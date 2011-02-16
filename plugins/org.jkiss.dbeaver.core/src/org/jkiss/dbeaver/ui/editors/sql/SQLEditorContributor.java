@@ -29,11 +29,12 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ICommandIds;
@@ -53,6 +54,8 @@ import java.util.ResourceBundle;
 public class SQLEditorContributor extends BasicTextEditorActionContributor implements DBPEventListener, IPropertyChangeListener
 {
     static final Log log = LogFactory.getLog(SQLEditorContributor.class);
+
+    public static final String EMPTY_SELECTION_TEXT = "<None>";
 
     private SQLEditor activeEditorPart;
 
@@ -222,11 +225,11 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 gl.marginHeight = 0;
                 comboGroup.setLayout(gl);
 
-                connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+                connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.FLAT | SWT.BORDER);
                 GridData gd = new GridData();
                 gd.widthHint = 100;
-                connectionCombo.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
                 connectionCombo.setLayoutData(gd);
+                connectionCombo.setVisibleItemCount(15);
                 connectionCombo.setToolTipText("Active datasource");
                 fillDataSourceList(editor);
                 connectionCombo.addSelectionListener(new SelectionListener()
@@ -254,15 +257,14 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 gl.marginHeight = 0;
                 comboGroup.setLayout(gl);
 
-                databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+                databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.FLAT | SWT.BORDER);
                 GridData gd = new GridData();
                 gd.widthHint = 100;
-                databaseCombo.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
                 databaseCombo.setLayoutData(gd);
+                databaseCombo.setVisibleItemCount(15);
                 databaseCombo.setToolTipText("Active database");
-                connectionCombo.add(DBIcon.DATABASES.getImage(), "");
-                databaseCombo.addSelectionListener(new SelectionListener()
-                {
+                databaseCombo.add(DBIcon.TREE_CATALOG.getImage(), EMPTY_SELECTION_TEXT);
+                databaseCombo.addSelectionListener(new SelectionListener() {
                     public void widgetSelected(SelectionEvent e)
                     {
                         changeDataBaseSelection();
@@ -280,29 +282,35 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
     }
 
     private void fillDataSourceList(SQLEditor editor) {
-        connectionCombo.removeAll();
+        connectionCombo.setRedraw(false);
+        try {
+            connectionCombo.removeAll();
 
-        connectionCombo.add(DBIcon.DATABASES.getImage(), "<None>");
-        boolean dsFound = false;
-        if (activeEditorPart != null) {
-            final DBSDataSourceContainer dataSourceContainer = activeEditorPart.getDataSourceContainer();
-            List<? extends DBSDataSourceContainer> dataSources;
-            if (dataSourceContainer != null) {
-                dataSources = dataSourceContainer.getRegistry().getDataSources();
-            } else {
-                dataSources = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(activeEditorPart.getEditorInput().getProject()).getDataSources();
-            }
-            for (int i = 0; i < dataSources.size(); i++) {
-                DBSDataSourceContainer ds = dataSources.get(i);
-                connectionCombo.add(DBIcon.DATABASES.getImage(), ds.getName());
-                if (editor != null && editor.getDataSourceContainer() == ds) {
-                    connectionCombo.select(i + 1);
-                    dsFound = true;
+            connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT);
+            int selectionIndex = 0;
+            if (activeEditorPart != null) {
+                final DBSDataSourceContainer dataSourceContainer = activeEditorPart.getDataSourceContainer();
+                List<? extends DBSDataSourceContainer> dataSources;
+                if (dataSourceContainer != null) {
+                    dataSources = dataSourceContainer.getRegistry().getDataSources();
+                } else {
+                    dataSources = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(activeEditorPart.getEditorInput().getProject()).getDataSources();
+                }
+                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                for (int i = 0; i < dataSources.size(); i++) {
+                    DBSDataSourceContainer ds = dataSources.get(i);
+                    DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(ds);
+                    connectionCombo.add(
+                        dsNode == null ? DBIcon.TREE_DATABASE.getImage() : dsNode.getNodeIconDefault(),
+                        ds.getName());
+                    if (editor != null && editor.getDataSourceContainer() == ds) {
+                        selectionIndex = i + 1;
+                    }
                 }
             }
-        }
-        if (!dsFound) {
-            connectionCombo.select(0);
+            connectionCombo.select(selectionIndex);
+        } finally {
+            connectionCombo.setRedraw(true);
         }
     }
 
@@ -402,62 +410,71 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
     private void fillDatabaseCombo(DBRProgressMonitor monitor, SQLEditor editor)
     {
         if (databaseCombo != null && !databaseCombo.isDisposed()) {
-            databaseCombo.removeAll();
-            boolean isEnabled = false;
-            if (editor != null) {
-                DBSDataSourceContainer dsContainer = editor.getDataSourceContainer();
-                if (dsContainer != null && dsContainer.isConnected()) {
-                    final DBPDataSource dataSource = dsContainer.getDataSource();
+            databaseCombo.setRedraw(false);
+            try {
+                databaseCombo.removeAll();
+                boolean isEnabled = false;
+                if (editor != null) {
+                    DBSDataSourceContainer dsContainer = editor.getDataSourceContainer();
+                    if (dsContainer != null && dsContainer.isConnected()) {
+                        final DBPDataSource dataSource = dsContainer.getDataSource();
 
-                    if (dataSource instanceof DBSEntityContainer &&
-                        dataSource instanceof DBSEntitySelector &&
-                        ((DBSEntitySelector)dataSource).supportsActiveChildChange())
-                    {
-                        DBSEntityContainer entityContainer = (DBSEntityContainer) dataSource;
-                        final CurrentDatabasesInfo databasesInfo = new CurrentDatabasesInfo();
-                        try {
-                            Class<? extends DBSEntity> childType = entityContainer.getChildType(monitor);
-                            if (childType == null || !DBSEntityContainer.class.isAssignableFrom(childType)) {
-                                isEnabled = false;
-                            } else {
-                                isEnabled = true;
-                                databasesInfo.list = entityContainer.getChildren(monitor);
-                                databasesInfo.active = ((DBSEntitySelector)dataSource).getActiveChild(monitor);
+                        if (dataSource instanceof DBSEntityContainer &&
+                            dataSource instanceof DBSEntitySelector &&
+                            ((DBSEntitySelector)dataSource).supportsActiveChildChange())
+                        {
+                            DBSEntityContainer entityContainer = (DBSEntityContainer) dataSource;
+                            final CurrentDatabasesInfo databasesInfo = new CurrentDatabasesInfo();
+                            try {
+                                Class<? extends DBSEntity> childType = entityContainer.getChildType(monitor);
+                                if (childType == null || !DBSEntityContainer.class.isAssignableFrom(childType)) {
+                                    isEnabled = false;
+                                } else {
+                                    isEnabled = true;
+                                    databasesInfo.list = entityContainer.getChildren(monitor);
+                                    databasesInfo.active = ((DBSEntitySelector)dataSource).getActiveChild(monitor);
+                                }
                             }
-                        }
-                        catch (DBException e) {
-                            log.error(e);
-                        }
-                        if (isEnabled) {
-                            if (databasesInfo.list != null && !databasesInfo.list.isEmpty()) {
-                                for (DBSObject database : databasesInfo.list) {
-                                    if (database instanceof DBSEntityContainer) {
-                                        databaseCombo.add(DBIcon.DATABASES.getImage(), database.getName());
-                                        databaseCombo.setData(database.getName(), database);
+                            catch (DBException e) {
+                                log.error(e);
+                            }
+                            if (isEnabled) {
+                                if (databasesInfo.list != null && !databasesInfo.list.isEmpty()) {
+                                    DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                                    for (DBSObject database : databasesInfo.list) {
+                                        if (database instanceof DBSEntityContainer) {
+                                            DBNDatabaseNode dbNode = navigatorModel.getNodeByObject(monitor, database, true);
+                                            databaseCombo.add(dbNode == null ? DBIcon.TREE_CATALOG.getImage() : dbNode.getNodeIconDefault(), database.getName());
+                                            databaseCombo.setData(database.getName(), database);
+                                        }
+                                    }
+                                }
+                                if (databasesInfo.active != null) {
+                                    int dbCount = databaseCombo.getItemCount();
+                                    for (int i = 0; i < dbCount; i++) {
+                                        String dbName = databaseCombo.getItem(i);
+                                        if (dbName.equals(databasesInfo.active.getName())) {
+                                            databaseCombo.select(i);
+                                            break;
+                                        }
                                     }
                                 }
                             }
-                            if (databasesInfo.active != null) {
-                                int dbCount = databaseCombo.getItemCount();
-                                for (int i = 0; i < dbCount; i++) {
-                                    String dbName = databaseCombo.getItem(i);
-                                    if (dbName.equals(databasesInfo.active.getName())) {
-                                        databaseCombo.select(i);
-                                        break;
-                                    }
-                                }
-                            }
+                        } else {
+                            databaseCombo.add(DBIcon.TREE_CATALOG.getImage(), dsContainer.getConnectionInfo().getDatabaseName());
+                            databaseCombo.select(0);
                         }
-                    } else {
-                        databaseCombo.add(DBIcon.DATABASES.getImage(), dsContainer.getConnectionInfo().getDatabaseName());
-                        databaseCombo.select(0);
                     }
                 }
+                if (databaseCombo.getItemCount() == 0) {
+                    databaseCombo.add(DBIcon.TREE_CATALOG.getImage(), EMPTY_SELECTION_TEXT);
+                    databaseCombo.select(0);
+                }
+                databaseCombo.setEnabled(isEnabled);
             }
-            if (databaseCombo.getItemCount() == 0) {
-                databaseCombo.add(DBIcon.DATABASES.getImage(), "<None>");
+            finally {
+                databaseCombo.setRedraw(true);
             }
-            databaseCombo.setEnabled(isEnabled);
         }
     }
 
