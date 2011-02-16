@@ -77,7 +77,11 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         try {
             IFile file = getFile();
             if (file != null) {
-                file.setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer.getId());
+                if (dataSourceContainer == null) {
+                    file.setPersistentProperty(PROP_DATA_SOURCE_ID, null);
+                } else {
+                    file.setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer.getId());
+                }
             }
         } catch (CoreException e) {
             log.error(e);

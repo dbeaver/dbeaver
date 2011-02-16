@@ -35,8 +35,10 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
 
@@ -55,8 +57,8 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
     private SQLEditor activeEditorPart;
 
     private Text resultSetSize;
-    private Combo connectionCombo;
-    private Combo databaseCombo;
+    private CImageCombo connectionCombo;
+    private CImageCombo databaseCombo;
     //private MenuContributionItem txnMenu;
 
     private RetargetTextEditorAction contentAssistProposal;
@@ -220,9 +222,10 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 gl.marginHeight = 0;
                 comboGroup.setLayout(gl);
 
-                connectionCombo = new Combo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+                connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
                 GridData gd = new GridData();
                 gd.widthHint = 100;
+                connectionCombo.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
                 connectionCombo.setLayoutData(gd);
                 connectionCombo.setToolTipText("Active datasource");
                 fillDataSourceList(editor);
@@ -251,11 +254,13 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 gl.marginHeight = 0;
                 comboGroup.setLayout(gl);
 
-                databaseCombo = new Combo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+                databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
                 GridData gd = new GridData();
                 gd.widthHint = 100;
+                databaseCombo.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
                 databaseCombo.setLayoutData(gd);
                 databaseCombo.setToolTipText("Active database");
+                connectionCombo.add(DBIcon.DATABASES.getImage(), "");
                 databaseCombo.addSelectionListener(new SelectionListener()
                 {
                     public void widgetSelected(SelectionEvent e)
@@ -268,7 +273,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                         widgetSelected(e);
                     }
                 });
-                //fillDatabaseCombo(monitor, editor);
+                //fillDatabaseCombo(monitor, getEditor());
                 return comboGroup;
             }
         });
@@ -277,7 +282,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
     private void fillDataSourceList(SQLEditor editor) {
         connectionCombo.removeAll();
 
-        connectionCombo.add("<None>");
+        connectionCombo.add(DBIcon.DATABASES.getImage(), "<None>");
         boolean dsFound = false;
         if (activeEditorPart != null) {
             final DBSDataSourceContainer dataSourceContainer = activeEditorPart.getDataSourceContainer();
@@ -289,7 +294,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
             }
             for (int i = 0; i < dataSources.size(); i++) {
                 DBSDataSourceContainer ds = dataSources.get(i);
-                connectionCombo.add(ds.getName(), i + 1);
+                connectionCombo.add(DBIcon.DATABASES.getImage(), ds.getName());
                 if (editor != null && editor.getDataSourceContainer() == ds) {
                     connectionCombo.select(i + 1);
                     dsFound = true;
@@ -427,7 +432,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                             if (databasesInfo.list != null && !databasesInfo.list.isEmpty()) {
                                 for (DBSObject database : databasesInfo.list) {
                                     if (database instanceof DBSEntityContainer) {
-                                        databaseCombo.add(database.getName());
+                                        databaseCombo.add(DBIcon.DATABASES.getImage(), database.getName());
                                         databaseCombo.setData(database.getName(), database);
                                     }
                                 }
@@ -444,10 +449,13 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                             }
                         }
                     } else {
-                        databaseCombo.add(dsContainer.getConnectionInfo().getDatabaseName());
+                        databaseCombo.add(DBIcon.DATABASES.getImage(), dsContainer.getConnectionInfo().getDatabaseName());
                         databaseCombo.select(0);
                     }
                 }
+            }
+            if (databaseCombo.getItemCount() == 0) {
+                databaseCombo.add(DBIcon.DATABASES.getImage(), "<None>");
             }
             databaseCombo.setEnabled(isEnabled);
         }
