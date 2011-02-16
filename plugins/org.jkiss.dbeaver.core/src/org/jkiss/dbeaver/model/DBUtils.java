@@ -465,6 +465,8 @@ public final class DBUtils {
         String query) throws DBCException
     {
         DBCStatementType statementType = DBCStatementType.QUERY;
+        // Normalize query
+        query = SQLUtils.makeUnifiedLineFeeds(query);
 
 /*
         // Check for output parameters
@@ -473,7 +475,7 @@ public final class DBUtils {
             statementType = DBCStatementType.EXEC;
         }
 */
-/*
+
             // Check for EXEC query
             final List<String> executeKeywords = context.getDataSource().getInfo().getExecuteKeywords();
             if (!CommonUtils.isEmpty(executeKeywords)) {
@@ -485,7 +487,7 @@ public final class DBUtils {
                     }
                 }
             }
-*/
+
 /*
         final DBCStatement statement = context.prepareStatement(statementType, query, false, false, false);
         if (outParamName != null) {

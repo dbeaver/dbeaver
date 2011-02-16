@@ -120,4 +120,26 @@ public final class SQLUtils {
         }
         return null;
     }
+
+    /**
+     * Removes \\r characters from query.
+     * Actually this is done specially for Oracle due to some bug in it's driver
+     * @param query query
+     * @return normalized query
+     */
+    public static String makeUnifiedLineFeeds(String query)
+    {
+        if (query.indexOf('\r') == -1) {
+            return query;
+        }
+        StringBuilder result = new StringBuilder(query.length());
+        for (int i = 0; i < query.length(); i++) {
+            char c = query.charAt(i);
+            if (c == '\r') {
+                continue;
+            }
+            result.append(c);
+        }
+        return result.toString();
+    }
 }
