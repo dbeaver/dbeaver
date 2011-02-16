@@ -230,26 +230,26 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
 
         // rule for multiline comments
         // We just need a scanner that does nothing but returns a token with
-        // the corrresponding text attributes
+        // the corresponding text attributes
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(
             new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT))));
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_MULTILINE_COMMENT);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_MULTILINE_COMMENT);
 
-        // Add a "damager-repairer" for changes witin one-line SQL comments.
+        // Add a "damager-repairer" for changes within one-line SQL comments.
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(
             new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT))));
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_COMMENT);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_COMMENT);
 
-        // Add a "damager-repairer" for changes witin quoted literals.
+        // Add a "damager-repairer" for changes within quoted literals.
         dr = new DefaultDamagerRepairer(
             new SingleTokenScanner(
                 new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_STRING))));
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_STRING);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_STRING);
 
-        // Add a "damager-repairer" for changes witin delimited identifiers.
+        // Add a "damager-repairer" for changes within delimited identifiers.
         dr = new DefaultDamagerRepairer(
             new SingleTokenScanner(
                 new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER))));

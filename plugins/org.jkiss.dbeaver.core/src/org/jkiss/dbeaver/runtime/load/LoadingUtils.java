@@ -72,6 +72,10 @@ public class LoadingUtils {
                 // skip
             } else if (method.getName().equals(getName)) {
                 // If it matches the get name, it's the right method
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                if (parameterTypes.length == 0 || (parameterTypes.length == 1 && parameterTypes[0] == DBRProgressMonitor.class)) {
+
+                }
                 return method;
             } else if (method.getName().equals(isName) && method.getReturnType().equals(boolean.class)) {
                 return method;

@@ -24,12 +24,11 @@ import java.util.*;
 
 /**
  * SQLSyntaxManager.
- *
+ * <p/>
  * Contains information about some concrete datasource underlying database syntax.
  * Support runtime change of datasource (reloads syntax information)
  */
-public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChangeListener
-{
+public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChangeListener {
     //static final Log log = LogFactory.getLog(SQLSyntaxManager.class);
 
     public enum KeywordType {
@@ -38,12 +37,15 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         TYPE
     }
 
+    public static final String DEFAULT_STATEMENT_DELIMITER = ";";
+
     public static final String CONFIG_COLOR_KEYWORD = "org.jkiss.dbeaver.sql.editor.color.keyword.foreground";
     public static final String CONFIG_COLOR_DATATYPE = "org.jkiss.dbeaver.sql.editor.color.datatype.foreground";
     public static final String CONFIG_COLOR_STRING = "org.jkiss.dbeaver.sql.editor.color.string.foreground";
     public static final String CONFIG_COLOR_NUMBER = "org.jkiss.dbeaver.sql.editor.color.number.foreground";
     public static final String CONFIG_COLOR_COMMENT = "org.jkiss.dbeaver.sql.editor.color.comment.foreground";
     public static final String CONFIG_COLOR_DELIMITER = "org.jkiss.dbeaver.sql.editor.color.delimiter.foreground";
+    public static final String CONFIG_COLOR_PARAMETER = "org.jkiss.dbeaver.sql.editor.color.parameter.foreground";
     public static final String CONFIG_COLOR_TEXT = "org.jkiss.dbeaver.sql.editor.color.text.foreground";
     public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
 
@@ -58,8 +60,8 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
     private TreeSet<String> columnQueryWords = new TreeSet<String>();
 
     private String catalogSeparator;
-    private String statementDelimiter = ";";
-    private String[] singleLineComments = { "--" };
+    private String statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
+    private String[] singleLineComments = {"--"};
 
     private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<Integer, SQLScriptPosition>();
 
@@ -126,7 +128,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
             statementDelimiter = dataSourceInfo.getScriptDelimiter();
         }
         if (statementDelimiter == null) {
-            statementDelimiter = ";";
+            statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
         }
         loadSyntax(dataSourceInfo);
         changeRules();
@@ -168,7 +170,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
 
     public boolean isKeywordStart(String word)
     {
-        SortedMap<String,KeywordType> map = allKeywords.tailMap(word);
+        SortedMap<String, KeywordType> map = allKeywords.tailMap(word);
         return !map.isEmpty() && map.firstKey().startsWith(word);
     }
 
@@ -249,7 +251,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
             functions.addAll(allFunctions);
         }
 
-        if (types .isEmpty()) {
+        if (types.isEmpty()) {
             // Add default types
         }
 
@@ -271,49 +273,47 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
 
     private void changeRules()
     {
-        Color backgroundColor = getColor(SQLSyntaxManager.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE);
-        IToken keywordToken = new Token(new TextAttribute(
-            getColor(SQLSyntaxManager.CONFIG_COLOR_KEYWORD),
-            backgroundColor,
-            SWT.BOLD));
-        IToken typeToken = new Token(new TextAttribute(
-            getColor(SQLSyntaxManager.CONFIG_COLOR_DATATYPE),
-            backgroundColor,
-            SWT.BOLD));
-        IToken stringToken = new Token(new TextAttribute(
-            getColor(SQLSyntaxManager.CONFIG_COLOR_STRING)));
-        IToken numberToken = new Token(new TextAttribute(
-            getColor(SQLSyntaxManager.CONFIG_COLOR_NUMBER)));
-        IToken commentToken = new Token(new TextAttribute(
-            getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT)));
-        SQLDelimiterToken delimToken = new SQLDelimiterToken(new TextAttribute(
-            getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED)));
-        IToken otherToken = new Token(new TextAttribute(
-            getColor(SQLSyntaxManager.CONFIG_COLOR_TEXT)));
+        final Color backgroundColor = getColor(SQLSyntaxManager.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE);
+        final IToken keywordToken = new Token(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_KEYWORD), backgroundColor, SWT.BOLD));
+        final IToken typeToken = new Token(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_DATATYPE), backgroundColor, SWT.BOLD));
+        final IToken stringToken = new Token(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_STRING)));
+        final IToken numberToken = new Token(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_NUMBER)));
+        final IToken commentToken = new Token(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT)));
+        final SQLDelimiterToken delimiterToken = new SQLDelimiterToken(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED)));
+        final SQLParameterToken parameterToken = new SQLParameterToken(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), backgroundColor, SWT.BOLD));
+        final IToken otherToken = new Token(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_TEXT)));
 
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<IRule>();
 
         // Add rule for single-line comments.
-        rules.add( new EndOfLineRule( "--", commentToken )); //$NON-NLS-1$
+        rules.add(new EndOfLineRule("--", commentToken)); //$NON-NLS-1$
 
         // Add rules for delimited identifiers and string literals.
-        rules.add( new NestedMultiLineRule( "'", "'", stringToken, '\\' )); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        rules.add( new NestedMultiLineRule( "\"", "\"", stringToken, '\\' )); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        rules.add(new NestedMultiLineRule("'", "'", stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        rules.add(new NestedMultiLineRule("\"", "\"", stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
         // Add rules for multi-line comments
         rules.add(new NestedMultiLineRule("/*", "*/", commentToken, (char) 0, true));
 
         // Add generic whitespace rule.
-        rules.add( new WhitespaceRule( new SQLWhiteSpaceDetector() ));
+        rules.add(new WhitespaceRule(new SQLWhiteSpaceDetector()));
 
         // Add numeric rule
         rules.add(new NumberRule(numberToken));
 
         // Add word rule for keywords, types, and constants.
         WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
-        for (String reserverWord : getReservedWords()) {
-            wordRule.addWord(reserverWord, keywordToken);
+        for (String reservedWord : getReservedWords()) {
+            wordRule.addWord(reservedWord, keywordToken);
         }
         for (String function : getFunctions()) {
             wordRule.addWord(function, typeToken);
@@ -336,8 +336,41 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
                     return statementDelimiter.indexOf(c) != -1;
                 }
             });
-            delimRule.addWord(statementDelimiter, delimToken);
+            delimRule.addWord(statementDelimiter, delimiterToken);
             rules.add(delimRule);
+        }
+
+        {
+            // Parameter rule
+            IRule parameterRule = new IRule() {
+                private StringBuilder buffer = new StringBuilder();
+
+                public IToken evaluate(ICharacterScanner scanner)
+                {
+                    int column = scanner.getColumn();
+                    int c = scanner.read();
+                    if (c != ICharacterScanner.EOF && (c == '?' || c == ':')) {
+                        buffer.setLength(0);
+                        do {
+                            buffer.append((char) c);
+                            c = scanner.read();
+                        } while (c != ICharacterScanner.EOF && Character.isJavaIdentifierPart(c));
+                        scanner.unread();
+
+                        if ((buffer.charAt(0) == '?' && buffer.length() == 1) || (buffer.charAt(0) == ':' && buffer.length() > 1)) {
+                            return parameterToken;
+                        }
+
+                        for (int i = buffer.length() - 1; i >= 0; i--) {
+                            scanner.unread();
+                        }
+                    } else {
+                        scanner.unread();
+                    }
+                    return Token.UNDEFINED;
+                }
+            };
+            rules.add(parameterRule);
         }
 
         IRule[] result = new IRule[rules.size()];
@@ -373,7 +406,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         "FROM",
         "UPDATE",
         "INTO",
-		"TABLE"
+        "TABLE"
     };
 
     private static final String[] COLUMN_KEYWORDS = {
@@ -397,7 +430,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         "BEGIN",
         "BETWEEN",
         "BOTH",
-        "BY", 
+        "BY",
         "CASE",
         "CAST",
         "CHECK",
