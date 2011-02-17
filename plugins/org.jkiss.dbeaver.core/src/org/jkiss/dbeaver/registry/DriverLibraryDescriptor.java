@@ -88,7 +88,11 @@ public class DriverLibraryDescriptor
 
     public File getLibraryFile()
     {
-        return new File(driver.getLibraryURL(path).getFile());
+        String url = driver.getLibraryURL(path).toExternalForm();
+        if (url.startsWith("file:/")) {
+            url = url.substring(6);
+        }
+        return new File(url);
     }
 
 
