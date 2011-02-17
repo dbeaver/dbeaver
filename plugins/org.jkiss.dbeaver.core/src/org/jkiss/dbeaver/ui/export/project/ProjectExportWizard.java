@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -100,13 +101,21 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         try {
             ByteArrayOutputStream metaBuffer = new ByteArrayOutputStream(10000);
             ZipOutputStream archiveStream = new ZipOutputStream(exportStream);
-            {
-                // Start meta
-                XMLBuilder meta = new XMLBuilder(metaBuffer, ContentUtils.DEFAULT_FILE_CHARSET);
-                meta.startElement(ExportConstants.TAG_ARCHIVE);
-                meta.addAttribute(ExportConstants.ATTR_VERSION, ExportConstants.ARCHIVE_VERSION_CURRENT);
 
-                exportData.initExport(DBeaverCore.getInstance().getProjectRegistry(), meta, archiveStream);
+            // Start meta
+            XMLBuilder meta = new XMLBuilder(metaBuffer, ContentUtils.DEFAULT_FILE_CHARSET);
+            meta.startElement(ExportConstants.TAG_ARCHIVE);
+            meta.addAttribute(ExportConstants.ATTR_VERSION, ExportConstants.ARCHIVE_VERSION_CURRENT);
+
+            exportData.initExport(DBeaverCore.getInstance().getProjectRegistry(), meta, archiveStream);
+
+            {
+                // Export source info
+                meta.startElement(ExportConstants.TAG_SOURCE);
+                meta.addAttribute(ExportConstants.ATTR_TIME, Long.valueOf(System.currentTimeMillis()));
+                meta.addAttribute(ExportConstants.ATTR_ADDRESS, InetAddress.getLocalHost().getHostAddress());
+                meta.addAttribute(ExportConstants.ATTR_HOST, InetAddress.getLocalHost().getHostName());
+                meta.endElement();
             }
 
             Map<IProject, Integer> resCountMap = new HashMap<IProject, Integer>();

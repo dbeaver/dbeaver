@@ -16,6 +16,7 @@ public class DataSourceConstants {
     public static final String TAG_PROVIDER = "provider";
     public static final String TAG_PARAMETER = "parameter";
     public static final String TAG_PROPERTY = "property";
+    public static final String TAG_LIBRARY = "library";
 
     public static final String ATTR_ID = "id";
     public static final String ATTR_DISABLED = "disabled";
@@ -28,5 +29,5 @@ public class DataSourceConstants {
     public static final String ATTR_DESCRIPTION = "description";
     public static final String ATTR_PATH = "path";
     public static final String ATTR_PROVIDER = "provider";
-    public static final String TAG_LIBRARY = "library";
+
 }
