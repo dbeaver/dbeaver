@@ -7,16 +7,19 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -83,26 +86,20 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             return false;
         }
 
+        final IResource resource = resourceNode.getResource();
         try {
-            workbenchWindow.run(true, true, new IRunnableWithProgress() {
-                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            IResource resource = resourceNode.getResource();
-                            if (resource instanceof IProject) {
-                                // Manually remove this project from registry
-                                DBeaverCore.getInstance().getProjectRegistry().removeProject((IProject) resource);
-                            }
-                            resource.delete(true, monitor);
-                        } catch (CoreException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    }
-                });
-        } catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
-            return false;
-        } catch (InterruptedException e) {
+            if (resource instanceof IFolder) {
+                ((IFolder)resource).delete(true, false, new NullProgressMonitor());
+            } else if (resource instanceof IProject) {
+                // Manually remove this project from registry
+                DBeaverCore.getInstance().getProjectRegistry().removeProject((IProject) resource);
+                // Delete project (with all contents)
+                ((IProject)resource).delete(true, true, new NullProgressMonitor());
+            } else {
+                resource.delete(true, new NullProgressMonitor());
+            }
+        } catch (CoreException e) {
+            log.error(e);
             return false;
         }
         return true;

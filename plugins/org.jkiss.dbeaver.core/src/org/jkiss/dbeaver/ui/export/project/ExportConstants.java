@@ -22,6 +22,7 @@ public class ExportConstants {
     public static final String TAG_PROJECT = "project"; //NON-NLS-1
     public static final String TAG_RESOURCE = "resource"; //NON-NLS-1
     public static final String TAG_ATTRIBUTE = "attribute"; //NON-NLS-1
+    public static final String TAG_LIBRARIES = "libraries"; //NON-NLS-1
 
     public static final String ATTR_VERSION = "version"; //NON-NLS-1
     public static final String ATTR_HOST = "host";
@@ -30,6 +31,7 @@ public class ExportConstants {
     public static final String ATTR_QUALIFIER = "qualifier"; //NON-NLS-1
     public static final String ATTR_NAME = "name"; //NON-NLS-1
     public static final String ATTR_VALUE = "value"; //NON-NLS-1
+    public static final String ATTR_DIRECTORY = "directory"; //NON-NLS-1
     public static final String ATTR_DESCRIPTION = "description"; //NON-NLS-1
     public static final String ATTR_CHARSET = "charset"; //NON-NLS-1
     public static final String ATTR_PATH = "path"; //NON-NLS-1
@@ -38,5 +40,4 @@ public class ExportConstants {
     public static final int ARCHIVE_VERSION_1 = 1;
     public static final int ARCHIVE_VERSION_CURRENT = ARCHIVE_VERSION_1;
 
-    public static final String TAG_LIBRARIES = "libraries";
 }

@@ -10,13 +10,16 @@ import net.sf.jkiss.utils.xml.XMLException;
 import net.sf.jkiss.utils.xml.XMLUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceConstants;
@@ -158,6 +161,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
             } catch (XMLException e) {
                 throw new DBException("Cannot parse meta file", e);
+            } catch (CoreException e) {
+                throw new DBException("Cannot persist project", e);
             } finally {
                 metaStream.close();
             }
@@ -199,10 +204,26 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
         if (driver == null) {
             // Try to find existing driver by class name
+            List<DriverDescriptor> matchedDrivers = new ArrayList<DriverDescriptor>();
             for (DriverDescriptor tmpDriver : dataSourceProvider.getDrivers()) {
                 if (tmpDriver.getDriverClassName().equals(driverClass)) {
-                    driver = tmpDriver;
-                    break;
+                    matchedDrivers.add(tmpDriver);
+                }
+            }
+            if (matchedDrivers.size() == 1) {
+                driver = matchedDrivers.get(0);
+            } else if (!matchedDrivers.isEmpty()) {
+                // Multiple drivers with the same class - tru to find driver with the same sample URL or with the same name
+                for (DriverDescriptor tmpDriver : matchedDrivers) {
+                    if (tmpDriver.getSampleURL().equals(driverURL) || tmpDriver.getName().equals(driverName)) {
+                        driver = tmpDriver;
+                        break;
+                    }
+                }
+                if (driver == null) {
+                    // Not found - lets use firs one
+                    log.warn("Ambiguous driver '" + driverName + "' - multiple drivers with class '" + driverClass + "' found. First one will be used");
+                    driver = matchedDrivers.get(0);
                 }
             }
         }
@@ -231,8 +252,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 libElement.getAttribute(DataSourceConstants.ATTR_VALUE));
         }
 
-        // Add libraries (only for custom drivers with empty library list)
-        if (driver.isCustom() && CommonUtils.isEmpty(driver.getLibraries())) {
+        // Add libraries (only for managable drivers with empty library list)
+        if (driver.isManagable() && CommonUtils.isEmpty(driver.getLibraries())) {
             List<String> libraryList = new ArrayList<String>();
             final Element[] libList = XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_LIBRARY);
             for (Element libElement : libList) {
@@ -268,7 +289,14 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                                     ContentUtils.close(os);
                                 }
                             }
-                            driver.addLibrary(importLibFile.getAbsolutePath());
+                            // Make relative path
+                            String contribPath = contribFolder.getAbsolutePath();
+                            String libAbsolutePath = importLibFile.getAbsolutePath();
+                            String relativePath = libAbsolutePath.substring(contribPath.length());
+                            while (relativePath.charAt(0) == '/' || relativePath.charAt(0) == '\\') {
+                                relativePath = relativePath.substring(1);
+                            }
+                            driver.addLibrary(relativePath);
                         }
                     }
                 }
@@ -283,7 +311,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         return driver;
     }
 
-    private IProject importProject(DBRProgressMonitor monitor, Element projectElement, ZipFile zipFile, Map<String, String> driverMap) throws DBException
+    private IProject importProject(DBRProgressMonitor monitor, Element projectElement, ZipFile zipFile, Map<String, String> driverMap)
+        throws DBException, CoreException, IOException
     {
         String projectName = projectElement.getAttribute(ExportConstants.ATTR_NAME);
         String projectDescription = projectElement.getAttribute(ExportConstants.ATTR_DESCRIPTION);
@@ -296,8 +325,102 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
         monitor.subTask("Import project " + targetProjectName);
 
+        final IProjectDescription description = DBeaverCore.getInstance().getWorkspace().newProjectDescription(project.getName());
+        if (!CommonUtils.isEmpty(projectDescription)) {
+            description.setComment(projectDescription);
+        }
+        project.create(description, monitor.getNestedMonitor());
+
+        try {
+            project.open(monitor.getNestedMonitor());
+            // Load resources
+            importChildResources(
+                monitor,
+                project,
+                projectElement,
+                ExportConstants.DIR_PROJECTS + "/" + projectName + "/",
+                zipFile);
+        } catch (Exception e) {
+            // Cleanup project which was partially imported
+            try {
+                project.delete(true, true, monitor.getNestedMonitor());
+            } catch (CoreException e1) {
+                log.error(e1);
+            }
+            throw new DBException("Error importing project resources", e);
+        }
+        // Set project properties
+        loadResourceProperties(monitor, project, projectElement);
+        project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, null);
+
+        // Add project to registry (it will also initialize this project)
+        DBeaverCore.getInstance().getProjectRegistry().addProject(project);
 
         return project;
+    }
+
+    private void importChildResources(DBRProgressMonitor monitor, IContainer resource, Element resourceElement, String containerPath, ZipFile zipFile)
+        throws DBException, IOException, CoreException
+    {
+        for (Element childElement : XMLUtils.getChildElementList(resourceElement, ExportConstants.TAG_RESOURCE)) {
+            String childName = childElement.getAttribute(ExportConstants.ATTR_NAME);
+            boolean isDirectory = "true".equals(childElement.getAttribute(ExportConstants.ATTR_DIRECTORY));
+            String entryPath = containerPath + childName;
+            if (isDirectory) {
+                entryPath += "/";
+            }
+            final ZipEntry resourceEntry = zipFile.getEntry(entryPath);
+            if (resourceEntry == null) {
+                throw new DBException("Project resource '" + entryPath + "' not found in archive");
+            }
+            if (isDirectory != resourceEntry.isDirectory()) {
+                throw new DBException("Directory '" + entryPath + "' stored as file in archive");
+            }
+            IResource childResource;
+            if (isDirectory) {
+                IFolder folder;
+                if (resource instanceof IFolder) {
+                    folder = ((IFolder)resource).getFolder(childName);
+                } else if (resource instanceof IProject) {
+                    folder = ((IProject)resource).getFolder(childName);
+                } else {
+                    throw new DBException("Unsupported container type '" + resource.getClass().getName() + "'");
+                }
+                folder.create(true, true, monitor.getNestedMonitor());
+                childResource = folder;
+                importChildResources(monitor, folder, childElement, entryPath, zipFile);
+            } else {
+                IFile file;
+                if (resource instanceof IFolder) {
+                    file = ((IFolder)resource).getFile(childName);
+                } else if (resource instanceof IProject) {
+                    file = ((IProject)resource).getFile(childName);
+                } else {
+                    throw new DBException("Unsupported container type '" + resource.getClass().getName() + "'");
+                }
+                file.create(zipFile.getInputStream(resourceEntry), true, monitor.getNestedMonitor());
+                childResource = file;
+            }
+            loadResourceProperties(monitor, childResource, resourceElement);
+        }
+    }
+
+    private void loadResourceProperties(DBRProgressMonitor monitor, IResource resource, Element element) throws CoreException, IOException
+    {
+        if (resource instanceof IFile) {
+            final String charset = element.getAttribute(ExportConstants.ATTR_CHARSET);
+            if (!CommonUtils.isEmpty(charset)) {
+                ((IFile) resource).setCharset(charset, monitor.getNestedMonitor());
+            }
+        }
+        for (Element attrElement : XMLUtils.getChildElementList(element, ExportConstants.TAG_ATTRIBUTE)) {
+            String qualifier = attrElement.getAttribute(ExportConstants.ATTR_QUALIFIER);
+            String name = attrElement.getAttribute(ExportConstants.ATTR_NAME);
+            String value = attrElement.getAttribute(ExportConstants.ATTR_VALUE);
+            if (!CommonUtils.isEmpty(qualifier) && !CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(value)) {
+                resource.setPersistentProperty(new QualifiedName(qualifier, name), value);
+            }
+        }
     }
 
 

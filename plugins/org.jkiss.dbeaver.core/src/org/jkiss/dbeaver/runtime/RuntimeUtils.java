@@ -139,7 +139,8 @@ public class RuntimeUtils
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
         final int month = c.get(Calendar.MONTH) + 1;
-        return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + c.get(Calendar.DAY_OF_MONTH);
+        final int day = c.get(Calendar.DAY_OF_MONTH);
+        return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + (day < 10 ? "0" + day : day);
     }
 
     public static String getCurrentTimeStamp()

@@ -8,10 +8,7 @@ import net.sf.jkiss.utils.IOUtils;
 import net.sf.jkiss.utils.xml.XMLBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
@@ -322,6 +319,8 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 xml.addAttribute(ExportConstants.ATTR_CHARSET, contentDescription.getCharset());
                 //xml.addAttribute(ExportConstants.ATTR_CHARSET, contentDescription.getContentType());
             }
+        } else if (resource instanceof IFolder) {
+            xml.addAttribute(ExportConstants.ATTR_DIRECTORY, true);
         }
         for (Object entry : resource.getPersistentProperties().entrySet()) {
             Map.Entry propEntry = (Map.Entry) entry;

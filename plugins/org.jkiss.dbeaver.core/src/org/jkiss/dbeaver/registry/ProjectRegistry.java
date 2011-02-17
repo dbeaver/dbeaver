@@ -19,7 +19,6 @@ import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
-import org.jkiss.dbeaver.ui.actions.ResourcePropertyTester;
 
 import java.util.ArrayList;
 import java.util.HashMap;
