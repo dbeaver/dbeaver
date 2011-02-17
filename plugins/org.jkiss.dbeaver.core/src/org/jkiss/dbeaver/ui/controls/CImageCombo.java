@@ -1,16 +1,7 @@
-/*******************************************************************************
- * Copyright (c) 2000, 2007 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Tom Seidel      - enhancements for image-handling
- *     Michael Edwards - further enhancements to support image AND text in 
- *                       collapsed state of combo
- *******************************************************************************/
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.controls;
 
 import java.util.Arrays;
@@ -88,7 +79,6 @@ import org.eclipse.ui.forms.widgets.TableWrapLayout;
  */
 
 public class CImageCombo extends Composite {
-    int visibleCount = 5;
 
     private Composite comboComposite;
     private Label imageLabel;
@@ -99,7 +89,6 @@ public class CImageCombo extends Composite {
     private Button arrow;
     private boolean hasFocus;
     private Listener listener, filter;
-    private Color foreground, background;
     private Font font;
     private int style;
 
@@ -159,7 +148,6 @@ public class CImageCombo extends Composite {
 
         this.imageLabel = new Label(this.comboComposite, SWT.NONE);
         this.imageLabel.setLayoutData(new TableWrapData());
-        //this.imageLabel.setImage(DBIcon.TREE_CATALOG.getImage());
 
         this.text = new Text(this.comboComposite, SWT.READ_ONLY);
         this.text.setLayoutData(new TableWrapData(TableWrapData.FILL_GRAB));
@@ -379,7 +367,7 @@ public class CImageCombo extends Composite {
     public Point computeSize(int wHint, int hHint, boolean changed)
     {
         checkWidget();
-        int width = 0, height = 0;
+        int width, height;
         String[] items = getStringsFromTable();
         int textWidth = 0;
         GC gc = new GC(this.comboComposite);
@@ -524,30 +512,6 @@ public class CImageCombo extends Composite {
     }
 
     /**
-     * Returns a <code>Point</code> whose x coordinate is the
-     * character position representing the start of the selection
-     * in the receiver's text field, and whose y coordinate is the
-     * character position representing the end of the selection.
-     * An "empty" selection is indicated by the x and y coordinates
-     * having the same value.
-     * <p>
-     * Indexing is zero based.  The range of a selection is from
-     * 0..N where N is the number of characters in the widget.
-     * </p>
-     *
-     * @return a point representing the selection start and end
-     * @throws SWTException <ul>
-     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                      </ul>
-     */
-    public Point getSelection()
-    {
-        checkWidget();
-        return this.text.getSize();
-    }
-
-    /**
      * Returns the zero-relative index of the item which is currently
      * selected in the receiver's list, or -1 if no item is selected.
      *
@@ -578,42 +542,6 @@ public class CImageCombo extends Composite {
     {
         checkWidget();
         return this.text.getText();
-    }
-
-    /**
-     * Returns the height of the receiver's text field.
-     *
-     * @return the text height
-     * @throws SWTException <ul>
-     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                      </ul>
-     */
-    public int getTextHeight()
-    {
-        checkWidget();
-        return this.text.getSize().x;
-    }
-
-    /**
-     * Gets the number of items that are visible in the drop
-     * down portion of the receiver's list.
-     * <p>
-     * Note: This operation is a hint and is not supported on
-     * platforms that do not have this concept.
-     * </p>
-     *
-     * @return the number of items that are visible
-     * @throws SWTException <ul>
-     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                      </ul>
-     * @since 3.0
-     */
-    public int getVisibleItemCount()
-    {
-        checkWidget();
-        return this.visibleCount;
     }
 
     /**
@@ -867,6 +795,8 @@ public class CImageCombo extends Composite {
         checkWidget();
         super.setToolTipText(string);
         this.arrow.setToolTipText(string);
+        this.imageLabel.setToolTipText(string);
+        this.text.setToolTipText(string);
         this.comboComposite.setToolTipText(string);
     }
 
@@ -973,12 +903,6 @@ public class CImageCombo extends Composite {
         this.table = new Table(this.popup, listStyle);
         if (this.font != null) {
             this.table.setFont(this.font);
-        }
-        if (this.foreground != null) {
-            this.table.setForeground(this.foreground);
-        }
-        if (this.background != null) {
-            this.table.setBackground(this.background);
         }
 
         int[] popupEvents = {SWT.Close, SWT.Paint, SWT.Deactivate};
