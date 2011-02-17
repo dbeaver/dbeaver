@@ -589,6 +589,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return origLibraries;
     }
 
+    public static File getDriversContribFolder() throws IOException
+    {
+        return new File(Platform.getInstallLocation().getDataArea("drivers").toExternalForm());
+    }
+
     public URL getLibraryURL(String path)
     {
         URL url = getProviderDescriptor().getContributorBundle().getEntry(path);

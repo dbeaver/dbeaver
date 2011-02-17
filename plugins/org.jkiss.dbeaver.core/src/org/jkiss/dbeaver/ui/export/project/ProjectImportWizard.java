@@ -5,10 +5,12 @@
 package org.jkiss.dbeaver.ui.export.project;
 
 import net.sf.jkiss.utils.CommonUtils;
+import net.sf.jkiss.utils.IOUtils;
 import net.sf.jkiss.utils.xml.XMLException;
 import net.sf.jkiss.utils.xml.XMLUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
@@ -22,9 +24,12 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -75,11 +80,12 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         catch (InvocationTargetException ex) {
             UIUtils.showErrorDialog(
                 getShell(),
-                "Export error",
+                "Import error",
                 "Cannot export projects",
                 ex.getTargetException());
             return false;
         }
+        UIUtils.showInfoBox(getShell(), "Project import", "Project(s) successfully imported");
         return true;
 	}
 
@@ -117,13 +123,33 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     final Element driversElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), DataSourceConstants.TAG_DRIVERS);
                     if (driversElement != null) {
                         final Element[] driverList = XMLUtils.getChildElementList(driversElement, DataSourceConstants.TAG_DRIVER);
-                        monitor.beginTask("Load drivers", driverList.length);
+                        monitor.beginTask("Import drivers", driverList.length);
                         for (Element driverElement : driverList) {
                             if (monitor.isCanceled()) {
                                 break;
                             }
 
-                            importDriver(monitor, driverElement, libMap, driverMap);
+                            importDriver(monitor, driverElement, zipFile, libMap, driverMap);
+                            monitor.worked(1);
+                        }
+                        // Save drivers
+                        DBeaverCore.getInstance().getDataSourceProviderRegistry().saveDrivers();
+                        monitor.done();
+                    }
+                }
+
+                {
+                    // Import projects
+                    final Element projectsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_PROJECTS);
+                    if (projectsElement != null) {
+                        final Element[] projectList = XMLUtils.getChildElementList(projectsElement, ExportConstants.TAG_PROJECT);
+                        monitor.beginTask("Import projects", projectList.length);
+                        for (Element projectElement : projectList) {
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
+
+                            importProject(monitor, projectElement, zipFile, driverMap);
                             monitor.worked(1);
                         }
                         monitor.done();
@@ -144,8 +170,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     private DriverDescriptor importDriver(
         DBRProgressMonitor monitor,
         Element driverElement,
+        ZipFile zipFile,
         Map<String, String> libMap,
-        Map<String, String> driverMap)
+        Map<String, String> driverMap) throws IOException, DBException
     {
         String providerId = driverElement.getAttribute(DataSourceConstants.ATTR_PROVIDER);
         String driverId = driverElement.getAttribute(DataSourceConstants.ATTR_ID);
@@ -158,8 +185,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
         DataSourceProviderDescriptor dataSourceProvider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(providerId);
         if (dataSourceProvider == null) {
-            UIUtils.showErrorDialog(getShell(), "Driver import", "Cannot find data source provider '" + providerId + "'");
-            return null;
+            throw new DBException("Cannot find data source provider '" + providerId + "' for driver '" + driverName + "'");
         }
         monitor.subTask("Load driver " + driverName);
 
@@ -193,14 +219,60 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             dataSourceProvider.addDriver(driver);
         }
 
-        List<String> libraryList = new ArrayList<String>();
-        final Element[] libList = XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_LIBRARY);
-        for (Element libElement : libList) {
-            libraryList.add(libElement.getAttribute(DataSourceConstants.ATTR_PATH));
+        // Parameters and properties
+        for (Element libElement : XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_PARAMETER)) {
+            driver.setDriverParameter(
+                libElement.getAttribute(DataSourceConstants.ATTR_NAME),
+                libElement.getAttribute(DataSourceConstants.ATTR_VALUE));
+        }
+        for (Element libElement : XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_PROPERTY)) {
+            driver.setConnectionProperty(
+                libElement.getAttribute(DataSourceConstants.ATTR_NAME),
+                libElement.getAttribute(DataSourceConstants.ATTR_VALUE));
         }
 
-        for (String libPath : libraryList) {
+        // Add libraries (only for custom drivers with empty library list)
+        if (driver.isCustom() && CommonUtils.isEmpty(driver.getLibraries())) {
+            List<String> libraryList = new ArrayList<String>();
+            final Element[] libList = XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_LIBRARY);
+            for (Element libElement : libList) {
+                libraryList.add(libElement.getAttribute(DataSourceConstants.ATTR_PATH));
+            }
 
+            for (String libPath : libraryList) {
+                File libFile = new File(libPath);
+                if (libFile.exists()) {
+                    // Just use path as-is (may be it is local re-import or local environments equal to export environment)
+                    driver.addLibrary(libPath);
+                } else {
+                    // Get driver library from archive
+                    String archiveLibEntry = libMap.get(libPath);
+                    if (archiveLibEntry != null) {
+                        ZipEntry libEntry = zipFile.getEntry(archiveLibEntry);
+                        if (libEntry != null) {
+                            // Extract driver to "drivers" folder
+                            String libName = libFile.getName();
+                            File contribFolder = DriverDescriptor.getDriversContribFolder();
+                            if (!contribFolder.exists()) {
+                                if (!contribFolder.mkdir()) {
+                                    log.error("Cannot create drivers folder '" + contribFolder.getAbsolutePath() + "'");
+                                    continue;
+                                }
+                            }
+                            File importLibFile = new File(contribFolder, libName);
+                            if (!importLibFile.exists()) {
+                                FileOutputStream os = new FileOutputStream(importLibFile);
+                                try {
+                                    IOUtils.copyStream(zipFile.getInputStream(libEntry), os, IOUtils.DEFAULT_BUFFER_SIZE);
+                                } finally {
+                                    ContentUtils.close(os);
+                                }
+                            }
+                            driver.addLibrary(importLibFile.getAbsolutePath());
+                        }
+                    }
+                }
+            }
         }
 
         if (driver != null) {
@@ -210,5 +282,23 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
         return driver;
     }
+
+    private IProject importProject(DBRProgressMonitor monitor, Element projectElement, ZipFile zipFile, Map<String, String> driverMap) throws DBException
+    {
+        String projectName = projectElement.getAttribute(ExportConstants.ATTR_NAME);
+        String projectDescription = projectElement.getAttribute(ExportConstants.ATTR_DESCRIPTION);
+        String targetProjectName = data.getTargetProjectName(projectName);
+
+        IProject project = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(targetProjectName);
+        if (project.exists()) {
+            throw new DBException("Project '" + targetProjectName + "' already exists");
+        }
+
+        monitor.subTask("Import project " + targetProjectName);
+
+
+        return project;
+    }
+
 
 }

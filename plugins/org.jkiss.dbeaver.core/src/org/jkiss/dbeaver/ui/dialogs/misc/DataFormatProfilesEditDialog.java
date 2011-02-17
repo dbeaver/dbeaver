@@ -82,7 +82,7 @@ public class DataFormatProfilesEditDialog extends org.eclipse.jface.dialogs.Dial
         if (buttonId == NEW_ID) {
             String profileName = EnterNameDialog.chooseName(getShell(), "Profile Name");
             if (registry.getCustomProfile(profileName) != null) {
-                UIUtils.showMessageBox(getShell(), "Create profile", "Profile '" + profileName + "' already exists");
+                UIUtils.showErrorBox(getShell(), "Create profile", "Profile '" + profileName + "' already exists");
             } else {
                 registry.createCustomProfile(profileName);
                 loadProfiles();

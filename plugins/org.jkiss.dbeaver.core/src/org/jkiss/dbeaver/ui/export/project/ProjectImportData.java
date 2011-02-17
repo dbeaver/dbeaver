@@ -107,6 +107,11 @@ public class ProjectImportData {
         }
     }
 
+    public String getTargetProjectName(String projectName)
+    {
+        return projectNameMap.get(projectName);
+    }
+
     public void clearProjectNameMap()
     {
         projectNameMap.clear();

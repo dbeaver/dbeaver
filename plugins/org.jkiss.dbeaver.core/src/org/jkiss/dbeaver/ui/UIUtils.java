@@ -30,7 +30,6 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.services.IServiceLocator;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -84,6 +83,7 @@ public class UIUtils {
         return object;
     }
 
+/*
     public static ToolItem createToolItem(ToolBar toolBar, IServiceLocator serviceLocator, final String commandId, SelectionListener listener)
     {
         final ToolItem item = new ToolItem(toolBar, SWT.PUSH);
@@ -147,6 +147,7 @@ public class UIUtils {
         item.addSelectionListener(listener);
         return item;
     }
+*/
 
     public static ToolItem createToolItem(ToolBar toolBar, String text, DBIcon icon, final IAction action)
     {
@@ -314,9 +315,17 @@ public class UIUtils {
         }
     }
 
-    public static void showMessageBox(Shell shell, String title, String info)
+    public static void showErrorBox(Shell shell, String title, String info)
     {
         MessageBox messageBox = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
+        messageBox.setMessage(info);
+        messageBox.setText(title);
+        messageBox.open();
+    }
+
+    public static void showInfoBox(Shell shell, String title, String info)
+    {
+        MessageBox messageBox = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
         messageBox.setMessage(info);
         messageBox.setText(title);
         messageBox.open();
