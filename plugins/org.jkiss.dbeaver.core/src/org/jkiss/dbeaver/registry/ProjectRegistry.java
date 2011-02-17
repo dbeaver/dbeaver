@@ -301,14 +301,13 @@ public class ProjectRegistry implements IResourceChangeListener {
         }
     }
 
-    public void removeProject(IProject project)
+    public void removeProject(String projectId)
     {
         // Remove project from registry
-        String projectId = getProjectId(project);
         if (projectId != null) {
             DataSourceRegistry dataSourceRegistry = projectDatabases.get(projectId);
             if (dataSourceRegistry == null) {
-                log.warn("Project '" + project.getName() + "' not found in the registry");
+                log.warn("Project '" + projectId + "' not found in the registry");
             } else {
                 dataSourceRegistry.dispose();
                 projectDatabases.remove(projectId);

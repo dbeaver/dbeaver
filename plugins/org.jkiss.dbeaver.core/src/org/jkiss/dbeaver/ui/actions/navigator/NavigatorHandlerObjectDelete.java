@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -91,10 +92,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             if (resource instanceof IFolder) {
                 ((IFolder)resource).delete(true, false, new NullProgressMonitor());
             } else if (resource instanceof IProject) {
-                // Manually remove this project from registry
-                DBeaverCore.getInstance().getProjectRegistry().removeProject((IProject) resource);
+                final String projectId = ProjectRegistry.getProjectId((IProject) resource);
                 // Delete project (with all contents)
-                ((IProject)resource).delete(true, true, new NullProgressMonitor());
+                ((IProject) resource).delete(true, true, new NullProgressMonitor());
+                // Manually remove this project from registry
+                DBeaverCore.getInstance().getProjectRegistry().removeProject(projectId);
             } else {
                 resource.delete(true, new NullProgressMonitor());
             }
