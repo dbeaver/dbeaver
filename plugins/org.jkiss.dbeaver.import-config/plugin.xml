@@ -9,18 +9,20 @@
         <category id="org.jkiss.dbeaver.import_config.third-party" name="3rd Party Configuration"/>
         <wizard
             category="org.jkiss.dbeaver.import_config.third-party"
-            class="org.jkiss.dbeaver.import_config.products.ImportConfigSquirrel"
+            class="org.jkiss.dbeaver.ext.import_config.wizards.ImportWizard"
             id="org.jkiss.dbeaver.import_config.sqlsquirrel"
-            name="SQL Squirrel">
+            name="SQL Squirrel"
+            icon="icons/squirrel.png">
             <description>
                 SQL Squirrel Client
             </description>
         </wizard>
         <wizard
-             category="org.jkiss.dbeaver.import_config.third-party"
-             class="org.jkiss.dbeaver.import_config.products.ImportConfigDBvis"
-             id="org.jkiss.dbeaver.import_config.sqlsquirrel"
-             name="DBVisualizer">
+            category="org.jkiss.dbeaver.import_config.third-party"
+            class="org.jkiss.dbeaver.ext.import_config.wizards.ImportWizard"
+            id="org.jkiss.dbeaver.import_config.sqlsquirrel"
+            name="DBVisualizer"
+            icon="icons/dbvis.png">
             <description>
                 DBVisualizer
             </description>

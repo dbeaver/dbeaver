@@ -77,19 +77,23 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
     {
         IWorkbenchWindow window = getWindowConfigurer().getWindow();
 
-        if (!ConfirmationDialog.confirmAction(window.getShell(), PrefConstants.CONFIRM_EXIT)) {
-            return false;
-        }
-        // Close al content editors
-        // They are locks resources which are shared between other editors
-        // So we need to close em first
-        IWorkbenchPage workbenchPage = window.getActivePage();
-        IEditorReference[] editors = workbenchPage.getEditorReferences();
-        for (IEditorReference editor : editors) {
-            IEditorPart editorPart = editor.getEditor(false);
-            if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
-                workbenchPage.closeEditor(editorPart, false);
+        try {
+            if (!ConfirmationDialog.confirmAction(window.getShell(), PrefConstants.CONFIRM_EXIT)) {
+                return false;
             }
+            // Close al content editors
+            // They are locks resources which are shared between other editors
+            // So we need to close em first
+            IWorkbenchPage workbenchPage = window.getActivePage();
+            IEditorReference[] editors = workbenchPage.getEditorReferences();
+            for (IEditorReference editor : editors) {
+                IEditorPart editorPart = editor.getEditor(false);
+                if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
+                    workbenchPage.closeEditor(editorPart, false);
+                }
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         // Do its job
         return super.preWindowShellClose();

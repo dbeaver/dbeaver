@@ -109,8 +109,8 @@
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle thin driver">
                     <library path="drivers/ojdbc6.jar"/>
-                    <parameter name="query-get-active-db">select sys_context( 'userenv', 'current_schema' ) from dual</parameter>
-                    <parameter name="query-set-active-db">alter session set current_schema=?</parameter>
+                    <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
+                    <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
                     <parameter name="meta-case" value="upper"/>
                 </driver>
                 <driver
@@ -134,8 +134,8 @@
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
                     webURL="http://jtds.sourceforge.net/"
                     description="MS SQL Server JTDS driver">
-                    <parameter name="query-get-active-db">select db_name()</parameter>
-                    <parameter name="query-set-active-db">use ?</parameter>
+                    <parameter name="query-get-active-db" value="select db_name()"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
                     <!--library path="drivers/sqljdbc4.jar"/-->
                     <library path="drivers/jtds-1.2.5.jar"/>
                 </driver>
