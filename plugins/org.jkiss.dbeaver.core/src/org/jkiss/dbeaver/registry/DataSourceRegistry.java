@@ -273,7 +273,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 try {
                     loadDataSources(is, encrypter);
                 } catch (DBException ex) {
-                    log.warn("Can't load datasource config from " + fromFile.getAbsolutePath(), ex);
+                    log.warn("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
                 }
                 finally {
                     is.close();

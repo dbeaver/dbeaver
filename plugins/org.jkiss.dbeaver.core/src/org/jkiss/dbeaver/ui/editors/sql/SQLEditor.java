@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
@@ -108,7 +109,7 @@ public class SQLEditor extends SQLEditorBase
     private static Image imgDataGrid;
     private static Image imgExplainPlan;
     private static Image imgLog;
-    private IProject project;
+    //private IProject project;
 
     static {
         imgDataGrid = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage();
@@ -279,9 +280,13 @@ public class SQLEditor extends SQLEditorBase
         }
         super.init(site, editorInput);
 
-        this.project = getEditorInput().getFile().getProject();
-
-        DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(this.project).addDataSourceListener(this);
+        IProject project = getEditorInput().getProject();
+        if (project != null) {
+            final DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+            if (dataSourceRegistry != null) {
+                dataSourceRegistry.addDataSourceListener(this);
+            }
+        }
     }
 
     public void resourceChanged(final IResourceChangeEvent event)
@@ -690,9 +695,13 @@ public class SQLEditor extends SQLEditorBase
     {
         closeSession();
 
-        DBeaverCore.getInstance().getProjectRegistry()
-            .getDataSourceRegistry(project)
-            .removeDataSourceListener(this);
+        IProject project = getEditorInput().getProject();
+        if (project != null) {
+            final DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+            if (dataSourceRegistry != null) {
+                dataSourceRegistry.removeDataSourceListener(this);
+            }
+        }
 
         if (planView != null) {
             planView.dispose();

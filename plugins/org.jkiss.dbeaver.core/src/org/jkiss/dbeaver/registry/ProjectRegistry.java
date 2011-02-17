@@ -193,6 +193,10 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public DataSourceRegistry getDataSourceRegistry(IProject project)
     {
+        if (!project.isOpen()) {
+            log.warn("Project '" + project.getName() + "' is not open - can't get datasource registry");
+            return null;
+        }
         String projectId = getProjectId(project);
         DataSourceRegistry dataSourceRegistry = projectId == null ? null : projectDatabases.get(projectId);
         if (dataSourceRegistry == null) {

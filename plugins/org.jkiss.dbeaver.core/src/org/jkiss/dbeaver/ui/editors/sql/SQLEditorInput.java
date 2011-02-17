@@ -63,6 +63,9 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
 
     public IProject getProject()
     {
+        if (getFile() == null || !getFile().exists()) {
+            return null;
+        }
         return getFile().getProject();
     }
 

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceConstants;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -31,10 +32,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -332,7 +330,13 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         project.create(description, monitor.getNestedMonitor());
 
         try {
+            // Open project
             project.open(monitor.getNestedMonitor());
+
+            // Set project properties
+            loadResourceProperties(monitor, project, projectElement);
+            project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, null);
+
             // Load resources
             importChildResources(
                 monitor,
@@ -340,6 +344,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 projectElement,
                 ExportConstants.DIR_PROJECTS + "/" + projectName + "/",
                 zipFile);
+
+            // Update driver references in datasources
+            updateDriverReferences(monitor, project, driverMap);
         } catch (Exception e) {
             // Cleanup project which was partially imported
             try {
@@ -349,9 +356,6 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             }
             throw new DBException("Error importing project resources", e);
         }
-        // Set project properties
-        loadResourceProperties(monitor, project, projectElement);
-        project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, null);
 
         // Add project to registry (it will also initialize this project)
         DBeaverCore.getInstance().getProjectRegistry().addProject(project);
@@ -401,7 +405,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 file.create(zipFile.getInputStream(resourceEntry), true, monitor.getNestedMonitor());
                 childResource = file;
             }
-            loadResourceProperties(monitor, childResource, resourceElement);
+            loadResourceProperties(monitor, childResource, childElement);
         }
     }
 
@@ -421,6 +425,43 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 resource.setPersistentProperty(new QualifiedName(qualifier, name), value);
             }
         }
+    }
+
+    private void updateDriverReferences(DBRProgressMonitor monitor, IProject project, Map<String, String> driverMap) throws DBException, CoreException, IOException
+    {
+        final IFile configFile = project.getFile(DataSourceRegistry.CONFIG_FILE_NAME);
+        if (configFile == null || !configFile.exists()) {
+            throw new DBException("Cannot find configuration file '" + DataSourceRegistry.CONFIG_FILE_NAME + "'");
+        }
+        // Read and filter datasources config
+        final InputStream configContents = configFile.getContents();
+        String filteredContent;
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(configContents, ContentUtils.DEFAULT_FILE_CHARSET));
+            StringBuilder buffer = new StringBuilder();
+            for (;;) {
+                String line = in.readLine();
+                if (line == null) {
+                    break;
+                }
+                buffer.append(line).append(ContentUtils.getDefaultLineSeparator());
+            }
+            filteredContent = buffer.toString();
+            for (Map.Entry<String, String> entry : driverMap.entrySet()) {
+                if (!entry.getKey().equals(entry.getValue())) {
+                    filteredContent = filteredContent.replace("driver=\"" + entry.getKey() + "\"", "driver=\"" + entry.getValue() + "\"");
+                }
+            }
+        }
+        finally {
+            ContentUtils.close(configContents);
+        }
+        // Update configuration
+        configFile.setContents(
+            new ByteArrayInputStream(filteredContent.getBytes(ContentUtils.DEFAULT_FILE_CHARSET)),
+            true,
+            false,
+            monitor.getNestedMonitor());
     }
 
 
