@@ -96,7 +96,7 @@
                     label="PostgreSQL"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
-                    webURL="http://postgresql.org"
+                    webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
                     <library path="drivers/postgresql-8.4-701.jdbc4.jar"/>
                     <parameter name="meta-case" value="lower"/>
@@ -106,7 +106,7 @@
                     label="Oracle"
                     class="oracle.jdbc.OracleDriver"
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
-                    webURL="http://oracle.com"
+                    webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle thin driver">
                     <library path="drivers/ojdbc6.jar"/>
                     <parameter name="query-get-active-db">select sys_context( 'userenv', 'current_schema' ) from dual</parameter>
@@ -118,7 +118,7 @@
                     label="DB2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
-                    webURL="www.ibm.com/software/data/db2/ad/java.html"
+                    webURL="http://www.ibm.com/software/data/db2/express/download.html"
                     description="DB2 JCC driver">
 					<library path="drivers/db2jcc.jar"/>
 					<library path="drivers/db2jcc_license_cu.jar"/>

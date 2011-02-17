@@ -49,7 +49,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private String driverClassName, origClassName;
     private Integer driverDefaultPort, origDefaultPort;
     private String sampleURL, origSampleURL;
-    private String webURL, origWebURL;
+    private String webURL;
     private Image iconPlain;
     private Image iconNormal;
     private Image iconError;
@@ -102,7 +102,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
         this.origSampleURL = this.sampleURL = config.getAttribute("sampleURL");
-        this.origWebURL = this.webURL = config.getAttribute("webURL");
+        this.webURL = config.getAttribute("webURL");
         this.supportsDriverProperties = !"false".equals(config.getAttribute("supportsDriverProperties"));
         this.custom = false;
         this.isLoaded = false;
@@ -377,11 +377,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return this.supportsDriverProperties;
     }
 
-    public boolean isLoaded()
-    {
-        return isLoaded;
-    }
-
     public boolean isManagable()
     {
         return getProviderDescriptor().isDriversManagable();
@@ -390,6 +385,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public boolean isInternalDriver()
     {
         return driverClassName != null && driverClassName.indexOf("sun.jdbc") != -1;
+    }
+
+/*
+    public boolean isLoaded()
+    {
+        return isLoaded;
     }
 
     public Class getDriverClass()
@@ -401,6 +402,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         return classLoader;
     }
+*/
 
     public List<DriverLibraryDescriptor> getLibraries()
     {
@@ -580,11 +582,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public String getOrigSampleURL()
     {
         return origSampleURL;
-    }
-
-    public String getOrigWebURL()
-    {
-        return origWebURL;
     }
 
     public List<DriverLibraryDescriptor> getOrigLibraries()

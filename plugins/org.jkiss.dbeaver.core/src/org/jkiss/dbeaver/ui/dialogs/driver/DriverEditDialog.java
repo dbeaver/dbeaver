@@ -22,9 +22,9 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
@@ -40,7 +40,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -146,7 +145,12 @@ public class DriverEditDialog extends Dialog
                 }
             });
 
-            driverPortText = UIUtils.createLabelText(propsGroup, "Default Port", driver.getDefaultPort() == null ? "" : driver.getDefaultPort().toString(), SWT.BORDER | advStyle);
+            boolean hasSite = !CommonUtils.isEmpty(driver.getWebURL());
+
+            UIUtils.createControlLabel(propsGroup, "Default Port");
+            Composite ph = hasSite ? UIUtils.createPlaceholder(propsGroup, 3) : propsGroup;
+            driverPortText = new Text(ph, SWT.BORDER | advStyle);
+            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort().toString());
             driverPortText.setLayoutData(new GridData(SWT.NONE));
             driverPortText.addModifyListener(new ModifyListener()
             {
@@ -155,6 +159,21 @@ public class DriverEditDialog extends Dialog
                     onChangeProperty();
                 }
             });
+            if (hasSite) {
+                GridLayout gl = (GridLayout)ph.getLayout();
+                gl.horizontalSpacing = 5;
+
+                UIUtils.createControlLabel(ph, "Website");
+                Link urlLabel = new Link(ph, SWT.NONE);
+                urlLabel.setText("<a>" + driver.getWebURL() + "</a>");
+                urlLabel.addSelectionListener(new SelectionAdapter() {
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        Program.launch(e.text);
+                    }
+                });
+
+            }
         }
         if (!isReadOnly) {
             TabFolder tabFolder = new TabFolder(group, SWT.TOP);

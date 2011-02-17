@@ -128,7 +128,7 @@
                     icon="icons/mysql_icon.png"
                     class="com.mysql.jdbc.Driver"
                     sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
-                    webURL="http://mysql.com"
+                    webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
                 </driver>
             </drivers>
