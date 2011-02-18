@@ -101,6 +101,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             final Map<String, String> libMap = new HashMap<String, String>();
             final Map<String, String> driverMap = new HashMap<String, String>();
             InputStream metaStream = zipFile.getInputStream(metaEntry);
+            if (metaStream == null) {
+                throw new DBException("Cannot open meta file '" + metaEntry.getName() + "'");
+            }
             try {
                 final Document metaDocument = XMLUtils.parseDocument(metaStream);
                 {
@@ -315,6 +318,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         String projectName = projectElement.getAttribute(ExportConstants.ATTR_NAME);
         String projectDescription = projectElement.getAttribute(ExportConstants.ATTR_DESCRIPTION);
         String targetProjectName = data.getTargetProjectName(projectName);
+        if (targetProjectName == null) {
+            targetProjectName = projectName;
+        }
 
         IProject project = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(targetProjectName);
         if (project.exists()) {
