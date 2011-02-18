@@ -9,33 +9,26 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 
-public class ImportWizard extends Wizard implements IImportWizard {
+public abstract class ConfigImportWizard extends Wizard implements IImportWizard {
 	
-	ImportWizardPage mainPage;
+	private ConfigImportWizardPage mainPage;
 
-	public ImportWizard() {
+	public ConfigImportWizard() {
 		super();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.wizard.Wizard#performFinish()
-	 */
 	public boolean performFinish() {
         return true;
 	}
 	 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.IWorkbenchWizard#init(org.eclipse.ui.IWorkbench, org.eclipse.jface.viewers.IStructuredSelection)
-	 */
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		setWindowTitle("File Import Wizard"); //NON-NLS-1
+		setWindowTitle("Import Configuration"); //NON-NLS-1
 		setNeedsProgressMonitor(true);
-		mainPage = new ImportWizardPage("Import File"); //NON-NLS-1
+		mainPage = createMainPage(); //NON-NLS-1
 	}
-	
-	/* (non-Javadoc)
-     * @see org.eclipse.jface.wizard.IWizard#addPages()
-     */
+
+    protected abstract ConfigImportWizardPage createMainPage();
+
     public void addPages() {
         super.addPages(); 
         addPage(mainPage);        

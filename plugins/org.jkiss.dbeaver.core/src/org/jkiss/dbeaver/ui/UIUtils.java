@@ -6,14 +6,10 @@ package org.jkiss.dbeaver.ui;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.commands.Command;
-import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ActionHandler;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -23,12 +19,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
-import org.eclipse.ui.commands.ICommandImageService;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
-import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
@@ -42,6 +35,7 @@ import java.util.SortedMap;
 /**
  * UI Utils
  */
+@SuppressWarnings("restriction")
 public class UIUtils {
 
     static final Log log = LogFactory.getLog(UIUtils.class);
@@ -636,7 +630,8 @@ public class UIUtils {
             public void partBroughtToTop(IWorkbenchPart part) { }
             public void partOpened(IWorkbenchPart part) { }
             public void partClosed(IWorkbenchPart part) { }
-            public void partActivated(IWorkbenchPart part)
+            @SuppressWarnings("restriction")
+			public void partActivated(IWorkbenchPart part)
             {
                 if (part == workbenchPart) {
                     Color sashActiveBackground = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(

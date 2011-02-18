@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.runtime.qm;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

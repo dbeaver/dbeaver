@@ -662,7 +662,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             return null;
         }
         StringBuilder tdt = new StringBuilder();
-        for (Iterator i = selection.iterator(); i.hasNext(); ) {
+        for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
             QMMObject item = (QMMObject)i.next();
             if (tdt.length() > 0) {
                 tdt.append(ContentUtils.getDefaultLineSeparator());

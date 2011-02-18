@@ -10,7 +10,8 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
-import java.io.*;
+import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.Date;
 
 /**

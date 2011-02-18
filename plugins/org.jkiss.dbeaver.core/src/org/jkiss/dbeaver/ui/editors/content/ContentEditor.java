@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;

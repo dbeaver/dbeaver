@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.edit;
 
-import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**

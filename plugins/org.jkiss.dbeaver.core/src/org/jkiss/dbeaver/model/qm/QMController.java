@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;

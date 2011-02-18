@@ -9,11 +9,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
  * PrefPageSQL

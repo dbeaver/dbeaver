@@ -6,16 +6,9 @@ package org.jkiss.dbeaver.registry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.osgi.service.datalocation.Location;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 
 /**
  * DriverLibraryDescriptor

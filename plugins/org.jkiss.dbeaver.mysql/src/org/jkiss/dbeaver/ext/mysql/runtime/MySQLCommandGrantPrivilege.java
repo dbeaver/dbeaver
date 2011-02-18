@@ -4,15 +4,15 @@
 
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
-import org.jkiss.dbeaver.model.edit.DBOCommand;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
+import org.jkiss.dbeaver.model.edit.DBOCommand;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
 
 import java.util.Map;
 

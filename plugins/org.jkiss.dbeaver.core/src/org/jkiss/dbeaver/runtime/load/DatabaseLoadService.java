@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.runtime.load;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 
 /**

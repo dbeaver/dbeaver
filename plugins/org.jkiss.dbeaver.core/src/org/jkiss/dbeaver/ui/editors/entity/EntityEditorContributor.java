@@ -6,10 +6,7 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.actions.SimpleAction;
 
 /**
  * Entity Editor contributor

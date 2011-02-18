@@ -4,43 +4,16 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import java.util.Arrays;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
-import org.eclipse.swt.accessibility.ACC;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
-import org.eclipse.swt.accessibility.AccessibleControlAdapter;
-import org.eclipse.swt.accessibility.AccessibleControlEvent;
-import org.eclipse.swt.accessibility.AccessibleEvent;
-import org.eclipse.swt.accessibility.AccessibleTextAdapter;
-import org.eclipse.swt.accessibility.AccessibleTextEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.List;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.TypedListener;
-import org.eclipse.swt.widgets.Widget;
+import org.eclipse.swt.accessibility.*;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
+
+import java.util.Arrays;
 
 /**
  * Instances of this class are controls that allow the user
@@ -288,14 +261,15 @@ public class CImageCombo extends Composite {
      * @see ModifyListener
      * @see #removeModifyListener
      */
-    public void addModifyListener(ModifyListener listener)
+    public void addModifyListener(final ModifyListener listener)
     {
         checkWidget();
-        if (listener == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-        }
-        TypedListener typedListener = new TypedListener(listener);
-        addListener(SWT.Modify, typedListener);
+        addListener(SWT.Modify, new Listener() {
+            public void handleEvent(Event event)
+            {
+                listener.modifyText(new ModifyEvent(event));
+            }
+        });
     }
 
     /**
@@ -320,15 +294,21 @@ public class CImageCombo extends Composite {
      * @see #removeSelectionListener
      * @see SelectionEvent
      */
-    public void addSelectionListener(SelectionListener listener)
+    public void addSelectionListener(final SelectionListener listener)
     {
         checkWidget();
-        if (listener == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-        }
-        TypedListener typedListener = new TypedListener(listener);
-        addListener(SWT.Selection, typedListener);
-        addListener(SWT.DefaultSelection, typedListener);
+        addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event event)
+            {
+                listener.widgetSelected(new SelectionEvent(event));
+            }
+        });
+        addListener(SWT.DefaultSelection, new Listener() {
+            public void handleEvent(Event event)
+            {
+                listener.widgetDefaultSelected(new SelectionEvent(event));
+            }
+        });
     }
 
     /**
@@ -348,14 +328,15 @@ public class CImageCombo extends Composite {
      * @see VerifyListener
      * @since 3.1
      */
-    public void addVerifyListener(VerifyListener listener)
+    public void addVerifyListener(final VerifyListener listener)
     {
         checkWidget();
-        if (listener == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-        }
-        TypedListener typedListener = new TypedListener(listener);
-        addListener(SWT.Verify, typedListener);
+        addListener(SWT.Verify, new Listener() {
+            public void handleEvent(Event event)
+            {
+                listener.verifyText(new VerifyEvent(event));
+            }
+        });
     }
 
     static int checkStyle(int style)

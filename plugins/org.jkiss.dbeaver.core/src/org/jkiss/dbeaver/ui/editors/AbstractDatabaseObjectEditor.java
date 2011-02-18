@@ -9,12 +9,12 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBOCommand;
 import org.jkiss.dbeaver.model.edit.DBOCommandReflector;
 import org.jkiss.dbeaver.model.edit.DBOEditor;
 import org.jkiss.dbeaver.model.edit.DBOManager;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**

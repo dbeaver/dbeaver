@@ -8,9 +8,9 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Composite;
 
 
-public class ImportWizardPage extends WizardPage {
+public abstract class ConfigImportWizardPage extends WizardPage {
 
-    protected ImportWizardPage(String pageName)
+    protected ConfigImportWizardPage(String pageName)
     {
         super(pageName);
     }

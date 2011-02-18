@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.graphics.Point;

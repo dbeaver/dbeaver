@@ -28,7 +28,10 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -323,7 +326,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             xml.addAttribute(ExportConstants.ATTR_DIRECTORY, true);
         }
         for (Object entry : resource.getPersistentProperties().entrySet()) {
-            Map.Entry propEntry = (Map.Entry) entry;
+            Map.Entry<?, ?> propEntry = (Map.Entry<?,?>) entry;
             xml.startElement(ExportConstants.TAG_ATTRIBUTE);
             final QualifiedName attrName = (QualifiedName) propEntry.getKey();
             xml.addAttribute(ExportConstants.ATTR_QUALIFIER, attrName.getQualifier());

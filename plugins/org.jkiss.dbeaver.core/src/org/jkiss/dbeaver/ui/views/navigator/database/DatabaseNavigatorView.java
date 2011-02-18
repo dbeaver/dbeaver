@@ -5,14 +5,7 @@
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.action.ControlContribution;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IActionBars;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;

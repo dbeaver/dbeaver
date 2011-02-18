@@ -5,9 +5,9 @@
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.edit.prop.DBOCommandProperty;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectScriptCommand;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.DBOEditorJDBC;

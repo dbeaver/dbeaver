@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ext;
 
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 
 /**

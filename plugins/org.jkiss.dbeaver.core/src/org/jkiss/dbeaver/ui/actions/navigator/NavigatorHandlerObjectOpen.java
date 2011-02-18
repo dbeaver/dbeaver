@@ -39,7 +39,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
 
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
-            for (Iterator iter = structSelection.iterator(); iter.hasNext(); ) {
+            for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
                 DBNDatabaseNode node = null;
                 if (element instanceof DBNResource) {

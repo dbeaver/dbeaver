@@ -6,11 +6,11 @@
 
 <plugin>
     <extension point="org.eclipse.ui.importWizards">
-        <category id="org.jkiss.dbeaver.import_config.third-party" name="3rd Party Configuration"/>
+        <category id="org.jkiss.dbeaver.import_config.third-party" name="Third Party Configuration"/>
         <wizard
             category="org.jkiss.dbeaver.import_config.third-party"
-            class="org.jkiss.dbeaver.ext.import_config.wizards.ImportWizard"
-            id="org.jkiss.dbeaver.import_config.sqlsquirrel"
+            class="org.jkiss.dbeaver.ext.import_config.wizards.squirrel.ConfigImportWizardSquirrel"
+            id="org.jkiss.dbeaver.import_config.squirrel"
             name="SQL Squirrel"
             icon="icons/squirrel.png">
             <description>
@@ -19,8 +19,8 @@
         </wizard>
         <wizard
             category="org.jkiss.dbeaver.import_config.third-party"
-            class="org.jkiss.dbeaver.ext.import_config.wizards.ImportWizard"
-            id="org.jkiss.dbeaver.import_config.sqlsquirrel"
+            class="org.jkiss.dbeaver.ext.import_config.wizards.dbvis.ConfigImportWizardDbvis"
+            id="org.jkiss.dbeaver.import_config.dbvis"
             name="DBVisualizer"
             icon="icons/dbvis.png">
             <description>

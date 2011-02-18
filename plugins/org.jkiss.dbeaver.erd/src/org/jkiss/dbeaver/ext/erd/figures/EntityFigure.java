@@ -8,7 +8,6 @@
 package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
-import org.eclipse.draw2d.text.TextFlow;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;

@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DBNDatabaseFolder

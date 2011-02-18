@@ -123,7 +123,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return (Class<DBSObject>)aClass ;
     }
 
-    private Class getChildrenType(DBXTreeItem childMeta)
+    private Class<?> getChildrenType(DBXTreeItem childMeta)
     {
         Object valueObject = getValueObject();
         if (valueObject == null) {

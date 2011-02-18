@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model.exec.plan;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Execution plan node

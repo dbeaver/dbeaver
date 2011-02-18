@@ -18,7 +18,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;

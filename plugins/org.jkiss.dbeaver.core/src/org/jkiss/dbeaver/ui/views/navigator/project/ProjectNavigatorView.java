@@ -6,11 +6,7 @@ package org.jkiss.dbeaver.ui.views.navigator.project;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
 
 /**

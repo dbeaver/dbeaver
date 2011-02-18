@@ -5,10 +5,17 @@
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Listener;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 
 /**
@@ -312,12 +319,14 @@ public class GridColumn extends Item {
 	 * @param listener
 	 *            the listener which should be notified
 	 */
-	public void addSelectionListener(SelectionListener listener) {
+	public void addSelectionListener(final SelectionListener listener) {
 		checkWidget();
-		if (listener == null) {
-			SWT.error(SWT.ERROR_NULL_ARGUMENT);
-		}
-		this.addListener(SWT.Selection, new TypedListener(listener));
+		this.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event event)
+            {
+                listener.widgetSelected(new SelectionEvent(event));
+            }
+        });
 	}
 
 	/**
@@ -424,14 +433,20 @@ public class GridColumn extends Item {
 	 * @param listener
 	 *            listener
 	 */
-	public void addControlListener(ControlListener listener) {
+	public void addControlListener(final ControlListener listener) {
 		checkWidget();
-		if (listener == null) {
-			SWT.error(SWT.ERROR_NULL_ARGUMENT);
-		}
-		TypedListener typedListener = new TypedListener(listener);
-		addListener(SWT.Resize, typedListener);
-		addListener(SWT.Move, typedListener);
+		addListener(SWT.Resize, new Listener() {
+            public void handleEvent(Event event)
+            {
+                listener.controlResized(new ControlEvent(event));
+            }
+        });
+		addListener(SWT.Move, new Listener() {
+            public void handleEvent(Event event)
+            {
+                listener.controlMoved(new ControlEvent(event));
+            }
+        });
 	}
 
 	/**

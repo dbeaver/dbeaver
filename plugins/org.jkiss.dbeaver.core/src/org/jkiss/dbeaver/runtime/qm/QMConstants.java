@@ -4,14 +4,6 @@
 
 package org.jkiss.dbeaver.runtime.qm;
 
-import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.preference.IPreferenceStore;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringTokenizer;
-
 /**
  * QM log constants
  */

@@ -10,9 +10,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.navigator.DBNRoot;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 
 public class NavigatorHandlerProjectSetActive extends NavigatorHandlerObjectBase {

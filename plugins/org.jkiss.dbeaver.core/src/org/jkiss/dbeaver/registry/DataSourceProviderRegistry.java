@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.registry;
 
-import net.sf.jkiss.utils.CommonUtils;
-import net.sf.jkiss.utils.xml.SAXListener;
 import net.sf.jkiss.utils.xml.SAXReader;
 import net.sf.jkiss.utils.xml.XMLBuilder;
 import net.sf.jkiss.utils.xml.XMLException;
@@ -20,7 +18,6 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.util.ArrayList;

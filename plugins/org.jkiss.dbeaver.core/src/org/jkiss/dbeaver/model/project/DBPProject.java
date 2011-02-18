@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.project;
 
-import org.eclipse.core.runtime.QualifiedName;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**

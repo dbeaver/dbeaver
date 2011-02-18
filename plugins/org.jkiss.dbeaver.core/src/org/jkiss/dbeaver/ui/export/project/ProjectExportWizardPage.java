@@ -71,7 +71,7 @@ public class ProjectExportWizardPage extends WizardPage {
         Set<IProject> projectList = new LinkedHashSet<IProject>();
         final ISelection selection = DBeaverCore.getInstance().getWorkbench().getActiveWorkbenchWindow().getActivePage().getSelection();
         if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
-            for (Iterator iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
+            for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
                 IResource resource = (IResource) Platform.getAdapterManager().getAdapter(element, IResource.class);
                 if (resource != null) {

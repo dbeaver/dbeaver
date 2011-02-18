@@ -57,7 +57,7 @@ public class DBeaverApplication implements IApplication
             e.printStackTrace();
         }
 */
-
+        System.out.println("DBeaver started at '" + instanceLoc.getURL() + "'");
         try {
             int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
             if (returnCode == PlatformUI.RETURN_RESTART) {

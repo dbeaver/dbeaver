@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.model.DBPNamedObject;
-
 /**
  * Named object extension
  */

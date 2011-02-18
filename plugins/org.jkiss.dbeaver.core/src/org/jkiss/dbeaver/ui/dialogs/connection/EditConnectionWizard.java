@@ -9,7 +9,6 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 

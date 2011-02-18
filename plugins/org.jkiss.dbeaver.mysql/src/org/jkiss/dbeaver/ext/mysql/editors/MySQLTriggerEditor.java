@@ -9,8 +9,8 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
+import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 /**

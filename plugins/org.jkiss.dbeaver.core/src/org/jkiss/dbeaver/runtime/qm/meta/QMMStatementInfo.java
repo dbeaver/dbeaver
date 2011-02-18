@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.runtime.qm.meta;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 
 import java.lang.ref.SoftReference;

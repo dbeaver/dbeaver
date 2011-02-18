@@ -6,8 +6,8 @@ package org.jkiss.dbeaver.model.impl.edit;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.edit.DBOCommand;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBOCommand;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;

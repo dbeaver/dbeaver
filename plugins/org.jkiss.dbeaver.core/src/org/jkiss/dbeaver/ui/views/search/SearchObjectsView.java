@@ -254,7 +254,7 @@ public class SearchObjectsView extends ViewPart {
                         public void selectionChanged(SelectionChangedEvent event)
                         {
                             IStructuredSelection structSel = (IStructuredSelection)event.getSelection();
-                            for (Iterator iter = structSel.iterator(); iter.hasNext(); ) {
+                            for (Iterator<?> iter = structSel.iterator(); iter.hasNext(); ) {
                                 Object object = iter.next();
                                 if (object instanceof DBNDataSource) {
                                     DBNDataSource dsNode = (DBNDataSource)object;

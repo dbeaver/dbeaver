@@ -8,13 +8,16 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.WorkbenchPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.views.search.SearchObjectsView;
 
+@SuppressWarnings("restriction")
 public class NavigatorHandlerObjectFind extends DataSourceHandler {
 
     private static final String VIEW_ACTIVATED = "search.objects.view.activates";

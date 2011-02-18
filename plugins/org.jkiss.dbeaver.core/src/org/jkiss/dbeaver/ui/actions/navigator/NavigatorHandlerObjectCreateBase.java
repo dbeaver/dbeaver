@@ -47,7 +47,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             log.error("Can't create child object - no container found");
             return false;
         }
-        Class childType = container.getItemsClass();
+        Class<?> childType = container.getItemsClass();
         if (childType == null) {
             log.error("Can't determine child element type for container '" + container + "'");
             return false;

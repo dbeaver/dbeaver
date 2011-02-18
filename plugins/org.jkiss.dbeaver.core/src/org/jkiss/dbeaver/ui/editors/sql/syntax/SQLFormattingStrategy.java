@@ -4,12 +4,12 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
+import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
+import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterException;
 
 import java.util.StringTokenizer;
 

@@ -19,7 +19,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -65,7 +64,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
 
         if (selection instanceof IStructuredSelection) {
             structSelection = (IStructuredSelection)selection;
-            for (Iterator iter = structSelection.iterator(); iter.hasNext(); ) {
+            for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
                 if (element instanceof DBNDatabaseNode) {
                     deleteObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNDatabaseNode)element);

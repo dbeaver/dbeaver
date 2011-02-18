@@ -11,16 +11,13 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 public class NavigatorHandlerLinkEditor extends AbstractHandler {
 

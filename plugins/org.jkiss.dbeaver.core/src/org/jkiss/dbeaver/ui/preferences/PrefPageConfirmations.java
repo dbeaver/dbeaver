@@ -4,28 +4,25 @@
 
 package org.jkiss.dbeaver.ui.preferences;
 
-import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.qm.QMConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * PrefPageConfirmations

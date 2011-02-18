@@ -9,13 +9,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-
-import java.lang.reflect.InvocationTargetException;
 
 
 public class RevertChangesHandler extends AbstractHandler

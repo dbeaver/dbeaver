@@ -5,10 +5,12 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
 
 /**

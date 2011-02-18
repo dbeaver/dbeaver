@@ -14,7 +14,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl;
@@ -25,9 +25,6 @@ import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class OpenSQLEditorHandler extends DataSourceHandler {
 

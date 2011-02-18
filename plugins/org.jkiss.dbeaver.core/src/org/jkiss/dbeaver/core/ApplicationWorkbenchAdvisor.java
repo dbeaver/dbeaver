@@ -25,13 +25,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This workbench advisor creates the window advisor, and specifies

@@ -5,8 +5,8 @@
 package org.jkiss.dbeaver.model.edit.prop;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.edit.DBOCommand;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBOCommand;
 import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 

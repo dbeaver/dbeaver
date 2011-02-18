@@ -6,8 +6,8 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.impl.edit.DBOManagerImpl;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;

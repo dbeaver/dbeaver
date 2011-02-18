@@ -9,21 +9,11 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.impl.project.BookmarkStorage;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * DBNBookmark

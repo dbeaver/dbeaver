@@ -11,11 +11,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
-import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
-import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 
 /**

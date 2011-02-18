@@ -16,9 +16,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.navigator.DBNRoot;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 
 import java.util.List;

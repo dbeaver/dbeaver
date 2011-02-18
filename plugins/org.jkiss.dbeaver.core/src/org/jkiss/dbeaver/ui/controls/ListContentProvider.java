@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 /**

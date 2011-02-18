@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;

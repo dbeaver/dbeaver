@@ -13,8 +13,6 @@ import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 
-import java.lang.reflect.InvocationTargetException;
-
 class LoadingUIJob<RESULT> extends AbstractUIJob {
     static final Log log = LogFactory.getLog(LoadingUIJob.class);
 
