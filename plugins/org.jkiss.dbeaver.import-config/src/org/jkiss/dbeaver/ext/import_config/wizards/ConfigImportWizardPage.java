@@ -8,12 +8,15 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 
@@ -39,8 +42,16 @@ public abstract class ConfigImportWizardPage extends WizardPage {
         connectionTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         UIUtils.createTableColumn(connectionTable, SWT.LEFT, "Name");
         UIUtils.createTableColumn(connectionTable, SWT.LEFT, "Driver");
+        UIUtils.createTableColumn(connectionTable, SWT.LEFT, "URL");
 
         UIUtils.packColumns(connectionTable);
+
+        connectionTable.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e)
+            {
+                getContainer().updateButtons();
+            }
+        });
 
         setControl(placeholder);
     }
@@ -58,13 +69,22 @@ public abstract class ConfigImportWizardPage extends WizardPage {
             } catch (DBException e) {
                 setMessage(e.getMessage(), IMessageProvider.ERROR);
             }
-            UIUtils.packColumns(connectionTable);
             getContainer().updateButtons();
             if (loaded) {
                 if (CommonUtils.isEmpty(importData.getConnections())) {
                     setMessage("Connection list is empty", IMessageProvider.WARNING);
+                } else {
+                    for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
+                        TableItem item = new TableItem(connectionTable, SWT.NONE);
+                        item.setImage(0, DBIcon.TREE_DATABASE.getImage());
+                        item.setText(0, connectionInfo.getAlias());
+                        item.setText(1, connectionInfo.getDriver().getName());
+                        item.setText(2, connectionInfo.getUrl());
+                        item.setData(connectionInfo);
+                    }
                 }
             }
+            UIUtils.packColumns(connectionTable);
         }
         super.setVisible(visible);
     }

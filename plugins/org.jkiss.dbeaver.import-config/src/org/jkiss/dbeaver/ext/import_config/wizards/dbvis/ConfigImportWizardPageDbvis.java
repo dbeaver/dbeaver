@@ -11,6 +11,7 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.Activator;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
+import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -53,9 +54,9 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
             Element driversElement = XMLUtils.getChildElement(configDocument.getDocumentElement(), "Drivers");
             if (driversElement != null) {
                 for (Element driverElement : XMLUtils.getChildElementList(driversElement, "Driver")) {
-                    String name = driverElement.getAttribute("Name");
-                    String sampleURL = driverElement.getAttribute("URLFormat");
-                    String driverClass = driverElement.getAttribute("DefaultClass");
+                    String name = XMLUtils.getChildElementBody(driverElement, "Name");
+                    String sampleURL = XMLUtils.getChildElementBody(driverElement, "URLFormat");
+                    String driverClass = XMLUtils.getChildElementBody(driverElement, "DefaultClass");
                     if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) && !CommonUtils.isEmpty(driverClass)) {
                         ImportDriverInfo driver = new ImportDriverInfo(null, name, sampleURL, driverClass);
                         importData.addDriver(driver);
@@ -66,7 +67,26 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
             Element databasesElement = XMLUtils.getChildElement(configDocument.getDocumentElement(), "Databases");
             if (databasesElement != null) {
                 for (Element dbElement : XMLUtils.getChildElementList(databasesElement, "Database")) {
-
+                    String alias = XMLUtils.getChildElementBody(dbElement, "Alias");
+                    String url = XMLUtils.getChildElementBody(dbElement, "Url");
+                    String driverName = XMLUtils.getChildElementBody(dbElement, "Driver");
+                    String user = XMLUtils.getChildElementBody(dbElement, "Userid");
+                    if (!CommonUtils.isEmpty(alias) && !CommonUtils.isEmpty(url) && !CommonUtils.isEmpty(driverName)) {
+                        ImportDriverInfo driver = importData.getDriver(driverName);
+                        if (driver != null) {
+                            ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
+                                driver,
+                                dbElement.getAttribute("id"),
+                                alias,
+                                url,
+                                null,
+                                -1,
+                                null,
+                                user,
+                                null);
+                            importData.addConnection(connectionInfo);
+                        }
+                    }
                 }
             }
 
