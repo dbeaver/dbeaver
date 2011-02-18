@@ -4,21 +4,74 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards.dbvis;
 
-import org.eclipse.swt.widgets.Composite;
+import net.sf.jkiss.utils.CommonUtils;
+import net.sf.jkiss.utils.xml.XMLException;
+import net.sf.jkiss.utils.xml.XMLUtils;
+import org.eclipse.jface.dialogs.IMessageProvider;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.import_config.Activator;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
+import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import java.io.File;
 
 
 public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
 
     protected ConfigImportWizardPageDbvis()
     {
-        super("Import DBVisualizer connections");
+        super("DBVisualizer");
+        setTitle("DBVisualizer");
+        setDescription("Import DBVisualizer connections");
+        setImageDescriptor(Activator.getImageDescriptor("icons/dbvis_big.png"));
     }
 
-    public void createControl(Composite parent)
+    @Override
+    protected void loadConnections(ImportData importData) throws DBException
     {
-        Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        setControl(placeholder);
+        File homeFolder = RuntimeUtils.getUserHomeDir();
+        File dbvisConfigHome = new File(homeFolder, ".dbvis");
+        if (!dbvisConfigHome.exists()) {
+            throw new DBException("DBVisualizer installation not found");
+        }
+        File configFolder = new File(dbvisConfigHome, "config70");
+        if (!configFolder.exists()) {
+            throw new DBException("Only DBVisualizer 7.x version is supported");
+        }
+        File configFile = new File(configFolder, "dbvis.xml");
+        if (!configFile.exists()) {
+            throw new DBException("DBVisualizer configuration file not found");
+        }
+
+        try {
+            Document configDocument = XMLUtils.parseDocument(configFile);
+
+            Element driversElement = XMLUtils.getChildElement(configDocument.getDocumentElement(), "Drivers");
+            if (driversElement != null) {
+                for (Element driverElement : XMLUtils.getChildElementList(driversElement, "Driver")) {
+                    String name = driverElement.getAttribute("Name");
+                    String sampleURL = driverElement.getAttribute("URLFormat");
+                    String driverClass = driverElement.getAttribute("DefaultClass");
+                    if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) && !CommonUtils.isEmpty(driverClass)) {
+                        ImportDriverInfo driver = new ImportDriverInfo(null, name, sampleURL, driverClass);
+                        importData.addDriver(driver);
+                    }
+                }
+            }
+
+            Element databasesElement = XMLUtils.getChildElement(configDocument.getDocumentElement(), "Databases");
+            if (databasesElement != null) {
+                for (Element dbElement : XMLUtils.getChildElementList(databasesElement, "Database")) {
+
+                }
+            }
+
+        } catch (XMLException e) {
+            throw new DBException("Configuration parse error: " + e.getMessage());
+        }
     }
 }

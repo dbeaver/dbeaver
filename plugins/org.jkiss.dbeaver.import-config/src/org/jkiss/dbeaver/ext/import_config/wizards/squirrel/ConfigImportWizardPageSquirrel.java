@@ -4,21 +4,25 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards.squirrel;
 
-import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.import_config.Activator;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 
 
 public class ConfigImportWizardPageSquirrel extends ConfigImportWizardPage {
 
     protected ConfigImportWizardPageSquirrel()
     {
-        super("Import SQL Squirrel connections");
+        super("SQL Squirrel");
+        setTitle("SQL Squirrel");
+        setDescription("Import SQL Squirrel connections");
+        setImageDescriptor(Activator.getImageDescriptor("icons/squirrel_big.png"));
     }
 
-    public void createControl(Composite parent)
+    @Override
+    protected void loadConnections(ImportData importData) throws DBException
     {
-        Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        setControl(placeholder);
+        throw new DBException("SQL Squirrel installation not found");
     }
 }
