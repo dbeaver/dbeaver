@@ -13,7 +13,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
@@ -26,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 public class ObjectEditorPageControl extends ProgressPageControl {
 
     private Button saveChangesButton;
+    private IDatabaseObjectEditor workbenchPart;
 /*
     private Button viewChangesButton;
     private Button resetChangesButton;
@@ -33,7 +33,8 @@ public class ObjectEditorPageControl extends ProgressPageControl {
 
     public ObjectEditorPageControl(Composite parent, int style, IDatabaseObjectEditor workbenchPart)
     {
-        super(parent, style, workbenchPart);
+        super(parent, style);
+        this.workbenchPart = workbenchPart;
 
         getMainEditorPart().addPropertyListener(new IPropertyListener() {
             public void propertyChanged(Object source, int propId)
@@ -50,17 +51,16 @@ public class ObjectEditorPageControl extends ProgressPageControl {
 
     public IDatabaseObjectEditor getEditorPart()
     {
-        return (IDatabaseObjectEditor) getWorkbenchPart();
+        return workbenchPart;
     }
 
     public IEditorPart getMainEditorPart()
     {
-        IWorkbenchPart part = getWorkbenchPart();
-        IWorkbenchPartSite site = part.getSite();
+        IWorkbenchPartSite site = workbenchPart.getSite();
         if (site instanceof MultiPageEditorSite) {
             return ((MultiPageEditorSite)site).getMultiPageEditor();
         } else {
-            return (IEditorPart)part;
+            return workbenchPart;
         }
     }
 

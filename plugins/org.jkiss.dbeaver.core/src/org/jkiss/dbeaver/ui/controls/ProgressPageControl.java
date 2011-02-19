@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -14,7 +12,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -24,12 +21,11 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class ProgressPageControl extends Composite
 {
-    static final Log log = LogFactory.getLog(ProgressPageControl.class);
+    //static final Log log = LogFactory.getLog(ProgressPageControl.class);
 
     private final static int PROGRESS_MIN = 0;
     private final static int PROGRESS_MAX = 20;
 
-    protected final IWorkbenchPart workbenchPart;
     private ProgressBar progressBar;
     private ToolBar progressTools;
     private ToolItem stopButton;
@@ -39,22 +35,15 @@ public class ProgressPageControl extends Composite
 
     public ProgressPageControl(
         Composite parent,
-        int style,
-        IWorkbenchPart workbenchPart)
+        int style)
     {
         super(parent, style);
-        this.workbenchPart = workbenchPart;
         GridLayout layout = new GridLayout(1, true);
         //layout.marginHeight = 0;
         //layout.marginWidth = 0;
         //layout.horizontalSpacing = 0;
         //layout.verticalSpacing = 0;
         this.setLayout(layout);
-    }
-
-    public IWorkbenchPart getWorkbenchPart()
-    {
-        return workbenchPart;
     }
 
     public void setInfo(String info)
@@ -150,17 +139,12 @@ public class ProgressPageControl extends Composite
         return false;
     }
 
-    public ProgressVisualizer<?> createVisualizer()
-    {
-        return new ProgressVisualizer<Object>();
-    }
-
-    protected class ProgressVisualizer<RESULT> implements ILoadVisualizer<RESULT> {
+    public class ProgressVisualizer<RESULT> implements ILoadVisualizer<RESULT> {
 
         private boolean completed = false;
 
         public Shell getShell() {
-            return UIUtils.getShell(workbenchPart);
+            return ProgressPageControl.this.getShell();
         }
 
         public boolean isCompleted()

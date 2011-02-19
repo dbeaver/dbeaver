@@ -79,11 +79,13 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
     };
 
     private IDataSourceProvider dataSourceProvider;
+    private IWorkbenchPart workbenchPart;
 
     public PlanNodesTree(Composite parent, int style, IWorkbenchPart workbenchPart, IDataSourceProvider dataSourceProvider)
     {
-        super(parent, style, workbenchPart, CONTENT_PROVIDER);
+        super(parent, style, CONTENT_PROVIDER);
         this.dataSourceProvider = dataSourceProvider;
+        this.workbenchPart = workbenchPart;
         setFitWidth(true);
 
         createContextMenu();
@@ -152,7 +154,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
         });
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
-        getWorkbenchPart().getSite().registerContextMenu(menuMgr, getItemsViewer());
+        workbenchPart.getSite().registerContextMenu(menuMgr, getItemsViewer());
     }
 
 

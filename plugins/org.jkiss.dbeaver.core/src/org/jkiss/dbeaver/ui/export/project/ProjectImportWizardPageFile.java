@@ -26,7 +26,7 @@ import org.w3c.dom.Element;
 import java.io.File;
 
 
-public class ProjectImportWizardPageFile extends WizardPage {
+class ProjectImportWizardPageFile extends WizardPage {
 
     private ProjectImportData importData;
     private String curFolder;

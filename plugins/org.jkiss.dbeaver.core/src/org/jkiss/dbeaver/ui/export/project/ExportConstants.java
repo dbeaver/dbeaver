@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ui.export.project;
 /**
  * Import/Export constants
  */
-public class ExportConstants {
+class ExportConstants {
 
     public static final String ARCHIVE_FILE_EXT = ".dbp"; //NON-NLS-1
 

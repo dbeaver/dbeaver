@@ -159,7 +159,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
     @Override
     public void createPartControl(Composite parent) {
-        progressControl = new ProgressControl(parent, SWT.NONE, this);
+        progressControl = new ProgressControl(parent, SWT.NONE);
 
         super.createPartControl(progressControl.createContentContainer());
 
@@ -869,8 +869,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         private ToolBarManager toolBarManager;
         private ZoomComboContributionItem zoomCombo;
 
-        private ProgressControl(Composite parent, int style, IWorkbenchPart workbenchPart) {
-            super(parent, style, workbenchPart);
+        private ProgressControl(Composite parent, int style) {
+            super(parent, style);
         }
 
         @Override

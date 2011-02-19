@@ -1,4 +1,10 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.import_config.wizards;
+
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +14,8 @@ import java.util.Map;
  */
 public class ImportConnectionInfo {
 
-    private ImportDriverInfo driver;
+    private DriverDescriptor driver;
+    private ImportDriverInfo driverInfo;
     private String id;
     private String alias;
     private String url;
@@ -19,9 +26,9 @@ public class ImportConnectionInfo {
     private String password;
     private Map<String, String> properties = new HashMap<String, String>();
 
-    public ImportConnectionInfo(ImportDriverInfo driver, String id, String alias, String url, String host, int port, String database, String user, String password)
+    public ImportConnectionInfo(ImportDriverInfo driverInfo, String id, String alias, String url, String host, int port, String database, String user, String password)
     {
-        this.driver = driver;
+        this.driverInfo = driverInfo;
         this.id = id;
         this.alias = alias;
         this.url = url;
@@ -32,9 +39,19 @@ public class ImportConnectionInfo {
         this.password = password;
     }
 
-    public ImportDriverInfo getDriver()
+    public DriverDescriptor getDriver()
     {
         return driver;
+    }
+
+    public void setDriver(DriverDescriptor driver)
+    {
+        this.driver = driver;
+    }
+
+    public ImportDriverInfo getDriverInfo()
+    {
+        return driverInfo;
     }
 
     public String getId()

@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -28,7 +26,6 @@ import java.util.List;
  */
 public class ItemListControl extends NodeListControl
 {
-    static final Log log = LogFactory.getLog(ItemListControl.class);
 
     public ItemListControl(
         Composite parent,

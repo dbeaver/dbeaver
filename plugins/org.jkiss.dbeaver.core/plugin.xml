@@ -1643,6 +1643,16 @@
                DBeaver Project
            </description>
         </wizard>
+        <wizard
+             category="org.jkiss.dbeaver.core.export.resources"
+             class="org.jkiss.dbeaver.ui.export.scripts.ScriptsExportWizard"
+             icon="icons/sql/sql_script.png"
+             id="org.jkiss.dbeaver.core.wizard.export.scripts"
+             name="Scripts">
+           <description>
+               SQL Scripts
+           </description>
+        </wizard>
     </extension>
 
     <extension point="org.eclipse.ui.importWizards">
@@ -1655,6 +1665,16 @@
             name="Project">
             <description>
                 DBeaver Project
+            </description>
+        </wizard>
+        <wizard
+            category="org.jkiss.dbeaver.core.import.resources"
+            class="org.jkiss.dbeaver.ui.export.scripts.ScriptsImportWizard"
+            icon="icons/sql/sql_script.png"
+            id="org.jkiss.dbeaver.core.wizard.import.scripts"
+            name="Scripts">
+            <description>
+                SQL Scripts
             </description>
         </wizard>
     </extension>

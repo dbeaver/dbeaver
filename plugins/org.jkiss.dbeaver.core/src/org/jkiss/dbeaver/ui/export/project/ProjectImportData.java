@@ -21,7 +21,7 @@ import java.util.zip.ZipFile;
 /**
  * Import data
  */
-public class ProjectImportData {
+class ProjectImportData {
 
     private File importFile = null;
     private boolean importDriverLibraries = true;

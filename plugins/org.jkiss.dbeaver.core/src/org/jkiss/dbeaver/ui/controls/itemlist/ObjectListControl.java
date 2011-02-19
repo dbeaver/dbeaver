@@ -18,7 +18,6 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -95,10 +94,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public ObjectListControl(
         Composite parent,
         int style,
-        IWorkbenchPart workbenchPart,
         IContentProvider contentProvider)
     {
-        super(parent, style, workbenchPart);
+        super(parent, style);
         this.isTree = (contentProvider instanceof ITreeContentProvider);
         this.isFitWidth = false;
         this.linkLayout = new TextLayout(parent.getDisplay());
@@ -881,4 +879,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return Status.OK_STATUS;
         }
     }
+
+    public ProgressVisualizer<Collection<OBJECT_TYPE>> createVisualizer()
+    {
+        return new ProgressVisualizer<Collection<OBJECT_TYPE>>();
+    }
+
 }

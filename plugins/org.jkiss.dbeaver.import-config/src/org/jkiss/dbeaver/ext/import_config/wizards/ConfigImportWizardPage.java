@@ -23,10 +23,16 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public abstract class ConfigImportWizardPage extends WizardPage {
 
     private Table connectionTable;
+    private ImportData importData;
 
     protected ConfigImportWizardPage(String pageName)
     {
         super(pageName);
+    }
+
+    public ImportData getImportData()
+    {
+        return importData;
     }
 
     public void createControl(Composite parent)
@@ -61,7 +67,7 @@ public abstract class ConfigImportWizardPage extends WizardPage {
     {
         if (visible) {
             connectionTable.removeAll();
-            ImportData importData = new ImportData();
+            importData = new ImportData();
             boolean loaded = false;
             try {
                 loadConnections(importData);
@@ -78,7 +84,7 @@ public abstract class ConfigImportWizardPage extends WizardPage {
                         TableItem item = new TableItem(connectionTable, SWT.NONE);
                         item.setImage(0, DBIcon.TREE_DATABASE.getImage());
                         item.setText(0, connectionInfo.getAlias());
-                        item.setText(1, connectionInfo.getDriver().getName());
+                        item.setText(1, connectionInfo.getDriverInfo().getName());
                         item.setText(2, connectionInfo.getUrl());
                         item.setData(connectionInfo);
                     }

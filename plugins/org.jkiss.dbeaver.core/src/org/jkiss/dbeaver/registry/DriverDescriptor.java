@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.xml.sax.Attributes;
@@ -236,6 +237,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return id;
     }
 
+    @Property(name = "Driver Name", viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -246,6 +248,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.name = name;
     }
 
+    @Property(name = "Description", viewable = true, order = 100)
     public String getDescription()
     {
         return description;
@@ -303,6 +306,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.disabled = disabled;
     }
 
+    @Property(name = "Driver Class", viewable = true, order = 2)
     public String getDriverClassName()
     {
         return driverClassName;
@@ -357,6 +361,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.driverDefaultPort = driverDefaultPort;
     }
 
+    @Property(name = "URL", viewable = true, order = 3)
     public String getSampleURL()
     {
         return sampleURL;

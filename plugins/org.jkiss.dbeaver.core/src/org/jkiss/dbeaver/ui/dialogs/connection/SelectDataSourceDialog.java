@@ -11,12 +11,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 
 import java.util.List;
@@ -108,10 +108,7 @@ public class SelectDataSourceDialog extends Dialog {
     {
         List<DataSourceDescriptor> datasources = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry().getDataSources();
         if (datasources.isEmpty()) {
-            MessageBox messageBox = new MessageBox(parentShell, SWT.ICON_INFORMATION | SWT.OK);
-            messageBox.setMessage("Create new datasource first.");
-            messageBox.setText("No datasources exists");
-            messageBox.open();
+            UIUtils.showErrorBox(parentShell, "No datasources exists", "Create new datasource first.");
             return null;
         } else if (datasources.size() == 1) {
             return datasources.get(0);
@@ -124,4 +121,5 @@ public class SelectDataSourceDialog extends Dialog {
             }
         }
     }
+
 }

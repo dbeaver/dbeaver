@@ -80,7 +80,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
         GridLayout layout = (GridLayout)group.getLayout();
         layout.numColumns = 2;
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 300;
+        gd.minimumHeight = 300;
         gd.widthHint = 300;
         group.setLayoutData(gd);
 

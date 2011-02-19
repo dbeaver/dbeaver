@@ -36,12 +36,12 @@ public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescri
             dataSource.setShowSystemObjects(copyFrom.isShowSystemObjects());
             // Generate new name
             String origName = copyFrom.getName();
-            String newName;
+            String newName = origName;
             for (int i = 0; ; i++) {
-                newName = origName + " " + (i + 1);
                 if (registry.findDataSourceByName(newName) == null) {
                     break;
                 }
+                newName = origName + " " + (i + 1);
             }
             dataSource.setName(newName);
             registry.addDataSource(dataSource);

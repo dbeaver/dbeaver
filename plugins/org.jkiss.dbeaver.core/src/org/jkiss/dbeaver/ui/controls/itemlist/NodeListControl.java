@@ -27,6 +27,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
     private DBNNode node;
+    private IWorkbenchPart workbenchPart;
 
     public NodeListControl(
         Composite parent,
@@ -34,7 +35,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         final IWorkbenchPart workbenchPart,
         DBNNode node)
     {
-        super(parent, style, workbenchPart, new ListContentProvider());
+        super(parent, style, new ListContentProvider());
+        this.workbenchPart = workbenchPart;
         this.node = node;
 
         ViewUtils.addContextMenu(workbenchPart, getItemsViewer());

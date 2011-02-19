@@ -466,7 +466,7 @@ public class SearchObjectsView extends ViewPart {
             closeButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    workbenchPart.getSite().getWorkbenchWindow().getActivePage().hideView(SearchObjectsView.this);
+                    SearchObjectsView.this.getSite().getWorkbenchWindow().getActivePage().hideView(SearchObjectsView.this);
                 }
             });
             return panel;

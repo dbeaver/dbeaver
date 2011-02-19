@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -98,7 +97,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
 
         sash.setWeights(new int[] {70, 30});
 
-        pageControl = new PageControl(composite, SWT.NONE, this);
+        pageControl = new PageControl(composite, SWT.NONE);
         pageControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         pageControl.createProgressPanel();
 
@@ -302,8 +301,8 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
         Button killSessionButton;
         Button killQueryButton;
 
-        public PageControl(Composite parent, int style, IWorkbenchPart workbenchPart) {
-            super(parent, style, workbenchPart);
+        public PageControl(Composite parent, int style) {
+            super(parent, style);
         }
 
         @Override

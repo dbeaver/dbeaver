@@ -32,7 +32,7 @@ import java.util.*;
 import java.util.List;
 
 
-public class ProjectExportWizardPage extends WizardPage {
+class ProjectExportWizardPage extends WizardPage {
 
     private Text directoryText;
     private Table projectsTable;
