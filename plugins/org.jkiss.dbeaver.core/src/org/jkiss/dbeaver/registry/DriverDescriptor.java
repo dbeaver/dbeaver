@@ -31,10 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DriverDescriptor
@@ -796,6 +793,85 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         public void saxText(SAXReader reader, String data) {}
 
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {}
+    }
+
+    public static class MetaURL {
+
+        private List<String> urlComponents = new ArrayList<String>();
+        private Set<String> availableProperties = new HashSet<String>();
+        private Set<String> requiredProperties = new HashSet<String>();
+
+        public List<String> getUrlComponents()
+        {
+            return urlComponents;
+        }
+
+        public Set<String> getAvailableProperties()
+        {
+            return availableProperties;
+        }
+
+        public Set<String> getRequiredProperties()
+        {
+            return requiredProperties;
+        }
+    }
+
+    public static MetaURL parseSampleURL(String sampleURL) throws DBException
+    {
+        MetaURL metaURL = new MetaURL();
+        int offsetPos = 0;
+        for (; ;) {
+            int divPos = sampleURL.indexOf('{', offsetPos);
+            if (divPos == -1) {
+                break;
+            }
+            int divPos2 = sampleURL.indexOf('}', divPos);
+            if (divPos2 == -1) {
+                throw new DBException("Bad sample URL: " + sampleURL);
+            }
+            String propName = sampleURL.substring(divPos + 1, divPos2);
+            boolean isOptional = false;
+            int optDiv1 = sampleURL.lastIndexOf('[', divPos);
+            int optDiv1c = sampleURL.lastIndexOf(']', divPos);
+            int optDiv2 = sampleURL.indexOf(']', divPos2);
+            int optDiv2c = sampleURL.indexOf('[', divPos2);
+            if (optDiv1 != -1 && optDiv2 != -1 && (optDiv1c == -1 || optDiv1c < optDiv1) && (optDiv2c == -1 || optDiv2c > optDiv2)) {
+                divPos = optDiv1;
+                divPos2 = optDiv2;
+                isOptional = true;
+            }
+            if (divPos > offsetPos) {
+                metaURL.urlComponents.add(sampleURL.substring(offsetPos, divPos));
+            }
+            metaURL.urlComponents.add(sampleURL.substring(divPos, divPos2 + 1));
+            metaURL.availableProperties.add(propName);
+            if (!isOptional) {
+                metaURL.requiredProperties.add(propName);
+            }
+            offsetPos = divPos2 + 1;
+        }
+        if (offsetPos < sampleURL.length() - 1) {
+            metaURL.urlComponents.add(sampleURL.substring(offsetPos));
+        }
+/*
+        // Check for required parts
+        for (String component : urlComponents) {
+            boolean isRequired = !component.startsWith("[");
+            int divPos = component.indexOf('{');
+            if (divPos != -1) {
+                int divPos2 = component.indexOf('}', divPos);
+                if (divPos2 != -1) {
+                    String propName = component.substring(divPos + 1, divPos2);
+                    availableProperties.add(propName);
+                    if (isRequired) {
+                        requiredProperties.add(propName);
+                    }
+                }
+            }
+        }
+*/
+        return metaURL;
     }
 
 }

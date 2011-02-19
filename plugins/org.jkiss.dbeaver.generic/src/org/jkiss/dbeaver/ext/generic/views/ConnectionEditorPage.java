@@ -14,17 +14,14 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * ConnectionEditorPage
@@ -49,8 +46,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
     private Button testButton;
 
     private boolean isCustom;
-    private List<String> urlComponents = new ArrayList<String>();
-    private Set<String> requiredProperties = new HashSet<String>();
+    private DriverDescriptor.MetaURL metaURL;
 
     private boolean driverPropsLoaded;
     private ConnectionPropertiesControl propsControl;
@@ -248,7 +244,10 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
         if (isCustom) {
             return !CommonUtils.isEmpty(urlText.getText());
         } else {
-            for (String prop : requiredProperties) {
+            if (metaURL == null) {
+                return false;
+            }
+            for (String prop : metaURL.getRequiredProperties()) {
                 if (
                     (prop.equals(PROP_HOST) && CommonUtils.isEmpty(hostText.getText())) ||
                         (prop.equals(PROP_PORT) && CommonUtils.isEmpty(portText.getText())) ||
@@ -361,47 +360,14 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
 
     private void parseSampleURL(DBPDriver driver)
     {
-        this.urlComponents.clear();
-        this.requiredProperties.clear();
+        metaURL = null;
 
         if (!CommonUtils.isEmpty(driver.getSampleURL())) {
             isCustom = false;
-            Set<String> availableProperties = new HashSet<String>();
-            String sampleURL = driver.getSampleURL();
-            int offsetPos = 0;
-            for (; ;) {
-                int divPos = sampleURL.indexOf('{', offsetPos);
-                if (divPos == -1) {
-                    break;
-                }
-                int divPos2 = sampleURL.indexOf('}', divPos);
-                if (divPos2 == -1) {
-                    setErrorMessage("Bad sample URL: " + sampleURL);
-                    break;
-                }
-                String propName = sampleURL.substring(divPos + 1, divPos2);
-                boolean isOptional = false;
-                int optDiv1 = sampleURL.lastIndexOf('[', divPos);
-                int optDiv1c = sampleURL.lastIndexOf(']', divPos);
-                int optDiv2 = sampleURL.indexOf(']', divPos2);
-                int optDiv2c = sampleURL.indexOf('[', divPos2);
-                if (optDiv1 != -1 && optDiv2 != -1 && (optDiv1c == -1 || optDiv1c < optDiv1) && (optDiv2c == -1 || optDiv2c > optDiv2)) {
-                    divPos = optDiv1;
-                    divPos2 = optDiv2;
-                    isOptional = true;
-                }
-                if (divPos > offsetPos) {
-                    urlComponents.add(sampleURL.substring(offsetPos, divPos));
-                }
-                urlComponents.add(sampleURL.substring(divPos, divPos2 + 1));
-                availableProperties.add(propName);
-                if (!isOptional) {
-                    requiredProperties.add(propName);
-                }
-                offsetPos = divPos2 + 1;
-            }
-            if (offsetPos < sampleURL.length() - 1) {
-                urlComponents.add(sampleURL.substring(offsetPos));
+            try {
+                metaURL = DriverDescriptor.parseSampleURL(driver.getSampleURL());
+            } catch (DBException e) {
+                setErrorMessage(e.getMessage());
             }
 /*
             // Check for required parts
@@ -420,9 +386,9 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
                 }
             }
 */
-            hostText.setEditable(availableProperties.contains(PROP_HOST));
-            portText.setEditable(availableProperties.contains(PROP_PORT));
-            dbText.setEditable(availableProperties.contains(PROP_DATABASE));
+            hostText.setEditable(metaURL.getAvailableProperties().contains(PROP_HOST));
+            portText.setEditable(metaURL.getAvailableProperties().contains(PROP_PORT));
+            dbText.setEditable(metaURL.getAvailableProperties().contains(PROP_DATABASE));
             urlText.setEditable(false);
         } else {
             isCustom = true;
@@ -435,9 +401,9 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
 
     private void evaluateURL()
     {
-        if (!isCustom) {
+        if (!isCustom && metaURL != null) {
             StringBuilder url = new StringBuilder();
-            for (String component : urlComponents) {
+            for (String component : metaURL.getUrlComponents()) {
                 String newComponent = component;
                 if (!CommonUtils.isEmpty(hostText.getText())) {
                     newComponent = newComponent.replace(PATTERN_HOST, hostText.getText());

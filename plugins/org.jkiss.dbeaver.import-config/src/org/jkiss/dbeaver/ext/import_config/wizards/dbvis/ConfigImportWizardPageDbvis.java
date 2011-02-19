@@ -7,18 +7,20 @@ package org.jkiss.dbeaver.ext.import_config.wizards.dbvis;
 import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.xml.XMLException;
 import net.sf.jkiss.utils.xml.XMLUtils;
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.Activator;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
@@ -59,6 +61,7 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
                     String driverClass = XMLUtils.getChildElementBody(driverElement, "DefaultClass");
                     if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) && !CommonUtils.isEmpty(driverClass)) {
                         ImportDriverInfo driver = new ImportDriverInfo(null, name, sampleURL, driverClass);
+                        adaptSampleUrl(driver);
                         importData.addDriver(driver);
                     }
                 }
@@ -84,6 +87,7 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
                                 null,
                                 user,
                                 null);
+                            adaptConnectionUrl(connectionInfo);
                             importData.addConnection(connectionInfo);
                         }
                     }
@@ -94,4 +98,36 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
             throw new DBException("Configuration parse error: " + e.getMessage());
         }
     }
+
+    private static Pattern PATTERN_HOST = Pattern.compile("<server>");
+    private static Pattern PATTERN_PORT = Pattern.compile("<port([0-9]*)>");
+    private static Pattern PATTERN_DATABASE = Pattern.compile("<database>|<databaseName>|<sid>|<datasource>");
+
+    private void adaptSampleUrl(ImportDriverInfo driverInfo)
+    {
+        int port = 0;
+        String sampleURL = driverInfo.getSampleURL();
+        sampleURL = PATTERN_HOST.matcher(sampleURL).replaceAll("{host}");
+        final Matcher portMatcher = PATTERN_PORT.matcher(sampleURL);
+        if (portMatcher.find()) {
+            final String portString = portMatcher.group(1);
+            if (!CommonUtils.isEmpty(portString)) {
+                port = CommonUtils.toInt(portString);
+            }
+        }
+        sampleURL = portMatcher.replaceAll("{port}");
+        sampleURL = PATTERN_DATABASE.matcher(sampleURL).replaceAll("{database}");
+
+        driverInfo.setSampleURL(sampleURL);
+        if (port > 0) {
+            driverInfo.setDefaultPort(port);
+        }
+    }
+
+    private void adaptConnectionUrl(ImportConnectionInfo connectionInfo) throws DBException
+    {
+        final DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(connectionInfo.getDriverInfo().getSampleURL());
+        final String url = connectionInfo.getUrl();
+    }
+
 }
