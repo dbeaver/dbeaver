@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * ObjectListControl
  */
-public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IDoubleClickListener
+public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IDoubleClickListener
 {
     static final Log log = LogFactory.getLog(ObjectListControl.class);
 
@@ -440,9 +440,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      * @param item list item
      * @return object which will be examined for properties
      */
-    protected abstract Object getObjectValue(OBJECT_TYPE item);
+    protected Object getObjectValue(OBJECT_TYPE item)
+    {
+        return item;
+    }
 
-    protected abstract Image getObjectImage(OBJECT_TYPE item);
+    /**
+     * Returns object's image
+     * @return image or null
+     */
+    protected Image getObjectImage(OBJECT_TYPE item)
+    {
+        return null;
+    }
 
     protected void createColumn(Class<?> objectClass, PropertyAnnoDescriptor prop)
     {
@@ -880,9 +890,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
+/*
     public ProgressVisualizer<Collection<OBJECT_TYPE>> createVisualizer()
     {
         return new ProgressVisualizer<Collection<OBJECT_TYPE>>();
+    }
+
+*/
+    public ObjectsLoadVisualizer createVisualizer()
+    {
+        return new ObjectsLoadVisualizer();
     }
 
 }

@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.ext.mysql.views;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -22,6 +20,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
 
 /**
@@ -29,8 +28,6 @@ import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
  */
 public class MySQLConnectionPage extends DialogPage implements IDataSourceConnectionEditor
 {
-    static final Log log = LogFactory.getLog(MySQLConnectionPage.class);
-
     private IDataSourceConnectionEditorSite site;
     private Text hostText;
     private Text portText;
@@ -130,6 +127,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
         gd.widthHint = 40;
         portText.setLayoutData(gd);
+        portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
         portText.addModifyListener(textListener);
 
         Label logoLabel = new Label(addrGroup, SWT.NONE);
@@ -211,8 +209,8 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
                 hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
             }
             if (portText != null) {
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    portText.setText(CommonUtils.getString(connectionInfo.getHostPort()));
+                if (connectionInfo.getHostPort() > 0) {
+                    portText.setText(String.valueOf(connectionInfo.getHostPort()));
                 } else {
                     portText.setText(String.valueOf(MySQLConstants.DEFAULT_PORT));
                 }
@@ -258,7 +256,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
                 connectionInfo.setHostName(hostText.getText());
             }
             if (portText != null) {
-                connectionInfo.setHostPort(portText.getText());
+                connectionInfo.setHostPort(CommonUtils.toInt(portText.getText()));
             }
             if (dbText != null) {
                 connectionInfo.setDatabaseName(dbText.getText());

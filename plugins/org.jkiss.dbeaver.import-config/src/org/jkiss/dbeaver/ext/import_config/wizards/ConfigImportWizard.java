@@ -11,8 +11,8 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.SelectObjectDialog;
 
@@ -53,6 +53,15 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             return false;
         }
 
+        try {
+            for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
+                importConnection(connectionInfo);
+            }
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(getShell(), "Import driver", null, e);
+            return false;
+        }
+
         return true;
     }
 
@@ -66,24 +75,29 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         if (CommonUtils.isEmpty(sampleURL)) {
             throw new DBException("Cannot create driver '" + driverInfo.getName() + "' - no connection URL pattern specified");
         }
-        final DataSourceProviderDescriptor dataSourceProvider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider("generic");
-        if (dataSourceProvider == null) {
-            throw new DBException("Generic datasource provider not found");
-        }
+        final DataSourceProviderRegistry registry = DBeaverCore.getInstance().getDataSourceProviderRegistry();
         List<DriverDescriptor> matchedDrivers = new ArrayList<DriverDescriptor>();
-        for (DriverDescriptor driver : dataSourceProvider.getDrivers()) {
-            if (driver.getDriverClassName().equals(driverInfo.getDriverClass())) {
-                matchedDrivers.add(driver);
+        for (DataSourceProviderDescriptor dataSourceProvider : registry.getDataSourceProviders()) {
+            for (DriverDescriptor driver : dataSourceProvider.getDrivers()) {
+                if (driver.getDriverClassName().equals(driverInfo.getDriverClass())) {
+                    matchedDrivers.add(driver);
+                }
             }
         }
+
         if (matchedDrivers.isEmpty()) {
             // Create new driver
-            DriverDescriptor driver = dataSourceProvider.createDriver();
+            final DataSourceProviderDescriptor genericProvider = registry.getDataSourceProvider("generic");
+            if (genericProvider == null) {
+                throw new DBException("Generic datasource provider not found");
+            }
+
+            DriverDescriptor driver = genericProvider.createDriver();
             driver.setName(driverInfo.getName());
             driver.setDriverClassName(driverInfo.getDriverClass());
             driver.setSampleURL(driverInfo.getSampleURL());
             driver.setConnectionProperties(driverInfo.getProperties());
-            dataSourceProvider.addDriver(driver);
+            genericProvider.addDriver(driver);
             connectionInfo.setDriver(driver);
         } else if (matchedDrivers.size() == 1) {
             // Use the only found driver
@@ -97,6 +111,35 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             connectionInfo.setDriver(driver);
         }
         return true;
+    }
+
+    private void importConnection(ImportConnectionInfo connectionInfo) throws DBException
+    {
+        final DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
+
+        String name = connectionInfo.getAlias();
+        for (int i = 0; ; i++) {
+            if (dataSourceRegistry.findDataSourceByName(name) == null) {
+                break;
+            }
+            name = name + " " + (i + 1);
+        }
+
+        DBPConnectionInfo config = new DBPConnectionInfo();
+        config.setProperties(connectionInfo.getProperties());
+        config.setUrl(connectionInfo.getUrl());
+        config.setUserName(connectionInfo.getUser());
+        config.setHostName(connectionInfo.getHost());
+        config.setHostPort(connectionInfo.getPort());
+        config.setDatabaseName(connectionInfo.getDatabase());
+        DataSourceDescriptor dataSource = new DataSourceDescriptor(
+            dataSourceRegistry,
+            DataSourceDescriptor.generateNewId(connectionInfo.getDriver()),
+            connectionInfo.getDriver(),
+            config);
+        dataSource.setName(name);
+        dataSource.setSavePassword(false);
+        dataSourceRegistry.addDataSource(dataSource);
     }
 
 }

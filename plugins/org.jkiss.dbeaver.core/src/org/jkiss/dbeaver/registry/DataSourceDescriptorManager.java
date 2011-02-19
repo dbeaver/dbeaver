@@ -61,10 +61,17 @@ public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescri
 
     public void deleteObject(Map<String, Object> options)
     {
+        Runnable remover = new Runnable() {
+            public void run()
+            {
+                getObject().getRegistry().removeDataSource(getObject());
+            }
+        };
         if (getObject().isConnected()) {
-            DataSourceDisconnectHandler.execute(getObject());
+            DataSourceDisconnectHandler.execute(getObject(), remover);
+        } else {
+            remover.run();
         }
-        getObject().getRegistry().removeDataSource(getObject());
     }
 
 }

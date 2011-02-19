@@ -59,18 +59,7 @@ public class SelectObjectDialog<T> extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        ObjectListControl<T> objectList = new ObjectListControl<T>(group, SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI), new ListContentProvider()) {
-            @Override
-            protected Object getObjectValue(Object item)
-            {
-                return item;
-            }
-            @Override
-            protected Image getObjectImage(Object item)
-            {
-                return null;
-            }
-        };
+        ObjectListControl<T> objectList = new ObjectListControl<T>(group, SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI), new ListContentProvider());
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.minimumWidth = 300;
@@ -79,9 +68,9 @@ public class SelectObjectDialog<T> extends Dialog {
             public void selectionChanged(SelectionChangedEvent event)
             {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                for (Iterator<?> iter = selection.iterator(); iter.hasNext(); ) {
-                    selectedObjects.add((T) iter.next());
-                }
+                selectedObjects.clear();
+                selectedObjects.addAll(selection.toList());
+                getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
             }
         });
         objectList.setDoubleClickHandler(new IDoubleClickListener()

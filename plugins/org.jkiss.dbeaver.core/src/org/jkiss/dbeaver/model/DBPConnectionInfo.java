@@ -14,7 +14,7 @@ public class DBPConnectionInfo implements DBPObject
 {
     //private DBPDriver driver;
     private String hostName;
-    private String hostPort;
+    private int hostPort;
     private String databaseName;
     private String userName;
     private String userPassword;
@@ -58,12 +58,12 @@ public class DBPConnectionInfo implements DBPObject
         this.hostName = hostName;
     }
 
-    public String getHostPort()
+    public int getHostPort()
     {
         return hostPort;
     }
 
-    public void setHostPort(String hostPort)
+    public void setHostPort(int hostPort)
     {
         this.hostPort = hostPort;
     }

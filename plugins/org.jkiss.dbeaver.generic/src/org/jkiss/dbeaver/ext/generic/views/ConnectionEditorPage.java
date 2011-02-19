@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.ext.generic.views;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -20,6 +18,7 @@ import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
 
 import java.util.ArrayList;
@@ -32,8 +31,6 @@ import java.util.Set;
  */
 public class ConnectionEditorPage extends DialogPage implements IDataSourceConnectionEditor
 {
-    static final Log log = LogFactory.getLog(ConnectionEditorPage.class);
-
     private static final String PROP_HOST = "host";
     private static final String PROP_PORT = "port";
     private static final String PROP_DATABASE = "database";
@@ -153,6 +150,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
         gd = new GridData(GridData.CENTER);
         gd.widthHint = 40;
         portText.setLayoutData(gd);
+        portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
         portText.addModifyListener(textListener);
 
         Label dbLabel = new Label(addrGroup, SWT.NONE);
@@ -278,8 +276,8 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
                     }
                 }
                 if (portText != null) {
-                    if (connectionInfo.getHostPort() != null) {
-                        portText.setText(CommonUtils.getString(connectionInfo.getHostPort()));
+                    if (connectionInfo.getHostPort() > 0) {
+                        portText.setText(String.valueOf(connectionInfo.getHostPort()));
                     } else if (site.getDriver().getDefaultPort() != null) {
                         portText.setText(site.getDriver().getDefaultPort().toString());
                     } else {
@@ -343,7 +341,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
                 connectionInfo.setHostName(hostText.getText());
             }
             if (portText != null) {
-                connectionInfo.setHostPort(portText.getText());
+                connectionInfo.setHostPort(CommonUtils.toInt(portText.getText()));
             }
             if (dbText != null) {
                 connectionInfo.setDatabaseName(dbText.getText());

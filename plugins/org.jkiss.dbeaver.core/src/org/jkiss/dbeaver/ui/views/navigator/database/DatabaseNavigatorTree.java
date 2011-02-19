@@ -100,50 +100,56 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
             case REMOVE:
                 final DBNNode parentNode = event.getNode().getParentNode();
                 if (parentNode != null) {
-                    asyncExec(new Runnable() { public void run() {
-                        if (!viewer.getControl().isDisposed()) {
-                            if (!parentNode.isDisposed()) {
-                                viewer.refresh(parentNode);
+                    executeInUI(new Runnable() {
+                        public void run()
+                        {
+                            if (!viewer.getControl().isDisposed()) {
+                                if (!parentNode.isDisposed()) {
+                                    viewer.refresh(parentNode);
+                                }
                             }
                         }
-                    }});
+                    });
                 }
                 break;
             case UPDATE:
-                asyncExec(new Runnable() { public void run() {
-                    if (!viewer.getControl().isDisposed()) {
-                        if (event.getNode() != null) {
-                            switch (event.getNodeChange()) {
-                                case LOAD:
-                                    viewer.expandToLevel(event.getNode(), 1);
-                                    viewer.refresh(event.getNode());
-                                    break;
-                                case UNLOAD:
-                                    viewer.collapseToLevel(event.getNode(), -1);
-                                    viewer.refresh(event.getNode());
-                                    break;
-                                case REFRESH:
-                                    viewer.update(event.getNode(), null);
-                                    break;
-                                case LOCK:
-                                case UNLOCK:
-                                    viewer.refresh(event.getNode());
-                                    break;
+                executeInUI(new Runnable() {
+                    public void run()
+                    {
+                        if (!viewer.getControl().isDisposed()) {
+                            if (event.getNode() != null) {
+                                switch (event.getNodeChange()) {
+                                    case LOAD:
+                                        viewer.expandToLevel(event.getNode(), 1);
+                                        viewer.refresh(event.getNode());
+                                        break;
+                                    case UNLOAD:
+                                        viewer.collapseToLevel(event.getNode(), -1);
+                                        viewer.refresh(event.getNode());
+                                        break;
+                                    case REFRESH:
+                                        viewer.update(event.getNode(), null);
+                                        break;
+                                    case LOCK:
+                                    case UNLOCK:
+                                        viewer.refresh(event.getNode());
+                                        break;
+                                }
+                            } else {
+                                log.warn("Null node object");
                             }
-                        } else {
-                            log.warn("Null node object");
                         }
                     }
-                }});
+                });
                 break;
             default:
                 break;
         }
     }
 
-    private void asyncExec(Runnable runnable)
+    private void executeInUI(Runnable runnable)
     {
-        Display.getDefault().asyncExec(runnable);
+        Display.getDefault().syncExec(runnable);
     }
 
     public void showNode(DBNNode node) {

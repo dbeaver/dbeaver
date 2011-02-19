@@ -97,18 +97,6 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
     }
 
     @Override
-    protected Object getObjectValue(DBCPlanNode item)
-    {
-        return item;
-    }
-
-    @Override
-    protected Image getObjectImage(DBCPlanNode item)
-    {
-        return null;
-    }
-
-    @Override
     public void clearData()
     {
         super.clearData();

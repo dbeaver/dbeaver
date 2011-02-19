@@ -537,7 +537,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
             addr.append(connectionInfo.getHostName());
         }
-        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+        if (connectionInfo.getHostPort() > 0) {
             addr.append(':').append(connectionInfo.getHostPort());
         }
         return addr.toString();
