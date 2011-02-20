@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.import_config.wizards.dbvis;
 import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.xml.XMLException;
 import net.sf.jkiss.utils.xml.XMLUtils;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.Activator;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
@@ -19,6 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -87,7 +89,11 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
                                 null,
                                 user,
                                 null);
-                            adaptConnectionUrl(connectionInfo);
+                            try {
+                                adaptConnectionUrl(connectionInfo);
+                            } catch (DBException e) {
+                                setMessage(e.getMessage(), IMessageProvider.WARNING);
+                            }
                             importData.addConnection(connectionInfo);
                         }
                     }
@@ -128,6 +134,40 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
     {
         final DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(connectionInfo.getDriverInfo().getSampleURL());
         final String url = connectionInfo.getUrl();
+        int sourceOffset = 0;
+        List<String> urlComponents = metaURL.getUrlComponents();
+        for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
+            String component = urlComponents.get(i);
+            if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' && metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1))) {
+                // Property
+                int partEnd;
+                if (i < urlComponentsSize - 1) {
+                    // Find next component
+                    final String nextComponent = urlComponents.get(i + 1);
+                    partEnd = url.indexOf(nextComponent, sourceOffset);
+                    if (partEnd == -1) {
+                        throw new DBException("Can't parse URL '" + url + "' - string '" + nextComponent + "' not found after '" + component);
+                    }
+                } else {
+                    partEnd = url.length();
+                }
+
+                String propertyValue = url.substring(sourceOffset, partEnd);
+                if (component.equals("{host}")) {
+                    connectionInfo.setHost(propertyValue);
+                } else if (component.equals("{port}")) {
+                    connectionInfo.setPort(CommonUtils.toInt(propertyValue));
+                } else if (component.equals("{database}")) {
+                    connectionInfo.setDatabase(propertyValue);
+                } else {
+                    throw new DBException("Unsupported property " + component);
+                }
+                sourceOffset = partEnd;
+            } else {
+                // Static string
+                sourceOffset += component.length();
+            }
+        }
     }
 
 }

@@ -79,9 +79,19 @@ public class ImportConnectionInfo {
         return port;
     }
 
+    public void setPort(int port)
+    {
+        this.port = port;
+    }
+
     public String getDatabase()
     {
         return database;
+    }
+
+    public void setDatabase(String database)
+    {
+        this.database = database;
     }
 
     public String getUser()
@@ -102,6 +112,11 @@ public class ImportConnectionInfo {
     public void setProperty(String name, String value)
     {
         properties.put(name, value);
+    }
+
+    public void setHost(String host)
+    {
+        this.host = host;
     }
 
 }
