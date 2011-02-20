@@ -96,6 +96,7 @@
                     label="PostgreSQL"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
                     <library path="drivers/postgresql-8.4-701.jdbc4.jar"/>
@@ -106,6 +107,7 @@
                     label="Oracle"
                     class="oracle.jdbc.OracleDriver"
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
+                    defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle thin driver">
                     <library path="drivers/ojdbc6.jar"/>
@@ -118,6 +120,7 @@
                     label="DB2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                    defaultPort="50000"
                     webURL="http://www.ibm.com/software/data/db2/express/download.html"
                     description="DB2 JCC driver">
 					<library path="drivers/db2jcc.jar"/>
@@ -132,6 +135,7 @@
                     label="MS SQL Server"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
+                    defaultPort="1433"
                     webURL="http://jtds.sourceforge.net/"
                     description="MS SQL Server JTDS driver">
                     <parameter name="query-get-active-db" value="select db_name()"/>
@@ -144,6 +148,7 @@
                     label="Sybase"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
+                    defaultPort="5000"
                     webURL="http://jtds.sourceforge.net/"
                     description="Sybase JTDS driver">
                     <!--parameter name="query-get-active-db">select db_name()</query>

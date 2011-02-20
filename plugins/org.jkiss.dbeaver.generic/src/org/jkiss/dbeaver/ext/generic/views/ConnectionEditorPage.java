@@ -409,10 +409,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
                     newComponent = newComponent.replace(PATTERN_HOST, hostText.getText());
                 }
                 if (!CommonUtils.isEmpty(portText.getText())) {
-                    Integer defaultPort = site.getDriver().getDefaultPort();
-                    if (defaultPort == null || !portText.getText().equals(defaultPort.toString())) {
-                        newComponent = newComponent.replace(PATTERN_PORT, portText.getText());
-                    }
+                    newComponent = newComponent.replace(PATTERN_PORT, portText.getText());
                 }
                 if (!CommonUtils.isEmpty(dbText.getText())) {
                     newComponent = newComponent.replace(PATTERN_DATABASE, dbText.getText());
