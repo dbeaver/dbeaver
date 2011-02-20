@@ -237,7 +237,9 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
     {
         // Clean up any previous editor control
         disposeOldEditor();
-
+        if (item.isDisposed()) {
+            return;
+        }
         final DBNNode node = (DBNNode) item.getData();
 
         Text text = new Text(viewer.getTree(), SWT.BORDER);

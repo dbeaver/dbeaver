@@ -130,6 +130,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
     {
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
         dataSources.add(newNode);
+        this.getModel().addNode(newNode, true);
         return newNode;
     }
 

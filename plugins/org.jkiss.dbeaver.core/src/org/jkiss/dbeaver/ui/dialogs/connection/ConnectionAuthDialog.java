@@ -89,6 +89,8 @@ public class ConnectionAuthDialog extends Dialog
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         savePasswordCheck.setLayoutData(gd);
 
+        passwordText.setFocus();
+
         return addrGroup;
     }
 

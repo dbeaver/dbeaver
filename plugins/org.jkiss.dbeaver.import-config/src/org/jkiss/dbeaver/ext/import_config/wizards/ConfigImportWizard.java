@@ -122,7 +122,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             if (dataSourceRegistry.findDataSourceByName(name) == null) {
                 break;
             }
-            name = name + " " + (i + 1);
+            name = connectionInfo.getAlias() + " " + (i + 1);
         }
 
         DBPConnectionInfo config = new DBPConnectionInfo();
