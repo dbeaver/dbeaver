@@ -144,6 +144,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         config.setProperties(connectionInfo.getProperties());
         config.setUrl(connectionInfo.getUrl());
         config.setUserName(connectionInfo.getUser());
+        config.setUserPassword(connectionInfo.getPassword());
         config.setHostName(connectionInfo.getHost());
         config.setHostPort(connectionInfo.getPort());
         config.setDatabaseName(connectionInfo.getDatabase());
@@ -153,7 +154,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             connectionInfo.getDriver(),
             config);
         dataSource.setName(name);
-        dataSource.setSavePassword(false);
+        dataSource.setSavePassword(!CommonUtils.isEmpty(config.getUserPassword()));
         dataSourceRegistry.addDataSource(dataSource);
     }
 
