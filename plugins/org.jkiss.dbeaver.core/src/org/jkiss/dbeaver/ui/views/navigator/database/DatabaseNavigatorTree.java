@@ -116,7 +116,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 executeInUI(new Runnable() {
                     public void run()
                     {
-                        if (!viewer.getControl().isDisposed()) {
+                        if (!viewer.getControl().isDisposed() && !viewer.isBusy()) {
                             if (event.getNode() != null) {
                                 switch (event.getNodeChange()) {
                                     case LOAD:

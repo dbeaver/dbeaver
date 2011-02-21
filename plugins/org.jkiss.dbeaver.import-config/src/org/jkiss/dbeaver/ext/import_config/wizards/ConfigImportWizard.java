@@ -44,10 +44,12 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         final ImportData importData = mainPage.getImportData();
         try {
             for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
-                if (!findOrCreateDriver(connectionInfo)) {
+                if (connectionInfo.isChecked() && !findOrCreateDriver(connectionInfo)) {
                     return false;
                 }
             }
+            // Flush drivers configuration
+            DBeaverCore.getInstance().getDataSourceProviderRegistry().saveDrivers();
         } catch (DBException e) {
             UIUtils.showErrorDialog(getShell(), "Import driver", null, e);
             return false;
@@ -55,7 +57,9 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
 
         try {
             for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
-                importConnection(connectionInfo);
+                if (connectionInfo.isChecked()) {
+                    importConnection(connectionInfo);
+                }
             }
         } catch (DBException e) {
             UIUtils.showErrorDialog(getShell(), "Import driver", null, e);
@@ -97,6 +101,11 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             driver.setDriverClassName(driverInfo.getDriverClass());
             driver.setSampleURL(driverInfo.getSampleURL());
             driver.setConnectionProperties(driverInfo.getProperties());
+            driver.setDescription(driverInfo.getDescription());
+            for (String path : driverInfo.getLibraries()) {
+                driver.addLibrary(path);
+            }
+            driver.setModified(true);
             genericProvider.addDriver(driver);
             connectionInfo.setDriver(driver);
         } else if (matchedDrivers.size() == 1) {

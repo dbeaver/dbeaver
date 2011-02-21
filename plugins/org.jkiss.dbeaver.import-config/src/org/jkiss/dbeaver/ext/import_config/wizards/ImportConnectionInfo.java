@@ -25,6 +25,7 @@ public class ImportConnectionInfo {
     private String user;
     private String password;
     private Map<String, String> properties = new HashMap<String, String>();
+    private boolean checked = false;
 
     public ImportConnectionInfo(ImportDriverInfo driverInfo, String id, String alias, String url, String host, int port, String database, String user, String password)
     {
@@ -119,4 +120,13 @@ public class ImportConnectionInfo {
         this.host = host;
     }
 
+    public boolean isChecked()
+    {
+        return checked;
+    }
+
+    public void setChecked(boolean checked)
+    {
+        this.checked = checked;
+    }
 }

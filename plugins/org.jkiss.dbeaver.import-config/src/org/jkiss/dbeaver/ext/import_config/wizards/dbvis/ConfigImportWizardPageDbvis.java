@@ -61,9 +61,26 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
                     String name = XMLUtils.getChildElementBody(driverElement, "Name");
                     String sampleURL = XMLUtils.getChildElementBody(driverElement, "URLFormat");
                     String driverClass = XMLUtils.getChildElementBody(driverElement, "DefaultClass");
+                    String lastName = XMLUtils.getChildElementBody(driverElement, "LastName");
+                    //String lastVersion = XMLUtils.getChildElementBody(driverElement, "LastVersion");
                     if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) && !CommonUtils.isEmpty(driverClass)) {
                         ImportDriverInfo driver = new ImportDriverInfo(null, name, sampleURL, driverClass);
+                        if (!CommonUtils.isEmpty(lastName)) {
+                            driver.setDescription(lastName);
+                        }
                         adaptSampleUrl(driver);
+
+                        // Parse libraries
+                        Element locationsElement = XMLUtils.getChildElement(driverElement, "Locations");
+                        if (locationsElement != null) {
+                            for (Element locationElement : XMLUtils.getChildElementList(locationsElement, "Location")) {
+                                String path = XMLUtils.getChildElementBody(locationElement, "Path");
+                                if (!CommonUtils.isEmpty(path)) {
+                                    driver.addLibrary(path);
+                                }
+                            }
+                        }
+
                         importData.addDriver(driver);
                     }
                 }
@@ -146,7 +163,13 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
                     final String nextComponent = urlComponents.get(i + 1);
                     partEnd = url.indexOf(nextComponent, sourceOffset);
                     if (partEnd == -1) {
-                        throw new DBException("Can't parse URL '" + url + "' - string '" + nextComponent + "' not found after '" + component);
+                        if (nextComponent.equals(":")) {
+                            // Try to find another divider - dbvis sometimes contains bad sample URLs (e.g. for Oracle)
+                            partEnd = url.indexOf("/", sourceOffset);
+                        }
+                        if (partEnd == -1) {
+                            throw new DBException("Can't parse URL '" + url + "' - string '" + nextComponent + "' not found after '" + component);
+                        }
                     }
                 } else {
                     partEnd = url.length();

@@ -21,6 +21,7 @@ public class ImportDriverInfo {
     private List<String> libraries = new ArrayList<String>();
     private Map<String, String> properties = new HashMap<String, String>();
     private int defaultPort;
+    private String description;
 
     public ImportDriverInfo(String id, String name, String sampleURL, String driverClass)
     {
@@ -85,9 +86,20 @@ public class ImportDriverInfo {
         properties.put(name, value);
     }
 
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
     @Override
     public String toString()
     {
         return name + " - " + driverClass + " - " + sampleURL;
     }
+
 }

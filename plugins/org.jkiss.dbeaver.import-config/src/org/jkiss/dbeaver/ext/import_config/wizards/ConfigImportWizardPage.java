@@ -55,6 +55,9 @@ public abstract class ConfigImportWizardPage extends WizardPage {
         connectionTable.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e)
             {
+                TableItem item = (TableItem) e.item;
+                ImportConnectionInfo connectionInfo = (ImportConnectionInfo) item.getData();
+                connectionInfo.setChecked(item.getChecked());
                 getContainer().updateButtons();
             }
         });
