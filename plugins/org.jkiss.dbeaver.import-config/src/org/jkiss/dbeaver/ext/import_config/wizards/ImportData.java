@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.import_config.wizards;
 
 import java.util.ArrayList;
@@ -20,6 +24,16 @@ public class ImportData {
     {
         for (ImportDriverInfo driver : drivers) {
             if (name.equals(driver.getName())) {
+                return driver;
+            }
+        }
+        return null;
+    }
+
+    public ImportDriverInfo getDriverByID(String id)
+    {
+        for (ImportDriverInfo driver : drivers) {
+            if (id.equals(driver.getId())) {
                 return driver;
             }
         }

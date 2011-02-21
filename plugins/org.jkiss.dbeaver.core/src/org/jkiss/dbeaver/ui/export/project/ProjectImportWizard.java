@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
@@ -86,7 +87,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 ex.getTargetException());
             return false;
         }
-        UIUtils.showInfoBox(getShell(), "Project import", "Project(s) successfully imported");
+        UIUtils.showMessageBox(getShell(), "Project import", "Project(s) successfully imported", SWT.ICON_INFORMATION);
         return true;
 	}
 

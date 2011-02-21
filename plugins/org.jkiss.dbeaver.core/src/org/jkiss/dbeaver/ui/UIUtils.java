@@ -309,17 +309,9 @@ public class UIUtils {
         }
     }
 
-    public static void showErrorBox(Shell shell, String title, String info)
+    public static void showMessageBox(Shell shell, String title, String info, int messageType)
     {
-        MessageBox messageBox = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-        messageBox.setMessage(info);
-        messageBox.setText(title);
-        messageBox.open();
-    }
-
-    public static void showInfoBox(Shell shell, String title, String info)
-    {
-        MessageBox messageBox = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
+        MessageBox messageBox = new MessageBox(shell, messageType | SWT.OK);
         messageBox.setMessage(info);
         messageBox.setText(title);
         messageBox.open();

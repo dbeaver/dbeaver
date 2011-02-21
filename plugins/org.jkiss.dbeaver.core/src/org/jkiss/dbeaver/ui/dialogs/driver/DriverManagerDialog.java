@@ -236,7 +236,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
             for (DataSourceDescriptor ds : usedDS) {
                 message.append("\n - ").append(ds.getName());
             }
-            UIUtils.showErrorBox(getShell(), "Can't delete driver", message.toString());
+            UIUtils.showMessageBox(getShell(), "Can't delete driver", message.toString(), SWT.ICON_ERROR);
             return;
         }
         if (UIUtils.confirmAction(

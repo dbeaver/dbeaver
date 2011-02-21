@@ -108,7 +108,7 @@ public class SelectDataSourceDialog extends Dialog {
     {
         List<DataSourceDescriptor> datasources = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry().getDataSources();
         if (datasources.isEmpty()) {
-            UIUtils.showErrorBox(parentShell, "No datasources exists", "Create new datasource first.");
+            UIUtils.showMessageBox(parentShell, "No datasources exists", "Create new datasource first.", SWT.ICON_ERROR);
             return null;
         } else if (datasources.size() == 1) {
             return datasources.get(0);

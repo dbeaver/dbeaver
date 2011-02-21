@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.import_config.wizards;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
@@ -124,6 +125,11 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
 
     private void importConnection(ImportConnectionInfo connectionInfo) throws DBException
     {
+        try {
+            adaptConnectionUrl(connectionInfo);
+        } catch (DBException e) {
+            UIUtils.showMessageBox(getShell(), "Extract URL parameters", e.getMessage(), SWT.ICON_WARNING);
+        }
         final DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
 
         String name = connectionInfo.getAlias();
@@ -149,6 +155,57 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         dataSource.setName(name);
         dataSource.setSavePassword(false);
         dataSourceRegistry.addDataSource(dataSource);
+    }
+
+    protected void adaptConnectionUrl(ImportConnectionInfo connectionInfo) throws DBException
+    {
+        String sampleURL = connectionInfo.getDriverInfo().getSampleURL();
+        if (connectionInfo.getDriver() != null) {
+            sampleURL = connectionInfo.getDriver().getSampleURL();
+        }
+        //connectionInfo.getDriver()
+        final DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(sampleURL);
+        final String url = connectionInfo.getUrl();
+        int sourceOffset = 0;
+        List<String> urlComponents = metaURL.getUrlComponents();
+        for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
+            String component = urlComponents.get(i);
+            if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' && metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1))) {
+                // Property
+                int partEnd;
+                if (i < urlComponentsSize - 1) {
+                    // Find next component
+                    final String nextComponent = urlComponents.get(i + 1);
+                    partEnd = url.indexOf(nextComponent, sourceOffset);
+                    if (partEnd == -1) {
+                        if (nextComponent.equals(":")) {
+                            // Try to find another divider - dbvis sometimes contains bad sample URLs (e.g. for Oracle)
+                            partEnd = url.indexOf("/", sourceOffset);
+                        }
+                        if (partEnd == -1) {
+                            throw new DBException("Can't parse URL '" + url + "' with pattern '" + sampleURL + "'. String '" + nextComponent + "' not found after '" + component);
+                        }
+                    }
+                } else {
+                    partEnd = url.length();
+                }
+
+                String propertyValue = url.substring(sourceOffset, partEnd);
+                if (component.equals("{host}")) {
+                    connectionInfo.setHost(propertyValue);
+                } else if (component.equals("{port}")) {
+                    connectionInfo.setPort(CommonUtils.toInt(propertyValue));
+                } else if (component.equals("{database}")) {
+                    connectionInfo.setDatabase(propertyValue);
+                } else {
+                    throw new DBException("Unsupported property " + component);
+                }
+                sourceOffset = partEnd;
+            } else {
+                // Static string
+                sourceOffset += component.length();
+            }
+        }
     }
 
 }
