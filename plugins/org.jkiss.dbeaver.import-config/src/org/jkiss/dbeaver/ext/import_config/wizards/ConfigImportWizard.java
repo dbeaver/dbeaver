@@ -103,6 +103,9 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             driver.setSampleURL(driverInfo.getSampleURL());
             driver.setConnectionProperties(driverInfo.getProperties());
             driver.setDescription(driverInfo.getDescription());
+            if (driverInfo.getDefaultPort() > 0) {
+                driver.setDriverDefaultPort(driverInfo.getDefaultPort());
+            }
             for (String path : driverInfo.getLibraries()) {
                 driver.addLibrary(path);
             }

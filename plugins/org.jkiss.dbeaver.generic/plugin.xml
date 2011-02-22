@@ -172,6 +172,27 @@
                     description="Derby (Java DB) embedded driver">
                     <parameter name="meta-case" value="upper"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
+                    <library path="drivers/derby/derby.jar"/>
+                </driver>
+                <driver
+                    id="derby_server"
+                    label="Derby Server"
+                    class="org.apache.derby.jdbc.ClientDriver"
+                    sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
+                    defaultPort="1527"
+                    webURL="http://db.apache.org/"
+                    description="Derby (Java DB) server driver">
+                    <parameter name="meta-case" value="upper"/>
+                    <library path="drivers/derby/derbyclient.jar"/>
+                </driver>
+                <driver
+                    id="mimer"
+                    label="Mimer SQL"
+                    class="com.mimer.jdbc.Driver"
+                    sampleURL="jdbc:mimer:tcp://{host}:{port}/{database}"
+                    webURL="http://developer.mimer.com/"
+                    description="Mimer SQL TCP/IP driver">
+                    <library path="drivers/mimjdbc3.jar"/>
                 </driver>
             </drivers>
             <views>

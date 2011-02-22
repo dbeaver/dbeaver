@@ -9,11 +9,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +45,12 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
             this.providers = DataSourceProviderRegistry.getDefault().getDataSourceProviders();
         }
 
+        TreeColumn nameColumn = new TreeColumn(getTree(), SWT.LEFT);
+        nameColumn.setText("Name");
+
+        //TreeColumn descColumn = new TreeColumn(getTree(), SWT.RIGHT);
+        //descColumn.setText("Description");
+
         this.setContentProvider(new ViewContentProvider());
         this.setLabelProvider(new ViewLabelProvider());
         this.setInput(DataSourceProviderRegistry.getDefault());
@@ -50,6 +58,8 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         this.addSelectionChangedListener(this);
         this.addDoubleClickListener(this);
         this.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        UIUtils.packColumns(getTree(), false);
     }
 
     class ViewContentProvider implements IStructuredContentProvider,
@@ -119,22 +129,30 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         }
     }
 
-    class ViewLabelProvider extends LabelProvider
+    class ViewLabelProvider extends CellLabelProvider
     {
 
-        public String getText(Object obj)
+        public void update(ViewerCell cell) {
+            cell.setText(getText(cell.getElement(), cell.getColumnIndex()));
+            cell.setImage(getImage(cell.getElement(), cell.getColumnIndex()));
+        }
+
+        public String getText(Object obj, int index)
         {
             if (obj instanceof DataSourceProviderDescriptor) {
-                return ((DataSourceProviderDescriptor) obj).getName();
+                return index == 0 ? ((DataSourceProviderDescriptor) obj).getName() : ((DataSourceProviderDescriptor) obj).getDescription();
             } else if (obj instanceof DriverDescriptor) {
-                return ((DriverDescriptor) obj).getName();
+                return index == 0 ? ((DriverDescriptor) obj).getName() : ((DriverDescriptor) obj).getDescription();
             } else {
-                return obj.toString();
+                return index == 0 ? obj.toString() : "";
             }
         }
 
-        public Image getImage(Object obj)
+        public Image getImage(Object obj, int index)
         {
+            if (index != 0) {
+                return null;
+            }
             String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
 			if (obj instanceof DataSourceProviderDescriptor) {
                 Image icon = ((DataSourceProviderDescriptor) obj).getIcon();

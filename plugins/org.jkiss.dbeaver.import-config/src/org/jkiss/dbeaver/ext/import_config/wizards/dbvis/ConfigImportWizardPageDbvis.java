@@ -118,6 +118,7 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
         }
     }
 
+    private static Pattern PATTERN_PROTOCOL = Pattern.compile("<protocol>");
     private static Pattern PATTERN_HOST = Pattern.compile("<server>");
     private static Pattern PATTERN_PORT = Pattern.compile("<port([0-9]*)>");
     private static Pattern PATTERN_DATABASE = Pattern.compile("<database>|<databaseName>|<sid>|<datasource>");
@@ -126,6 +127,7 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
     {
         int port = 0;
         String sampleURL = driverInfo.getSampleURL();
+        sampleURL = PATTERN_PROTOCOL.matcher(sampleURL).replaceAll("{protocol}");
         sampleURL = PATTERN_HOST.matcher(sampleURL).replaceAll("{host}");
         final Matcher portMatcher = PATTERN_PORT.matcher(sampleURL);
         if (portMatcher.find()) {

@@ -13,10 +13,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -73,30 +70,30 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
         }
 
         getShell().setText("Driver Manager");
+        getShell().setMinimumSize(300, 300);
         dialogImage = DBeaverActivator.getImageDescriptor("/icons/driver_manager.png").createImage();
         getShell().setImage(dialogImage);
 
-        Composite group = (Composite)super.createDialogArea(parent);
-        GridLayout layout = (GridLayout)group.getLayout();
-        layout.numColumns = 2;
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.minimumHeight = 300;
-        gd.widthHint = 300;
-        group.setLayoutData(gd);
+        Composite group = UIUtils.createPlaceholder((Composite) super.createDialogArea(parent), 2);
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             treeControl = new DriverTreeControl(group);
             treeControl.initDrivers(this, provders);
+            treeControl.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         }
+
         {
             Composite buttonBar = new Composite(group, SWT.TOP);
-            layout = new GridLayout(1, true);
-            buttonBar.setLayout(layout);
-            buttonBar.setLayoutData(new GridData(GridData.FILL_BOTH));
+            buttonBar.setLayout(new GridLayout(1, false));
+            GridData gd = new GridData(GridData.FILL_VERTICAL);
+            gd.minimumWidth = 100;
+            buttonBar.setLayoutData(gd);
 
             newButton = new Button(buttonBar, SWT.FLAT | SWT.PUSH);
             newButton.setText("&New");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd = new GridData(GridData.BEGINNING);
+            gd.widthHint = 100;
             newButton.setLayoutData(gd);
             newButton.addSelectionListener(new SelectionListener()
             {
@@ -112,7 +109,8 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
 
             editButton = new Button(buttonBar, SWT.FLAT | SWT.PUSH);
             editButton.setText("&Edit ...");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd = new GridData(GridData.BEGINNING);
+            gd.widthHint = 100;
             editButton.setLayoutData(gd);
             editButton.addSelectionListener(new SelectionListener()
             {
@@ -128,7 +126,8 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
 
             deleteButton = new Button(buttonBar, SWT.FLAT | SWT.PUSH);
             deleteButton.setText("&Delete");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd = new GridData(GridData.BEGINNING);
+            gd.widthHint = 100;
             deleteButton.setLayoutData(gd);
             deleteButton.addSelectionListener(new SelectionListener()
             {
@@ -141,18 +140,34 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
                 {
                 }
             });
+
+            {
+                final Composite legend = UIUtils.createPlaceholder(buttonBar, 2, 5);
+                gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.verticalIndent = 5;
+                gd.horizontalSpan = 2;
+                legend.setLayoutData(gd);
+
+                UIUtils.createImageLabel(legend, DBIcon.OVER_CONDITION.getImage());
+                UIUtils.createTextLabel(legend, "- User defined");
+
+                UIUtils.createImageLabel(legend, DBIcon.OVER_ERROR.getImage());
+                UIUtils.createTextLabel(legend, "- Unavailable");
+            }
         }
+/*
         {
-            final Composite legend = UIUtils.createPlaceholder(group, 2, 5);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            Composite descBar = UIUtils.createPlaceholder(group, 1, 5);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
+            descBar.setLayoutData(gd);
 
-            UIUtils.createImageLabel(legend, DBIcon.OVER_CONDITION.getImage());
-            UIUtils.createTextLabel(legend, "- User defined driver");
-
-            UIUtils.createImageLabel(legend, DBIcon.OVER_ERROR.getImage());
-            UIUtils.createTextLabel(legend, "- Unavailable driver");
+            Text text = new Text(descBar, SWT.READ_ONLY | SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            //gd.verticalIndent = 5;
+            text.setLayoutData(gd);
         }
+*/
         return group;
     }
 
