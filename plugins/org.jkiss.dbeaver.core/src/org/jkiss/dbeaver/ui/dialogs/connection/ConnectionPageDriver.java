@@ -6,11 +6,14 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
 
 /**
@@ -31,9 +34,14 @@ class ConnectionPageDriver extends WizardPage implements ISelectionChangedListen
 
     public void createControl(Composite parent)
     {
-        driverTreeControl = new DriverTreeControl(parent);
+        Composite placeholder = UIUtils.createPlaceholder(parent, 1);
+        driverTreeControl = new DriverTreeControl(placeholder);
         driverTreeControl.initDrivers(this, wizard.getAvailableProvides());
-        setControl(driverTreeControl.getControl());
+        Control control = driverTreeControl.getControl();
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 200;
+        control.setLayoutData(gd);
+        setControl(placeholder);
     }
 
     public DriverDescriptor getSelectedDriver()
