@@ -125,7 +125,7 @@ public class HexManager {
             hexEditControl.setFont(fontText);
         }
 
-        //hexEditControl.addLongSelectionListener(new MySelectionAdapter(MySelectionAdapter.UPDATE_POSITION_TEXT));
+        //hexEditControl.addLongSelectionListener(new ControlSelectionAdapter(ControlSelectionAdapter.UPDATE_POSITION_TEXT));
         hexEditControl.addListener(SWT.Modify, new Listener() {
             public void handleEvent(Event event)
             {

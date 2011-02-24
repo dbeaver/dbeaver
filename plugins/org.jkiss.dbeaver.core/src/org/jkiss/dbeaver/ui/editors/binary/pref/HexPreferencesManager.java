@@ -295,36 +295,36 @@ public class HexPreferencesManager {
 
     void populateFixedCharWidthFontsAsync()
     {
-        FontData aData = getNextFontData();
-        if (!fontsRejected.contains(aData.getName())) {
+        FontData fontData = getNextFontData();
+        if (!fontsRejected.contains(fontData.getName())) {
             boolean isScalable = fontsListCurrent == fontsScalable;
             int height = 10;
-            if (!isScalable) height = aData.getHeight();
-            Font font = new Font(Display.getCurrent(), aData.getName(), height, SWT.NORMAL);
+            if (!isScalable) height = fontData.getHeight();
+            Font font = new Font(Display.getCurrent(), fontData.getName(), height, SWT.NORMAL);
             fontsGc.setFont(font);
             int width = fontsGc.getAdvanceWidth((char) 0x020);
             boolean isFixedWidth = true;
             for (int j = 0x021; j < 0x0100 && isFixedWidth; ++j) {
-                if (HexEditControl.byteToChar[j] == '.' && j != '.') continue;
+                if (((char)j) == '.' && j != '.') continue;
                 if (width != fontsGc.getAdvanceWidth((char) j)) isFixedWidth = false;
             }
             font.dispose();
             if (isFixedWidth) {
                 if (isScalable) {
-                    fontsSorted.put(aData.getName(), scalableSizes);
+                    fontsSorted.put(fontData.getName(), scalableSizes);
                 } else {
-                    Set<Integer> heights = fontsSorted.get(aData.getName());
+                    Set<Integer> heights = fontsSorted.get(fontData.getName());
                     if (heights == null) {
                         heights = new TreeSet<Integer>();
-                        fontsSorted.put(aData.getName(), heights);
+                        fontsSorted.put(fontData.getName(), heights);
                     }
-                    heights.add(aData.getHeight());
+                    heights.add(fontData.getHeight());
                 }
                 if (!list.isDisposed())
                     list.setItems(fontsSorted.keySet().toArray(new String[fontsSorted.keySet().size()]));
                 refreshWidgets();
             } else {
-                fontsRejected.add(aData.getName());
+                fontsRejected.add(fontData.getName());
             }
         }
         if (fontsNonScalable.size() == 0 && fontsScalable.size() == 0) {
@@ -390,7 +390,7 @@ public class HexPreferencesManager {
     }
 
 
-    void showSelected(List aList, String item)
+    static void showSelected(List aList, String item)
     {
         int selected = aList.indexOf(item);
         if (selected >= 0) {

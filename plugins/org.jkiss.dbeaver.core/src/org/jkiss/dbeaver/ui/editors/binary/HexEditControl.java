@@ -51,7 +51,6 @@ public class HexEditControl extends Composite {
      * There are differences on which chars can correctly be displayed in each operating system,
      * charset encoding, or font system.
      */
-    public static final char[] byteToChar = new char[256];
     public static final String[] byteToHex = new String[256];
     static final int charsForAddress = 12;  // Files up to 16 Ters: 11 binary digits + ':'
     static String headerRow = null;
@@ -77,6 +76,8 @@ public class HexEditControl extends Composite {
         headerRow = rowChars.toString().toUpperCase();
     }
 
+    public final char[] byteToChar = new char[256];
+
     private boolean readOnly;
     private int charsForFileSizeAddress = 0;
     private String charset = null;
@@ -99,7 +100,7 @@ public class HexEditControl extends Composite {
     private long endPosition = 0L;
     private BinaryTextFinder finder = null;
     private boolean isInserting = false;
-    private KeyListener keyAdapter = new MyKeyAdapter();
+    private KeyListener keyAdapter = new ControlKeyAdapter();
     private int lastFocusedTextArea = -1;  // 1 or 2;
     private long lastLocationPosition = -1L;
     private List<SelectionListener> longSelectionListeners = null;
@@ -118,16 +119,13 @@ public class HexEditControl extends Composite {
     private byte[] tmpRawBuffer = new byte[maxScreenResolution / minCharSize / 3 * maxScreenResolution / minCharSize];
     private int verticalBarFactor = 0;
 
-    private final MyTraverseAdapter traverseAdapter = new MyTraverseAdapter();
-    private final MyVerifyKeyAdapter verifyKeyAdapter = new MyVerifyKeyAdapter();
-
     // visual components
     private Color colorCaretLine = null;
     private Color colorHighlight = null;
     private Font fontCurrent = null;  // disposed externally
     private Font fontDefault = null;  // disposed internally
-    private GridData gridData5 = null;
-    private GridData gridData6 = null;
+    private GridData textGridData = null;
+    private GridData previewGridData = null;
     private GC styledText1GC = null;
     private GC styledText2GC = null;
     private Text linesTextSeparator = null;
@@ -138,67 +136,6 @@ public class HexEditControl extends Composite {
 
     private Text previewTextSeparator = null;
     private StyledText previewText = null;
-
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
-
-    public BinaryTextFinder getFinder()
-    {
-        return finder;
-    }
-    /**
-     * compose byte-to-char map
-     */
-    private void composeByteToCharMap()
-    {
-        if (charset == null || previewText == null) return;
-
-        CharsetDecoder decoder = Charset.forName(charset).newDecoder().
-            onMalformedInput(CodingErrorAction.REPLACE).
-            onUnmappableCharacter(CodingErrorAction.REPLACE).
-            replaceWith(".");
-        ByteBuffer bb = ByteBuffer.allocate(1);
-        CharBuffer cb = CharBuffer.allocate(1);
-        for (int i = 0; i < 256; ++i) {
-            if (i < 0x20 || i == 0x7f) {
-                byteToChar[i] = '.';
-            } else {
-                bb.clear();
-                bb.put((byte) i);
-                bb.rewind();
-                cb.clear();
-                decoder.reset();
-                decoder.decode(bb, cb, true);
-                decoder.flush(cb);
-                cb.rewind();
-                char decoded = cb.get();
-                // neither font metrics nor graphic context work for charset 8859-1 chars between 128 and
-                // 159
-                // It works too slow. Dumn with it.
-/*
-                String text = previewText.getText();
-                previewText.setText("|" + decoded);
-                if (previewText.getLocationAtOffset(2).x - previewText.getLocationAtOffset(1).x <
-                    previewText.getLocationAtOffset(1).x - previewText.getLocationAtOffset(0).x) {
-                    decoded = '.';
-                }
-                previewText.setText(text);
-*/
-                byteToChar[i] = decoded;
-            }
-        }
-    }
-
-    public void setCharset(String name)
-    {
-        if (CommonUtils.isEmpty(name)) {
-            name = ContentUtils.getDefaultFileEncoding();
-        }
-        charset = name;
-        composeByteToCharMap();
-    }
 
     /**
      * Get long selection start and end points. Helper method for long selection listeners.
@@ -233,7 +170,7 @@ public class HexEditControl extends Composite {
     }
 
 
-    private class MyKeyAdapter extends KeyAdapter {
+    private class ControlKeyAdapter extends KeyAdapter {
         public void keyPressed(KeyEvent e)
         {
             switch (e.keyCode) {
@@ -308,11 +245,10 @@ public class HexEditControl extends Composite {
         }
     }
 
-
-    private class MyMouseAdapter extends MouseAdapter {
+    private class ControlMouseAdapter extends MouseAdapter {
         int charLen;
 
-        public MyMouseAdapter(boolean hexContent)
+        public ControlMouseAdapter(boolean hexContent)
         {
             charLen = 1;
             if (hexContent) charLen = 3;
@@ -354,10 +290,10 @@ public class HexEditControl extends Composite {
     }
 
 
-    private class MyPaintAdapter implements PaintListener {
+    private class ControlPaintAdapter implements PaintListener {
         boolean hexContent = false;
 
-        MyPaintAdapter(boolean isHexText)
+        ControlPaintAdapter(boolean isHexText)
         {
             hexContent = isHexText;
         }
@@ -382,10 +318,10 @@ public class HexEditControl extends Composite {
     }
 
 
-    private class MySelectionAdapter extends SelectionAdapter implements SelectionListener {
+    private class ControlSelectionAdapter extends SelectionAdapter implements SelectionListener {
         int charLen;
 
-        public MySelectionAdapter(boolean hexContent)
+        public ControlSelectionAdapter(boolean hexContent)
         {
             charLen = 1;
             if (hexContent) charLen = 3;
@@ -415,7 +351,7 @@ public class HexEditControl extends Composite {
     }
 
 
-    private class MyTraverseAdapter implements TraverseListener {
+    private class ControlTraverseAdapter implements TraverseListener {
         public void keyTraversed(TraverseEvent e)
         {
             if (e.detail == SWT.TRAVERSE_TAB_NEXT)
@@ -424,10 +360,9 @@ public class HexEditControl extends Composite {
     }
 
 
-    private class MyVerifyKeyAdapter implements VerifyKeyListener {
+    private class ControlVerifyKeyAdapter implements VerifyKeyListener {
         public void verifyKey(VerifyEvent e)
         {
-//System.out.println("int:"+(int)e.character+", char:"+e.character+", keycode:"+e.keyCode);
             if (readOnly) {
                 return;
             }
@@ -466,7 +401,6 @@ public class HexEditControl extends Composite {
         }
     }
 
-
     /**
      * Create a binary text editor
      *
@@ -503,6 +437,59 @@ public class HexEditControl extends Composite {
         lastFocusedTextArea = 1;
         previousLine = -1;
     }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
+
+    public BinaryTextFinder getFinder()
+    {
+        return finder;
+    }
+    /**
+     * compose byte-to-char map
+     */
+    private void composeByteToCharMap()
+    {
+        if (charset == null || previewText == null) return;
+
+        CharsetDecoder decoder = Charset.forName(charset).newDecoder().
+            onMalformedInput(CodingErrorAction.REPLACE).
+            onUnmappableCharacter(CodingErrorAction.REPLACE).
+            replaceWith(".");
+        ByteBuffer bb = ByteBuffer.allocate(1);
+        CharBuffer cb = CharBuffer.allocate(1);
+        for (int i = 0; i < 256; ++i) {
+            if (i < 0x20 || i == 0x7f) {
+                byteToChar[i] = '.';
+            } else {
+                bb.clear();
+                bb.put((byte) i);
+                bb.rewind();
+                cb.clear();
+                decoder.reset();
+                decoder.decode(bb, cb, true);
+                decoder.flush(cb);
+                cb.rewind();
+                char decoded = cb.get();
+                // neither font metrics nor graphic context work for charset 8859-1 chars between 128 and
+                // 159
+                // It works too slow. Dumn with it.
+                byteToChar[i] = decoded;
+            }
+        }
+    }
+
+    public void setCharset(String name)
+    {
+        if (CommonUtils.isEmpty(name)) {
+            name = ContentUtils.getDefaultFileEncoding();
+        }
+        charset = name;
+        composeByteToCharMap();
+    }
+
 
     public StyledText getHexText()
     {
@@ -639,12 +626,12 @@ public class HexEditControl extends Composite {
         }
         styledText1GC = new GC(hexText);
         int width = bytesPerLine * 3 * fontCharWidth;
-        gridData5 = new GridData();
-        gridData5.horizontalIndent = 1;
-        gridData5.verticalAlignment = SWT.FILL;
-        gridData5.widthHint = hexText.computeTrim(0, 0, width, 0).width;
-        gridData5.grabExcessVerticalSpace = true;
-        hexText.setLayoutData(gridData5);
+        textGridData = new GridData();
+        textGridData.horizontalIndent = 1;
+        textGridData.verticalAlignment = SWT.FILL;
+        textGridData.widthHint = hexText.computeTrim(0, 0, width, 0).width;
+        textGridData.grabExcessVerticalSpace = true;
+        hexText.setLayoutData(textGridData);
         hexText.addKeyListener(keyAdapter);
         FocusListener myFocusAdapter = new FocusAdapter() {
             public void focusGained(FocusEvent e)
@@ -662,13 +649,13 @@ public class HexEditControl extends Composite {
             }
         };
         hexText.addFocusListener(myFocusAdapter);
-        hexText.addMouseListener(new MyMouseAdapter(true));
-        hexText.addPaintListener(new MyPaintAdapter(true));
-        hexText.addTraverseListener(traverseAdapter);
-        hexText.addVerifyKeyListener(verifyKeyAdapter);
+        hexText.addMouseListener(new ControlMouseAdapter(true));
+        hexText.addPaintListener(new ControlPaintAdapter(true));
+        hexText.addTraverseListener(new ControlTraverseAdapter());
+        hexText.addVerifyKeyListener(new ControlVerifyKeyAdapter());
         hexText.setContent(new DisplayedContent(bytesPerLine * 3, numberOfLines));
         hexText.setDoubleClickEnabled(false);
-        hexText.addSelectionListener(new MySelectionAdapter(true));
+        hexText.addSelectionListener(new ControlSelectionAdapter(true));
         // StyledText.setCaretOffset() version 3.448 bug resets the caret size if using the default one,
         // so we use not the default one.
         Caret defaultCaret = hexText.getCaret();
@@ -703,20 +690,20 @@ public class HexEditControl extends Composite {
             previewText.setEditable(false);
         }
         width = bytesPerLine * fontCharWidth + 1;  // one pixel for caret in last linesColumn
-        gridData6 = new GridData();
-        gridData6.verticalAlignment = SWT.FILL;
-        gridData6.widthHint = previewText.computeTrim(0, 0, width, 0).width;
-        gridData6.grabExcessVerticalSpace = true;
-        previewText.setLayoutData(gridData6);
+        previewGridData = new GridData();
+        previewGridData.verticalAlignment = SWT.FILL;
+        previewGridData.widthHint = previewText.computeTrim(0, 0, width, 0).width;
+        previewGridData.grabExcessVerticalSpace = true;
+        previewText.setLayoutData(previewGridData);
         previewText.addKeyListener(keyAdapter);
         previewText.addFocusListener(myFocusAdapter);
-        previewText.addMouseListener(new MyMouseAdapter(false));
-        previewText.addPaintListener(new MyPaintAdapter(false));
-        previewText.addTraverseListener(traverseAdapter);
-        previewText.addVerifyKeyListener(verifyKeyAdapter);
+        previewText.addMouseListener(new ControlMouseAdapter(false));
+        previewText.addPaintListener(new ControlPaintAdapter(false));
+        previewText.addTraverseListener(new ControlTraverseAdapter());
+        previewText.addVerifyKeyListener(new ControlVerifyKeyAdapter());
         previewText.setContent(new DisplayedContent(bytesPerLine, numberOfLines));
         previewText.setDoubleClickEnabled(false);
-        previewText.addSelectionListener(new MySelectionAdapter(false));
+        previewText.addSelectionListener(new ControlSelectionAdapter(false));
         // StyledText.setCaretOffset() version 3.448 bug resets the caret size if using the default one,
         // so we use not the default one.
         defaultCaret = previewText.getCaret();
@@ -1989,8 +1976,8 @@ public class HexEditControl extends Composite {
         bytesPerLine = (width / displayedNumberWidth) & 0xfffffff8;  // 0, 8, 16, 24, etc.
         if (bytesPerLine < 16)
             bytesPerLine = 16;
-        gridData5.widthHint = hexText.computeTrim(0, 0, bytesPerLine * 3 * fontCharWidth, 100).width;
-        gridData6.widthHint = previewText.computeTrim(0, 0, bytesPerLine * fontCharWidth, 100).width;
+        textGridData.widthHint = hexText.computeTrim(0, 0, bytesPerLine * 3 * fontCharWidth, 100).width;
+        previewGridData.widthHint = previewText.computeTrim(0, 0, bytesPerLine * fontCharWidth, 100).width;
         updateNumberOfLines();
         changed(new Control[]{hexHeaderText, linesText, hexText, previewText});
         updateScrollBar();
