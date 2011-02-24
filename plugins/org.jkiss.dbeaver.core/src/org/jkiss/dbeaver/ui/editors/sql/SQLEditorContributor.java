@@ -264,6 +264,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 databaseCombo.setVisibleItemCount(15);
                 databaseCombo.setToolTipText("Active database");
                 databaseCombo.add(DBIcon.TREE_CATALOG.getImage(), EMPTY_SELECTION_TEXT);
+                databaseCombo.select(0);
                 databaseCombo.addSelectionListener(new SelectionListener() {
                     public void widgetSelected(SelectionEvent e)
                     {
