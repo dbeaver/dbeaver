@@ -124,6 +124,7 @@ public class CImageCombo extends Composite {
 
         this.text = new Text(this.comboComposite, SWT.READ_ONLY);
         this.text.setLayoutData(new TableWrapData(TableWrapData.FILL_GRAB));
+        this.text.setEditable(false);
 
         this.comboComposite.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 
@@ -710,7 +711,7 @@ public class CImageCombo extends Composite {
             if (index != getSelectionIndex()) {
                 this.imageLabel.setImage(this.table.getItem(index).getImage());
                 this.text.setText(this.table.getItem(index).getText());
-                this.text.selectAll();
+                //this.text.selectAll();
                 this.table.select(index);
                 this.table.showSelection();
             }
@@ -766,7 +767,7 @@ public class CImageCombo extends Composite {
             return;
         }
         this.text.setText(string);
-        this.text.selectAll();
+        //this.text.selectAll();
         this.table.setSelection(index);
         this.table.showSelection();
     }
@@ -1396,7 +1397,9 @@ public class CImageCombo extends Composite {
                 boolean dropped = isDropped();
                 this.text.selectAll();
                 if (!dropped) {
-                    setFocus();
+                    if (getEditable()) {
+                        setFocus();
+                    }
                 }
                 dropDown(!dropped);
                 break;

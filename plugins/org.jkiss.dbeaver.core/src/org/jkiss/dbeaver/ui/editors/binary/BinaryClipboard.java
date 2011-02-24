@@ -191,11 +191,13 @@ public class BinaryClipboard {
     public void dispose()
         throws IOException
     {
-        File lastPaste = (File) myClipboard.getContents(FileByteArrayTransfer.getInstance());
-        myClipboard.dispose();
+        if (!myClipboard.isDisposed()) {
+            File lastPaste = (File) myClipboard.getContents(FileByteArrayTransfer.getInstance());
+            myClipboard.dispose();
 
-        if (!clipboardFile.equals(lastPaste))  // null
-            emptyClipboardFile();
+            if (!clipboardFile.equals(lastPaste))  // null
+                emptyClipboardFile();
+        }
 
         for (File aFile : myFilesReferencesCounter.keySet()) {
             int count = myFilesReferencesCounter.get(aFile);
