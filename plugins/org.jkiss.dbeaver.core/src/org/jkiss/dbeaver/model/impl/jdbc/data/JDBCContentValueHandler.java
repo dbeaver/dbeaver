@@ -55,8 +55,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                         int columnIndex)
         throws DBCException, SQLException
     {
-        Object value;
-        if (JDBCUtils.isDriverODBC(context)) {
+        Object value = resultSet.getObject(columnIndex);
+        if (value == null && !resultSet.wasNull()) {
+            // This may happen in some bad drivers like ODBC bridge
             switch (column.getValueType()) {
                 case java.sql.Types.CHAR:
                 case java.sql.Types.VARCHAR:
@@ -77,8 +78,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     value = resultSet.getObject(columnIndex);
                     break;
             }
-        } else {
-            value = resultSet.getObject(columnIndex);
         }
         if (value == null) {
             // Create wrapper using column type

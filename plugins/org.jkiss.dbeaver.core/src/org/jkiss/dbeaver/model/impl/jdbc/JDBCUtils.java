@@ -371,8 +371,10 @@ public class JDBCUtils
         return query == null || query.length() <= maxLength ? query : query.substring(0, maxLength);
     }
 
+/*
     public static boolean isDriverODBC(DBCExecutionContext context)
     {
         return context.getDataSource().getContainer().getDriver().getDriverClassName().contains("Odbc");
     }
+*/
 }
