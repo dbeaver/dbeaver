@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -54,7 +55,31 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                         int columnIndex)
         throws DBCException, SQLException
     {
-        Object value = resultSet.getObject(columnIndex);
+        Object value;
+        if (JDBCUtils.isDriverODBC(context)) {
+            switch (column.getValueType()) {
+                case java.sql.Types.CHAR:
+                case java.sql.Types.VARCHAR:
+                case java.sql.Types.NVARCHAR:
+                case java.sql.Types.LONGVARCHAR:
+                case java.sql.Types.LONGNVARCHAR:
+                case java.sql.Types.CLOB:
+                case java.sql.Types.NCLOB:
+                    value = resultSet.getString(columnIndex);
+                    break;
+                case java.sql.Types.BINARY:
+                case java.sql.Types.VARBINARY:
+                case java.sql.Types.LONGVARBINARY:
+                case java.sql.Types.BLOB:
+                    value = resultSet.getBytes(columnIndex);
+                    break;
+                default:
+                    value = resultSet.getObject(columnIndex);
+                    break;
+            }
+        } else {
+            value = resultSet.getObject(columnIndex);
+        }
         if (value == null) {
             // Create wrapper using column type
             switch (column.getValueType()) {

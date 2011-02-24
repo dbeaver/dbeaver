@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -93,6 +94,20 @@ public class JDBCUtils
             log.debug(e);
             return null;
         }
+    }
+
+    public static int getDataTypeByName(int valueType, String typeName)
+    {
+        if (valueType == java.sql.Types.OTHER) {
+            if ("BLOB".equalsIgnoreCase(typeName)) {
+                return java.sql.Types.BLOB;
+            } else if ("CLOB".equalsIgnoreCase(typeName)) {
+                return java.sql.Types.CLOB;
+            } else if ("NCLOB".equalsIgnoreCase(typeName)) {
+                return java.sql.Types.NCLOB;
+            }
+        }
+        return valueType;
     }
 
     public static DBSDataKind getDataKind(DBSTypedObject type)
@@ -354,5 +369,10 @@ public class JDBCUtils
     public static String limitQueryLength(String query, int maxLength)
     {
         return query == null || query.length() <= maxLength ? query : query.substring(0, maxLength);
+    }
+
+    public static boolean isDriverODBC(DBCExecutionContext context)
+    {
+        return context.getDataSource().getContainer().getDriver().getDriverClassName().contains("Odbc");
     }
 }

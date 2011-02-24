@@ -284,6 +284,10 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             int charLength = JDBCUtils.safeGetInt(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
             int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
             boolean autoIncrement = "YES".equals(JDBCUtils.safeGetString(dbResult, JDBCConstants.IS_AUTOINCREMENT));
+            if (valueType == java.sql.Types.OTHER && !CommonUtils.isEmpty(typeName)) {
+                // Try to determine value type from type name
+                valueType = JDBCUtils.getDataTypeByName(valueType, typeName);
+            }
 
             return new GenericTableColumn(
                 table,
