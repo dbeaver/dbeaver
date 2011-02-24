@@ -182,45 +182,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return null;
     }
 
-/*
-    private IProject openOrCreateProject(String projectName)
-    {
-        final IProject project = this.workspace.getRoot().getProject(projectName);
-
-        try {
-            PlatformUI.getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
-                public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        if (!project.exists()) {
-                            project.create(monitor);
-                        }
-                        project.open(monitor);
-                    }
-                    catch (CoreException ex) {
-                        throw new InvocationTargetException(ex);
-                    }
-                }
-            });
-        }
-        catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
-        }
-        catch (InterruptedException e) {
-            // do nothing
-        }
-        try {
-            if (project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID) == null) {
-                project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, SecurityUtils.generateGUID(false));
-            }
-        } catch (CoreException e) {
-            log.error("Couldn't set project ID");
-        }
-        return project;
-    }
-*/
-
     public synchronized void dispose()
     {
         IProgressMonitor monitor = new NullProgressMonitor();
@@ -497,6 +458,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         
         // Text editor default preferences
         RuntimeUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
+
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.HEX_FONT_NAME, "Courier New");
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.HEX_FONT_SIZE, 10);
 
         // QM
         queryManager.initDefaultPreferences(store);

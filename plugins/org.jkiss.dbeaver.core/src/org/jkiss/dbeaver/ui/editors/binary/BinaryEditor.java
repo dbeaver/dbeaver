@@ -29,6 +29,8 @@ import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
@@ -42,13 +44,12 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
     static final Log log = LogFactory.getLog(HexEditControl.class);
 
-    static final String textSavingFilePleaseWait = "Saving file, please wait";
+    //static final String textSavingFilePleaseWait = "Saving file, please wait";
 
     private HexManager manager = null;
-    IContentOutlinePage outlinePage = null;
-    IPropertyChangeListener preferencesChangeListener = null;
-    Set<ISelectionChangedListener> selectionListeners = null;  // of ISelectionChangedListener
-
+    private IContentOutlinePage outlinePage = null;
+    private IPropertyChangeListener preferencesChangeListener = null;
+    private Set<ISelectionChangedListener> selectionListeners = null;  // of ISelectionChangedListener
 
     public BinaryEditor()
     {
@@ -98,8 +99,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
     public void createPartControl(Composite parent)
     {
-        getManager().setTextFont(HexConfig.getFontData());
-        getManager().setFindReplaceLists(HexConfig.getFindReplaceFindList(), HexConfig.getFindReplaceReplaceList());
+        getManager().setTextFont(HexPreferencesPage.getPrefFontData());
         getManager().setMenuListener(this);
         int editorStyle = SWT.NONE;
         getManager().createEditorPart(parent, editorStyle);
@@ -142,11 +142,11 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         preferencesChangeListener = new IPropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event)
             {
-                if (PreferencesPage.preferenceFontData.equals(event.getProperty()))
+                if (HexPreferencesPage.PROP_FONT_DATA.equals(event.getProperty()))
                     manager.setTextFont((FontData) event.getNewValue());
             }
         };
-        IPreferenceStore store = HexConfig.getInstance().getPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
         store.addPropertyChangeListener(preferencesChangeListener);
 
         manager.addLongSelectionListener(new SelectionAdapter() {
@@ -210,7 +210,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             manager = null;
         }
 
-        IPreferenceStore store = HexConfig.getInstance().getPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
         store.removePropertyChangeListener(preferencesChangeListener);
 
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
@@ -313,19 +313,6 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         return new StructuredSelection(new Object[]
             {longSelection[0], longSelection[1]});
     }
-
-
-    boolean implementsInterface(IEditorInput input, String interfaceName)
-    {
-        Class[] classes = input.getClass().getInterfaces();
-        for (Class aClass : classes) {
-            if (interfaceName.equals(aClass.getName()))
-                return true;
-        }
-
-        return false;
-    }
-
 
     public void init(IEditorSite site, final IEditorInput input)
         throws PartInitException

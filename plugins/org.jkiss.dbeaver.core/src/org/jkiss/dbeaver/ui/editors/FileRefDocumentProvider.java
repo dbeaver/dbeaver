@@ -225,7 +225,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
             }
 
             in = new BufferedReader(new InputStreamReader(contentStream, encoding), DEFAULT_BUFFER_SIZE);
-            StringBuffer buffer = new StringBuffer(DEFAULT_BUFFER_SIZE);
+            StringBuilder buffer = new StringBuilder(DEFAULT_BUFFER_SIZE);
             char[] readBuffer = new char[2048];
             int n = in.read(readBuffer);
             while (n > 0) {

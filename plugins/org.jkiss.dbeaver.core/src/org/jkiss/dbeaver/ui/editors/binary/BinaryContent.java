@@ -42,9 +42,10 @@ public class BinaryContent {
     final static class Range implements Comparable<Range>, Cloneable {
         long position = -1L;
         long length = -1L;
-        boolean dirty = true;
         long dataOffset = 0L;
         Object data = null;
+
+        private boolean dirty = true;
 
         Range(long aPosition, long aLength)
         {
@@ -100,7 +101,7 @@ public class BinaryContent {
 
         public String toString()
         {
-            return new StringBuffer("Range {position:").append(position).append(", length:").append
+            return new StringBuilder("Range {position:").append(position).append(", length:").append
                 (length).append('}').toString();
         }
     }
@@ -108,28 +109,25 @@ public class BinaryContent {
 
     static final long mappedFileBufferLength = 2048 * 1024;  // for mapped file I/O
 
-    ActionHistory actions = null;  // undo/redo actions history
-    ActionHistory actionsTemp = null;
-    boolean dirty = false;
-    boolean dirtySize = false;
-    long exclusiveEnd = -1L;
-    long lastUpperNibblePosition = -1L;
-    List<ModifyListener> listeners = null;
-    List<Integer> myChanges = null;
-    boolean myChangesInserted = false;
-    long myChangesPosition = -1L;
-    TreeSet<Range> myRanges = null;
-    Iterator<Range> tailTree = null;
-
+    private ActionHistory actions = null;  // undo/redo actions history
+    private ActionHistory actionsTemp = null;
+    private boolean dirty = false;
+    private boolean dirtySize = false;
+    private long exclusiveEnd = -1L;
+    private long lastUpperNibblePosition = -1L;
+    private List<ModifyListener> listeners = null;
+    private List<Integer> changeList = null;
+    private boolean changesInserted = false;
+    private long changesPosition = -1L;
+    private TreeSet<Range> ranges = new TreeSet<Range>();
+    private Iterator<Range> tailTree = null;
 
     /**
      * Create new empty content.
      */
     public BinaryContent()
     {
-        myRanges = new TreeSet<Range>();
     }
-
 
     /**
      * Create new content from a file
@@ -144,7 +142,7 @@ public class BinaryContent {
         if (aFile == null || aFile.length() < 1L)
             return;
 
-        myRanges.add(new Range(0L, aFile, false));
+        ranges.add(new Range(0L, aFile, false));
     }
 
 
@@ -198,20 +196,20 @@ public class BinaryContent {
 
     void commitChanges()
     {
-        if (myChanges == null) return;
+        if (changeList == null) return;
 
-        ByteBuffer store = ByteBuffer.allocate(myChanges.size());
-        for (Integer myChange : myChanges) {
+        ByteBuffer store = ByteBuffer.allocate(changeList.size());
+        for (Integer myChange : changeList) {
             store.put(myChange.byteValue());
         }
         store.position(0);
-        myChanges = null;
-        if (myChangesInserted)
-            insertRange(new Range(myChangesPosition, store, true));
+        changeList = null;
+        if (changesInserted)
+            insertRange(new Range(changesPosition, store, true));
         else
-            overwriteRange(new Range(myChangesPosition, store, true));
-        myChangesInserted = false;
-        myChangesPosition = -1L;
+            overwriteRange(new Range(changesPosition, store, true));
+        changesInserted = false;
+        changesPosition = -1L;
     }
 
 
@@ -231,20 +229,20 @@ public class BinaryContent {
             length = length() - position;
         if (actions != null) {
             lastUpperNibblePosition = -1L;
-            actions.eventPreModify(ActionHistory.TYPE_DELETE, position, length == 1L);
+            actions.eventPreModify(ActionHistory.ActionType.DELETE, position, length == 1L);
         }
-        if (myChanges != null && myChangesInserted && myChangesPosition <= position &&
-            myChangesPosition + myChanges.size() >= position + length) {
-            int deleteStart = (int) (position - myChangesPosition);
-            List<Integer> subList = myChanges.subList(deleteStart, deleteStart + (int) length);
+        if (changeList != null && changesInserted && changesPosition <= position &&
+            changesPosition + changeList.size() >= position + length) {
+            int deleteStart = (int) (position - changesPosition);
+            List<Integer> subList = changeList.subList(deleteStart, deleteStart + (int) length);
             if (actions != null) {
                 actions.addDeleted(position, subList, length == 1L);
                 if (length > 1) actions.endAction();
             }
-            if (length < myChanges.size()) {
+            if (length < changeList.size()) {
                 subList.clear();
-            } else {  // length == myChanges.size()
-                myChanges = null;
+            } else {  // length == changeList.size()
+                changeList = null;
 //			splitAndShift(position, 0);  // mark them as dirty
             }
         } else {
@@ -311,7 +309,7 @@ public class BinaryContent {
             lastRange.position += delta;
             lastRange.length -= delta;
             lastRange.dataOffset += delta;
-            if (toBeAdded) myRanges.add(lastRange);
+            if (toBeAdded) ranges.add(lastRange);
         }
         if (actions != null)
             actions.addLostRanges(deleted);
@@ -340,9 +338,9 @@ public class BinaryContent {
      */
     public void dispose()
     {
-        if (myRanges == null) return;
+        if (ranges == null) return;
 
-        for (Range value : myRanges) {
+        for (Range value : ranges) {
             if (value.data instanceof RandomAccessFile) {
                 try {
                     ((RandomAccessFile) value.data).close();
@@ -354,24 +352,25 @@ public class BinaryContent {
         }
 
         if (actions != null) {
-            actions.finalize();
+            actions.dispose();
+            actions = null;
         }
-        myRanges = null;
+        ranges = null;
         listeners = null;
     }
 
 
     int fillWithChanges(ByteBuffer dst, long position)
     {
-        long relativePosition = position - myChangesPosition;
-        int changesSize = myChanges.size();
+        long relativePosition = position - changesPosition;
+        int changesSize = changeList.size();
         if (relativePosition < 0L || relativePosition >= changesSize)
             return 0;
 
         int remaining = dst.remaining();
         int i = (int) relativePosition;
         for (; remaining > 0 && i < changesSize; ++i, --remaining) {
-            dst.put(myChanges.get(i).byteValue());
+            dst.put(changeList.get(i).byteValue());
         }
 
         return i - (int) relativePosition;
@@ -413,18 +412,18 @@ public class BinaryContent {
         throws IOException
     {
         long positionSoFar = position;
-        if (position < myChangesPosition) {
+        if (position < changesPosition) {
             int added = fillWithPartOfRange(dst, sourceRange, overlapBytes,
-                                            (int) Math.min(myChangesPosition - position, Integer.MAX_VALUE));
+                                            (int) Math.min(changesPosition - position, Integer.MAX_VALUE));
             positionSoFar += added;
             overlapBytes += added;
         }
         int changesAdded = 0;
         long changesPosition = positionSoFar;
-        if (myChanges != null && positionSoFar >= myChangesPosition &&
-            positionSoFar < myChangesPosition + myChanges.size() && overlapBytes < sourceRange.length) {
+        if (changeList != null && positionSoFar >= this.changesPosition &&
+            positionSoFar < this.changesPosition + changeList.size() && overlapBytes < sourceRange.length) {
             changesAdded = fillWithChanges(dst, positionSoFar);
-            if (myChangesInserted)
+            if (changesInserted)
                 positionSoFar += changesAdded;
             else
                 overlapBytes += changesAdded;
@@ -436,10 +435,10 @@ public class BinaryContent {
             if (sourceRange.dirty) {
                 rangesModified.add(position);
                 rangesModified.add(positionSoFar - position);
-            } else if (changesAdded > 0) {//&& !myChangesInserted) {
+            } else if (changesAdded > 0) {//&& !changesInserted) {
                 rangesModified.add(changesPosition);
                 rangesModified.add((long)changesAdded);
-//		} else if (myChanges != null && changesPosition >= myChangesPosition && myChangesInserted &&
+//		} else if (changeList != null && changesPosition >= changesPosition && changesInserted &&
                 //		positionSoFar - changesPosition > 0) {
                 //	rangesModified.add(Long.valueOf(changesPosition));
                 //rangesModified.add(Long.valueOf(positionSoFar - changesPosition));
@@ -453,9 +452,10 @@ public class BinaryContent {
      *
      * @see Object#finalize()
      */
-    protected void finalize()
+    protected void finalize() throws Throwable
     {
         dispose();
+        super.finalize();
     }
 
 
@@ -478,8 +478,6 @@ public class BinaryContent {
      * Reads a sequence of bytes from this content into the given buffer, starting at the given position
      *
      * @param dst      where to write the read result to
-     * @param ranges   ordered Long's sequence (range start, range length, ...). Return variable that
-     *                 specifies current ranges of modified content. Useful for highlighting changes in content.
      * @param position starting read point
      * @return number of bytes read
      * @throws IOException
@@ -490,8 +488,8 @@ public class BinaryContent {
         if (rangesModified != null) rangesModified.clear();
         long positionShift = 0;
         int dstInitialRemaining = dst.remaining();
-        if (myChanges != null && myChangesInserted && position > myChangesPosition)
-            positionShift = (int) Math.min(myChanges.size(), position - myChangesPosition);
+        if (changeList != null && changesInserted && position > changesPosition)
+            positionShift = (int) Math.min(changeList.size(), position - changesPosition);
 
         long positionSoFar = position - positionShift;
         initSubtreeTraversing(positionSoFar, dst.remaining());
@@ -501,12 +499,12 @@ public class BinaryContent {
             fillWithRange(dst, partialRange, positionSoFar - partialRange.position,
                           positionSoFar + positionShift, rangesModified);
             positionSoFar = partialRange.exclusiveEnd();
-            if (myChanges != null && myChangesInserted &&
-                positionSoFar + positionShift > myChangesPosition)
-                positionShift = myChanges.size();
+            if (changeList != null && changesInserted &&
+                positionSoFar + positionShift > changesPosition)
+                positionShift = changeList.size();
         }
-        if (dst.remaining() > 0 && myChanges != null &&
-            positionSoFar + positionShift < myChangesPosition + myChanges.size()) {
+        if (dst.remaining() > 0 && changeList != null &&
+            positionSoFar + positionShift < changesPosition + changeList.size()) {
             int size = fillWithChanges(dst, positionSoFar + positionShift);
             if (rangesModified != null) {
                 rangesModified.add(positionSoFar + positionShift);
@@ -521,7 +519,6 @@ public class BinaryContent {
     /**
      * Reads the sequence of all bytes from this content into the given file
      *
-     * @param dst where to write the read result to
      * @return number of bytes read
      * @throws IOException
      */
@@ -535,7 +532,6 @@ public class BinaryContent {
     /**
      * Reads a sequence of bytes from this content into the given file
      *
-     * @param dst    where to write the read result to
      * @param start  first byte in sequence
      * @param length number of bytes to read
      * @return number of bytes read
@@ -605,7 +601,7 @@ public class BinaryContent {
 
 
     /*
-    * Does not check myChanges
+    * Does not check changeList
     */
     private int getFromRanges(long position)
         throws IOException
@@ -632,7 +628,7 @@ public class BinaryContent {
 
     Range getRangeAt(long position)
     {
-        SortedSet<Range> subSet = myRanges.tailSet(new Range(position, 1L));
+        SortedSet<Range> subSet = ranges.tailSet(new Range(position, 1L));
         if (subSet.isEmpty())
             return null;
 
@@ -642,7 +638,7 @@ public class BinaryContent {
 
     Set<Range> initSubtreeTraversing(long position, long length)
     {
-        Set<Range> result = myRanges.tailSet(new Range(position, 1L));
+        Set<Range> result = ranges.tailSet(new Range(position, 1L));
         tailTree = result.iterator();
         exclusiveEnd = position + length;
         if (exclusiveEnd > length())
@@ -667,9 +663,9 @@ public class BinaryContent {
         dirtySize = true;
         lastUpperNibblePosition = position;
         if (actions != null)
-            actions.eventPreModify(ActionHistory.TYPE_INSERT, position, true);
+            actions.eventPreModify(ActionHistory.ActionType.INSERT, position, true);
         updateChanges(position, true);
-        myChanges.set((int) (position - myChangesPosition), source & 0x0ff);
+        changeList.set((int) (position - changesPosition), source & 0x0ff);
         notifyListeners();
     }
 
@@ -690,7 +686,7 @@ public class BinaryContent {
         dirtySize = true;
         lastUpperNibblePosition = -1L;
         if (actions != null)
-            actions.eventPreModify(ActionHistory.TYPE_INSERT, position, false);
+            actions.eventPreModify(ActionHistory.ActionType.INSERT, position, false);
         commitChanges();
         Range newRange = new Range(position, source, true);
         insertRange(newRange);
@@ -704,7 +700,7 @@ public class BinaryContent {
      * Inserts a sequence of bytes from the given file into this content, starting at the given position
      * and shifting the existing ones.
      *
-     * @param source   bytes. The file is not copied internally, changes after this call will result in
+     * @param aFile   The file is not copied internally, changes after this call will result in
      *                 undefined behaviour.
      * @param position starting insert point
      * @throws IOException when i/o problems occur. The content stays unchanged and valid
@@ -720,7 +716,7 @@ public class BinaryContent {
         dirtySize = true;
         lastUpperNibblePosition = -1L;
         if (actions != null)
-            actions.eventPreModify(ActionHistory.TYPE_INSERT, position, false);
+            actions.eventPreModify(ActionHistory.ActionType.INSERT, position, false);
         commitChanges();
         insertRange(newRange);
         if (actions != null)
@@ -732,7 +728,7 @@ public class BinaryContent {
     private void insertRange(Range newRange)
     {
         splitAndShift(newRange.position, newRange.length);
-        myRanges.add(newRange);
+        ranges.add(newRange);
     }
 
 
@@ -743,7 +739,7 @@ public class BinaryContent {
         splitAndShift(firstRange.position, lastRange.exclusiveEnd() - firstRange.position);
         List<Range> cloned = new ArrayList<Range>(ranges.size());
         for (Range range : ranges) cloned.add((Range)range.clone());
-        myRanges.addAll(cloned);
+        this.ranges.addAll(cloned);
 
         return new long[]{firstRange.position, lastRange.exclusiveEnd()};
     }
@@ -780,12 +776,12 @@ public class BinaryContent {
     {
         long result = 0L;
 
-        if (myRanges.size() > 0) {
-            result = myRanges.last().exclusiveEnd();
+        if (ranges.size() > 0) {
+            result = ranges.last().exclusiveEnd();
         }
 
-        if (myChanges != null && myChangesInserted) {
-            result += myChanges.size();
+        if (changeList != null && changesInserted) {
+            result += changeList.size();
         }
 
         return result;
@@ -841,15 +837,15 @@ public class BinaryContent {
             if (lastUpperNibblePosition == position && offset == 4 && length == 4)
                 actionsOn(false);
             else
-                actions.eventPreModify(ActionHistory.TYPE_OVERWRITE, position, true);
+                actions.eventPreModify(ActionHistory.ActionType.OVERWRITE, position, true);
         }
         if (length + offset > 8)
             length = 8 - offset;
         Range range = updateChanges(position, false);
-        int previous = myChanges.get((int) (position - myChangesPosition));
+        int previous = changeList.get((int) (position - changesPosition));
         int mask = (0x0ff >>> offset) & (0x0ff << (8 - offset - length));
         int newValue = previous & ~mask | (source << (8 - offset - length)) & mask;
-        myChanges.set((int) (position - myChangesPosition), newValue);
+        changeList.set((int) (position - changesPosition), newValue);
         if (actions != null) {
             if (range == null)
                 actions.addLostByte(position, previous);
@@ -905,7 +901,7 @@ public class BinaryContent {
         dirty = true;
         lastUpperNibblePosition = -1L;
         if (actions != null)
-            actions.eventPreModify(ActionHistory.TYPE_OVERWRITE, newRange.position, false);
+            actions.eventPreModify(ActionHistory.ActionType.OVERWRITE, newRange.position, false);
         commitChanges();
         overwriteRange(newRange);
         if (actions != null)
@@ -917,7 +913,7 @@ public class BinaryContent {
     private void overwriteRange(Range aRange)
     {
         deleteInternal(aRange.position, aRange.length);
-        myRanges.add(aRange);
+        ranges.add(aRange);
     }
 
 
@@ -939,7 +935,7 @@ public class BinaryContent {
         }
         List<Range> cloned = new ArrayList<Range>(ranges.size());
         for (Range range : ranges) cloned.add((Range)range.clone());
-        myRanges.addAll(cloned);
+        this.ranges.addAll(cloned);
 
         return new long[]{firstRange.position, lastRange.exclusiveEnd()};
     }
@@ -961,11 +957,11 @@ public class BinaryContent {
         long[] result = null;
         @SuppressWarnings("unchecked")
         List<Range> currentAction = (List<Range>) action[1];
-        if (action[0] == ActionHistory.TYPE_DELETE) {
+        if (action[0] == ActionHistory.ActionType.DELETE) {
             result = deleteRanges(currentAction);
-        } else if (action[0] == ActionHistory.TYPE_INSERT) {
+        } else if (action[0] == ActionHistory.ActionType.INSERT) {
             result = insertRanges(currentAction);
-        } else if (action[0] == ActionHistory.TYPE_OVERWRITE) {
+        } else if (action[0] == ActionHistory.ActionType.OVERWRITE) {
             // 0 to size - 1: overwritten ranges, last one: overwriter range
             int size = currentAction.size();
             result = overwriteRanges(currentAction.subList(size - 1, size));
@@ -1034,7 +1030,7 @@ public class BinaryContent {
         }
         shiftRemainingRanges(increment);
         if (secondRange != null)
-            myRanges.add(secondRange);
+            ranges.add(secondRange);
     }
 
 
@@ -1043,8 +1039,8 @@ public class BinaryContent {
      */
     public String toString()
     {
-        StringBuffer result = new StringBuffer("BinaryContent: {length:").append(length()).append("}\n");
-        for (Range myRange : myRanges) {
+        StringBuilder result = new StringBuilder("BinaryContent: {length:").append(length()).append("}\n");
+        for (Range myRange : ranges) {
             result.append(myRange).append('\n');
         }
 
@@ -1069,11 +1065,11 @@ public class BinaryContent {
         long[] result = null;
         @SuppressWarnings("unchecked")
         List<Range> currentAction = (List<Range>) action[1];
-        if (action[0] == ActionHistory.TYPE_DELETE) {
+        if (action[0] == ActionHistory.ActionType.DELETE) {
             result = insertRanges(currentAction);
-        } else if (action[0] == ActionHistory.TYPE_INSERT) {
+        } else if (action[0] == ActionHistory.ActionType.INSERT) {
             result = deleteRanges(currentAction);
-        } else if (action[0] == ActionHistory.TYPE_OVERWRITE) {
+        } else if (action[0] == ActionHistory.ActionType.OVERWRITE) {
             // 0 to size - 1: overwritten ranges, last one: overwriter range
             result = overwriteRanges(currentAction.subList(0, currentAction.size() - 1));
         }
@@ -1087,23 +1083,23 @@ public class BinaryContent {
         throws IOException
     {
         Range result = null;
-        if (myChanges != null) {
-            long lowerLimit = myChangesPosition;
-            long upperLimit = myChangesPosition + myChanges.size();
+        if (changeList != null) {
+            long lowerLimit = changesPosition;
+            long upperLimit = changesPosition + changeList.size();
             if (!insert && position >= lowerLimit && position < upperLimit)
                 return result;  // reuse without expanding
 
             if (!insert) --lowerLimit;
-            if (insert == myChangesInserted && position >= lowerLimit && position <= upperLimit) { // reuse
+            if (insert == changesInserted && position >= lowerLimit && position <= upperLimit) { // reuse
                 if (insert) {
-                    myChanges.add((int) (position - myChangesPosition), 0);
+                    changeList.add((int) (position - changesPosition), 0);
                 } else {
                     result = getRangeAt(position);
-                    if (myChangesPosition > position) {
-                        myChangesPosition = position;
-                        myChanges.add(0, getFromRanges(position));
-                    } else if (myChangesPosition + myChanges.size() <= position) {
-                        myChanges.add(getFromRanges(position));
+                    if (changesPosition > position) {
+                        changesPosition = position;
+                        changeList.add(0, getFromRanges(position));
+                    } else if (changesPosition + changeList.size() <= position) {
+                        changeList.add(getFromRanges(position));
                     }
                 }
                 return result;
@@ -1112,13 +1108,14 @@ public class BinaryContent {
                 commitChanges();
             }
         }
-        myChanges = new ArrayList<Integer>();
-        myChanges.add(getFromRanges(position));
-        myChangesInserted = insert;
-        myChangesPosition = position;
+        changeList = new ArrayList<Integer>();
+        changeList.add(getFromRanges(position));
+        changesInserted = insert;
+        changesPosition = position;
         if (!insert)
             result = getRangeAt(position);
 
         return result;
     }
+
 }

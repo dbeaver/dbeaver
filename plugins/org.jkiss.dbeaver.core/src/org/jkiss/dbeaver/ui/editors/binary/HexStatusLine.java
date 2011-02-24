@@ -15,11 +15,11 @@ import org.eclipse.swt.widgets.Label;
 /**
  * Status line component of the editor. Displays the current position and the insert/overwrite status.
  */
-public class StatusLine extends Composite {
+public class HexStatusLine extends Composite {
 
 
-    static final String textInsert = "Insert";
-    static final String textOverwrite = "Overwrite";
+    private static final String TEXT_INSERT = "Insert";
+    private static final String TEXT_OVERWRITE = "Overwrite";
 
     private Label position = null;
     private Label value = null;
@@ -33,7 +33,7 @@ public class StatusLine extends Composite {
      * @param style             not used
      * @param withLeftSeparator so it can be put besides other status items (for plugin)
      */
-    public StatusLine(Composite parent, int style, boolean withLeftSeparator)
+    public HexStatusLine(Composite parent, int style, boolean withLeftSeparator)
     {
         super(parent, style);
         initialize(withLeftSeparator);
@@ -86,7 +86,7 @@ public class StatusLine extends Composite {
 
         insertMode = new Label(this, SWT.SHADOW_NONE);
         GridData gridData3 = new GridData(/*SWT.DEFAULT*/
-                                          (textOverwrite.length() + 2) * fontMetrics.getAverageCharWidth(),
+                                          (TEXT_OVERWRITE.length() + 2) * fontMetrics.getAverageCharWidth(),
                                           SWT.DEFAULT);
         insertMode.setLayoutData(gridData3);
         gc.dispose();
@@ -102,7 +102,7 @@ public class StatusLine extends Composite {
     {
         if (isDisposed() || insertMode.isDisposed()) return;
 
-        insertMode.setText(insert ? textInsert : textOverwrite);
+        insertMode.setText(insert ? TEXT_INSERT : TEXT_OVERWRITE);
     }
 
     /**

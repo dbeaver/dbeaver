@@ -74,7 +74,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
             // find white spaces
             int end = findEndOfWhiteSpace(d, start, c.offset);
 
-            StringBuffer buf = new StringBuffer(c.text);
+            StringBuilder buf = new StringBuilder(c.text);
             if (end >= start) {
                 String indentation = commentExtractLinePrefix(d, d.getLineOfOffset(c.offset));
                 buf.append(indentation);
@@ -241,7 +241,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
         int lineLength = region.getLength();
 
         String lineContents = document.get(lineOffset, lineLength);
-        StringBuffer buffer = new StringBuffer(lineContents);
+        StringBuilder buffer = new StringBuilder(lineContents);
         int start = command.offset - lineOffset;
         int end = command.length + start;
         buffer.replace(start, end, command.text);
@@ -338,7 +338,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
             caret -= lineOffset;
         }
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         int currentLine = line;
         while (line == currentLine || isCommentLine(document, currentLine)) {
 
@@ -442,9 +442,9 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
 
         LineBreakIterator iterator = new LineBreakIterator(paragraph);
 
-        StringBuffer paragraphBuffer = new StringBuffer();
-        StringBuffer lineBuffer = new StringBuffer();
-        StringBuffer whiteSpaceBuffer = new StringBuffer();
+        StringBuilder paragraphBuffer = new StringBuilder();
+        StringBuilder lineBuffer = new StringBuilder();
+        StringBuilder whiteSpaceBuffer = new StringBuilder();
 
         int index = offset[0];
         int indexBuffer = -1;

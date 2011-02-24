@@ -11,7 +11,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.editors.binary.Finder;
+import org.jkiss.dbeaver.ui.editors.binary.BinaryTextFinder;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.binary.HexManager;
 
@@ -315,10 +315,10 @@ public class FindReplaceDialog extends Dialog {
         HexManager.reduceDistance(getParent(), sShell);
         findGroup.refreshCombo();
         long selectionLength = editControl.getSelection()[1] - editControl.getSelection()[0];
-        if (selectionLength > 0L && selectionLength <= Finder.MAX_SEQUENCE_SIZE) {
+        if (selectionLength > 0L && selectionLength <= BinaryTextFinder.MAX_SEQUENCE_SIZE) {
             findGroup.refreshHexOrText(true);
             checkBox.setEnabled(false);
-            StringBuffer selectedText = new StringBuffer();
+            StringBuilder selectedText = new StringBuilder();
             byte[] selection = new byte[(int) selectionLength];
             try {
                 editControl.getContent().get(ByteBuffer.wrap(selection), editControl.getSelection()[0]);

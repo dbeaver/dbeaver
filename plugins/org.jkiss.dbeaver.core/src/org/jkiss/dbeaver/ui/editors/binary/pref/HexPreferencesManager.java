@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.binary;
+package org.jkiss.dbeaver.ui.editors.binary.pref;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -15,10 +15,10 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 
 import java.util.*;
 
@@ -27,26 +27,25 @@ import java.util.*;
  *
  * @author Jordi
  */
-public class PreferencesManager {
-
+public class HexPreferencesManager {
 
     static final int itemsDisplayed = 9;  // Number of font names displayed in list
     static final java.util.Set<Integer> scalableSizes = new TreeSet<Integer>(
         Arrays.asList(6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 22, 32, 72));
-    static final String textBold = "Bold";
-    static final String textBoldItalic = "Bold Italic";
-    static final String textItalic = "Italic";
-    static final String textRegular = "Regular";
 
-    int dialogResult = SWT.CANCEL;
-    java.util.List<FontData> fontsListCurrent = null;
-    java.util.List<FontData> fontsNonScalable = null;
-    java.util.List<FontData> fontsScalable = null;
-    GC fontsGc = null;
-    java.util.Set<String> fontsRejected = null;
-    java.util.Map<String, Set<Integer>> fontsSorted = null;
-    FontData initialFontData = null;
-    FontData sampleFontData = null;
+    private static final String TEXT_BOLD = "Bold";
+    private static final String TEXT_BOLD_ITALIC = "Bold Italic";
+    private static final String TEXT_ITALIC = "Italic";
+    private static final String TEXT_REGULAR = "Regular";
+    public static final String SAMPLE_TEXT = "ca fe ba be 00 00 01 2d";
+
+    private java.util.List<FontData> fontsListCurrent = null;
+    private java.util.List<FontData> fontsNonScalable = null;
+    private java.util.List<FontData> fontsScalable = null;
+    private GC fontsGc = null;
+    private java.util.Set<String> fontsRejected = null;
+    private java.util.Map<String, Set<Integer>> fontsSorted = null;
+    private FontData sampleFontData = null;
 
     private Composite composite = null;
     private Composite parent = null;
@@ -58,17 +57,15 @@ public class PreferencesManager {
     private List list2 = null;
     private Font sampleFont = null;
     private Text sampleText = null;
-    private Shell dialog = null;
-
 
     static int fontStyleToInt(String styleString)
     {
         int style = SWT.NORMAL;
-        if (textBold.equals(styleString))
+        if (TEXT_BOLD.equals(styleString))
             style = SWT.BOLD;
-        else if (textItalic.equals(styleString))
+        else if (TEXT_ITALIC.equals(styleString))
             style = SWT.ITALIC;
-        else if (textBoldItalic.equals(styleString))
+        else if (TEXT_BOLD_ITALIC.equals(styleString))
             style = SWT.BOLD | SWT.ITALIC;
 
         return style;
@@ -79,20 +76,20 @@ public class PreferencesManager {
     {
         switch (style) {
             case SWT.BOLD:
-                return textBold;
+                return TEXT_BOLD;
             case SWT.ITALIC:
-                return textItalic;
+                return TEXT_ITALIC;
             case SWT.BOLD | SWT.ITALIC:
-                return textBoldItalic;
+                return TEXT_BOLD_ITALIC;
             default:
-                return textRegular;
+                return TEXT_REGULAR;
         }
     }
 
 
-    public PreferencesManager(FontData aFontData)
+    public HexPreferencesManager(FontData aFontData)
     {
-        initialFontData = sampleFontData = aFontData;
+        sampleFontData = aFontData;
         fontsSorted = new TreeMap<String, Set<Integer>>();
     }
 
@@ -156,9 +153,9 @@ public class PreferencesManager {
         list1 = new List(group, SWT.SINGLE | SWT.BORDER);
         GridData gridData21 = new GridData();
         gridData21.verticalAlignment = org.eclipse.swt.layout.GridData.FILL;
-        gridData21.widthHint = averageCharWidth * textBoldItalic.length() * 2;
+        gridData21.widthHint = averageCharWidth * TEXT_BOLD_ITALIC.length() * 2;
         list1.setLayoutData(gridData21);
-        list1.setItems(new String[]{textRegular, textBold, textItalic, textBoldItalic});
+        list1.setItems(new String[]{TEXT_REGULAR, TEXT_BOLD, TEXT_ITALIC, TEXT_BOLD_ITALIC});
         list1.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e)
             {
@@ -180,7 +177,7 @@ public class PreferencesManager {
             }
         });
         sampleText = new Text(group, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY | SWT.BORDER);
-        sampleText.setText("ca fe ba be 00 00 01 2d");
+        sampleText.setText(SAMPLE_TEXT);
         sampleText.setEditable(false);
         GridData gridData8 = new GridData();
         gridData8.horizontalSpan = 3;
@@ -199,41 +196,6 @@ public class PreferencesManager {
         });
     }
 
-
-    private void createCompositeOkCancel()
-    {
-        GridData gridData2 = new GridData();
-        gridData2.horizontalAlignment = org.eclipse.swt.layout.GridData.END;
-        RowLayout rowLayout1 = new RowLayout();
-        rowLayout1.type = org.eclipse.swt.SWT.HORIZONTAL;
-        rowLayout1.marginHeight = 10;
-        rowLayout1.marginWidth = 10;
-        rowLayout1.pack = false;
-        Composite compositeOkCancel = new Composite(dialog, SWT.NONE);
-        compositeOkCancel.setLayout(rowLayout1);
-        compositeOkCancel.setLayoutData(gridData2);
-        Button buttonOk = new Button(compositeOkCancel, SWT.NONE);
-        buttonOk.setText("OK");
-        buttonOk.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-            {
-                initialFontData = sampleFontData;
-                dialogResult = SWT.OK;
-                dialog.close();
-            }
-        });
-        dialog.setDefaultButton(buttonOk);
-        Button buttonCancel = new Button(compositeOkCancel, SWT.NONE);
-        buttonCancel.setText("Cancel");
-        buttonCancel.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-            {
-                sampleFontData = initialFontData;
-                dialogResult = SWT.CANCEL;
-                dialog.close();
-            }
-        });
-    }
 
     /**
      * Creates the part containing all preferences-editing widgets, that is, ok and cancel
@@ -263,8 +225,10 @@ public class PreferencesManager {
      */
     public FontData getFontData()
     {
-        return new FontData(sampleFontData.getName(), sampleFontData.getHeight(),
-                            sampleFontData.getStyle());
+        return new FontData(
+            sampleFontData.getName(),
+            sampleFontData.getHeight(),
+            sampleFontData.getStyle());
     }
 
 
@@ -420,7 +384,7 @@ public class PreferencesManager {
     public void setFontData(FontData aFontData)
     {
         if (aFontData == null)
-            aFontData = HexEditControl.fontDataDefault;
+            aFontData = HexEditControl.DEFAULT_FONT_DATA;
         sampleFontData = aFontData;
         refreshWidgets();
     }

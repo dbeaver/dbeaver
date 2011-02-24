@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  *
  * @author Jordi
  */
-public class Finder {
+public class BinaryTextFinder {
 
 
     public static final int MAP_SIZE = 64 * 1024;
@@ -30,13 +30,13 @@ public class Finder {
     private int currentPartFound = -1;  // relative positions
     private boolean currentPartFoundIsUnicode = false;
     private long currentPosition = 0L;  // absolute value, start of forward finds, end(exclusive) of backward finds
-    private byte[] myByteFindSequence = null;
-    private boolean myCaseSensitive = true;
-    private BinaryContent myContent = null;
-    private boolean myDirectionForward = true;
-    private CharSequence myLiteral = null;
-    private int myLiteralByteLength = -1;
-    private Pattern myPattern = null;
+    private byte[] byteFindSequence = null;
+    private boolean caseSensitive = true;
+    private BinaryContent content = null;
+    private boolean directionForward = true;
+    private CharSequence literal = null;
+    private int literalByteLength = -1;
+    private Pattern pattern = null;
     private boolean stopSearching = false;
 
 
@@ -44,13 +44,13 @@ public class Finder {
      * Create a finder object for a sequence of characters; uses unicode and ascii traversing
      *
      * @param literal the char sequence to find
-     * @param content provider to be traversed
+     * @param aContent provider to be traversed
      */
-    public Finder(CharSequence literal, BinaryContent aContent)
+    public BinaryTextFinder(CharSequence literal, BinaryContent aContent)
     {
-        myLiteral = literal;
+        this.literal = literal;
         initSearchUnicodeAscii();
-        myContent = aContent;
+        content = aContent;
         bufferPosition = 0L;
         currentPosition = 0L;
     }
@@ -60,12 +60,12 @@ public class Finder {
      * Create a finder object for a raw sequence of bytes
      *
      * @param sequence the byte sequence to find
-     * @param content  provider to be traversed
+     * @param aContent  provider to be traversed
      */
-    public Finder(byte[] sequence, BinaryContent aContent)
+    public BinaryTextFinder(byte[] sequence, BinaryContent aContent)
     {
         initSearchHex(sequence);
-        myContent = aContent;
+        content = aContent;
         bufferPosition = 0L;
         currentPosition = 0L;
     }
@@ -79,8 +79,8 @@ public class Finder {
         currentPartFoundIsUnicode = false;
 
         if (currentPartFoundUnicode >= 0 && (currentPartFound < 0 ||
-            myDirectionForward && currentPartFound > currentPartFoundUnicode ||
-            !myDirectionForward && currentPartFound < currentPartFoundUnicode)) {
+            directionForward && currentPartFound > currentPartFoundUnicode ||
+            !directionForward && currentPartFound < currentPartFoundUnicode)) {
             currentPartFound = currentPartFoundUnicode;
             currentPartFoundIsUnicode = true;
         }
@@ -90,25 +90,25 @@ public class Finder {
     private int findHexAsciiMatchInPart()
         throws IOException
     {
-        if (myByteFindSequence == null) return -1;
+        if (byteFindSequence == null) return -1;
 
         int start = 0;
-        int inclusiveEnd = byteBuffer.limit() - myByteFindSequence.length;
-        if (!myDirectionForward) {
+        int inclusiveEnd = byteBuffer.limit() - byteFindSequence.length;
+        if (!directionForward) {
             start = inclusiveEnd;
             inclusiveEnd = 0;
         }
 
         for (int i = start;
-            myDirectionForward && i <= inclusiveEnd || !myDirectionForward && i >= inclusiveEnd;
-            i += myDirectionForward ? 1 : -1)
+            directionForward && i <= inclusiveEnd || !directionForward && i >= inclusiveEnd;
+            i += directionForward ? 1 : -1)
         {
             boolean matchesSoFar = true;
-            for (int j = 0; j < myByteFindSequence.length && matchesSoFar; ++j) {
+            for (int j = 0; j < byteFindSequence.length && matchesSoFar; ++j) {
                 byte existing = byteBuffer.get(i + j);
-                byte matcher = myByteFindSequence[j];
+                byte matcher = byteFindSequence[j];
                 if (existing != matcher) {
-                    if (myCaseSensitive || existing < 'A' || existing > 'z' || matcher < 'A' ||
+                    if (caseSensitive || existing < 'A' || existing > 'z' || matcher < 'A' ||
                         matcher > 'z' || existing - matcher != 32 && matcher - existing != 32)
                         matchesSoFar = false;
                 }
@@ -125,22 +125,22 @@ public class Finder {
     private int findUnicodeMatchInPart()
         throws IOException
     {
-        if (myPattern == null) return -1;
+        if (pattern == null) return -1;
 
         int result = Integer.MAX_VALUE;
-        if (!myDirectionForward) {
+        if (!directionForward) {
             result = -1;
         }
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-        Matcher matcher = myPattern.matcher(byteBuffer.asCharBuffer());
+        Matcher matcher = pattern.matcher(byteBuffer.asCharBuffer());
 
         for (int encoding = 0; encoding < 4; ++encoding) {
             while (matcher.find()) {
                 int index = matcher.start() * 2 + (encoding >= 2 ? 1 : 0);
-                if (myDirectionForward && result > index || !myDirectionForward && result < index) {
+                if (directionForward && result > index || !directionForward && result < index) {
                     result = index;
                 }
-                if (myDirectionForward) {
+                if (directionForward) {
                     break;
                 }
             }
@@ -163,11 +163,11 @@ public class Finder {
 
     long getContentLength()
     {
-        if (myContent == null) {
+        if (content == null) {
             return 0L;
         }
 
-        return myContent.length();
+        return content.length();
     }
 
 
@@ -194,8 +194,8 @@ public class Finder {
         }
 
         long resultPosition = bufferPosition + currentPartFound;
-        int length = currentPartFoundIsUnicode ? myLiteralByteLength : myByteFindSequence.length;
-        setNewStart(resultPosition + (myDirectionForward ? 1 : length - 1));
+        int length = currentPartFoundIsUnicode ? literalByteLength : byteFindSequence.length;
+        setNewStart(resultPosition + (directionForward ? 1 : length - 1));
 
         return new Number[]{Long.valueOf(resultPosition), Integer.valueOf(length)};
     }
@@ -203,14 +203,14 @@ public class Finder {
 
     void initSearchHex(byte[] sequence)
     {
-        myByteFindSequence = sequence;
+        byteFindSequence = sequence;
 
         if (sequence.length > MAX_SEQUENCE_SIZE) {
-            myByteFindSequence = new byte[MAX_SEQUENCE_SIZE];
-            System.arraycopy(sequence, 0, myByteFindSequence, 0, MAX_SEQUENCE_SIZE);
+            byteFindSequence = new byte[MAX_SEQUENCE_SIZE];
+            System.arraycopy(sequence, 0, byteFindSequence, 0, MAX_SEQUENCE_SIZE);
         }
 
-        myLiteralByteLength = myByteFindSequence.length;
+        literalByteLength = byteFindSequence.length;
     }
 
 
@@ -227,17 +227,17 @@ public class Finder {
 
     void initSearchUnicodeAscii()
     {
-        StringBuffer regex = new StringBuffer("\\Q");  // everything-quoted regular expression
+        StringBuilder regex = new StringBuilder("\\Q");  // everything-quoted regular expression
 
-        if (myLiteral.length() * 2 > MAX_SEQUENCE_SIZE)  // 16 bit Unicode chars
-            myLiteral = myLiteral.subSequence(0, MAX_SEQUENCE_SIZE / 2);
-        myLiteralByteLength = myLiteral.length() * 2;
+        if (literal.length() * 2 > MAX_SEQUENCE_SIZE)  // 16 bit Unicode chars
+            literal = literal.subSequence(0, MAX_SEQUENCE_SIZE / 2);
+        literalByteLength = literal.length() * 2;
 
         boolean isAsciiCompatible = true;
-        byte[] tmpBytes = new byte[myLiteral.length()];
+        byte[] tmpBytes = new byte[literal.length()];
         char previous = '\0';
-        for (int i = 0; i < myLiteral.length(); ++i) {
-            char aChar = myLiteral.charAt(i);
+        for (int i = 0; i < literal.length(); ++i) {
+            char aChar = literal.charAt(i);
             regex.append(aChar);
 
             if (previous == '\\' && aChar == 'E')
@@ -251,28 +251,28 @@ public class Finder {
         regex.append("\\E");
 
         int ignoreCaseFlags = 0;
-        if (!myCaseSensitive) ignoreCaseFlags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-        myPattern = Pattern.compile(regex.toString(), ignoreCaseFlags);
+        if (!caseSensitive) ignoreCaseFlags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+        pattern = Pattern.compile(regex.toString(), ignoreCaseFlags);
 
         if (isAsciiCompatible)
-            myByteFindSequence = tmpBytes;
+            byteFindSequence = tmpBytes;
     }
 
 
     ByteBuffer nextPart()
         throws IOException
     {
-        long newPos = bufferPosition + byteBuffer.limit() - myLiteralByteLength + 1L;
-        if (!myDirectionForward)
-            newPos = bufferPosition - MAP_SIZE + myLiteralByteLength - 1L;
+        long newPos = bufferPosition + byteBuffer.limit() - literalByteLength + 1L;
+        if (!directionForward)
+            newPos = bufferPosition - MAP_SIZE + literalByteLength - 1L;
         if (newPos < 0L)
             newPos = 0L;
 
         int size = (int) Math.min(MAP_SIZE, getContentLength() - newPos);
-        if (!myDirectionForward)
-            size = (int) (bufferPosition + myLiteralByteLength - 1L - newPos);
+        if (!directionForward)
+            size = (int) (bufferPosition + literalByteLength - 1L - newPos);
 
-        if (size < myLiteralByteLength)
+        if (size < literalByteLength)
             return null;
         bufferPosition = newPos;
         populatePart(size);
@@ -285,7 +285,7 @@ public class Finder {
         throws IOException
     {
         int size = MAP_SIZE;
-        if (!myDirectionForward) {
+        if (!directionForward) {
             size = (int) Math.min(MAP_SIZE, currentPosition);
         }
         populatePart(size);
@@ -295,7 +295,7 @@ public class Finder {
     void populatePart(int size)
         throws IOException
     {
-        if (myContent == null) return;
+        if (content == null) return;
 
         byteBuffer = null;  // multiple FileChannel.read(byteBuffer) leak memory, so don't reuse buffer
         byteBuffer = ByteBuffer.allocate(MAP_SIZE);
@@ -304,13 +304,13 @@ public class Finder {
         byteBuffer.limit(size);
         byteBuffer.position(0);
 //	try {
-        myContent.get(byteBuffer, bufferPosition);
+        content.get(byteBuffer, bufferPosition);
 //	} catch (OutOfMemoryError e) {
 //		byteBuffer = null;
 //		byteBuffer = ByteBuffer.allocate(MAP_SIZE);
         //	byteBuffer.limit(size);
         //byteBuffer.position(0);
-        //myContent.get(byteBuffer, myCurrentPosition);
+        //content.get(byteBuffer, myCurrentPosition);
         //}
         byteBuffer.limit(byteBuffer.position());
         byteBuffer.position(0);
@@ -324,10 +324,10 @@ public class Finder {
      */
     public void setCaseSensitive(boolean beSensitive)
     {
-        if (myCaseSensitive == beSensitive) return;
+        if (caseSensitive == beSensitive) return;
 
-        myCaseSensitive = beSensitive;
-        if (myLiteral != null)
+        caseSensitive = beSensitive;
+        if (literal != null)
             initSearchUnicodeAscii();
     }
 
@@ -339,7 +339,7 @@ public class Finder {
      */
     public void setDirectionForward(boolean goForward)
     {
-        myDirectionForward = goForward;
+        directionForward = goForward;
     }
 
 
@@ -355,7 +355,7 @@ public class Finder {
 
         currentPosition = startPoint;
         bufferPosition = startPoint;
-        if (!myDirectionForward) {
+        if (!directionForward) {
             bufferPosition = startPoint - MAP_SIZE;
         }
         if (bufferPosition < 0L)

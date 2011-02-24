@@ -24,6 +24,7 @@ public class BinaryClipboard {
     static final Log log = LogFactory.getLog(HexEditControl.class);
 
     static class FileByteArrayTransfer extends ByteArrayTransfer {
+
         static final String FORMAT_NAME = "BinaryFileByteArrayTypeName";
         static final int FORMAT_ID = registerType(FORMAT_NAME);
         static FileByteArrayTransfer instance = new FileByteArrayTransfer();
@@ -147,11 +148,12 @@ public class BinaryClipboard {
     }
 
 
-    static final File clipboardDir = new File(System.getProperty("java.io.tmpdir", "."));
-    static final File clipboardFile = new File(clipboardDir, "dbeaver-binary-clipboard.tmp");
-    static final long maxClipboardDataInMemory = 4 * 1024 * 1024;  // 4 Megs for byte[], 4 Megs for text
-    Clipboard myClipboard = null;
-    Map<File, Integer> myFilesReferencesCounter = null;
+    private static final File clipboardDir = new File(System.getProperty("java.io.tmpdir", "."));
+    private static final File clipboardFile = new File(clipboardDir, "dbeaver-binary-clipboard.tmp");
+    private static final long maxClipboardDataInMemory = 4 * 1024 * 1024;  // 4 Megs for byte[], 4 Megs for text
+
+    private Clipboard myClipboard = null;
+    private Map<File, Integer> myFilesReferencesCounter = null;
 
 
     /**
@@ -230,10 +232,10 @@ public class BinaryClipboard {
      *
      * @see Object#finalize()
      */
-    protected void finalize()
-        throws IOException
+    protected void finalize() throws Throwable
     {
         dispose();
+        super.finalize();
     }
 
 
@@ -327,20 +329,25 @@ public class BinaryClipboard {
         long total = lastPaste.length();
         if (!insert && total > content.length() - start) return 0L;
 
-        File lock = null;
+        File lock;
         if (clipboardFile.equals(lastPaste)) {
-            for (int i = 0; i < 9999; ++i) {
-                StringBuffer name = new StringBuffer("binaryPasted").append(i);
+            for (int i = 0; ; ++i) {
+                StringBuilder name = new StringBuilder("binaryPasted").append(i);
                 lastPaste = new File(clipboardDir, name.toString() + ".tmp");
                 lock = new File(clipboardDir, name.append(".lock").toString());
                 if (!lock.exists())
                     if (!lastPaste.exists() || lastPaste.delete())
                         break;
             }
-            if (lastPaste.exists() || lock.exists()) return 0L;
-            clipboardFile.renameTo(lastPaste);
-            myClipboard.setContents(new Object[]{lastPaste},
-                                    new Transfer[]{FileByteArrayTransfer.getInstance()});
+            if (lastPaste.exists() || lock.exists()) {
+                return 0L;
+            }
+            if (!clipboardFile.renameTo(lastPaste)) {
+                log.warn("Can't rename clipboard temp file");
+            }
+            myClipboard.setContents(
+                new Object[]{lastPaste},
+                new Transfer[]{FileByteArrayTransfer.getInstance()});
         } else {
             lock = getLockFromFile(lastPaste);
         }

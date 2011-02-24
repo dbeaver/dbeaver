@@ -23,30 +23,31 @@ import java.util.List;
  */
 public class ActionHistory {
 
+    static enum ActionType {
+        DELETE,
+        INSERT,
+        OVERWRITE
+    }
 
     /**
      * Waiting time before a single action is considered separate from the previous one.
      * Current value is 1500 milliseconds.
      */
-    static final int MERGE_TIME = 1500;  // milliseconds
-    static final Integer TYPE_DELETE = 0;
-    static final Integer TYPE_INSERT = 1;
-    static final Integer TYPE_OVERWRITE = 2;
+    private static final int MERGE_TIME = 1500;  // milliseconds
 
     private BinaryContent.Range actionLastRange = null;
-    BinaryContent content = null;
-    List<Integer> deletedList = null;  // of Integers
-    boolean isBackspace = false;
-    List<Object[]> myActions = null;  // contains ArrayLists (from currentAction)
-    int myActionsIndex = 0;
-    List<Range> myCurrentAction = null;  // contains Ranges
-    Integer myCurrentActionType = null;
-    long myMergedSinglesTop = -1L;
-    boolean myMergingSingles = false;
-    long myPreviousTime = 0L;
-    long newRangeLength = -1L;
-    long newRangePosition = -1L;
-
+    private BinaryContent content = null;
+    private List<Integer> deletedList = null;  // of Integers
+    private boolean isBackspace = false;
+    private List<Object[]> actionList = null;  // contains ArrayLists (from currentAction)
+    private int actionsIndex = 0;
+    private List<Range> currentAction = null;  // contains Ranges
+    private ActionType currentActionType = null;
+    private long mergedSinglesTop = -1L;
+    private boolean mergingSingles = false;
+    private long previousTime = 0L;
+    private long newRangeLength = -1L;
+    private long newRangePosition = -1L;
 
     /**
      * Create new action history storage object
@@ -54,19 +55,19 @@ public class ActionHistory {
     ActionHistory(BinaryContent aContent)
     {
         if (aContent == null)
-            throw new NullPointerException("null BinaryContent");
+            throw new NullPointerException("null content");
 
         content = aContent;
-        myActions = new ArrayList<Object[]>();
+        actionList = new ArrayList<Object[]>();
     }
 
 
     private long actionExclusiveEnd()
     {
         long result = 0L;
-        if (myCurrentAction != null && myCurrentAction.size() > 0) {
+        if (currentAction != null && currentAction.size() > 0) {
             BinaryContent.Range highest =
-                myCurrentAction.get(myCurrentAction.size() - 1);
+                currentAction.get(currentAction.size() - 1);
             result = highest.exclusiveEnd();
         }
         long newRangeExclusiveEnd = newRangePosition + newRangeLength;
@@ -80,8 +81,8 @@ public class ActionHistory {
     private long actionPosition()
     {
         long result = -1L;
-        if (myCurrentAction != null && myCurrentAction.size() > 0) {
-            BinaryContent.Range lowest = myCurrentAction.get(0);
+        if (currentAction != null && currentAction.size() > 0) {
+            BinaryContent.Range lowest = currentAction.get(0);
             result = lowest.position;
         }
         if (result < 0 || newRangePosition >= 0 && newRangePosition < result)
@@ -110,7 +111,7 @@ public class ActionHistory {
         } else {
             addLostByte(position, integerList.get(0));
         }
-        myPreviousTime = System.currentTimeMillis();
+        previousTime = System.currentTimeMillis();
     }
 
 
@@ -122,23 +123,23 @@ public class ActionHistory {
         updateNewRange(position);
         if (isBackspace) {
             deletedList.add(0, integer);
-        } else {  // delete(Del) or overwite
+        } else {  // delete(Del) or overwrite
             deletedList.add(integer);
         }
-        myPreviousTime = System.currentTimeMillis();
+        previousTime = System.currentTimeMillis();
     }
 
 
     void addLostRange(BinaryContent.Range aRange)
     {
-        if (myMergingSingles) {
-            if (myMergedSinglesTop < 0L) {
-                myMergedSinglesTop = aRange.exclusiveEnd();
+        if (mergingSingles) {
+            if (mergedSinglesTop < 0L) {
+                mergedSinglesTop = aRange.exclusiveEnd();
                 // merging singles shifts aRange
-            } else if (myCurrentActionType == TYPE_DELETE && !isBackspace) {
-                aRange.position = myMergedSinglesTop++;
+            } else if (currentActionType == ActionType.DELETE && !isBackspace) {
+                aRange.position = mergedSinglesTop++;
             }
-            myPreviousTime = System.currentTimeMillis();
+            previousTime = System.currentTimeMillis();
         }
         mergeRange(aRange);
     }
@@ -158,9 +159,9 @@ public class ActionHistory {
     void addRangeToCurrentAction(Range aRange)
     {
         if (actionPosition() <= aRange.position) {  // they're == when ending an overwrite action
-            myCurrentAction.add(aRange);
+            currentAction.add(aRange);
         } else {
-            myCurrentAction.add(0, aRange);
+            currentAction.add(0, aRange);
         }
         actionLastRange = aRange;
     }
@@ -173,7 +174,7 @@ public class ActionHistory {
      */
     void addInserted(BinaryContent.Range aRange)
     {
-        myCurrentAction.add(aRange);
+        currentAction.add(aRange);
         endAction();
     }
 
@@ -185,7 +186,7 @@ public class ActionHistory {
      */
     public boolean canRedo()
     {
-        return myActionsIndex < myActions.size() && myCurrentAction == null;
+        return actionsIndex < actionList.size() && currentAction == null;
     }
 
 
@@ -196,20 +197,24 @@ public class ActionHistory {
      */
     public boolean canUndo()
     {
-        return myCurrentAction != null || myActionsIndex > 0;
+        return currentAction != null || actionsIndex > 0;
     }
 
 
     void dispose()
     {
-        if (myActions != null) {
-            for (Object[] tuple : myActions) {
+        if (actionList != null) {
+            for (Object[] tuple : actionList) {
                 @SuppressWarnings("unchecked")
 				List<Range> ranges = (List<Range>) tuple[1];
                 disposeRanges(ranges);
             }
+            actionList = null;
         }
-        disposeRanges(myCurrentAction);
+        if (currentAction != null) {
+            disposeRanges(currentAction);
+            currentAction = null;
+        }
     }
 
 
@@ -236,22 +241,22 @@ public class ActionHistory {
      */
     void endAction()
     {
-        if (myCurrentAction == null) return;
+        if (currentAction == null) return;
 
-        if (myMergingSingles)
+        if (mergingSingles)
             newRangeToCurrentAction();
-        Object[] tuple = {myCurrentActionType, myCurrentAction};
-        myActions.subList(myActionsIndex, myActions.size()).clear();
-        myActions.add(tuple);
-        myActionsIndex = myActions.size();
+        Object[] tuple = {currentActionType, currentAction};
+        actionList.subList(actionsIndex, actionList.size()).clear();
+        actionList.add(tuple);
+        actionsIndex = actionList.size();
 
         isBackspace = false;
-        myCurrentActionType = null;
-        myCurrentAction = null;
+        currentActionType = null;
+        currentAction = null;
         actionLastRange = null;
         newRangePosition = -1L;
         newRangeLength = -1L;
-        myMergedSinglesTop = -1L;
+        mergedSinglesTop = -1L;
     }
 
 
@@ -261,20 +266,20 @@ public class ActionHistory {
      * @param type
      * @param position
      */
-    void eventPreModify(Integer type, long position, boolean isSingle)
+    void eventPreModify(ActionType type, long position, boolean isSingle)
     {
-        if (type != myCurrentActionType ||
+        if (type != currentActionType ||
             !isSingle ||
-            System.currentTimeMillis() - myPreviousTime > MERGE_TIME ||
-            (type == TYPE_INSERT || type == TYPE_OVERWRITE) && actionExclusiveEnd() != position ||
-            type == TYPE_DELETE && actionPosition() != position && actionPosition() - 1L != position) {
+            System.currentTimeMillis() - previousTime > MERGE_TIME ||
+            (type == ActionType.INSERT || type == ActionType.OVERWRITE) && actionExclusiveEnd() != position ||
+            type == ActionType.DELETE && actionPosition() != position && actionPosition() - 1L != position) {
             startAction(type, isSingle);
         } else {
             isBackspace = actionPosition() > position;
         }
-        if (isSingle && type == TYPE_INSERT) {  // never calls addInserted...
+        if (isSingle && type == ActionType.INSERT) {  // never calls addInserted...
             updateNewRange(position);
-            myPreviousTime = System.currentTimeMillis();
+            previousTime = System.currentTimeMillis();
         }
     }
 
@@ -284,9 +289,10 @@ public class ActionHistory {
      *
      * @see Object#finalize()
      */
-    protected void finalize()
+    protected void finalize() throws Throwable
     {
         dispose();
+        super.finalize();
     }
 
 
@@ -303,7 +309,7 @@ public class ActionHistory {
             }
             actionLastRange.length += aRange.length;
         }
-        if (myCurrentActionType == TYPE_OVERWRITE && myMergingSingles) {
+        if (currentActionType == ActionType.OVERWRITE && mergingSingles) {
             if (newRangePosition < 0L) {
                 newRangePosition = aRange.position;
                 newRangeLength = 1L;
@@ -337,13 +343,13 @@ public class ActionHistory {
     private void newRangeToCurrentAction()
     {
         BinaryContent.Range newRange;
-        if (myCurrentActionType == TYPE_DELETE) {
+        if (currentActionType == ActionType.DELETE) {
             if (deletedList == null)
                 return;
 
             newRange = newRangeFromIntegerList(newRangePosition, deletedList);
             deletedList = null;
-        } else {  // myCurrentActionType == TYPE_INSERT || myCurrentActionType == TYPE_OVERWRITE
+        } else {  // currentActionType == INSERT || currentActionType == OVERWRITE
             if (newRangePosition < 0L)
                 return;
 
@@ -363,28 +369,28 @@ public class ActionHistory {
     {
         if (!canRedo()) return null;
 
-        return myActions.get(myActionsIndex++);
+        return actionList.get(actionsIndex++);
     }
 
 
     /**
      * Starts the processing of a new action.
      *
-     * @param type     one of TYPE_DELETE, TYPE_INSERT or TYPE_OVERWRITE
+     * @param type     one of DELETE, INSERT or OVERWRITE
      * @param isSingle whether the action is a single byte or more
      */
-    private void startAction(Integer type, boolean isSingle)
+    private void startAction(ActionType type, boolean isSingle)
     {
         endAction();
-        myCurrentAction = new ArrayList<Range>();
-        myCurrentActionType = type;
-        myMergingSingles = isSingle;
+        currentAction = new ArrayList<Range>();
+        currentActionType = type;
+        mergingSingles = isSingle;
     }
 
 
     public String toString()
     {
-        return myActions.toString();
+        return actionList.toString();
     }
 
 
@@ -396,9 +402,9 @@ public class ActionHistory {
         if (!canUndo()) return null;
 
         endAction();
-        --myActionsIndex;
+        --actionsIndex;
 
-        return myActions.get(myActionsIndex);
+        return actionList.get(actionsIndex);
     }
 
 

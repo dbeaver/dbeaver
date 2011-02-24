@@ -19,12 +19,11 @@ import java.util.Set;
 public class DisplayedContent implements StyledTextContent {
 
 
-    StringBuffer myData = null;
-    Set<TextChangeListener> myTextListeners = null;
-    int numberOfColumns = -1;
-    int numberOfLines = -1;
-    int linesTimesColumns = -1;
-    StyledText styledText = null;
+    private StringBuilder data = null;
+    private Set<TextChangeListener> textListeners = null;
+    private int numberOfColumns = -1;
+    //private int numberOfLines = -1;
+    private int linesTimesColumns = -1;
 
     /**
      * Create empty content for a StyledText of the specified size
@@ -32,48 +31,32 @@ public class DisplayedContent implements StyledTextContent {
      * @param numberOfLines
      * @param numberOfColumns
      */
-    DisplayedContent(StyledText styledText, int numberOfColumns, int numberOfLines)
+    DisplayedContent(int numberOfColumns, int numberOfLines)
     {
-        this.styledText = styledText;
-        myData = new StringBuffer(numberOfColumns * numberOfLines * 2);  // account for replacements
-        myTextListeners = new HashSet<TextChangeListener>();
+        data = new StringBuilder(numberOfColumns * numberOfLines * 2);  // account for replacements
+        textListeners = new HashSet<TextChangeListener>();
         setDimensions(numberOfColumns, numberOfLines);
     }
 
-
-    /**
-     * @see org.eclipse.swt.custom.StyledTextContent#addTextChangeListener
-     *      (org.eclipse.swt.custom.TextChangeListener)
-     */
     public void addTextChangeListener(TextChangeListener listener)
     {
         if (listener == null) throw new IllegalArgumentException("Cannot add a null listener");
 
-        myTextListeners.add(listener);
+        textListeners.add(listener);
     }
 
-
-    /**
-     * @see org.eclipse.swt.custom.StyledTextContent#getCharCount()
-     */
     public int getCharCount()
     {
-        return myData.length();
+        return data.length();
     }
 
 
-    /**
-     * @see org.eclipse.swt.custom.StyledTextContent#getLine(int)
-     */
     public String getLine(int lineIndex)
     {
         return getTextRange(lineIndex * numberOfColumns, numberOfColumns);
     }
 
 
-    /**
-     * @see org.eclipse.swt.custom.StyledTextContent#getLineAtOffset(int)
-     */
     public int getLineAtOffset(int offset)
     {
         int result = offset / numberOfColumns;
@@ -84,55 +67,37 @@ public class DisplayedContent implements StyledTextContent {
     }
 
 
-    /**
-     * @see org.eclipse.swt.custom.StyledTextContent#getLineCount()
-     */
     public int getLineCount()
     {
-        return (myData.length() - 1) / numberOfColumns + 1;
+        return (data.length() - 1) / numberOfColumns + 1;
     }
 
-
-    /**
-     * @see org.eclipse.swt.custom.StyledTextContent#getLineDelimiter()
-     */
     public String getLineDelimiter()
     {
         return "";
     }
 
-
-    /**
-     * @see org.eclipse.swt.custom.StyledTextContent#getOffsetAtLine(int)
-     */
     public int getOffsetAtLine(int lineIndex)
     {
         return lineIndex * numberOfColumns;
     }
 
 
-    /**
-     * @see org.eclipse.swt.custom.StyledTextContent#getTextRange(int, int)
-     */
     public String getTextRange(int start, int length)
     {
-        int dataLength = myData.length();
+        int dataLength = data.length();
         if (start > dataLength)
             return "";
 
-        return myData.substring(start, Math.min(dataLength, start + length));
+        return data.substring(start, Math.min(dataLength, start + length));
     }
 
 
-    /**
-     * @see org.eclipse.swt.custom.StyledTextContent#removeTextChangeListener
-     *      (org.eclipse.swt.custom.TextChangeListener)
-     */
     public void removeTextChangeListener(TextChangeListener listener)
     {
         if (listener == null) throw new IllegalArgumentException("Cannot remove a null listener");
 
-        myTextListeners.remove(listener);
+        textListeners.remove(listener);
     }
 
 
@@ -146,19 +111,19 @@ public class DisplayedContent implements StyledTextContent {
     public void replaceTextRange(int start, int replaceLength, String text)
     {
         int length = text.length();
-        if (length != replaceLength || start + length > myData.length())
+        if (length != replaceLength || start + length > data.length())
             return;
 
-        myData.replace(start, start + length, text);
+        data.replace(start, start + length, text);
     }
 
 
     void setDimensions(int columns, int lines)
     {
         numberOfColumns = columns;
-        numberOfLines = lines;
+        //numberOfLines = lines;
         linesTimesColumns = lines * columns;
-        setText(myData.toString());
+        setText(data.toString());
     }
 
 
@@ -167,11 +132,13 @@ public class DisplayedContent implements StyledTextContent {
      */
     public void setText(String text)
     {
-        myData.setLength(0);
-        myData.append(text.substring(0, Math.min(text.length(), linesTimesColumns)));
+        data.setLength(0);
+        data.append(text.substring(0, Math.min(text.length(), linesTimesColumns)));
 
         TextChangedEvent changedEvent = new TextChangedEvent(this);
-        for (TextChangeListener myTextListener : myTextListeners) myTextListener.textSet(changedEvent);
+        for (TextChangeListener textListener : textListeners) {
+            textListener.textSet(changedEvent);
+        }
     }
 
 
@@ -186,7 +153,7 @@ public class DisplayedContent implements StyledTextContent {
         if (text.length() == 0) return;
 
         int linesInText = (text.length() - 1) / numberOfColumns + 1;
-        int currentLimit = Math.min(myData.length(), linesTimesColumns);
+        int currentLimit = Math.min(data.length(), linesTimesColumns);
         TextChangingEvent event = new TextChangingEvent(this);
         event.start = forward ? 0 : currentLimit;
         event.newText = text;
@@ -194,14 +161,14 @@ public class DisplayedContent implements StyledTextContent {
         event.newCharCount = text.length();
         event.replaceLineCount = 0;
         event.newLineCount = linesInText;
-        for (TextChangeListener myTextListener : myTextListeners) myTextListener.textChanging(event);
+        for (TextChangeListener myTextListener : textListeners) myTextListener.textChanging(event);
 
-        myData.insert(event.start, text);
+        data.insert(event.start, text);
 //System.out.print("Event1:start:"+event.start+", newCCount:"+event.newCharCount+", newLCount:"+
 //event.newLineCount+" ");System.out.flush();
 
         TextChangedEvent changedEvent = new TextChangedEvent(this);
-        for (TextChangeListener myTextListener : myTextListeners) myTextListener.textChanged(changedEvent);
+        for (TextChangeListener myTextListener : textListeners) myTextListener.textChanged(changedEvent);
 
         event = new TextChangingEvent(this);
 //	event.start = forward ? linesTimesColumns : 0;
@@ -211,17 +178,18 @@ public class DisplayedContent implements StyledTextContent {
         event.newCharCount = 0;
         event.replaceLineCount = linesInText;
         event.newLineCount = 0;
-        for (TextChangeListener myTextListener : myTextListeners) myTextListener.textChanging(event);
+        for (TextChangeListener myTextListener : textListeners) myTextListener.textChanging(event);
 
-//	myData.delete(event.start, event.start + event.replaceCharCount);
+//	data.delete(event.start, event.start + event.replaceCharCount);
         if (forward)
-            myData.delete(linesTimesColumns, linesTimesColumns + event.replaceCharCount);
+            data.delete(linesTimesColumns, linesTimesColumns + event.replaceCharCount);
         else
-            myData.delete(0, event.replaceCharCount);
+            data.delete(0, event.replaceCharCount);
 //System.out.println("Event2:start:"+event.start+", replaceCCount:"+event.replaceCharCount+
 //", replaceLCount:"+event.replaceLineCount+", text:"+text);System.out.flush();
 
         changedEvent = new TextChangedEvent(this);
-        for (TextChangeListener myTextListener : myTextListeners) myTextListener.textChanged(changedEvent);
+        for (TextChangeListener myTextListener : textListeners) myTextListener.textChanged(changedEvent);
     }
+
 }

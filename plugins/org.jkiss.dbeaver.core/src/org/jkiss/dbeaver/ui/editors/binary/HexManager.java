@@ -32,9 +32,10 @@ import java.util.List;
  */
 public class HexManager {
 
+    private static List<Object[]> findReplaceFindList = new ArrayList<Object[]>();
+    private static List<Object[]> findReplaceReplaceList = new ArrayList<Object[]>();
+
     private BinaryContent content = null;
-    private List<Object[]> findReplaceFindList = null;
-    private List<Object[]> findReplaceReplaceList = null;
     private FontData fontData = null;  // when null uses default font
     private Font fontText = null;
     private java.util.List<Listener> listOfStatusChangedListeners = null;
@@ -44,7 +45,7 @@ public class HexManager {
     private FindReplaceDialog findDialog = null;
     private GoToDialog goToDialog = null;
     private HexEditControl hexEditControl = null;
-    private StatusLine statusLine = null;
+    private HexStatusLine statusLine = null;
     private Composite textsParent = null;
     private IMenuListener menuListener;
 
@@ -428,20 +429,6 @@ public class HexManager {
         hexEditControl.setContentProvider(content);
     }
 
-
-    /**
-     * Set Find/Replace combo lists pre-exisitng values
-     *
-     * @param findList    previous find values
-     * @param replaceList previous replace values
-     */
-    public void setFindReplaceLists(List<Object[]> findList, List<Object[]> replaceList)
-    {
-        findReplaceFindList = findList;
-        findReplaceReplaceList = replaceList;
-    }
-
-
     /**
      * Causes the text areas to have the keyboard focus
      */
@@ -484,7 +471,7 @@ public class HexManager {
     public void setTextFont(FontData aFont)
     {
         fontData = aFont;
-        if (HexEditControl.fontDataDefault.equals(fontData))
+        if (HexEditControl.DEFAULT_FONT_DATA.equals(fontData))
             fontData = null;
         // dispose it after setting new one (StyledTextRenderer 3.448 bug in line 994)
         Font fontToDispose = fontText;
