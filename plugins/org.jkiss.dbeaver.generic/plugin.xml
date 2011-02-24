@@ -190,9 +190,29 @@
                     label="Mimer SQL"
                     class="com.mimer.jdbc.Driver"
                     sampleURL="jdbc:mimer:tcp://{host}:{port}/{database}"
+                    defaultPort="1360"
                     webURL="http://developer.mimer.com/"
                     description="Mimer SQL TCP/IP driver">
                     <library path="drivers/mimjdbc3.jar"/>
+                </driver>
+                <driver
+                    id="hsqldb_server"
+                    label="HSQLDB Server"
+                    class="org.hsqldb.jdbcDriver"
+                    sampleURL="jdbc:hsqldb:hsql://{host}[:{port}]/[{database}]"
+                    defaultPort="9001"
+                    webURL="http://hsqldb.org/"
+                    description="HyperSQL DataBase - Server Mode">
+                    <library path="drivers/hsqldb.jar"/>
+                </driver>
+                <driver
+                    id="hsqldb_embedded"
+                    label="HSQLDB Embedded"
+                    class="org.hsqldb.jdbc.JDBCDriver"
+                    sampleURL="jdbc:hsqldb:file:{database}"
+                    webURL="http://hsqldb.org/"
+                    description="HyperSQL DataBase - Embedded Mode">
+                    <library path="drivers/hsqldb.jar"/>
                 </driver>
             </drivers>
             <views>

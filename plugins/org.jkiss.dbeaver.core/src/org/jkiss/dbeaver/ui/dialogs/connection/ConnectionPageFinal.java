@@ -136,7 +136,7 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
             gd.widthHint = 400;
             securityGroup.setLayoutData(gd);
          
-            savePasswordCheck = UIUtils.createCheckbox(securityGroup, "Save password locally", dataSourceDescriptor != null && dataSourceDescriptor.isSavePassword());
+            savePasswordCheck = UIUtils.createCheckbox(securityGroup, "Save password locally", dataSourceDescriptor == null || dataSourceDescriptor.isSavePassword());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             //gd.horizontalSpan = 2;
             savePasswordCheck.setLayoutData(gd);
