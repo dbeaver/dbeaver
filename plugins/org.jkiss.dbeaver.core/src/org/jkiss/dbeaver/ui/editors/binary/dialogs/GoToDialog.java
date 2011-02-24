@@ -25,47 +25,43 @@ import java.util.regex.Pattern;
  */
 public class GoToDialog extends Dialog {
 
+    private static final Pattern patternDecDigits = Pattern.compile("[0-9]+");
+    private static final Pattern patternHexDigits = Pattern.compile("[0-9a-fA-F]+");
 
-    static final Pattern patternDecDigits = Pattern.compile("[0-9]+");
-    static final Pattern patternHexDigits = Pattern.compile("[0-9a-fA-F]+");
-    private Shell sShell = null;  //  @jve:decl-index=0:visual-constraint="100,50"
-    private Composite composite = null;
-    private Composite composite2 = null;
+    private Shell dialogShell = null;  //  @jve:decl-index=0:visual-constraint="100,50"
     private Button hexRadioButton = null;
     private Button decRadioButton = null;
     private Button showButton = null;
     private Button gotoButton = null;
-    private Button closeButton = null;
-    private Composite composite1 = null;
+    private Composite textComposite = null;
     private Text text = null;
     private Label label = null;
     private Label label2 = null;
-    SelectionAdapter defaultSelectionAdapter = new SelectionAdapter() {
+    private long finalResult = -1L;
+    private long buttonPressed = 0;
+
+    private boolean lastHexButtonSelected = true;
+    private String lastLocationText = "";
+    private long limit = -1L;
+    private long tempResult = -1L;
+
+    private final SelectionAdapter defaultSelectionAdapter = new SelectionAdapter() {
         public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
         {
             text.setFocus();
         }
     };
-    long finalResult = -1L;
-    long buttonPressed = 0;
-
-    boolean lastHexButtonSelected = true;
-    String lastLocationText = null;
-    long limit = -1L;
-    long tempResult = -1L;
-
 
     public GoToDialog(Shell aShell)
     {
         super(aShell);
-        lastLocationText = "";
     }
 
 
     /**
      * This method initializes composite
      */
-    private void createComposite()
+    private void createRadixPanel()
     {
         RowLayout rowLayout1 = new RowLayout();
 //	rowLayout1.marginHeight = 5;
@@ -73,7 +69,7 @@ public class GoToDialog extends Dialog {
         rowLayout1.marginBottom = 2;
         //rowLayout1.marginWidth = 5;
         rowLayout1.type = SWT.VERTICAL;
-        composite = new Composite(composite1, SWT.NONE);
+        Composite composite = new Composite(textComposite, SWT.NONE);
         composite.setLayout(rowLayout1);
 
         SelectionAdapter hexTextSelectionAdapter = new SelectionAdapter() {
@@ -81,29 +77,12 @@ public class GoToDialog extends Dialog {
             {
                 text.setText(text.getText());  // generate event
                 lastHexButtonSelected = e.widget == hexRadioButton;
-/* Crashes when the text is not a number
-			if (lastHexButtonSelected) return;
-			String textNew = text.getText();
-			textNew = Integer.toHexString(Integer.parseInt(textNew)).toUpperCase();
-			text.setText(textNew);  // generate event
-			lastHexButtonSelected = true;
-*/
             }
         };
-/* Crashes when the text is not radix 16
-	SelectionAdapter decTextSelectionAdapter = new SelectionAdapter() {
-		public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
-			if (!lastHexButtonSelected) return;
-			String textNew = text.getText();
-			textNew = Integer.toString(Integer.parseInt(textNew, 16));
-			text.setText(textNew);  // generate event
-			lastHexButtonSelected = false;
-		}
-	};
-*/
-// Besides the crashes: the user always knows which number is entering, don't need any automatic
-// conversion. What does sometimes happen is one enters the right number and the wrong binary or dec was
-// selected. In that case automatic conversion is the wrong thing to do and very annoying.
+
+        // Besides the crashes: the user always knows which number is entering, don't need any automatic
+        // conversion. What does sometimes happen is one enters the right number and the wrong binary or dec was
+        // selected. In that case automatic conversion is the wrong thing to do and very annoying.
         hexRadioButton = new Button(composite, SWT.RADIO);
         hexRadioButton.setText("Hex");
         hexRadioButton.addSelectionListener(defaultSelectionAdapter);
@@ -122,7 +101,7 @@ public class GoToDialog extends Dialog {
     {
         lastLocationText = text.getText();
         finalResult = tempResult;
-        sShell.close();
+        dialogShell.close();
     }
 
     public long getButtonPressed()
@@ -133,7 +112,7 @@ public class GoToDialog extends Dialog {
     /**
      * This method initializes composite2
      */
-    private void createComposite2()
+    private void createButtonsPanel()
     {
         RowLayout rowLayout1 = new RowLayout();
         rowLayout1.type = org.eclipse.swt.SWT.VERTICAL;
@@ -141,9 +120,9 @@ public class GoToDialog extends Dialog {
         rowLayout1.marginWidth = 10;
         rowLayout1.fill = true;
 
-        composite2 = new Composite(sShell, SWT.NONE);
+        Composite composite2 = new Composite(dialogShell, SWT.NONE);
         FormData formData = new FormData();
-        formData.left = new FormAttachment(composite1);
+        formData.left = new FormAttachment(textComposite);
         formData.right = new FormAttachment(100);
         composite2.setLayoutData(formData);
         composite2.setLayout(rowLayout1);
@@ -170,30 +149,30 @@ public class GoToDialog extends Dialog {
             }
         });
 
-        closeButton = new Button(composite2, SWT.NONE);
+        Button closeButton = new Button(composite2, SWT.NONE);
         closeButton.setText("Close");
         closeButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
             {
-                sShell.close();
+                dialogShell.close();
             }
         });
 
-        sShell.setDefaultButton(showButton);
+        dialogShell.setDefaultButton(showButton);
     }
 
 
     /**
-     * This method initializes composite1
+     * This method initializes textComposite
      */
-    private void createComposite1()
+    private void createTextPanel()
     {
         GridLayout gridLayout = new GridLayout();
         gridLayout.numColumns = 2;
-        composite1 = new Composite(sShell, SWT.NONE);
-        composite1.setLayout(gridLayout);
-        createComposite();
-        text = new Text(composite1, SWT.BORDER | SWT.SINGLE);
+        textComposite = new Composite(dialogShell, SWT.NONE);
+        textComposite.setLayout(gridLayout);
+        createRadixPanel();
+        text = new Text(textComposite, SWT.BORDER | SWT.SINGLE);
         text.setTextLimit(30);
         int columns = 35;
         GC gc = new GC(text);
@@ -206,7 +185,7 @@ public class GoToDialog extends Dialog {
             {
                 String newText = text.getText();
                 int radix = 10;
-                Matcher numberMatcher = null;
+                Matcher numberMatcher;
                 if (hexRadioButton.getSelection()) {
                     numberMatcher = patternHexDigits.matcher(newText);
                     radix = 16;
@@ -235,34 +214,34 @@ public class GoToDialog extends Dialog {
         });
         FormData formData = new FormData();
         formData.top = new FormAttachment(label);
-        composite1.setLayoutData(formData);
+        textComposite.setLayoutData(formData);
     }
 
 
     /**
-     * This method initializes sShell
+     * This method initializes dialogShell
      */
-    private void createSShell()
+    private void createDialogShell()
     {
-//	sShell = new Shell(/*XXX getParent(),*/ SWT.MODELESS | SWT.DIALOG_TRIM);
-        sShell = new Shell(getParent(), SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
-        sShell.setText("Go to location");
+//	dialogShell = new Shell(/*XXX getParent(),*/ SWT.MODELESS | SWT.DIALOG_TRIM);
+        dialogShell = new Shell(getParent(), SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
+        dialogShell.setText("Go to location");
         FormLayout formLayout = new FormLayout();
         formLayout.marginHeight = 3;
         formLayout.marginWidth = 3;
-        sShell.setLayout(formLayout);
-        label = new Label(sShell, SWT.NONE);
+        dialogShell.setLayout(formLayout);
+        label = new Label(dialogShell, SWT.NONE);
         FormData formData = new FormData();
         formData.left = new FormAttachment(0, 5);
         formData.right = new FormAttachment(100);
         label.setLayoutData(formData);
-        createComposite1();
-        createComposite2();
-        label2 = new Label(sShell, SWT.CENTER);
+        createTextPanel();
+        createButtonsPanel();
+        label2 = new Label(dialogShell, SWT.CENTER);
         FormData formData2 = new FormData();
         formData2.left = new FormAttachment(0);
         formData2.right = new FormAttachment(100);
-        formData2.top = new FormAttachment(composite1);
+        formData2.top = new FormAttachment(textComposite);
         formData2.bottom = new FormAttachment(100, -10);
         label2.setLayoutData(formData2);
     }
@@ -273,12 +252,12 @@ public class GoToDialog extends Dialog {
         limit = aLimit;
         finalResult = -1L;
         buttonPressed = 0;
-        if (sShell == null || sShell.isDisposed()) {
-            createSShell();
+        if (dialogShell == null || dialogShell.isDisposed()) {
+            createDialogShell();
         }
 
-        sShell.pack();
-        HexManager.reduceDistance(getParent(), sShell);
+        dialogShell.pack();
+        HexManager.reduceDistance(getParent(), dialogShell);
         if (lastHexButtonSelected) {
             hexRadioButton.setSelection(true);
         } else {
@@ -289,9 +268,9 @@ public class GoToDialog extends Dialog {
         text.setText(lastLocationText);
         text.selectAll();
         text.setFocus();
-        sShell.open();
+        dialogShell.open();
         Display display = getParent().getDisplay();
-        while (!sShell.isDisposed()) {
+        while (!dialogShell.isDisposed()) {
             if (!display.readAndDispatch())
                 display.sleep();
         }

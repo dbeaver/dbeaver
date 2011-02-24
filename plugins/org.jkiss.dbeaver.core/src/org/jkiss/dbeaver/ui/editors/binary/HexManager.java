@@ -32,14 +32,11 @@ import java.util.List;
  */
 public class HexManager {
 
-    private static List<Object[]> findReplaceFindList = new ArrayList<Object[]>();
-    private static List<Object[]> findReplaceReplaceList = new ArrayList<Object[]>();
-
     private BinaryContent content = null;
     private FontData fontData = null;  // when null uses default font
     private Font fontText = null;
-    private java.util.List<Listener> listOfStatusChangedListeners = null;
-    private java.util.List<SelectionListener> listOfLongListeners = null;
+    private List<Listener> listOfStatusChangedListeners = null;
+    private List<SelectionListener> listOfLongListeners = null;
 
     // visual controls
     private FindReplaceDialog findDialog = null;
@@ -280,11 +277,6 @@ public class HexManager {
     {
         if (findDialog == null) {
             findDialog = new FindReplaceDialog(textsParent.getShell());
-            if (findReplaceFindList == null) {
-                findReplaceFindList = new ArrayList<Object[]>();
-                findReplaceReplaceList = new ArrayList<Object[]>();
-            }
-            findDialog.setFindReplaceLists(findReplaceFindList, findReplaceReplaceList);
         }
         findDialog.setTarget(hexEditControl);
         findDialog.open();

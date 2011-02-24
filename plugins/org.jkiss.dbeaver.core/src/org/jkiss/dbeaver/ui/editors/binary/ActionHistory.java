@@ -5,9 +5,9 @@
 package org.jkiss.dbeaver.ui.editors.binary;
 
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent.Range;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -220,16 +220,13 @@ public class ActionHistory {
 
     private void disposeRanges(java.util.List<Range> ranges)
     {
-        if (ranges == null) return;
+        if (ranges == null) {
+            return;
+        }
 
         for (Range range : ranges) {
-            if (range.data instanceof RandomAccessFile) {
-                try {
-                    ((RandomAccessFile) range.data).close();
-                }
-                catch (IOException e) {
-                    // ok, leave this file alone and close the rest
-                }
+            if (range.data instanceof Closeable) {
+                ContentUtils.close((Closeable) range.data);
             }
         }
     }

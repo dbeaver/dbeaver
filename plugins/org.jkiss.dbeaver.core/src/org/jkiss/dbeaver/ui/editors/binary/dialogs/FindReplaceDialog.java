@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.ui.editors.binary.HexManager;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -32,30 +33,30 @@ import java.util.regex.Pattern;
 public class FindReplaceDialog extends Dialog {
 
 
-    static final Pattern patternHexDigits = Pattern.compile("[0-9a-fA-F]*");
-    static final String text1Replacement = "1 Replacement";
-    static final String textBackward = "&Backward";
-    static final String textCancel = "Cancel";
-    static final String textClose = "Close";
-    static final String textDirection = "Direction";
-    static final String textError = "Error: ";
-    static final String textFind = "Fi&nd";
-    static final String textFindLiteral = "Find literal";
-    static final String textFindReplace = "Find/Replace";
-    static final String textForward = "F&orward";
-    static final String textFoundLiteral = "Found literal";
-    static final String textHex = "Hex";
-    static final String textIgnoreCase = "&Ignore case";
-    static final String textLiteralNotFound = "Literal not found";
-    static final String textNewFind = "New find";
-    static final String textReplace = "&Replace";
-    static final String textReplaceAll = "Replace &All";
-    static final String textReplaceFind = "Replace/Fin&d";
-    static final String textReplaceWith = "Replace With";
-    static final String textReplacements = " Replacements";
-    static final String textSearching = "Searching";
-    static final String textStop = "Stop";
-    static final String textText = "Text";
+    private static final Pattern patternHexDigits = Pattern.compile("[0-9a-fA-F]*");
+    private static final String text1Replacement = "1 Replacement";
+    private static final String textBackward = "&Backward";
+    private static final String textCancel = "Cancel";
+    private static final String textClose = "Close";
+    private static final String textDirection = "Direction";
+    private static final String textError = "Error: ";
+    private static final String textFind = "Fi&nd";
+    private static final String textFindLiteral = "Find literal";
+    private static final String textFindReplace = "Find/Replace";
+    private static final String textForward = "F&orward";
+    private static final String textFoundLiteral = "Found literal";
+    private static final String textHex = "Hex";
+    private static final String textIgnoreCase = "&Ignore case";
+    private static final String textLiteralNotFound = "Literal not found";
+    private static final String textNewFind = "New find";
+    private static final String textReplace = "&Replace";
+    private static final String textReplaceAll = "Replace &All";
+    private static final String textReplaceFind = "Replace/Fin&d";
+    private static final String textReplaceWith = "Replace With";
+    private static final String textReplacements = " Replacements";
+    private static final String textSearching = "Searching";
+    private static final String textStop = "Stop";
+    private static final String textText = "Text";
 
     SelectionAdapter defaultSelectionAdapter = new SelectionAdapter() {
         public void widgetSelected(SelectionEvent e)
@@ -69,8 +70,10 @@ public class FindReplaceDialog extends Dialog {
             lastFocused.textCombo.setFocus();
         }
     };
-    private List<Object[]> findReplaceFindList = null;
-    private List<Object[]> findReplaceReplaceList = null;
+
+    private static final List<Object[]> findReplaceFindList = new ArrayList<Object[]>();
+    private static final List<Object[]> findReplaceReplaceList = new ArrayList<Object[]>();
+
     private HexEditControl editControl = null;
     private TextHexInputGroup lastFocused = null;
     private boolean lastForward = true;
@@ -700,20 +703,6 @@ public class FindReplaceDialog extends Dialog {
     {
         editControl.replace(replaceGroup.textCombo.getText(), replaceGroup.hexRadioButton.getSelection());
     }
-
-
-    /**
-     * Set Find/Replace combo lists pre-exisitng values
-     *
-     * @param findList    previous find values
-     * @param replaceList previous replace values
-     */
-    public void setFindReplaceLists(List<Object[]> findList, List<Object[]> replaceList)
-    {
-        findReplaceFindList = findList;
-        findReplaceReplaceList = replaceList;
-    }
-
 
     /**
      * Set the target editor to search

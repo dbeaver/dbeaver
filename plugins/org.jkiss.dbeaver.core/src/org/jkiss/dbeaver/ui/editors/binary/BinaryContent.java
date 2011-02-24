@@ -4,6 +4,9 @@
 
 package org.jkiss.dbeaver.ui.editors.binary;
 
+import org.jkiss.dbeaver.utils.ContentUtils;
+
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -112,7 +115,6 @@ public class BinaryContent {
     private ActionHistory actions = null;  // undo/redo actions history
     private ActionHistory actionsTemp = null;
     private boolean dirty = false;
-    private boolean dirtySize = false;
     private long exclusiveEnd = -1L;
     private long lastUpperNibblePosition = -1L;
     private List<ModifyListener> listeners = null;
@@ -224,7 +226,6 @@ public class BinaryContent {
         if (position < 0 || position >= length() || length < 1L) return;
 
         dirty = true;
-        dirtySize = true;
         if (length > length() - position)
             length = length() - position;
         if (actions != null) {
@@ -341,13 +342,8 @@ public class BinaryContent {
         if (ranges == null) return;
 
         for (Range value : ranges) {
-            if (value.data instanceof RandomAccessFile) {
-                try {
-                    ((RandomAccessFile) value.data).close();
-                }
-                catch (IOException e) {
-                    // ok, leave this file alone and close the rest
-                }
+            if (value.data instanceof Closeable) {
+                ContentUtils.close((Closeable) value.data);
             }
         }
 
@@ -545,8 +541,8 @@ public class BinaryContent {
         if (actions != null)
             actions.endAction();
         commitChanges();
+
         RandomAccessFile dst = new RandomAccessFile(destinationFile, "rws");
-        IOException preCloseException = null;
         try {
             dst.setLength(length);
             FileChannel channel = dst.getChannel();
@@ -582,19 +578,9 @@ public class BinaryContent {
             channel.force(true);
             channel.close();
         }
-        catch (IOException e) {
-            preCloseException = e;
+        finally {
+            ContentUtils.close(dst);
         }
-        try {
-            dst.close();
-        }
-        catch (IOException e) {
-            if (preCloseException == null)
-                throw e;
-            throw preCloseException;  // throw previous exception instead
-        }
-        if (preCloseException != null)
-            throw preCloseException;
 
         return length;
     }
@@ -660,7 +646,6 @@ public class BinaryContent {
         if (position > length()) return;
 
         dirty = true;
-        dirtySize = true;
         lastUpperNibblePosition = position;
         if (actions != null)
             actions.eventPreModify(ActionHistory.ActionType.INSERT, position, true);
@@ -683,7 +668,6 @@ public class BinaryContent {
         if (source.remaining() < 1 || position > length()) return;
 
         dirty = true;
-        dirtySize = true;
         lastUpperNibblePosition = -1L;
         if (actions != null)
             actions.eventPreModify(ActionHistory.ActionType.INSERT, position, false);
@@ -713,7 +697,6 @@ public class BinaryContent {
 
         Range newRange = new Range(position, aFile, true);
         dirty = true;
-        dirtySize = true;
         lastUpperNibblePosition = -1L;
         if (actions != null)
             actions.eventPreModify(ActionHistory.ActionType.INSERT, position, false);
@@ -754,18 +737,6 @@ public class BinaryContent {
     {
         return dirty;
     }
-
-
-    /**
-     * Tells whether changes have been done to the original content's size
-     *
-     * @return true: the content has been modified in size
-     */
-    public boolean isDirtySize()
-    {
-        return dirtySize;
-    }
-
 
     /**
      * Number of bytes in content
@@ -962,7 +933,7 @@ public class BinaryContent {
         } else if (action[0] == ActionHistory.ActionType.INSERT) {
             result = insertRanges(currentAction);
         } else if (action[0] == ActionHistory.ActionType.OVERWRITE) {
-            // 0 to size - 1: overwritten ranges, last one: overwriter range
+            // 0 to size - 1: overwritten ranges, last one: overwrite range
             int size = currentAction.size();
             result = overwriteRanges(currentAction.subList(size - 1, size));
         }
@@ -970,19 +941,6 @@ public class BinaryContent {
 
         return result;
     }
-
-
-    /**
-     * Remove a listener to the list of listeners to be notified when there is a change in the content
-     *
-     * @param listener not to be notified of the change
-     */
-    public void removeModifyListener(ModifyListener listener)
-    {
-        if (listeners != null)
-            listeners.remove(listener);
-    }
-
 
     /**
      * Sets action history on. After this call the content will remember past actions to undo and redo
@@ -1070,7 +1028,7 @@ public class BinaryContent {
         } else if (action[0] == ActionHistory.ActionType.INSERT) {
             result = deleteRanges(currentAction);
         } else if (action[0] == ActionHistory.ActionType.OVERWRITE) {
-            // 0 to size - 1: overwritten ranges, last one: overwriter range
+            // 0 to size - 1: overwritten ranges, last one: overwrite  range
             result = overwriteRanges(currentAction.subList(0, currentAction.size() - 1));
         }
         notifyListeners();
