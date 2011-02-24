@@ -247,7 +247,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
     {
         List<DataSourceDescriptor> usedDS = selectedDriver.getUsedBy();
         if (!usedDS.isEmpty()) {
-            StringBuilder message = new StringBuilder("Your can't delete driver '" + selectedDriver.getName() +"' because it's used by next data source(s):");
+            StringBuilder message = new StringBuilder("Your can't delete driver '" + selectedDriver.getName() +"' because it's used by following datasource(s):");
             for (DataSourceDescriptor ds : usedDS) {
                 message.append("\n - ").append(ds.getName());
             }

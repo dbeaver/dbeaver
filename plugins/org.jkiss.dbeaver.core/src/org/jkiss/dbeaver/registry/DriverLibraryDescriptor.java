@@ -24,7 +24,7 @@ public class DriverLibraryDescriptor
     private boolean custom;
     private boolean disabled;
 
-    DriverLibraryDescriptor(DriverDescriptor driver, String path)
+    public DriverLibraryDescriptor(DriverDescriptor driver, String path)
     {
         this.driver = driver;
         this.path = path;

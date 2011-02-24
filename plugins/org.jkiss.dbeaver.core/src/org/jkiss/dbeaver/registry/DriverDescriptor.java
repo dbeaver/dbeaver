@@ -271,11 +271,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
      */
     public Image getIcon()
     {
-        if (!isLoaded && (isFailed || (isManagable() && !isInternalDriver() && libraries.isEmpty()))) {
+        if (!isLoaded && (isFailed || (isManagable() && !isInternalDriver() && !hasValidLibraries()))) {
             return iconError;
         } else {
             return iconNormal;
         }
+    }
+
+    private boolean hasValidLibraries()
+    {
+        for (DriverLibraryDescriptor lib : libraries) {
+            if (lib.getLibraryFile().exists()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isCustom()
@@ -431,6 +441,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         DriverLibraryDescriptor lib = new DriverLibraryDescriptor(this, path);
         this.libraries.add(lib);
         return lib;
+    }
+
+    public boolean addLibrary(DriverLibraryDescriptor descriptor)
+    {
+        if (!libraries.contains(descriptor)) {
+            this.libraries.add(descriptor);
+            return true;
+        }
+        return false;
     }
 
     public boolean removeLibrary(DriverLibraryDescriptor lib)

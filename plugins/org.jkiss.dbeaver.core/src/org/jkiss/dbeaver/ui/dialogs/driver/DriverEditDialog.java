@@ -8,12 +8,11 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -24,11 +23,15 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
 
@@ -39,7 +42,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -53,7 +58,7 @@ public class DriverEditDialog extends Dialog
     private DataSourceProviderDescriptor provider;
     private DriverDescriptor driver;
     private String curFolder = null;
-    private ListViewer libList;
+    private TableViewer libTable;
     private Button deleteButton;
     private Button upButton;
     private Button downButton;
@@ -66,6 +71,7 @@ public class DriverEditDialog extends Dialog
     private Text driverPortText;
     private EditablePropertiesControl parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
+    private List<DriverLibraryDescriptor> libList;
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
     {
@@ -209,11 +215,31 @@ public class DriverEditDialog extends Dialog
             //gd = new GridData(GridData.FILL_HORIZONTAL);
 
             // Additional libraries list
-            libList = new ListViewer(libsListGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+            libTable = new TableViewer(libsListGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
             //libsTable.setLinesVisible (true);
             //libsTable.setHeaderVisible (true);
-            libList.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-            libList.getControl().addListener(SWT.Selection, new Listener()
+            libTable.setContentProvider(new ListContentProvider());
+            libTable.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell)
+                {
+                    DriverLibraryDescriptor lib = (DriverLibraryDescriptor) cell.getElement();
+                    cell.setText(lib.getPath());
+                    if (lib.getLibraryFile().exists()) {
+                        cell.setForeground(null);
+                    } else {
+                        cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+                    }
+                    cell.setImage(
+                        !lib.getLibraryFile().exists() ?
+                            PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE) :
+                            lib.getLibraryFile().isDirectory() ?
+                                PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER) :
+                                DBIcon.JAR.getImage());
+                }
+            });
+            libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+            libTable.getControl().addListener(SWT.Selection, new Listener()
             {
                 public void handleEvent(Event event)
                 {
@@ -221,12 +247,14 @@ public class DriverEditDialog extends Dialog
                 }
             });
 
+            libList = new ArrayList<DriverLibraryDescriptor>();
             for (DriverLibraryDescriptor lib : driver.getLibraries()) {
                 if (lib.isDisabled()) {
                     continue;
                 }
-                libList.getList().add(lib.getLibraryFile().getPath());
+                libList.add(lib);
             }
+            libTable.setInput(libList);
 
             // Find driver class
 
@@ -256,12 +284,12 @@ public class DriverEditDialog extends Dialog
                 public void handleEvent(Event event)
                 {
                     try {
-                        ClassFindJob classFinder = new ClassFindJob(libList.getList().getItems());
+                        ClassFindJob classFinder = new ClassFindJob();
                         new ProgressMonitorDialog(getShell()).run(true, true, classFinder);
 
                         if (classListCombo != null && !classListCombo.isDisposed()) {
-                            java.util.List<String> clasNames = classFinder.getDriverClassNames();
-                            classListCombo.setItems(clasNames.toArray(new String[clasNames.size()]));
+                            java.util.List<String> classNames = classFinder.getDriverClassNames();
+                            classListCombo.setItems(classNames.toArray(new String[classNames.size()]));
                             classListCombo.setListVisible(true);
                         }
 
@@ -297,7 +325,10 @@ public class DriverEditDialog extends Dialog
                     if (!CommonUtils.isEmpty(fileNames)) {
                         File folderFile = new File(curFolder);
                         for (String fileName : fileNames) {
-                            libList.getList().add(new File(folderFile, fileName).getPath());
+                            libList.add(
+                                new DriverLibraryDescriptor(
+                                    driver,
+                                    new File(folderFile, fileName).getAbsolutePath()));
                         }
                         changeLibContent();
                     }
@@ -318,7 +349,7 @@ public class DriverEditDialog extends Dialog
                 String selected = fd.open();
                 if (selected != null) {
                     curFolder = fd.getFilterPath();
-                    libList.getList().add(selected);
+                    libList.add(new DriverLibraryDescriptor(driver, selected));
                     changeLibContent();
                 }
             }
@@ -331,7 +362,7 @@ public class DriverEditDialog extends Dialog
         {
             public void handleEvent(Event event)
             {
-                libList.getList().remove(libList.getList().getSelectionIndices());
+                libList.remove(getSelectedLibrary());
                 changeLibContent();
             }
         });
@@ -345,12 +376,10 @@ public class DriverEditDialog extends Dialog
         {
             public void handleEvent(Event event)
             {
-                int selIndex = libList.getList().getSelectionIndex();
-                String selItem = libList.getList().getItem(selIndex);
-                String prevItem = libList.getList().getItem(selIndex - 1);
-                libList.getList().setItem(selIndex, prevItem);
-                libList.getList().setItem(selIndex - 1, selItem);
-                libList.getList().setSelection(selIndex - 1);
+                DriverLibraryDescriptor selectedLib = getSelectedLibrary();
+                int selIndex = libList.indexOf(selectedLib);
+                Collections.swap(libList, selIndex, selIndex - 1);
+                changeLibContent();
                 changeLibSelection();
             }
         });
@@ -363,12 +392,10 @@ public class DriverEditDialog extends Dialog
         {
             public void handleEvent(Event event)
             {
-                int selIndex = libList.getList().getSelectionIndex();
-                String selItem = libList.getList().getItem(selIndex);
-                String nextItem = libList.getList().getItem(selIndex + 1);
-                libList.getList().setItem(selIndex, nextItem);
-                libList.getList().setItem(selIndex + 1, selItem);
-                libList.getList().setSelection(selIndex + 1);
+                DriverLibraryDescriptor selectedLib = getSelectedLibrary();
+                int selIndex = libList.indexOf(selectedLib);
+                Collections.swap(libList, selIndex, selIndex + 1);
+                changeLibContent();
                 changeLibSelection();
             }
         });
@@ -438,18 +465,24 @@ public class DriverEditDialog extends Dialog
         }
     }
 
+    private DriverLibraryDescriptor getSelectedLibrary()
+    {
+        IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
+        return selection == null || selection.isEmpty() ? null : (DriverLibraryDescriptor) selection.getFirstElement();
+    }
+
     private void changeLibContent()
     {
-        List list = libList.getList();
-        findClassButton.setEnabled(list.getItemCount() > 0);
+        libTable.refresh();
+        findClassButton.setEnabled(!libList.isEmpty());
     }
 
     private void changeLibSelection()
     {
-        List list = libList.getList();
-        deleteButton.setEnabled(list.getSelectionCount() > 0);
-        upButton.setEnabled(list.getSelectionCount() == 1 && list.getSelectionIndex() > 0);
-        downButton.setEnabled(list.getSelectionCount() == 1 && list.getSelectionIndex() < list.getItemCount() - 1);
+        DriverLibraryDescriptor selectedLib = getSelectedLibrary();
+        deleteButton.setEnabled(selectedLib != null);
+        upButton.setEnabled(libList.indexOf(selectedLib) > 0);
+        downButton.setEnabled(libList.indexOf(selectedLib) < libList.size() - 1);
     }
 
     private void onChangeProperty()
@@ -468,13 +501,14 @@ public class DriverEditDialog extends Dialog
         driverClassText.setText(CommonUtils.getString(driver.getOrigClassName()));
         driverURLText.setText(CommonUtils.getString(driver.getOrigSampleURL()));
         driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort().toString());
-        libList.getList().removeAll();
+        libList.clear();
         for (DriverLibraryDescriptor lib : driver.getOrigLibraries()) {
             if (lib.isDisabled()) {
                 continue;
             }
-            libList.getList().add(lib.getLibraryFile().getPath());
+            libList.add(lib);
         }
+        changeLibContent();
         parametersEditor.loadProperties(driver.getProviderDescriptor().getDriverPropertyGroups(), driver.getDriverParameters(), driver.getDefaultDriverParameters());
         connectionPropertiesEditor.loadProperties(driver, driver.getConnectionProperties());
     }
@@ -517,31 +551,11 @@ public class DriverEditDialog extends Dialog
         driver.setModified(true);
 
         // Set libraries
-        String[] libNames = libList.getList().getItems();
-        File[] libFiles = new File[libNames.length];
-        for (int i = 0; i < libNames.length; i++) {
-            libFiles[i] = new File(libNames[i]);
-        }
-        for (File libFile : libFiles) {
-            boolean exists = false;
-            for (DriverLibraryDescriptor lib : driver.getLibraries()) {
-                if (!lib.isDisabled() && lib.getLibraryFile().equals(libFile)) {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists) {
-                driver.addLibrary(libFile.getPath());
-            }
+        for (DriverLibraryDescriptor lib : libList) {
+            driver.addLibrary(lib);
         }
         for (DriverLibraryDescriptor lib : CommonUtils.copyList(driver.getLibraries())) {
-            boolean exists = false;
-            for (File libFile : libFiles) {
-                if (lib.getLibraryFile().equals(libFile)) {
-                    exists = true;
-                }
-            }
-            if (!exists) {
+            if (!libList.contains(lib)) {
                 driver.removeLibrary(lib);
             }
         }
@@ -566,11 +580,9 @@ public class DriverEditDialog extends Dialog
 
     private class ClassFindJob implements IRunnableWithProgress {
 
-        private String[] fileNames;
         private java.util.List<String> driverClassNames = new ArrayList<String>();
 
-        private ClassFindJob(String[] fileNames) {
-            this.fileNames = fileNames;
+        private ClassFindJob() {
         }
 
         public java.util.List<String> getDriverClassNames() {
@@ -587,16 +599,8 @@ public class DriverEditDialog extends Dialog
         {
             java.util.List<File> libFiles = new ArrayList<File>();
             java.util.List<URL> libURLs = new ArrayList<URL>();
-            for (String libFileName : fileNames) {
-                File libFile = new File(libFileName);
-                if (!libFile.exists()) {
-                    try {
-                        URL libURL = Platform.getInstallLocation().getDataArea(libFileName);
-                        libFile = new File(libURL.getFile());
-                    } catch (IOException e) {
-                        log.debug(e);
-                    }
-                }
+            for (DriverLibraryDescriptor lib : libList) {
+                File libFile = lib.getLibraryFile();
                 if (libFile.exists() && !libFile.isDirectory()) {
                     libFiles.add(libFile);
                     try {

@@ -6,6 +6,9 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -31,10 +34,18 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
 
     private Object site;
     private List<DataSourceProviderDescriptor> providers;
+    private Font boldFont;
 
     public DriverTreeControl(Composite parent)
     {
         super(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        boldFont = UIUtils.makeBoldFont(parent.getFont());
+        parent.addDisposeListener(new DisposeListener() {
+            public void widgetDisposed(DisposeEvent e)
+            {
+                UIUtils.dispose(boldFont);
+            }
+        });
     }
 
     public void initDrivers(Object site, List<DataSourceProviderDescriptor> providers)
@@ -135,6 +146,11 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         public void update(ViewerCell cell) {
             cell.setText(getText(cell.getElement(), cell.getColumnIndex()));
             cell.setImage(getImage(cell.getElement(), cell.getColumnIndex()));
+            if (cell.getElement() instanceof DriverDescriptor && !((DriverDescriptor)cell.getElement()).getUsedBy().isEmpty()) {
+                cell.setFont(boldFont);
+            } else {
+                cell.setFont(null);
+            }
         }
 
         public String getText(Object obj, int index)

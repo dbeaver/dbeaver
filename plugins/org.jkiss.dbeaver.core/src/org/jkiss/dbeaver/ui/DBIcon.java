@@ -100,6 +100,7 @@ public enum DBIcon
     IMPORT("import", "/icons/file/import.png"),
     EXPORT("export", "/icons/file/export.png"),
     REFRESH("refresh", "/icons/refresh.png"),
+    JAR("jar", "/icons/misc/jar.png"),
 
     ROW_ADD("row_add", "/icons/sql/row_add.png"),
     ROW_COPY("row_copy", "/icons/sql/row_copy.png"),
