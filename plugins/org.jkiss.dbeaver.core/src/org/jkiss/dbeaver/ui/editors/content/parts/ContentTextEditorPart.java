@@ -10,6 +10,7 @@ import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.editors.FileRefDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
@@ -21,7 +22,7 @@ public class ContentTextEditorPart extends BaseTextEditor implements IContentEdi
     private IEditorPart contentEditor;
 
     public ContentTextEditorPart() {
-        setDocumentProvider(new ContentTextDocumentProvider());
+        setDocumentProvider(new FileRefDocumentProvider());
     }
 
     public void initPart(IEditorPart contentEditor)
