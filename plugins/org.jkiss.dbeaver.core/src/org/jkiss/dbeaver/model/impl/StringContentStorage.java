@@ -70,7 +70,7 @@ public class StringContentStorage implements DBDContentStorage {
         }
         char[] data = new char[(int)contentLength];
         int count = stream.read(data);
-        if (count != contentLength) {
+        if (count >= 0 && count != contentLength) {
             log.warn("Actual content length (" + count + ") is less than declared: " + contentLength);
             data = Arrays.copyOf(data, count);
         }
