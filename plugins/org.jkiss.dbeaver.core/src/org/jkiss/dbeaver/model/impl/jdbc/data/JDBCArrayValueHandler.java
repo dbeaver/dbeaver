@@ -67,7 +67,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         return DBDArray.class;
     }
 
-    public Object copyValueObject(DBCExecutionContext context, Object value)
+    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
         return null;

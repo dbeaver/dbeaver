@@ -182,8 +182,9 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         IEditorInput unresolved = getEditorInput();
         File systemFile = null;
         if (unresolved instanceof IPathEditorInput) {  // eg. FileInPlaceEditorInput
-            IPathEditorInput file = (IPathEditorInput) unresolved;
-            systemFile = file.getPath().toFile();
+            final IPath absolutePath = Platform.getLocation().append(
+                ((IPathEditorInput) unresolved).getPath());
+            systemFile = absolutePath.toFile();
         }
         // open file
         try {

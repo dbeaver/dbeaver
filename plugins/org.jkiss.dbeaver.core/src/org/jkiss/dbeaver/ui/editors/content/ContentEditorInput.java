@@ -197,7 +197,7 @@ public class ContentEditorInput implements IPathEditorInput, IDatabaseEditorInpu
 
     public IPath getPath()
     {
-        return contentFile == null ? null : new Path(contentFile.getLocation().toString());
+        return contentFile == null ? null : contentFile.getFullPath();
     }
 
     public boolean isReadOnly() {

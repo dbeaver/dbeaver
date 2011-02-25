@@ -1144,7 +1144,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         showCellEditor(spreadsheet.getCursorPosition(), false, null);
     }
 
-    void addNewRow(boolean copyCurrent)
+    void addNewRow(final boolean copyCurrent)
     {
         GridPos curPos = spreadsheet.getCursorPosition();
         int rowNum;
@@ -1161,15 +1161,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         // Add new row
         final Object[] cells = new Object[metaColumns.length];
         final int currentRowNumber = rowNum;
-        if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < curRows.size()) {
-            try {
-                DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        // Copy cell values in new context
-                        DBCExecutionContext context = getDataContainer().getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Copy row values");
-                        try {
+        try {
+            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    // Copy cell values in new context
+                    DBCExecutionContext context = getDataContainer().getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Copy row values");
+                    try {
+                        if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < curRows.size()) {
                             Object[] origRow = curRows.get(currentRowNumber);
                             for (int i = 0; i < metaColumns.length; i++) {
                                 DBDColumnBinding metaColumn = metaColumns[i];
@@ -1178,7 +1178,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                                     cells[i] = null;
                                 } else {
                                     try {
-                                        cells[i] = metaColumn.getValueHandler().copyValueObject(context, origRow[i]);
+                                        cells[i] = metaColumn.getValueHandler().copyValueObject(context, metaColumn.getTableColumn(), origRow[i]);
                                     }
                                     catch (DBCException e) {
                                         log.warn(e);
@@ -1186,16 +1186,25 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                                     }
                                 }
                             }
-                        } finally {
-                            context.close();
+                        } else {
+                            // Initialize new values
+                            for (int i = 0; i < metaColumns.length; i++) {
+                                try {
+                                    cells[i] = metaColumns[i].getValueHandler().createValueObject(context, metaColumns[i].getTableColumn());
+                                } catch (DBCException e) {
+                                    log.warn(e);
+                                }
+                            }
                         }
+                    } finally {
+                        context.close();
                     }
-                });
-            } catch (InvocationTargetException e) {
-                log.error("Could not copy cell", e.getTargetException());
-            } catch (InterruptedException e) {
-                // interrupted - do nothing
-            }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            log.error("Could not create new row", e.getTargetException());
+        } catch (InterruptedException e) {
+            // interrupted - do nothing
         }
         curRows.add(rowNum, cells);
 

@@ -51,7 +51,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         return Boolean.class;
     }
 
-    public Object copyValueObject(DBCExecutionContext context, Object value)
+    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
         // Boolean is immutable

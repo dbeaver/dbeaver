@@ -12,6 +12,7 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -77,7 +78,9 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         IEditorInput input = getEditorInput();
         if (input instanceof IPathEditorInput) {
             try {
-                File file = ((IPathEditorInput) input).getPath().toFile();
+                final IPath absolutePath = Platform.getLocation().append(
+                    ((IPathEditorInput) input).getPath());
+                File file = absolutePath.toFile();
                 if (file.exists()) {
                     InputStream inputStream = new FileInputStream(file);
                     try {

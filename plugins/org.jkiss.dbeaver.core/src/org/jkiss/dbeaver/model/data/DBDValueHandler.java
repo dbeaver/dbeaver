@@ -28,9 +28,11 @@ public interface DBDValueHandler
     /**
      * Extracts object from result set
      * @param context
-     *@param resultSet result set
+     * @param resultSet result set
      * @param column column
-     * @param columnIndex column index   @return value or null    @return value    @throws org.jkiss.dbeaver.model.exec.DBCException on error
+     * @param columnIndex column index
+     * @return value or null
+     * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
     Object getValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject column, int columnIndex)
         throws DBCException;
@@ -38,23 +40,37 @@ public interface DBDValueHandler
     /**
      * Binds specified parameter to statement
      * @param context
-     *@param statement statement
+     * @param statement statement
      * @param columnType column type
      * @param paramIndex parameter index (starts from 0)
      * @param value parameter value (can be null). Value is get from getValueObject function or from
-* object set by editor (editValue function).     @throws org.jkiss.dbeaver.model.exec.DBCException on error
+     * object set by editor (editValue function).
+     * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
     void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
+        throws DBCException;
+
+    /**
+     * Creates new value object.
+     * For simple types returns null (as initial value). For complex type may return DBDValue.
+     *
+     * @param context
+     * @param column column
+     * @return initial object value
+     * @throws org.jkiss.dbeaver.model.exec.DBCException on error
+     */
+    Object createValueObject(DBCExecutionContext context, DBSTypedObject column)
         throws DBCException;
 
     /**
      * Makes value copy. For Non-mutable objects (like numbers and string) may return the same value as passed in.
      * If copy operation is not supported for some values then may return null.
      * @param context
-     *@param value original value  @return copied value or null  @return value copy
+     * @param column
+     * @param value original value  @return copied value or null  @return value copy
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
-    Object copyValueObject(DBCExecutionContext context, Object value)
+    Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException;
 
     /**

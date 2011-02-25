@@ -161,7 +161,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         return Date.class;
     }
 
-    public Object copyValueObject(DBCExecutionContext context, Object value)
+    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
         if (value instanceof Timestamp) {

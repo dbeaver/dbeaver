@@ -54,9 +54,15 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         }
     }
 
+    public Object createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
+    {
+        // Default value for most object types is NULL
+        return null;
+    }
+
     public void releaseValueObject(Object value)
     {
-        // do nothing by defaulr
+        // do nothing by default
     }
 
     public String getValueDisplayString(DBSTypedObject column, Object value) {

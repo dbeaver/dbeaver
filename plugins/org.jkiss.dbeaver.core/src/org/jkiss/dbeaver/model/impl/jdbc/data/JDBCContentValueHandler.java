@@ -18,7 +18,6 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -80,26 +79,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             }
         }
         if (value == null) {
-            // Create wrapper using column type
-            switch (column.getValueType()) {
-                case java.sql.Types.CHAR:
-                case java.sql.Types.VARCHAR:
-                case java.sql.Types.NVARCHAR:
-                case java.sql.Types.LONGVARCHAR:
-                case java.sql.Types.LONGNVARCHAR:
-                    return new JDBCContentChars(null);
-                case java.sql.Types.CLOB:
-                case java.sql.Types.NCLOB:
-                    return new JDBCContentCLOB(null);
-                case java.sql.Types.BINARY:
-                case java.sql.Types.VARBINARY:
-                case java.sql.Types.LONGVARBINARY:
-                    return new JDBCContentBytes(null);
-                case java.sql.Types.BLOB:
-                    return new JDBCContentBLOB(null);
-                default:
-                    throw new DBCException("Unsupported column type: " + column.getTypeName());
-            }
+            return createValueObject(context, column);
         } else if (value instanceof byte[]) {
             return new JDBCContentBytes((byte[]) value);
         } else if (value instanceof String) {
@@ -133,7 +113,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         return DBDContent.class;
     }
 
-    public Object copyValueObject(DBCExecutionContext context, Object value)
+    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
         if (value instanceof DBDValueClonable) {
@@ -143,7 +123,31 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         if (value instanceof DBDValue) {
             return ((DBDValue)value).makeNull();
         }
-        return null;
+        return createValueObject(context, column);
+    }
+
+    public DBDContent createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
+    {
+        // Create wrapper using column type
+        switch (column.getValueType()) {
+            case java.sql.Types.CHAR:
+            case java.sql.Types.VARCHAR:
+            case java.sql.Types.NVARCHAR:
+            case java.sql.Types.LONGVARCHAR:
+            case java.sql.Types.LONGNVARCHAR:
+                return new JDBCContentChars(null);
+            case java.sql.Types.CLOB:
+            case java.sql.Types.NCLOB:
+                return new JDBCContentCLOB(null);
+            case java.sql.Types.BINARY:
+            case java.sql.Types.VARBINARY:
+            case java.sql.Types.LONGVARBINARY:
+                return new JDBCContentBytes(null);
+            case java.sql.Types.BLOB:
+                return new JDBCContentBLOB(null);
+            default:
+                throw new DBCException("Unsupported column type: " + column.getTypeName());
+        }
     }
 
     @Override

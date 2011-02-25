@@ -416,6 +416,10 @@ public class HexManager {
     public void openFile(File aFile, String charset)
         throws IOException
     {
+        if (content != null) {
+            content.dispose();
+            content = null;
+        }
         content = new BinaryContent(aFile);  // throws IOException
         hexEditControl.setCharset(charset);
         hexEditControl.setContentProvider(content);

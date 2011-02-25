@@ -194,7 +194,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         return Number.class;
     }
 
-    public Object copyValueObject(DBCExecutionContext context, Object value)
+    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
         // Number are immutable

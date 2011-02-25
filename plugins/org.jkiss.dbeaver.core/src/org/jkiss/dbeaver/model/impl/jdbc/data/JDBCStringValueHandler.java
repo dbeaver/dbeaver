@@ -77,7 +77,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         return String.class;
     }
 
-    public Object copyValueObject(DBCExecutionContext context, Object value)
+    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
         // String are immutable

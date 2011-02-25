@@ -40,7 +40,12 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
         
     }
 
-    public Object copyValueObject(DBCExecutionContext context, Object value)
+    public Object createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
+    {
+        return null;
+    }
+
+    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
         return value;
