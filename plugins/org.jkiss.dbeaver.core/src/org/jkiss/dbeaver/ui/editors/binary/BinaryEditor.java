@@ -28,11 +28,9 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
-import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleException;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,8 +44,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
     //static final String textSavingFilePleaseWait = "Saving file, please wait";
 
-    private HexManager manager = null;
-    private IContentOutlinePage outlinePage = null;
+    private final HexManager manager = new HexManager();
     private IPropertyChangeListener preferencesChangeListener = null;
     private Set<ISelectionChangedListener> selectionListeners = null;  // of ISelectionChangedListener
 
@@ -99,10 +96,10 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
     public void createPartControl(Composite parent)
     {
-        getManager().setTextFont(HexPreferencesPage.getPrefFontData());
-        getManager().setMenuListener(this);
+        manager.setTextFont(HexPreferencesPage.getPrefFontData());
+        manager.setMenuListener(this);
         int editorStyle = SWT.NONE;
-        getManager().createEditorPart(parent, editorStyle);
+        manager.createEditorPart(parent, editorStyle);
         FillLayout fillLayout = new FillLayout();
         parent.setLayout(fillLayout);
 
@@ -208,7 +205,6 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     {
         if (manager != null) {
             manager.dispose();
-            manager = null;
         }
 
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
@@ -235,82 +231,20 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     {
     }
 
-
     public Object getAdapter(Class required)
     {
-        Object result;
-        if (IContentOutlinePage.class.isAssignableFrom(required)) {
-            if (outlinePage == null) {
-                outlinePage = getOutlinePage();
-            }
-            result = outlinePage;
-        } else if (BinaryContent.class.isAssignableFrom(required)) {
-            result = getManager().getContent();
+        if (BinaryContent.class.isAssignableFrom(required)) {
+            return manager.getContent();
         } else if (HexManager.class.isAssignableFrom(required)) {
-            result = getManager();
+            return manager;
         } else {
-            result = super.getAdapter(required);
+            return super.getAdapter(required);
         }
-        return result;
     }
-
-
-    /**
-     * Getter for the manager instance.
-     *
-     * @return the manager
-     */
-    public HexManager getManager()
-    {
-        if (manager == null)
-            manager = new HexManager();
-
-        return manager;
-    }
-
-
-    IContentOutlinePage getOutlinePage()
-    {
-        IExtensionRegistry registry = Platform.getExtensionRegistry();
-        IExtensionPoint point = registry.getExtensionPoint("org.jkiss.dbeaver.ui.editors.binary.outline");
-        if (point == null) return null;
-
-        IExtension[] extensions = point.getExtensions();
-        if (extensions.length == 0) return null;
-        IConfigurationElement[] elements = extensions[0].getConfigurationElements();
-        String className = null;
-        for (IConfigurationElement element : elements) {
-            if ("outline".equals(element.getName())) {
-                className = element.getAttribute("class");
-                break;
-            }
-        }
-
-        Bundle aBundle = Platform.getBundle(extensions[0].getNamespaceIdentifier());
-        IContentOutlinePage result = null;
-        if (aBundle != null) {
-            try {
-                aBundle.start();
-            }
-            catch (BundleException e) {
-                return null;
-            }
-            try {
-                // throws IllegalAccessException, InstantiationException, ClassNotFoundException
-                result = (IContentOutlinePage) aBundle.loadClass(className).newInstance();
-            }
-            catch (Exception e) {
-                return null;
-            }
-        }
-
-        return result;
-    }
-
 
     public ISelection getSelection()
     {
-        long[] longSelection = getManager().getSelection();
+        long[] longSelection = manager.getSelection();
         return new StructuredSelection(new Object[]
             {longSelection[0], longSelection[1]});
     }
@@ -334,7 +268,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
     public boolean isDirty()
     {
-        return getManager().isDirty();
+        return manager.isDirty();
     }
 
 
@@ -374,7 +308,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
                 end = startEnd[1];
             }
         }
-        getManager().setSelection(start, end);
+        manager.setSelection(start, end);
     }
 
 
@@ -384,7 +318,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
      */
     public void updateActionsStatus()
     {
-        boolean textSelected = getManager().isTextSelected();
+        boolean textSelected = manager.isTextSelected();
         boolean lengthModifiable = textSelected && !manager.isOverwriteMode();
         IActionBars bars = getEditorSite().getActionBars();
         IAction action = bars.getGlobalActionHandler(IWorkbenchCommandConstants.EDIT_UNDO);
@@ -411,7 +345,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_PASTE, "Paste"));
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, "Select All"));
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, "Find/Replace"));
-        manager.add(new EditorAction(ITextEditorActionConstants.GOTO_LINE, "Go to line"));
+        manager.add(new EditorAction(ITextEditorActionDefinitionIds.LINE_GOTO, "Go to line"));
         manager.add(new Separator());
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_UNDO, "Undo"));
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_REDO, "Redo"));
@@ -436,23 +370,23 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         public void run()
         {
             if (actionId.equals(IWorkbenchCommandConstants.EDIT_UNDO))
-                getManager().doUndo();
+                manager.doUndo();
             else if (actionId.equals(IWorkbenchCommandConstants.EDIT_REDO))
-                getManager().doRedo();
+                manager.doRedo();
             else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT))
-                getManager().doCut();
+                manager.doCut();
             else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY))
-                getManager().doCopy();
+                manager.doCopy();
             else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE))
-                getManager().doPaste();
+                manager.doPaste();
             else if (actionId.equals(IWorkbenchCommandConstants.EDIT_DELETE))
-                getManager().doDelete();
+                manager.doDelete();
             else if (actionId.equals(IWorkbenchCommandConstants.EDIT_SELECT_ALL))
-                getManager().doSelectAll();
+                manager.doSelectAll();
             else if (actionId.equals(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE))
-                getManager().doFind();
-            else if (actionId.equals(ITextEditorActionConstants.GOTO_LINE))
-                getManager().doGoTo();
+                manager.doFind();
+            else if (actionId.equals(ITextEditorActionDefinitionIds.LINE_GOTO))
+                manager.doGoTo();
         }
     }
 
