@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -127,6 +128,36 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             }
         }
         return childNodes;
+    }
+
+    List<DBNDatabaseNode> getChildNodes()
+    {
+        return childNodes;
+    }
+
+    void addChildItem(DBSObject object)
+    {
+        final List<DBXTreeNode> metaChildren = getMeta().getChildren();
+        if (!CommonUtils.isEmpty(metaChildren) && metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
+            final DBNDatabaseItem newChild = new DBNDatabaseItem(this, (DBXTreeItem) metaChildren.get(0), object, false);
+            childNodes.add(newChild);
+            getModel().addNode(newChild, true);
+        } else {
+            log.error("Cannot add child item to " + getNodeName() + ". Conditions doesn't met");
+        }
+    }
+
+    void removeChildItem(DBSObject object)
+    {
+        if (!CommonUtils.isEmpty(childNodes)) {
+            for (Iterator<DBNDatabaseNode> iter = childNodes.iterator(); iter.hasNext(); ) {
+                final DBNDatabaseNode child = iter.next();
+                if (child.getObject() == object) {
+                    iter.remove();
+                    child.dispose(true);
+                }
+            }
+        }
     }
 
     @Override

@@ -148,18 +148,19 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         // Ensure that children are loaded
         getChildren(monitor);
         // Add new child item
-        DBNDatabaseItem childItem = new DBNDatabaseItem(this, childMeta, (DBSObject)childObject, true);
+        DBNDatabaseItem childItem = new DBNDatabaseItem(this, childMeta, (DBSObject)childObject, false);
         this.childNodes.add(childItem);
+        this.getModel().addNode(childItem, true);
 
         return childItem;
     }
 
     public void removeChildItem(DBNNode item) throws DBException
     {
-        if (!(item instanceof DBNDatabaseNode) || CommonUtils.isEmpty(childNodes) || !childNodes.contains(item)) {
+        if (!(item instanceof DBNDatabaseNode) || CommonUtils.isEmpty(childNodes) || !childNodes.contains((DBNDatabaseNode)item)) {
             throw new DBException("Item '" + item.getNodeName() + "' do not belongs to node '" + getNodeName() + "' and can't be removed from it");
         }
-        childNodes.remove(item);
+        childNodes.remove((DBNDatabaseNode)item);
         item.dispose(true);
     }
 

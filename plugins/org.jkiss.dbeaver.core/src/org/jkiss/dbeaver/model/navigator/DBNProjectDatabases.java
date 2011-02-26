@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
@@ -152,11 +153,21 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
             case OBJECT_ADD:
                 if (event.getObject() instanceof DataSourceDescriptor) {
                     addDataSource((DataSourceDescriptor) event.getObject());
+                } else if (getModel().getNodeByObject(event.getObject()) == null) {
+                    final DBNDatabaseNode parentNode = getModel().getParentNode(event.getObject());
+                    if (parentNode != null && !CommonUtils.isEmpty(parentNode.getChildNodes())) {
+                        parentNode.addChildItem(event.getObject());
+                    }
                 }
                 break;
             case OBJECT_REMOVE:
                 if (event.getObject() instanceof DataSourceDescriptor) {
                     removeDataSource((DataSourceDescriptor) event.getObject());
+                } else {
+                    final DBNDatabaseNode node = getModel().getNodeByObject(event.getObject());
+                    if (node != null && node.getParentNode() instanceof DBNDatabaseNode) {
+                        ((DBNDatabaseNode)node.getParentNode()).removeChildItem(event.getObject());
+                    }
                 }
                 break;
             case OBJECT_UPDATE:

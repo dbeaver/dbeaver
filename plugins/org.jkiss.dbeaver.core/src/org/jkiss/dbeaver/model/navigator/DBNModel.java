@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
@@ -169,6 +170,51 @@ public class DBNModel implements IResourceChangeListener {
             }
         }
         return getNodeByObject(object);
+    }
+
+    public DBNDatabaseNode getParentNode(DBSObject object)
+    {
+        DBNDatabaseNode node = getNodeByObject(object);
+        if (node != null) {
+            if (node.getParentNode() instanceof DBNDatabaseNode) {
+                return (DBNDatabaseNode) node.getParentNode();
+            } else {
+                log.error("Object's " + object.getName() + "' parent node is not a database node: " + node.getParentNode());
+                return null;
+            }
+        }
+        List<DBSObject> path = new ArrayList<DBSObject>();
+        for (DBSObject item = object.getParentObject(); item != null; item = item.getParentObject()) {
+            path.add(0, item);
+        }
+        for (int i = 0; i < path.size(); i++) {
+            DBSObject item = path.get(i);
+            DBSObject nextItem = path.get(i + 1);
+            node = getNodeByObject(item);
+            if (node == null) {
+                // Parent node read
+                return null;
+            }
+            List<? extends DBNDatabaseNode> children = node.getChildNodes();
+            if (CommonUtils.isEmpty(children)) {
+                // Parent node is not read
+                return null;
+            }
+
+            if (item == object.getParentObject()) {
+                // Try to find parent node withing children
+                for (DBNDatabaseNode child : children) {
+                    if (child instanceof DBNDatabaseFolder) {
+                        Class<?> itemsClass = ((DBNDatabaseFolder) child).getItemsClass();
+                        if (itemsClass != null && itemsClass.isAssignableFrom(nextItem.getClass())) {
+                            return child;
+                        }
+                    }
+                }
+            }
+        }
+        // Not found
+        return null;
     }
 
     void addNode(DBNDatabaseNode node)
