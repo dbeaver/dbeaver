@@ -30,7 +30,7 @@ public abstract class DBOEditorJDBC<OBJECT_TYPE extends DBSObject> extends DBOEd
             action.handleExecute(null);
         } catch (DBCException e) {
             action.handleExecute(e);
-            throw new DBCException("Could not execute script:" + ContentUtils.getDefaultLineSeparator() + script, e);
+            throw e;
         } finally {
             dbStat.close();
         }
