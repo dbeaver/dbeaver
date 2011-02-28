@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Core Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
-Bundle-Version: 1.0.0.rc2
+Bundle-Version: 1.0.1
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
@@ -81,6 +81,7 @@ Export-Package: net.sf.jkiss.utils,
  org.jkiss.dbeaver.ui.editors,
  org.jkiss.dbeaver.ui.editors.binary,
  org.jkiss.dbeaver.ui.editors.binary.dialogs,
+ org.jkiss.dbeaver.ui.editors.binary.pref,
  org.jkiss.dbeaver.ui.editors.content,
  org.jkiss.dbeaver.ui.editors.content.parts,
  org.jkiss.dbeaver.ui.editors.data,
@@ -99,13 +100,17 @@ Export-Package: net.sf.jkiss.utils,
  org.jkiss.dbeaver.ui.editors.sql.util,
  org.jkiss.dbeaver.ui.editors.text,
  org.jkiss.dbeaver.ui.export,
+ org.jkiss.dbeaver.ui.export.data,
  org.jkiss.dbeaver.ui.export.data.encoders,
  org.jkiss.dbeaver.ui.export.data.handlers,
  org.jkiss.dbeaver.ui.export.data.impl,
  org.jkiss.dbeaver.ui.export.data.wizard,
+ org.jkiss.dbeaver.ui.export.project,
  org.jkiss.dbeaver.ui.preferences,
  org.jkiss.dbeaver.ui.splash,
  org.jkiss.dbeaver.ui.views.navigator.database,
+ org.jkiss.dbeaver.ui.views.navigator.database.load,
+ org.jkiss.dbeaver.ui.views.navigator.project,
  org.jkiss.dbeaver.ui.views.properties,
  org.jkiss.dbeaver.ui.views.qm,
  org.jkiss.dbeaver.ui.views.search,

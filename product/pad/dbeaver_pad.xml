@@ -1,26 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <XML_DIZ_INFO>
-  <MASTER_PAD_VERSION_INFO>
-    <MASTER_PAD_VERSION>3.11</MASTER_PAD_VERSION>
-    <MASTER_PAD_EDITOR>RoboSoft 4.0.738</MASTER_PAD_EDITOR>
-    <MASTER_PAD_EDITOR_URL>http://robosoft.rudenko.com</MASTER_PAD_EDITOR_URL>
-    <MASTER_PAD_INFO>Portable Application Description, or PAD for short, is a data set that is used by shareware authors to disseminate information to anyone interested in their software products. To find out more go to http://www.asp-shareware.org/pad</MASTER_PAD_INFO>
-  </MASTER_PAD_VERSION_INFO>
-  <RoboSoft>
-    <Company_UIN>CMP-00B10B5DE8E</Company_UIN>
-    <Company_Description>JKISS is the project for java-based free and/or opensource software</Company_Description>
-    <Product_UIN>APP-00B10BF055C</Product_UIN>
-    <Search_String>DBeaver</Search_String>
-    <Publish_on_CD>FALSE</Publish_on_CD>
-    <RSProductType></RSProductType>
-    <Press_Release_Search_String></Press_Release_Search_String>
-    <NewsFeed_Search_String></NewsFeed_Search_String>
-    <Search_Engine_Search_String></Search_Engine_Search_String>
-    <Web_Directories_Search_String></Web_Directories_Search_String>
-    <Search_String_Unique></Search_String_Unique>
-    <Comments_For_Reviewer></Comments_For_Reviewer>
-    <Backlink></Backlink>
-  </RoboSoft>
   <Company_Info>
     <Company_Name>JKISS</Company_Name>
     <Address_1>Engelsa pr. 97-212</Address_1>
@@ -68,9 +47,9 @@
   </NewsFeed>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.0.0</Program_Version>
-    <Program_Release_Month>01</Program_Release_Month>
-    <Program_Release_Day>26</Program_Release_Day>
+    <Program_Version>1.0.1</Program_Version>
+    <Program_Release_Month>02</Program_Release_Month>
+    <Program_Release_Day>28</Program_Release_Day>
     <Program_Release_Year>2011</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -78,13 +57,13 @@
     <Program_Install_Support>Install and Uninstall</Program_Install_Support>
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
-    <Program_Change_Info>Projects support, bookmarks and scripts navigation</Program_Change_Info>
+    <Program_Change_Info>Projects import/export, 3rd party configuration import. Bugfixes and minor UI changes.</Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
     <File_Info>
-      <File_Size_Bytes>23994646</File_Size_Bytes>
-      <File_Size_K>23432</File_Size_K>
-      <File_Size_MB>22.88</File_Size_MB>
+      <File_Size_Bytes>24206914</File_Size_Bytes>
+      <File_Size_K>23639</File_Size_K>
+      <File_Size_MB>23.08</File_Size_MB>
       <Filename_Versioned></Filename_Versioned>
       <Filename_Previous></Filename_Previous>
       <Filename_Generic></Filename_Generic>
@@ -118,7 +97,7 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-rc2-setup.exe</Primary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.0.1-setup.exe</Primary_Download_URL>
       <Secondary_Download_URL></Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>

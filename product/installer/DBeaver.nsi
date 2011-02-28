@@ -25,8 +25,8 @@
   VIAddVersionKey "LegalTrademarks" "DBeaver is a trademark of JKISS"
   VIAddVersionKey "LegalCopyright" "JKISS"
   VIAddVersionKey "FileDescription" "DBeaver"
-  VIAddVersionKey "FileVersion" "1.0.0"
-  VIProductVersion "1.0.0.0"
+  VIAddVersionKey "FileVersion" "1.0.1"
+  VIProductVersion "1.0.1.0"
 
 ; Definitions for Java 6.0
   !define JRE_VERSION "6.0"
@@ -132,7 +132,7 @@ Section "-DBeaver Core" SecCore
   
   SetOutPath "$INSTDIR\plugins"
   
-  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.core_1.0.0.*.jar"
+  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.core_*.jar"
   
   ;Store installation folder
   WriteRegStr HKCU "Software\DBeaver" "" $INSTDIR
@@ -157,7 +157,7 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 	  
-	  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.generic_1.0.0.jar"
+	  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.generic_*.jar"
 
 	SectionEnd
 
@@ -165,7 +165,7 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 	  
-	  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.mysql_1.0.0.jar"
+	  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.mysql_*.jar"
 
 	SectionEnd
 
@@ -173,12 +173,12 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 	  
-	  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.erd_1.0.0.jar"
+	  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.erd_*.jar"
 
 	SectionEnd
 	
 	Section "-Import 3rd Party Configurations" Sec3RD
-		File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.import_config_1.0.0.jar"
+		File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.import_config_*.jar"
 	SectionEnd
 
 SectionGroupEnd
