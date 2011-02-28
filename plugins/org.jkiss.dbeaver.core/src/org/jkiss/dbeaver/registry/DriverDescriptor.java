@@ -576,7 +576,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
             URL url;
             try {
-                url = library.getLibraryFile().toURI().toURL();
+                url = new URL("file:" + library.getLibraryFile().getAbsolutePath());
             } catch (MalformedURLException e) {
                 log.error(e);
                 continue;
