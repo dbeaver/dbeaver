@@ -117,14 +117,38 @@
             <tarfileset file="${debDirectory}/dbeaver.desktop" prefix="usr/share/applications"/>
         </deb>
 
-	</target>
+    </target>
 
-	<target name="dist-macos">
+    <target name="dist-macos">
 
     </target>
 
-	<target name="all" depends="clean,build,dist-win,dist-deb,dist-macos">
+    <target name="all" depends="clean,build,dist-win,dist-deb,dist-macos">
 
+    </target>
+
+    <target name="copy-release">
+		<mkdir dir="${releaseFilesDirectory}" />
+		<copy todir="${releaseFilesDirectory}">
+			<fileset dir="${buildDirectory}/${buildType}.${buildId}">
+				<include name="*.zip" />
+			</fileset>
+			<fileset dir="${distDirectory}">
+				<include name="**" />
+			</fileset>
+		</copy>
     </target>
 	
+    <target name="copy-ea">
+		<mkdir dir="${releaseFilesDirectory}/ea" />
+		<copy todir="${releaseFilesDirectory}/ea">
+			<fileset dir="${buildDirectory}/${buildType}.${buildId}">
+				<include name="*.zip" />
+			</fileset>
+			<fileset dir="${distDirectory}">
+				<include name="**" />
+			</fileset>
+		</copy>
+    </target>
+
 </project>

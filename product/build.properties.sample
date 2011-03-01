@@ -1,14 +1,16 @@
 productName=DBeaver
 productVersion=1.0.0.rc2
-product=/org.jkiss.dbeaver.core/DBeaver.product
-buildDirectory=build
 archivePrefix=dbeaver
+product=/org.jkiss.dbeaver.core/DBeaver.product
+
+baseLocation=D:/Java/eclipse-3.6-dp
+nsisDirectory=C:/Program Files/NSIS
+buildDirectory=D:/Devel/My/dbeaver/product/build
+releaseFilesDirectory=D:\temp\dbeaver.release
+
 topLevelElementType = plugin
 topLevelElementId = org.jkiss.dbeaver.core
-
 distDirectory=dist
-nsisDirectory=C:/Program Files/NSIS
-baseLocation=D:/Java/eclipse-3.6-dp
 
 buildType=B
 buildId=${archivePrefix}-${productVersion}
