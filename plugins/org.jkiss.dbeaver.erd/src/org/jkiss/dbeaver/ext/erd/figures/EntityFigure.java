@@ -46,7 +46,7 @@ public class EntityFigure extends Figure
         } else {
 		    setBackgroundColor(ColorConstants.tooltipBackground);
         }
-		setForegroundColor(ColorConstants.black);
+		setForegroundColor(ColorConstants.tooltipForeground);
 		setOpaque(true);
 
 		add(nameLabel);
