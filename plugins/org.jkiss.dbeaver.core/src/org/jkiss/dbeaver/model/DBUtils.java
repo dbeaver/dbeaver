@@ -51,10 +51,14 @@ public final class DBUtils {
     {
         StringBuilder buffer = new StringBuilder();
         for (DBSObject obj = object; obj != null; obj = obj.getParentObject()) {
+            final String objectName = obj.getName();
+            //if (!isValidObjectName(objectName)) {
+            //   continue;
+            //}
             if (buffer.length() > 0) {
                 buffer.insert(0, '.');
             }
-            buffer.insert(0, obj.getName());
+            buffer.insert(0, objectName);
         }
         return buffer.toString();
     }
@@ -91,12 +95,34 @@ public final class DBUtils {
             if (namePart == null) {
                 continue;
             }
+            // Check for valid object name
+            if (!isValidObjectName(namePart)) {
+                continue;
+            }
             if (name.length() > 0) {
                 name.append(catalogSeparator);
             }
             name.append(DBUtils.getQuotedIdentifier(dataSource, namePart));
         }
         return name.toString();
+    }
+
+    /**
+     * Checks that object has valid object name.
+     * Some DB objects have dummy names (like "" or ".") - we won't use them for certain purposes.
+     * @param name object name
+     * @return true or false
+     */
+    public static boolean isValidObjectName(String name)
+    {
+        boolean validName = false;
+        for (int i = 0; i < name.length(); i++) {
+            if (Character.isLetter(name.charAt(i))) {
+                validName = true;
+                break;
+            }
+        }
+        return validName;
     }
 
     public static DBSObject getObjectByPath(
