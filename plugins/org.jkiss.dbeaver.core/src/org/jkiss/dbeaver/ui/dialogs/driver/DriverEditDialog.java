@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -638,7 +639,12 @@ public class DriverEditDialog extends Dialog
                             monitor.subTask(className);
                             try {
                                 Class<?> aClass = Class.forName(className, false, findCL);
-                                if (java.sql.Driver.class.isAssignableFrom(aClass)) {
+                                final int modifiers = aClass.getModifiers();
+                                if (java.sql.Driver.class.isAssignableFrom(aClass) &&
+                                    !Modifier.isAbstract(modifiers) &&
+                                    !Modifier.isStatic(modifiers) &&
+                                    Modifier.isPublic(modifiers))
+                                {
                                     driverClassNames.add(aClass.getName());
                                 }
                             } catch (Throwable e1) {
