@@ -547,7 +547,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     }
                 }
             }
-            catch (ClassNotFoundException ex) {
+            catch (Throwable ex) {
                 throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
             }
 
@@ -581,9 +581,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 log.error(e);
                 continue;
             }
-            if (url != null) {
-                libraryURLs.add(url);
-            }
+            libraryURLs.add(url);
         }
         // Make class loader
         this.classLoader = new DriverClassLoader(
