@@ -72,6 +72,7 @@ public class GenericForeignKey extends GenericConstraint implements DBSForeignKe
         return (GenericForeignKeyColumn)super.getColumn(monitor, tableColumn);
     }
 
+    //@Property(name = "Columns", viewable = true, order = 8)
     public List<GenericForeignKeyColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;

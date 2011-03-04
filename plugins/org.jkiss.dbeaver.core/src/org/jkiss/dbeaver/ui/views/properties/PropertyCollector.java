@@ -6,7 +6,10 @@ package org.jkiss.dbeaver.ui.views.properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -31,18 +34,31 @@ public class PropertyCollector extends PropertySourceAbstract
     public void collectProperties(Object object)
     {
         List<PropertyAnnoDescriptor> annoProps = PropertyAnnoDescriptor.extractAnnotations(object);
-        for (PropertyAnnoDescriptor desc : annoProps) {
+        for (final PropertyAnnoDescriptor desc : annoProps) {
             if (desc.isCollectionAnno()) {
+                DBRRunnableWithProgress loader = new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            Object value = desc.readValue(getEditableValue(), monitor);
+                            addProperty(desc.getId(), desc.getDisplayName(), value);
+                        } catch (IllegalAccessException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                };
                 // Add as collection
                 try {
-                    Object value = desc.readValue(getEditableValue(), null);
-                    addProperty(desc.getId(), desc.getDisplayName(), value);
-                }
-                catch (IllegalAccessException e) {
-                    log.error(e);
+                    if (desc.isLazy()) {
+                        DBeaverCore.getInstance().runAndWait2(loader);
+                    } else {
+                        loader.run(null);
+                    }
                 }
                 catch (InvocationTargetException e) {
                     log.error(e.getTargetException());
+                } catch (InterruptedException e) {
+                    // Do nothing
                 }
             } else {
                 addProperty(desc);

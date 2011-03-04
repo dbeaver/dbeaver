@@ -29,4 +29,16 @@ public class GenericForeignKeyColumn extends GenericConstraintColumn implements 
     {
         return referencedColumn;
     }
+
+    @Override
+    public String toString()
+    {
+        return getName();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getName().hashCode();
+    }
 }
