@@ -890,6 +890,7 @@
             <command commandId="org.eclipse.ui.file.refresh"/>
             <command commandId="org.eclipse.ui.file.close"/>
             <separator name="import-export" visible="true"/>
+            <command commandId="org.eclipse.ui.file.print"/>
             <command commandId="org.eclipse.ui.edit.rename"/>
 
             <command commandId="org.eclipse.ui.file.import"/>
