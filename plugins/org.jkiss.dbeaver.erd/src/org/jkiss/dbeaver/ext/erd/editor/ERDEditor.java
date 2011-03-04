@@ -18,6 +18,7 @@ import org.eclipse.gef.commands.CommandStackListener;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.*;
+import org.eclipse.gef.print.PrintGraphicalViewerOperation;
 import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
@@ -34,6 +35,9 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.printing.PrintDialog;
+import org.eclipse.swt.printing.Printer;
+import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -53,6 +57,7 @@ import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
+import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
@@ -616,9 +621,6 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         addStackAction(new RedoAction(this));
         addEditPartAction(new DeleteAction((IWorkbenchPart) this));
         addEditorAction(new SaveAction(this));
-        final PrintAction printAction = new PrintAction(this);
-        printAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_PRINT);
-        addEditorAction(printAction);
     }
 
     /**
@@ -1017,7 +1019,13 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 toolBarManager.add(saveImageAction);
             }
             {
-                PrintAction printAction = new PrintAction(ERDEditor.this);
+                Action printAction = new Action("Print diagram") {
+                    @Override
+                    public void run()
+                    {
+                        printDiagram();
+                    }
+                };
                 printAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_PRINT);
                 printAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_PRINT_EDIT));
                 toolBarManager.add(printAction);
@@ -1122,6 +1130,49 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             e.printStackTrace();
         }
 
+    }
+
+    public void printDiagram()
+    {
+        GraphicalViewer viewer = getGraphicalViewer();
+
+        PrintDialog dialog = new PrintDialog(viewer.getControl().getShell(), SWT.NULL);
+        PrinterData data = dialog.open();
+
+        if (data != null) {
+            IFigure rootFigure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
+            //EntityDiagramFigure diagramFigure = findFigure(rootFigure, EntityDiagramFigure.class);
+            if (rootFigure != null) {
+                PrintFigureOperation printOp = new PrintFigureOperation(new Printer(data), rootFigure);
+                printOp.setPrintMode(PrintFigureOperation.FIT_PAGE);
+
+    /*
+                PrintGraphicalViewerOperation op = new PrintGraphicalViewerOperation(
+                        new Printer(data), viewer);
+    */
+                printOp.run(getTitle());
+            }
+        }
+        //new PrintAction(this).run();
+    }
+
+    private <T> T findFigure(IFigure parent, Class<T> aClass)
+    {
+        final List children = parent.getChildren();
+        if (CommonUtils.isEmpty(children)) {
+            return null;
+        }
+        for (int i = 0; i < children.size(); i++) {
+            IFigure child = (IFigure) children.get(i);
+            if (aClass.isInstance(child)) {
+                return aClass.cast(child);
+            }
+            T res = findFigure(child, aClass);
+            if (res != null) {
+                return res;
+            }
+        }
+        return null;
     }
 
 }

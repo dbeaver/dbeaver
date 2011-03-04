@@ -24,7 +24,7 @@ public class ERDPrintHandler extends AbstractHandler {
         if (control != null) {
             ERDEditor editor = ERDEditorAdapter.getEditor(control);
             if (editor != null) {
-                new PrintAction(editor).run();
+                editor.printDiagram();
             }
         }
         return null;

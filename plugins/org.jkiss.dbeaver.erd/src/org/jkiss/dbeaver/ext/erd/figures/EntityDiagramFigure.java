@@ -26,10 +26,11 @@ public class EntityDiagramFigure extends FreeformLayer
 
 	}
 
-/*
     @Override
     public Rectangle getBounds()
     {
+        return getFreeformExtent();
+/*
         final List children = getChildren();
         if (children.isEmpty()) {
             return super.getBounds();
@@ -44,6 +45,7 @@ public class EntityDiagramFigure extends FreeformLayer
             if (rectangle.y + rectangle.height > bounds.y + bounds.height) bounds.height += (rectangle.height + rectangle.y) - (bounds.height + bounds.y);
         }
         return bounds;
-    }
 */
+    }
+
 }
