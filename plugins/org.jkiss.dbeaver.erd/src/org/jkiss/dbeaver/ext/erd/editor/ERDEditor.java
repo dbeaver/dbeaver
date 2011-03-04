@@ -10,7 +10,8 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.commands.CommandStackListener;
@@ -23,13 +24,21 @@ import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.EditorPart;
@@ -61,7 +70,12 @@ import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -991,6 +1005,18 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             toolBarManager.add(new DiagramRefreshAction(ERDEditor.this));
             toolBarManager.add(new Separator());
             {
+                Action saveImageAction = new Action("Save diagram as image") {
+                    @Override
+                    public void run()
+                    {
+                        saveDiagramAsImage();
+                    }
+                };
+                saveImageAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_SAVE_AS);
+                saveImageAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_SAVEAS_EDIT));
+                toolBarManager.add(saveImageAction);
+            }
+            {
                 PrintAction printAction = new PrintAction(ERDEditor.this);
                 printAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_PRINT);
                 printAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_PRINT_EDIT));
@@ -1028,6 +1054,72 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 zoomCombo.setZoomManager(rootPart.getZoomManager());
                 toolBarManager.getControl().setEnabled(true);
             }
+        }
+
+    }
+
+    public void saveDiagramAsImage()
+    {
+        final Shell shell = getSite().getShell();
+        FileDialog saveDialog = new FileDialog(shell, SWT.SAVE);
+        saveDialog.setFilterExtensions(new String[]{"*.png", "*.gif", "*.jpg", "*.bmp"});
+        saveDialog.setFilterNames(new String[]{
+            "PNG format (*.png)",
+            "GIF format (*.png)",
+            "JPEG format (*.jpg)",
+            "Bitmap format (*.bmp)"});
+
+        String filePath = saveDialog.open();
+        if (filePath == null || filePath.trim().length() == 0) {
+            return;
+        }
+
+        int imageType = SWT.IMAGE_BMP;
+        if (filePath.toLowerCase().endsWith(".jpg")) {
+            imageType = SWT.IMAGE_JPEG;
+        } else if (filePath.toLowerCase().endsWith(".png")) {
+            imageType = SWT.IMAGE_PNG;
+        } else if (filePath.toLowerCase().endsWith(".gif")) {
+            imageType = SWT.IMAGE_GIF;
+        }
+
+        IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
+        Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane)figure).getFreeformExtent() : figure.getBounds();
+        try {
+            FileOutputStream fos = new FileOutputStream(filePath);
+            try {
+                Rectangle r = figure.getBounds();
+                GC gc = null;
+                Graphics g = null;
+                try {
+                    Image image = new Image(null, contentBounds.x * 2 + contentBounds.width, contentBounds.y *2 + contentBounds.height);
+                    try {
+                        gc = new GC(image);
+                        gc.setClipping(contentBounds.x, contentBounds.y, contentBounds.width, contentBounds.height);
+                        g = new SWTGraphics(gc);
+                        g.translate(r.x * -1, r.y * -1);
+                        figure.paint(g);
+                        ImageLoader imageLoader = new ImageLoader();
+                        imageLoader.data = new ImageData[]{image.getImageData()};
+                        imageLoader.save(fos, imageType);
+                    } finally {
+                        UIUtils.dispose(image);
+                    }
+                } finally {
+                    if (g != null) {
+                        g.dispose();
+                    }
+                    UIUtils.dispose(gc);
+                }
+
+                fos.flush();
+            } finally {
+                ContentUtils.close(fos);
+            }
+            Program.launch(filePath);
+            //UIUtils.showMessageBox(shell, "Save ERD", "Diagram has been exported to " + filePath, SWT.ICON_INFORMATION);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }

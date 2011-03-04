@@ -887,6 +887,7 @@
         <!-- File menu-->
         <menuContribution allPopups="false" locationURI="menu:file?before=end">
             <command commandId="org.eclipse.ui.file.save"/>
+            <command commandId="org.eclipse.ui.file.saveAs"/>
             <command commandId="org.eclipse.ui.file.refresh"/>
             <command commandId="org.eclipse.ui.file.close"/>
             <separator name="import-export" visible="true"/>

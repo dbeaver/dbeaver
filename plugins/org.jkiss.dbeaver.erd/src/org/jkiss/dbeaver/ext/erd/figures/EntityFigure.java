@@ -86,4 +86,10 @@ public class EntityFigure extends Figure
 	{
 		return attributeFigure;
 	}
+
+    @Override
+    public String toString()
+    {
+        return table.getObject().getName() + " [" + getBounds() + "]";
+    }
 }

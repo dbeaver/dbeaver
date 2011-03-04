@@ -76,6 +76,13 @@
                 </with>
             </activeWhen>
         </handler>
+        <handler commandId="org.eclipse.ui.file.saveAs" class="org.jkiss.dbeaver.ext.erd.action.ERDSaveImageHandler">
+            <activeWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"/>
+                </with>
+            </activeWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
