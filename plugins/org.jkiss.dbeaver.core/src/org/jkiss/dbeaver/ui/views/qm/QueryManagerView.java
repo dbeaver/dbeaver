@@ -9,6 +9,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.model.IWorkbenchAdapter;
+import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
@@ -54,26 +55,10 @@ public class QueryManagerView extends ViewPart
     public Object getAdapter(Class adapter)
     {
         if (adapter == IWorkbenchAdapter.class) {
-            return new IWorkbenchAdapter() {
-
-                public Object[] getChildren(Object o)
-                {
-                    return new Object[0];
-                }
-
-                public ImageDescriptor getImageDescriptor(Object object)
-                {
-                    return null;
-                }
-
+            return new WorkbenchAdapter() {
                 public String getLabel(Object o)
                 {
                     return "Query Manager";
-                }
-
-                public Object getParent(Object o)
-                {
-                    return null;
                 }
             };
         }

@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.model.IWorkbenchAdapter;
+import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -113,13 +114,7 @@ public class DBNAdapterFactory implements IAdapterFactory
             // Workbench adapter
             if (adaptableObject instanceof DBNNode) {
                 final DBNNode node = (DBNNode)adaptableObject;
-                return new IWorkbenchAdapter() {
-
-                    public Object[] getChildren(Object o)
-                    {
-                        return null;
-                    }
-
+                return new WorkbenchAdapter() {
                     public ImageDescriptor getImageDescriptor(Object object)
                     {
                         return ImageDescriptor.createFromImage(node.getNodeIconDefault());

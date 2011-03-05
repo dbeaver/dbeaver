@@ -76,13 +76,13 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.file.saveAs" class="org.jkiss.dbeaver.ext.erd.action.ERDSaveImageHandler">
+        <!--handler commandId="org.eclipse.ui.file.saveAs" class="org.jkiss.dbeaver.ext.erd.action.ERDSaveImageHandler">
             <activeWhen>
                 <with variable="activeFocusControl">
                     <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"/>
                 </with>
             </activeWhen>
-        </handler>
+        </handler-->
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
@@ -116,6 +116,18 @@
                 value="COLOR_LIST_SELECTION">
             <description>Entity background</description>
         </colorDefinition-->
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page id="org.jkiss.dbeaver.preferences.erd.editor" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ext.erd.editor.ERDPreferencePage" name="ERD Editor"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.erd.general" class="org.jkiss.dbeaver.ext.erd.editor.ERDPreferencePage" name="General Settings">
+           <enabledWhen>
+              <instanceof value="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"/>
+           </enabledWhen>
+        </page>
     </extension>
 
 </plugin>

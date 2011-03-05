@@ -4,8 +4,11 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.model.IWorkbenchAdapter;
+import org.eclipse.ui.model.WorkbenchAdapter;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -51,6 +54,20 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
 
     public Object getAdapter(Class adapter)
     {
+        if (IWorkbenchAdapter.class.equals(adapter)) {
+            return new WorkbenchAdapter() {
+                public ImageDescriptor getImageDescriptor(Object object) {
+                    return ImageDescriptor.createFromImage(node.getNodeIconDefault());
+                }
+                public String getLabel(Object o) {
+                    return node.getName();
+                }
+                public Object getParent(Object o) {
+                    return node.getParentNode();
+                }
+            };
+        }
+
         return null;
     }
 

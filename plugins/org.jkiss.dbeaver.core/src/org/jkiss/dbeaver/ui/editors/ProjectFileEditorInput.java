@@ -13,6 +13,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
+import org.eclipse.ui.model.WorkbenchAdapter;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
@@ -101,12 +102,7 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
 	 */
 	public Object getAdapter(Class adapter) {
 		if (IWorkbenchAdapter.class.equals(adapter)) {
-			return new IWorkbenchAdapter() {
-
-				public Object[] getChildren(Object o) {
-					return new Object[0];
-				}
-
+			return new WorkbenchAdapter() {
 				public ImageDescriptor getImageDescriptor(Object object) {
 					return ProjectFileEditorInput.this.getImageDescriptor();
 				}

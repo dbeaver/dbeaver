@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -18,7 +19,6 @@ import org.eclipse.gef.commands.CommandStackListener;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.*;
-import org.eclipse.gef.print.PrintGraphicalViewerOperation;
 import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
@@ -29,6 +29,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -45,6 +47,9 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.ActionFactory;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.model.IWorkbenchAdapter;
+import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.services.IEvaluationService;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -57,7 +62,6 @@ import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
-import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
@@ -73,14 +77,14 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -250,6 +254,12 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             return getOverviewOutlinePage();
         } else if (adapter == ZoomManager.class) {
             return getGraphicalViewer().getProperty(ZoomManager.class.toString());
+        } else if (IWorkbenchAdapter.class.equals(adapter)) {
+            return new WorkbenchAdapter() {
+                public String getLabel(Object o) {
+                    return "ERD Editor";
+                }
+            };
         }
         // the super implementation handles the rest
         return super.getAdapter(adapter);
@@ -1014,8 +1024,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                         saveDiagramAsImage();
                     }
                 };
-                saveImageAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_SAVE_AS);
-                saveImageAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_SAVEAS_EDIT));
+                //saveImageAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_SAVE_AS);
+                saveImageAction.setImageDescriptor(DBIcon.PICTURE_SAVE.getImageDescriptor());
                 toolBarManager.add(saveImageAction);
             }
             {
@@ -1029,6 +1039,17 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 printAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_PRINT);
                 printAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_PRINT_EDIT));
                 toolBarManager.add(printAction);
+            }
+            {
+                Action configAction = new Action("Configuration") {
+                    @Override
+                    public void run()
+                    {
+                        showPreferences();
+                    }
+                };
+                configAction.setImageDescriptor(DBIcon.CONFIGURATION.getImageDescriptor());
+                toolBarManager.add(configAction);
             }
 
             toolBarManager.createControl(infoGroup);
@@ -1064,6 +1085,19 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             }
         }
 
+    }
+
+    public void showPreferences()
+    {
+        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
+            getSite().getShell(),
+            this,
+            ERDPreferencePage.PAGE_ID,
+            null,//new String[]{pageId},
+            null);
+        if (propDialog != null) {
+            propDialog.open();
+        }
     }
 
     public void saveDiagramAsImage()

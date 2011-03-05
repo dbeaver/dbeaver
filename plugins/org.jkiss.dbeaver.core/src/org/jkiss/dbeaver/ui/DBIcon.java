@@ -44,6 +44,10 @@ public enum DBIcon
     SCRIPTS("scripts", "icons/scripts.png"),
     BOOKMARK_FOLDER("bookmark_folder", "icons/bookmark_folder.png"),
     BOOKMARK("bookmark", "icons/bookmark.png"),
+    PICTURE("picture", "icons/picture.png"),
+    PICTURE_SAVE("picture_save", "icons/picture.png"),
+    PROPERTIES("properties", "icons/properties.png"),
+    CONFIGURATION("properties", "icons/configuration.png"),
 
     LOADING1("loading1", "icons/tree/load/loading1.gif"),
     LOADING2("loading2", "icons/tree/load/loading2.gif"),
