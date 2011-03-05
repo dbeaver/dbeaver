@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -30,7 +29,6 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -80,7 +78,6 @@ import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
-import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.FileOutputStream;
@@ -1179,11 +1176,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             if (rootFigure != null) {
                 PrintFigureOperation printOp = new PrintFigureOperation(new Printer(data), rootFigure);
                 printOp.setPrintMode(PrintFigureOperation.FIT_PAGE);
+                //printOp.setPrintMargin();
 
-    /*
-                PrintGraphicalViewerOperation op = new PrintGraphicalViewerOperation(
-                        new Printer(data), viewer);
-    */
                 printOp.run(getTitle());
             }
         }

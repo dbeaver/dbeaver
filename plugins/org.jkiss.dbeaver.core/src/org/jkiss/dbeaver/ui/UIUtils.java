@@ -454,6 +454,16 @@ public class UIUtils {
         return button;
     }
 
+    public static Combo createLabelCombo(Composite parent, String label, int style)
+    {
+        Label labelControl = createControlLabel(parent, label);
+        labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        final Combo combo = new Combo(parent, style);
+
+        return combo;
+    }
+
     public static Text createCheckText(Composite parent, String label, String value, boolean checked, int textWidth)
     {
         final Button checkbox = UIUtils.createCheckbox(parent, label, checked);
