@@ -14,8 +14,9 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -33,7 +34,7 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
     protected Control createContents(Composite parent)
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
@@ -75,7 +76,7 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
     public boolean performOk()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
         int pageMode;
         switch (modeCombo.getSelectionIndex()) {
@@ -90,6 +91,8 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
         store.setValue(ERDConstants.PREF_PRINT_MARGIN_BOTTOM, spinnerMarginBottom.getSelection());
         store.setValue(ERDConstants.PREF_PRINT_MARGIN_LEFT, spinnerMarginLeft.getSelection());
         store.setValue(ERDConstants.PREF_PRINT_MARGIN_RIGHT, spinnerMarginRight.getSelection());
+
+        RuntimeUtils.savePreferenceStore(store);
 
         return true;
     }

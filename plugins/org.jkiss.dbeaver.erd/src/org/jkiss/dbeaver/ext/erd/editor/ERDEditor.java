@@ -56,7 +56,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
@@ -1181,7 +1180,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 PrintFigureOperation printOp = new PrintFigureOperation(new Printer(data), rootFigure);
 
                 // Set print preferences
-                IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+                IPreferenceStore store = Activator.getDefault().getPreferenceStore();
                 printOp.setPrintMode(store.getInt(ERDConstants.PREF_PRINT_PAGE_MODE));
                 printOp.setPrintMargin(new Insets(
                     store.getInt(ERDConstants.PREF_PRINT_MARGIN_TOP),
