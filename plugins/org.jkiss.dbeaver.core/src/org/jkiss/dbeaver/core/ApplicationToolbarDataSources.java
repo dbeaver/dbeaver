@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
@@ -110,7 +111,8 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         if (editorInput instanceof IDataSourceContainerProvider) {
             return ((IDataSourceContainerProvider)editorInput).getDataSourceContainer();
         } else if (editorInput instanceof IDataSourceProvider) {
-            return ((IDataSourceProvider)editorInput).getDataSource().getContainer();
+            final DBPDataSource dataSource = ((IDataSourceProvider) editorInput).getDataSource();
+            return dataSource == null ? null : dataSource.getContainer();
         } else {
             return null;
         }
@@ -167,6 +169,76 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     public void fillToolBar(IToolBarManager manager)
     {
+        // Connection related actions
+        manager.add(new ControlContribution("DataSources")
+        {
+            protected Control createControl(Composite parent)
+            {
+                Composite comboGroup = new Composite(parent, SWT.NONE);
+                GridLayout gl = new GridLayout(1, true);
+                gl.marginWidth = 5;
+                gl.marginHeight = 0;
+                comboGroup.setLayout(gl);
+
+                connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+                GridData gd = new GridData();
+                gd.widthHint = 120;
+                connectionCombo.setLayoutData(gd);
+                connectionCombo.setVisibleItemCount(15);
+                connectionCombo.setToolTipText("Active datasource");
+                connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
+                connectionCombo.select(0);
+                fillDataSourceList();
+                connectionCombo.addSelectionListener(new SelectionListener()
+                {
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        changeDataSourceSelection();
+                    }
+
+                    public void widgetDefaultSelected(SelectionEvent e)
+                    {
+                        widgetSelected(e);
+                    }
+                });
+                return comboGroup;
+            }
+        });
+        manager.add(new ControlContribution("DataBases") {
+            protected Control createControl(Composite parent)
+            {
+                Composite comboGroup = new Composite(parent, SWT.NONE);
+                GridLayout gl = new GridLayout(1, true);
+                gl.marginWidth = 5;
+                gl.marginHeight = 0;
+                comboGroup.setLayout(gl);
+
+                databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+                GridData gd = new GridData();
+                gd.widthHint = 120;
+                databaseCombo.setLayoutData(gd);
+                databaseCombo.setVisibleItemCount(15);
+                databaseCombo.setToolTipText("Active catalog/schema");
+                databaseCombo.add(DBIcon.TREE_CATALOG.getImage(), EMPTY_SELECTION_TEXT, null);
+                databaseCombo.select(0);
+                databaseCombo.addSelectionListener(new SelectionListener() {
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        changeDataBaseSelection();
+                    }
+
+                    public void widgetDefaultSelected(SelectionEvent e)
+                    {
+                        widgetSelected(e);
+                    }
+                });
+                updateDatabaseList();
+                return comboGroup;
+            }
+        });
+
+        manager.add(new Separator());
+
         manager.add(new ControlContribution("ResultSet Size") {
             protected Control createControl(Composite parent)
             {
@@ -203,84 +275,24 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
             }
         });
 
-        // Connection related actions
-        manager.add(new Separator());
-        manager.add(new ControlContribution("DataSources")
-        {
-            protected Control createControl(Composite parent)
-            {
-                Composite comboGroup = new Composite(parent, SWT.NONE);
-                GridLayout gl = new GridLayout(1, true);
-                gl.marginWidth = 5;
-                gl.marginHeight = 0;
-                comboGroup.setLayout(gl);
-
-                connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
-                GridData gd = new GridData();
-                gd.widthHint = 120;
-                connectionCombo.setLayoutData(gd);
-                connectionCombo.setVisibleItemCount(15);
-                connectionCombo.setToolTipText("Active datasource");
-                fillDataSourceList();
-                connectionCombo.addSelectionListener(new SelectionListener()
-                {
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        changeDataSourceSelection();
-                    }
-
-                    public void widgetDefaultSelected(SelectionEvent e)
-                    {
-                        widgetSelected(e);
-                    }
-                });
-                return comboGroup;
-            }
-        });
-        manager.add(new ControlContribution("DataBases") {
-            protected Control createControl(Composite parent)
-            {
-                Composite comboGroup = new Composite(parent, SWT.NONE);
-                GridLayout gl = new GridLayout(1, true);
-                gl.marginWidth = 5;
-                gl.marginHeight = 0;
-                comboGroup.setLayout(gl);
-
-                databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
-                GridData gd = new GridData();
-                gd.widthHint = 120;
-                databaseCombo.setLayoutData(gd);
-                databaseCombo.setVisibleItemCount(15);
-                databaseCombo.setToolTipText("Active database");
-                databaseCombo.add(DBIcon.TREE_CATALOG.getImage(), EMPTY_SELECTION_TEXT);
-                databaseCombo.select(0);
-                databaseCombo.addSelectionListener(new SelectionListener() {
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        changeDataBaseSelection();
-                    }
-
-                    public void widgetDefaultSelected(SelectionEvent e)
-                    {
-                        widgetSelected(e);
-                    }
-                });
-                updateDatabaseList();
-                return comboGroup;
-            }
-        });
     }
 
     private void fillDataSourceList() {
         connectionCombo.setRedraw(false);
         try {
-            connectionCombo.removeAll();
+            final List<? extends DBSDataSourceContainer> dataSources = getAvailableDataSources();
 
-            connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT);
+            // Remove all but first item
+            final int itemCount = connectionCombo.getItemCount();
+            if (itemCount > 1) {
+                for (int i = itemCount - 1; i > 0; i--) {
+                    connectionCombo.remove(i);
+                }
+            }
+
             int selectionIndex = 0;
             if (activeEditorPart != null) {
                 final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
-                List<? extends DBSDataSourceContainer> dataSources = getAvailableDataSources();
                 if (!CommonUtils.isEmpty(dataSources)) {
                     DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                     for (int i = 0; i < dataSources.size(); i++) {
@@ -288,7 +300,8 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                         DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(ds);
                         connectionCombo.add(
                             dsNode == null ? DBIcon.TREE_DATABASE.getImage() : dsNode.getNodeIconDefault(),
-                            ds.getName());
+                            ds.getName(),
+                            ds);
                         if (dataSourceContainer == ds) {
                             selectionIndex = i + 1;
                         }
@@ -369,6 +382,8 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     private void updateDatabaseList()
     {
+        //fillDatabaseCombo(VoidProgressMonitor.INSTANCE);
+
         // Update databases combo
         DBeaverCore.runUIJob("Populate current database list", new DBRRunnableWithProgress() {
             public void run(DBRProgressMonitor monitor)
@@ -384,7 +399,13 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         if (databaseCombo != null && !databaseCombo.isDisposed()) {
             databaseCombo.setRedraw(false);
             try {
-                databaseCombo.removeAll();
+                // Remove all but first item (which is constant)
+                if (databaseCombo.getItemCount() > 1) {
+                    for (int i = databaseCombo.getItemCount() - 1; i > 0; i--) {
+                        databaseCombo.remove(i);
+                    }
+                }
+
                 boolean isEnabled = false;
                 DBSDataSourceContainer dsContainer = getDataSourceContainer();
                 if (dsContainer != null && dsContainer.isConnected()) {
@@ -415,8 +436,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                                 for (DBSObject database : databasesInfo.list) {
                                     if (database instanceof DBSEntityContainer) {
                                         DBNDatabaseNode dbNode = navigatorModel.getNodeByObject(monitor, database, true);
-                                        databaseCombo.add(dbNode == null ? DBIcon.TREE_CATALOG.getImage() : dbNode.getNodeIconDefault(), database.getName());
-                                        databaseCombo.setData(database.getName(), database);
+                                        databaseCombo.add(dbNode == null ? DBIcon.TREE_CATALOG.getImage() : dbNode.getNodeIconDefault(), database.getName(), database);
                                     }
                                 }
                             }
@@ -431,14 +451,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                                 }
                             }
                         }
-                    } else {
-                        databaseCombo.add(DBIcon.TREE_CATALOG.getImage(), dsContainer.getConnectionInfo().getDatabaseName());
-                        databaseCombo.select(0);
                     }
-                }
-                if (databaseCombo.getItemCount() == 0) {
-                    databaseCombo.add(DBIcon.TREE_CATALOG.getImage(), EMPTY_SELECTION_TEXT);
-                    databaseCombo.select(0);
                 }
                 databaseCombo.setEnabled(isEnabled);
             }
@@ -497,32 +510,34 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             try {
-                if (dataSource instanceof DBSEntityContainer &&
-                    dataSource instanceof DBSEntitySelector &&
-                    ((DBSEntitySelector)dataSource).supportsActiveChildChange())
-                {
-                    DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
-                        public void run(DBRProgressMonitor monitor)
-                            throws InvocationTargetException, InterruptedException
-                        {
-                            try {
+                DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            if (dataSource instanceof DBSEntityContainer &&
+                                dataSource instanceof DBSEntitySelector &&
+                                ((DBSEntitySelector)dataSource).supportsActiveChildChange())
+                            {
                                 DBSObject newChild = ((DBSEntityContainer) dataSource).getChild(monitor, newName);
                                 if (newChild != null) {
                                     ((DBSEntitySelector)dataSource).setActiveChild(monitor, newChild);
                                 } else {
                                     throw new DBException("Could not find database '" + newName + "'");
                                 }
-                            }
-                            catch (DBException e) {
-                                throw new InvocationTargetException(e);
+                            } else {
+                                throw new DBException("Active database change is not supported");
                             }
                         }
-                    });
-                } else {
-                    throw new DBException("Active database change is not supported");
-                }
-            } catch (DBException e) {
-                log.error("Error changing active database" + e.getMessage());
+                        catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Change active database", null, e.getTargetException());
+            } catch (InterruptedException e) {
+                // skip
             }
         }
     }
@@ -572,9 +587,11 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     public void partDeactivated(IWorkbenchPart part)
     {
-        if (part == activeEditorPart) {
-            setActiveEditor(null);
-        }
+        // Do nothing
+
+        //if (part == activeEditorPart) {
+        //    setActiveEditor(null);
+        //}
     }
 
     public void partOpened(IWorkbenchPart part)

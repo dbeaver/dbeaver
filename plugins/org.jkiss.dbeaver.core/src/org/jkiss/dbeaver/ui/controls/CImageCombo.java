@@ -134,7 +134,7 @@ public class CImageCombo extends Composite {
         }
         this.arrow = new Button(this, arrowStyle);
 
-        setEnabled(true);
+        setEnabled(true, true);
 
         this.listener = new Listener() {
             public void handleEvent(Event event)
@@ -193,11 +193,18 @@ public class CImageCombo extends Composite {
         initAccessible();
     }
 
+    private void setEnabled(boolean enabled, boolean force)
+    {
+        if (force || enabled != isEnabled()) {
+            super.setEnabled(enabled);
+            setBackground(Display.getDefault().getSystemColor(enabled ? SWT.COLOR_LIST_BACKGROUND : SWT.COLOR_WIDGET_BACKGROUND));
+        }
+    }
+
     @Override
     public void setEnabled(boolean enabled)
     {
-        super.setEnabled(enabled);
-        setBackground(Display.getDefault().getSystemColor(enabled ? SWT.COLOR_LIST_BACKGROUND : SWT.COLOR_WIDGET_BACKGROUND));
+        setEnabled(enabled, false);
     }
 
     public void setForeground(Color foreground)
@@ -230,7 +237,7 @@ public class CImageCombo extends Composite {
      *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
      *                                  </ul>
      */
-    public void add(Image image, String string)
+    public void add(Image image, String string, Object data)
     {
         checkWidget();
         if (string == null) {
@@ -238,11 +245,21 @@ public class CImageCombo extends Composite {
         }
 
         TableItem newItem = new TableItem(this.table, SWT.FILL);
-        newItem.setText(string);//
+        newItem.setText(string);
+        newItem.setData(data);
         if (image != null) {
             newItem.setImage(image);
             //this.imageLabel.setImage(image);
         }
+    }
+
+    public Object getData(int index)
+    {
+        checkWidget();
+        if (index < 0 || index >= table.getItemCount()) {
+            SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+        }
+        return table.getItem(index).getData();
     }
 
     /**
@@ -567,6 +584,9 @@ public class CImageCombo extends Composite {
     public void remove(int index)
     {
         checkWidget();
+        if (index == getSelectionIndex() && index > 0) {
+            select(0);
+        }
         this.table.remove(index);
     }
 
