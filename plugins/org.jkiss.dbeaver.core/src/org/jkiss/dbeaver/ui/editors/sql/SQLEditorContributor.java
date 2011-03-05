@@ -91,15 +91,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
     {
         setActiveEditor(null);
 
-        if (resultSetSize != null) {
-            resultSetSize.dispose();
-        }
-        if (connectionCombo != null) {
-            connectionCombo.dispose();
-        }
-        if (databaseCombo != null) {
-            databaseCombo.dispose();
-        }
+        UIUtils.dispose(resultSetSize);
+        UIUtils.dispose(connectionCombo);
+        UIUtils.dispose(databaseCombo);
 
         if (activeEditorPart != null) {
             activeEditorPart.getDataSourceContainer().getRegistry().removeDataSourceListener(this);
@@ -276,7 +270,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                         widgetSelected(e);
                     }
                 });
-                //fillDatabaseCombo(monitor, getEditor());
+                updateDatabaseList(getEditor());
                 return comboGroup;
             }
         });
@@ -363,15 +357,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
 
         // Update datasources combo
         updateDataSourceList(editor);
+        updateDatabaseList(editor);
 
-        // Update databases combo
-        DBeaverCore.runUIJob("Populate current database list", new DBRRunnableWithProgress() {
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                fillDatabaseCombo(monitor, editor);
-            }
-        });
+
     }
 
     private void changeResultSetSize()
@@ -401,6 +389,18 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 fillDataSourceList(editor);
             }
         }
+    }
+
+    private void updateDatabaseList(final SQLEditor editor)
+    {
+        // Update databases combo
+        DBeaverCore.runUIJob("Populate current database list", new DBRRunnableWithProgress() {
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                fillDatabaseCombo(monitor, editor);
+            }
+        });
     }
 
     private class CurrentDatabasesInfo {

@@ -241,7 +241,7 @@ public class CImageCombo extends Composite {
         newItem.setText(string);//
         if (image != null) {
             newItem.setImage(image);
-            this.imageLabel.setImage(image);
+            //this.imageLabel.setImage(image);
         }
     }
 
@@ -1189,6 +1189,15 @@ public class CImageCombo extends Composite {
             index++;
         } while (index < length);
         return string;
+    }
+
+    @Override
+    public void setRedraw(boolean redraw)
+    {
+        if (this.table != null && !this.table.isDisposed()) {
+            this.table.setRedraw(redraw);
+        }
+        super.setRedraw(redraw);
     }
 
     void initAccessible()
