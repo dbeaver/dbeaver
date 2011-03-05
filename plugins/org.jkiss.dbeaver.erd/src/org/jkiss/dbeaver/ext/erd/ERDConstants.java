@@ -4,10 +4,20 @@
 
 package org.jkiss.dbeaver.ext.erd;
 
+import org.eclipse.draw2d.PrintFigureOperation;
+
 /**
  * ERD constants
  */
 public class ERDConstants {
 
+    public static final String PREF_PRINT_PAGE_MODE = "erd.print.page-mode";
+    public static final String PREF_PRINT_MARGIN_TOP = "erd.print.margin-top";
+    public static final String PREF_PRINT_MARGIN_BOTTOM = "erd.print.margin-bottom";
+    public static final String PREF_PRINT_MARGIN_LEFT = "erd.print.margin-left";
+    public static final String PREF_PRINT_MARGIN_RIGHT = "erd.print.margin-right";
+
+    public static final int PRINT_MODE_DEFAULT = PrintFigureOperation.TILE;
+    public static final int PRINT_MARGIN_DEFAULT = 0;
 
 }

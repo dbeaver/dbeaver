@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.commands.CommandStack;
@@ -28,6 +29,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
@@ -54,7 +56,9 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.Activator;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
@@ -1175,10 +1179,18 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             //EntityDiagramFigure diagramFigure = findFigure(rootFigure, EntityDiagramFigure.class);
             if (rootFigure != null) {
                 PrintFigureOperation printOp = new PrintFigureOperation(new Printer(data), rootFigure);
-                printOp.setPrintMode(PrintFigureOperation.FIT_PAGE);
-                //printOp.setPrintMargin();
 
-                printOp.run(getTitle());
+                // Set print preferences
+                IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+                printOp.setPrintMode(store.getInt(ERDConstants.PREF_PRINT_PAGE_MODE));
+                printOp.setPrintMargin(new Insets(
+                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_TOP),
+                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_LEFT),
+                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_BOTTOM),
+                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_RIGHT)
+                ));
+                // Run print
+                printOp.run("Print ER diagram");
             }
         }
         //new PrintAction(this).run();
