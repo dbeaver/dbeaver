@@ -945,6 +945,10 @@
                 <command commandId="org.jkiss.dbeaver.core.rollback"/>
                 <command commandId="org.jkiss.dbeaver.core.txn.autocommit" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn"/>
             </toolbar>
+            <toolbar id="datasource-settings" label="Transactions">
+
+            </toolbar>
+
         </menuContribution>
 
         <!-- Database Navigator menu & toolbar -->

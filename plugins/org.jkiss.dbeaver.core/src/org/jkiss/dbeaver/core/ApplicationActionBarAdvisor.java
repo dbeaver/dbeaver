@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.core;
 
 import org.eclipse.jface.action.*;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -170,13 +171,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         helpMenu.add(ViewUtils.makeAction(aboutAction, null, null, "About", null, null));
     }
 
-
     protected void fillCoolBar(ICoolBarManager coolBar)
     {
         //IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
-        //coolBar.add(new ToolBarContributionItem(toolbar, "main"));
-        //toolbar.add(driverManagerAction);
-        //toolbar.add(newConnectionAction);
-        //toolbar.add(openSQLEditorAction);
+        //toolbar.add(new Action("HEY") {} );
+
+        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), "database"));
+        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), "txn"));
+        //coolBar.add(new ToolBarContributionItem(toolbar, "datasource-settings"));
     }
 }
