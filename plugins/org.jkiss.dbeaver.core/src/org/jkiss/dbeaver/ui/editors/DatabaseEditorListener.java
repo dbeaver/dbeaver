@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.IDBNListener;
@@ -18,9 +18,9 @@ import org.jkiss.dbeaver.model.navigator.IDBNListener;
 public class DatabaseEditorListener implements IDBNListener
 {
 
-    private IDatabaseEditor databaseEditor;
+    private IDatabaseNodeEditor databaseEditor;
 
-    DatabaseEditorListener(IDatabaseEditor databaseEditor) {
+    DatabaseEditorListener(IDatabaseNodeEditor databaseEditor) {
         this.databaseEditor = databaseEditor;
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
     }

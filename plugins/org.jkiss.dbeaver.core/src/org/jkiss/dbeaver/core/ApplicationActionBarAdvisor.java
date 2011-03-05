@@ -38,6 +38,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private IWorkbenchAction newWindowAction;
     //private IWorkbenchAction viewPropertiesAction;
     private IWorkbenchAction viewPreferencesAction;
+    private ApplicationToolbarDataSources dataSourceToolbar;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
     {
@@ -173,11 +174,21 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     protected void fillCoolBar(ICoolBarManager coolBar)
     {
-        //IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
-        //toolbar.add(new Action("HEY") {} );
-
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), "database"));
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), "txn"));
-        //coolBar.add(new ToolBarContributionItem(toolbar, "datasource-settings"));
+
+        IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
+        dataSourceToolbar = new ApplicationToolbarDataSources(getActionBarConfigurer().getWindowConfigurer().getWindow());
+        dataSourceToolbar.fillToolBar(toolbar);
+        coolBar.add(new ToolBarContributionItem(toolbar, "datasource-settings"));
+    }
+
+    @Override
+    public void dispose()
+    {
+        if (dataSourceToolbar != null) {
+            dataSourceToolbar.dispose();
+            dataSourceToolbar = null;
+        }
     }
 }

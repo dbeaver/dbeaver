@@ -13,14 +13,13 @@ import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -42,7 +41,7 @@ import java.io.*;
 /**
  * ContentEditorInput
  */
-public class ContentEditorInput implements IPathEditorInput, IDatabaseEditorInput
+public class ContentEditorInput implements IPathEditorInput, IDatabaseNodeEditorInput
 {
     static final Log log = LogFactory.getLog(ContentEditorInput.class);
 
@@ -293,7 +292,7 @@ public class ContentEditorInput implements IPathEditorInput, IDatabaseEditorInpu
     }
 
     ////////////////////////////////////////////////////////
-    // IDatabaseEditorInput methods
+    // IDatabaseNodeEditorInput methods
 
     public DBPDataSource getDataSource() {
         return valueController.getDataSource();

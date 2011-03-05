@@ -64,7 +64,7 @@
                 id="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.database.editor"
                 properties="active"
-                type="org.jkiss.dbeaver.ext.IDatabaseEditor">
+                type="org.jkiss.dbeaver.ext.IDatabaseNodeEditor">
         </propertyTester>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
@@ -372,7 +372,7 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <or>
-                        <adapt type="org.jkiss.dbeaver.ext.IDatabaseEditor"/>
+                        <adapt type="org.jkiss.dbeaver.ext.IDatabaseNodeEditor"/>
                         <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                     </or>
                 </with>
@@ -1364,7 +1364,7 @@
            <enabledWhen>
                <or>
                   <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                  <instanceof value="org.jkiss.dbeaver.ext.IDatabaseEditorInput"/>
+                  <instanceof value="org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput"/>
                </or>
            </enabledWhen>
         </page>
@@ -1372,7 +1372,7 @@
            <enabledWhen>
               <or>
                  <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                 <instanceof value="org.jkiss.dbeaver.ext.IDatabaseEditorInput"/>
+                 <instanceof value="org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput"/>
                  <instanceof value="org.jkiss.dbeaver.registry.DataFormatterRegistry"/>
               </or>
            </enabledWhen>
@@ -1381,7 +1381,7 @@
            <enabledWhen>
                <or>
                 <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                <instanceof value="org.jkiss.dbeaver.ext.IDatabaseEditorInput"/>
+                <instanceof value="org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput"/>
                </or>
            </enabledWhen>
         </page>

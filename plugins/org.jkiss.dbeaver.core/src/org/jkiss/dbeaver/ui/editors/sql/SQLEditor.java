@@ -7,10 +7,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.IOUtils;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -40,7 +37,7 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
@@ -82,7 +79,7 @@ import java.util.ResourceBundle;
  * SQL Executor
  */
 public class SQLEditor extends SQLEditorBase
-    implements IResourceChangeListener, IDataSourceContainerProvider, DBPEventListener, ISaveablePart2, ResultSetProvider
+    implements IResourceChangeListener, IDataSourceContainerProviderEx, DBPEventListener, ISaveablePart2, ResultSetProvider
 {
 
     static final int PAGE_INDEX_RESULTSET = 0;
@@ -291,6 +288,10 @@ public class SQLEditor extends SQLEditorBase
 
     public void resourceChanged(final IResourceChangeEvent event)
     {
+        final IResourceDelta delta = event.getDelta().findMember(getEditorInput().getPath());
+        if (delta != null) {
+            final int kind = delta.getKind();
+        }
     }
 
     public void explainQueryPlan()

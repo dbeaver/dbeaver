@@ -8,11 +8,11 @@ import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 
 /**
- * IDatabaseEditor
+ * IDatabaseNodeEditor
  */
-public interface IDatabaseEditor extends IEditorPart
+public interface IDatabaseNodeEditor extends IEditorPart
 {
-    IDatabaseEditorInput getEditorInput();
+    IDatabaseNodeEditorInput getEditorInput();
 
     void refreshDatabaseContent(DBNEvent event);
 }

@@ -13,13 +13,13 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 
 /**
  * AbstractDatabaseEditor
  */
-public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends EditorPart implements IDatabaseEditor, IDataSourceProvider
+public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseNodeEditorInput> extends EditorPart implements IDatabaseNodeEditor, IDataSourceProvider
 {
     static final Log log = LogFactory.getLog(AbstractDatabaseEditor.class);
 

@@ -17,8 +17,8 @@ import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * MultiPageDatabaseEditor
  */
-public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends MultiPageEditorPart implements IDatabaseEditor, IDataSourceProvider
+public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseNodeEditorInput> extends MultiPageEditorPart implements IDatabaseNodeEditor, IDataSourceProvider
 {
     static final Log log = LogFactory.getLog(MultiPageDatabaseEditor.class);
 

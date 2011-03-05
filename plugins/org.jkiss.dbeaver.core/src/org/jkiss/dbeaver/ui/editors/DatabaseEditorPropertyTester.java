@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 
 /**
  * DatabaseEditorPropertyTester
@@ -20,10 +20,10 @@ public class DatabaseEditorPropertyTester extends PropertyTester
     }
 
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof IDatabaseEditor)) {
+        if (!(receiver instanceof IDatabaseNodeEditor)) {
             return false;
         }
-        IDatabaseEditor databaseEditor = (IDatabaseEditor) receiver;
+        IDatabaseNodeEditor databaseEditor = (IDatabaseNodeEditor) receiver;
         if (property.equals(PROP_ACTIVE)) {
             String typeName = String.valueOf(expectedValue);
             if (databaseEditor instanceof MultiPageDatabaseEditor<?>) {

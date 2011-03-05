@@ -918,8 +918,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 /*
     public DBNNode getRootNode() {
         IEditorInput editorInput = getEditorInput();
-        if (editorInput instanceof IDatabaseEditorInput) {
-            return ((IDatabaseEditorInput)editorInput).getTreeNode();
+        if (editorInput instanceof IDatabaseNodeEditorInput) {
+            return ((IDatabaseNodeEditorInput)editorInput).getTreeNode();
         }
         return null;
     }

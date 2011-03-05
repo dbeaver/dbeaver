@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -31,8 +31,8 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
             if (adaptableObject instanceof IDataSourceContainerProvider) {
                 return ((IDataSourceContainerProvider)adaptableObject).getDataSourceContainer();
             }
-            if (adaptableObject instanceof IDatabaseEditor) {
-                DBNNode node = ((IDatabaseEditor) adaptableObject).getEditorInput().getTreeNode();
+            if (adaptableObject instanceof IDatabaseNodeEditor) {
+                DBNNode node = ((IDatabaseNodeEditor) adaptableObject).getEditorInput().getTreeNode();
                 if (node instanceof DBSWrapper) {
                     DBSObject dbsObject = ((DBSWrapper)node).getObject();
                     if (dbsObject != null) {
@@ -45,8 +45,8 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
             }
             return null;
         } else if (DBPObject.class.isAssignableFrom(adapterType)) {
-            if (adaptableObject instanceof IDatabaseEditor) {
-                DBNNode node = ((IDatabaseEditor) adaptableObject).getEditorInput().getTreeNode();
+            if (adaptableObject instanceof IDatabaseNodeEditor) {
+                DBNNode node = ((IDatabaseNodeEditor) adaptableObject).getEditorInput().getTreeNode();
                 if (node instanceof DBSWrapper) {
                     DBSObject object = ((DBSWrapper)node).getObject();
                     if (object != null && adapterType.isAssignableFrom(object.getClass())) {

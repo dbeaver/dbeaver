@@ -14,7 +14,8 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -24,7 +25,7 @@ import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 /**
  * SQLEditorInput
  */
-public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IAutoSaveEditorInput, IDatabaseEditorInput
+public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IAutoSaveEditorInput, IDatabaseNodeEditorInput, IDataSourceContainerProvider
 {
     public static final QualifiedName PROP_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", "sql-editor-data-source-id");
 
@@ -77,6 +78,9 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
 
     public void setDataSourceContainer(DBSDataSourceContainer container)
     {
+        if (dataSourceContainer == container) {
+            return;
+        }
         dataSourceContainer = container;
         try {
             IFile file = getFile();

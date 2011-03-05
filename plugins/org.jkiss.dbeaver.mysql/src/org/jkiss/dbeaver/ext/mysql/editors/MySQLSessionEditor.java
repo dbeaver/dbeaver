@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * MySQLSessionEditor
  */
-public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput>
+public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEditorInput>
 {
     static final Log log = LogFactory.getLog(MySQLSessionEditor.class);
 
