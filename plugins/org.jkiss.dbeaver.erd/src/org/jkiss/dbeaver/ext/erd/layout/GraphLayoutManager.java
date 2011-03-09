@@ -53,8 +53,10 @@ public class GraphLayoutManager extends AbstractLayout
 			return;
 */
 
+        // TODO: REPLACE WITH ZEST!
 		new DirectedGraphLayoutVisitor().layoutDiagram(diagram);
-		diagram.setTableModelBounds();
+        diagram.setTableModelBounds();
+        //new ZestGraphLayout().layoutDiagram(diagram);
 
         Animation.run(400);
 	}

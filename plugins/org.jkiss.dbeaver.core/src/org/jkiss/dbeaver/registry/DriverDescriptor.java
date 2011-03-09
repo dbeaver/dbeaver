@@ -576,7 +576,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
             URL url;
             try {
-                url = new URL("file:/" + library.getLibraryFile().getAbsolutePath());
+                url = library.getLibraryFile().toURI().toURL();
             } catch (MalformedURLException e) {
                 log.error(e);
                 continue;
@@ -624,43 +624,38 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return new File(Platform.getInstallLocation().getDataArea("drivers").toExternalForm());
     }
 
-    public URL getLibraryURL(String path)
+    File getLibraryFile(String path)
     {
-        URL url = getProviderDescriptor().getContributorBundle().getEntry(path);
-        if (url != null) {
-            try {
-                url = FileLocator.toFileURL(url);
-            }
-            catch (IOException ex) {
-                log.warn(ex);
-            }
-        }
         // Try to use direct path
-        if (url == null) {
-            File libraryFile = new File(path);
-            if (!libraryFile.exists()) {
-                // File not exists - try to use relative path
-                Location location = Platform.getInstallLocation();
+        File libraryFile = new File(path);
+        if (libraryFile.exists()) {
+            return libraryFile;
+        }
+        // Try to use relative path
+        File installLocation = new File(Platform.getInstallLocation().getURL().getFile());
+        File platformFile = new File(installLocation, path);
+        if (platformFile.exists()) {
+            // Relative file do not exists - use plain one
+            return platformFile;
+        }
+        // Try to get from plugin's bundle
+        {
+            URL url = getProviderDescriptor().getContributorBundle().getEntry(path);
+            if (url != null) {
                 try {
-                    url = location.getDataArea(path);
-                    File platformFile = new File(url.getFile());
-                    if (!platformFile.exists()) {
-                        // Relative file do not exists - use plain one
-                        url = libraryFile.toURI().toURL();
-                    }
-                } catch (IOException e) {
-                    log.warn(e);
+                    url = FileLocator.toFileURL(url);
                 }
-            } else {
-                try {
-                    url = new URL("file:/" + libraryFile.toString());
-                }
-                catch (MalformedURLException ex) {
+                catch (IOException ex) {
                     log.warn(ex);
                 }
             }
+            if (url != null) {
+                return new File(url.getFile());
+            }
         }
-        return url;
+
+        // Nothing fits - just return plain url
+        return libraryFile;
     }
 
     public void serialize(XMLBuilder xml, boolean export)
