@@ -1107,7 +1107,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         saveDialog.setFilterExtensions(new String[]{"*.png", "*.gif", "*.jpg", "*.bmp"});
         saveDialog.setFilterNames(new String[]{
             "PNG format (*.png)",
-            "GIF format (*.png)",
+            "GIF format (*.gif)",
             "JPEG format (*.jpg)",
             "Bitmap format (*.bmp)"});
 
