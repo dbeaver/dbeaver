@@ -82,6 +82,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.ImageUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -256,7 +257,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             return getGraphicalViewer().getProperty(ZoomManager.class.toString());
         } else if (IWorkbenchAdapter.class.equals(adapter)) {
             return new WorkbenchAdapter() {
-                public String getLabel(Object o) {
+                public String getLabel(Object o)
+                {
                     return "ERD Editor";
                 }
             };
@@ -1126,7 +1128,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         }
 
         IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
-        Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane)figure).getFreeformExtent() : figure.getBounds();
+        Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
         try {
             FileOutputStream fos = new FileOutputStream(filePath);
             try {
@@ -1134,7 +1136,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 GC gc = null;
                 Graphics g = null;
                 try {
-                    Image image = new Image(null, contentBounds.x * 2 + contentBounds.width, contentBounds.y *2 + contentBounds.height);
+                    Image image = new Image(null, contentBounds.x * 2 + contentBounds.width, contentBounds.y * 2 + contentBounds.height);
                     try {
                         gc = new GC(image);
                         gc.setClipping(contentBounds.x, contentBounds.y, contentBounds.width, contentBounds.height);
@@ -1142,7 +1144,14 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                         g.translate(r.x * -1, r.y * -1);
                         figure.paint(g);
                         ImageLoader imageLoader = new ImageLoader();
-                        imageLoader.data = new ImageData[]{image.getImageData()};
+                        imageLoader.data = new ImageData[1];
+                        if (imageType != SWT.IMAGE_JPEG) {
+                            // Convert to 8bit color
+                            imageLoader.data[0] = ImageUtils.makeWebImageData(image);
+                        } else {
+                            // Use maximum colors for JPEG
+                            imageLoader.data[0] = image.getImageData();
+                        }
                         imageLoader.save(fos, imageType);
                     } finally {
                         UIUtils.dispose(image);
@@ -1160,8 +1169,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             }
             Program.launch(filePath);
             //UIUtils.showMessageBox(shell, "Save ERD", "Diagram has been exported to " + filePath, SWT.ICON_INFORMATION);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            UIUtils.showErrorDialog(getSite().getShell(), "Save ERD as image", null, e);
         }
 
     }
