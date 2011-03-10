@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -194,13 +195,10 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             throw new DBException("Can't detect folder for bookmark");
         }
 
-        String fileName = CommonUtils.escapeFileName(title);
-        IFile file = folder.getFile(fileName + "." + BOOKMARK_EXT);
-        int index = 1;
-        while (file.exists()) {
-            file = folder.getFile(fileName + "-" + index + "." + BOOKMARK_EXT);
-            index++;
-        }
+        IFile file = ContentUtils.getUniqueFile(
+            folder,
+            CommonUtils.escapeFileName(title),
+            BOOKMARK_EXT);
 
         updateBookmark(node, title, file);
     }

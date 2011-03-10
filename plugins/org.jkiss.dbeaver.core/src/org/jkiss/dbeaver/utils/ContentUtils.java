@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
@@ -368,5 +369,15 @@ public class ContentUtils {
         }
     }
 
+    public static IFile getUniqueFile(IFolder folder, String fileName, String fileExt)
+    {
+        IFile file = folder.getFile(fileName + "." + fileExt);
+        int index = 1;
+        while (file.exists()) {
+            file = folder.getFile(fileName + "-" + index + "." + fileExt);
+            index++;
+        }
+        return file;
+    }
 
 }

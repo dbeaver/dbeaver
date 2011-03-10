@@ -37,7 +37,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
 
         List<DataSourceDescriptor> projectDataSources = dataSourceRegistry.getDataSources();
         for (DataSourceDescriptor ds : projectDataSources) {
-            addDataSource(ds);
+            addDataSource(ds, false);
         }
     }
 
@@ -77,7 +77,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
     public DBNNode addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException
     {
         if (childObject instanceof DataSourceDescriptor) {
-            return addDataSource((DataSourceDescriptor)childObject);
+            return addDataSource((DataSourceDescriptor)childObject, true);
         }
         throw new IllegalArgumentException("Only data source descriptors could be added to root node");
     }
@@ -127,11 +127,11 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
         return null;
     }
 
-    DBNDataSource addDataSource(DataSourceDescriptor descriptor)
+    private DBNDataSource addDataSource(DataSourceDescriptor descriptor, boolean reflect)
     {
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
         dataSources.add(newNode);
-        this.getModel().addNode(newNode, true);
+        this.getModel().addNode(newNode, reflect);
         return newNode;
     }
 
@@ -152,7 +152,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
         switch (event.getAction()) {
             case OBJECT_ADD:
                 if (event.getObject() instanceof DataSourceDescriptor) {
-                    addDataSource((DataSourceDescriptor) event.getObject());
+                    addDataSource((DataSourceDescriptor) event.getObject(), true);
                 } else if (getModel().getNodeByObject(event.getObject()) == null) {
                     final DBNDatabaseNode parentNode = getModel().getParentNode(event.getObject());
                     if (parentNode != null && !CommonUtils.isEmpty(parentNode.getChildNodes())) {

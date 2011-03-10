@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.ByteArrayInputStream;
 
@@ -56,15 +57,8 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
             }
         }
         // Make new script file
-        IFile tempFile;
-        for (int i = 1; ; i++) {
-            tempFile = scriptsFolder.getFile("Script " + i + ".sql");
-            if (tempFile.exists()) {
-                continue;
-            }
-            tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
-            break;
-        }
+        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", "sql");
+        tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
         tempFile.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_SCRIPTS);
         return tempFile;
     }
