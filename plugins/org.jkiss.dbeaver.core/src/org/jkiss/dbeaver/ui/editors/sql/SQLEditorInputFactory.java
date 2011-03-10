@@ -15,7 +15,7 @@ public class SQLEditorInputFactory implements IElementFactory
 {
     //static final Log log = LogFactory.getLog(SQLEditorInputFactory.class);
 
-    private static final String ID_FACTORY = "org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"; //$NON-NLS-1$
+    private static final String ID_FACTORY = SQLEditorInputFactory.class.getName(); //$NON-NLS-1$
 
     private static final String TAG_PATH = "path"; //$NON-NLS-1$
     //private static final String TAG_NAME = "name"; //$NON-NLS-1$

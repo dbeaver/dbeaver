@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -59,6 +60,14 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
 	public IFile getFile() {
 		return file;
 	}
+
+    public IProject getProject()
+    {
+        if (getFile() == null || !getFile().exists()) {
+            return null;
+        }
+        return getFile().getProject();
+    }
 
 	public ImageDescriptor getImageDescriptor() {
 		return DBIcon.TYPE_UNKNOWN.getImageDescriptor();

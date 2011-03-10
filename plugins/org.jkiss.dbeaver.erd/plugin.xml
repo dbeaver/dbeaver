@@ -127,4 +127,8 @@
         </page>
     </extension>
 
+    <extension point="org.eclipse.ui.elementFactories">
+        <factory id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorInputFactory" class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorInputFactory"/>
+    </extension>
+
 </plugin>
