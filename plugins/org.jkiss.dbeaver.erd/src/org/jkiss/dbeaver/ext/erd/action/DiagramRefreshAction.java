@@ -8,7 +8,7 @@
 package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.jface.action.Action;
-import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
+import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
@@ -18,9 +18,9 @@ import org.jkiss.dbeaver.ui.DBIcon;
  */
 public class DiagramRefreshAction extends Action
 {
-	private ERDEditor editor;
+	private ERDEditorPart editor;
 
-	public DiagramRefreshAction(ERDEditor editor)
+	public DiagramRefreshAction(ERDEditorPart editor)
 	{
 		super("Refresh Diagram", DBIcon.REFRESH.getImageDescriptor());
 		this.editor = editor;

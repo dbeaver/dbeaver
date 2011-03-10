@@ -26,8 +26,8 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
-            id="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"
-            class="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"
+            id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorEmbedded"
+            class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorEmbedded"
             main="false"
             label="Diagram"
             description="ERD Diagram"
@@ -50,7 +50,7 @@
             <adapter type="org.jkiss.dbeaver.model.struct.DBSEntityQualified"/>
         </factory>
         <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter">
-           <adapter type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"/>
+           <adapter type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
         </factory>
     </extension>
 
@@ -58,7 +58,7 @@
         <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ext.erd.action.ERDUndoHandler">
             <activeWhen>
                 <with variable="activeFocusControl">
-                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
                         <test property="org.jkiss.dbeaver.ext.erd.editor.canUndo"/>
                     </adapt>
                 </with>
@@ -67,7 +67,7 @@
         <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ext.erd.action.ERDRedoHandler">
             <activeWhen>
                 <with variable="activeFocusControl">
-                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
                         <test property="org.jkiss.dbeaver.ext.erd.editor.canRedo"/>
                     </adapt>
                 </with>
@@ -76,17 +76,10 @@
         <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.ext.erd.action.ERDPrintHandler">
             <activeWhen>
                 <with variable="activeFocusControl">
-                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"/>
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
                 </with>
             </activeWhen>
         </handler>
-        <!--handler commandId="org.eclipse.ui.file.saveAs" class="org.jkiss.dbeaver.ext.erd.action.ERDSaveImageHandler">
-            <activeWhen>
-                <with variable="activeFocusControl">
-                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"/>
-                </with>
-            </activeWhen>
-        </handler-->
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
@@ -95,7 +88,7 @@
              id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPropertyTester"
              namespace="org.jkiss.dbeaver.ext.erd.editor"
              properties="canUndo,canRedo"
-             type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor">
+             type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
        </propertyTester>
     </extension>
 
@@ -129,7 +122,7 @@
     <extension point="org.eclipse.ui.propertyPages">
         <page id="org.jkiss.dbeaver.preferences.erd.general" class="org.jkiss.dbeaver.ext.erd.editor.ERDPreferencePage" name="General Settings">
            <enabledWhen>
-              <instanceof value="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"/>
+              <instanceof value="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
            </enabledWhen>
         </page>
     </extension>

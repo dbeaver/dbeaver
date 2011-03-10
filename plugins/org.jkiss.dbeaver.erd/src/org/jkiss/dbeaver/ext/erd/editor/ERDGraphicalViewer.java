@@ -20,7 +20,6 @@ import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
-import org.jkiss.dbeaver.model.DBUtils;
 
 /**
  * GraphicalViewer which also knows about ValidationMessageHandler to output
@@ -30,7 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPropertyChangeListener
 {
 
-    private ERDEditor editor;
+    private ERDEditorPart editor;
 	private ValidationMessageHandler messageHandler;
     private IThemeManager themeManager;
 
@@ -38,7 +37,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 	 * ValidationMessageHandler to receive messages
 	 * @param messageHandler message handler 
 	 */
-	public ERDGraphicalViewer(ERDEditor editor, ValidationMessageHandler messageHandler)
+	public ERDGraphicalViewer(ERDEditorPart editor, ValidationMessageHandler messageHandler)
 	{
 		super();
         this.editor = editor;
@@ -56,7 +55,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         if (control != null) {
             ERDEditorAdapter.mapControl(control, editor);
             IFocusService fs = (IFocusService) PlatformUI.getWorkbench().getService(IFocusService.class);
-            fs.addFocusTracker(control, DBUtils.getUniqueObjectId(editor.getObjectManager().getObject()) + "#" + this.hashCode());
+            fs.addFocusTracker(control, editor.getEditorInput() + "#" + this.hashCode());
 
             applyThemeSettings();
         }

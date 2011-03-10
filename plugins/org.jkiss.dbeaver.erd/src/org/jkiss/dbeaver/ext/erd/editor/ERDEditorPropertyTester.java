@@ -16,10 +16,10 @@ public class ERDEditorPropertyTester extends PropertyTester
     public static final String PROP_CAN_REDO = "canRedo";
 
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof ERDEditor)) {
+        if (!(receiver instanceof ERDEditorPart)) {
             return false;
         }
-        ERDEditor erdEditor = (ERDEditor) receiver;
+        ERDEditorPart erdEditor = (ERDEditorPart) receiver;
         if (property.equals(PROP_CAN_UNDO)) {
             return erdEditor.getCommandStack().canUndo();
         } else if (property.equals(PROP_CAN_REDO)) {

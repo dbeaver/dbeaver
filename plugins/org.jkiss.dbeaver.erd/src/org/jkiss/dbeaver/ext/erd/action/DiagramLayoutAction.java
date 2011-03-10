@@ -9,7 +9,7 @@ package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.ext.erd.Activator;
-import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
+import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 
 /**
  * Action to toggle the layout between manual and automatic
@@ -18,9 +18,9 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
  */
 public class DiagramLayoutAction extends Action
 {
-	private ERDEditor editor;
+	private ERDEditorPart editor;
 
-	public DiagramLayoutAction(ERDEditor editor)
+	public DiagramLayoutAction(ERDEditorPart editor)
 	{
 		super("Arrange Diagram", Activator.getImageDescriptor("icons/arrangeall.png"));
 		this.editor = editor;

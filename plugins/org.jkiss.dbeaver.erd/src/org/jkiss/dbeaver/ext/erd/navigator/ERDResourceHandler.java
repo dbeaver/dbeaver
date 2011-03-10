@@ -15,9 +15,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.project.AbstractResourceHandler;
-import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.navigator.DBNBookmark;
-import org.jkiss.dbeaver.model.navigator.DBNBookmarkFolder;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 /**
@@ -83,6 +82,13 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         if (!(resource instanceof IFile)) {
             return;
         }
+/*
+        ERDEditorInput sqlInput = new ERDEditorInput((IFile)resource);
+        window.getActivePage().openEditor(
+            sqlInput,
+            SQLEditor.class.getName());
+*/
+
 /*
         final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(resource.getProject());
         if (projectNode == null) {

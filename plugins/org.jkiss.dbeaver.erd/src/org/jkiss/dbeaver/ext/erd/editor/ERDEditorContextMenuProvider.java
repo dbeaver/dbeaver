@@ -21,19 +21,19 @@ import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
  */
 public class ERDEditorContextMenuProvider extends ContextMenuProvider
 {
-    private ERDEditor editor;
+    private ERDEditorPart editor;
 	private ActionRegistry actionRegistry;
 
 	/**
 	 * Creates a new FlowContextMenuProvider assoicated with the given viewer
 	 * and action registry.
 	 * 
-	 * @param viewer
-	 *            the viewer
+	 * @param editor
+	 *            the editor
 	 * @param registry
 	 *            the action registry
 	 */
-	public ERDEditorContextMenuProvider(ERDEditor editor, ActionRegistry registry)
+	public ERDEditorContextMenuProvider(ERDEditorPart editor, ActionRegistry registry)
 	{
 		super(editor.getViewer());
         this.editor = editor;

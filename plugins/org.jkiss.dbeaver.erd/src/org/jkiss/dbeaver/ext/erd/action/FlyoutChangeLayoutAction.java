@@ -9,7 +9,7 @@ package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
+import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 
 /**
@@ -31,9 +31,9 @@ public class FlyoutChangeLayoutAction extends Action
 
 	public void run()
 	{
-		if (editor instanceof ERDEditor)
+		if (editor instanceof ERDEditorPart)
 		{
-			ERDEditor erdEditor = (ERDEditor) editor;
+			ERDEditorPart erdEditor = (ERDEditorPart) editor;
 			EntityDiagram entityDiagram = erdEditor.getDiagram();
 			boolean isManual = entityDiagram.isLayoutManualDesired();
 			entityDiagram.setLayoutManualDesired(!isManual);
@@ -58,9 +58,9 @@ public class FlyoutChangeLayoutAction extends Action
 	public boolean isChecked(IEditorPart editor)
 	{
 
-		if (editor instanceof ERDEditor)
+		if (editor instanceof ERDEditorPart)
 		{
-			ERDEditor schemaEditor = (ERDEditor) editor;
+			ERDEditorPart schemaEditor = (ERDEditorPart) editor;
 			EntityDiagram entityDiagram = schemaEditor.getDiagram();
 			boolean checkTrue = entityDiagram.isLayoutManualDesired();
 			return (!checkTrue);

@@ -10,8 +10,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter;
+import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 
 public class ERDUndoHandler extends AbstractHandler {
     public ERDUndoHandler() {
@@ -21,7 +21,7 @@ public class ERDUndoHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         Control control = (Control) HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
         if (control != null) {
-            ERDEditor editor = ERDEditorAdapter.getEditor(control);
+            ERDEditorPart editor = ERDEditorAdapter.getEditor(control);
             if (editor != null && editor.getCommandStack().canUndo()) {
                 editor.getCommandStack().undo();
             }
