@@ -131,6 +131,9 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
                 catch (AbstractMethodError e) {
                     return prepareCall(sqlQuery);
                 }
+                catch (UnsupportedOperationException e) {
+                    return prepareCall(sqlQuery);
+                }
             } else if (returnGeneratedKeys) {
                 try {
                     return prepareStatement(
@@ -138,6 +141,9 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
                         Statement.RETURN_GENERATED_KEYS);
                 }
                 catch (AbstractMethodError e) {
+                    return prepareStatement(sqlQuery);
+                }
+                catch (UnsupportedOperationException e) {
                     return prepareStatement(sqlQuery);
                 }
             } else {
