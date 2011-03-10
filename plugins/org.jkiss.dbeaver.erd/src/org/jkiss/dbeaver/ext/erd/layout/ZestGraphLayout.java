@@ -19,12 +19,12 @@ import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
-/*
+
 import org.eclipse.zest.layouts.*;
 import org.eclipse.zest.layouts.algorithms.*;
 import org.eclipse.zest.layouts.exampleStructures.SimpleNode;
 import org.eclipse.zest.layouts.exampleStructures.SimpleRelationship;
-*/
+
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class ZestGraphLayout
 {
-/*
+
     static final Log log = LogFactory.getLog(ZestGraphLayout.class);
 
     List<LayoutEntity> entities = new ArrayList<LayoutEntity>();
@@ -47,10 +47,9 @@ public class ZestGraphLayout
 	Map<EntityPart, LayoutEntity> partToNodesMap;
     Map<ConnectionEditPart, LayoutRelationship> connectionToRelationshipsMap;
 
-	*/
-/**
+    /**
 	 * Public method for reading graph nodes
-	 *//*
+	 */
 
 	public void layoutDiagram(AbstractGraphicalEditPart diagram)
 	{
@@ -62,10 +61,9 @@ public class ZestGraphLayout
         LayoutAlgorithm algorithm = new
             CompositeLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING,
             new LayoutAlgorithm[] {
-                new SpringLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING)*/
-/*,
-                new HorizontalShift(LayoutStyles.NO_LAYOUT_NODE_RESIZING)*//*
- });
+                new SpringLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING),
+                new HorizontalShift(LayoutStyles.NO_LAYOUT_NODE_RESIZING)
+            });
 
 		partToNodesMap = new IdentityHashMap<EntityPart, LayoutEntity>();
         connectionToRelationshipsMap = new IdentityHashMap<ConnectionEditPart, LayoutRelationship>();
@@ -110,7 +108,7 @@ public class ZestGraphLayout
     }
 
 	/*/
-/******************* DiagramPart contribution methods **********//*
+/******************* DiagramPart contribution methods **********/
 
 
 	protected void addDiagramNodes(AbstractGraphicalEditPart diagram)
@@ -123,10 +121,9 @@ public class ZestGraphLayout
 		}
 	}
 
-	*/
-/**
+    /**
 	 * Adds nodes to the graph object for use by the GraphLayoutManager
-	 *//*
+	 */
 
 	protected void addEntityNode(EntityPart entityPart)
 	{
@@ -146,9 +143,7 @@ public class ZestGraphLayout
 		}
 	}
 
-	/*/
-/******************* Entity contribution methods **********//*
-
+    /******************* Entity contribution methods **********/
 
 	protected void addEntityEdges(GraphicalEditPart entityPart)
 	{
@@ -161,7 +156,7 @@ public class ZestGraphLayout
 	}
 
 	/*/
-/******************* Connection contribution methods **********//*
+/******************* Connection contribution methods **********/
 
 
 	protected void addConnectionEdges(ConnectionEditPart connectionPart)
@@ -199,6 +194,5 @@ public class ZestGraphLayout
         }
         return null;
     }
-*/
 
 }
