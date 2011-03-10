@@ -27,7 +27,7 @@ public class NodeJoiningDirectedGraphLayout extends DirectedGraphLayout
 	{
 		//add dummy edges so that graph does not fall over because some nodes
 		// are not in relationships
-		//new DummyEdgeCreator().visit(graph);
+		new DummyEdgeCreator().visit(graph);
 		
 		// create edges to join any isolated clusters
         // TODO: investigate - cluster edges makes diagram ugly

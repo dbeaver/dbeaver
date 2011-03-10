@@ -42,7 +42,8 @@ public class DirectedGraphLayoutVisitor
 		partToNodesMap = new IdentityHashMap<EditPart, Object>();
 		
 		graph = new DirectedGraph();
-        graph.setDirection(PositionConstants.NSEW);
+        graph.setDirection(PositionConstants.EAST);
+
 		addDiagramNodes(diagram);
 		if (graph.nodes.size() > 0)
 		{	
