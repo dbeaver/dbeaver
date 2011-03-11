@@ -5,14 +5,25 @@
 package org.jkiss.dbeaver.ext.erd.navigator;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 
 
 class DiagramCreateWizardPage extends WizardPage {
@@ -37,7 +48,7 @@ class DiagramCreateWizardPage extends WizardPage {
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        Composite configGroup = UIUtils.createControlGroup(placeholder, "General", 2, GridData.FILL_HORIZONTAL, 0);
+        Composite configGroup = UIUtils.createControlGroup(placeholder, "Settings", 2, GridData.FILL_BOTH, 0);
 
         final Text projectNameText = UIUtils.createLabelText(configGroup, "Name", "");
         projectNameText.addModifyListener(new ModifyListener() {
@@ -45,6 +56,36 @@ class DiagramCreateWizardPage extends WizardPage {
             {
                 diagram.setName(projectNameText.getText());
                 updateState();
+            }
+        });
+
+        Label contentLabel = UIUtils.createControlLabel(configGroup, "Content");
+        GridData gd = new GridData(GridData.BEGINNING);
+        gd.horizontalSpan = 2;
+        contentLabel.setLayoutData(gd);
+
+        final DBNProject rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
+        DatabaseNavigatorTree contentTree = new DatabaseNavigatorTree(configGroup, rootNode.getDatabases(), SWT.SINGLE | SWT.CHECK);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.horizontalSpan = 2;
+        contentTree.setLayoutData(gd);
+
+        CheckboxTreeViewer viewer = (CheckboxTreeViewer) contentTree.getViewer();
+        viewer.setCheckStateProvider(new ICheckStateProvider() {
+            public boolean isChecked(Object element)
+            {
+                return false;
+            }
+
+            public boolean isGrayed(Object element)
+            {
+                if (element instanceof DBNDatabaseNode && !(element instanceof DBNDataSource)) {
+                    DBSObject object = ((DBNDatabaseNode) element).getObject();
+                    if (object instanceof DBSTable) {
+                        return false;
+                    }
+                }
+                return true;
             }
         });
 

@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -38,6 +39,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
     private TreeViewer viewer;
     private DBNModel model;
     private TreeEditor treeEditor;
+    private boolean checkEnabled;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
     {
@@ -55,13 +57,19 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
             }
         });
 
+        checkEnabled = (style & SWT.CHECK) != 0;
+
         // Create tree
         // TODO: there are problems with this tree when we have a lot of items.
         // TODO: I may set SWT.SINGLE style and it'll solve the problem at least when traversing tree
         // TODO: But we need multiple selection (to copy, export, etc)
         // TODO: need to do something with it
         int treeStyle = SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | style;
-        this.viewer = new TreeViewer(this, treeStyle);
+        if (checkEnabled) {
+            this.viewer = new CheckboxTreeViewer(this, treeStyle);
+        } else {
+            this.viewer = new TreeViewer(this, treeStyle);
+        }
         this.viewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         this.viewer.setUseHashlookup(true);
         if (rootNode.getParentNode() == null) {
@@ -85,7 +93,10 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         treeEditor.minimumWidth = 50;
 
         //treeControl.addSelectionListener(new TreeSelectionAdapter());
-        treeControl.addMouseListener(new TreeSelectionAdapter());
+        if (!checkEnabled) {
+            // Add rename listener only for non CHECK trees
+            treeControl.addMouseListener(new TreeSelectionAdapter());
+        }
     }
 
     public TreeViewer getViewer()
