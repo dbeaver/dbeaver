@@ -11,8 +11,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.Activator;
-import org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
@@ -51,11 +49,7 @@ public class DBNDiagramFolder extends DBNResource
     @Override
     public boolean supportsDrop(DBNNode otherNode)
     {
-        if (otherNode instanceof DBNDiagram) {
-            return true;
-        } else {
-            return super.supportsDrop(otherNode);
-        }
+        return otherNode instanceof DBNDiagram || super.supportsDrop(otherNode);
     }
 
     @Override

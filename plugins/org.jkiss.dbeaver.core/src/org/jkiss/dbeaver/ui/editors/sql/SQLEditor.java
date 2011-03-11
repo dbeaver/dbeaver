@@ -812,7 +812,7 @@ public class SQLEditor extends SQLEditorBase
         }
         final File saveFile = new File(fileName);
 
-        DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
+        DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
             public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
             {
                 getSite().getShell().getDisplay().syncExec(new Runnable() {

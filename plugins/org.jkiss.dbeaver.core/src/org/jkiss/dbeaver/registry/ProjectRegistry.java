@@ -160,12 +160,7 @@ public class ProjectRegistry implements IResourceChangeListener {
             return null;
         }
         DBPResourceHandler handler = null;
-        String resourceType = null;
-        try {
-            resourceType = resource.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE);
-        } catch (CoreException e) {
-            log.debug(e);
-        }
+        String resourceType = getResourceType(resource);
         if (resourceType != null) {
             handler = getResourceHandler(resourceType);
         }
@@ -174,11 +169,23 @@ public class ProjectRegistry implements IResourceChangeListener {
                 handler = getResourceHandlerByExtension(resource.getFileExtension());
             }
         }
-        if (handler == null && resource instanceof IFolder && !(resource.getParent() instanceof IProject)) {
-            // For folders try to get parent's handler
-            return getResourceHandler(resource.getParent());
-        }
         return handler;
+    }
+
+    public static String getResourceType(IResource resource)
+    {
+        String resourceType;
+        try {
+            resourceType = resource.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE);
+        } catch (CoreException e) {
+            log.warn(e);
+            return null;
+        }
+        if (CommonUtils.isEmpty(resourceType) && resource instanceof IFolder && !(resource.getParent() instanceof IProject)) {
+            // For folders try to get parent's handler
+            return getResourceType(resource.getParent());
+        }
+        return resourceType;
     }
 
     public DBPResourceHandler getResourceHandler(String resourceType)

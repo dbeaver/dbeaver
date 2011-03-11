@@ -262,7 +262,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                     final String newName = text.getText();
                     if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
                         try {
-                            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                                 {
                                     try {

@@ -64,7 +64,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
         return null;
     }
 
-    private void openResource(IResource resource, IWorkbenchWindow window)
+    public static void openResource(IResource resource, IWorkbenchWindow window)
     {
         try {
             DBPResourceHandler handler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);

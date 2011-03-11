@@ -14,5 +14,5 @@ public interface DBRRunnableContext
      * If any exception will occure when running this process then it'll written in log
      * @param runnable runnable implementation
      */
-    public void runAndWait(DBRRunnableWithProgress runnable);
+    public void runInProgressDialog(DBRRunnableWithProgress runnable);
 }

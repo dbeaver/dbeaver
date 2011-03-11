@@ -14,10 +14,20 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.erd.editor.ERDEditorInput;
+import org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.impl.project.AbstractResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.utils.ContentUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Bookmarks handler
@@ -82,49 +92,14 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         if (!(resource instanceof IFile)) {
             return;
         }
-/*
-        ERDEditorInput sqlInput = new ERDEditorInput((IFile)resource);
-        window.getActivePage().openEditor(
-            sqlInput,
-            SQLEditor.class.getName());
-*/
 
-/*
-        final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(resource.getProject());
-        if (projectNode == null) {
-            throw new DBException("Can't find project node for '" + resource.getProject().getName() + "'");
-        }
-        final BookmarkStorage storage = new BookmarkStorage((IFile) resource, false);
-        try {
-            final DataSourceDescriptor dataSourceContainer = projectNode.getDatabases().getDataSourceRegistry().getDataSource(storage.getDataSourceId());
-            if (dataSourceContainer == null) {
-                throw new DBException("Can't find datasource '" + storage.getDataSourceId() + "'");
-            }
-            //if (!dataSourceContainer.isConnected()) {
-            //    dataSourceContainer.connect();
-            //}
-            final DBNDataSource dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
-            dsNode.initializeNode(new Runnable() {
-                public void run()
-                {
-                    if (dsNode.getDataSourceContainer().isConnected()) {
-                        Display.getDefault().syncExec(new Runnable() {
-                            public void run()
-                            {
-                                openNodeByPath(dsNode, (IFile) resource, storage, window);
-                            }
-                        });
-                    }
-                }
-            });
-        }
-        finally {
-            storage.dispose();
-        }
-*/
+        ERDEditorInput erdInput = new ERDEditorInput((IFile)resource);
+        window.getActivePage().openEditor(
+            erdInput,
+            ERDEditorStandalone.class.getName());
     }
 
-    public static void createDiagram(DBNDiagram copyFrom, String title, IFolder folder) throws DBException
+    public static IFile createDiagram(DBNDiagram copyFrom, String title, IFolder folder) throws DBException
     {
         if (folder == null) {
             folder = getDiagramsFolder(copyFrom != null ? copyFrom.getResource().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
@@ -136,35 +111,37 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         IFile file = ContentUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
 
         updateDiagram(copyFrom, title, file);
+
+        return file;
     }
 
-    private static void updateDiagram(DBNDiagram copyFrom, String title, IFile file)
+    private static void updateDiagram(final DBNDiagram copyFrom, final String title, final IFile file)
         throws DBException
     {
-/*
-        if (CommonUtils.isEmpty(title)) {
-            title = node.getNodeName();
-        }
-
-        List<String> nodePath = new ArrayList<String>();
-        for (DBNNode parent = node; !(parent instanceof DBNDataSource); parent = parent.getParentNode()) {
-            nodePath.add(0, parent.getNodeName());
-        }
-
-        BookmarkStorage storage = new BookmarkStorage(
-            title,
-            node.getNodeType() + " " + node.getNodeName(),
-            node.getNodeIconDefault(),
-            node.getObject().getDataSource().getContainer().getId(),
-            nodePath);
-
         try {
-            InputStream data = storage.serialize();
-            file.create(data, true, VoidProgressMonitor.INSTANCE.getNestedMonitor());
-        } catch (Exception e) {
-            throw new DBException(e);
+            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        EntityDiagram newDiagram = copyFrom == null ? new EntityDiagram(null, "<Diagram>") : copyFrom.getDiagram().copy();
+                        newDiagram.setName(title);
+
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                        newDiagram.save(buffer);
+                        InputStream data = new ByteArrayInputStream(buffer.toByteArray());
+
+                        file.create(data, true, monitor.getNestedMonitor());
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            throw new DBException(e.getTargetException());
+        } catch (InterruptedException e) {
+            // interrupted
         }
-*/
+
     }
 
 }

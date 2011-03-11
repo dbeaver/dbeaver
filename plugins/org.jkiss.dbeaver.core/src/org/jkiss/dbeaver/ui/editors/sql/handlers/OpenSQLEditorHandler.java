@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 
@@ -58,17 +59,7 @@ public class OpenSQLEditorHandler extends DataSourceHandler {
             return null;
         }
 
-        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        SQLEditorInput sqlInput = new SQLEditorInput(
-            scriptFile,
-            dataSourceContainer);
-        try {
-            workbenchWindow.getActivePage().openEditor(
-                sqlInput,
-                SQLEditor.class.getName());
-        } catch (Exception ex) {
-            log.error("Could not  open SQL editor", ex);
-        }
+        NavigatorHandlerObjectOpen.openResource(scriptFile, HandlerUtil.getActiveWorkbenchWindow(event));
 
         return null;
     }

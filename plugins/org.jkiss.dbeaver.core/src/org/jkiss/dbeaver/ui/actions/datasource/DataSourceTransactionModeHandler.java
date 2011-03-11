@@ -38,7 +38,7 @@ public class DataSourceTransactionModeHandler extends DataSourceHandler
     public static void execute(Shell shell, final DBSDataSourceContainer dataSourceContainer) {
         final DBPDataSource dataSource = dataSourceContainer.getDataSource();
         try {
-            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -55,11 +55,9 @@ public class DataSourceTransactionModeHandler extends DataSourceHandler
                         dataSourceContainer.getRegistry().flushConfig();
 
                         // Update command image
-                    }
-                    catch (DBCException e) {
+                    } catch (DBCException e) {
                         throw new InvocationTargetException(e);
-                    }
-                    finally {
+                    } finally {
                         context.close();
                     }
                 }

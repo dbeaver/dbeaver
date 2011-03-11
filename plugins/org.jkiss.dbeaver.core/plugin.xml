@@ -20,8 +20,7 @@
                 file-extensions="sql"
                 id="org.jkiss.dbeaver.core.content-type-sql"
                 name="SQL"
-                priority="normal">
-        </content-type>
+                priority="normal"/>
     </extension>
 
     <extension id="application" point="org.eclipse.core.runtime.applications">
@@ -56,7 +55,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.resource"
-                properties="canOpen,canDelete,canCreateFolder,canSetActive,canCreateScript"
+                properties="canOpen,canDelete,canCreateFolder,canSetActive,type"
                 type="org.eclipse.core.resources.IResource">
         </propertyTester>
         <propertyTester
@@ -1019,6 +1018,7 @@
                     </with>
                 </visibleWhen>
             </command>
+
             <command commandId="org.jkiss.dbeaver.core.new.sql.editor">
                 <visibleWhen>
                     <with variable="selection">
@@ -1052,12 +1052,15 @@
                         <count value="1"/>
                         <iterate operator="and">
                             <adapt type="org.eclipse.core.resources.IFolder">
-                                <test property="org.jkiss.dbeaver.core.resource.canCreateScript"/>
+                                <test property="org.jkiss.dbeaver.core.resource.type" value="scripts"/>
                             </adapt>
                         </iterate>
                     </with>
                 </visibleWhen>
             </command>
+
+            <separator name="create" visible="false"/>
+
             <separator name="tools" visible="true"/>
 
             <command commandId="org.jkiss.dbeaver.core.object.open">
@@ -1299,9 +1302,7 @@
                 contributorClass="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-            <contentTypeBinding
-                    contentTypeId="org.jkiss.dbeaver.core.content-type-sql">
-            </contentTypeBinding>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.core.content-type-sql"/>
         </editor>
         <editor
                 name="Folder Editor"

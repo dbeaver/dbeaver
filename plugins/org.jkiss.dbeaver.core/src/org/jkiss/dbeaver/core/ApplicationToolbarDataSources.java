@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
@@ -510,26 +509,24 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             try {
-                DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
                         try {
                             if (dataSource instanceof DBSEntityContainer &&
                                 dataSource instanceof DBSEntitySelector &&
-                                ((DBSEntitySelector)dataSource).supportsActiveChildChange())
-                            {
+                                ((DBSEntitySelector) dataSource).supportsActiveChildChange()) {
                                 DBSObject newChild = ((DBSEntityContainer) dataSource).getChild(monitor, newName);
                                 if (newChild != null) {
-                                    ((DBSEntitySelector)dataSource).setActiveChild(monitor, newChild);
+                                    ((DBSEntitySelector) dataSource).setActiveChild(monitor, newChild);
                                 } else {
                                     throw new DBException("Could not find database '" + newName + "'");
                                 }
                             } else {
                                 throw new DBException("Active database change is not supported");
                             }
-                        }
-                        catch (DBException e) {
+                        } catch (DBException e) {
                             throw new InvocationTargetException(e);
                         }
                     }

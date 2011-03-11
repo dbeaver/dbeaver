@@ -287,7 +287,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
         final DBDContent value = (DBDContent)controller.getValue();
         try {
-            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -300,8 +300,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                         }
                         value.updateContents(monitor, storage);
                         controller.updateValue(value);
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
                 }
@@ -333,7 +332,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
         final DBDContent value = (DBDContent)controller.getValue();
         try {
-            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -353,8 +352,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                 monitor
                             );
                         }
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
                 }

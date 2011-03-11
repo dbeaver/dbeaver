@@ -129,7 +129,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     private void openNodeByPath(final DBNDataSource dsNode, final IFile file, final BookmarkStorage storage, final IWorkbenchWindow window)
     {
         try {
-            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
@@ -157,7 +157,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                             file.setContents(storage.serialize(), true, false, monitor.getNestedMonitor());
 
                             // Open entity editor
-                            final DBNDatabaseNode databaseNode = (DBNDatabaseNode)currentNode;
+                            final DBNDatabaseNode databaseNode = (DBNDatabaseNode) currentNode;
                             Display.getDefault().syncExec(new Runnable() {
                                 public void run()
                                 {

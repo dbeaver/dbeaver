@@ -83,6 +83,12 @@ public class DBNResource extends DBNNode
         if (resourceImage != null) {
             return resourceImage;
         }
+/*
+        if (resource instanceof IFile) {
+            final IContentDescription contentDescription = ((IFile) resource).getContentDescription();
+            contentDescription.getContentType().
+        }
+*/
         String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
         switch (resource.getType()) {
             case IResource.FOLDER: imageKey = ISharedImages.IMG_OBJ_FOLDER; break;

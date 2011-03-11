@@ -56,10 +56,17 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
                 }
             }
         }
+
         // Make new script file
         IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", "sql");
         tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
         tempFile.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_SCRIPTS);
+
+        // Save ds container reference
+        if (dataSourceContainer != null) {
+            new SQLEditorInput(tempFile, dataSourceContainer);
+        }
+
         return tempFile;
     }
 

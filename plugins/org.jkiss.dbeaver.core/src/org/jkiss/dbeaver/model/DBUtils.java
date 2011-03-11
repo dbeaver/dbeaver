@@ -360,7 +360,7 @@ public final class DBUtils {
             if (monitor != null) {
                 finder.run(monitor);
             } else {
-                DBeaverCore.getInstance().runAndWait2(finder);
+                DBeaverCore.getInstance().runInProgressService(finder);
             }
         }
         catch (InvocationTargetException e) {

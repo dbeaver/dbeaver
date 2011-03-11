@@ -103,7 +103,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             if (editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected()) {
                 try {
                     final QueryType qt = queryType;
-                    DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                    DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException
                         {

@@ -313,8 +313,8 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
     {
         if (info instanceof FileInfo) {
             FileInfo fileInfo = (FileInfo) info;
-            if (fileInfo.fFileSynchronizer != null) {
-                fileInfo.fFileSynchronizer.uninstall();
+            if (fileInfo.fileSynchronizer != null) {
+                fileInfo.fileSynchronizer.uninstall();
             }
         }
 
@@ -452,8 +452,8 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
      */
     protected class FileSynchronizer implements IResourceChangeListener, IResourceDeltaVisitor {
 
-        protected IEditorInput fFileEditorInput;
-        protected boolean fIsInstalled = false;
+        protected IEditorInput fileEditorInput;
+        protected boolean isInstalled = false;
 
         /**
          * Creates a new file synchronizer. Is not yet installed on a resource.
@@ -462,7 +462,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
          */
         public FileSynchronizer(IEditorInput fileEditorInput)
         {
-            fFileEditorInput = fileEditorInput;
+            this.fileEditorInput = fileEditorInput;
         }
 
         /**
@@ -472,7 +472,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
          */
         protected IFile getFile()
         {
-            IStorage storage = getStorageFromInput(fFileEditorInput);
+            IStorage storage = getStorageFromInput(fileEditorInput);
             return storage instanceof IFile ? (IFile)storage : null;
         }
 
@@ -482,7 +482,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         public void install()
         {
             getFile().getWorkspace().addResourceChangeListener(this);
-            fIsInstalled = true;
+            isInstalled = true;
         }
 
         /**
@@ -491,14 +491,14 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         public void uninstall()
         {
             getFile().getWorkspace().removeResourceChangeListener(this);
-            fIsInstalled = false;
+            isInstalled = false;
         }
 
         public void resourceChanged(IResourceChangeEvent e)
         {
             IResourceDelta delta = e.getDelta();
             try {
-                if (delta != null && fIsInstalled) {
+                if (delta != null && isInstalled) {
                     delta.accept(this);
                 }
             } catch (CoreException x) {
@@ -522,14 +522,14 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
 
             switch (delta.getKind()) {
                 case IResourceDelta.CHANGED:
-                    FileInfo info = (FileInfo) getElementInfo(fFileEditorInput);
+                    FileInfo info = (FileInfo) getElementInfo(fileEditorInput);
                     if (info == null || info.fCanBeSaved) {
                         break;
                     }
 
                     boolean isSynchronized = computeModificationStamp(getFile()) == info.fModificationStamp;
                     if ((IResourceDelta.ENCODING & delta.getFlags()) != 0 && isSynchronized) {
-                        runnable = new SafeChange(fFileEditorInput) {
+                        runnable = new SafeChange(fileEditorInput) {
                             protected void execute(IEditorInput input) throws Exception
                             {
                                 handleElementContentChanged(input);
@@ -538,7 +538,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
                     }
 
                     if (runnable == null && (IResourceDelta.CONTENT & delta.getFlags()) != 0 && !isSynchronized) {
-                        runnable = new SafeChange(fFileEditorInput) {
+                        runnable = new SafeChange(fileEditorInput) {
                             protected void execute(IEditorInput input) throws Exception
                             {
                                 handleElementContentChanged(input);
@@ -550,16 +550,16 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
                 case IResourceDelta.REMOVED:
                     if ((IResourceDelta.MOVED_TO & delta.getFlags()) != 0) {
                         final IPath path = delta.getMovedToPath();
-                        runnable = new SafeChange(fFileEditorInput) {
+                        runnable = new SafeChange(fileEditorInput) {
                             protected void execute(IEditorInput input) throws Exception
                             {
                                 handleElementMoved(input, path);
                             }
                         };
                     } else {
-                        info = (FileInfo) getElementInfo(fFileEditorInput);
+                        info = (FileInfo) getElementInfo(fileEditorInput);
                         if (info != null && !info.fCanBeSaved) {
-                            runnable = new SafeChange(fFileEditorInput) {
+                            runnable = new SafeChange(fileEditorInput) {
                                 protected void execute(IEditorInput input) throws Exception
                                 {
                                     handleElementDeleted(input);
@@ -586,7 +586,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         {
 
             if (runnable instanceof SafeChange) {
-                fireElementStateChanging(fFileEditorInput);
+                fireElementStateChanging(fileEditorInput);
             }
 
             IWorkbench workbench = PlatformUI.getWorkbench();
@@ -609,7 +609,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         /**
          * The file synchronizer.
          */
-        public FileSynchronizer fFileSynchronizer;
+        public FileSynchronizer fileSynchronizer;
         /**
          * The time stamp at which this provider changed the file.
          */
@@ -618,7 +618,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         public FileInfo(IDocument document, IAnnotationModel model, FileSynchronizer fileSynchronizer)
         {
             super(document, model);
-            fFileSynchronizer = fileSynchronizer;
+            this.fileSynchronizer = fileSynchronizer;
         }
     }
 

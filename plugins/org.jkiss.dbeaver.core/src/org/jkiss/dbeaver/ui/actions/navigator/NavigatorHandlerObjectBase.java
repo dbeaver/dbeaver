@@ -27,7 +27,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         if (node == null) {
             NodeLoader nodeLoader = new NodeLoader(model, object);
             try {
-                DBeaverCore.getInstance().runAndWait2(nodeLoader);
+                DBeaverCore.getInstance().runInProgressService(nodeLoader);
             } catch (InvocationTargetException e) {
                 log.warn("Could not load node for object '" + object.getName() + "'", e.getTargetException());
             } catch (InterruptedException e) {

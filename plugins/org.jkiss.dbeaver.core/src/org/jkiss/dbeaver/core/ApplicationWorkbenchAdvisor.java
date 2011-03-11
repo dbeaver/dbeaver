@@ -83,7 +83,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     }
                 }
                 // Wait for all datasource jobs to finish
-                core.runAndWait2(new DBRRunnableWithProgress() {
+                core.runInProgressService(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {

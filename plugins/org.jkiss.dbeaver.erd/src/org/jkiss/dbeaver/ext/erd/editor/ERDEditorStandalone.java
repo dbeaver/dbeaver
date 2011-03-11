@@ -5,7 +5,10 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 
 /**
@@ -20,12 +23,23 @@ public class ERDEditorStandalone extends ERDEditorPart {
     {
     }
 
+    @Override
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException
+    {
+        super.init(site, input);
+
+        loadDiagram();
+    }
+
     protected synchronized void loadDiagram()
     {
         if (diagramLoadingJob != null) {
             // Do not start new one while old is running
             return;
         }
+
+        setPartName(getEditorInput().getName());
+
 /*
         diagramLoadingJob = LoadingUtils.createService(
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {

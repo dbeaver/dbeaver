@@ -82,8 +82,7 @@ public class NewConnectionWizard extends ConnectionWizard
         addPage(pageDrivers);
 
         try {
-            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress()
-            {
+            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {

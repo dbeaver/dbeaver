@@ -9,6 +9,9 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +71,11 @@ public class EntityDiagram extends ERDObject<DBSObject>
 		return name;
 	}
 
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
 	/**
 	 * @param layoutManualAllowed
 	 *            The layoutManualAllowed to set.
@@ -104,5 +112,26 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
     public int getEntityCount() {
         return tables.size();
+    }
+
+    public void load(InputStream in)
+        throws IOException
+    {
+
+    }
+
+    public void save(OutputStream out)
+        throws IOException
+    {
+
+    }
+
+    public EntityDiagram copy()
+    {
+        EntityDiagram copy = new EntityDiagram(getObject(), getName());
+        copy.tables.addAll(this.tables);
+        copy.layoutManualDesired = this.layoutManualDesired;
+        copy.layoutManualAllowed = this.layoutManualAllowed;
+        return copy;
     }
 }

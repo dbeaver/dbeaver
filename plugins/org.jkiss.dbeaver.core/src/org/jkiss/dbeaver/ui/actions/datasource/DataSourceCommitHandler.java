@@ -35,18 +35,16 @@ public class DataSourceCommitHandler extends DataSourceHandler
     public static void execute(Shell shell, final DBSDataSourceContainer dataSourceContainer) {
         final DBPDataSource dataSource = dataSourceContainer.getDataSource();
         try {
-            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
                     DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, "Commit '" + dataSourceContainer.getName() + "' transaction");
                     try {
                         context.getTransactionManager().commit();
-                    }
-                    catch (DBCException e) {
+                    } catch (DBCException e) {
                         throw new InvocationTargetException(e);
-                    }
-                    finally {
+                    } finally {
                         context.close();
                     }
                 }

@@ -272,7 +272,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         DBNDatabaseNode node = getEditorInput().getTreeNode();
         try {
             if (node.isLazyNode()) {
-                DBeaverCore.getInstance().runAndWait2(tabsCollector);
+                DBeaverCore.getInstance().runInProgressService(tabsCollector);
             } else {
                 tabsCollector.run(VoidProgressMonitor.INSTANCE);
             }

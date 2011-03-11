@@ -102,7 +102,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                    DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
                             getEditorPart().getObjectManager().resetChanges(monitor);

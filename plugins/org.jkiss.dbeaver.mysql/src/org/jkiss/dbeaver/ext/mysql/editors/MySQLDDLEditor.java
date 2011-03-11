@@ -38,14 +38,13 @@ public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<MySQLTable, DBO
     public void activatePart()
     {
         final StringBuilder ddl = new StringBuilder();
-        DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
+        DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
             public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
                 try {
                     ddl.append(getObjectManager().getObject().getDDL(monitor));
-                }
-                catch (DBException e) {
+                } catch (DBException e) {
                     log.error("Can't obtain table DDL", e);
                 }
             }

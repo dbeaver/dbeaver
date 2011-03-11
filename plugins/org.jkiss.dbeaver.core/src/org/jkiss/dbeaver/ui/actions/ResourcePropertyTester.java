@@ -4,14 +4,14 @@
 
 package org.jkiss.dbeaver.ui.actions;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 
@@ -20,14 +20,14 @@ import org.jkiss.dbeaver.registry.ProjectRegistry;
  */
 public class ResourcePropertyTester extends PropertyTester
 {
-    //static final Log log = LogFactory.getLog(ObjectPropertyTester.class);
+    static final Log log = LogFactory.getLog(ObjectPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.resource";
     public static final String PROP_CAN_OPEN = "canOpen";
     public static final String PROP_CAN_CREATE_FOLDER = "canCreateFolder";
-    public static final String PROP_CAN_CREATE_SCRIPT = "canCreateScript";
     public static final String PROP_CAN_SET_ACTIVE = "canSetActive";
     public static final String PROP_CAN_DELETE = "canDelete";
+    public static final String PROP_TYPE = "type";
 
     public ResourcePropertyTester() {
         super();
@@ -52,8 +52,9 @@ public class ResourcePropertyTester extends PropertyTester
             return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0;
         } else if (property.equals(PROP_CAN_SET_ACTIVE)) {
             return resource instanceof IProject && resource != projectRegistry.getActiveProject();
-        } else if (property.equals(PROP_CAN_CREATE_SCRIPT)) {
-            return resource instanceof IFolder && handler instanceof ScriptsHandlerImpl;
+        } else if (property.equals(PROP_TYPE)) {
+            final String resType = ProjectRegistry.getResourceType(resource);
+            return resType != null && resType.equals(expectedValue);
         }
         return false;
     }

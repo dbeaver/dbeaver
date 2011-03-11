@@ -187,7 +187,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     public void reloadSyntaxRules()
     {
         // Refresh syntax
-        getSyntaxManager().changeDataSource(getDataSource());
+        if (getSyntaxManager() != null) {
+            getSyntaxManager().changeDataSource(getDataSource());
+        }
 
         ProjectionViewer projectionViewer = (ProjectionViewer)getSourceViewer();
         IDocument document = getDocument();

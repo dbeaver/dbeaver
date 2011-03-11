@@ -302,7 +302,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return plugin.getPreferenceStore();
     }
 
-    public void runAndWait(final DBRRunnableWithProgress runnable)
+    public void runInProgressDialog(final DBRRunnableWithProgress runnable)
     {
         try {
             IRunnableContext runnableContext;
@@ -328,7 +328,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         }
     }
 
-    public void runAndWait2(final DBRRunnableWithProgress runnable)
+    public void runInProgressService(final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException
     {
         this.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress() {

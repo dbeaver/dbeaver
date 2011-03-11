@@ -108,7 +108,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
         try {
             DisconnectTask disconnectTask = new DisconnectTask();
-            DBeaverCore.getInstance().runAndWait2(disconnectTask);
+            DBeaverCore.getInstance().runInProgressService(disconnectTask);
             return disconnectTask.disconnected;
         } catch (InvocationTargetException e) {
             log.error("Can't close opened connections", e.getTargetException());

@@ -131,4 +131,54 @@
         <factory id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorInputFactory" class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorInputFactory"/>
     </extension>
 
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="utf-8"
+            file-extensions="erd"
+            id="org.jkiss.dbeaver.erd.content-type-erd"
+            name="ERD"
+            priority="normal"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor name="ERD Editor"
+                extensions="erd"
+                icon="icons/erd.png"
+                contributorClass="org.jkiss.dbeaver.ext.erd.editor.ERDEditorContributor"
+                class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone"
+                id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone">
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd.content-type-erd"/>
+        </editor>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.erd.diagram.create" name="Create ERD" description="Create ER diagram" categoryId="org.jkiss.dbeaver.core.navigator"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="icons/erd.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.ext.erd.navigator.CreateDiagramHandler"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <!-- All Context menus -->
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="Create New Diagram">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IFolder">
+                                <test property="org.jkiss.dbeaver.core.resource.type" value="erd"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+    </extension>
 </plugin>

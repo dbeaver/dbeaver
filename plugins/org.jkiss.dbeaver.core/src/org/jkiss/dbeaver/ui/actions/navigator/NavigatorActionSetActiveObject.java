@@ -32,14 +32,13 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
                 final DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                 final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
                     DBSEntitySelector.class, databaseNode.getObject());
-                DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
+                DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
                         try {
                             activeContainer.setActiveChild(monitor, databaseNode.getObject());
-                        }
-                        catch (DBException e) {
+                        } catch (DBException e) {
                             throw new InvocationTargetException(e);
                         }
                     }

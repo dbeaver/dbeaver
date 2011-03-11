@@ -1162,7 +1162,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         final Object[] cells = new Object[metaColumns.length];
         final int currentRowNumber = rowNum;
         try {
-            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -1179,8 +1179,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                                 } else {
                                     try {
                                         cells[i] = metaColumn.getValueHandler().copyValueObject(context, metaColumn.getTableColumn(), origRow[i]);
-                                    }
-                                    catch (DBCException e) {
+                                    } catch (DBCException e) {
                                         log.warn(e);
                                         cells[i] = DBUtils.makeNullValue(origRow[i]);
                                     }

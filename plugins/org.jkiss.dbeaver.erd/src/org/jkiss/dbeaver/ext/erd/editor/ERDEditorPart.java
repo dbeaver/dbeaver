@@ -163,7 +163,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         // initialize actions
         createActions();
-
     }
 
     @Override
