@@ -4,22 +4,16 @@
 
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardPage;
-import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 
 /**
  * ActiveWizardPage
  */
-public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPage implements IEmbeddedPart
+public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPage
 {
     protected ActiveWizardPage(String pageName) {
         super(pageName);
-    }
-
-    protected ActiveWizardPage(String pageName, String title, ImageDescriptor titleImage) {
-        super(pageName, title, titleImage);
     }
 
     @Override
@@ -42,11 +36,22 @@ public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPag
         return false;
     }
 
-    public void activatePart() {
+    @Override
+    public void setVisible(boolean visible)
+    {
+        if (visible) {
+            activatePage();
+        } else {
+            deactivatePage();
+        }
+        super.setVisible(visible);
+    }
+
+    public void activatePage() {
 
     }
 
-    public void deactivatePart() {
+    public void deactivatePage() {
 
     }
 }

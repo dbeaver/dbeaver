@@ -64,7 +64,7 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
     }
 
     @Override
-    public void activatePart()
+    public void activatePage()
     {
         resultTable.removeAll();
         List<DBSDataContainer> dataProviders = getWizard().getSettings().getDataProviders();

@@ -192,7 +192,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     }
 
     @Override
-    public void activatePart() {
+    public void activatePage() {
         DataExportSettings exportSettings = getWizard().getSettings();
         DataExporterDescriptor exporter = exportSettings.getDataExporter();
         propsEditor.loadProperties(exporter.getPropertyGroups(), exportSettings.getExtractorProperties());
@@ -212,10 +212,10 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     }
 
     @Override
-    public void deactivatePart()
+    public void deactivatePage()
     {
         getWizard().getSettings().setExtractorProperties(propsEditor.getPropertiesWithDefaults());
-        super.deactivatePart();
+        super.deactivatePage();
     }
 
     @Override

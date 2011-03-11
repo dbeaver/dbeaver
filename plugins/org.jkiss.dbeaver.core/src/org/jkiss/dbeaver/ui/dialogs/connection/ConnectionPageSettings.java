@@ -7,16 +7,15 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
-import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 
 import java.util.HashMap;
@@ -28,7 +27,7 @@ import java.util.Map;
  * OR with the extension that matches the expected one (mpe).
  */
 
-class ConnectionPageSettings extends WizardPage implements IDataSourceConnectionEditorSite, IEmbeddedPart
+class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConnectionEditorSite
 {
     static final Log log = LogFactory.getLog(DriverDescriptor.class);
 
@@ -39,7 +38,7 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceConnection
     private Map<DriverDescriptor, DBPConnectionInfo> infoMap = new HashMap<DriverDescriptor, DBPConnectionInfo>();
 
     /**
-     * Constructor for SampleNewWizardPage.
+     * Constructor for ConnectionPageSettings
      */
     ConnectionPageSettings(
         ConnectionWizard wizard,
@@ -54,7 +53,7 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceConnection
     }
 
     /**
-     * Constructor for SampleNewWizardPage.
+     * Constructor for ConnectionPageSettings
      */
     ConnectionPageSettings(
         ConnectionWizard wizard,
@@ -65,21 +64,17 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceConnection
         this.dataSource = dataSource;
     }
 
-    public void setVisible(boolean visible)
-    {
-        if (visible && this.connectionEditor != null) {
-            this.connectionEditor.loadSettings();
-        }
-        super.setVisible(visible);
-    }
-
-    public void activatePart()
+    public void activatePage()
     {
         setMessage(getDriver().getName() + " connection settings");
+
+        if (this.connectionEditor != null) {
+            this.connectionEditor.loadSettings();
+        }
         //this.editor.loadSettings();
     }
 
-    public void deactivatePart()
+    public void deactivatePage()
     {
         if (this.connectionEditor != null) {
             this.connectionEditor.saveSettings();

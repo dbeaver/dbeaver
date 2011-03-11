@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -20,11 +19,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
@@ -32,7 +31,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  * OR with the extension that matches the expected one (mpe).
  */
 
-class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
+class ConnectionPageFinal extends ActiveWizardPage
 {
     static final Log log = LogFactory.getLog(ConnectionPageFinal.class);
 
@@ -61,7 +60,7 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
         this.dataSourceDescriptor = dataSourceDescriptor;
     }
 
-    public void activatePart()
+    public void activatePage()
     {
         if (testButton != null) {
             ConnectionPageSettings settings = wizard.getPageSettings();
@@ -103,7 +102,7 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
         }
     }
 
-    public void deactivatePart() {
+    public void deactivatePage() {
     }
 
     public void createControl(Composite parent)
@@ -114,7 +113,7 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
         //gl.marginWidth = 20;
         //gl.verticalSpacing = 10;
         group.setLayout(gl);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd;// = new GridData(GridData.FILL_HORIZONTAL);
         //gd.horizontalAlignment = GridData.HORIZONTAL_ALIGN_CENTER;
         //gd.verticalAlignment = GridData.VERTICAL_ALIGN_CENTER;
         //group.setLayoutData(gd);

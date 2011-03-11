@@ -15,11 +15,12 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 /**
  * Driver selection page
  */
-class ConnectionPageDriver extends WizardPage implements ISelectionChangedListener, IDoubleClickListener, IEmbeddedPart {
+class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChangedListener, IDoubleClickListener {
     private NewConnectionWizard wizard;
     private DriverDescriptor selectedDriver;
     private DriverTreeControl driverTreeControl;
@@ -84,14 +85,14 @@ class ConnectionPageDriver extends WizardPage implements ISelectionChangedListen
         }
     }
 
-    public void activatePart()
+    public void activatePage()
     {
         if (driverTreeControl != null) {
             driverTreeControl.refresh();
         }
     }
 
-    public void deactivatePart()
+    public void deactivatePage()
     {
 
     }

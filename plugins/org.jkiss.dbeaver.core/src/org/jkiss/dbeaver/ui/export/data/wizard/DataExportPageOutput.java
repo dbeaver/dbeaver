@@ -222,7 +222,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
     }
 
     @Override
-    public void activatePart()
+    public void activatePage()
     {
         DataExportSettings exportSettings = getWizard().getSettings();
         directoryText.setText(exportSettings.getOutputFolder());
