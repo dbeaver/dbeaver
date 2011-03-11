@@ -9,7 +9,18 @@ import org.eclipse.ui.IWorkbenchPart;
 /**
  * Embedded workbench part
  */
-public interface IObjectEditorPart extends IWorkbenchPart, IEmbeddedPart
+public interface IObjectEditorPart extends IWorkbenchPart
 {
+    /**
+     * Activates editor part.
+     * Called when part becomes active (visible).
+     */
+    void activatePart();
+
+    /**
+     * Deactivates editor part.
+     * Called when part becomes inactive (invisible).
+     */
+    void deactivatePart();
 
 }
