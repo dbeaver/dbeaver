@@ -7,7 +7,9 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import net.sf.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -123,7 +125,28 @@ public class EntityDiagram extends ERDObject<DBSObject>
     public void save(OutputStream out)
         throws IOException
     {
+        XMLBuilder xml = new XMLBuilder(out, ContentUtils.DEFAULT_FILE_CHARSET);
 
+        xml.startElement("diagram");
+        xml.addAttribute("version", 1);
+        xml.addAttribute("name", name);
+
+        {
+            xml.startElement("entities");
+            xml.endElement();
+        }
+        {
+            xml.startElement("relations");
+            xml.endElement();
+        }
+        {
+            xml.startElement("notes");
+            xml.endElement();
+        }
+
+        xml.endElement();
+
+        xml.flush();
     }
 
     public EntityDiagram copy()

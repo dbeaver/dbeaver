@@ -122,6 +122,8 @@ public class ERDResourceHandler extends AbstractResourceHandler {
                     try {
                         EntityDiagram newDiagram = copyFrom == null ? new EntityDiagram(null, "<Diagram>") : copyFrom.copy();
                         newDiagram.setName(title);
+                        newDiagram.setLayoutManualAllowed(true);
+                        newDiagram.setLayoutManualDesired(true);
 
                         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
                         newDiagram.save(buffer);
