@@ -5,7 +5,7 @@
 /*
  * Created on Jul 14, 2004
  */
-package org.jkiss.dbeaver.ext.erd.layout;
+package org.jkiss.dbeaver.ext.erd.layout.algorithm.direct;
 
 import org.eclipse.draw2d.graph.*;
 

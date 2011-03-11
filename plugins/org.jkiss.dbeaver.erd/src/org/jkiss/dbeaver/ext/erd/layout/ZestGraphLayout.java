@@ -122,7 +122,7 @@ public class ZestGraphLayout
 	}
 
     /**
-	 * Adds nodes to the graph object for use by the GraphLayoutManager
+	 * Adds nodes to the graph object for use by the GraphLayoutAuto
 	 */
 
 	protected void addEntityNode(EntityPart entityPart)

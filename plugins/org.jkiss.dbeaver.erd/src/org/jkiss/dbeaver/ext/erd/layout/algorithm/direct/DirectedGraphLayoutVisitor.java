@@ -5,7 +5,7 @@
 /*
  * Created on Jul 15, 2004
  */
-package org.jkiss.dbeaver.ext.erd.layout;
+package org.jkiss.dbeaver.ext.erd.layout.algorithm.direct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,6 +18,7 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
+import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 import java.util.*;
@@ -71,7 +72,7 @@ public class DirectedGraphLayoutVisitor
 	}
 
 	/**
-	 * Adds nodes to the graph object for use by the GraphLayoutManager
+	 * Adds nodes to the graph object for use by the GraphLayoutAuto
 	 */
 	protected void addEntityNode(EntityPart entityPart)
 	{

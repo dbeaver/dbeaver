@@ -18,12 +18,12 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
  * when doing manual layout (XYLayout)
  * @author Serge Rieder
  */
-public class GraphXYLayout extends FreeformLayout
+public class GraphLayoutXY extends FreeformLayout
 {
 
 	private DiagramPart diagram;
 	
-	public GraphXYLayout(DiagramPart diagram)
+	public GraphLayoutXY(DiagramPart diagram)
 	{
 		this.diagram = diagram;
 	}

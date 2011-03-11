@@ -12,6 +12,7 @@ import org.eclipse.draw2d.Animation;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.jkiss.dbeaver.ext.erd.layout.algorithm.direct.DirectedGraphLayoutVisitor;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 import java.util.List;
@@ -21,12 +22,12 @@ import java.util.List;
  * Uses the DirectedGraphLayoutVisitor to automatically lay out figures on diagram
  * @author Serge Rieder
  */
-public class GraphLayoutManager extends AbstractLayout
+public class GraphLayoutAuto extends AbstractLayout
 {
 
 	private DiagramPart diagram;
 
-	public GraphLayoutManager(DiagramPart diagram)
+	public GraphLayoutAuto(DiagramPart diagram)
 	{
 		this.diagram = diagram;
 	}
