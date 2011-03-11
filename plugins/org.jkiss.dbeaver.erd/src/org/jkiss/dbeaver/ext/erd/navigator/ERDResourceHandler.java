@@ -99,31 +99,28 @@ public class ERDResourceHandler extends AbstractResourceHandler {
             ERDEditorStandalone.class.getName());
     }
 
-    public static IFile createDiagram(DBNDiagram copyFrom, String title, IFolder folder) throws DBException
+    public static IFile createDiagram(
+        final EntityDiagram copyFrom,
+        final String title,
+        IFolder folder,
+        DBRProgressMonitor monitor)
+        throws DBException
     {
         if (folder == null) {
-            folder = getDiagramsFolder(copyFrom != null ? copyFrom.getResource().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
+            folder = getDiagramsFolder(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
         }
         if (folder == null) {
             throw new DBException("Can't detect folder for diagram");
         }
 
-        IFile file = ContentUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
+        final IFile file = ContentUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
 
-        updateDiagram(copyFrom, title, file);
-
-        return file;
-    }
-
-    private static void updateDiagram(final DBNDiagram copyFrom, final String title, final IFile file)
-        throws DBException
-    {
         try {
-            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+            DBRRunnableWithProgress runnable = new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        EntityDiagram newDiagram = copyFrom == null ? new EntityDiagram(null, "<Diagram>") : copyFrom.getDiagram().copy();
+                        EntityDiagram newDiagram = copyFrom == null ? new EntityDiagram(null, "<Diagram>") : copyFrom.copy();
                         newDiagram.setName(title);
 
                         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -135,13 +132,20 @@ public class ERDResourceHandler extends AbstractResourceHandler {
                         throw new InvocationTargetException(e);
                     }
                 }
-            });
+            };
+            if (monitor == null) {
+                DBeaverCore.getInstance().runInProgressService(runnable);
+            } else {
+                runnable.run(monitor);
+            }
         } catch (InvocationTargetException e) {
             throw new DBException(e.getTargetException());
         } catch (InterruptedException e) {
             // interrupted
         }
 
+        return file;
     }
+
 
 }

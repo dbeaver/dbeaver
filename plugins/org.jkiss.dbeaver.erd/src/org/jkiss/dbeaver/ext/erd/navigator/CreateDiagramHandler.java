@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 public class CreateDiagramHandler extends DataSourceHandler {
 
@@ -32,16 +33,10 @@ public class CreateDiagramHandler extends DataSourceHandler {
                 scriptFolder = (IFolder) ((DBNResource)element).getResource();
             }
         }
-        IFile scriptFile;
-        try {
-            scriptFile = ERDResourceHandler.createDiagram(null, "New", scriptFolder);
-        }
-        catch (Exception e) {
-            UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Create new diagram", null, e);
-            return null;
-        }
-
-        NavigatorHandlerObjectOpen.openResource(scriptFile, HandlerUtil.getActiveWorkbenchWindow(event));
+        ActiveWizardDialog dialog = new ActiveWizardDialog(
+            HandlerUtil.getActiveWorkbenchWindow(event),
+            new DiagramCreateWizard(scriptFolder));
+        dialog.open();
 
         return null;
     }

@@ -56,7 +56,11 @@ public class DBNDiagramFolder extends DBNResource
     public void dropNode(DBNNode otherNode) throws DBException
     {
         if (otherNode instanceof DBNDiagram) {
-            ERDResourceHandler.createDiagram((DBNDiagram) otherNode, otherNode.getNodeName(), (IFolder) getResource());
+            ERDResourceHandler.createDiagram(
+                ((DBNDiagram) otherNode).getDiagram(),
+                otherNode.getNodeName(),
+                (IFolder) getResource(),
+                null);
         } else {
             super.dropNode(otherNode);
         }
