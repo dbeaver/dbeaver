@@ -10,7 +10,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.ui.IEditorInput;
-import org.jkiss.dbeaver.ui.editors.FileRefDocumentProvider;
+import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 
 /**

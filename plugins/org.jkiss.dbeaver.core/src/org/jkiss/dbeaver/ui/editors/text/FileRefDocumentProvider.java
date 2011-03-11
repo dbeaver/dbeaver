@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors;
+package org.jkiss.dbeaver.ui.editors.text;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,6 +23,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractDocumentProvider;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
@@ -299,7 +300,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
                 f.install();
 
                 FileInfo info = new FileInfo(d, m, f);
-                info.fModificationStamp = computeModificationStamp(file);
+                info.modificationStamp = computeModificationStamp(file);
                 info.fStatus = s;
 
                 return info;
@@ -375,7 +376,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
                 info.fDocument.removeDocumentListener(info);
                 info.fDocument.set(newContent);
                 info.fCanBeSaved = false;
-                info.fModificationStamp = computeModificationStamp(file);
+                info.modificationStamp = computeModificationStamp(file);
                 info.fStatus = status;
 
                 addUnchangedElementListeners(fileEditorInput, info);
@@ -388,7 +389,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
 
                 // fires only the dirty state related event
                 info.fCanBeSaved = false;
-                info.fModificationStamp = computeModificationStamp(file);
+                info.modificationStamp = computeModificationStamp(file);
                 info.fStatus = status;
 
                 addUnchangedElementListeners(fileEditorInput, info);
@@ -423,11 +424,11 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
 
     protected abstract class SafeChange implements Runnable {
 
-        private IEditorInput fInput;
+        private IEditorInput editorInput;
 
         public SafeChange(IEditorInput input)
         {
-            fInput = input;
+            editorInput = input;
         }
 
         protected abstract void execute(IEditorInput input) throws Exception;
@@ -435,14 +436,14 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         public void run()
         {
 
-            if (getElementInfo(fInput) == null) {
-                fireElementStateChangeFailed(fInput);
+            if (getElementInfo(editorInput) == null) {
+                fireElementStateChangeFailed(editorInput);
                 return;
             }
             try {
-                execute(fInput);
+                execute(editorInput);
             } catch (Exception e) {
-                fireElementStateChangeFailed(fInput);
+                fireElementStateChangeFailed(editorInput);
             }
         }
     }
@@ -527,7 +528,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
                         break;
                     }
 
-                    boolean isSynchronized = computeModificationStamp(getFile()) == info.fModificationStamp;
+                    boolean isSynchronized = computeModificationStamp(getFile()) == info.modificationStamp;
                     if ((IResourceDelta.ENCODING & delta.getFlags()) != 0 && isSynchronized) {
                         runnable = new SafeChange(fileEditorInput) {
                             protected void execute(IEditorInput input) throws Exception
@@ -613,7 +614,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         /**
          * The time stamp at which this provider changed the file.
          */
-        public long fModificationStamp = IResource.NULL_STAMP;
+        public long modificationStamp = IResource.NULL_STAMP;
 
         public FileInfo(IDocument document, IAnnotationModel model, FileSynchronizer fileSynchronizer)
         {

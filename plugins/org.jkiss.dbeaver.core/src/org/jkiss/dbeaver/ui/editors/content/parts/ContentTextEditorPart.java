@@ -10,7 +10,7 @@ import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.editors.FileRefDocumentProvider;
+import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
