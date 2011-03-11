@@ -14,13 +14,9 @@ import org.jkiss.dbeaver.ui.export.project.ProjectCreateWizard;
 public class NavigatorHandlerProjectCreate extends NavigatorHandlerObjectBase {
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        ProjectCreateWizard wizard = new ProjectCreateWizard();
-        wizard.init(
-            HandlerUtil.getActiveWorkbenchWindow(event).getWorkbench(),
-            (IStructuredSelection) HandlerUtil.getCurrentSelection(event));
         ActiveWizardDialog dialog = new ActiveWizardDialog(
-            HandlerUtil.getActiveShell(event),
-            wizard);
+            HandlerUtil.getActiveWorkbenchWindow(event),
+            new ProjectCreateWizard());
         dialog.open();
 
         return null;

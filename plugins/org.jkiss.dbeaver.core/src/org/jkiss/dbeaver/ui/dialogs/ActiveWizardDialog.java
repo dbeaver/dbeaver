@@ -6,10 +6,13 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 
 /**
@@ -17,9 +20,24 @@ import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
  */
 public class ActiveWizardDialog extends WizardDialog
 {
-    public ActiveWizardDialog(Shell shell, IWizard wizard)
+    public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard)
     {
-        super(shell, wizard);
+        this(window, wizard, null);
+    }
+
+    public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard, IStructuredSelection selection)
+    {
+        super(window.getShell(), wizard);
+
+        // Initialize wizard
+        if (wizard instanceof IWorkbenchWizard) {
+            if (selection == null) {
+                if (window.getSelectionService().getSelection() instanceof IStructuredSelection) {
+                    selection = (IStructuredSelection)window.getSelectionService().getSelection();
+                }
+            }
+            ((IWorkbenchWizard)wizard).init(window.getWorkbench(), selection);
+        }
 
         this.addPageChangingListener(new IPageChangingListener()
         {

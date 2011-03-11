@@ -41,9 +41,9 @@ public class DataExportHandler extends AbstractHandler {
 
         // Refresh objects
         if (!dataProviders.isEmpty()) {
-            DataExportWizard wizard = new DataExportWizard(dataProviders);
-            wizard.init(workbenchWindow.getWorkbench(), (IStructuredSelection) selection);
-            ActiveWizardDialog dialog = new ActiveWizardDialog(workbenchWindow.getShell(), wizard);
+            ActiveWizardDialog dialog = new ActiveWizardDialog(
+                workbenchWindow,
+                new DataExportWizard(dataProviders));
             dialog.open();
         }
 

@@ -19,8 +19,7 @@ public class ConnectionDialog extends ActiveWizardDialog
 
     public ConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard)
     {
-        super(window.getShell(), wizard);
-        getWizard().init(window.getWorkbench(), null);
+        super(window, wizard);
     }
 
     protected ConnectionWizard getWizard()
