@@ -129,12 +129,20 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
                 try {
                     preparedStatement.setBinaryStream(paramIndex, tmpStream);
                 }
-                catch (AbstractMethodError e) {
-                    try {
-                        preparedStatement.setBinaryStream(paramIndex, tmpStream, storage.getContentLength());
-                    }
-                    catch (AbstractMethodError e1) {
-                        preparedStatement.setBinaryStream(paramIndex, tmpStream, (int)storage.getContentLength());
+                catch (Throwable e) {
+                    if (e instanceof SQLException) {
+                        throw (SQLException)e;
+                    } else {
+                        try {
+                            preparedStatement.setBinaryStream(paramIndex, tmpStream, storage.getContentLength());
+                        }
+                        catch (Throwable e1) {
+                            if (e1 instanceof SQLException) {
+                                throw (SQLException)e1;
+                            } else {
+                                preparedStatement.setBinaryStream(paramIndex, tmpStream, (int)storage.getContentLength());
+                            }
+                        }
                     }
                 }
             } else {

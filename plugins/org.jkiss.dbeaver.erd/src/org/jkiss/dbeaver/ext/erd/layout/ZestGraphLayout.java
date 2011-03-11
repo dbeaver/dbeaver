@@ -20,10 +20,12 @@ import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 
+/*
 import org.eclipse.zest.layouts.*;
 import org.eclipse.zest.layouts.algorithms.*;
 import org.eclipse.zest.layouts.exampleStructures.SimpleNode;
 import org.eclipse.zest.layouts.exampleStructures.SimpleRelationship;
+*/
 
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
@@ -39,6 +41,7 @@ import java.util.Map;
 public class ZestGraphLayout
 {
 
+/*
     static final Log log = LogFactory.getLog(ZestGraphLayout.class);
 
     List<LayoutEntity> entities = new ArrayList<LayoutEntity>();
@@ -46,10 +49,6 @@ public class ZestGraphLayout
 
 	Map<EntityPart, LayoutEntity> partToNodesMap;
     Map<ConnectionEditPart, LayoutRelationship> connectionToRelationshipsMap;
-
-    /**
-	 * Public method for reading graph nodes
-	 */
 
 	public void layoutDiagram(AbstractGraphicalEditPart diagram)
 	{
@@ -107,9 +106,6 @@ public class ZestGraphLayout
         }
     }
 
-	/*/
-/******************* DiagramPart contribution methods **********/
-
 
 	protected void addDiagramNodes(AbstractGraphicalEditPart diagram)
 	{
@@ -120,10 +116,6 @@ public class ZestGraphLayout
 			addEntityNode((EntityPart) child);
 		}
 	}
-
-    /**
-	 * Adds nodes to the graph object for use by the GraphLayoutAuto
-	 */
 
 	protected void addEntityNode(EntityPart entityPart)
 	{
@@ -143,8 +135,6 @@ public class ZestGraphLayout
 		}
 	}
 
-    /******************* Entity contribution methods **********/
-
 	protected void addEntityEdges(GraphicalEditPart entityPart)
 	{
 		List<?> outgoing = entityPart.getSourceConnections();
@@ -154,10 +144,6 @@ public class ZestGraphLayout
 			addConnectionEdges(connectionPart);
 		}
 	}
-
-	/*/
-/******************* Connection contribution methods **********/
-
 
 	protected void addConnectionEdges(ConnectionEditPart connectionPart)
 	{
@@ -194,5 +180,6 @@ public class ZestGraphLayout
         }
         return null;
     }
+*/
 
 }

@@ -22,8 +22,7 @@ import java.sql.*;
 /**
  * JDBCUtils
  */
-public class JDBCUtils
-{
+public class JDBCUtils {
     static final Log log = LogFactory.getLog(JDBCUtils.class);
 
     public static String safeGetString(ResultSet dbResult, String columnName)
@@ -278,8 +277,7 @@ public class JDBCUtils
             {
                 try {
                     connection.close();
-                }
-                catch (SQLException e) {
+                } catch (SQLException e) {
                     throw new DBCException("Coud not close connection", e);
                 }
             }
@@ -309,8 +307,7 @@ public class JDBCUtils
                 System.out.println();
             }
             System.out.println();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
@@ -323,8 +320,7 @@ public class JDBCUtils
             }
             connection.getMetaData().getTables(null, null, "UN_EXIST_TBL_NAME1978", null);
             return true;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             log.debug(e);
             return false;
         }
@@ -341,6 +337,9 @@ public class JDBCUtils
             // Seems to be not supported
             log.debug(e);
         } catch (AbstractMethodError e) {
+            // Seems to be legacy JDBC
+            log.debug(e);
+        } catch (UnsupportedOperationException e) {
             // Seems to be legacy JDBC
             log.debug(e);
         }
@@ -361,8 +360,8 @@ public class JDBCUtils
         for (SQLWarning warning = rootWarning; warning != null; warning = warning.getNextWarning()) {
             log.warn(
                 "SQL Warning: " + warning.getLocalizedMessage() + ContentUtils.getDefaultLineSeparator() +
-                "SQL Code: " + warning.getErrorCode() + ContentUtils.getDefaultLineSeparator() +
-                "SQL State: " + warning.getSQLState());
+                    "SQL Code: " + warning.getErrorCode() + ContentUtils.getDefaultLineSeparator() +
+                    "SQL State: " + warning.getSQLState());
         }
     }
 

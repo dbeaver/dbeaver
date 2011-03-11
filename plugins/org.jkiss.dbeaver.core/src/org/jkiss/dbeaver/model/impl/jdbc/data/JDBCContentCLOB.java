@@ -132,19 +132,27 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContent {
                         paramIndex,
                         streamReader);
                 }
-                catch (AbstractMethodError e) {
-                    long streamLength = ContentUtils.calculateContentLength(storage.getContentReader());
-                    try {
-                        preparedStatement.setCharacterStream(
-                            paramIndex,
-                            streamReader,
-                            streamLength);
-                    }
-                    catch (AbstractMethodError e1) {
-                        preparedStatement.setCharacterStream(
-                            paramIndex,
-                            streamReader,
-                            (int)streamLength);
+                catch (Throwable e) {
+                    if (e instanceof SQLException) {
+                        throw (SQLException)e;
+                    } else {
+                        long streamLength = ContentUtils.calculateContentLength(storage.getContentReader());
+                        try {
+                            preparedStatement.setCharacterStream(
+                                paramIndex,
+                                streamReader,
+                                streamLength);
+                        }
+                        catch (Throwable e1) {
+                            if (e1 instanceof SQLException) {
+                                throw (SQLException)e1;
+                            } else {
+                                preparedStatement.setCharacterStream(
+                                    paramIndex,
+                                    streamReader,
+                                    (int)streamLength);
+                            }
+                        }
                     }
                 }
             } else if (clob != null) {
