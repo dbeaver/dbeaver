@@ -885,16 +885,22 @@
 
         <!-- File menu-->
         <menuContribution allPopups="false" locationURI="menu:file?before=end">
+            <command commandId="org.eclipse.ui.newWizard"/>
             <command commandId="org.eclipse.ui.file.save"/>
             <command commandId="org.eclipse.ui.file.saveAs"/>
-            <command commandId="org.eclipse.ui.file.refresh"/>
             <command commandId="org.eclipse.ui.file.close"/>
-            <separator name="import-export" visible="true"/>
             <command commandId="org.eclipse.ui.file.print"/>
             <command commandId="org.eclipse.ui.edit.rename"/>
 
+            <command commandId="org.eclipse.ui.file.refresh"/>
+
+            <separator name="import-export" visible="true"/>
+
             <command commandId="org.eclipse.ui.file.import"/>
             <command commandId="org.eclipse.ui.file.export"/>
+
+            <separator name="settings" visible="true"/>
+            <command commandId="org.eclipse.ui.window.preferences"/>
 
             <separator name="exit" visible="true"/>
             <command commandId="org.eclipse.ui.file.exit"/>
@@ -1683,6 +1689,20 @@
             <description>
                 SQL Scripts
             </description>
+        </wizard>
+    </extension>
+
+    <extension point="org.eclipse.ui.newWizards">
+        <category id="org.jkiss.dbeaver.core.new.general" name="General"/>
+        <wizard
+             category="org.jkiss.dbeaver.core.new.general"
+             class="org.jkiss.dbeaver.ui.export.project.ProjectCreateWizard"
+             icon="icons/project.png"
+             id="org.jkiss.dbeaver.core.wizard.new.project"
+             name="Project">
+           <description>
+               DBeaver Project
+           </description>
         </wizard>
     </extension>
 

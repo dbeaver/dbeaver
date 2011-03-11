@@ -181,4 +181,19 @@
             </command>
         </menuContribution>
     </extension>
+
+    <extension point="org.eclipse.ui.newWizards">
+        <wizard
+             category="org.jkiss.dbeaver.core.new.general"
+             class="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"
+             icon="icons/erd.png"
+             id="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"
+             name="ER Diagram">
+           <description>
+               Entity Relation Diagram (ERD)
+           </description>
+        </wizard>
+    </extension>
+
+
 </plugin>

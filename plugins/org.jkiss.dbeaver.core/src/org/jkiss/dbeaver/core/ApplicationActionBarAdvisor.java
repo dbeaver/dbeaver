@@ -37,7 +37,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private IActionDelegate aboutAction;
     private IWorkbenchAction newWindowAction;
     //private IWorkbenchAction viewPropertiesAction;
-    private IWorkbenchAction viewPreferencesAction;
     private ApplicationToolbarDataSources dataSourceToolbar;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
@@ -92,9 +91,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         //viewPropertiesAction = ActionFactory.PROPERTIES.create(window);
         //register(viewPropertiesAction);
-
-        viewPreferencesAction = ActionFactory.PREFERENCES.create(window);
-        register(viewPreferencesAction);
     }
 
     protected void fillMenuBar(IMenuManager menuBar)
@@ -116,7 +112,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         menuBar.add(helpMenu);
 
         // File
-        fileMenu.add(viewPreferencesAction);
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(new Separator("end"));
 

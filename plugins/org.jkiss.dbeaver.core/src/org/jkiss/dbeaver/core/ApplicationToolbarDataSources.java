@@ -15,6 +15,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -52,7 +53,7 @@ import java.util.List;
 /**
  * DataSource Toolbar
  */
-class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener {
+class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener, ISelectionListener {
     static final Log log = LogFactory.getLog(ApplicationToolbarDataSources.class);
 
     public static final String EMPTY_SELECTION_TEXT = "<None>";
@@ -558,11 +559,13 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
     public void pageClosed(IWorkbenchPage page)
     {
         page.removePartListener(this);
+        page.removeSelectionListener(this);
     }
 
     public void pageOpened(IWorkbenchPage page)
     {
         page.addPartListener(this);
+        page.addSelectionListener(this);
     }
 
     // IPartListener
@@ -593,6 +596,11 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     public void partOpened(IWorkbenchPart part)
     {
+    }
+
+    public void selectionChanged(IWorkbenchPart part, ISelection selection)
+    {
+
     }
 
 }
