@@ -1704,6 +1704,16 @@
                DBeaver Project
            </description>
         </wizard>
+        <wizard
+             category="org.jkiss.dbeaver.core.new.general"
+             class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
+             icon="icons/database.png"
+             id="org.jkiss.dbeaver.core.wizard.new.connection"
+             name="Connection">
+           <description>
+               Database connection
+           </description>
+        </wizard>
     </extension>
 
 </plugin>

@@ -31,6 +31,11 @@ public class NewConnectionWizard extends ConnectionWizard
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<DataSourceProviderDescriptor, ConnectionPageSettings>();
     private ConnectionPageFinal pageFinal;
 
+    public NewConnectionWizard()
+    {
+        super(DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry());
+    }
+
     /**
      * Constructor for SampleNewWizard.
      */
