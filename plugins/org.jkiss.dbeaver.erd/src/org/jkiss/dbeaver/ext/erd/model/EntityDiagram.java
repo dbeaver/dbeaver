@@ -7,15 +7,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
@@ -36,8 +31,9 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	private List<ERDTable> tables = new ArrayList<ERDTable>();
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
+    private Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
 
-	public EntityDiagram(DBSObject container, String name)
+    public EntityDiagram(DBSObject container, String name)
 	{
 		super(container);
 		if (name == null)
@@ -173,7 +169,6 @@ public class EntityDiagram extends ERDObject<DBSObject>
     public void fillTables(DBRProgressMonitor monitor, Collection<DBSTable> tables, DBSObject dbObject)
     {
         // Load entities
-        Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
         for (DBSTable table : tables) {
             if (monitor.isCanceled()) {
                 break;
@@ -190,32 +185,9 @@ public class EntityDiagram extends ERDObject<DBSObject>
             if (monitor.isCanceled()) {
                 break;
             }
-            ERDTable table1 = tableMap.get(table);
-            try {
-                Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
-                // Make associations
-                Collection<? extends DBSForeignKey> fks = table.getForeignKeys(monitor);
-                for (DBSForeignKey fk : fks) {
-                    fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
-                    ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
-                    if (table2 == null) {
-                        //log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
-                    } else {
-                        //if (table1 != table2) {
-                        new ERDAssociation(fk, table2, table1, false);
-                        //}
-                    }
-                }
-
-                // Mark column's fk flag
-                for (ERDTableColumn column : table1.getColumns()) {
-                    if (fkColumns.contains(column.getObject())) {
-                        column.setInForeignKey(true);
-                    }
-                }
-
-            } catch (DBException e) {
-                log.warn("Could not load table '" + table.getName() + "' foreign keys", e);
+            final ERDTable erdTable = tableMap.get(table);
+            if (erdTable != null) {
+                erdTable.addRelations(monitor, tableMap, false);
             }
         }
     }
@@ -228,5 +200,10 @@ public class EntityDiagram extends ERDObject<DBSObject>
             }
         }
         return false;
+    }
+
+    public Map<DBSTable,ERDTable> getTableMap()
+    {
+        return tableMap;
     }
 }

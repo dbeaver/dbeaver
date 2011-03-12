@@ -37,6 +37,7 @@ public class EntityAddCommand extends Command
         Point curLocation = location == null ? null : new Point(location);
         for (ERDTable table : tables) {
 		    diagramPart.getDiagram().addTable(table, true);
+            //diagramPart.getDiagram().addRelations(monitor, table, true);
 
             if (curLocation != null) {
                 // Put new tables in specified location

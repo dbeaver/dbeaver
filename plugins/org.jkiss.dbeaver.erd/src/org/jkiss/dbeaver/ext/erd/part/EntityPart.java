@@ -142,11 +142,11 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	{
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
-            installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
-            installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
+            //installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
+            //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
             installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
             installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());
-            installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new EntityDirectEditPolicy());
+            //installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new EntityDirectEditPolicy());
         }
 	}
 

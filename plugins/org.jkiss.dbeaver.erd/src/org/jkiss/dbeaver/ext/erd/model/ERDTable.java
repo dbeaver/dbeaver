@@ -11,12 +11,11 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Model object representing a relational database Table
@@ -39,7 +38,7 @@ public class ERDTable extends ERDObject<DBSTable>
         super(dbsTable);
     }
 
-	public void addColumn(ERDTableColumn column, boolean reflect)
+    public void addColumn(ERDTableColumn column, boolean reflect)
 	{
 		if (columns.contains(column))
 		{
@@ -216,6 +215,37 @@ public class ERDTable extends ERDObject<DBSTable>
             log.debug("Could not load table '" + dbTable.getName() + "'columns", e);
         }
         return erdTable;
+    }
+
+    public void addRelations(DBRProgressMonitor monitor, Map<DBSTable, ERDTable> tableMap, boolean reflect)
+    {
+        ERDTable table1 = this;
+        try {
+            Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
+            // Make associations
+            Collection<? extends DBSForeignKey> fks = getObject().getForeignKeys(monitor);
+            for (DBSForeignKey fk : fks) {
+                fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
+                ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
+                if (table2 == null) {
+                    //log.debug("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
+                } else {
+                    //if (table1 != table2) {
+                    new ERDAssociation(fk, table2, table1, reflect);
+                    //}
+                }
+            }
+
+            // Mark column's fk flag
+            for (ERDTableColumn column : table1.getColumns()) {
+                if (fkColumns.contains(column.getObject())) {
+                    column.setInForeignKey(true);
+                }
+            }
+
+        } catch (DBException e) {
+            log.warn("Could not load table '" + getObject().getName() + "' foreign keys", e);
+        }
     }
 
 }

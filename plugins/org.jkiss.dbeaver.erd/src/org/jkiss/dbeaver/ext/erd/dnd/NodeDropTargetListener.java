@@ -28,9 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Provides a listener for dropping nodes onto the editor drawing
@@ -67,20 +65,26 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
+                            final EntityDiagram diagram = ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram();
+                            Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
+                            tableMap.putAll(diagram.getTableMap());
                             for (DBNNode node : nodes) {
                                 if (monitor.isCanceled()) {
                                     break;
                                 }
                                 if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSTable) {
                                     DBSTable table = (DBSTable) ((DBNDatabaseNode) node).getObject();
-                                    final EntityDiagram diagram = ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram();
                                     if (diagram.containsTable(table)) {
                                         // Avoid duplicates
                                         continue;
                                     }
                                     ERDTable erdTable = ERDTable.fromObject(monitor, table);
                                     tables.add(erdTable);
+                                    tableMap.put(table, erdTable);
                                 }
+                            }
+                            for (ERDTable erdTable : tables) {
+                                erdTable.addRelations(monitor, tableMap, false);
                             }
                         }
                     });
