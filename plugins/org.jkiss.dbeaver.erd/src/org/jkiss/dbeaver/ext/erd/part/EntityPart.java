@@ -140,7 +140,7 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	 */
 	protected void createEditPolicies()
 	{
-        final boolean editEnabled = ((DiagramPart) getParent()).getDiagram().isLayoutManualAllowed();
+        final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
             installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
             installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
@@ -150,7 +150,7 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
         }
 	}
 
-	//******************* Direct editing related methods *********************/
+    //******************* Direct editing related methods *********************/
 
 	/**
 	 * @see org.eclipse.gef.EditPart#performRequest(org.eclipse.gef.Request)

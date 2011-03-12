@@ -181,21 +181,6 @@ public class EntityDiagram extends ERDObject<DBSObject>
             ERDTable erdTable = ERDTable.fromObject(monitor, table);
             erdTable.setPrimary(table == dbObject);
 
-            try {
-                List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, table);
-
-                Collection<? extends DBSTableColumn> columns = table.getColumns(monitor);
-                if (!CommonUtils.isEmpty(columns)) {
-                    for (DBSTableColumn column : columns) {
-                        ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
-                        erdTable.addColumn(c1, false);
-                    }
-                }
-            } catch (DBException e) {
-                // just skip this problematic columns
-                log.debug("Could not load table '" + table.getName() + "'columns", e);
-            }
-
             addTable(erdTable, false);
             tableMap.put(table, erdTable);
         }

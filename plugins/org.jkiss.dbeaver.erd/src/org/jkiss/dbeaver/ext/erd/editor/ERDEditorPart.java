@@ -129,7 +129,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     private boolean isDirty;
 
-    private boolean isReadOnly;
     protected boolean isLoaded;
 
     protected LoadingJob<EntityDiagram> diagramLoadingJob;
@@ -146,9 +145,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
-        // Editor is readonly if editor input is not a file but database object
-        this.isReadOnly = true;
-
         editDomain = new DefaultEditDomain(this);
         setEditDomain(editDomain);
 
@@ -304,8 +300,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     public boolean isDirty()
     {
-        return !isReadOnly && isDirty;
+        return !isReadOnly() && isDirty;
     }
+
+    public abstract boolean isReadOnly();
 
     /**
      * Returns the <code>CommandStack</code> of this editor's
@@ -637,11 +635,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);
         controls.add(separator);
 
-        if (!isReadOnly) {
+        if (!isReadOnly()) {
             controls.add(new ConnectionCreationToolEntry("Connections", "Create Connections", null,
                 Activator.getImageDescriptor("icons/relationship.gif"),
                 Activator.getImageDescriptor("icons/relationship.gif")));
 
+/*
             PaletteDrawer drawer = new PaletteDrawer("New Component",
                 Activator.getImageDescriptor("icons/connection.gif"));
 
@@ -663,6 +662,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             drawer.addAll(entries);
 
             paletteRoot.add(drawer);
+*/
         }
 
         return paletteRoot;

@@ -27,6 +27,11 @@ import java.util.List;
 public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implements PropertyChangeListener
 {
 
+    protected boolean isEditEnabled()
+    {
+        return getParent() instanceof DiagramPart && ((DiagramPart) getParent()).getDiagram().isLayoutManualAllowed();
+    }
+
 	/**
 	 * @see org.eclipse.gef.EditPart#activate()
 	 */

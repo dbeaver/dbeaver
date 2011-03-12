@@ -31,6 +31,12 @@ public class ERDEditorStandalone extends ERDEditorPart {
     }
 
     @Override
+    public boolean isReadOnly()
+    {
+        return false;
+    }
+
+    @Override
     public void createPartControl(Composite parent)
     {
         super.createPartControl(parent);

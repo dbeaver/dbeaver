@@ -19,6 +19,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -50,8 +51,11 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     protected void createEditPolicies() {
         installEditPolicy(EditPolicy.CONNECTION_ENDPOINTS_ROLE, new ConnectionEndpointEditPolicy());
-        //installEditPolicy(EditPolicy.COMPONENT_ROLE, new AssociationEditPolicy());
         installEditPolicy(EditPolicy.CONNECTION_BENDPOINTS_ROLE, new AssociationBendEditPolicy());
+
+        if (isEditEnabled()) {
+            installEditPolicy(EditPolicy.COMPONENT_ROLE, new AssociationEditPolicy());
+        }
     }
 
     protected IFigure createFigure() {

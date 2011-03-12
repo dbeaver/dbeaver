@@ -22,6 +22,11 @@ import java.beans.PropertyChangeListener;
 public abstract class PropertyAwareConnectionPart extends AbstractConnectionEditPart implements PropertyChangeListener
 {
 
+    protected boolean isEditEnabled()
+    {
+        return getRoot().getContents() instanceof DiagramPart && ((DiagramPart) getRoot().getContents()).getDiagram().isLayoutManualAllowed();
+    }
+
 	/**
 	 * @see org.eclipse.gef.EditPart#activate()
 	 */

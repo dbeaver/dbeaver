@@ -39,6 +39,12 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
     {
     }
 
+    @Override
+    public boolean isReadOnly()
+    {
+        return true;
+    }
+
     DBSObject getSourceObject()
     {
         return objectManager.getObject();
