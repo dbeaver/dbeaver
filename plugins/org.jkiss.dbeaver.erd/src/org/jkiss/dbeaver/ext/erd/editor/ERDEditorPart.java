@@ -291,7 +291,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     public EntityDiagram getDiagram()
     {
-        return (EntityDiagram) getGraphicalViewer().getContents();
+        return getDiagramPart().getDiagram();
     }
 
     public DiagramPart getDiagramPart()

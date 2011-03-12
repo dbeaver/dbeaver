@@ -144,6 +144,7 @@ public class DiagramPart extends PropertyAwarePart {
 
         //getFigure().setLayoutManager(delegatingLayoutManager);
         //getFigure().getLayoutManager().layout(getFigure());
+        getFigure().repaint();
     }
 
     /**

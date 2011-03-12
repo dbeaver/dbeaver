@@ -11,13 +11,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
-public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView
+public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider
 {
     private DBNModel model;
     private DatabaseNavigatorTree tree;
@@ -81,11 +86,14 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         navigatorTree.getViewer().addDoubleClickListener(new IDoubleClickListener() {
             public void doubleClick(DoubleClickEvent event)
             {
-                DBNNode dbmNode = getSelectedNode();
-                if (dbmNode == null) {
-                    return;
+                IStructuredSelection selection = (IStructuredSelection)tree.getViewer().getSelection();
+                if (selection.size() == 1) {
+                    DBNNode dbmNode = (DBNNode)selection.getFirstElement();
+                    if (dbmNode == null) {
+                        return;
+                    }
+                    ViewUtils.runCommand(dbmNode.getDefaultCommandId(), NavigatorViewBase.this);
                 }
-                ViewUtils.runCommand(dbmNode.getDefaultCommandId(), NavigatorViewBase.this);
             }
 
         });
@@ -129,4 +137,23 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         tree.showNode(node);
     }
 
+    public DBSDataSourceContainer getDataSourceContainer()
+    {
+        final IStructuredSelection selection = (IStructuredSelection)tree.getViewer().getSelection();
+        if (selection == null || selection.isEmpty()) {
+            return null;
+        }
+        final Object element = selection.getFirstElement();
+        if (element instanceof DBNDatabaseNode) {
+            if (element instanceof DBNDataSource) {
+                return ((DBNDataSource)element).getDataSourceContainer();
+            } else {
+                final DBPDataSource dataSource = ((DBNDatabaseNode) element).getObject().getDataSource();
+                if (dataSource != null) {
+                    return dataSource.getContainer();
+                }
+            }
+        }
+        return null;
+    }
 }

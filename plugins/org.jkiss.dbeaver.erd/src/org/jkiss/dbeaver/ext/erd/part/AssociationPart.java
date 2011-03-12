@@ -103,7 +103,10 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         } else {
             ((PolylineConnection) getFigure()).setLineWidth(1);
         }
-
+        if (getSource() == null || getTarget() == null) {
+            // This part seems to be deleted
+            return;
+        }
         List<AttributePart> sourceAttributes = getEntityAttributes(
             (EntityPart)getSource(),
             DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, getAssociation().getObject().getReferencedKey()));

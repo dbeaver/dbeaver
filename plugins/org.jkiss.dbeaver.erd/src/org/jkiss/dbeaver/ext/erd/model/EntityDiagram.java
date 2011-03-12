@@ -9,6 +9,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import net.sf.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -169,6 +170,19 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
         {
             xml.startElement("entities");
+            for (ERDTable erdTable : tables) {
+                final DBSTable table = erdTable.getObject();
+                xml.startElement("entity");
+                xml.addAttribute("ds", table.getDataSource().getContainer().getId());
+                xml.addAttribute("name", table.getName());
+                xml.addAttribute("fq-name", table.getFullQualifiedName());
+                for (DBSObject parent = table.getParentObject(); parent != null && !(parent instanceof DBSDataSourceContainer); parent = parent.getParentObject()) {
+                    xml.startElement("path");
+                    xml.addText(parent.getName());
+                    xml.endElement();
+                }
+                xml.endElement();
+            }
             xml.endElement();
         }
         {

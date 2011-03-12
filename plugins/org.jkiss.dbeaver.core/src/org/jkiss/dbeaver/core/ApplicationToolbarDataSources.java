@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
@@ -16,6 +17,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -59,7 +62,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
     public static final String EMPTY_SELECTION_TEXT = "<None>";
 
     private IWorkbenchWindow workbenchWindow;
-    private IEditorPart activeEditorPart;
+    private IWorkbenchPart activePart;
 
     private Text resultSetSize;
     private CImageCombo connectionCombo;
@@ -79,7 +82,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     public void dispose()
     {
-        setActiveEditor(null);
+        setActivePart(null);
 
         UIUtils.dispose(resultSetSize);
         UIUtils.dispose(connectionCombo);
@@ -88,30 +91,39 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         this.workbenchWindow.removePageListener(this);
     }
 
-    private IProject getActiveProject()
+    private IAdaptable getActiveObject()
     {
-        if (activeEditorPart == null || activeEditorPart.getEditorInput() == null) {
-            return null;
-        }
-        final IEditorInput editorInput = activeEditorPart.getEditorInput();
-        final IFile file = (IFile) editorInput.getAdapter(IFile.class);
-        if (file != null) {
-            return file.getProject();
+        if (activePart instanceof IEditorPart) {
+            return ((IEditorPart) activePart).getEditorInput();
+        } else if (activePart instanceof IViewPart) {
+            return activePart;
         } else {
             return null;
         }
     }
 
+    private IProject getActiveProject()
+    {
+        final IAdaptable activeObject = getActiveObject();
+        if (activeObject != null) {
+            final IFile file = (IFile) activeObject.getAdapter(IFile.class);
+            if (file != null) {
+                return file.getProject();
+            }
+        }
+        return DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+    }
+
     private DBSDataSourceContainer getDataSourceContainer()
     {
-        if (activeEditorPart == null || activeEditorPart.getEditorInput() == null) {
+        final IAdaptable activeObject = getActiveObject();
+        if (activeObject == null) {
             return null;
         }
-        final IEditorInput editorInput = activeEditorPart.getEditorInput();
-        if (editorInput instanceof IDataSourceContainerProvider) {
-            return ((IDataSourceContainerProvider)editorInput).getDataSourceContainer();
-        } else if (editorInput instanceof IDataSourceProvider) {
-            final DBPDataSource dataSource = ((IDataSourceProvider) editorInput).getDataSource();
+        if (activeObject instanceof IDataSourceContainerProvider) {
+            return ((IDataSourceContainerProvider)activeObject).getDataSourceContainer();
+        } else if (activeObject instanceof IDataSourceProvider) {
+            final DBPDataSource dataSource = ((IDataSourceProvider) activeObject).getDataSource();
             return dataSource == null ? null : dataSource.getContainer();
         } else {
             return null;
@@ -120,11 +132,14 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     private IDataSourceContainerProviderEx getActiveDataSourceUpdater()
     {
-        if (activeEditorPart instanceof IDataSourceContainerProviderEx) {
-            return (IDataSourceContainerProviderEx) activeEditorPart;
+        if (activePart instanceof IDataSourceContainerProviderEx) {
+            return (IDataSourceContainerProviderEx) activePart;
         } else {
-            final IEditorInput editorInput = activeEditorPart == null ? null : activeEditorPart.getEditorInput();
-            return editorInput instanceof IDataSourceContainerProviderEx ? (IDataSourceContainerProviderEx)editorInput : null;
+            final IAdaptable activeObject = getActiveObject();
+            if (activeObject == null) {
+                return null;
+            }
+            return activeObject instanceof IDataSourceContainerProviderEx ? (IDataSourceContainerProviderEx)activeObject : null;
         }
     }
 
@@ -142,9 +157,9 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         return null;
     }
 
-    public void setActiveEditor(IEditorPart targetEditor)
+    public void setActivePart(IWorkbenchPart part)
     {
-        if (activeEditorPart == targetEditor) {
+        if (activePart == part) {
             return;
         }
 
@@ -154,7 +169,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
             container.getPreferenceStore().removePropertyChangeListener(this);
             container.getRegistry().removeDataSourceListener(this);
         }
-        activeEditorPart = targetEditor;
+        activePart = part;
         container = getDataSourceContainer();
 
         if (container != null) {
@@ -291,7 +306,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
             }
 
             int selectionIndex = 0;
-            if (activeEditorPart != null) {
+            if (activePart != null) {
                 final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
                 if (!CommonUtils.isEmpty(dataSources)) {
                     DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
@@ -314,23 +329,19 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         }
     }
 
-    public void handleDataSourceEvent(DBPEvent event)
+    public void handleDataSourceEvent(final DBPEvent event)
     {
-        final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        if (dataSourceContainer != null) {
-            if (event.getObject() == dataSourceContainer &&
-                event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
-                event.getEnabled() != null)
-            {
-                Display.getDefault().asyncExec(
-                    new Runnable() {
-                        public void run()
-                        {
+        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null) {
+            Display.getDefault().asyncExec(
+                new Runnable() {
+                    public void run()
+                    {
+                        if (event.getObject() == getDataSourceContainer()) {
                             updateControls();
                         }
                     }
-                );
-            }
+                }
+            );
         }
     }
 
@@ -466,9 +477,6 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         if (connectionCombo == null || connectionCombo.isDisposed()) {
             return;
         }
-        if (activeEditorPart == null || activeEditorPart.getEditorInput() == null) {
-            return;
-        }
         IDataSourceContainerProviderEx dataSourceUpdater = getActiveDataSourceUpdater();
         if (dataSourceUpdater == null) {
             return;
@@ -572,9 +580,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     public void partActivated(IWorkbenchPart part)
     {
-        if (part instanceof IEditorPart) {
-            setActiveEditor((IEditorPart) part);
-        }
+        setActivePart(part);
     }
 
     public void partBroughtToTop(IWorkbenchPart part)
@@ -589,7 +595,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
     {
         // Do nothing
 
-        //if (part == activeEditorPart) {
+        //if (part == activePart) {
         //    setActiveEditor(null);
         //}
     }
@@ -600,7 +606,12 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     public void selectionChanged(IWorkbenchPart part, ISelection selection)
     {
-
+        if (part == activePart && selection instanceof IStructuredSelection) {
+            final Object element = ((IStructuredSelection) selection).getFirstElement();
+            if (element instanceof DBNNode) {
+                updateControls();
+            }
+        }
     }
 
 }

@@ -4,24 +4,20 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.gef.ui.actions.DeleteAction;
-import org.eclipse.gef.ui.actions.RedoAction;
-import org.eclipse.gef.ui.actions.SaveAction;
-import org.eclipse.gef.ui.actions.UndoAction;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -50,30 +46,19 @@ public class ERDEditorStandalone extends ERDEditorPart {
         loadDiagram();
     }
 
-
     public void doSave(IProgressMonitor monitor)
     {
-/*
         try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ObjectOutputStream objectOut = new ObjectOutputStream(out);
-            objectOut.writeObject(getDiagram());
-            objectOut.close();
-            IEditorInput input = getEditorInput();
-            if (input instanceof IFileEditorInput) {
-                IFile file = ((IFileEditorInput) input).getFile();
-                try {
-                    file.setContents(new ByteArrayInputStream(out.toByteArray()), true, false, monitor);
-                } finally {
-                    out.close();
-                }
-            }
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            getDiagram().save(buffer);
+
+            final IFile file = getEditorFile();
+            file.setContents(new ByteArrayInputStream(buffer.toByteArray()), true, true, monitor);
+
+            getCommandStack().markSaveLocation();
+        } catch (Exception e) {
+            UIUtils.showErrorDialog(getSite().getShell(), "Save diagram", null, e);
         }
-        catch (Exception e) {
-            log.error("Could not save diagram", e);
-        }
-*/
-        getCommandStack().markSaveLocation();
     }
 
 /*
@@ -147,6 +132,11 @@ public class ERDEditorStandalone extends ERDEditorPart {
         entityDiagram.setLayoutManualAllowed(true);
         entityDiagram.setLayoutManualDesired(true);
         return entityDiagram;
+    }
+
+    private IFile getEditorFile()
+    {
+        return (IFile) getEditorInput().getAdapter(IFile.class);
     }
 
 /*

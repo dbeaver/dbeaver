@@ -36,8 +36,8 @@ public class AssociationDeleteCommand extends Command
 	 */
 	public void execute()
 	{
+        primaryKeyTarget.removePrimaryKeyRelationship(relationship, true);
 		foreignKeySource.removeForeignKeyRelationship(relationship, true);
-		primaryKeyTarget.removePrimaryKeyRelationship(relationship, true);
 		relationship.setForeignKeyTable(null);
 		relationship.setPrimaryKeyTable(null);
 	}
