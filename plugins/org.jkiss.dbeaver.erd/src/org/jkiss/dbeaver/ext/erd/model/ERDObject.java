@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import net.sf.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
@@ -42,7 +43,8 @@ public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySo
 	protected transient PropertyChangeSupport listeners = new PropertyChangeSupport(this);
 
     protected final OBJECT object;
-    protected PropertyCollector propertyCollector = null;
+    private PropertyCollector propertyCollector = null;
+    private int objectId;
 
 	protected ERDObject(OBJECT object)
 	{
@@ -51,6 +53,16 @@ public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySo
 
     public OBJECT getObject() {
         return object;
+    }
+
+    public int getObjectId()
+    {
+        return objectId;
+    }
+
+    public void setObjectId(int objectId)
+    {
+        this.objectId = objectId;
     }
 
     private PropertyCollector getPropertyCollector()

@@ -50,7 +50,7 @@ public class ERDEditorStandalone extends ERDEditorPart {
     {
         try {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            getDiagram().save(buffer);
+            getDiagram().save(getDiagramPart(), buffer);
 
             final IFile file = getEditorFile();
             file.setContents(new ByteArrayInputStream(buffer.toByteArray()), true, true, monitor);

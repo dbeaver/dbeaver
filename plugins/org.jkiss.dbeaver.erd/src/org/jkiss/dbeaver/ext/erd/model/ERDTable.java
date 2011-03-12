@@ -96,14 +96,14 @@ public class ERDTable extends ERDObject<DBSTable>
 	/**
 	 * Adds relationship where the current object is the primary key table in a relationship
 	 * 
-	 * @param rel
+	 * @param table
 	 *            the foreign key relationship
 	 */
-	public void addPrimaryKeyRelationship(ERDAssociation rel, boolean reflect)
+	public void addPrimaryKeyRelationship(ERDAssociation table, boolean reflect)
 	{
-		primaryKeyRelationships.add(rel);
+		primaryKeyRelationships.add(table);
         if (reflect) {
-		    firePropertyChange(INPUT, null, rel);
+		    firePropertyChange(INPUT, null, table);
         }
 	}
 

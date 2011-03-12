@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -136,18 +137,24 @@ public class RuntimeUtils
 
     public static String getCurrentDate()
     {
+        return new SimpleDateFormat("yyyyMMdd").format(new Date());
+/*
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
         final int month = c.get(Calendar.MONTH) + 1;
         final int day = c.get(Calendar.DAY_OF_MONTH);
         return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + (day < 10 ? "0" + day : day);
+*/
     }
 
     public static String getCurrentTimeStamp()
     {
+        return new SimpleDateFormat("yyyyMMddhhmm").format(new Date());
+/*
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
         final int month = c.get(Calendar.MONTH) + 1;
         return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + c.get(Calendar.DAY_OF_MONTH) + c.get(Calendar.HOUR_OF_DAY) + c.get(Calendar.MINUTE);
+*/
     }
 }

@@ -16,6 +16,7 @@ import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.dnd.AbstractTransferDropTargetListener;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.CreationFactory;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -24,6 +25,9 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
@@ -63,24 +67,35 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
 
                 try {
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                        EntityDiagram diagram;
+                        Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
-                            final EntityDiagram diagram = ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram();
-                            Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
+                            diagram = ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram();
                             tableMap.putAll(diagram.getTableMap());
+
                             for (DBNNode node : nodes) {
                                 if (monitor.isCanceled()) {
                                     break;
                                 }
-                                if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSTable) {
-                                    DBSTable table = (DBSTable) ((DBNDatabaseNode) node).getObject();
-                                    if (diagram.containsTable(table)) {
-                                        // Avoid duplicates
-                                        continue;
+                                if (node instanceof DBNDatabaseNode) {
+                                    final DBSObject object = ((DBNDatabaseNode) node).getObject();
+                                    if (object instanceof DBSTable) {
+                                        addTable(monitor, (DBSTable) object);
+                                    } else if (object instanceof DBSEntityContainer) {
+                                        try {
+                                            final Collection<? extends DBSEntity> children = ((DBSEntityContainer) object).getChildren(monitor);
+                                            if (!CommonUtils.isEmpty(children)) {
+                                                for (DBSEntity entity : children) {
+                                                    if (entity instanceof DBSTable) {
+                                                        addTable(monitor, (DBSTable)entity);
+                                                    }
+                                                }
+                                            }
+                                        } catch (DBException e) {
+                                            throw new InvocationTargetException(e);
+                                        }
                                     }
-                                    ERDTable erdTable = ERDTable.fromObject(monitor, table);
-                                    tables.add(erdTable);
-                                    tableMap.put(table, erdTable);
                                 }
                             }
 
@@ -88,6 +103,18 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                             for (ERDTable erdTable : tables) {
                                 erdTable.addRelations(monitor, tableMap, false);
                             }
+                        }
+
+                        private void addTable(DBRProgressMonitor monitor, DBSTable object)
+                        {
+                            DBSTable table = (DBSTable) object;
+                            if (diagram.containsTable(table)) {
+                                // Avoid duplicates
+                                return;
+                            }
+                            ERDTable erdTable = ERDTable.fromObject(monitor, table);
+                            tables.add(erdTable);
+                            tableMap.put(table, erdTable);
                         }
                     });
                 } catch (InvocationTargetException e) {

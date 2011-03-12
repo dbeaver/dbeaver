@@ -8,10 +8,14 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import net.sf.jkiss.utils.xml.XMLBuilder;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
@@ -153,32 +157,75 @@ public class EntityDiagram extends ERDObject<DBSObject>
         return tables.size();
     }
 
+    private static class DataSourceObjects {
+        List<ERDTable> tables = new ArrayList<ERDTable>();
+    }
+
     public void load(InputStream in)
         throws IOException
     {
 
     }
 
-    public void save(OutputStream out)
+    public void save(DiagramPart diagramPart, OutputStream out)
         throws IOException
     {
+        // Prepare DS objects map
+        Map<DBSDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<DBSDataSourceContainer, DataSourceObjects>();
+        for (ERDTable erdTable : tables) {
+            final DBSDataSourceContainer dsContainer = erdTable.getObject().getDataSource().getContainer();
+            DataSourceObjects desc = dsMap.get(dsContainer);
+            if (desc == null) {
+                desc = new DataSourceObjects();
+                dsMap.put(dsContainer, desc);
+            }
+            desc.tables.add(erdTable);
+        }
+
+        // Save as XML
         XMLBuilder xml = new XMLBuilder(out, ContentUtils.DEFAULT_FILE_CHARSET);
+        xml.setButify(true);
 
         xml.startElement("diagram");
         xml.addAttribute("version", 1);
         xml.addAttribute("name", name);
+        xml.addAttribute("time", RuntimeUtils.getCurrentTimeStamp());
 
         {
             xml.startElement("entities");
-            for (ERDTable erdTable : tables) {
-                final DBSTable table = erdTable.getObject();
-                xml.startElement("entity");
-                xml.addAttribute("ds", table.getDataSource().getContainer().getId());
-                xml.addAttribute("name", table.getName());
-                xml.addAttribute("fq-name", table.getFullQualifiedName());
-                for (DBSObject parent = table.getParentObject(); parent != null && !(parent instanceof DBSDataSourceContainer); parent = parent.getParentObject()) {
-                    xml.startElement("path");
-                    xml.addText(parent.getName());
+            for (DBSDataSourceContainer dsContainer : dsMap.keySet()) {
+                xml.startElement("data-source");
+                xml.addAttribute("id", dsContainer.getId());
+
+                final DataSourceObjects desc = dsMap.get(dsContainer);
+                int tableCounter = 1;
+                for (ERDTable erdTable : desc.tables) {
+                    final DBSTable table = erdTable.getObject();
+                    erdTable.setObjectId(tableCounter++);
+                    EntityPart tablePart = null;
+                    if (diagramPart != null) {
+                        for (Object child : diagramPart.getChildren()) {
+                            if (child instanceof EntityPart && ((EntityPart) child).getTable() == erdTable) {
+                                tablePart = (EntityPart) child;
+                                break;
+                            }
+                        }
+                    }
+                    if (tablePart == null) {
+                        log.warn("Cannot find part for table " + table);
+                        continue;
+                    }
+
+                    xml.startElement("entity");
+                    xml.addAttribute("id", erdTable.getObjectId());
+                    xml.addAttribute("name", table.getName());
+                    xml.addAttribute("fq-name", table.getFullQualifiedName());
+                    for (DBSObject parent = table.getParentObject(); parent != null && parent != dsContainer; parent = parent.getParentObject()) {
+                        xml.startElement("path");
+                        xml.addText(parent.getName());
+                        xml.endElement();
+                    }
+                    serializeBounds(xml, tablePart.getBounds());
                     xml.endElement();
                 }
                 xml.endElement();
@@ -197,6 +244,17 @@ public class EntityDiagram extends ERDObject<DBSObject>
         xml.endElement();
 
         xml.flush();
+    }
+
+    private void serializeBounds(XMLBuilder xml, Rectangle bounds) throws IOException
+    {
+        xml
+            .startElement("bounds")
+            .addAttribute("x", bounds.x)
+            .addAttribute("y", bounds.y)
+            .addAttribute("w", bounds.width)
+            .addAttribute("h", bounds.height)
+            .endElement();
     }
 
     public EntityDiagram copy()
