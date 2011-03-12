@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
+import org.jkiss.dbeaver.ext.erd.policy.*;
 
 import java.beans.PropertyChangeEvent;
 import java.util.List;
@@ -139,11 +140,14 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	 */
 	protected void createEditPolicies()
 	{
-		//installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
-		//installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
-		//installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
-		//installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());
-		//installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new EntityDirectEditPolicy());
+        final boolean editEnabled = ((DiagramPart) getParent()).getDiagram().isLayoutManualAllowed();
+        if (editEnabled) {
+            installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
+            installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
+            installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
+            installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());
+            installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new EntityDirectEditPolicy());
+        }
 	}
 
 	//******************* Direct editing related methods *********************/

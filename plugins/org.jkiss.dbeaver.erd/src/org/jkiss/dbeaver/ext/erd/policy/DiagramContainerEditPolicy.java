@@ -58,14 +58,8 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
         //EditPart host = getTargetEditPart(request);
 
         DiagramPart diagramPart = (DiagramPart) getHost();
-        EntityDiagram entityDiagram = diagramPart.getDiagram();
 
-        EntityAddCommand entityAddCommand = new EntityAddCommand();
-        entityAddCommand.setDiagram(entityDiagram);
-        entityAddCommand.setTables(tables);
-        entityAddCommand.setLocation(location);
-
-        return entityAddCommand;
+        return new EntityAddCommand(diagramPart, tables, location);
     }
 
     /**

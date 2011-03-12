@@ -96,7 +96,10 @@ public class ERDEditorStandalone extends ERDEditorPart {
         }
         return entityDiagram;
 */
-        return new EntityDiagram(null, getEditorInput().getName());
+        EntityDiagram entityDiagram = new EntityDiagram(null, getEditorInput().getName());
+        entityDiagram.setLayoutManualAllowed(true);
+        entityDiagram.setLayoutManualDesired(true);
+        return entityDiagram;
     }
 
 /*
