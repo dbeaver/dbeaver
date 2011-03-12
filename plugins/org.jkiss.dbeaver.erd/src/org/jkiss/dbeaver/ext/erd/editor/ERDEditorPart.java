@@ -57,10 +57,7 @@ import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
-import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
-import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
@@ -108,11 +105,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * the list of action ids that are to CommandStack actions
      */
     private List<String> stackActionIDs = new ArrayList<String>();
-
-    /**
-     * the list of action ids that are editor actions
-     */
-    private List<String> editorActionIDs = new ArrayList<String>();
 
     /**
      * the overview outline page
@@ -247,40 +239,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return super.getAdapter(adapter);
     }
 
-    /**
-     * Saves the schema model to the file
-     *
-     * @see org.eclipse.ui.part.EditorPart#doSave
-     */
+    @Override
     public void doSave(IProgressMonitor monitor)
-    {
-/*
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ObjectOutputStream objectOut = new ObjectOutputStream(out);
-            objectOut.writeObject(getDiagram());
-            objectOut.close();
-            IEditorInput input = getEditorInput();
-            if (input instanceof IFileEditorInput) {
-                IFile file = ((IFileEditorInput) input).getFile();
-                try {
-                    file.setContents(new ByteArrayInputStream(out.toByteArray()), true, false, monitor);
-                } finally {
-                    out.close();
-                }
-            }
-        }
-        catch (Exception e) {
-            log.error("Could not save diagram", e);
-        }
-*/
-        getCommandStack().markSaveLocation();
-    }
-
-    /**
-     * Save as not allowed
-     */
-    public void doSaveAs()
     {
         throw new UnsupportedOperationException();
     }
@@ -288,9 +248,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * Save as not allowed
      */
+    public void doSaveAs()
+    {
+        saveDiagramAsImage();
+    }
+
+    /**
+     * Save as not allowed
+     */
     public boolean isSaveAsAllowed()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -465,7 +433,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         addStackAction(new UndoAction(this));
         addStackAction(new RedoAction(this));
         addEditPartAction(new DeleteAction((IWorkbenchPart) this));
-        addEditorAction(new SaveAction(this));
     }
 
     /**
@@ -496,20 +463,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         getActionRegistry().registerAction(action);
         stackActionIDs.add(action.getId());
-    }
-
-    /**
-     * Adds an editor action to this editor.
-     * <p/>
-     * <p/>
-     * <Editor actions are actions that depend and work on the editor.
-     *
-     * @param action the editor action
-     */
-    protected void addEditorAction(WorkbenchPartAction action)
-    {
-        getActionRegistry().registerAction(action);
-        editorActionIDs.add(action.getId());
     }
 
     /**
@@ -570,15 +523,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         return undoablePropertySheetPage;
-    }
-
-    /*
-      */
-
-    protected void firePropertyChange(int propertyId)
-    {
-        super.firePropertyChange(propertyId);
-        updateActions(editorActionIDs);
     }
 
     /**

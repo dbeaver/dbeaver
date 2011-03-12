@@ -4,11 +4,17 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.gef.ui.actions.DeleteAction;
+import org.eclipse.gef.ui.actions.RedoAction;
+import org.eclipse.gef.ui.actions.SaveAction;
+import org.eclipse.gef.ui.actions.UndoAction;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -43,6 +49,41 @@ public class ERDEditorStandalone extends ERDEditorPart {
 
         loadDiagram();
     }
+
+
+    public void doSave(IProgressMonitor monitor)
+    {
+/*
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ObjectOutputStream objectOut = new ObjectOutputStream(out);
+            objectOut.writeObject(getDiagram());
+            objectOut.close();
+            IEditorInput input = getEditorInput();
+            if (input instanceof IFileEditorInput) {
+                IFile file = ((IFileEditorInput) input).getFile();
+                try {
+                    file.setContents(new ByteArrayInputStream(out.toByteArray()), true, false, monitor);
+                } finally {
+                    out.close();
+                }
+            }
+        }
+        catch (Exception e) {
+            log.error("Could not save diagram", e);
+        }
+*/
+        getCommandStack().markSaveLocation();
+    }
+
+/*
+    protected void createActions()
+    {
+        super.createActions();
+
+        //addEditorAction(new SaveAction(this));
+    }
+*/
 
     protected synchronized void loadDiagram()
     {

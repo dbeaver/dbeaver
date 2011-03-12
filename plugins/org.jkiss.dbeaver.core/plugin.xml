@@ -620,15 +620,6 @@
         </handler>
 
         <!-- Entity editor handlers -->
-        <handler commandId="org.eclipse.ui.file.save" class="org.jkiss.dbeaver.ui.editors.entity.handlers.ApplyChangesHandler">
-            <activeWhen>
-                <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.entity.dirty"/>
-                    </adapt>
-                </with>
-            </activeWhen>
-        </handler>
         <handler commandId="org.eclipse.ui.file.revert" class="org.jkiss.dbeaver.ui.editors.entity.handlers.RevertChangesHandler">
             <activeWhen>
                 <with variable="activeEditor">

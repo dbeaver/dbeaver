@@ -80,6 +80,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //findAction = ActionFactory.FIND.create(window);
         //register(findAction);
 
+        register(ActionFactory.SAVE.create(window));
+        register(ActionFactory.SAVE_AS.create(window));
+        register(ActionFactory.SAVE_ALL.create(window));
+        register(ActionFactory.CLOSE.create(window));
+        register(ActionFactory.PRINT.create(window));
 
         //aboutAction = ActionFactory.ABOUT.create(window);
         //register(aboutAction);
