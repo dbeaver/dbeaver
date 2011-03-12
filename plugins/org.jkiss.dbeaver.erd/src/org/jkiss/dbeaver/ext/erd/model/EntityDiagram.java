@@ -7,15 +7,21 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents a Schema in the model. Note that this class also includes
@@ -39,22 +45,28 @@ public class EntityDiagram extends ERDObject<DBSObject>
 		this.name = name;
 	}
 
-	public synchronized void addTable(ERDTable table)
+	public synchronized void addTable(ERDTable table, boolean reflect)
 	{
 		tables.add(table);
-		//firePropertyChange(CHILD, null, table);
+        if (reflect) {
+		    firePropertyChange(CHILD, null, table);
+        }
 	}
 
-	public synchronized void addTable(ERDTable table, int i)
+	public synchronized void addTable(ERDTable table, int i, boolean reflect)
 	{
 		tables.add(i, table);
-		//firePropertyChange(CHILD, null, table);
+        if (reflect) {
+		    firePropertyChange(CHILD, null, table);
+        }
 	}
 
-	public synchronized void removeTable(ERDTable table)
+	public synchronized void removeTable(ERDTable table, boolean reflect)
 	{
 		tables.remove(table);
-		//firePropertyChange(CHILD, table, null);
+        if (reflect) {
+		    firePropertyChange(CHILD, table, null);
+        }
 	}
 
     /**
@@ -156,5 +168,80 @@ public class EntityDiagram extends ERDObject<DBSObject>
         copy.layoutManualDesired = this.layoutManualDesired;
         copy.layoutManualAllowed = this.layoutManualAllowed;
         return copy;
+    }
+
+    public void fillTables(DBRProgressMonitor monitor, Collection<DBSTable> tables, DBSObject dbObject)
+    {
+        // Load entities
+        Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
+        for (DBSTable table : tables) {
+            if (monitor.isCanceled()) {
+                break;
+            }
+            ERDTable erdTable = ERDTable.fromObject(monitor, table);
+            erdTable.setPrimary(table == dbObject);
+
+            try {
+                List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, table);
+
+                Collection<? extends DBSTableColumn> columns = table.getColumns(monitor);
+                if (!CommonUtils.isEmpty(columns)) {
+                    for (DBSTableColumn column : columns) {
+                        ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
+                        erdTable.addColumn(c1, false);
+                    }
+                }
+            } catch (DBException e) {
+                // just skip this problematic columns
+                log.debug("Could not load table '" + table.getName() + "'columns", e);
+            }
+
+            addTable(erdTable, false);
+            tableMap.put(table, erdTable);
+        }
+
+        // Load relations
+        for (DBSTable table : tables) {
+            if (monitor.isCanceled()) {
+                break;
+            }
+            ERDTable table1 = tableMap.get(table);
+            try {
+                Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
+                // Make associations
+                Collection<? extends DBSForeignKey> fks = table.getForeignKeys(monitor);
+                for (DBSForeignKey fk : fks) {
+                    fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
+                    ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
+                    if (table2 == null) {
+                        //log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
+                    } else {
+                        //if (table1 != table2) {
+                        new ERDAssociation(fk, table2, table1, false);
+                        //}
+                    }
+                }
+
+                // Mark column's fk flag
+                for (ERDTableColumn column : table1.getColumns()) {
+                    if (fkColumns.contains(column.getObject())) {
+                        column.setInForeignKey(true);
+                    }
+                }
+
+            } catch (DBException e) {
+                log.warn("Could not load table '" + table.getName() + "' foreign keys", e);
+            }
+        }
+    }
+
+    public boolean containsTable(DBSTable table)
+    {
+        for (ERDTable erdTable : tables) {
+            if (erdTable.getObject() == table) {
+                return true;
+            }
+        }
+        return false;
     }
 }

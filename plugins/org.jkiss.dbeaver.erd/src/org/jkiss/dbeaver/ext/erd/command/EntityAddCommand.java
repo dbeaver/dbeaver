@@ -9,6 +9,8 @@ import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 
+import java.util.Collection;
+
 /**
  * Add entity to diagram
  */
@@ -16,17 +18,21 @@ public class EntityAddCommand extends Command
 {
 
 	private EntityDiagram diagram;
-	private ERDTable table;
+	private Collection<ERDTable> tables;
     private Point location;
 
 	public void execute()
 	{
-		diagram.addTable(table);
+        for (ERDTable table : tables) {
+		    diagram.addTable(table, true);
+        }
 	}
 
     public void undo()
     {
-        diagram.removeTable(table);
+        for (ERDTable table : tables) {
+            diagram.removeTable(table, true);
+        }
     }
 
 	public void setDiagram(EntityDiagram diagram)
@@ -37,12 +43,12 @@ public class EntityAddCommand extends Command
 	/**
 	 * Sets the Activity to create
 	 *
-	 * @param table
+	 * @param tables
 	 *            the Activity to create
 	 */
-	public void setTable(ERDTable table)
+	public void setTables(Collection<ERDTable> tables)
 	{
-		this.table = table;
+		this.tables = tables;
 	}
 
     public void setLocation(Point location)

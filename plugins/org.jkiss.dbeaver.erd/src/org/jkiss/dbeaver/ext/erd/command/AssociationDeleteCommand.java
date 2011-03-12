@@ -32,25 +32,25 @@ public class AssociationDeleteCommand extends Command
 	}
 
 	/**
-	 * @see Removes the relationship
+	 * Removes the relationship
 	 */
 	public void execute()
 	{
-		foreignKeySource.removeForeignKeyRelationship(relationship);
-		primaryKeyTarget.removePrimaryKeyRelationship(relationship);
+		foreignKeySource.removeForeignKeyRelationship(relationship, true);
+		primaryKeyTarget.removePrimaryKeyRelationship(relationship, true);
 		relationship.setForeignKeyTable(null);
 		relationship.setPrimaryKeyTable(null);
 	}
 
 	/**
-	 * @see Restores the relationship
+	 * Restores the relationship
 	 */
 	public void undo()
 	{
 		relationship.setForeignKeyTable(foreignKeySource);
 		relationship.setForeignKeyTable(primaryKeyTarget);
-		foreignKeySource.addForeignKeyRelationship(relationship);
-		primaryKeyTarget.addPrimaryKeyRelationship(relationship);
+		foreignKeySource.addForeignKeyRelationship(relationship, true);
+		primaryKeyTarget.addPrimaryKeyRelationship(relationship, true);
 	}
 
 }

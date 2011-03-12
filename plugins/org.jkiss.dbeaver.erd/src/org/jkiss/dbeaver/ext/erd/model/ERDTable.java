@@ -7,9 +7,15 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -33,37 +39,33 @@ public class ERDTable extends ERDObject<DBSTable>
         super(dbsTable);
     }
 
-	public void addColumn(ERDTableColumn column)
+	public void addColumn(ERDTableColumn column, boolean reflect)
 	{
 		if (columns.contains(column))
 		{
 			throw new IllegalArgumentException("Column already present");
 		}
 		columns.add(column);
-		//firePropertyChange(CHILD, null, column);
+        if (reflect) {
+		    firePropertyChange(CHILD, null, column);
+        }
 	}
 
-	public void addColumn(ERDTableColumn column, int index)
-	{
-		if (columns.contains(column))
-		{
-			throw new IllegalArgumentException("Column already present");
-		}
-		columns.add(index, column);
-		//firePropertyChange(CHILD, null, column);
-	}
-
-	public void removeColumn(ERDTableColumn column)
+	public void removeColumn(ERDTableColumn column, boolean reflect)
 	{
 		columns.remove(column);
-		//firePropertyChange(CHILD, column, null);
+        if (reflect) {
+		    firePropertyChange(CHILD, column, null);
+        }
 	}
 
-	public void switchColumn(ERDTableColumn column, int index)
+	public void switchColumn(ERDTableColumn column, int index, boolean reflect)
 	{
 		columns.remove(column);
 		columns.add(index, column);
-		//firePropertyChange(REORDER, this, column);
+        if (reflect) {
+		    firePropertyChange(REORDER, this, column);
+        }
 	}
 
 	/**
@@ -83,10 +85,12 @@ public class ERDTable extends ERDObject<DBSTable>
 	 * @param table
 	 *            the primary key relationship
 	 */
-	public void addForeignKeyRelationship(ERDAssociation table)
+	public void addForeignKeyRelationship(ERDAssociation table, boolean reflect)
 	{
 		foreignKeyRelationships.add(table);
-		//firePropertyChange(OUTPUT, null, table);
+        if (reflect) {
+		    firePropertyChange(OUTPUT, null, table);
+        }
 	}
 
 	/**
@@ -95,10 +99,12 @@ public class ERDTable extends ERDObject<DBSTable>
 	 * @param table
 	 *            the foreign key relationship
 	 */
-	public void addPrimaryKeyRelationship(ERDAssociation table)
+	public void addPrimaryKeyRelationship(ERDAssociation table, boolean reflect)
 	{
 		primaryKeyRelationships.add(table);
-		//firePropertyChange(INPUT, null, table);
+        if (reflect) {
+		    firePropertyChange(INPUT, null, table);
+        }
 	}
 
 	/**
@@ -107,10 +113,12 @@ public class ERDTable extends ERDObject<DBSTable>
 	 * @param table
 	 *            the primary key relationship
 	 */
-	public void removeForeignKeyRelationship(ERDAssociation table)
+	public void removeForeignKeyRelationship(ERDAssociation table, boolean reflect)
 	{
 		foreignKeyRelationships.remove(table);
-		//firePropertyChange(OUTPUT, table, null);
+        if (reflect) {
+		    firePropertyChange(OUTPUT, table, null);
+        }
 	}
 
 	/**
@@ -119,10 +127,12 @@ public class ERDTable extends ERDObject<DBSTable>
 	 * @param table
 	 *            the foreign key relationship
 	 */
-	public void removePrimaryKeyRelationship(ERDAssociation table)
+	public void removePrimaryKeyRelationship(ERDAssociation table, boolean reflect)
 	{
 		primaryKeyRelationships.remove(table);
-		//firePropertyChange(INPUT, table, null);
+        if (reflect) {
+		    firePropertyChange(INPUT, table, null);
+        }
 	}
 
 	public List<ERDTableColumn> getColumns()
@@ -186,5 +196,26 @@ public class ERDTable extends ERDObject<DBSTable>
 			return false;
         return object.equals(((ERDTable)o).object);
 	}
+
+    public static ERDTable fromObject(DBRProgressMonitor monitor, DBSTable dbTable)
+    {
+        ERDTable erdTable = new ERDTable(dbTable);
+
+        try {
+            List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, dbTable);
+
+            Collection<? extends DBSTableColumn> columns = dbTable.getColumns(monitor);
+            if (!CommonUtils.isEmpty(columns)) {
+                for (DBSTableColumn column : columns) {
+                    ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
+                    erdTable.addColumn(c1, false);
+                }
+            }
+        } catch (DBException e) {
+            // just skip this problematic columns
+            log.debug("Could not load table '" + dbTable.getName() + "'columns", e);
+        }
+        return erdTable;
+    }
 
 }

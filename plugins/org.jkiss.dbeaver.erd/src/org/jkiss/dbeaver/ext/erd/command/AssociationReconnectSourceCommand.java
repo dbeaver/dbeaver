@@ -75,9 +75,9 @@ public class AssociationReconnectSourceCommand extends Command
 	{
 		if (sourceForeignKey != null)
 		{
-			oldSourceForeignKey.removeForeignKeyRelationship(relationship);
+			oldSourceForeignKey.removeForeignKeyRelationship(relationship, true);
 			relationship.setForeignKeyTable(sourceForeignKey);
-			sourceForeignKey.addForeignKeyRelationship(relationship);
+			sourceForeignKey.addForeignKeyRelationship(relationship, true);
 		}
 	}
 
@@ -141,8 +141,8 @@ public class AssociationReconnectSourceCommand extends Command
 	 */
 	public void undo()
 	{
-		sourceForeignKey.removeForeignKeyRelationship(relationship);
+		sourceForeignKey.removeForeignKeyRelationship(relationship, true);
 		relationship.setForeignKeyTable(oldSourceForeignKey);
-		oldSourceForeignKey.addForeignKeyRelationship(relationship);
+		oldSourceForeignKey.addForeignKeyRelationship(relationship, true);
 	}
 }

@@ -49,8 +49,8 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = foreignKeyRelationships.get(i);
-			r.getPrimaryKeyTable().removePrimaryKeyRelationship(r);
-			t.removeForeignKeyRelationship(r);
+			r.getPrimaryKeyTable().removePrimaryKeyRelationship(r, true);
+			t.removeForeignKeyRelationship(r, true);
 		}
 
 		//for all relationships where current table is primary key
@@ -58,8 +58,8 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = primaryKeyRelationships.get(i);
-			r.getForeignKeyTable().removeForeignKeyRelationship(r);
-			t.removePrimaryKeyRelationship(r);
+			r.getForeignKeyTable().removeForeignKeyRelationship(r, true);
+			t.removePrimaryKeyRelationship(r, true);
 		}
 	}
 
@@ -80,7 +80,7 @@ public class EntityDeleteCommand extends Command
 
 		deleteRelationships(table);
 		index = entityDiagram.getTables().indexOf(table);
-		entityDiagram.removeTable(table);
+		entityDiagram.removeTable(table, true);
         // Zero bounds - to let modifyBounds reflect on undo
 	}
 
@@ -97,15 +97,15 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = foreignKeyRelationships.get(i);
-			r.getForeignKeyTable().addForeignKeyRelationship(r);
-			r.getPrimaryKeyTable().addPrimaryKeyRelationship(r);
+			r.getForeignKeyTable().addForeignKeyRelationship(r, true);
+			r.getPrimaryKeyTable().addPrimaryKeyRelationship(r, true);
 		}
 		foreignKeyRelationships.clear();
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = primaryKeyRelationships.get(i);
-			r.getForeignKeyTable().addForeignKeyRelationship(r);
-			r.getPrimaryKeyTable().addPrimaryKeyRelationship(r);
+			r.getForeignKeyTable().addForeignKeyRelationship(r, true);
+			r.getPrimaryKeyTable().addPrimaryKeyRelationship(r, true);
 		}
 		primaryKeyRelationships.clear();
 	}
@@ -115,7 +115,7 @@ public class EntityDeleteCommand extends Command
 	 */
 	public void undo()
 	{
-		entityDiagram.addTable(table, index);
+		entityDiagram.addTable(table, index, true);
 		restoreRelationships();
 		//entityPart.modifyBounds(bounds);
 	}

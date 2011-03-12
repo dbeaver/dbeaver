@@ -20,13 +20,13 @@ public class ERDAssociation extends ERDObject<DBSForeignKey>
 	private ERDTable primaryKeyTable;
 	private ERDTable foreignKeyTable;
 
-	public ERDAssociation(DBSForeignKey object, ERDTable foreignTable, ERDTable primaryTable)
+	public ERDAssociation(DBSForeignKey object, ERDTable foreignTable, ERDTable primaryTable, boolean reflect)
 	{
 		super(object);
 		this.primaryKeyTable = primaryTable;
 		this.foreignKeyTable = foreignTable;
-		this.primaryKeyTable.addPrimaryKeyRelationship(this);
-		this.foreignKeyTable.addForeignKeyRelationship(this);
+		this.primaryKeyTable.addPrimaryKeyRelationship(this, reflect);
+		this.foreignKeyTable.addForeignKeyRelationship(this, reflect);
 	}
 
 	/**

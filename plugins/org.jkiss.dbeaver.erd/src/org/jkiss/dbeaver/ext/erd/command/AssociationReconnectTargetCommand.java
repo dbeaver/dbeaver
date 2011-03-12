@@ -75,9 +75,9 @@ public class AssociationReconnectTargetCommand extends Command
 	{
 		if (targetPrimaryKey != null)
 		{
-			oldTargetPrimaryKey.removePrimaryKeyRelationship(relationship);
+			oldTargetPrimaryKey.removePrimaryKeyRelationship(relationship, true);
 			relationship.setPrimaryKeyTable(targetPrimaryKey);
-			targetPrimaryKey.addPrimaryKeyRelationship(relationship);
+			targetPrimaryKey.addPrimaryKeyRelationship(relationship, true);
 		}
 	}
 
@@ -141,8 +141,8 @@ public class AssociationReconnectTargetCommand extends Command
 	 */
 	public void undo()
 	{
-		targetPrimaryKey.removePrimaryKeyRelationship(relationship);
+		targetPrimaryKey.removePrimaryKeyRelationship(relationship, true);
 		relationship.setPrimaryKeyTable(oldTargetPrimaryKey);
-		oldTargetPrimaryKey.addPrimaryKeyRelationship(relationship);
+		oldTargetPrimaryKey.addPrimaryKeyRelationship(relationship, true);
 	}
 }

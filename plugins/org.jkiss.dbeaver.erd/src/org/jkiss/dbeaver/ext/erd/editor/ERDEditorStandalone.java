@@ -4,12 +4,19 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Standalone ERD editor
@@ -24,9 +31,9 @@ public class ERDEditorStandalone extends ERDEditorPart {
     }
 
     @Override
-    public void init(IEditorSite site, IEditorInput input) throws PartInitException
+    public void createPartControl(Composite parent)
     {
-        super.init(site, input);
+        super.createPartControl(parent);
 
         loadDiagram();
     }
@@ -37,22 +44,23 @@ public class ERDEditorStandalone extends ERDEditorPart {
             // Do not start new one while old is running
             return;
         }
-
-        setPartName(getEditorInput().getName());
-
-/*
         diagramLoadingJob = LoadingUtils.createService(
-            new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
+            new AbstractLoadService<EntityDiagram>("Load diagram '" + getEditorInput().getName() + "'") {
                 public EntityDiagram evaluate()
                     throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        return loadFromDatabase(getProgressMonitor());
+                        return loadContentFromFile(getProgressMonitor());
                     } catch (DBException e) {
                         log.error(e);
                     }
 
                     return null;
+                }
+
+                public Object getFamily()
+                {
+                    return ERDEditorStandalone.this;
                 }
             },
             progressControl.createLoadVisualizer());
@@ -64,27 +72,31 @@ public class ERDEditorStandalone extends ERDEditorPart {
             }
         });
         diagramLoadingJob.schedule();
-*/
+
+        setPartName(getEditorInput().getName());
     }
 
-    private EntityDiagram loadContentFromFile(IFileEditorInput input) {
-
+    private EntityDiagram loadContentFromFile(DBRProgressMonitor progressMonitor)
+        throws DBException
+    {
+/*
         EntityDiagram entityDiagram = null;
         IFile file = input.getFile();
         try {
             setPartName(file.getName());
-/*
+
             InputStream is = file.getContents(true);
             ObjectInputStream ois = new ObjectInputStream(is);
             entityDiagram = (EntityDiagram) ois.readObject();
             ois.close();
-*/
         }
         catch (Exception e) {
             log.error("Error loading diagram from file '" + file.getFullPath().toString() + "'", e);
             entityDiagram = new EntityDiagram(null, file.getName());
         }
         return entityDiagram;
+*/
+        return new EntityDiagram(null, getEditorInput().getName());
     }
 
 /*

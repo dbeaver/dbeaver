@@ -7,6 +7,8 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -29,6 +31,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySource, IAdaptable
 {
+    static final Log log = LogFactory.getLog(ERDObject.class);
 
 	public static final String CHILD = "CHILD";
 	public static final String REORDER = "REORDER";
