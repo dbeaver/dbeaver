@@ -36,6 +36,10 @@ import java.util.List;
  */
 public class AssociationPart extends PropertyAwareConnectionPart {
 
+    public AssociationPart()
+    {
+    }
+
     private ERDAssociation getAssociation()
     {
         return (ERDAssociation) getModel();

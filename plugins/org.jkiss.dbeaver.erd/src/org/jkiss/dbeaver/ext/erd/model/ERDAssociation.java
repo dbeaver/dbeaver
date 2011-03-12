@@ -25,8 +25,8 @@ public class ERDAssociation extends ERDObject<DBSForeignKey>
 		super(object);
 		this.primaryKeyTable = primaryTable;
 		this.foreignKeyTable = foreignTable;
-		this.primaryKeyTable.addPrimaryKeyRelationship(this, reflect);
-		this.foreignKeyTable.addForeignKeyRelationship(this, reflect);
+        this.primaryKeyTable.addPrimaryKeyRelationship(this, reflect);
+        this.foreignKeyTable.addForeignKeyRelationship(this, reflect);
 	}
 
 	/**
@@ -48,8 +48,8 @@ public class ERDAssociation extends ERDObject<DBSForeignKey>
 	public void setPrimaryKeyTable(ERDTable targetPrimaryKey)
 	{
 		this.primaryKeyTable = targetPrimaryKey;
-	}	
-	
+	}
+
 	/**
 	 * @param sourceForeignKey the foreign key table you are connecting from
 	 */
@@ -57,4 +57,11 @@ public class ERDAssociation extends ERDObject<DBSForeignKey>
 	{
 		this.foreignKeyTable = sourceForeignKey;
 	}
+
+    @Override
+    public String toString()
+    {
+        return getObject() + " [" + primaryKeyTable + "->" + foreignKeyTable + "]";
+    }
+
 }

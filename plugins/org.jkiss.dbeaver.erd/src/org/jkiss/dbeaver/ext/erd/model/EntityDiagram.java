@@ -31,7 +31,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	private List<ERDTable> tables = new ArrayList<ERDTable>();
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
-    private Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
+    private Map<DBSTable, ERDTable> tableMap = new IdentityHashMap<DBSTable, ERDTable>();
 
     public EntityDiagram(DBSObject container, String name)
 	{
@@ -43,22 +43,50 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
 	public synchronized void addTable(ERDTable table, boolean reflect)
 	{
-		tables.add(table);
-        if (reflect) {
-		    firePropertyChange(CHILD, null, table);
-        }
+        addTable(table, -1, reflect);
 	}
 
 	public synchronized void addTable(ERDTable table, int i, boolean reflect)
 	{
-		tables.add(i, table);
+        if (i < 0) {
+            tables.add(table);
+        } else {
+		    tables.add(i, table);
+        }
+        tableMap.put(table.getObject(), table);
+
         if (reflect) {
 		    firePropertyChange(CHILD, null, table);
+/*
+            for (ERDAssociation rel : table.getPrimaryKeyRelationships()) {
+                table.firePropertyChange(INPUT, null, rel);
+            }
+            for (ERDAssociation rel : table.getForeignKeyRelationships()) {
+                table.firePropertyChange(OUTPUT, null, rel);
+            }
+*/
+        }
+
+        resolveRelations(reflect);
+
+        if (reflect) {
+            for (ERDAssociation rel : table.getPrimaryKeyRelationships()) {
+                rel.getForeignKeyTable().firePropertyChange(OUTPUT, null, rel);
+            }
         }
 	}
 
+    private void resolveRelations(boolean reflect)
+    {
+        // Resolve incomplete relations
+        for (ERDTable erdTable : getTables()) {
+            erdTable.resolveRelations(tableMap, reflect);
+        }
+    }
+
 	public synchronized void removeTable(ERDTable table, boolean reflect)
 	{
+        tableMap.remove(table.getObject());
 		tables.remove(table);
         if (reflect) {
 		    firePropertyChange(CHILD, table, null);
@@ -161,6 +189,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     {
         EntityDiagram copy = new EntityDiagram(getObject(), getName());
         copy.tables.addAll(this.tables);
+        copy.tableMap.putAll(this.tableMap);
         copy.layoutManualDesired = this.layoutManualDesired;
         copy.layoutManualAllowed = this.layoutManualAllowed;
         return copy;

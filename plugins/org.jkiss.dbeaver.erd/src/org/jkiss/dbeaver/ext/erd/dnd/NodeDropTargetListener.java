@@ -83,6 +83,8 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                                     tableMap.put(table, erdTable);
                                 }
                             }
+
+                            // Add new relations
                             for (ERDTable erdTable : tables) {
                                 erdTable.addRelations(monitor, tableMap, false);
                             }
