@@ -331,14 +331,12 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     public void handleDataSourceEvent(final DBPEvent event)
     {
-        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null) {
+        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null && event.getObject() == getDataSourceContainer()) {
             Display.getDefault().asyncExec(
                 new Runnable() {
                     public void run()
                     {
-                        if (event.getObject() == getDataSourceContainer()) {
-                            updateControls();
-                        }
+                        updateControls();
                     }
                 }
             );
@@ -353,6 +351,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         if (resultSetSize != null && !resultSetSize.isDisposed()) {
             if (dataSourceContainer == null) {
                 resultSetSize.setEnabled(false);
+                resultSetSize.setText("");
             } else {
                 resultSetSize.setEnabled(true);
                 resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS)));

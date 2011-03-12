@@ -26,6 +26,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 {
     private DBNModel model;
     private DatabaseNavigatorTree tree;
+    private transient Object lastSelection;
 
     protected NavigatorViewBase()
     {
@@ -71,14 +72,16 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 {
                     IStructuredSelection structSel = (IStructuredSelection)event.getSelection();
                     if (!structSel.isEmpty()) {
-                        Object object = structSel.getFirstElement();
-                        if (object instanceof DBNNode) {
-                            String desc = ((DBNNode)object).getNodeDescription();
+                        lastSelection = structSel.getFirstElement();
+                        if (lastSelection instanceof DBNNode) {
+                            String desc = ((DBNNode)lastSelection).getNodeDescription();
                             if (CommonUtils.isEmpty(desc)) {
-                                desc = ((DBNNode)object).getNodeName();
+                                desc = ((DBNNode)lastSelection).getNodeName();
                             }
                             getViewSite().getActionBars().getStatusLineManager().setMessage(desc);
                         }
+                    } else {
+                        lastSelection = null;
                     }
                 }
             }
@@ -139,16 +142,11 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
     public DBSDataSourceContainer getDataSourceContainer()
     {
-        final IStructuredSelection selection = (IStructuredSelection)tree.getViewer().getSelection();
-        if (selection == null || selection.isEmpty()) {
-            return null;
-        }
-        final Object element = selection.getFirstElement();
-        if (element instanceof DBNDatabaseNode) {
-            if (element instanceof DBNDataSource) {
-                return ((DBNDataSource)element).getDataSourceContainer();
+        if (lastSelection instanceof DBNDatabaseNode) {
+            if (lastSelection instanceof DBNDataSource) {
+                return ((DBNDataSource)lastSelection).getDataSourceContainer();
             } else {
-                final DBPDataSource dataSource = ((DBNDatabaseNode) element).getObject().getDataSource();
+                final DBPDataSource dataSource = ((DBNDatabaseNode) lastSelection).getObject().getDataSource();
                 if (dataSource != null) {
                     return dataSource.getContainer();
                 }
