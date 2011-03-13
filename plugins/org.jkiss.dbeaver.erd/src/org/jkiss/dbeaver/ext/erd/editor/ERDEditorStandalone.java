@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -12,13 +13,17 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -51,7 +56,7 @@ public class ERDEditorStandalone extends ERDEditorPart {
     {
         try {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            DiagramLoader.save(getDiagramPart(), buffer);
+            DiagramLoader.save(getDiagramPart(), false, buffer);
 
             final IFile file = getEditorFile();
             file.setContents(new ByteArrayInputStream(buffer.toByteArray()), true, true, monitor);
@@ -112,26 +117,26 @@ public class ERDEditorStandalone extends ERDEditorPart {
     private EntityDiagram loadContentFromFile(DBRProgressMonitor progressMonitor)
         throws DBException
     {
-/*
-        EntityDiagram entityDiagram = null;
-        IFile file = input.getFile();
-        try {
-            setPartName(file.getName());
+        final IFile file = getEditorFile();
 
-            InputStream is = file.getContents(true);
-            ObjectInputStream ois = new ObjectInputStream(is);
-            entityDiagram = (EntityDiagram) ois.readObject();
-            ois.close();
-        }
-        catch (Exception e) {
-            log.error("Error loading diagram from file '" + file.getFullPath().toString() + "'", e);
-            entityDiagram = new EntityDiagram(null, file.getName());
-        }
-        return entityDiagram;
-*/
-        EntityDiagram entityDiagram = new EntityDiagram(null, getEditorInput().getName());
+        final DiagramPart diagramPart = getDiagramPart();
+        EntityDiagram entityDiagram = new EntityDiagram(null, file.getName());
+        entityDiagram.clear();
         entityDiagram.setLayoutManualAllowed(true);
         entityDiagram.setLayoutManualDesired(true);
+        diagramPart.setModel(entityDiagram);
+
+        try {
+            final InputStream fileContent = file.getContents();
+            try {
+                DiagramLoader.load(progressMonitor, file.getProject(), diagramPart, fileContent);
+            } finally {
+                ContentUtils.close(fileContent);
+            }
+        } catch (Exception e) {
+            throw new DBException("Error loading ER diagram from '" + file.getName() + "'", e);
+        }
+
         return entityDiagram;
     }
 

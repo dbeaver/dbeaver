@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
@@ -27,6 +28,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
     private Map<DBSTable, ERDTable> tableMap = new IdentityHashMap<DBSTable, ERDTable>();
+    private Map<ERDTable, Rectangle> initBounds = new IdentityHashMap<ERDTable, Rectangle>();
 
     public EntityDiagram(DBSObject container, String name)
 	{
@@ -196,5 +198,32 @@ public class EntityDiagram extends ERDObject<DBSObject>
     public Map<DBSTable,ERDTable> getTableMap()
     {
         return tableMap;
+    }
+
+    public ERDTable getERDTable(DBSTable table)
+    {
+        return tableMap.get(table);
+    }
+
+    public void clear()
+    {
+        this.tables.clear();
+        this.tableMap.clear();
+        this.initBounds.clear();
+    }
+
+    public Rectangle getInitBounds(ERDTable erdTable)
+    {
+        return initBounds.get(erdTable);
+    }
+
+    public void addInitBounds(ERDTable erdTable, Rectangle bounds)
+    {
+        initBounds.put(erdTable, bounds);
+    }
+
+    public void resetInitBounds()
+    {
+        initBounds.clear();
     }
 }

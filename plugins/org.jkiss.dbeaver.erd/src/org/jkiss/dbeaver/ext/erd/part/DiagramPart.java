@@ -214,7 +214,6 @@ public class DiagramPart extends PropertyAwarePart {
      */
     public boolean setTableFigureBounds(boolean updateConstraint)
     {
-
         List<?> tableParts = getChildren();
 
         for (Iterator<?> iter = tableParts.iterator(); iter.hasNext();) {

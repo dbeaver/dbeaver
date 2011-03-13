@@ -10,46 +10,51 @@ package org.jkiss.dbeaver.ext.erd.layout;
 import org.eclipse.draw2d.FreeformLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 
 /**
  * Subclass of XYLayout which can use the child figures actual bounds as a constraint
  * when doing manual layout (XYLayout)
+ *
  * @author Serge Rieder
  */
-public class GraphLayoutXY extends FreeformLayout
-{
+public class GraphLayoutXY extends FreeformLayout {
+    private DiagramPart diagram;
 
-	private DiagramPart diagram;
-	
-	public GraphLayoutXY(DiagramPart diagram)
-	{
-		this.diagram = diagram;
-	}
-	
-	public void layout(IFigure container)
-	{
-		super.layout(container);
-		diagram.setTableModelBounds();
-	}
-	
+    public GraphLayoutXY(DiagramPart diagram)
+    {
+        this.diagram = diagram;
+    }
 
-	public Object getConstraint(IFigure child)
-	{
-		Object constraint = constraints.get(child);
-		if (constraint instanceof Rectangle)
-		{
-			return constraint;
-		}
-		else
-		{
-			Rectangle currentBounds = child.getBounds();
-			return new Rectangle(currentBounds.x, currentBounds.y, -1,-1);
-		}
-	}
+    public void layout(IFigure container)
+    {
+        super.layout(container);
+        diagram.setTableModelBounds();
+    }
 
-    public void cleanupConstraints() {
+    public Object getConstraint(IFigure child)
+    {
+        if (child instanceof EntityFigure) {
+            final ERDTable erdTable = ((EntityFigure) child).getTable();
+            Rectangle bounds = diagram.getDiagram().getInitBounds(erdTable);
+            if (bounds != null) {
+                return bounds;
+            }
+        }
+        Object constraint = constraints.get(child);
+        if (constraint instanceof Rectangle) {
+            return constraint;
+        } else {
+            Rectangle currentBounds = child.getBounds();
+            return new Rectangle(currentBounds.x, currentBounds.y, -1, -1);
+        }
+    }
+
+    public void cleanupConstraints()
+    {
         constraints.clear();
     }
 }

@@ -9,18 +9,27 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.xml.XMLBuilder;
+import net.sf.jkiss.utils.xml.XMLException;
+import net.sf.jkiss.utils.xml.XMLUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,12 +47,37 @@ public class DiagramLoader
 {
     static final Log log = LogFactory.getLog(DiagramLoader.class);
 
-    private static class TableInfo {
+    public static final String TAG_DIAGRAM = "diagram";
+    public static final String TAG_ENTITIES = "entities";
+    public static final String TAG_DATA_SOURCE = "data-source";
+    public static final String TAG_ENTITY = "entity";
+    public static final String TAG_PATH = "path";
+    public static final String TAG_RELATIONS = "relations";
+    public static final String TAG_RELATION = "relation";
+    public static final String TAG_BEND = "bend";
+    public static final String TAG_BOUNDS = "bounds";
+
+    public static final String ATTR_VERSION = "version";
+    public static final String ATTR_NAME = "name";
+    public static final String ATTR_TIME = "time";
+    public static final String ATTR_ID = "id";
+    public static final String ATTR_FQ_NAME = "fq-name";
+    public static final String ATTR_TYPE = "type";
+    public static final String ATTR_PK_REF = "pk-ref";
+    public static final String ATTR_FK_REF = "fk-ref";
+    public static final String ATTR_X = "x";
+    public static final String ATTR_Y = "y";
+    public static final String ATTR_W = "w";
+    public static final String ATTR_H = "h";
+
+    public static final int ERD_VERSION_1 = 1;
+
+    private static class TableSaveInfo {
         final ERDTable erdTable;
         final EntityPart tablePart;
         final int objectId;
 
-        private TableInfo(ERDTable erdTable, EntityPart tablePart, int objectId)
+        private TableSaveInfo(ERDTable erdTable, EntityPart tablePart, int objectId)
         {
             this.erdTable = erdTable;
             this.tablePart = tablePart;
@@ -51,18 +85,136 @@ public class DiagramLoader
         }
     }
 
+    private static class TableLoadInfo {
+        final String objectId;
+        final DBSTable table;
+        final Rectangle bounds;
+
+        private TableLoadInfo(String objectId, DBSTable table, Rectangle bounds)
+        {
+            this.objectId = objectId;
+            this.table = table;
+            this.bounds = bounds;
+        }
+    }
+
     private static class DataSourceObjects {
         List<ERDTable> tables = new ArrayList<ERDTable>();
     }
 
-
-    public static void load(DiagramPart diagramPart, InputStream in)
-        throws IOException
+    public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, InputStream in)
+        throws IOException, XMLException, DBException
     {
+        final EntityDiagram diagram = diagramPart.getDiagram();
 
+        final DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+        if (dsRegistry == null) {
+            throw new DBException("Cannot find datasource registry for project '" + project.getName() + "'");
+        }
+
+        final Document document = XMLUtils.parseDocument(in);
+
+        final Element diagramElem = document.getDocumentElement();
+
+        // Check version
+        final String diagramVersion = diagramElem.getAttribute(ATTR_VERSION);
+        if (CommonUtils.isEmpty(diagramVersion)) {
+            throw new DBException("Diagram version not found");
+        }
+        if (!diagramVersion.equals(String.valueOf(ERD_VERSION_1))) {
+            throw new DBException("Unsupported diagram version: " + diagramVersion);
+        }
+
+        List<TableLoadInfo> tableInfos = new ArrayList<TableLoadInfo>();
+
+        final Element entitiesElem = XMLUtils.getChildElement(diagramElem, TAG_ENTITIES);
+        if (entitiesElem != null) {
+
+            // Parse data source
+            for (Element dsElem : XMLUtils.getChildElementList(entitiesElem, TAG_DATA_SOURCE)) {
+                String dsId = dsElem.getAttribute(ATTR_ID);
+                if (CommonUtils.isEmpty(dsId)) {
+                    log.warn("Missing datasource ID");
+                    continue;
+                }
+                // Get connected datasource
+                final DataSourceDescriptor dataSourceContainer = dsRegistry.getDataSource(dsId);
+                if (dataSourceContainer == null) {
+                    log.warn("Datasource '" + dsId + "' not found");
+                    continue;
+                }
+                if (!dataSourceContainer.isConnected()) {
+                    dataSourceContainer.connect(monitor);
+                }
+                final DBPDataSource dataSource = dataSourceContainer.getDataSource();
+                if (!(dataSource instanceof DBSEntityContainer)) {
+                    log.warn("Datasource '" + dataSourceContainer.getName() + "' entities cannot be loaded - no entity container found");
+                    continue;
+                }
+                DBSEntityContainer rootContainer = (DBSEntityContainer)dataSource;
+                // Parse entities
+                for (Element entityElem : XMLUtils.getChildElementList(dsElem, TAG_ENTITY)) {
+                    String tableId = entityElem.getAttribute(ATTR_ID);
+                    String tableName = entityElem.getAttribute(ATTR_NAME);
+                    List<String> path = new ArrayList<String>();
+                    for (Element pathElem : XMLUtils.getChildElementList(entityElem, TAG_PATH)) {
+                        path.add(0, pathElem.getAttribute(ATTR_NAME));
+                    }
+                    DBSEntityContainer container = rootContainer;
+                    for (String conName : path) {
+                        final DBSEntity child = container.getChild(monitor, conName);
+                        if (child == null) {
+                            log.warn("Object '" + conName + "' not found within '" + container.getName() + "'");
+                            container = null;
+                            break;
+                        }
+                        if (child instanceof DBSEntityContainer) {
+                            container = (DBSEntityContainer) child;
+                        } else {
+                            log.warn("Object '" + child.getName() + "' is not a container");
+                            container = null;
+                            break;
+                        }
+                    }
+                    if (container == null) {
+                        continue;
+                    }
+                    final DBSEntity child = container.getChild(monitor, tableName);
+                    if (!(child instanceof DBSTable)) {
+                        log.warn("Cannot find table '" + tableName + "' in '" + container.getName() + "'");
+                        continue;
+                    }
+                    DBSTable table = (DBSTable) child;
+                    Rectangle bounds = new Rectangle();
+                    Element boundsElem = XMLUtils.getChildElement(entityElem, TAG_BOUNDS);
+                    if (boundsElem != null) {
+                        bounds.x = Integer.parseInt(boundsElem.getAttribute(ATTR_X));
+                        bounds.y = Integer.parseInt(boundsElem.getAttribute(ATTR_Y));
+                        bounds.width = Integer.parseInt(boundsElem.getAttribute(ATTR_W));
+                        bounds.height = Integer.parseInt(boundsElem.getAttribute(ATTR_H));
+                    }
+                    TableLoadInfo info = new TableLoadInfo(tableId, table, bounds);
+                    tableInfos.add(info);
+                }
+            }
+        }
+
+        List<DBSTable> tableList = new ArrayList<DBSTable>();
+        for (TableLoadInfo info : tableInfos) {
+            tableList.add(info.table);
+        }
+        diagram.fillTables(monitor, tableList, null);
+
+        // Set initial bounds
+        for (TableLoadInfo info : tableInfos) {
+            final ERDTable erdTable = diagram.getERDTable(info.table);
+            if (erdTable != null) {
+                diagram.addInitBounds(erdTable, info.bounds);
+            }
+        }
     }
 
-    public static void save(DiagramPart diagramPart, OutputStream out)
+    public static void save(DiagramPart diagramPart, boolean verbose, OutputStream out)
         throws IOException
     {
         final EntityDiagram diagram = diagramPart == null ? null : diagramPart.getDiagram();
@@ -81,27 +233,49 @@ public class DiagramLoader
             }
         }
 
-        Map<ERDTable, TableInfo> infoMap = new IdentityHashMap<ERDTable, TableInfo>();
+        Map<ERDTable, TableSaveInfo> infoMap = new IdentityHashMap<ERDTable, TableSaveInfo>();
 
         // Save as XML
         XMLBuilder xml = new XMLBuilder(out, ContentUtils.DEFAULT_FILE_CHARSET);
         xml.setButify(true);
-
-        xml.startElement("diagram");
-        xml.addAttribute("version", 1);
-        if (diagram != null) {
-            xml.addAttribute("name", diagram.getName());
+        if (verbose) {
+            xml.addContent(
+                "\n<!DOCTYPE diagram [\n" +
+                "<!ATTLIST diagram version CDATA #REQUIRED\n" +
+                " name CDATA #IMPLIED\n" +
+                " time CDATA #REQUIRED>\n" +
+                "<!ELEMENT diagram (entities, relations, notes)>\n" +
+                "<!ELEMENT entities (data-source*)>\n" +
+                "<!ELEMENT data-source (entity*)>\n" +
+                "<!ATTLIST data-source id CDATA #REQUIRED>\n" +
+                "<!ELEMENT entity (path*,bounds?)>\n" +
+                "<!ATTLIST entity id ID #REQUIRED\n" +
+                " name CDATA #REQUIRED\n" +
+                " fq-name CDATA #REQUIRED>\n" +
+                "<!ELEMENT relations (relation*)>\n" +
+                "<!ELEMENT relation (bend*)>\n" +
+                "<!ATTLIST relation name CDATA #REQUIRED\n" +
+                " fq-name CDATA #REQUIRED\n" +
+                " pk-ref IDREF #REQUIRED\n" +
+                " fk-ref IDREF #REQUIRED>\n" +
+                "]>\n"
+            );
         }
-        xml.addAttribute("time", RuntimeUtils.getCurrentTimeStamp());
+        xml.startElement(TAG_DIAGRAM);
+        xml.addAttribute(ATTR_VERSION, ERD_VERSION_1);
+        if (diagram != null) {
+            xml.addAttribute(ATTR_NAME, diagram.getName());
+        }
+        xml.addAttribute(ATTR_TIME, RuntimeUtils.getCurrentTimeStamp());
 
         if (diagram != null) {
-            xml.startElement("entities");
+            xml.startElement(TAG_ENTITIES);
             for (DBSDataSourceContainer dsContainer : dsMap.keySet()) {
-                xml.startElement("data-source");
-                xml.addAttribute("id", dsContainer.getId());
+                xml.startElement(TAG_DATA_SOURCE);
+                xml.addAttribute(ATTR_ID, dsContainer.getId());
 
                 final DataSourceObjects desc = dsMap.get(dsContainer);
-                int tableCounter = 1;
+                int tableCounter = ERD_VERSION_1;
                 for (ERDTable erdTable : desc.tables) {
                     final DBSTable table = erdTable.getObject();
                     EntityPart tablePart = null;
@@ -116,16 +290,16 @@ public class DiagramLoader
                         log.warn("Cannot find part for table " + table);
                         continue;
                     }
-                    TableInfo info = new TableInfo(erdTable, tablePart, tableCounter++);
+                    TableSaveInfo info = new TableSaveInfo(erdTable, tablePart, tableCounter++);
                     infoMap.put(erdTable, info);
 
-                    xml.startElement("entity");
-                    xml.addAttribute("id", info.objectId);
-                    xml.addAttribute("name", table.getName());
-                    xml.addAttribute("fq-name", table.getFullQualifiedName());
+                    xml.startElement(TAG_ENTITY);
+                    xml.addAttribute(ATTR_ID, info.objectId);
+                    xml.addAttribute(ATTR_NAME, table.getName());
+                    xml.addAttribute(ATTR_FQ_NAME, table.getFullQualifiedName());
                     for (DBSObject parent = table.getParentObject(); parent != null && parent != dsContainer; parent = parent.getParentObject()) {
-                        xml.startElement("path");
-                        xml.addText(parent.getName());
+                        xml.startElement(TAG_PATH);
+                        xml.addAttribute(ATTR_NAME, parent.getName());
                         xml.endElement();
                     }
                     serializeBounds(xml, tablePart.getBounds());
@@ -136,26 +310,26 @@ public class DiagramLoader
             xml.endElement();
 
             // Relations
-            xml.startElement("relations");
+            xml.startElement(TAG_RELATIONS);
 
             for (ERDTable erdTable : diagram.getTables()) {
                 for (ERDAssociation rel : erdTable.getPrimaryKeyRelationships()) {
-                    xml.startElement("relation");
-                    xml.addAttribute("name", rel.getObject().getName());
-                    xml.addAttribute("fq-name", rel.getObject().getFullQualifiedName());
-                    xml.addAttribute("type", rel.getObject().getConstraintType().getName());
-                    TableInfo pkInfo = infoMap.get(rel.getPrimaryKeyTable());
+                    xml.startElement(TAG_RELATION);
+                    xml.addAttribute(ATTR_NAME, rel.getObject().getName());
+                    xml.addAttribute(ATTR_FQ_NAME, rel.getObject().getFullQualifiedName());
+                    xml.addAttribute(ATTR_TYPE, rel.getObject().getConstraintType().getName());
+                    TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryKeyTable());
                     if (pkInfo == null) {
                         log.error("Cannot find PK table '" + rel.getPrimaryKeyTable().getObject().getFullQualifiedName() + "' in info map");
                         continue;
                     }
-                    TableInfo fkInfo = infoMap.get(rel.getForeignKeyTable());
+                    TableSaveInfo fkInfo = infoMap.get(rel.getForeignKeyTable());
                     if (fkInfo == null) {
                         log.error("Cannot find FK table '" + rel.getForeignKeyTable().getObject().getFullQualifiedName() + "' in info map");
                         continue;
                     }
-                    xml.addAttribute("pk-ref", pkInfo.objectId);
-                    xml.addAttribute("fk-ref", fkInfo.objectId);
+                    xml.addAttribute(ATTR_PK_REF, pkInfo.objectId);
+                    xml.addAttribute(ATTR_FK_REF, fkInfo.objectId);
 
                     AssociationPart associationPart = null;
                     for (Object conn : pkInfo.tablePart.getTargetConnections()) {
@@ -168,9 +342,9 @@ public class DiagramLoader
                         final List<Bendpoint> bendpoints = associationPart.getBendpoints();
                         if (!CommonUtils.isEmpty(bendpoints)) {
                             for (Bendpoint bendpoint : bendpoints) {
-                                xml.startElement("bend");
-                                xml.addAttribute("x", bendpoint.getLocation().x);
-                                xml.addAttribute("y", bendpoint.getLocation().y);
+                                xml.startElement(TAG_BEND);
+                                xml.addAttribute(ATTR_X, bendpoint.getLocation().x);
+                                xml.addAttribute(ATTR_Y, bendpoint.getLocation().y);
                                 xml.endElement();
                             }
                         }
@@ -197,11 +371,11 @@ public class DiagramLoader
     private static void serializeBounds(XMLBuilder xml, Rectangle bounds) throws IOException
     {
         xml
-            .startElement("bounds")
-            .addAttribute("x", bounds.x)
-            .addAttribute("y", bounds.y)
-            .addAttribute("w", bounds.width)
-            .addAttribute("h", bounds.height)
+            .startElement(TAG_BOUNDS)
+            .addAttribute(ATTR_X, bounds.x)
+            .addAttribute(ATTR_Y, bounds.y)
+            .addAttribute(ATTR_W, bounds.width)
+            .addAttribute(ATTR_H, bounds.height)
             .endElement();
     }
 

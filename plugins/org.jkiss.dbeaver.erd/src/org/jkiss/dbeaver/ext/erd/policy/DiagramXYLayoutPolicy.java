@@ -65,6 +65,7 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 	 */
 	public Rectangle getCurrentConstraintFor(GraphicalEditPart child)
 	{
+
 		IFigure fig = child.getFigure();
 		Rectangle rectangle = (Rectangle) fig.getParent().getLayoutManager().getConstraint(fig);
 		if (rectangle == null)

@@ -50,7 +50,6 @@ public class DelegatingLayoutManager implements LayoutManager {
 
     public void layout(IFigure container)
     {
-
         EntityDiagram entityDiagram = diagram.getDiagram();
 
         if (entityDiagram.isLayoutManualDesired()) {
@@ -91,6 +90,9 @@ public class DelegatingLayoutManager implements LayoutManager {
             activeLayoutManager.layout(container);
         }
 
+        // Reset initial bounds (in case we load diagram from file)
+        // to allow figures moving/resizing
+        diagram.getDiagram().resetInitBounds();
     }
 
     public Object getConstraint(IFigure child)

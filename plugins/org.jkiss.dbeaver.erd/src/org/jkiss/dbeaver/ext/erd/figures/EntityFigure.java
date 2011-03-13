@@ -57,7 +57,12 @@ public class EntityFigure extends Figure
         setToolTip(toolTip);
 	}
 
-	public void setSelected(boolean isSelected)
+    public ERDTable getTable()
+    {
+        return table;
+    }
+
+    public void setSelected(boolean isSelected)
 	{
 		LineBorder lineBorder = (LineBorder) getBorder();
 		if (isSelected)
