@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
@@ -116,6 +117,10 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     private DBSDataSourceContainer getDataSourceContainer()
     {
+        if (activePart instanceof IDataSourceContainerProvider) {
+            return ((IDataSourceContainerProvider)activePart).getDataSourceContainer();
+        }
+
         final IAdaptable activeObject = getActiveObject();
         if (activeObject == null) {
             return null;
@@ -607,8 +612,10 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
     {
         if (part == activePart && selection instanceof IStructuredSelection) {
             final Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element instanceof DBNNode) {
-                updateControls();
+            if (element != null) {
+                if (element instanceof DBNNode || Platform.getAdapterManager().getAdapter(element, DBSObject.class) != null) {
+                    updateControls();
+                }
             }
         }
     }

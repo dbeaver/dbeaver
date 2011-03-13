@@ -5,16 +5,21 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.gef.EditPart;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
+import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -22,14 +27,13 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 
 /**
  * Standalone ERD editor
  */
-public class ERDEditorStandalone extends ERDEditorPart {
+public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceContainerProvider {
 
     /**
      * No-arg constructor
@@ -163,4 +167,17 @@ public class ERDEditorStandalone extends ERDEditorPart {
     }
 */
 
+    public DBSDataSourceContainer getDataSourceContainer()
+    {
+        for (Object part : getViewer().getSelectedEditParts()) {
+            EditPart editPart = (EditPart) part;
+            if (editPart.getModel() instanceof ERDObject) {
+                final ERDObject model = (ERDObject) editPart.getModel();
+                if (model.getObject() != null && model.getObject().getDataSource() != null) {
+                    return model.getObject().getDataSource().getContainer();
+                }
+            }
+        }
+        return null;
+    }
 }
