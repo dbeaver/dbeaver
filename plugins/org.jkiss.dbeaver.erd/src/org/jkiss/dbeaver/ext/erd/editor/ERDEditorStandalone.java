@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
@@ -50,7 +51,7 @@ public class ERDEditorStandalone extends ERDEditorPart {
     {
         try {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            getDiagram().save(getDiagramPart(), buffer);
+            DiagramLoader.save(getDiagramPart(), buffer);
 
             final IFile file = getEditorFile();
             file.setContents(new ByteArrayInputStream(buffer.toByteArray()), true, true, monitor);

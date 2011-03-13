@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorInput;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone;
+import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.impl.project.AbstractResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -126,7 +127,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
                         newDiagram.setLayoutManualDesired(true);
 
                         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                        newDiagram.save(null, buffer);
+                        DiagramLoader.save(null, buffer);
                         InputStream data = new ByteArrayInputStream(buffer.toByteArray());
 
                         file.create(data, true, monitor.getNestedMonitor());

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     {
     }
 
-    private ERDAssociation getAssociation()
+    public ERDAssociation getAssociation()
     {
         return (ERDAssociation) getModel();
     }
@@ -142,13 +143,13 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     public void addBendpoint(int bendpointIndex, Point location) {
         Bendpoint bendpoint = new AbsoluteBendpoint(location);
-        List<Bendpoint> bendpoints = getBendpoints();
+        List<Bendpoint> bendpoints = getBendpointsCopy();
         bendpoints.add(bendpointIndex, bendpoint);
         updateBendpoints(bendpoints);
     }
 
     public void removeBendpoint(int bendpointIndex) {
-        List<Bendpoint> bendpoints = getBendpoints();
+        List<Bendpoint> bendpoints = getBendpointsCopy();
         if (bendpointIndex < bendpoints.size()) {
             bendpoints.remove(bendpointIndex);
             updateBendpoints(bendpoints);
@@ -157,14 +158,24 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     public void moveBendpoint(int bendpointIndex, Point location) {
         Bendpoint bendpoint = new AbsoluteBendpoint(location);
-        List<Bendpoint> bendpoints = getBendpoints();
+        List<Bendpoint> bendpoints = getBendpointsCopy();
         if (bendpointIndex < bendpoints.size()) {
             bendpoints.set(bendpointIndex, bendpoint);
             updateBendpoints(bendpoints);
         }
     }
 
-    private List<Bendpoint> getBendpoints() {
+    public List<Bendpoint> getBendpoints() {
+        Object constraint = getConnectionFigure().getRoutingConstraint();
+        if (constraint instanceof List) {
+            // Make constraint copy
+            return (List<Bendpoint>) constraint;
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    private List<Bendpoint> getBendpointsCopy() {
         Object constraint = getConnectionFigure().getRoutingConstraint();
         if (constraint instanceof List) {
             // Make constraint copy
