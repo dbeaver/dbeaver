@@ -181,10 +181,17 @@ public class DiagramLoader
                         log.warn("Cannot find table '" + tableName + "' in '" + container.getName() + "'");
                         continue;
                     }
+                    String locX = entityElem.getAttribute(ATTR_X);
+                    String locY = entityElem.getAttribute(ATTR_Y);
+
                     DBSTable table = (DBSTable) child;
                     Rectangle bounds = new Rectangle();
-                    bounds.x = Integer.parseInt(entityElem.getAttribute(ATTR_X));
-                    bounds.y = Integer.parseInt(entityElem.getAttribute(ATTR_Y));
+                    if (CommonUtils.isEmpty(locX) || CommonUtils.isEmpty(locY)) {
+                        diagram.setNeedsAutoLayout(true);
+                    } else {
+                        bounds.x = Integer.parseInt(locX);
+                        bounds.y = Integer.parseInt(locY);
+                    }
 
                     TableLoadInfo info = new TableLoadInfo(tableId, table, bounds);
                     tableInfos.add(info);
@@ -207,11 +214,9 @@ public class DiagramLoader
         }
     }
 
-    public static void save(DiagramPart diagramPart, boolean verbose, OutputStream out)
+    public static void save(DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, OutputStream out)
         throws IOException
     {
-        final EntityDiagram diagram = diagramPart == null ? null : diagramPart.getDiagram();
-
         // Prepare DS objects map
         Map<DBSDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<DBSDataSourceContainer, DataSourceObjects>();
         if (diagram != null) {
@@ -272,17 +277,15 @@ public class DiagramLoader
                 for (ERDTable erdTable : desc.tables) {
                     final DBSTable table = erdTable.getObject();
                     EntityPart tablePart = null;
-                    for (Object child : diagramPart.getChildren()) {
-                        if (child instanceof EntityPart && ((EntityPart) child).getTable() == erdTable) {
-                            tablePart = (EntityPart) child;
-                            break;
+                    if (diagramPart != null) {
+                        for (Object child : diagramPart.getChildren()) {
+                            if (child instanceof EntityPart && ((EntityPart) child).getTable() == erdTable) {
+                                tablePart = (EntityPart) child;
+                                break;
+                            }
                         }
                     }
 
-                    if (tablePart == null) {
-                        log.warn("Cannot find part for table " + table);
-                        continue;
-                    }
                     TableSaveInfo info = new TableSaveInfo(erdTable, tablePart, tableCounter++);
                     infoMap.put(erdTable, info);
 
@@ -290,8 +293,16 @@ public class DiagramLoader
                     xml.addAttribute(ATTR_ID, info.objectId);
                     xml.addAttribute(ATTR_NAME, table.getName());
                     xml.addAttribute(ATTR_FQ_NAME, table.getFullQualifiedName());
-                    xml.addAttribute(ATTR_X, tablePart.getBounds().x);
-                    xml.addAttribute(ATTR_Y, tablePart.getBounds().y);
+                    Rectangle tableBounds;
+                    if (tablePart != null) {
+                        tableBounds = tablePart.getBounds();
+                    } else {
+                        tableBounds = diagram.getInitBounds(erdTable);
+                    }
+                    if (tableBounds != null) {
+                        xml.addAttribute(ATTR_X, tableBounds.x);
+                        xml.addAttribute(ATTR_Y, tableBounds.y);
+                    }
                     for (DBSObject parent = table.getParentObject(); parent != null && parent != dsContainer; parent = parent.getParentObject()) {
                         xml.startElement(TAG_PATH);
                         xml.addAttribute(ATTR_NAME, parent.getName());
@@ -325,25 +336,26 @@ public class DiagramLoader
                     xml.addAttribute(ATTR_PK_REF, pkInfo.objectId);
                     xml.addAttribute(ATTR_FK_REF, fkInfo.objectId);
 
-                    AssociationPart associationPart = null;
-                    for (Object conn : pkInfo.tablePart.getTargetConnections()) {
-                        if (conn instanceof AssociationPart && ((AssociationPart) conn).getAssociation() == rel) {
-                            associationPart = (AssociationPart) conn;
-                            break;
-                        }
-                    }
-                    if (associationPart != null) {
-                        final List<Bendpoint> bendpoints = associationPart.getBendpoints();
-                        if (!CommonUtils.isEmpty(bendpoints)) {
-                            for (Bendpoint bendpoint : bendpoints) {
-                                xml.startElement(TAG_BEND);
-                                xml.addAttribute(ATTR_X, bendpoint.getLocation().x);
-                                xml.addAttribute(ATTR_Y, bendpoint.getLocation().y);
-                                xml.endElement();
+                    // Save bends
+                    if (pkInfo.tablePart != null) {
+                        AssociationPart associationPart = null;
+                        for (Object conn : pkInfo.tablePart.getTargetConnections()) {
+                            if (conn instanceof AssociationPart && ((AssociationPart) conn).getAssociation() == rel) {
+                                associationPart = (AssociationPart) conn;
+                                break;
                             }
                         }
-                    } else {
-                        log.warn("Cannot find part for relation '" + rel.getObject().getName() + "'");
+                        if (associationPart != null) {
+                            final List<Bendpoint> bendpoints = associationPart.getBendpoints();
+                            if (!CommonUtils.isEmpty(bendpoints)) {
+                                for (Bendpoint bendpoint : bendpoints) {
+                                    xml.startElement(TAG_BEND);
+                                    xml.addAttribute(ATTR_X, bendpoint.getLocation().x);
+                                    xml.addAttribute(ATTR_Y, bendpoint.getLocation().y);
+                                    xml.endElement();
+                                }
+                            }
+                        }
                     }
 
                     xml.endElement();

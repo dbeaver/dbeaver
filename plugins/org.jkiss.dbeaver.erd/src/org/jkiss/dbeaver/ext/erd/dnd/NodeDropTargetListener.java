@@ -18,8 +18,7 @@ import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.CreationFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
-import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
+import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -69,14 +68,14 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
-                            ObjectCollector collector = new ObjectCollector(
+                            DiagramObjectCollector collector = new DiagramObjectCollector(
                                 ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram());
                             try {
-                                collector.collectTables(monitor, nodes);
+                                collector.generateDiagramObjects(monitor, nodes);
                             } catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }
-                            tables.addAll(collector.getTables());
+                            tables.addAll(collector.getDiagramTables());
                         }
                     });
                 } catch (InvocationTargetException e) {

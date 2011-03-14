@@ -1,9 +1,7 @@
-package org.jkiss.dbeaver.ext.erd.dnd;
+package org.jkiss.dbeaver.ext.erd.model;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -18,21 +16,32 @@ import java.util.*;
 /**
  * Table collector
  */
-class ObjectCollector {
+public class DiagramObjectCollector {
 
     private final EntityDiagram diagram;
-    private final List<ERDTable> tables = new ArrayList<ERDTable>();
+    private final List<ERDTable> erdTables = new ArrayList<ERDTable>();
     private final Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
 
-    public ObjectCollector(EntityDiagram diagram)
+    public DiagramObjectCollector(EntityDiagram diagram)
     {
         this.diagram = diagram;
         this.tableMap.putAll(diagram.getTableMap());
     }
 
-    public void collectTables(
+    public static Collection<DBSTable> collectTables(
         DBRProgressMonitor monitor,
         Collection<? extends DBNNode> nodes)
+        throws DBException
+    {
+        Set<DBSTable> tables = new LinkedHashSet<DBSTable>();
+        collectTables(monitor, nodes, tables);
+        return tables;
+    }
+
+    private static void collectTables(
+        DBRProgressMonitor monitor,
+        Collection<? extends DBNNode> nodes,
+        Set<DBSTable> tables)
         throws DBException
     {
         for (DBNNode node : nodes) {
@@ -40,27 +49,23 @@ class ObjectCollector {
                 break;
             }
             if (node instanceof DBNContainer) {
-                collectTables(monitor, node.getChildren(monitor));
+                collectTables(monitor, node.getChildren(monitor), tables);
             } else if (node instanceof DBNDatabaseNode) {
                 final DBSObject object = ((DBNDatabaseNode) node).getObject();
                 if (object instanceof DBSTable) {
-                    addTable(monitor, (DBSTable) object);
+                    tables.add((DBSTable) object);
                 }
                 if (object instanceof DBSEntityContainer) {
-                    collectTables(monitor, (DBSEntityContainer) object);
+                    collectTables(monitor, (DBSEntityContainer) object, tables);
                 }
             }
         }
-
-        // Add new relations
-        for (ERDTable erdTable : tables) {
-            erdTable.addRelations(monitor, tableMap, false);
-        }
     }
 
-    private void collectTables(
+    private static void collectTables(
         DBRProgressMonitor monitor,
-        DBSEntityContainer container)
+        DBSEntityContainer container,
+        Set<DBSTable> tables)
         throws DBException
     {
         if (monitor.isCanceled()) {
@@ -73,27 +78,44 @@ class ObjectCollector {
                     break;
                 }
                 if (entity instanceof DBSTable) {
-                    addTable(monitor, (DBSTable)entity);
+                    tables.add((DBSTable) entity);
                 } else if (entity instanceof DBSEntityContainer) {
-                    collectTables(monitor, (DBSEntityContainer)entity);
+                    collectTables(monitor, (DBSEntityContainer) entity, tables);
                 }
             }
         }
     }
 
-    private void addTable(DBRProgressMonitor monitor, DBSTable table)
+    public void generateDiagramObjects(
+        DBRProgressMonitor monitor,
+        Collection<? extends DBNNode> nodes)
+        throws DBException
+    {
+        Collection<DBSTable> tables = collectTables(monitor, nodes);
+        for (DBSTable table : tables) {
+            addDiagramTable(monitor, table);
+        }
+
+        // Add new relations
+        for (ERDTable erdTable : erdTables) {
+            erdTable.addRelations(monitor, tableMap, false);
+        }
+    }
+
+    private void addDiagramTable(DBRProgressMonitor monitor, DBSTable table)
     {
         if (diagram.containsTable(table)) {
             // Avoid duplicates
             return;
         }
         ERDTable erdTable = ERDTable.fromObject(monitor, table);
-        tables.add(erdTable);
+        erdTables.add(erdTable);
         tableMap.put(table, erdTable);
     }
 
-    public List<ERDTable> getTables()
+    public List<ERDTable> getDiagramTables()
     {
-        return tables;
+        return erdTables;
     }
+
 }

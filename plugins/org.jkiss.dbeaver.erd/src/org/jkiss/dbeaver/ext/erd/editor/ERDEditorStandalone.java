@@ -60,7 +60,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
     {
         try {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            DiagramLoader.save(getDiagramPart(), false, buffer);
+            DiagramLoader.save(getDiagramPart(), getDiagram(), false, buffer);
 
             final IFile file = getEditorFile();
             file.setContents(new ByteArrayInputStream(buffer.toByteArray()), true, true, monitor);

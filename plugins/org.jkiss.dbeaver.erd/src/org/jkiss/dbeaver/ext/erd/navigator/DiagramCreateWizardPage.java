@@ -19,16 +19,22 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 
 class DiagramCreateWizardPage extends WizardPage {
 
     private EntityDiagram diagram;
+    private DatabaseNavigatorTree contentTree;
 
     protected DiagramCreateWizardPage(EntityDiagram diagram)
     {
@@ -59,13 +65,13 @@ class DiagramCreateWizardPage extends WizardPage {
             }
         });
 
-        Label contentLabel = UIUtils.createControlLabel(configGroup, "Content");
+        Label contentLabel = UIUtils.createControlLabel(configGroup, "Initial content");
         GridData gd = new GridData(GridData.BEGINNING);
         gd.horizontalSpan = 2;
         contentLabel.setLayoutData(gd);
 
         final DBNProject rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
-        DatabaseNavigatorTree contentTree = new DatabaseNavigatorTree(configGroup, rootNode.getDatabases(), SWT.SINGLE | SWT.CHECK);
+        contentTree = new DatabaseNavigatorTree(configGroup, rootNode.getDatabases(), SWT.SINGLE | SWT.CHECK);
         gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
         contentTree.setLayoutData(gd);
@@ -97,4 +103,14 @@ class DiagramCreateWizardPage extends WizardPage {
         getContainer().updateButtons();
     }
 
+    Collection<DBNNode> getInitialContent()
+    {
+        List<DBNNode> nodes = new ArrayList<DBNNode>();
+        CheckboxTreeViewer viewer = (CheckboxTreeViewer) contentTree.getViewer();
+        for (Object obj : viewer.getCheckedElements()) {
+            DBNNode node = (DBNNode)obj;
+            nodes.add(node);
+        }
+        return nodes;
+    }
 }

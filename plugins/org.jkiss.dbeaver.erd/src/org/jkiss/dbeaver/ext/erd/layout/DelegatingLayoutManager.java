@@ -58,7 +58,7 @@ public class DelegatingLayoutManager implements LayoutManager {
 
                 if (activeLayoutManager != xyLayoutManager) {
 
-                    if (entityDiagram.isLayoutManualAllowed()) {
+                    if (entityDiagram.isLayoutManualAllowed() && !entityDiagram.isNeedsAutoLayout()) {
 
                         //	yes we are okay to start populating the table bounds
                         setLayoutManager(container, xyLayoutManager);
@@ -96,6 +96,9 @@ public class DelegatingLayoutManager implements LayoutManager {
             // Reset initial bounds (in case we load diagram from file)
             // to allow figures moving/resizing
             entityDiagram.enableInitBounds(false);
+            if (!diagram.getChildren().isEmpty()) {
+                entityDiagram.setNeedsAutoLayout(false);
+            }
         }
     }
 

@@ -30,6 +30,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     private Map<DBSTable, ERDTable> tableMap = new IdentityHashMap<DBSTable, ERDTable>();
     private Map<ERDTable, Rectangle> initBounds = new IdentityHashMap<ERDTable, Rectangle>();
     private boolean initBoundsEnabled;
+    private boolean needsAutoLayout;
 
     public EntityDiagram(DBSObject container, String name)
 	{
@@ -157,6 +158,8 @@ public class EntityDiagram extends ERDObject<DBSObject>
         copy.tableMap.putAll(this.tableMap);
         copy.layoutManualDesired = this.layoutManualDesired;
         copy.layoutManualAllowed = this.layoutManualAllowed;
+        copy.initBounds = initBounds;
+        copy.initBoundsEnabled = initBoundsEnabled;
         return copy;
     }
 
@@ -226,5 +229,15 @@ public class EntityDiagram extends ERDObject<DBSObject>
     public void enableInitBounds(boolean enable)
     {
         initBoundsEnabled = enable;
+    }
+
+    public boolean isNeedsAutoLayout()
+    {
+        return needsAutoLayout;
+    }
+
+    public void setNeedsAutoLayout(boolean needsAutoLayout)
+    {
+        this.needsAutoLayout = needsAutoLayout;
     }
 }
