@@ -4,6 +4,12 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -13,13 +19,20 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.UIUtils;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * ItemListControl
  */
-public class ProgressPageControl extends Composite
+public class ProgressPageControl extends Composite implements IRunnableContext
 {
     //static final Log log = LogFactory.getLog(ProgressPageControl.class);
 
@@ -137,6 +150,26 @@ public class ProgressPageControl extends Composite
     protected boolean cancelProgress()
     {
         return false;
+    }
+
+    public void run(boolean fork, boolean cancelable, final IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
+    {
+        Job job = new Job("Progress") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor)
+            {
+                try {
+                    runnable.run(monitor);
+                } catch (InvocationTargetException e) {
+                    return RuntimeUtils.makeExceptionStatus(e.getTargetException());
+                } catch (InterruptedException e) {
+                    // do nothing
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+        job.join();
     }
 
     public class ProgressVisualizer<RESULT> implements ILoadVisualizer<RESULT> {

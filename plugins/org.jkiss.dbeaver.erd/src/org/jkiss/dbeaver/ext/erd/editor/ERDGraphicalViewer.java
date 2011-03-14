@@ -47,6 +47,11 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         themeManager.addPropertyChangeListener(this);
 	}
 
+    public ERDEditorPart getEditor()
+    {
+        return editor;
+    }
+
     @Override
     public void setControl(Control control)
     {

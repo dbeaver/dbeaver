@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.policy;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Request;
@@ -44,16 +45,16 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
      */
     protected Command getCreateCommand(CreateRequest request)
     {
-        Collection<ERDTable> tables;
+        Collection<ERDTable> tables = null;
         Object newObject = request.getNewObject();
         if (newObject instanceof ERDTable) {
             tables = Collections.singletonList((ERDTable) newObject);
         } else if (newObject instanceof Collection) {
             tables = (Collection<ERDTable>) newObject;
-        } else {
+        }
+        if (CommonUtils.isEmpty(tables)) {
             return null;
         }
-
         Point location = request.getLocation();
         //EditPart host = getTargetEditPart(request);
 

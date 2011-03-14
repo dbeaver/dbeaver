@@ -125,7 +125,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                 try {
                     IEditorInput editorInput = editorRef.getEditorInput();
 
-                    if (editorInput instanceof IAutoSaveEditorInput) {
+                    if (editorInput instanceof IAutoSaveEditorInput && ((IAutoSaveEditorInput) editorInput).isAutoSaveEnabled()) {
                         IEditorPart editor = editorRef.getEditor(false);
                         if (editor != null && editor.isDirty()) {
                             editor.doSave(nullMonitor);

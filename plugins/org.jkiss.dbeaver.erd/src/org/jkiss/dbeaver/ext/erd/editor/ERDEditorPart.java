@@ -132,6 +132,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
     }
 
+    public ProgressControl getProgressControl()
+    {
+        return progressControl;
+    }
+
     /**
      * Initializes the editor.
      */

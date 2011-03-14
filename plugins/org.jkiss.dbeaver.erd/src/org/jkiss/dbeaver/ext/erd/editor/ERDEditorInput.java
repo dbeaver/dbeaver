@@ -55,7 +55,7 @@ public class ERDEditorInput extends ProjectFileEditorInput implements IPersistab
 
     public boolean isAutoSaveEnabled()
     {
-        return true;
+        return false;
     }
 
 }

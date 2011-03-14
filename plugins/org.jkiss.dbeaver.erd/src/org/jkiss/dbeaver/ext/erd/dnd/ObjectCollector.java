@@ -4,6 +4,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -17,7 +18,7 @@ import java.util.*;
 /**
  * Table collector
  */
-public class ObjectCollector {
+class ObjectCollector {
 
     private final EntityDiagram diagram;
     private final List<ERDTable> tables = new ArrayList<ERDTable>();
@@ -31,26 +32,22 @@ public class ObjectCollector {
 
     public void collectTables(
         DBRProgressMonitor monitor,
-        Collection<DBNNode> nodes)
+        Collection<? extends DBNNode> nodes)
         throws DBException
     {
         for (DBNNode node : nodes) {
             if (monitor.isCanceled()) {
                 break;
             }
-            if (node instanceof DBNDatabaseNode) {
+            if (node instanceof DBNContainer) {
+                collectTables(monitor, node.getChildren(monitor));
+            } else if (node instanceof DBNDatabaseNode) {
                 final DBSObject object = ((DBNDatabaseNode) node).getObject();
                 if (object instanceof DBSTable) {
                     addTable(monitor, (DBSTable) object);
-                } else if (object instanceof DBSEntityContainer) {
-                    final Collection<? extends DBSEntity> children = ((DBSEntityContainer) object).getChildren(monitor);
-                    if (!CommonUtils.isEmpty(children)) {
-                        for (DBSEntity entity : children) {
-                            if (entity instanceof DBSTable) {
-                                addTable(monitor, (DBSTable)entity);
-                            }
-                        }
-                    }
+                }
+                if (object instanceof DBSEntityContainer) {
+                    collectTables(monitor, (DBSEntityContainer) object);
                 }
             }
         }
@@ -58,6 +55,29 @@ public class ObjectCollector {
         // Add new relations
         for (ERDTable erdTable : tables) {
             erdTable.addRelations(monitor, tableMap, false);
+        }
+    }
+
+    private void collectTables(
+        DBRProgressMonitor monitor,
+        DBSEntityContainer container)
+        throws DBException
+    {
+        if (monitor.isCanceled()) {
+            return;
+        }
+        final Collection<? extends DBSEntity> children = container.getChildren(monitor);
+        if (!CommonUtils.isEmpty(children)) {
+            for (DBSEntity entity : children) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                if (entity instanceof DBSTable) {
+                    addTable(monitor, (DBSTable)entity);
+                } else if (entity instanceof DBSEntityContainer) {
+                    collectTables(monitor, (DBSEntityContainer)entity);
+                }
+            }
         }
     }
 

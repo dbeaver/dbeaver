@@ -18,6 +18,8 @@ import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.CreationFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
+import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -62,6 +64,8 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                 final List<ERDTable> tables = new ArrayList<ERDTable>();
 
                 try {
+                    //ERDEditorPart editor = ((ERDGraphicalViewer) getViewer()).getEditor();
+
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
