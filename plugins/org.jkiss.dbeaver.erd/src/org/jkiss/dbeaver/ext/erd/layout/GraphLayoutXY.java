@@ -41,6 +41,8 @@ public class GraphLayoutXY extends FreeformLayout {
             final ERDTable erdTable = ((EntityFigure) child).getTable();
             Rectangle bounds = diagram.getDiagram().getInitBounds(erdTable);
             if (bounds != null) {
+                bounds.width = child.getSize().width;
+                bounds.height = child.getSize().height;
                 return bounds;
             }
         }

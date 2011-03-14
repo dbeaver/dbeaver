@@ -55,7 +55,6 @@ public class DiagramLoader
     public static final String TAG_RELATIONS = "relations";
     public static final String TAG_RELATION = "relation";
     public static final String TAG_BEND = "bend";
-    public static final String TAG_BOUNDS = "bounds";
 
     public static final String ATTR_VERSION = "version";
     public static final String ATTR_NAME = "name";
@@ -67,8 +66,6 @@ public class DiagramLoader
     public static final String ATTR_FK_REF = "fk-ref";
     public static final String ATTR_X = "x";
     public static final String ATTR_Y = "y";
-    public static final String ATTR_W = "w";
-    public static final String ATTR_H = "h";
 
     public static final int ERD_VERSION_1 = 1;
 
@@ -186,13 +183,9 @@ public class DiagramLoader
                     }
                     DBSTable table = (DBSTable) child;
                     Rectangle bounds = new Rectangle();
-                    Element boundsElem = XMLUtils.getChildElement(entityElem, TAG_BOUNDS);
-                    if (boundsElem != null) {
-                        bounds.x = Integer.parseInt(boundsElem.getAttribute(ATTR_X));
-                        bounds.y = Integer.parseInt(boundsElem.getAttribute(ATTR_Y));
-                        bounds.width = Integer.parseInt(boundsElem.getAttribute(ATTR_W));
-                        bounds.height = Integer.parseInt(boundsElem.getAttribute(ATTR_H));
-                    }
+                    bounds.x = Integer.parseInt(entityElem.getAttribute(ATTR_X));
+                    bounds.y = Integer.parseInt(entityElem.getAttribute(ATTR_Y));
+
                     TableLoadInfo info = new TableLoadInfo(tableId, table, bounds);
                     tableInfos.add(info);
                 }
@@ -248,7 +241,7 @@ public class DiagramLoader
                 "<!ELEMENT entities (data-source*)>\n" +
                 "<!ELEMENT data-source (entity*)>\n" +
                 "<!ATTLIST data-source id CDATA #REQUIRED>\n" +
-                "<!ELEMENT entity (path*,bounds?)>\n" +
+                "<!ELEMENT entity (path*)>\n" +
                 "<!ATTLIST entity id ID #REQUIRED\n" +
                 " name CDATA #REQUIRED\n" +
                 " fq-name CDATA #REQUIRED>\n" +
@@ -297,12 +290,13 @@ public class DiagramLoader
                     xml.addAttribute(ATTR_ID, info.objectId);
                     xml.addAttribute(ATTR_NAME, table.getName());
                     xml.addAttribute(ATTR_FQ_NAME, table.getFullQualifiedName());
+                    xml.addAttribute(ATTR_X, tablePart.getBounds().x);
+                    xml.addAttribute(ATTR_Y, tablePart.getBounds().y);
                     for (DBSObject parent = table.getParentObject(); parent != null && parent != dsContainer; parent = parent.getParentObject()) {
                         xml.startElement(TAG_PATH);
                         xml.addAttribute(ATTR_NAME, parent.getName());
                         xml.endElement();
                     }
-                    serializeBounds(xml, tablePart.getBounds());
                     xml.endElement();
                 }
                 xml.endElement();
@@ -368,15 +362,5 @@ public class DiagramLoader
         xml.flush();
     }
 
-    private static void serializeBounds(XMLBuilder xml, Rectangle bounds) throws IOException
-    {
-        xml
-            .startElement(TAG_BOUNDS)
-            .addAttribute(ATTR_X, bounds.x)
-            .addAttribute(ATTR_Y, bounds.y)
-            .addAttribute(ATTR_W, bounds.width)
-            .addAttribute(ATTR_H, bounds.height)
-            .endElement();
-    }
 
 }
