@@ -4,12 +4,17 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.gef.EditPart;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IPathEditorInput;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
@@ -33,13 +38,27 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Standalone ERD editor
  */
-public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceContainerProvider {
+public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceContainerProvider, IResourceChangeListener {
 
     /**
      * No-arg constructor
      */
     public ERDEditorStandalone()
     {
+    }
+
+    @Override
+    public void dispose()
+    {
+        super.dispose();
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+    }
+
+    @Override
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException
+    {
+        super.init(site, input);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
     @Override
@@ -180,4 +199,27 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
         }
         return null;
     }
+
+    public void resourceChanged(IResourceChangeEvent event)
+    {
+        IResourceDelta delta= event.getDelta();
+        if (delta == null) {
+            return;
+        }
+        final IFile file = getEditorFile();
+        delta = delta.findMember(file.getFullPath());
+        if (delta == null) {
+            return;
+        }
+        if (delta.getKind() == IResourceDelta.REMOVED) {
+            // Refresh editor
+            getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                public void run()
+                {
+                    getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false);
+                }
+            });
+        }
+    }
+
 }
