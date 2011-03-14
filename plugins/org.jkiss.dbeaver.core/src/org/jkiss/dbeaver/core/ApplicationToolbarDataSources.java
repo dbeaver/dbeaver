@@ -26,10 +26,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
@@ -51,6 +48,7 @@ import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -184,7 +182,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         }
 
         // Update controls and actions
-        updateControls();
+        updateControls(false);
     }
 
     public void fillToolBar(IToolBarManager manager)
@@ -208,7 +206,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                 connectionCombo.setToolTipText("Active datasource");
                 connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
                 connectionCombo.select(0);
-                fillDataSourceList();
+                fillDataSourceList(true);
                 connectionCombo.addSelectionListener(new SelectionListener()
                 {
                     public void widgetSelected(SelectionEvent e)
@@ -252,7 +250,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                         widgetSelected(e);
                     }
                 });
-                updateDatabaseList();
+                updateDatabaseList(true);
                 return comboGroup;
             }
         });
@@ -297,16 +295,37 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     }
 
-    private void fillDataSourceList() {
+    private void fillDataSourceList(boolean force) {
         connectionCombo.setRedraw(false);
         try {
             final List<? extends DBSDataSourceContainer> dataSources = getAvailableDataSources();
 
-            // Remove all but first item
-            final int itemCount = connectionCombo.getItemCount();
-            if (itemCount > 1) {
-                for (int i = itemCount - 1; i > 0; i--) {
-                    connectionCombo.remove(i);
+            boolean update = force;
+            if (!update) {
+                // Check if there are any changes
+                final List<DBSDataSourceContainer> oldDataSources = new ArrayList<DBSDataSourceContainer>();
+                for (TableItem item : connectionCombo.getItems()) {
+                    if (item.getData() instanceof DBSDataSourceContainer) {
+                        oldDataSources.add((DBSDataSourceContainer) item.getData());
+                    }
+                }
+                if (oldDataSources.size() == dataSources.size()) {
+                    for (int i = 0; i < dataSources.size(); i++) {
+                        if (dataSources.get(i) != oldDataSources.get(i)) {
+                            update = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (update) {
+                // Remove all but first item
+                final int itemCount = connectionCombo.getItemCount();
+                if (itemCount > 1) {
+                    for (int i = itemCount - 1; i > 0; i--) {
+                        connectionCombo.remove(i);
+                    }
                 }
             }
 
@@ -317,11 +336,13 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                     DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                     for (int i = 0; i < dataSources.size(); i++) {
                         DBSDataSourceContainer ds = dataSources.get(i);
-                        DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(ds);
-                        connectionCombo.add(
-                            dsNode == null ? DBIcon.TREE_DATABASE.getImage() : dsNode.getNodeIconDefault(),
-                            ds.getName(),
-                            ds);
+                        if (update) {
+                            DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(ds);
+                            connectionCombo.add(
+                                dsNode == null ? DBIcon.TREE_DATABASE.getImage() : dsNode.getNodeIconDefault(),
+                                ds.getName(),
+                                ds);
+                        }
                         if (dataSourceContainer == ds) {
                             selectionIndex = i + 1;
                         }
@@ -336,19 +357,21 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     public void handleDataSourceEvent(final DBPEvent event)
     {
-        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null && event.getObject() == getDataSourceContainer()) {
+        if (event.getAction() == DBPEvent.Action.OBJECT_ADD ||
+            event.getAction() == DBPEvent.Action.OBJECT_REMOVE ||
+            event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null && event.getObject() == getDataSourceContainer()) {
             Display.getDefault().asyncExec(
                 new Runnable() {
                     public void run()
                     {
-                        updateControls();
+                        updateControls(true);
                     }
                 }
             );
         }
     }
 
-    private void updateControls()
+    private void updateControls(boolean force)
     {
         final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
 
@@ -364,8 +387,8 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         }
 
         // Update datasources combo
-        updateDataSourceList();
-        updateDatabaseList();
+        updateDataSourceList(force);
+        updateDatabaseList(force);
     }
 
     private void changeResultSetSize()
@@ -382,7 +405,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         }
     }
 
-    private void updateDataSourceList()
+    private void updateDataSourceList(boolean force)
     {
         if (connectionCombo != null && !connectionCombo.isDisposed()) {
             IDataSourceContainerProviderEx containerProvider = getActiveDataSourceUpdater();
@@ -391,11 +414,11 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
             } else {
                 connectionCombo.setEnabled(true);
             }
-            fillDataSourceList();
+            fillDataSourceList(force);
         }
     }
 
-    private void updateDatabaseList()
+    private void updateDatabaseList(boolean force)
     {
         //fillDatabaseCombo(VoidProgressMonitor.INSTANCE);
 
@@ -509,7 +532,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                 }
             }
         }
-        updateControls();
+        updateControls(false);
     }
 
     private void changeDataBaseSelection()
@@ -614,7 +637,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
             final Object element = ((IStructuredSelection) selection).getFirstElement();
             if (element != null) {
                 if (element instanceof DBNNode || Platform.getAdapterManager().getAdapter(element, DBSObject.class) != null) {
-                    updateControls();
+                    updateControls(false);
                 }
             }
         }
