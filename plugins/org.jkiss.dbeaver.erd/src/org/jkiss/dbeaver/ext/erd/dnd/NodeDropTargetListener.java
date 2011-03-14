@@ -19,20 +19,16 @@ import org.eclipse.gef.requests.CreationFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Provides a listener for dropping nodes onto the editor drawing
@@ -67,54 +63,16 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
 
                 try {
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
-                        EntityDiagram diagram;
-                        Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
-                            diagram = ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram();
-                            tableMap.putAll(diagram.getTableMap());
-
-                            for (DBNNode node : nodes) {
-                                if (monitor.isCanceled()) {
-                                    break;
-                                }
-                                if (node instanceof DBNDatabaseNode) {
-                                    final DBSObject object = ((DBNDatabaseNode) node).getObject();
-                                    if (object instanceof DBSTable) {
-                                        addTable(monitor, (DBSTable) object);
-                                    } else if (object instanceof DBSEntityContainer) {
-                                        try {
-                                            final Collection<? extends DBSEntity> children = ((DBSEntityContainer) object).getChildren(monitor);
-                                            if (!CommonUtils.isEmpty(children)) {
-                                                for (DBSEntity entity : children) {
-                                                    if (entity instanceof DBSTable) {
-                                                        addTable(monitor, (DBSTable)entity);
-                                                    }
-                                                }
-                                            }
-                                        } catch (DBException e) {
-                                            throw new InvocationTargetException(e);
-                                        }
-                                    }
-                                }
+                            ObjectCollector collector = new ObjectCollector(
+                                ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram());
+                            try {
+                                collector.collectTables(monitor, nodes);
+                            } catch (DBException e) {
+                                throw new InvocationTargetException(e);
                             }
-
-                            // Add new relations
-                            for (ERDTable erdTable : tables) {
-                                erdTable.addRelations(monitor, tableMap, false);
-                            }
-                        }
-
-                        private void addTable(DBRProgressMonitor monitor, DBSTable object)
-                        {
-                            DBSTable table = (DBSTable) object;
-                            if (diagram.containsTable(table)) {
-                                // Avoid duplicates
-                                return;
-                            }
-                            ERDTable erdTable = ERDTable.fromObject(monitor, table);
-                            tables.add(erdTable);
-                            tableMap.put(table, erdTable);
+                            tables.addAll(collector.getTables());
                         }
                     });
                 } catch (InvocationTargetException e) {

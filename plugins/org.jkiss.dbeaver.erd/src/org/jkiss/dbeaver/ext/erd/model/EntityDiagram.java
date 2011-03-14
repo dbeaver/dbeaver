@@ -29,6 +29,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	private boolean layoutManualAllowed = false;
     private Map<DBSTable, ERDTable> tableMap = new IdentityHashMap<DBSTable, ERDTable>();
     private Map<ERDTable, Rectangle> initBounds = new IdentityHashMap<ERDTable, Rectangle>();
+    private boolean initBoundsEnabled;
 
     public EntityDiagram(DBSObject container, String name)
 	{
@@ -214,7 +215,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
     public Rectangle getInitBounds(ERDTable erdTable)
     {
-        return initBounds.get(erdTable);
+        return initBoundsEnabled ? initBounds.get(erdTable) : null;
     }
 
     public void addInitBounds(ERDTable erdTable, Rectangle bounds)
@@ -222,8 +223,8 @@ public class EntityDiagram extends ERDObject<DBSObject>
         initBounds.put(erdTable, bounds);
     }
 
-    public void resetInitBounds()
+    public void enableInitBounds(boolean enable)
     {
-        initBounds.clear();
+        initBoundsEnabled = enable;
     }
 }

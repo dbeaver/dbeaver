@@ -138,7 +138,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
                 ContentUtils.close(fileContent);
             }
         } catch (Exception e) {
-            throw new DBException("Error loading ER diagram from '" + file.getName() + "'", e);
+            log.error("Error loading ER diagram from '" + file.getName() + "'", e);
         }
 
         return entityDiagram;

@@ -52,47 +52,51 @@ public class DelegatingLayoutManager implements LayoutManager {
     {
         EntityDiagram entityDiagram = diagram.getDiagram();
 
-        if (entityDiagram.isLayoutManualDesired()) {
+        entityDiagram.enableInitBounds(true);
+        try {
+            if (entityDiagram.isLayoutManualDesired()) {
 
-            if (activeLayoutManager != xyLayoutManager) {
+                if (activeLayoutManager != xyLayoutManager) {
 
-                if (entityDiagram.isLayoutManualAllowed()) {
+                    if (entityDiagram.isLayoutManualAllowed()) {
 
-                    //	yes we are okay to start populating the table bounds
-                    setLayoutManager(container, xyLayoutManager);
-                    activeLayoutManager.layout(container);
-
-                } else {
-
-                    // we first have to set the constraint data
-                    if (diagram.setTableFigureBounds(true)) {
-                        //we successfully set bounds for all the existing
-                        // tables so we can start using xyLayout immediately
+                        //	yes we are okay to start populating the table bounds
                         setLayoutManager(container, xyLayoutManager);
                         activeLayoutManager.layout(container);
+
                     } else {
-                        //we did not - we still need to run autolayout once
-                        // before we can set xyLayout
-                        activeLayoutManager.layout(container);
 
-                        //run this again so that it will work again next time
-                        setLayoutManager(container, xyLayoutManager);
+                        // we first have to set the constraint data
+                        if (diagram.setTableFigureBounds(true)) {
+                            //we successfully set bounds for all the existing
+                            // tables so we can start using xyLayout immediately
+                            setLayoutManager(container, xyLayoutManager);
+                            activeLayoutManager.layout(container);
+                        } else {
+                            //we did not - we still need to run autolayout once
+                            // before we can set xyLayout
+                            activeLayoutManager.layout(container);
+
+                            //run this again so that it will work again next time
+                            setLayoutManager(container, xyLayoutManager);
+                        }
+
                     }
 
+                } else {
+                    setLayoutManager(container, xyLayoutManager);
+                    activeLayoutManager.layout(container);
                 }
-
             } else {
-                setLayoutManager(container, xyLayoutManager);
+                setLayoutManager(container, graphLayoutManager);
                 activeLayoutManager.layout(container);
             }
-        } else {
-            setLayoutManager(container, graphLayoutManager);
-            activeLayoutManager.layout(container);
         }
-
-        // Reset initial bounds (in case we load diagram from file)
-        // to allow figures moving/resizing
-        diagram.getDiagram().resetInitBounds();
+        finally {
+            // Reset initial bounds (in case we load diagram from file)
+            // to allow figures moving/resizing
+            entityDiagram.enableInitBounds(false);
+        }
     }
 
     public Object getConstraint(IFigure child)
