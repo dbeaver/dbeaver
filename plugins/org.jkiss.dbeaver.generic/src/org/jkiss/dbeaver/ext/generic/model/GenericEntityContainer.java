@@ -104,14 +104,21 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         //cacheIndexes(monitor, null);
 
         if (!indexCache.isCached()) {
-            // Load indexes for all tables and return copy of them
-            List<GenericIndex> tmpIndexList = new ArrayList<GenericIndex>();
-            for (GenericTable table : getTables(monitor)) {
-                for (GenericIndex index : table.getIndexes(monitor)) {
-                    tmpIndexList.add(new GenericIndex(index));
+
+            try {
+                // Try to load all indexes with one query
+                indexCache.getObjects(monitor, null);
+            } catch (Exception e) {
+                // Failed
+                // Load indexes for all tables and return copy of them
+                List<GenericIndex> tmpIndexList = new ArrayList<GenericIndex>();
+                for (GenericTable table : getTables(monitor)) {
+                    for (GenericIndex index : table.getIndexes(monitor)) {
+                        tmpIndexList.add(new GenericIndex(index));
+                    }
                 }
+                indexCache.setCache(tmpIndexList);
             }
-            indexCache.setCache(tmpIndexList);
         }
         return indexCache.getObjects(monitor, null);
     }
@@ -125,9 +132,13 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             // Cannot be sure that all jdbc drivers support reading of all catalog columns
             try {
                 tableCache.loadChildren(monitor, null);
-            } catch (DBException e) {
+            } catch (Exception e) {
                 log.debug(e);
             }
+        }
+        if ((scope & STRUCT_ASSOCIATIONS) != 0) {
+            // Read all indexes
+            getIndexes(monitor);
         }
     }
 
