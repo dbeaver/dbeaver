@@ -52,10 +52,21 @@ public class StandaloneNodeConnector {
         if (nodeList.size() > 1) {
 
             // Order nodes by their connections count
+            // Order unconnected nodes by their geometrical size
             Collections.sort(nodeList, new Comparator<Node>() {
                 public int compare(Node o1, Node o2)
                 {
-                    return (o2.outgoing.size() + o2.incoming.size()) - (o1.outgoing.size() + o1.incoming.size());
+                    final int connCount1 = o2.outgoing.size() + o2.incoming.size();
+                    final int connCount2 = o1.outgoing.size() + o1.incoming.size();
+                    if (connCount1 == 0 && connCount1 == connCount2) {
+                        if (o1.data instanceof EntityPart && o2.data instanceof EntityPart) {
+                            return ((EntityPart) o1.data).getFigure().getMinimumSize().height - ((EntityPart) o2.data).getFigure().getMinimumSize().height;
+                        } else {
+                            return 0;
+                        }
+                    } else {
+                        return connCount1 - connCount2;
+                    }
                 }
             });
 
@@ -70,18 +81,6 @@ public class StandaloneNodeConnector {
 
             final int nodeCount = unconnectedNodes.size();
             if (nodeCount > 1) {
-                // Order unconnected nodes by their geometrical size
-                Collections.sort(unconnectedNodes, new Comparator<Node>() {
-                    public int compare(Node o1, Node o2)
-                    {
-                        if (o1.data instanceof EntityPart && o2.data instanceof EntityPart) {
-                            return ((EntityPart) o1.data).getFigure().getSize().height - ((EntityPart) o2.data).getFigure().getSize().height;
-                        } else {
-                            return 0;
-                        }
-                    }
-                });
-
                 // Connect all unconnected nodes between each other
                 final Point diagramSize = diagram.getViewer().getControl().getSize();
                 double horizontalRatio = (float)diagramSize.x / (float)diagramSize.y;

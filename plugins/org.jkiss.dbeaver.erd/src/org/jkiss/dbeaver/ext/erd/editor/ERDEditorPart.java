@@ -247,7 +247,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void doSave(IProgressMonitor monitor)
     {
-        throw new UnsupportedOperationException();
+
     }
 
     /**

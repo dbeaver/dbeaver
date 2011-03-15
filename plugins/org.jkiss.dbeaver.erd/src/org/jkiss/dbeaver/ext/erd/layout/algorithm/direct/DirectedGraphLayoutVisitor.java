@@ -18,6 +18,8 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.LineAttributes;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
@@ -181,8 +183,10 @@ public class DirectedGraphLayoutVisitor {
         NodeList edgeNodes = connEdge.vNodes;
 
         PolylineConnection conn = (PolylineConnection) connectionPart.getConnectionFigure();
+        //conn.setOpaque(true);
+        //conn.setLineJoin(SWT.JOIN_BEVEL);
         //conn.setTargetDecoration(new PolygonDecoration());
-        if (edgeNodes != null) {
+        if (edgeNodes != null && edgeNodes.size() > 1) {
             List<AbsoluteBendpoint> bends = new ArrayList<AbsoluteBendpoint>();
             for (int i = 0; i < edgeNodes.size(); i++) {
                 Node vn = edgeNodes.getNode(i);
@@ -200,30 +204,6 @@ public class DirectedGraphLayoutVisitor {
 */
             }
             conn.setRoutingConstraint(bends);
-        } else if (connEdge.source.getParent() != null && connEdge.source.getParent() == connEdge.target.getParent()) {
-            // Self link
-            //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
-            //final Dimension entitySize = entity.getFigure().getSize();
-            int entityWidth = connEdge.source.getParent().width;
-            int entityHeight = connEdge.source.getParent().height;
-
-            List<RelativeBendpoint> bends = new ArrayList<RelativeBendpoint>();
-            {
-                RelativeBendpoint bp1 = new RelativeBendpoint(conn);
-                bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
-                bends.add(bp1);
-            }
-            {
-                RelativeBendpoint bp2 = new RelativeBendpoint(conn);
-                bp2.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
-                bends.add(bp2);
-            }
-            conn.setRoutingConstraint(bends);
-
-            //conn.setSourceAnchor(new EllipseAnchor(entity.getFigure()));
-            //conn.setTargetAnchor(new EllipseAnchor(entity.getFigure()));
-        } else {
-            conn.setRoutingConstraint(Collections.EMPTY_LIST);
         }
 
     }

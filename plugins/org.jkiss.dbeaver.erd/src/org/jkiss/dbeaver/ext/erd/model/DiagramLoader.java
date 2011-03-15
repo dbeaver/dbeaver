@@ -14,7 +14,9 @@ import net.sf.jkiss.utils.xml.XMLUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Bendpoint;
+import org.eclipse.draw2d.RelativeBendpoint;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.DBException;
@@ -66,6 +68,8 @@ public class DiagramLoader
     public static final String ATTR_Y = "y";
 
     public static final int ERD_VERSION_1 = 1;
+    private static final String BEND_ABSOLUTE = "abs";
+    private static final String BEND_RELATIVE = "rel";
 
     private static class TableSaveInfo {
         final ERDTable erdTable;
@@ -238,12 +242,15 @@ public class DiagramLoader
                 relInfos.add(relationLoadInfo);
 
                 for (Element bendElem : XMLUtils.getChildElementList(relElem, TAG_BEND)) {
-                    String locX = bendElem.getAttribute(ATTR_X);
-                    String locY = bendElem.getAttribute(ATTR_Y);
-                    if (!CommonUtils.isEmpty(locX) && !CommonUtils.isEmpty(locY)) {
-                        relationLoadInfo.bends.add(new Point(
-                            Integer.parseInt(locX),
-                            Integer.parseInt(locY)));
+                    String type = bendElem.getAttribute(ATTR_TYPE);
+                    if (!BEND_RELATIVE.equals(type)) {
+                        String locX = bendElem.getAttribute(ATTR_X);
+                        String locY = bendElem.getAttribute(ATTR_Y);
+                        if (!CommonUtils.isEmpty(locX) && !CommonUtils.isEmpty(locY)) {
+                            relationLoadInfo.bends.add(new Point(
+                                Integer.parseInt(locX),
+                                Integer.parseInt(locY)));
+                        }
                     }
                 }
             }
@@ -408,8 +415,15 @@ public class DiagramLoader
                             if (!CommonUtils.isEmpty(bendpoints)) {
                                 for (Bendpoint bendpoint : bendpoints) {
                                     xml.startElement(TAG_BEND);
-                                    xml.addAttribute(ATTR_X, bendpoint.getLocation().x);
-                                    xml.addAttribute(ATTR_Y, bendpoint.getLocation().y);
+                                    if (bendpoint instanceof AbsoluteBendpoint) {
+                                        xml.addAttribute(ATTR_TYPE, BEND_ABSOLUTE);
+                                        xml.addAttribute(ATTR_X, bendpoint.getLocation().x);
+                                        xml.addAttribute(ATTR_Y, bendpoint.getLocation().y);
+                                    } else if (bendpoint instanceof RelativeBendpoint) {
+                                        xml.addAttribute(ATTR_TYPE, BEND_RELATIVE);
+                                        xml.addAttribute(ATTR_X, bendpoint.getLocation().x);
+                                        xml.addAttribute(ATTR_Y, bendpoint.getLocation().y);
+                                    }
                                     xml.endElement();
                                 }
                             }

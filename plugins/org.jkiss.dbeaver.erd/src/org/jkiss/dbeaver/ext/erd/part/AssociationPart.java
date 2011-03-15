@@ -9,6 +9,7 @@ package org.jkiss.dbeaver.ext.erd.part;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
@@ -93,6 +94,27 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 connBends.add(new AbsoluteBendpoint(bend.x, bend.y));
             }
             conn.setRoutingConstraint(connBends);
+        } else if (association.getPrimaryKeyTable() == association.getForeignKeyTable()) {
+            // Self link
+            final IFigure entityFigure = ((GraphicalEditPart) getSource()).getFigure();
+            //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
+            //final Dimension entitySize = entity.getFigure().getSize();
+            final Dimension figureSize = entityFigure.getMinimumSize();
+            int entityWidth = figureSize.width;
+            int entityHeight = figureSize.height;
+
+            List<RelativeBendpoint> bends = new ArrayList<RelativeBendpoint>();
+            {
+                RelativeBendpoint bp1 = new RelativeBendpoint(conn);
+                bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
+                bends.add(bp1);
+            }
+            {
+                RelativeBendpoint bp2 = new RelativeBendpoint(conn);
+                bp2.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
+                bends.add(bp2);
+            }
+            conn.setRoutingConstraint(bends);
         }
 
         Label toolTip = new Label(getAssociation().getObject().getConstraintType().getName() + " " + getAssociation().getObject().getFullQualifiedName());
