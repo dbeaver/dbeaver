@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -239,5 +240,14 @@ public class EntityDiagram extends ERDObject<DBSObject>
     public void setNeedsAutoLayout(boolean needsAutoLayout)
     {
         this.needsAutoLayout = needsAutoLayout;
+    }
+
+    public void addInitRelationBends(ERDTable sourceTable, ERDTable targetTable, String relName, List<Point> bends)
+    {
+        for (ERDAssociation rel : sourceTable.getPrimaryKeyRelationships()) {
+            if (rel.getForeignKeyTable() == targetTable && relName.equals(rel.getObject().getName())) {
+                rel.addInitBends(bends);
+            }
+        }
     }
 }

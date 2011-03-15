@@ -15,6 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.draw2d.Bendpoint;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -34,10 +35,7 @@ import org.w3c.dom.Element;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Entity diagram loader/saver
@@ -95,6 +93,22 @@ public class DiagramLoader
         }
     }
 
+    private static class RelationLoadInfo {
+        final String name;
+        final String type;
+        final TableLoadInfo pkTable;
+        final TableLoadInfo fkTable;
+        final List<Point> bends = new ArrayList<Point>();
+
+        private RelationLoadInfo(String name, String type, TableLoadInfo pkTable, TableLoadInfo fkTable)
+        {
+            this.name = name;
+            this.type = type;
+            this.pkTable = pkTable;
+            this.fkTable = fkTable;
+        }
+    }
+
     private static class DataSourceObjects {
         List<ERDTable> tables = new ArrayList<ERDTable>();
     }
@@ -123,6 +137,8 @@ public class DiagramLoader
         }
 
         List<TableLoadInfo> tableInfos = new ArrayList<TableLoadInfo>();
+        List<RelationLoadInfo> relInfos = new ArrayList<RelationLoadInfo>();
+        Map<String, TableLoadInfo> tableMap = new HashMap<String, TableLoadInfo>();
 
         final Element entitiesElem = XMLUtils.getChildElement(diagramElem, TAG_ENTITIES);
         if (entitiesElem != null) {
@@ -195,6 +211,40 @@ public class DiagramLoader
 
                     TableLoadInfo info = new TableLoadInfo(tableId, table, bounds);
                     tableInfos.add(info);
+                    tableMap.put(info.objectId, info);
+                }
+            }
+        }
+
+        final Element relationsElem = XMLUtils.getChildElement(diagramElem, TAG_RELATIONS);
+        if (relationsElem != null) {
+            // Parse relations
+            for (Element relElem : XMLUtils.getChildElementList(relationsElem, TAG_RELATION)) {
+                String relName = relElem.getAttribute(ATTR_NAME);
+                String relType = relElem.getAttribute(ATTR_TYPE);
+                String pkRefId = relElem.getAttribute(ATTR_PK_REF);
+                String fkRefId = relElem.getAttribute(ATTR_FK_REF);
+                if (CommonUtils.isEmpty(relName) || CommonUtils.isEmpty(pkRefId) || CommonUtils.isEmpty(fkRefId)) {
+                    log.warn("Missing relation ID");
+                    continue;
+                }
+                TableLoadInfo pkTable = tableMap.get(pkRefId);
+                TableLoadInfo fkTable = tableMap.get(fkRefId);
+                if (pkTable == null || fkTable == null) {
+                    log.warn("PK (" + pkRefId + ") or FK (" + fkRefId +") table(s) not found for relation " + relName);
+                    continue;
+                }
+                RelationLoadInfo relationLoadInfo = new RelationLoadInfo(relName, relType, pkTable, fkTable);
+                relInfos.add(relationLoadInfo);
+
+                for (Element bendElem : XMLUtils.getChildElementList(relElem, TAG_BEND)) {
+                    String locX = bendElem.getAttribute(ATTR_X);
+                    String locY = bendElem.getAttribute(ATTR_Y);
+                    if (!CommonUtils.isEmpty(locX) && !CommonUtils.isEmpty(locY)) {
+                        relationLoadInfo.bends.add(new Point(
+                            Integer.parseInt(locX),
+                            Integer.parseInt(locY)));
+                    }
                 }
             }
         }
@@ -211,6 +261,12 @@ public class DiagramLoader
             if (erdTable != null) {
                 diagram.addInitBounds(erdTable, info.bounds);
             }
+        }
+        // Set relations' bends
+        for (RelationLoadInfo info : relInfos) {
+            final ERDTable sourceTable = diagram.getERDTable(info.pkTable.table);
+            final ERDTable targetTable = diagram.getERDTable(info.fkTable.table);
+            diagram.addInitRelationBends(sourceTable, targetTable, info.name, info.bends);
         }
     }
 
