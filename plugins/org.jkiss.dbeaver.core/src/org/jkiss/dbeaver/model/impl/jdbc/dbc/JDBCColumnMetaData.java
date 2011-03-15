@@ -284,6 +284,9 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
 
     public Image getObjectImage()
     {
+        if (tableColumn instanceof IObjectImageProvider) {
+            return ((IObjectImageProvider) tableColumn).getObjectImage();
+        }
         return JDBCUtils.getDataIcon(this).getImage();
     }
 

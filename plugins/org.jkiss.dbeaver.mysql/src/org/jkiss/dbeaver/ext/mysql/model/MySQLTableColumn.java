@@ -5,6 +5,10 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
@@ -14,24 +18,38 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * GenericTable
+ * MySQLTableColumn
  */
 public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
 {
+    static final Log log = LogFactory.getLog(MySQLTableColumn.class);
+
     private static Pattern enumPattern = Pattern.compile("'([^']*)'");
+    private Image columnImage;
+
+    public static enum KeyType {
+        PRI,
+        UNI,
+        MUL
+    }
 
     private MySQLTable table;
     private String defaultValue;
     private int charLength;
     private boolean autoIncrement;
+    private KeyType keyType;
 
     private List<String> enumValues;
 
@@ -50,6 +68,14 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION));
         String typeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DATA_TYPE);
+        String keyTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_KEY);
+        if (!CommonUtils.isEmpty(keyTypeName)) {
+            try {
+                keyType = KeyType.valueOf(keyTypeName);
+            } catch (IllegalArgumentException e) {
+                log.debug(e);
+            }
+        }
         setTypeName(typeName);
         setValueType(MySQLUtils.typeNameToValueType(typeName));
         DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName.toUpperCase());
@@ -114,8 +140,58 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         return autoIncrement;
     }
 
+    @Property(name = "Key", viewable = true, order = 11)
+    public KeyType getKeyType()
+    {
+        return keyType;
+    }
+
     public List<String> getEnumValues()
     {
         return enumValues;
     }
+
+    public Image getObjectImage()
+    {
+        if (columnImage == null) {
+            columnImage = super.getObjectImage();
+            if (keyType != null) {
+                columnImage = getOverlayImage(columnImage, keyType);
+            }
+        }
+        return columnImage;
+    }
+
+    private static final Map<Image, Map<KeyType, Image>> overlayCache = new IdentityHashMap<Image, Map<KeyType, Image>>();
+
+    private static Image getOverlayImage(Image columnImage, KeyType keyType)
+    {
+        synchronized (overlayCache) {
+            Map<KeyType, Image> keyTypeImageMap = overlayCache.get(columnImage);
+            if (keyTypeImageMap == null) {
+                keyTypeImageMap = new IdentityHashMap<KeyType, Image>();
+                overlayCache.put(columnImage, keyTypeImageMap);
+            }
+            Image finalImage = keyTypeImageMap.get(keyType);
+            if (finalImage == null) {
+                OverlayImageDescriptor overlay = new OverlayImageDescriptor(columnImage.getImageData());
+                ImageDescriptor overImage;
+                switch (keyType) {
+                    case PRI:
+                    case UNI:
+                        overImage = DBIcon.OVER_KEY.getImageDescriptor();
+                        break;
+                    default:
+                        overImage = DBIcon.OVER_REFERENCE.getImageDescriptor();
+                        break;
+                }
+                overlay.setBottomRight(new ImageDescriptor[] {overImage} );
+                finalImage = overlay.createImage();
+                keyTypeImageMap.put(keyType, finalImage);
+            }
+
+            return finalImage;
+        }
+    }
+
 }

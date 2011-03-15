@@ -49,6 +49,7 @@ public class MySQLConstants {
     public static final String COL_ORDINAL_POSITION = "ORDINAL_POSITION";
     
     public static final String COL_COLUMN_NAME = "COLUMN_NAME";
+    public static final String COL_COLUMN_KEY = "COLUMN_KEY";
     public static final String COL_DATA_TYPE = "DATA_TYPE";
     public static final String COL_CHARACTER_MAXIMUM_LENGTH = "CHARACTER_MAXIMUM_LENGTH";
     public static final String COL_CHARACTER_OCTET_LENGTH = "CHARACTER_OCTET_LENGTH";
