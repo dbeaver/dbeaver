@@ -49,4 +49,9 @@ public class GenericPrimaryKey extends GenericConstraint
         }
         this.columns.add(column);
     }
+
+    void setColumns(List<GenericConstraintColumn> columns)
+    {
+        this.columns = columns;
+    }
 }

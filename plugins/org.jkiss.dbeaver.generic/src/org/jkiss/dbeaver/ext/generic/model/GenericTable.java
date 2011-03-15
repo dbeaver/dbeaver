@@ -185,9 +185,14 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         throws DBException
     {
         if (constraints == null) {
-            constraints = loadConstraints(monitor);
+            getContainer().getPrimaryKeysCache().getObjects(monitor, this);
         }
         return constraints;
+    }
+
+    void setConstraints(List<GenericPrimaryKey> uniqueKeys)
+    {
+        this.constraints = uniqueKeys;
     }
 
     void addConstraint(GenericPrimaryKey constraint) {
@@ -225,6 +230,16 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     public String getDescription()
     {
         return description;
+    }
+
+    public boolean isForeignKeysCached()
+    {
+        return foreignKeys != null;
+    }
+
+    public boolean isConstraintsCached()
+    {
+        return constraints != null;
     }
 
 /*
@@ -284,61 +299,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         return rowCount;
     }
 */
-
-    private List<GenericPrimaryKey> loadConstraints(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Loading constraints");
-        try {
-            List<GenericPrimaryKey> pkList = new ArrayList<GenericPrimaryKey>();
-            Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
-            JDBCDatabaseMetaData metaData = context.getMetaData();
-            // Load indexes
-            JDBCResultSet dbResult = metaData.getPrimaryKeys(
-                getCatalog() == null ? null : getCatalog().getName(),
-                getSchema() == null ? null : getSchema().getName(),
-                getName());
-            try {
-                while (dbResult.next()) {
-                    String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                    int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
-                    String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
-                    GenericPrimaryKey pk = pkMap.get(pkName);
-                    if (pk == null) {
-                        pk = new GenericPrimaryKey(
-                            this,
-                            pkName,
-                            null,
-                            DBSConstraintType.PRIMARY_KEY);
-                        pkList.add(pk);
-                        pkMap.put(pkName, pk);
-                    }
-                    if (CommonUtils.isEmpty(columnName)) {
-                        // Bad index - can't evaluate it
-                        continue;
-                    }
-                    GenericTableColumn tableColumn = this.getColumn(monitor, columnName);
-                    if (tableColumn == null) {
-                        log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "' for PK");
-                        continue;
-                    }
-                    pk.addColumn(
-                        new GenericConstraintColumn(
-                            pk,
-                            tableColumn,
-                            keySeq));
-                }
-            }
-            finally {
-                dbResult.close();
-            }
-            return pkList;
-        } catch (SQLException ex) {
-            throw new DBException(ex);
-        } finally {
-            context.close();
-        }
-    }
 
     private static class ForeignKeyInfo {
         String pkColumnName;

@@ -48,6 +48,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
     private final TableCache tableCache;
     private final IndexCache indexCache;
     private final ForeignKeysCache foreignKeysCache;
+    private final PrimaryKeysCache primaryKeysCache;
     private Map<String, GenericPackage> packageMap;
     private List<GenericProcedure> procedures;
 
@@ -56,6 +57,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         this.dataSource = dataSource;
         this.tableCache = new TableCache(dataSource);
         this.indexCache = new IndexCache();
+        this.primaryKeysCache = new PrimaryKeysCache();
         this.foreignKeysCache = new ForeignKeysCache();
     }
 
@@ -67,6 +69,11 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
     final IndexCache getIndexCache()
     {
         return indexCache;
+    }
+
+    final PrimaryKeysCache getPrimaryKeysCache()
+    {
+        return primaryKeysCache;
     }
 
     final ForeignKeysCache getForeignKeysCache()
@@ -159,8 +166,18 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         }
         // Cache associations
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
-            // Read all indexes
+            // Try to read all PKs
+            // Try to read all FKs
+            try {
+                primaryKeysCache.getObjects(monitor, null);
+            } catch (Exception e) {
+                // Failed - seems to be unsupported feature
+                log.debug(e);
+            }
+
+            // Try to read all indexes
             cacheIndexes(monitor, false);
+
             // Try to read all FKs
             try {
                 foreignKeysCache.getObjects(monitor, null);
@@ -218,6 +235,8 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
     {
         this.tableCache.clearCache();
         this.indexCache.clearCache();
+        this.primaryKeysCache.clearCache();
+        this.foreignKeysCache.clearCache();
         this.packageMap = null;
         this.procedures = null;
         return true;
@@ -340,6 +359,11 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
 
             boolean isSystemTable = tableType != null && tableType.toUpperCase().indexOf("SYSTEM") != -1;
             if (isSystemTable && !getDataSource().getContainer().isShowSystemObjects()) {
+                return null;
+            }
+
+            // Skip "recycled" tables (Oracle)
+            if (tableName.startsWith("BIN$")) {
                 return null;
             }
 /*
@@ -518,6 +542,80 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         }
     }
 
+    /**
+     * Index cache implementation
+     */
+    class PrimaryKeysCache extends JDBCCompositeCache<GenericTable, GenericPrimaryKey, GenericConstraintColumn> {
+        protected PrimaryKeysCache()
+        {
+            super(tableCache, JDBCConstants.TABLE_NAME, JDBCConstants.PK_NAME);
+        }
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericTable forParent)
+            throws SQLException, DBException
+        {
+            try {
+                return context.getMetaData().getPrimaryKeys(
+                        getCatalog() == null ? null : getCatalog().getName(),
+                        getSchema() == null ? null : getSchema().getName(),
+                        forParent == null ? null : forParent.getName())
+                    .getSource();
+            } catch (SQLException e) {
+                throw e;
+            } catch (Exception e) {
+                if (forParent == null) {
+                    throw new DBException("Global primary keys read not supported", e);
+                } else {
+                    throw new DBException(e);
+                }
+            }
+        }
+
+        protected GenericPrimaryKey fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String pkName)
+            throws SQLException, DBException
+        {
+            return new GenericPrimaryKey(
+                parent,
+                pkName,
+                null,
+                DBSConstraintType.PRIMARY_KEY);
+        }
+
+        protected GenericConstraintColumn fetchObjectRow(
+            JDBCExecutionContext context,
+            ResultSet dbResult,
+            GenericTable parent,
+            GenericPrimaryKey object)
+            throws SQLException, DBException
+        {
+            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
+            int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
+
+            GenericTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
+            if (tableColumn == null) {
+                log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "' for PK");
+                return null;
+            }
+
+            return new GenericConstraintColumn(object, tableColumn, keySeq);
+        }
+
+        protected boolean isObjectsCached(GenericTable parent)
+        {
+            return parent.isConstraintsCached();
+        }
+
+        protected void cacheObjects(GenericTable parent, List<GenericPrimaryKey> primaryKeys)
+        {
+            parent.setConstraints(primaryKeys);
+        }
+
+        protected void cacheRows(GenericPrimaryKey primaryKey, List<GenericConstraintColumn> rows)
+        {
+            primaryKey.setColumns(rows);
+        }
+    }
+
     class ForeignKeysCache extends JDBCCompositeCache<GenericTable, GenericForeignKey, GenericForeignKeyColumn> {
 
         Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
@@ -648,7 +746,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
 
         protected boolean isObjectsCached(GenericTable parent)
         {
-            return parent.isIndexesCached();
+            return parent.isForeignKeysCached();
         }
 
         protected void cacheObjects(GenericTable parent, List<GenericForeignKey> foreignKeys)
