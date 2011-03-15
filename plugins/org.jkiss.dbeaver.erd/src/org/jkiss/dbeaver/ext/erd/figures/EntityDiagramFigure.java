@@ -9,6 +9,7 @@ package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.FreeformLayer;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.Orientable;
 import org.eclipse.draw2d.geometry.Rectangle;
 
 import java.util.List;
@@ -23,15 +24,7 @@ public class EntityDiagramFigure extends FreeformLayer
 	public EntityDiagramFigure()
 	{
 		setOpaque(true);
-
+        //setChildrenOrientation(Orientable.HORIZONTAL);
 	}
-
-/*
-    @Override
-    public Rectangle getBounds()
-    {
-        return getFreeformExtent();
-    }
-*/
 
 }
