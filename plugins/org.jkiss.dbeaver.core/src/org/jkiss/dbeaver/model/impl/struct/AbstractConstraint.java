@@ -49,6 +49,19 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
         return null;
     }
 
+    public DBSConstraintColumn getColumn(DBRProgressMonitor monitor, String columnName)
+    {
+        Collection<? extends DBSConstraintColumn> columns = getColumns(monitor);
+        if (columns != null) {
+            for (DBSConstraintColumn constraintColumn : columns) {
+                if (constraintColumn.getTableColumn().getName().equals(columnName)) {
+                    return constraintColumn;
+                }
+            }
+        }
+        return null;
+    }
+
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {

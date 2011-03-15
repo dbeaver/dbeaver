@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -376,4 +377,16 @@ public class JDBCUtils {
         return context.getDataSource().getContainer().getDriver().getDriverClassName().contains("Odbc");
     }
 */
+
+    public static DBSConstraintCascade getCascadeFromNum(int num)
+    {
+        switch (num) {
+            case DatabaseMetaData.importedKeyNoAction: return DBSConstraintCascade.NO_ACTION;
+            case DatabaseMetaData.importedKeyCascade: return DBSConstraintCascade.CASCADE;
+            case DatabaseMetaData.importedKeySetNull: return DBSConstraintCascade.SET_NULL;
+            case DatabaseMetaData.importedKeySetDefault: return DBSConstraintCascade.SET_DEFAULT;
+            case DatabaseMetaData.importedKeyRestrict: return DBSConstraintCascade.RESTRICT;
+            default: return DBSConstraintCascade.UNKNOWN;
+        }
+    }
 }

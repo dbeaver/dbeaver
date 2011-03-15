@@ -223,8 +223,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 }
 
                 if (CommonUtils.isEmpty(schemas)) {
-                    structureContainer = new DataSourceEntityContainer();
-                    structureContainer.initCache();
+                    this.structureContainer = new DataSourceEntityContainer();
                 }
             }
         } catch (SQLException ex) {
@@ -525,8 +524,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     }
 
     private class DataSourceEntityContainer extends GenericEntityContainer {
-        public GenericDataSource getDataSource() {
-            return GenericDataSource.this;
+        private DataSourceEntityContainer()
+        {
+            super(GenericDataSource.this);
         }
 
         public GenericCatalog getCatalog() {

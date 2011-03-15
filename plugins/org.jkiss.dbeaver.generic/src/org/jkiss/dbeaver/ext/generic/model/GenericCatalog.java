@@ -22,21 +22,14 @@ import java.util.List;
  */
 public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
 {
-    private GenericDataSource dataSource;
     private String catalogName;
     private List<GenericSchema> schemas;
     private boolean isInitialized = false;
 
     public GenericCatalog(GenericDataSource dataSource, String catalogName)
     {
-        this.dataSource = dataSource;
+        super(dataSource);
         this.catalogName = catalogName;
-        this.initCache();
-    }
-
-    public GenericDataSource getDataSource()
-    {
-        return dataSource;
     }
 
     public GenericCatalog getCatalog()

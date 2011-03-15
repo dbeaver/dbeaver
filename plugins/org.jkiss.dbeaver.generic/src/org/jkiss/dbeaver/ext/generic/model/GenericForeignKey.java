@@ -90,4 +90,9 @@ public class GenericForeignKey extends GenericConstraint implements DBSForeignKe
     {
         return getReferencedTable();
     }
+
+    void setColumns(List<GenericForeignKeyColumn> columns)
+    {
+        this.columns = columns;
+    }
 }

@@ -190,7 +190,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         return constraints;
     }
 
-    private void addConstraint(GenericPrimaryKey constraint) {
+    void addConstraint(GenericPrimaryKey constraint) {
         if (constraints != null) {
             constraints.add(constraint);
         }
@@ -199,16 +199,21 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     public List<GenericForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
-        return loadForeignKeys(monitor, true);
+        return loadReferences(monitor);
     }
 
     public List<GenericForeignKey> getForeignKeys(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {
-            foreignKeys = loadForeignKeys(monitor, false);
+            getContainer().getForeignKeysCache().getObjects(monitor, this);
         }
         return foreignKeys;
+    }
+
+    void setForeignKeys(List<GenericForeignKey> foreignKeys)
+    {
+        this.foreignKeys = foreignKeys;
     }
 
     public List<GenericTable> getSubTables()
@@ -336,9 +341,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     }
 
     private static class ForeignKeyInfo {
-        String pkTableCatalog;
-        String pkTableSchema;
-        String pkTableName;
         String pkColumnName;
         String fkTableCatalog;
         String fkTableSchema;
@@ -352,7 +354,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         int defferabilityNum;
     }
 
-    private List<GenericForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
+    private List<GenericForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
@@ -363,24 +365,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             List<ForeignKeyInfo> fkInfos = new ArrayList<ForeignKeyInfo>();
             JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
-            JDBCResultSet dbResult;
-            if (references) {
-                dbResult = metaData.getExportedKeys(
+            JDBCResultSet dbResult = metaData.getExportedKeys(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
                     getName());
-            } else {
-                dbResult = metaData.getImportedKeys(
-                    getCatalog() == null ? null : getCatalog().getName(),
-                    getSchema() == null ? null : getSchema().getName(),
-                    getName());
-            }
             try {
                 while (dbResult.next()) {
                     ForeignKeyInfo fkInfo = new ForeignKeyInfo();
-                    fkInfo.pkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_CAT);
-                    fkInfo.pkTableSchema = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_SCHEM);
-                    fkInfo.pkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_NAME);
                     fkInfo.pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
                     fkInfo.fkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_CAT);
                     fkInfo.fkTableSchema = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_SCHEM);
@@ -401,10 +392,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
 
             List<GenericForeignKey> fkList = new ArrayList<GenericForeignKey>();
             Map<String, GenericForeignKey> fkMap = new HashMap<String, GenericForeignKey>();
-            Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
             for (ForeignKeyInfo info : fkInfos) {
-                DBSConstraintCascade deleteRule = getCascadeFromNum(info.deleteRuleNum);
-                DBSConstraintCascade updateRule = getCascadeFromNum(info.updateRuleNum);
+                DBSConstraintCascade deleteRule = JDBCUtils.getCascadeFromNum(info.deleteRuleNum);
+                DBSConstraintCascade updateRule = JDBCUtils.getCascadeFromNum(info.updateRuleNum);
                 DBSConstraintDefferability defferability;
                 switch (info.defferabilityNum) {
                     case DatabaseMetaData.importedKeyInitiallyDeferred: defferability = DBSConstraintDefferability.INITIALLY_DEFERRED; break;
@@ -413,16 +403,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                     default: defferability = DBSConstraintDefferability.UNKNOWN; break;
                 }
 
-                if (info.pkTableName == null) {
-                    log.debug("Null PK table name");
-                    continue;
-                }
-                String pkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), info.pkTableCatalog, info.pkTableSchema, info.pkTableName);
-                GenericTable pkTable = getDataSource().findTable(monitor, info.pkTableCatalog, info.pkTableSchema, info.pkTableName);
-                if (pkTable == null) {
-                    log.warn("Can't find PK table " + pkTableFullName);
-                    continue;
-                }
                 if (info.fkTableName == null) {
                     log.debug("Null FK table name");
                     continue;
@@ -433,9 +413,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                     log.warn("Can't find FK table " + fkTableFullName);
                     continue;
                 }
-                GenericTableColumn pkColumn = pkTable.getColumn(monitor, info.pkColumnName);
+                GenericTableColumn pkColumn = this.getColumn(monitor, info.pkColumnName);
                 if (pkColumn == null) {
-                    log.warn("Can't find PK table " + DBUtils.getFullQualifiedName(getDataSource(), info.pkTableCatalog, info.pkTableSchema, info.pkTableName) + " column " + info.pkColumnName);
+                    log.warn("Can't find PK column " + info.pkColumnName);
                     continue;
                 }
                 GenericTableColumn fkColumn = fkTable.getColumn(monitor, info.fkColumnName);
@@ -447,13 +427,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                 // Find PK
                 GenericPrimaryKey pk = null;
                 if (info.pkName != null) {
-                    pk = DBUtils.findObject(pkTable.getUniqueKeys(monitor), info.pkName);
+                    pk = DBUtils.findObject(this.getUniqueKeys(monitor), info.pkName);
                     if (pk == null) {
-                        log.warn("Unique key '" + info.pkName + "' not found in table " + pkTable.getFullQualifiedName());
+                        log.warn("Unique key '" + info.pkName + "' not found in table " + this.getFullQualifiedName());
                     }
                 }
                 if (pk == null) {
-                    List<GenericPrimaryKey> uniqueKeys = pkTable.getUniqueKeys(monitor);
+                    List<GenericPrimaryKey> uniqueKeys = this.getUniqueKeys(monitor);
                     if (uniqueKeys != null) {
                         for (GenericPrimaryKey pkConstraint : uniqueKeys) {
                             if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
@@ -464,30 +444,23 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                     }
                 }
                 if (pk == null) {
-                    log.warn("Could not find unique key for table " + pkTable.getFullQualifiedName() + " column " + pkColumn.getName());
+                    log.warn("Could not find unique key for table " + this.getFullQualifiedName() + " column " + pkColumn.getName());
                     // Too bad. But we have to create new fake PK for this FK
-                    String pkFullName = pkTableFullName + "." + info.pkName;
-                    pk = pkMap.get(pkFullName);
-                    if (pk == null) {
-                        pk = new GenericPrimaryKey(pkTable, info.pkName, null, DBSConstraintType.PRIMARY_KEY);
-                        pkMap.put(pkFullName, pk);
-                        // Add this fake constraint to it's owner
-                        pk.getTable().addConstraint(pk);
-                    }
+                    String pkFullName = getFullQualifiedName() + "." + info.pkName;
+                    pk = new GenericPrimaryKey(this, info.pkName, null, DBSConstraintType.PRIMARY_KEY);
                     pk.addColumn(new GenericConstraintColumn(pk, pkColumn, info.keySeq));
+                    // Add this fake constraint to it's owner
+                    this.addConstraint(pk);
                 }
 
                 // Find (or create) FK
-                GenericForeignKey fk = null;
-                if (references) {
-                    fk = DBUtils.findObject(fkTable.getForeignKeys(monitor), info.fkName);
-                    if (fk == null) {
-                        log.warn("Could not find foreign key '" + info.fkName + "' for table " + fkTable.getFullQualifiedName());
-                        // No choice, we have to create fake foreign key :(
-                    } else {
-                        if (!fkList.contains(fk)) {
-                            fkList.add(fk);
-                        }
+                GenericForeignKey fk = DBUtils.findObject(fkTable.getForeignKeys(monitor), info.fkName);
+                if (fk == null) {
+                    log.warn("Could not find foreign key '" + info.fkName + "' for table " + fkTable.getFullQualifiedName());
+                    // No choice, we have to create fake foreign key :(
+                } else {
+                    if (!fkList.contains(fk)) {
+                        fkList.add(fk);
                     }
                 }
 
@@ -509,18 +482,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         }
         finally {
             context.close();
-        }
-    }
-
-    private static DBSConstraintCascade getCascadeFromNum(int num)
-    {
-        switch (num) {
-            case DatabaseMetaData.importedKeyNoAction: return DBSConstraintCascade.NO_ACTION;
-            case DatabaseMetaData.importedKeyCascade: return DBSConstraintCascade.CASCADE;
-            case DatabaseMetaData.importedKeySetNull: return DBSConstraintCascade.SET_NULL;
-            case DatabaseMetaData.importedKeySetDefault: return DBSConstraintCascade.SET_DEFAULT;
-            case DatabaseMetaData.importedKeyRestrict: return DBSConstraintCascade.RESTRICT;
-            default: return DBSConstraintCascade.UNKNOWN;
         }
     }
 

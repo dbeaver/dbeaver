@@ -44,20 +44,19 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         INVALID_TABLE_TYPES.add("SYSTEM SEQUENCE");
     }
 
-    private TableCache tableCache;
-    private IndexCache indexCache;
+    private GenericDataSource dataSource;
+    private final TableCache tableCache;
+    private final IndexCache indexCache;
+    private final ForeignKeysCache foreignKeysCache;
     private Map<String, GenericPackage> packageMap;
     private List<GenericProcedure> procedures;
 
-    protected GenericEntityContainer()
+    protected GenericEntityContainer(GenericDataSource dataSource)
     {
-
-    }
-
-    protected void initCache()
-    {
-        this.tableCache = new TableCache();
+        this.dataSource = dataSource;
+        this.tableCache = new TableCache(dataSource);
         this.indexCache = new IndexCache();
+        this.foreignKeysCache = new ForeignKeysCache();
     }
 
     final TableCache getTableCache()
@@ -70,7 +69,16 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         return indexCache;
     }
 
-    public abstract GenericDataSource getDataSource();
+    final ForeignKeysCache getForeignKeysCache()
+    {
+        return foreignKeysCache;
+    }
+
+    public GenericDataSource getDataSource()
+    {
+        return dataSource;
+    }
+
 
     public boolean isPersisted()
     {
@@ -98,35 +106,47 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
     public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
+        cacheIndexes(monitor, true);
+        return indexCache.getObjects(monitor, null);
+    }
+
+    private void cacheIndexes(DBRProgressMonitor monitor, boolean readFromTables)
+        throws DBException
+    {
         // Cache indexes (read all tables, all columns and all indexes in this container)
         // This doesn't work for generic datasource because metadata facilities
         // allows index query only by certain table name
         //cacheIndexes(monitor, null);
+        synchronized (indexCache) {
+            if (!indexCache.isCached()) {
 
-        if (!indexCache.isCached()) {
-
-            try {
-                // Try to load all indexes with one query
-                indexCache.getObjects(monitor, null);
-            } catch (Exception e) {
-                // Failed
-                // Load indexes for all tables and return copy of them
-                List<GenericIndex> tmpIndexList = new ArrayList<GenericIndex>();
-                for (GenericTable table : getTables(monitor)) {
-                    for (GenericIndex index : table.getIndexes(monitor)) {
-                        tmpIndexList.add(new GenericIndex(index));
+                try {
+                    // Try to load all indexes with one query
+                    indexCache.getObjects(monitor, null);
+                } catch (Exception e) {
+                    // Failed
+                    if (readFromTables) {
+                        // Load indexes for all tables and return copy of them
+                        List<GenericIndex> tmpIndexList = new ArrayList<GenericIndex>();
+                        for (GenericTable table : getTables(monitor)) {
+                            for (GenericIndex index : table.getIndexes(monitor)) {
+                                tmpIndexList.add(new GenericIndex(index));
+                            }
+                        }
+                        indexCache.setCache(tmpIndexList);
                     }
                 }
-                indexCache.setCache(tmpIndexList);
             }
         }
-        return indexCache.getObjects(monitor, null);
     }
 
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
+        // Cache tables
         tableCache.getObjects(monitor);
+
+        // Cache attributes
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             // Try to cache columns
             // Cannot be sure that all jdbc drivers support reading of all catalog columns
@@ -137,9 +157,17 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 log.debug(e);
             }
         }
+        // Cache associations
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             // Read all indexes
-            getIndexes(monitor);
+            cacheIndexes(monitor, false);
+            // Try to read all FKs
+            try {
+                foreignKeysCache.getObjects(monitor, null);
+            } catch (Exception e) {
+                // Failed - seems to be unsupported feature
+                log.debug(e);
+            }
         }
     }
 
@@ -282,9 +310,9 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
      */
     class TableCache extends JDBCStructCache<GenericTable, GenericTableColumn> {
 
-        protected TableCache()
+        protected TableCache(GenericDataSource dataSource)
         {
-            super(getDataSource(), JDBCConstants.TABLE_NAME);
+            super(dataSource, JDBCConstants.TABLE_NAME);
             setListOrderComparator(DBUtils.<GenericTable>nameComparator());
         }
 
@@ -405,15 +433,25 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericTable forParent)
             throws SQLException, DBException
         {
-            return context.getMetaData().getIndexInfo(
-                    getCatalog() == null ? null : getCatalog().getName(),
-                    getSchema() == null ? null : getSchema().getName(),
-                    // oracle fails if unquoted complex identifier specified
-                    // but other DBs (and logically it's correct) do not want quote chars in this query
-                    // so let's fix it in oracle plugin
-                    forParent == null ? null : forParent.getName(), //DBUtils.getQuotedIdentifier(getDataSourceContainer(), forTable.getName()),
-                    true,
-                    true).getSource();
+            try {
+                return context.getMetaData().getIndexInfo(
+                        getCatalog() == null ? null : getCatalog().getName(),
+                        getSchema() == null ? null : getSchema().getName(),
+                        // oracle fails if unquoted complex identifier specified
+                        // but other DBs (and logically it's correct) do not want quote chars in this query
+                        // so let's fix it in oracle plugin
+                        forParent == null ? null : forParent.getName(), //DBUtils.getQuotedIdentifier(getDataSourceContainer(), forTable.getName()),
+                        true,
+                        true).getSource();
+            } catch (SQLException e) {
+                throw e;
+            } catch (Exception e) {
+                if (forParent == null) {
+                    throw new DBException("Global indexes read not supported", e);
+                } else {
+                    throw new DBException(e);
+                }
+            }
         }
 
         protected GenericIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String indexName)
@@ -480,70 +518,132 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         }
     }
 
-    class ImportedKeysCache extends JDBCCompositeCache<GenericTable, GenericIndex, GenericIndexColumn> {
-        protected ImportedKeysCache()
+    class ForeignKeysCache extends JDBCCompositeCache<GenericTable, GenericForeignKey, GenericForeignKeyColumn> {
+
+        Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
+
+        protected ForeignKeysCache()
         {
-            super(tableCache, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
+            super(tableCache, JDBCConstants.FKTABLE_NAME, JDBCConstants.FK_NAME);
+        }
+
+        @Override
+        public void clearCache()
+        {
+            pkMap.clear();
+            super.clearCache();
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericTable forParent)
             throws SQLException, DBException
         {
-            return context.getMetaData().getIndexInfo(
-                    getCatalog() == null ? null : getCatalog().getName(),
-                    getSchema() == null ? null : getSchema().getName(),
-                    // oracle fails if unquoted complex identifier specified
-                    // but other DBs (and logically it's correct) do not want quote chars in this query
-                    // so let's fix it in oracle plugin
-                    forParent == null ? null : forParent.getName(), //DBUtils.getQuotedIdentifier(getDataSourceContainer(), forTable.getName()),
-                    true,
-                    true).getSource();
+            return context.getMetaData().getImportedKeys(
+                getCatalog() == null ? null : getCatalog().getName(),
+                getSchema() == null ? null : getSchema().getName(),
+                forParent == null ? null : forParent.getName())
+                .getSource();
         }
 
-        protected GenericIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String indexName)
+        protected GenericForeignKey fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String fkName)
             throws SQLException, DBException
         {
-            boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
-            String indexQualifier = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_QUALIFIER);
-            int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
+            String pkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_CAT);
+            String pkTableSchema = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_SCHEM);
+            String pkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_NAME);
 
-            DBSIndexType indexType;
-            switch (indexTypeNum) {
-                case DatabaseMetaData.tableIndexStatistic: indexType = DBSIndexType.STATISTIC; break;
-                case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
-                case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
-                case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
-                default: indexType = DBSIndexType.UNKNOWN; break;
+            int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
+            int updateRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
+            int deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
+            String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
+            int defferabilityNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DEFERRABILITY);
+
+            DBSConstraintCascade deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
+            DBSConstraintCascade updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+            DBSConstraintDefferability defferability;
+            switch (defferabilityNum) {
+                case DatabaseMetaData.importedKeyInitiallyDeferred: defferability = DBSConstraintDefferability.INITIALLY_DEFERRED; break;
+                case DatabaseMetaData.importedKeyInitiallyImmediate: defferability = DBSConstraintDefferability.INITIALLY_IMMEDIATE; break;
+                case DatabaseMetaData.importedKeyNotDeferrable: defferability = DBSConstraintDefferability.NOT_DEFERRABLE; break;
+                default: defferability = DBSConstraintDefferability.UNKNOWN; break;
             }
 
-            return new GenericIndex(
-                parent,
-                isNonUnique,
-                indexQualifier,
-                indexName,
-                indexType);
-        }
-
-        protected GenericIndexColumn fetchObjectRow(
-            JDBCExecutionContext context, ResultSet dbResult,
-            GenericTable parent, GenericIndex object)
-            throws SQLException, DBException
-        {
-            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-            String ascOrDesc = JDBCUtils.safeGetString(dbResult, JDBCConstants.ASC_OR_DESC);
-
-            GenericTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
-            if (tableColumn == null) {
-                log.warn("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
+            if (pkTableName == null) {
+                log.debug("Null PK table name");
+                return null;
+            }
+            String pkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
+            GenericTable pkTable = getDataSource().findTable(context.getProgressMonitor(), pkTableCatalog, pkTableSchema, pkTableName);
+            if (pkTable == null) {
+                log.warn("Can't find PK table " + pkTableFullName);
                 return null;
             }
 
-            return new GenericIndexColumn(
-                object,
-                tableColumn,
-                ordinalPosition,
-                !"D".equalsIgnoreCase(ascOrDesc));
+            // Find PK
+            GenericPrimaryKey pk = null;
+            if (pkName != null) {
+                pk = DBUtils.findObject(pkTable.getUniqueKeys(context.getProgressMonitor()), pkName);
+                if (pk == null) {
+                    log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
+                }
+            }
+            if (pk == null) {
+                String pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
+                GenericTableColumn pkColumn = pkTable.getColumn(context.getProgressMonitor(), pkColumnName);
+                if (pkColumn == null) {
+                    log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
+                    return null;
+                }
+
+                List<GenericPrimaryKey> uniqueKeys = pkTable.getUniqueKeys(context.getProgressMonitor());
+                if (uniqueKeys != null) {
+                    for (GenericPrimaryKey pkConstraint : uniqueKeys) {
+                        if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(context.getProgressMonitor(), pkColumn) != null) {
+                            pk = pkConstraint;
+                            break;
+                        }
+                    }
+                }
+                if (pk == null) {
+                    log.warn("Could not find unique key for table " + pkTable.getFullQualifiedName() + " column " + pkColumn.getName());
+                    // Too bad. But we have to create new fake PK for this FK
+                    String pkFullName = pkTableFullName + "." + pkName;
+                    pk = pkMap.get(pkFullName);
+                    if (pk == null) {
+                        pk = new GenericPrimaryKey(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);
+                        pkMap.put(pkFullName, pk);
+                        // Add this fake constraint to it's owner
+                        pk.getTable().addConstraint(pk);
+                    }
+                    pk.addColumn(new GenericConstraintColumn(pk, pkColumn, keySeq));
+                }
+            }
+
+            return new GenericForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability);
+        }
+
+        protected GenericForeignKeyColumn fetchObjectRow(
+            JDBCExecutionContext context,
+            ResultSet dbResult,
+            GenericTable parent,
+            GenericForeignKey foreignKey)
+            throws SQLException, DBException
+        {
+            String pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
+            GenericConstraintColumn pkColumn = (GenericConstraintColumn)foreignKey.getReferencedKey().getColumn(context.getProgressMonitor(), pkColumnName);
+            if (pkColumn == null) {
+                log.warn("Can't find PK table " + foreignKey.getReferencedKey().getTable().getFullQualifiedName() + " column " + pkColumnName);
+                return null;
+            }
+            int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
+
+            String fkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKCOLUMN_NAME);
+            GenericTableColumn fkColumn = foreignKey.getTable().getColumn(context.getProgressMonitor(), fkColumnName);
+            if (fkColumn == null) {
+                log.warn("Can't find FK table " + foreignKey.getTable().getFullQualifiedName() + " column " + fkColumnName);
+                return null;
+            }
+
+            return new GenericForeignKeyColumn(foreignKey, fkColumn, keySeq, pkColumn.getTableColumn());
         }
 
         protected boolean isObjectsCached(GenericTable parent)
@@ -551,15 +651,16 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             return parent.isIndexesCached();
         }
 
-        protected void cacheObjects(GenericTable parent, List<GenericIndex> indexes)
+        protected void cacheObjects(GenericTable parent, List<GenericForeignKey> foreignKeys)
         {
-            parent.setIndexes(indexes);
+            parent.setForeignKeys(foreignKeys);
         }
 
-        protected void cacheRows(GenericIndex index, List<GenericIndexColumn> rows)
+        protected void cacheRows(GenericForeignKey foreignKey, List<GenericForeignKeyColumn> rows)
         {
-            index.setColumns(rows);
+            foreignKey.setColumns(rows);
         }
+
     }
 
 }

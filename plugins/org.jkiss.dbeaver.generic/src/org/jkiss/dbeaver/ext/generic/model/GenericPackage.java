@@ -32,6 +32,7 @@ public class GenericPackage extends GenericEntityContainer implements DBSEntityQ
         String packageName,
         boolean nameFromCatalog)
     {
+        super(container.getDataSource());
         this.container = container;
         this.packageName = packageName;
         this.nameFromCatalog = nameFromCatalog;
@@ -51,12 +52,6 @@ public class GenericPackage extends GenericEntityContainer implements DBSEntityQ
     public DBSObject getParentObject()
     {
         return container;
-    }
-
-    @Override
-    public GenericDataSource getDataSource()
-    {
-        return container.getDataSource();
     }
 
     @Property(name = "Catalog", viewable = true, order = 3)

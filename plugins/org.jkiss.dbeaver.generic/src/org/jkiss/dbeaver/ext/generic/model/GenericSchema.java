@@ -16,28 +16,20 @@ import org.jkiss.dbeaver.model.struct.DBSSchema;
  */
 public class GenericSchema extends GenericEntityContainer implements DBSSchema
 {
-    private GenericDataSource dataSource;
     private GenericCatalog catalog;
     private String schemaName;
 
     public GenericSchema(GenericDataSource dataSource, String schemaName)
     {
-        this.dataSource = dataSource;
+        super(dataSource);
         this.schemaName = schemaName;
-        this.initCache();
     }
 
     public GenericSchema(GenericCatalog catalog, String schemaName)
     {
-        this.dataSource = catalog.getDataSource();
+        super(catalog.getDataSource());
         this.catalog = catalog;
         this.schemaName = schemaName;
-        this.initCache();
-    }
-
-    public GenericDataSource getDataSource()
-    {
-        return dataSource;
     }
 
     @Property(name = "Catalog", order = 2)
