@@ -181,7 +181,6 @@ public class DirectedGraphLayoutVisitor
 
 	protected void applyConnectionResults(AbstractConnectionEditPart connectionPart)
 	{
-
 		Edge e = (Edge) partToNodesMap.get(connectionPart);
 		NodeList nodes = e.vNodes;
 

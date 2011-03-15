@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPart;
@@ -85,6 +86,17 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         Label relationshipLabel = new Label(association.getObject().getName());
         conn.add(relationshipLabel, relationshipLocator);
 */
+
+        // Set initial bends
+        conn.setConnectionRouter(new BendpointConnectionRouter());
+        if (!CommonUtils.isEmpty(association.getInitBends())) {
+            List<AbsoluteBendpoint> connBends = new ArrayList<AbsoluteBendpoint>();
+            for (Point bend : association.getInitBends()) {
+                connBends.add(new AbsoluteBendpoint(bend.x, bend.y));
+            }
+            conn.setRoutingConstraint(connBends);
+        }
+
         Label toolTip = new Label(getAssociation().getObject().getConstraintType().getName() + " " + getAssociation().getObject().getFullQualifiedName());
         toolTip.setIcon(DBIcon.TREE_FOREIGN_KEY.getImage());
         //toolTip.setTextPlacement(PositionConstants.SOUTH);
