@@ -18,12 +18,13 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.LineAttributes;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Visitor with support for populating nodes and edges of DirectedGraph

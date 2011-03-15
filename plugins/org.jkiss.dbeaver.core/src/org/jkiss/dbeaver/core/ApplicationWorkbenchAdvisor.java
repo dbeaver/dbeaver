@@ -143,9 +143,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                 }
             }
             // Save all other editors
-            if (!workbenchPage.saveAllEditors(true)) {
-                return false;
-            }
+            //if (!workbenchPage.saveAllEditors(true)) {
+            //    return false;
+            //}
         }
 
 /*
