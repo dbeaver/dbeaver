@@ -165,34 +165,38 @@ public abstract class JDBCCompositeCache<
                         }
                         objectInfo.rows.add(rowRef);
                     }
+                    if (forParent != null || !parentObjectMap.isEmpty()) {
+                        // Cache data in individual objects only if we have read something or have certain parent object
+                        // Otherwise we assume that this function is not supported for mass data reading
 
-                    // All objects are read. Now assign them to parents
-                    for (Map.Entry<PARENT,Map<String,ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
-                        Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
-                        ArrayList<OBJECT> objects = new ArrayList<OBJECT>(objectInfos.size());
-                        for (ObjectInfo objectInfo : objectInfos) {
-                            cacheRows(objectInfo.object, objectInfo.rows);
-                            objects.add(objectInfo.object);
-                        }
-                        cacheObjects(colEntry.getKey(), objects);
-                    }
-                    // Now set empty object list for other parents
-                    if (forParent == null) {
-                        for (PARENT tmpParent : parentCache.getObjects(monitor)) {
-                            if (!parentObjectMap.containsKey(tmpParent)) {
-                                cacheObjects(tmpParent, new ArrayList<OBJECT>());
+                        // All objects are read. Now assign them to parents
+                        for (Map.Entry<PARENT,Map<String,ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
+                            Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
+                            ArrayList<OBJECT> objects = new ArrayList<OBJECT>(objectInfos.size());
+                            for (ObjectInfo objectInfo : objectInfos) {
+                                cacheRows(objectInfo.object, objectInfo.rows);
+                                objects.add(objectInfo.object);
                             }
+                            cacheObjects(colEntry.getKey(), objects);
                         }
-                    } else if (!parentObjectMap.containsKey(forParent)) {
-                        cacheObjects(forParent, new ArrayList<OBJECT>());
-                    }
+                        // Now set empty object list for other parents
+                        if (forParent == null) {
+                            for (PARENT tmpParent : parentCache.getObjects(monitor)) {
+                                if (!parentObjectMap.containsKey(tmpParent)) {
+                                    cacheObjects(tmpParent, new ArrayList<OBJECT>());
+                                }
+                            }
+                        } else if (!parentObjectMap.containsKey(forParent)) {
+                            cacheObjects(forParent, new ArrayList<OBJECT>());
+                        }
 
-                    if (forParent == null) {
-                        // Cache global object list
-                        objectList = new ArrayList<OBJECT>();
-                        for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
-                            for (ObjectInfo info : objMap.values()) {
-                                objectList.add(info.object);
+                        if (forParent == null) {
+                            // Cache global object list
+                            objectList = new ArrayList<OBJECT>();
+                            for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
+                                for (ObjectInfo info : objMap.values()) {
+                                    objectList.add(info.object);
+                                }
                             }
                         }
                     }

@@ -4,10 +4,13 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -53,5 +56,13 @@ public class GenericPrimaryKey extends GenericConstraint
     void setColumns(List<GenericConstraintColumn> columns)
     {
         this.columns = columns;
+        if (!CommonUtils.isEmpty(this.columns) && this.columns.size() > 1) {
+            Collections.sort(columns, new Comparator<GenericConstraintColumn>() {
+                public int compare(GenericConstraintColumn o1, GenericConstraintColumn o2)
+                {
+                    return o1.getOrdinalPosition() - o2.getOrdinalPosition();
+                }
+            });
+        }
     }
 }
