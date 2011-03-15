@@ -37,6 +37,7 @@ public class GraphLayoutXY extends FreeformLayout {
 
     public Object getConstraint(IFigure child)
     {
+/*
         if (child instanceof EntityFigure) {
             final ERDTable erdTable = ((EntityFigure) child).getTable();
             Rectangle bounds = diagram.getDiagram().getInitBounds(erdTable);
@@ -46,6 +47,7 @@ public class GraphLayoutXY extends FreeformLayout {
                 return bounds;
             }
         }
+*/
         Object constraint = constraints.get(child);
         if (constraint instanceof Rectangle) {
             return constraint;

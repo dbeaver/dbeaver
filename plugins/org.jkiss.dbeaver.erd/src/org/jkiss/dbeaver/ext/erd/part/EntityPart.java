@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.*;
 
 import java.beans.PropertyChangeEvent;
@@ -247,8 +248,15 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	 */
 	protected IFigure createFigure()
 	{
-		return new EntityFigure(getTable());
-	}
+        final EntityFigure figure = new EntityFigure(getTable());
+        final EntityDiagram diagram = ((DiagramPart) getParent()).getDiagram();
+        Rectangle bounds = diagram.getInitBounds(getTable());
+        if (bounds != null) {
+            figure.setLocation(bounds.getLocation());
+        }
+
+        return figure;
+    }
 
 	/**
 	 * Reset the layout constraint, and revalidate the content pane

@@ -52,7 +52,6 @@ public class DelegatingLayoutManager implements LayoutManager {
     {
         EntityDiagram entityDiagram = diagram.getDiagram();
 
-        entityDiagram.enableInitBounds(true);
         try {
             if (entityDiagram.isLayoutManualDesired()) {
 
@@ -93,9 +92,6 @@ public class DelegatingLayoutManager implements LayoutManager {
             }
         }
         finally {
-            // Reset initial bounds (in case we load diagram from file)
-            // to allow figures moving/resizing
-            entityDiagram.enableInitBounds(false);
             if (!diagram.getChildren().isEmpty()) {
                 entityDiagram.setNeedsAutoLayout(false);
             }

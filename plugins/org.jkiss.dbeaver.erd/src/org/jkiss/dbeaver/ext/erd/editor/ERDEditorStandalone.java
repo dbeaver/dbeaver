@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.gef.EditPart;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPathEditorInput;
@@ -213,7 +214,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
         }
         if (delta.getKind() == IResourceDelta.REMOVED) {
             // Refresh editor
-            getSite().getShell().getDisplay().asyncExec(new Runnable() {
+            Display.getDefault().asyncExec(new Runnable() {
                 public void run()
                 {
                     getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false);
