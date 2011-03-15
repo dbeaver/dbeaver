@@ -264,9 +264,11 @@ public class DiagramLoader
         }
         // Set relations' bends
         for (RelationLoadInfo info : relInfos) {
-            final ERDTable sourceTable = diagram.getERDTable(info.pkTable.table);
-            final ERDTable targetTable = diagram.getERDTable(info.fkTable.table);
-            diagram.addInitRelationBends(sourceTable, targetTable, info.name, info.bends);
+            if (!CommonUtils.isEmpty(info.bends)) {
+                final ERDTable sourceTable = diagram.getERDTable(info.pkTable.table);
+                final ERDTable targetTable = diagram.getERDTable(info.fkTable.table);
+                diagram.addInitRelationBends(sourceTable, targetTable, info.name, info.bends);
+            }
         }
     }
 

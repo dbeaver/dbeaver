@@ -67,7 +67,7 @@ public class ERDAssociation extends ERDObject<DBSForeignKey>
         return initBends;
     }
 
-    public void addInitBends(List<Point> bends)
+    public void setInitBends(List<Point> bends)
     {
         this.initBends = bends;
     }

@@ -156,11 +156,13 @@ public class DBNModel implements IResourceChangeListener {
             }
             try {
                 List<? extends DBNDatabaseNode> children = node.getChildren(monitor);
-                for (DBNDatabaseNode child : children) {
-                    if (child instanceof DBNDatabaseFolder) {
-                        Class<?> itemsClass = ((DBNDatabaseFolder) child).getItemsClass();
-                        if (itemsClass != null && itemsClass.isAssignableFrom(nextItem.getClass())) {
-                            child.getChildren(monitor);
+                if (!CommonUtils.isEmpty(children)) {
+                    for (DBNDatabaseNode child : children) {
+                        if (child instanceof DBNDatabaseFolder) {
+                            Class<?> itemsClass = ((DBNDatabaseFolder) child).getItemsClass();
+                            if (itemsClass != null && itemsClass.isAssignableFrom(nextItem.getClass())) {
+                                child.getChildren(monitor);
+                            }
                         }
                     }
                 }

@@ -370,10 +370,7 @@
         <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkEditor">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <or>
-                        <adapt type="org.jkiss.dbeaver.ext.IDatabaseNodeEditor"/>
-                        <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
-                    </or>
+                    <adapt type="org.eclipse.ui.IEditorPart"/>
                 </with>
             </enabledWhen>
         </handler>

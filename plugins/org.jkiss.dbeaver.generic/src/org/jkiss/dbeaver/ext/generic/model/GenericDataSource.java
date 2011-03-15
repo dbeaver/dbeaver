@@ -242,14 +242,17 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
 
             List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
             JDBCResultSet dbResult;
+            boolean catalogSchemas;
             try {
                 dbResult = context.getMetaData().getSchemas(
                     catalog == null ? null : catalog.getName(),
                     schemaFilters.size() == 1 ? schemaFilters.get(0) : null);
+                catalogSchemas = true;
             } catch (Throwable e) {
                 // This method not supported (may be old driver version)
                 // Use general schema reading method
                 dbResult = context.getMetaData().getSchemas();
+                catalogSchemas = false;
             }
 
 
@@ -270,17 +273,22 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                         // Check pattern
                         continue;
                     }
-                    context.getProgressMonitor().subTask("Schema " + schemaName);
                     String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
 
                     if (!CommonUtils.isEmpty(catalogName)) {
                         if (catalog == null) {
                             // Invalid schema's catalog or schema without catalog (then do not use schemas as structure)
-                            log.warn("Catalog name (" + catalogName + ") found for schema '" + schemaName + "' while no parent catalog specified");
+                            log.warn("Catalog name (" + catalogName + ") found for schema '" + schemaName + "' while schema doesn't have parent catalog");
                         } else if (!catalog.getName().equals(catalogName)) {
+                            if (!catalogSchemas) {
+                                // Just skip it - we have list of all existing schemas and this one belongs to another catalog
+                                continue;
+                            }
                             log.warn("Catalog name '" + catalogName + "' differs from schema's catalog '" + catalog.getName() + "'");
                         }
                     }
+
+                    context.getProgressMonitor().subTask("Schema " + schemaName);
 
                     GenericSchema schema;
                     if (catalog == null) {

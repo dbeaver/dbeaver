@@ -20,12 +20,10 @@ import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 
-/*
 import org.eclipse.zest.layouts.*;
 import org.eclipse.zest.layouts.algorithms.*;
 import org.eclipse.zest.layouts.exampleStructures.SimpleNode;
 import org.eclipse.zest.layouts.exampleStructures.SimpleRelationship;
-*/
 
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
@@ -41,7 +39,6 @@ import java.util.Map;
 public class ZestGraphLayout
 {
 
-/*
     static final Log log = LogFactory.getLog(ZestGraphLayout.class);
 
     List<LayoutEntity> entities = new ArrayList<LayoutEntity>();
@@ -180,6 +177,6 @@ public class ZestGraphLayout
         }
         return null;
     }
-*/
+
 
 }

@@ -246,7 +246,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     {
         for (ERDAssociation rel : sourceTable.getPrimaryKeyRelationships()) {
             if (rel.getForeignKeyTable() == targetTable && relName.equals(rel.getObject().getName())) {
-                rel.addInitBends(bends);
+                rel.setInitBends(bends);
             }
         }
     }

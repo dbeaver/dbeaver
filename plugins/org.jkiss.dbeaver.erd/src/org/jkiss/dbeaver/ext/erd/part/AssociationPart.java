@@ -10,10 +10,7 @@ package org.jkiss.dbeaver.ext.erd.part;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.EditPolicy;
-import org.eclipse.gef.Request;
-import org.eclipse.gef.RequestConstants;
+import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -87,8 +84,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         conn.add(relationshipLabel, relationshipLocator);
 */
 
-        // Set initial bends
-        conn.setConnectionRouter(new BendpointConnectionRouter());
+        // Set router and initial bends
+        ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
+        conn.setConnectionRouter(cLayer.getConnectionRouter());
         if (!CommonUtils.isEmpty(association.getInitBends())) {
             List<AbsoluteBendpoint> connBends = new ArrayList<AbsoluteBendpoint>();
             for (Point bend : association.getInitBends()) {

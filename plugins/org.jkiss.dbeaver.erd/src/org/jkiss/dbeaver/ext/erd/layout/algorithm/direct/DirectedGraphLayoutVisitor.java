@@ -50,6 +50,7 @@ public class DirectedGraphLayoutVisitor
 		{	
 			addDiagramEdges(diagram);
             try {
+                //new CompoundDirectedGraphLayout().visit(graph);
                 new NodeJoiningDirectedGraphLayout().visit(graph);
             } catch (Exception e) {
                 log.error("Diagram layout error", e);
@@ -181,6 +182,7 @@ public class DirectedGraphLayoutVisitor
 
 	protected void applyConnectionResults(AbstractConnectionEditPart connectionPart)
 	{
+
 		Edge e = (Edge) partToNodesMap.get(connectionPart);
 		NodeList nodes = e.vNodes;
 

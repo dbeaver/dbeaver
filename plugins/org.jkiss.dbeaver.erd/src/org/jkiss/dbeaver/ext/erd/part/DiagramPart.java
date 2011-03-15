@@ -96,6 +96,20 @@ public class DiagramPart extends PropertyAwarePart {
         ViewportAwareConnectionLayerClippingStrategy clippingStrategy = new ViewportAwareConnectionLayerClippingStrategy(cLayer);
         figure.setClippingStrategy(clippingStrategy);
 */
+        Control control = getViewer().getControl();
+        ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
+        if ((control.getStyle() & SWT.MIRRORED) == 0) {
+            cLayer.setAntialias(SWT.ON);
+        }
+
+        FanRouter router = new FanRouter();
+        router.setSeparation(15);
+        //router.setNextRouter(new BendpointConnectionRouter());
+        router.setNextRouter(new ShortestPathConnectionRouter(figure));
+        //router.setNextRouter(new ManhattanConnectionRouter());
+        //router.setNextRouter(new BendpointConnectionRouter());
+        cLayer.setConnectionRouter(router);
+
 
         return figure;
     }
@@ -272,29 +286,5 @@ public class DiagramPart extends PropertyAwarePart {
         super.handleChildChange(evt);
     }
 
-    @Override
-    protected void refreshVisuals()
-    {
-        Control control = getViewer().getControl();
-        if (control == null || control.isDisposed()) {
-            return;
-        }
-
-        Animation.markBegin();
-        ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
-        if ((control.getStyle() & SWT.MIRRORED) == 0) {
-            cLayer.setAntialias(SWT.ON);
-        }
-
-        FanRouter router = new FanRouter();
-        router.setSeparation(15);
-        //router.setNextRouter(new BendpointConnectionRouter());
-        router.setNextRouter(new ShortestPathConnectionRouter(getFigure()));
-        //router.setNextRouter(new ManhattanConnectionRouter());
-        //router.setNextRouter(new BendpointConnectionRouter());
-        cLayer.setConnectionRouter(router);
-
-        Animation.run(400);
-    }
 
 }
