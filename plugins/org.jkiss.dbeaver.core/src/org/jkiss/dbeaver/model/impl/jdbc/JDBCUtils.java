@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,7 +30,7 @@ public class JDBCUtils {
         try {
             return dbResult.getString(columnName);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug(e.getMessage());
             return null;
         }
     }
@@ -41,7 +40,7 @@ public class JDBCUtils {
         try {
             return dbResult.getString(columnIndex);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug(e.getMessage());
             return null;
         }
     }
@@ -51,7 +50,7 @@ public class JDBCUtils {
         try {
             return dbResult.getInt(columnName);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug(e.getMessage());
             return 0;
         }
     }
@@ -61,7 +60,7 @@ public class JDBCUtils {
         try {
             return dbResult.getLong(columnName);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug(e.getMessage());
             return 0;
         }
     }
@@ -71,7 +70,7 @@ public class JDBCUtils {
         try {
             return dbResult.getDouble(columnName);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug(e.getMessage());
             return 0.0;
         }
     }
@@ -81,7 +80,7 @@ public class JDBCUtils {
         try {
             return dbResult.getBoolean(columnName);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug(e.getMessage());
             return false;
         }
     }
@@ -91,7 +90,7 @@ public class JDBCUtils {
         try {
             return dbResult.getBytes(columnName);
         } catch (SQLException e) {
-            log.debug(e);
+            log.debug(e.getMessage());
             return null;
         }
     }
@@ -155,7 +154,7 @@ public class JDBCUtils {
             case java.sql.Types.ARRAY:
                 return DBSDataKind.ARRAY;
             case java.sql.Types.ROWID:
-                // thread ROWID as string
+                // threat ROWID as string
                 return DBSDataKind.STRING;
         }
         return DBSDataKind.UNKNOWN;
@@ -279,7 +278,7 @@ public class JDBCUtils {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    throw new DBCException("Coud not close connection", e);
+                    throw new DBCException("Can't close connection", e);
                 }
             }
         };
@@ -319,7 +318,7 @@ public class JDBCUtils {
             if (connection.isClosed()) {
                 return false;
             }
-            connection.getMetaData().getTables(null, null, "UN_EXIST_TBL_NAME1978", null);
+            connection.getMetaData().getTables(null, null, "UN_EXIST_DBEAVER_TBL_NAME1978", null);
             return true;
         } catch (SQLException e) {
             log.debug(e);
@@ -336,13 +335,13 @@ public class JDBCUtils {
             scrolled = dbResult.absolute((int) offset);
         } catch (SQLException e) {
             // Seems to be not supported
-            log.debug(e);
+            log.debug(e.getMessage());
         } catch (AbstractMethodError e) {
             // Seems to be legacy JDBC
-            log.debug(e);
+            log.debug(e.getMessage());
         } catch (UnsupportedOperationException e) {
             // Seems to be legacy JDBC
-            log.debug(e);
+            log.debug(e.getMessage());
         }
         if (!scrolled) {
             // Just fetch first 'firstRow' rows
