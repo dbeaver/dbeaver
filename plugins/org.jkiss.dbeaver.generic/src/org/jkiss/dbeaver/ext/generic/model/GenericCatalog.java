@@ -91,6 +91,15 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         return getDataSource().getContainer();
     }
 
+    @Override
+    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
+    {
+        if (CommonUtils.isEmpty(getSchemas(monitor))) {
+            // Cache tables only if we don't have schemas
+            super.cacheStructure(monitor, scope);
+        }
+    }
+
     public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {

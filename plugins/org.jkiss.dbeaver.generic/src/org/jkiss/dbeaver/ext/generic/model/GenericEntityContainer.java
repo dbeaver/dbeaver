@@ -123,7 +123,11 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             // Do not use columns cache
             // Cannot be sure that all jdbc drivers support reading of all catalog columns
-            //tableCache.cacheChildren(monitor, null);
+            try {
+                tableCache.loadChildren(monitor, null);
+            } catch (DBException e) {
+                log.debug(e);
+            }
         }
     }
 

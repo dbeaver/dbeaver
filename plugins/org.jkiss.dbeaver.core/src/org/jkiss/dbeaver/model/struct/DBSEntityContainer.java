@@ -26,6 +26,10 @@ public interface DBSEntityContainer extends DBSObject
      * Cache underlying relations
      */
     public static final int STRUCT_ASSOCIATIONS = 4;
+    /**
+     * Cache everything
+     */
+    public static final int STRUCT_ALL = STRUCT_ENTITIES | STRUCT_ATTRIBUTES | STRUCT_ASSOCIATIONS;
 
     /**
      * Retrieve list of immediate child objects (not recursive)

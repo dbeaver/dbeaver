@@ -71,6 +71,7 @@ public class DiagramObjectCollector {
         if (monitor.isCanceled()) {
             return;
         }
+        container.cacheStructure(monitor, DBSEntityContainer.STRUCT_ALL);
         final Collection<? extends DBSEntity> children = container.getChildren(monitor);
         if (!CommonUtils.isEmpty(children)) {
             for (DBSEntity entity : children) {
