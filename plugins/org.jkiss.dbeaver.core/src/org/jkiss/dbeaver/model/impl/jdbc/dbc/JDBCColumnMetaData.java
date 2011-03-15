@@ -34,7 +34,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
     private JDBCResultSetMetaData resultSetMeta;
     private int index;
     private boolean nullable;
-    private int displaySize;
+    private long displaySize;
     private String label;
     private String name;
     private int precision;
@@ -159,7 +159,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return nullable;
     }
 
-    public int getDisplaySize()
+    public long getDisplaySize()
     {
         return displaySize;
     }

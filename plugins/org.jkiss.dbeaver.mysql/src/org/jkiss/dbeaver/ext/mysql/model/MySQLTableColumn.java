@@ -47,7 +47,7 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
 
     private MySQLTable table;
     private String defaultValue;
-    private int charLength;
+    private long charLength;
     private boolean autoIncrement;
     private KeyType keyType;
 
@@ -79,7 +79,7 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         setTypeName(typeName);
         setValueType(MySQLUtils.typeNameToValueType(typeName));
         DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName.toUpperCase());
-        this.charLength = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_CHARACTER_MAXIMUM_LENGTH);
+        this.charLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_CHARACTER_MAXIMUM_LENGTH);
         if (this.charLength <= 0) {
             if (dataType != null) {
                 setMaxLength(dataType.getPrecision());
@@ -129,7 +129,7 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         return defaultValue;
     }
 
-    public int getCharLength()
+    public long getCharLength()
     {
         return charLength;
     }

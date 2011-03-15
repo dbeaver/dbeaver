@@ -17,7 +17,7 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
     private GenericTable table;
     private String defaultValue;
     private int sourceType;
-    private int charLength;
+    private long charLength;
     private boolean autoIncrement;
 
     public GenericTableColumn(
@@ -27,8 +27,8 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
         int valueType,
         int sourceType,
         int ordinalPosition,
-        int columnSize,
-        int charLength,
+        long columnSize,
+        long charLength,
         int scale,
         int precision,
         int radix,
@@ -79,7 +79,7 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
         return sourceType;
     }
 
-    public int getCharLength()
+    public long getCharLength()
     {
         return charLength;
     }

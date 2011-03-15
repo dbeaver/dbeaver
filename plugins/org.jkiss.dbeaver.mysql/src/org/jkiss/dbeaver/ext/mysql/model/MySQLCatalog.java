@@ -469,7 +469,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
             int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
             String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
             int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-            int columnSize = JDBCUtils.safeGetInt(dbResult, JDBCConstants.LENGTH);
+            long columnSize = JDBCUtils.safeGetLong(dbResult, JDBCConstants.LENGTH);
             boolean isNullable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) != DatabaseMetaData.procedureNoNulls;
             int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE);
             int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);

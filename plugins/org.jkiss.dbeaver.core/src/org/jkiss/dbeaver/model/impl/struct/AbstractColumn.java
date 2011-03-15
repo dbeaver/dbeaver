@@ -14,7 +14,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
 {
     protected String name;
     protected int valueType;
-    protected int maxLength;
+    protected long maxLength;
     protected boolean nullable;
     protected int scale;
     protected int precision;
@@ -32,7 +32,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         String typeName,
         int valueType,
         int ordinalPosition,
-        int maxLength,
+        long maxLength,
         int scale,
         int radix,
         int precision,
@@ -95,12 +95,12 @@ public abstract class AbstractColumn implements DBSColumnDefinition
     }
 
     @Property(name = "Length", viewable = true, order = 3)
-    public int getMaxLength()
+    public long getMaxLength()
     {
         return maxLength;
     }
 
-    public void setMaxLength(int maxLength)
+    public void setMaxLength(long maxLength)
     {
         this.maxLength = maxLength;
     }

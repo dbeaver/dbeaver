@@ -419,14 +419,14 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
             int sourceType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SOURCE_DATA_TYPE);
             String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-            int columnSize = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_SIZE);
+            long columnSize = JDBCUtils.safeGetLong(dbResult, JDBCConstants.COLUMN_SIZE);
             boolean isNullable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) != DatabaseMetaData.columnNoNulls;
             int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS);
             int precision = 0;//GenericUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_);
             int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NUM_PREC_RADIX);
             String defaultValue = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_DEF);
             String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-            int charLength = JDBCUtils.safeGetInt(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
+            long charLength = JDBCUtils.safeGetLong(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
             int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
             boolean autoIncrement = "YES".equals(JDBCUtils.safeGetString(dbResult, JDBCConstants.IS_AUTOINCREMENT));
             if (valueType == java.sql.Types.OTHER && !CommonUtils.isEmpty(typeName)) {

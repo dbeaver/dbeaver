@@ -41,9 +41,9 @@ public class TextViewDialog extends ValueViewDialog {
         textEdit = new Text(dialogGroup, style);
 
         textEdit.setText(value == null ? "" : value.toString());
-        int maxSize = getValueController().getColumnMetaData().getDisplaySize();
+        long maxSize = getValueController().getColumnMetaData().getDisplaySize();
         if (maxSize > 0) {
-            textEdit.setTextLimit(maxSize);
+            textEdit.setTextLimit((int) maxSize);
         }
         textEdit.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
         GridData gd = new GridData(isForeignKey ? GridData.FILL_HORIZONTAL : GridData.FILL_BOTH);

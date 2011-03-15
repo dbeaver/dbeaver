@@ -24,7 +24,7 @@ public class MySQLProcedureColumn extends JDBCColumn implements DBSProcedureColu
         String typeName,
         int valueType,
         int ordinalPosition,
-        int columnSize,
+        long columnSize,
         int scale,
         int precision,
         int radix,

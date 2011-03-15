@@ -227,13 +227,13 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
                 editor.setText(value.getData() == null ? "" : value.getData());
                 editor.setEditable(!controller.isReadOnly());
-                int maxLength = controller.getColumnMetaData().getDisplaySize();
+                long maxLength = controller.getColumnMetaData().getDisplaySize();
                 if (maxLength <= 0) {
                     maxLength = MAX_STRING_LENGTH;
                 } else {
                     maxLength = Math.min(maxLength, MAX_STRING_LENGTH);
                 }
-                editor.setTextLimit(maxLength);
+                editor.setTextLimit((int)maxLength);
                 editor.selectAll();
                 editor.setFocus();
                 initInlineControl(controller, editor, new ValueExtractor<Text>() {
