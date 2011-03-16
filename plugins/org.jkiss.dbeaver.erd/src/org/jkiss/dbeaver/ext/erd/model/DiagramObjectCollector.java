@@ -2,14 +2,8 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.*;
 
@@ -30,34 +24,31 @@ public class DiagramObjectCollector {
 
     public static Collection<DBSTable> collectTables(
         DBRProgressMonitor monitor,
-        Collection<? extends DBNNode> nodes)
+        Collection<? extends DBSObject> roots)
         throws DBException
     {
         Set<DBSTable> tables = new LinkedHashSet<DBSTable>();
-        collectTables(monitor, nodes, tables);
+        collectTables(monitor, roots, tables);
         return tables;
     }
 
     private static void collectTables(
         DBRProgressMonitor monitor,
-        Collection<? extends DBNNode> nodes,
+        Collection<? extends DBSObject> roots,
         Set<DBSTable> tables)
         throws DBException
     {
-        for (DBNNode node : nodes) {
+        for (DBSObject root : roots) {
             if (monitor.isCanceled()) {
                 break;
             }
-            if (node instanceof DBNContainer) {
-                collectTables(monitor, node.getChildren(monitor), tables);
-            } else if (node instanceof DBNDatabaseNode) {
-                final DBSObject object = ((DBNDatabaseNode) node).getObject();
-                if (object instanceof DBSTable) {
-                    tables.add((DBSTable) object);
-                }
-                if (object instanceof DBSEntityContainer) {
-                    collectTables(monitor, (DBSEntityContainer) object, tables);
-                }
+            if (root instanceof DBSFolder) {
+                collectTables(monitor, ((DBSFolder) root).getChildrenObjects(monitor), tables);
+            } else if (root instanceof DBSTable) {
+                tables.add((DBSTable) root);
+            }
+            if (root instanceof DBSEntityContainer) {
+                collectTables(monitor, (DBSEntityContainer) root, tables);
             }
         }
     }
@@ -89,10 +80,10 @@ public class DiagramObjectCollector {
 
     public void generateDiagramObjects(
         DBRProgressMonitor monitor,
-        Collection<? extends DBNNode> nodes)
+        Collection<? extends DBSObject> roots)
         throws DBException
     {
-        Collection<DBSTable> tables = collectTables(monitor, nodes);
+        Collection<DBSTable> tables = collectTables(monitor, roots);
         for (DBSTable table : tables) {
             addDiagramTable(monitor, table);
         }

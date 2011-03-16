@@ -20,6 +20,8 @@ import org.jkiss.dbeaver.ui.ICommandIds;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -164,4 +166,15 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         item.dispose(true);
     }
 
+    public Collection<DBSObject> getChildrenObjects(DBRProgressMonitor monitor) throws DBException
+    {
+        List<DBNDatabaseNode> children = getChildren(monitor);
+        List<DBSObject> childObjects = new ArrayList<DBSObject>();
+        if (!CommonUtils.isEmpty(children)) {
+            for (DBNDatabaseNode child : children) {
+                childObjects.add(child.getObject());
+            }
+        }
+        return childObjects;
+    }
 }

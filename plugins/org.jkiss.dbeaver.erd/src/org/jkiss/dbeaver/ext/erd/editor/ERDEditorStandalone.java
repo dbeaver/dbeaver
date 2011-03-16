@@ -169,24 +169,6 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
         return (IFile) getEditorInput().getAdapter(IFile.class);
     }
 
-/*
-    public DBNNode getRootNode() {
-        IEditorInput editorInput = getEditorInput();
-        if (editorInput instanceof IDatabaseNodeEditorInput) {
-            return ((IDatabaseNodeEditorInput)editorInput).getTreeNode();
-        }
-        return null;
-    }
-
-    public Viewer getNavigatorViewer() {
-        return null;
-    }
-
-    public IWorkbenchPart getWorkbenchPart() {
-        return this;
-    }
-*/
-
     public DBSDataSourceContainer getDataSourceContainer()
     {
         for (Object part : getViewer().getSelectedEditParts()) {

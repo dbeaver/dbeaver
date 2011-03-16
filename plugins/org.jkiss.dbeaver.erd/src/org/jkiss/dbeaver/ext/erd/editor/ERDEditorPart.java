@@ -345,10 +345,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         GraphicalViewer viewer = createViewer(parent);
 
-        GraphicalViewerKeyHandler graphicalViewerKeyHandler = new GraphicalViewerKeyHandler(viewer);
-        KeyHandler parentKeyHandler = graphicalViewerKeyHandler.setParent(getCommonKeyHandler());
-        viewer.setKeyHandler(parentKeyHandler);
-
         // hook the viewer into the EditDomain
         setGraphicalViewer(viewer);
 
@@ -391,17 +387,25 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         super.configureGraphicalViewer();
 
+        GraphicalViewer graphicalViewer = getGraphicalViewer();
+
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
-        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
-        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
-        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
+        graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
+        graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
+        graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
             store.getInt(ERDConstants.PREF_GRID_WIDTH),
             store.getInt(ERDConstants.PREF_GRID_HEIGHT)));
 
         // initialize actions
         createActions();
 
+        // Set key handler
+        GraphicalViewerKeyHandler graphicalViewerKeyHandler = new GraphicalViewerKeyHandler(graphicalViewer);
+        KeyHandler parentKeyHandler = graphicalViewerKeyHandler.setParent(getCommonKeyHandler());
+        graphicalViewer.setKeyHandler(parentKeyHandler);
+
+        // Setup zoom manager
         ZoomManager zoomManager = rootPart.getZoomManager();
 
         List<String> zoomLevels = new ArrayList<String>(3);

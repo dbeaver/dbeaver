@@ -65,7 +65,7 @@ class DiagramCreateWizardPage extends WizardPage {
             }
         });
 
-        Label contentLabel = UIUtils.createControlLabel(configGroup, "Initial content");
+        Label contentLabel = UIUtils.createControlLabel(configGroup, "Initial content (optional)");
         GridData gd = new GridData(GridData.BEGINNING);
         gd.horizontalSpan = 2;
         contentLabel.setLayoutData(gd);

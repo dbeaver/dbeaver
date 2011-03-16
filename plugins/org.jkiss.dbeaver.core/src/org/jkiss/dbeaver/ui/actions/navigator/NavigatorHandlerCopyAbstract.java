@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.Clipboard;
@@ -14,8 +15,11 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
+import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -38,6 +42,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler {
             workbenchWindow.getShell().getDisplay().syncExec(new Runnable() {
                 public void run() {
                     List<DBNNode> selectedNodes = new ArrayList<DBNNode>();
+                    List<DBSObject> selectedObjects = new ArrayList<DBSObject>();
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ){
                         Object object = iter.next();
@@ -45,8 +50,19 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler {
                         if (objectValue == null) {
                             continue;
                         }
-                        if (object instanceof DBNNode) {
-                            selectedNodes.add((DBNNode) object);
+                        DBNNode node = (DBNNode)Platform.getAdapterManager().getAdapter(object, DBNNode.class);
+                        DBSObject dbObject = null;
+                        if (node instanceof DBNDatabaseNode) {
+                            dbObject = ((DBNDatabaseNode)node).getObject();
+                        }
+                        if (dbObject == null) {
+                            dbObject = (DBSObject)Platform.getAdapterManager().getAdapter(object, DBSObject.class);
+                        }
+                        if (node != null) {
+                            selectedNodes.add(node);
+                        }
+                        if (dbObject != null) {
+                            selectedObjects.add(dbObject);
                         }
                         if (buf.length() > 0) {
                             buf.append(ContentUtils.getDefaultLineSeparator());
@@ -58,10 +74,12 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler {
                         clipboard.setContents(
                             new Object[]{
                                 buf.toString(),
-                                selectedNodes},
+                                selectedNodes,
+                                selectedObjects},
                             new Transfer[]{
                                 TextTransfer.getInstance(),
-                                TreeNodeTransfer.getInstance()});
+                                TreeNodeTransfer.getInstance(),
+                                DatabaseObjectTransfer.getInstance()});
                         ObjectPropertyTester.firePropertyChange(ObjectPropertyTester.PROP_CAN_PASTE);
                     }
                 }

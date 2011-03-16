@@ -13,16 +13,20 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class DiagramCreateWizard extends Wizard implements INewWizard {
 
@@ -51,7 +55,14 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
 	@Override
 	public boolean performFinish() {
         try {
-            DiagramCreator creator = new DiagramCreator(pageContent.getInitialContent());
+            Collection<DBNNode> initialContent = pageContent.getInitialContent();
+            List<DBSObject> rootObjects = new ArrayList<DBSObject>();
+            for (DBNNode node : initialContent) {
+                if (node instanceof DBNDatabaseNode) {
+                    rootObjects.add(((DBNDatabaseNode) node).getObject());
+                }
+            }
+            DiagramCreator creator = new DiagramCreator(rootObjects);
             RuntimeUtils.run(getContainer(), true, true, creator);
 
             NavigatorHandlerObjectOpen.openResource(creator.diagramFile, DBeaverCore.getActiveWorkbenchWindow());
@@ -71,12 +82,12 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
 	}
 
     private class DiagramCreator implements DBRRunnableWithProgress {
-        Collection<DBNNode> nodes;
+        Collection<DBSObject> roots;
         IFile diagramFile;
 
-        private DiagramCreator(Collection<DBNNode> nodes)
+        private DiagramCreator(Collection<DBSObject> roots)
         {
-            this.nodes = nodes;
+            this.roots = roots;
         }
 
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
@@ -84,7 +95,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
             try {
                 Collection<DBSTable> tables = DiagramObjectCollector.collectTables(
                     monitor,
-                    nodes);
+                    roots);
                 diagram.fillTables(monitor, tables, null);
 
                 diagramFile = ERDResourceHandler.createDiagram(diagram, diagram.getName(), folder, monitor);
