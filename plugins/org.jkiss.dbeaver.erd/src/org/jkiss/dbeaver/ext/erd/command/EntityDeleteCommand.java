@@ -76,6 +76,7 @@ public class EntityDeleteCommand extends Command
 	 */
 	protected void primExecute()
 	{
+        entityDiagram.addInitBounds(table, entityPart.getBounds());
         entityPart.modifyBounds(new Rectangle(0, 0, 0, 0));
 
 		deleteRelationships(table);
