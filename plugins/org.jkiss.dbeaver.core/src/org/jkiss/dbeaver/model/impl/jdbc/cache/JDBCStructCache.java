@@ -81,13 +81,13 @@ public abstract class JDBCStructCache<
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
-                        String tableName = JDBCUtils.safeGetString(dbResult, objectNameColumn);
+                        String objectName = JDBCUtils.safeGetString(dbResult, objectNameColumn);
 
                         OBJECT table = forObject;
                         if (table == null) {
-                            table = super.getObject(monitor, tableName);
+                            table = super.getObject(monitor, objectName);
                             if (table == null) {
-                                log.warn("Object '" + tableName + "' not found");
+                                log.debug("Object '" + objectName + "' not found");
                                 continue;
                             }
                         }

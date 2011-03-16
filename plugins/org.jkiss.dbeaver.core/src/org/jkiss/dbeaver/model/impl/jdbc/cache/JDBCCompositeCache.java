@@ -134,7 +134,7 @@ public abstract class JDBCCompositeCache<
                         if (parent == null) {
                             parent = parentCache.getObject(monitor, parentName);
                             if (parent == null) {
-                                log.warn("Object '" + objectName + "' owner '" + parentName + "' not found");
+                                log.debug("Object '" + objectName + "' owner '" + parentName + "' not found");
                                 continue;
                             }
                         }
