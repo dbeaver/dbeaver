@@ -82,6 +82,10 @@ public class Activator extends AbstractUIPlugin {
         RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_MARGIN_BOTTOM, ERDConstants.PRINT_MARGIN_DEFAULT);
         RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_MARGIN_LEFT, ERDConstants.PRINT_MARGIN_DEFAULT);
         RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_MARGIN_RIGHT, ERDConstants.PRINT_MARGIN_DEFAULT);
+        RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_GRID_ENABLED, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_GRID_SNAP_ENABLED, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_GRID_WIDTH, 20);
+        RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_GRID_HEIGHT, 20);
     }
 
 }

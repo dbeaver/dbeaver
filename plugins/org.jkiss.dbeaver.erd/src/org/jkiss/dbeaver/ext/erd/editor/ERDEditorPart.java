@@ -29,6 +29,8 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -56,6 +58,7 @@ import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
+import org.jkiss.dbeaver.ext.erd.action.DiagramToggleGridAction;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
@@ -125,6 +128,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected boolean isLoaded;
 
     protected LoadingJob<EntityDiagram> diagramLoadingJob;
+    private IPropertyChangeListener configPropertyListener;
 
     /**
      * No-arg constructor
@@ -155,6 +159,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         // add selection change listener
         getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
+
+        configPropertyListener = new ConfigPropertyListener();
+        Activator.getDefault().getPreferenceStore().addPropertyChangeListener(configPropertyListener);
     }
 
     @Override
@@ -193,6 +200,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     public void dispose()
     {
+        Activator.getDefault().getPreferenceStore().removePropertyChangeListener(configPropertyListener);
+
         if (diagramLoadingJob != null) {
             diagramLoadingJob.cancel();
             diagramLoadingJob = null;
@@ -382,9 +391,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         super.configureGraphicalViewer();
 
-        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, true);
-        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, true);
-        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(20, 20));
+        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+
+        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
+        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
+        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
+            store.getInt(ERDConstants.PREF_GRID_WIDTH),
+            store.getInt(ERDConstants.PREF_GRID_HEIGHT)));
 
         // initialize actions
         createActions();
@@ -447,7 +460,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         addEditPartAction(new DeleteAction((IWorkbenchPart) this));
 
         getActionRegistry().registerAction(new SelectAllAction(this));
-        getActionRegistry().registerAction(new ToggleGridAction(this.getViewer()));
     }
 
     /**
@@ -628,6 +640,22 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     }
 
+    private class ConfigPropertyListener implements IPropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent event)
+        {
+            if (event.getProperty().equals(ERDConstants.PREF_GRID_ENABLED)) {
+                boolean enabled = (Boolean)event.getNewValue();
+                getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, enabled);
+                getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, enabled);
+            } else if (event.getProperty().equals(ERDConstants.PREF_GRID_WIDTH) || event.getProperty().equals(ERDConstants.PREF_GRID_HEIGHT)) {
+                final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+                getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
+                    store.getInt(ERDConstants.PREF_GRID_WIDTH),
+                    store.getInt(ERDConstants.PREF_GRID_HEIGHT)));
+            }
+        }
+    }
+
     protected class ProgressControl extends ProgressPageControl {
 
         private ToolBarManager toolBarManager;
@@ -714,6 +742,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             toolBarManager.add(new ZoomInAction(zoomManager));
             toolBarManager.add(new ZoomOutAction(zoomManager));
             toolBarManager.add(new DiagramLayoutAction(ERDEditorPart.this));
+            toolBarManager.add(new DiagramToggleGridAction());
             toolBarManager.add(new DiagramRefreshAction(ERDEditorPart.this));
             toolBarManager.add(new Separator());
             {

@@ -5,11 +5,11 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.PrintFigureOperation;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -31,14 +31,36 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private Spinner spinnerMarginBottom;
     private Spinner spinnerMarginLeft;
     private Spinner spinnerMarginRight;
+    private Button gridCheck;
+    private Button snapCheck;
+    private Spinner spinnerGridWidth;
+    private Spinner spinnerGridHeight;
 
     protected Control createContents(Composite parent)
     {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
-        Group printGroup = UIUtils.createControlGroup(composite, "Print", 2, GridData.BEGINNING, 0);
+        createGridGroup(store, composite);
+        createPrintGroup(store, composite);
+
+        return composite;
+    }
+
+    private void createGridGroup(IPreferenceStore store, Composite composite)
+    {
+        Group gridGroup = UIUtils.createControlGroup(composite, "Grid", 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        gridCheck = UIUtils.createLabelCheckbox(gridGroup, "Grid Enabled", store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
+        snapCheck = UIUtils.createLabelCheckbox(gridGroup, "Snap To Grid", store.getBoolean(ERDConstants.PREF_GRID_SNAP_ENABLED));
+
+        spinnerGridWidth = UIUtils.createLabelSpinner(gridGroup, "Grid Width", store.getInt(ERDConstants.PREF_GRID_WIDTH), 5, Short.MAX_VALUE);
+        spinnerGridHeight = UIUtils.createLabelSpinner(gridGroup, "Grid Height", store.getInt(ERDConstants.PREF_GRID_HEIGHT), 5, Short.MAX_VALUE);
+    }
+
+    private void createPrintGroup(IPreferenceStore store, Composite composite)
+    {
+        Group printGroup = UIUtils.createControlGroup(composite, "Print", 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
         modeCombo = UIUtils.createLabelCombo(printGroup, "Page Mode", SWT.READ_ONLY | SWT.DROP_DOWN);
         modeCombo.add("Tile");
         modeCombo.add("Fit Page");
@@ -56,8 +78,6 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
         spinnerMarginBottom = UIUtils.createLabelSpinner(printGroup, "Margin Bottom", store.getInt(ERDConstants.PREF_PRINT_MARGIN_BOTTOM), 0, Short.MAX_VALUE);
         spinnerMarginLeft = UIUtils.createLabelSpinner(printGroup, "Margin Left", store.getInt(ERDConstants.PREF_PRINT_MARGIN_LEFT), 0, Short.MAX_VALUE);
         spinnerMarginRight = UIUtils.createLabelSpinner(printGroup, "Margin Right", store.getInt(ERDConstants.PREF_PRINT_MARGIN_RIGHT), 0, Short.MAX_VALUE);
-
-        return composite;
     }
 
 
@@ -77,6 +97,11 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
     public boolean performOk()
     {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+
+        store.setValue(ERDConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
+        store.setValue(ERDConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());
+        store.setValue(ERDConstants.PREF_GRID_WIDTH, spinnerGridWidth.getSelection());
+        store.setValue(ERDConstants.PREF_GRID_HEIGHT, spinnerGridHeight.getSelection());
 
         int pageMode;
         switch (modeCombo.getSelectionIndex()) {

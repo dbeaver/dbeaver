@@ -8,9 +8,12 @@ import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.commands.CommandStackListener;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.ext.erd.Activator;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
@@ -288,7 +291,12 @@ public class DiagramPart extends PropertyAwarePart {
     public Object getAdapter(Class key)
     {
         if (key == SnapToHelper.class) {
-            return new SnapToGrid(this);
+            final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+            if (store.getBoolean(ERDConstants.PREF_GRID_ENABLED) && store.getBoolean(ERDConstants.PREF_GRID_SNAP_ENABLED)) {
+                return new SnapToGrid(this);
+            } else {
+                return null;
+            }
         }
         return super.getAdapter(key);
     }
