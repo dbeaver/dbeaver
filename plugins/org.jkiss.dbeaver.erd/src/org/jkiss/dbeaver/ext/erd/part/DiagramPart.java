@@ -6,9 +6,7 @@ package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.EditPolicy;
-import org.eclipse.gef.LayerConstants;
+import org.eclipse.gef.*;
 import org.eclipse.gef.commands.CommandStackListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
@@ -286,5 +284,12 @@ public class DiagramPart extends PropertyAwarePart {
         super.handleChildChange(evt);
     }
 
-
+    @Override
+    public Object getAdapter(Class key)
+    {
+        if (key == SnapToHelper.class) {
+            return new SnapToGrid(this);
+        }
+        return super.getAdapter(key);
+    }
 }

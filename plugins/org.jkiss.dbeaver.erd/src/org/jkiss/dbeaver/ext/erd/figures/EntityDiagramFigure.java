@@ -23,7 +23,7 @@ public class EntityDiagramFigure extends FreeformLayer
 {
 	public EntityDiagramFigure()
 	{
-		setOpaque(true);
+		//setOpaque(true);
         //setChildrenOrientation(Orientable.HORIZONTAL);
 	}
 

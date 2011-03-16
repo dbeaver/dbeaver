@@ -62,6 +62,10 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
         if (action.isEnabled())
             menu.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
 
+        action = getActionRegistry().getAction(GEFActionConstants.TOGGLE_GRID_VISIBILITY);
+        if (action.isEnabled())
+            menu.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
+
         action = new DiagramLayoutAction(editor);
         menu.appendToGroup(GEFActionConstants.GROUP_VIEW, action);
         //action = getActionRegistry().getAction(ActionFactory.PRINT.getId());

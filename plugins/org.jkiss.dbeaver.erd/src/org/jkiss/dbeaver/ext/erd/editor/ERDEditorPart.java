@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
@@ -154,9 +155,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         // add selection change listener
         getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
-
-        // initialize actions
-        createActions();
     }
 
     @Override
@@ -384,6 +382,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         super.configureGraphicalViewer();
 
+        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, true);
+        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, true);
+        getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(20, 20));
+
+        // initialize actions
+        createActions();
+
         ZoomManager zoomManager = rootPart.getZoomManager();
 
         List<String> zoomLevels = new ArrayList<String>(3);
@@ -400,6 +405,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         IAction zoomOut = new ZoomOutAction(zoomManager);
         addAction(zoomIn);
         addAction(zoomOut);
+
+
     }
 
     protected KeyHandler getCommonKeyHandler()
@@ -440,6 +447,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         addEditPartAction(new DeleteAction((IWorkbenchPart) this));
 
         getActionRegistry().registerAction(new SelectAllAction(this));
+        getActionRegistry().registerAction(new ToggleGridAction(this.getViewer()));
     }
 
     /**
@@ -588,8 +596,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         if (!isReadOnly()) {
             controls.add(new ConnectionCreationToolEntry("Connections", "Create Connections", null,
-                Activator.getImageDescriptor("icons/relationship.gif"),
-                Activator.getImageDescriptor("icons/relationship.gif")));
+                DBIcon.TREE_FOREIGN_KEY.getImageDescriptor(),
+                DBIcon.TREE_FOREIGN_KEY.getImageDescriptor()));
 
 /*
             PaletteDrawer drawer = new PaletteDrawer("New Component",
