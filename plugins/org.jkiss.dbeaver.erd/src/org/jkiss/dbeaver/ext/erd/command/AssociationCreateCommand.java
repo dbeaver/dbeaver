@@ -9,23 +9,21 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDLogicalForeignKey;
+import org.jkiss.dbeaver.ext.erd.model.ERDLogicalPrimaryKey;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 
 import java.util.List;
 
 /**
  * Command to delete relationship
- * 
+ *
  * @author Serge Rieder
  */
-public class AssociationCreateCommand extends Command
-{
+public class AssociationCreateCommand extends Command {
 
-    /** The relationship between primary and foreign key tables * */
     protected ERDAssociation association;
-    /** The source (foreign key) table * */
     protected ERDTable foreignTable;
-    /** The target (primary key) table * */
     protected ERDTable primaryTable;
 
     /**
@@ -35,26 +33,18 @@ public class AssociationCreateCommand extends Command
     {
 
         boolean returnValue = true;
-        if (foreignTable.equals(primaryTable))
-        {
+        if (foreignTable.equals(primaryTable)) {
             returnValue = false;
-        }
-        else
-        {
+        } else {
 
-            if (primaryTable == null)
-            {
+            if (primaryTable == null) {
                 return false;
-            }
-            else
-            {
+            } else {
                 // Check for existence of relationship already
                 List<ERDAssociation> relationships = primaryTable.getPrimaryKeyRelationships();
-                for (int i = 0; i < relationships.size(); i++)
-                {
+                for (int i = 0; i < relationships.size(); i++) {
                     ERDAssociation currentRelationship = relationships.get(i);
-                    if (currentRelationship.getForeignKeyTable().equals(foreignTable))
-                    {
+                    if (currentRelationship.getForeignKeyTable().equals(foreignTable)) {
                         returnValue = false;
                         break;
                     }
@@ -71,7 +61,12 @@ public class AssociationCreateCommand extends Command
      */
     public void execute()
     {
-        association = new ERDAssociation(null, foreignTable, primaryTable, true);
+        ERDLogicalForeignKey fk = new ERDLogicalForeignKey(
+            foreignTable,
+            foreignTable.getObject().getName() + " -> " + primaryTable.getObject().getName(),
+            "",
+            primaryTable.getLogicalPrimaryKey());
+        association = new ERDAssociation(fk, foreignTable, primaryTable, true);
     }
 
     /**
@@ -110,8 +105,7 @@ public class AssociationCreateCommand extends Command
     }
 
     /**
-     * @param foreignTable
-     *            The foreignTable to set.
+     * @param foreignTable The foreignTable to set.
      */
     public void setForeignTable(ERDTable foreignTable)
     {
@@ -119,8 +113,7 @@ public class AssociationCreateCommand extends Command
     }
 
     /**
-     * @param primaryTable
-     *            The primaryTable to set.
+     * @param primaryTable The primaryTable to set.
      */
     public void setPrimaryTable(ERDTable primaryTable)
     {
@@ -128,8 +121,7 @@ public class AssociationCreateCommand extends Command
     }
 
     /**
-     * @param association
-     *            The relationship to set.
+     * @param association The relationship to set.
      */
     public void setAssociation(ERDAssociation association)
     {

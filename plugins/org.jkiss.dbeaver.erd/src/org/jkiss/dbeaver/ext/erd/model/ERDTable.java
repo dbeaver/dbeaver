@@ -34,6 +34,7 @@ public class ERDTable extends ERDObject<DBSTable>
     private List<DBSForeignKey> unresolvedKeys;
 
     private boolean primary = false;
+    private ERDLogicalPrimaryKey logicalPK;
 
     public ERDTable(DBSTable dbsTable) {
         super(dbsTable);
@@ -265,5 +266,13 @@ public class ERDTable extends ERDObject<DBSTable>
                 iter.remove();
             }
         }
+    }
+
+    public ERDLogicalPrimaryKey getLogicalPrimaryKey()
+    {
+        if (logicalPK == null) {
+            logicalPK = new ERDLogicalPrimaryKey(this, "Primary key", "");
+        }
+        return logicalPK;
     }
 }

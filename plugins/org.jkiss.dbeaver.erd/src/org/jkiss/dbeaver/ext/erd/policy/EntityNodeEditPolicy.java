@@ -42,13 +42,10 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 	 */
 	protected Command getConnectionCompleteCommand(CreateConnectionRequest request)
 	{
-/*
 		AssociationCreateCommand cmd = (AssociationCreateCommand) request.getStartCommand();
 		EntityPart part = (EntityPart) request.getTargetEditPart();
 		cmd.setPrimaryTable(part.getTable());
 		return cmd;
-*/
-        return null;
 	}
 
 	/**

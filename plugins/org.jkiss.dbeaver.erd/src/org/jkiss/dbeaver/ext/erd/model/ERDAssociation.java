@@ -33,6 +33,11 @@ public class ERDAssociation extends ERDObject<DBSForeignKey>
         this.foreignKeyTable.addForeignKeyRelationship(this, reflect);
 	}
 
+    public boolean isLogical()
+    {
+        return getObject() instanceof ERDLogicalForeignKey;
+    }
+
 	/**
 	 * @return Returns the foreignKeyTable.
 	 */

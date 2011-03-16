@@ -72,6 +72,11 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         //conn.setToolTip(new TextFlow(association.getObject().getName()));
         conn.setTargetDecoration(new PolygonDecoration());
 
+        if (association.isLogical()) {
+            conn.setLineStyle(SWT.LINE_CUSTOM);
+            conn.setLineDash(new float[] {5} );
+        }
+
         //ChopboxAnchor sourceAnchor = new ChopboxAnchor(classFigure);
         //ChopboxAnchor targetAnchor = new ChopboxAnchor(classFigure2);
         //conn.setSourceAnchor(sourceAnchor);
@@ -117,6 +122,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             conn.setRoutingConstraint(bends);
         }
 
+        // Set tool tip
         Label toolTip = new Label(getAssociation().getObject().getConstraintType().getName() + " " + getAssociation().getObject().getFullQualifiedName());
         toolTip.setIcon(DBIcon.TREE_FOREIGN_KEY.getImage());
         //toolTip.setTextPlacement(PositionConstants.SOUTH);
