@@ -144,6 +144,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
 
         // Cache structure
         if (root instanceof DBSEntityContainer) {
+            monitor.beginTask("Load '" + root.getName() + "' content", 3);
             DBSEntityContainer entityContainer = (DBSEntityContainer) root;
             entityContainer.cacheStructure(monitor, DBSEntityContainer.STRUCT_ENTITIES | DBSEntityContainer.STRUCT_ASSOCIATIONS | DBSEntityContainer.STRUCT_ATTRIBUTES);
             Collection<? extends DBSObject> entities = entityContainer.getChildren(monitor);
@@ -152,17 +153,21 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
                     result.add((DBSTable) entity);
                 }
             }
+            monitor.done();
 
         } else if (root instanceof DBSTable) {
+            monitor.beginTask("Load '" + root.getName() + "' relations", 2);
             DBSTable rootTable = (DBSTable) root;
             result.add(rootTable);
             try {
+                monitor.subTask("Read foreign keys");
                 Collection<? extends DBSForeignKey> fks = rootTable.getForeignKeys(monitor);
                 if (fks != null) {
                     for (DBSForeignKey fk : fks) {
                         result.add(fk.getReferencedKey().getTable());
                     }
                 }
+                monitor.worked(1);
             } catch (DBException e) {
                 log.warn("Could not load table foreign keys", e);
             }
@@ -170,15 +175,18 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
                 return result;
             }
             try {
+                monitor.subTask("Read references");
                 Collection<? extends DBSForeignKey> refs = rootTable.getReferences(monitor);
                 if (refs != null) {
                     for (DBSForeignKey ref : refs) {
                         result.add(ref.getTable());
                     }
                 }
+                monitor.worked(1);
             } catch (DBException e) {
                 log.warn("Could not load table references", e);
             }
+            monitor.done();
         }
 
         return result;

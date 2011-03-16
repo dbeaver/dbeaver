@@ -165,27 +165,37 @@ public class EntityDiagram extends ERDObject<DBSObject>
     public void fillTables(DBRProgressMonitor monitor, Collection<DBSTable> tables, DBSObject dbObject)
     {
         // Load entities
+        monitor.beginTask("Load tables metadata", tables.size());
         for (DBSTable table : tables) {
             if (monitor.isCanceled()) {
                 break;
             }
+            monitor.subTask("Load " + table.getName());
             ERDTable erdTable = ERDTable.fromObject(monitor, table);
             erdTable.setPrimary(table == dbObject);
 
             addTable(erdTable, false);
             tableMap.put(table, erdTable);
+
+            monitor.worked(1);
         }
 
+        monitor.done();
+
         // Load relations
+        monitor.beginTask("Load tables' relations", tables.size());
         for (DBSTable table : tables) {
             if (monitor.isCanceled()) {
                 break;
             }
+            monitor.subTask("Load " + table.getName());
             final ERDTable erdTable = tableMap.get(table);
             if (erdTable != null) {
                 erdTable.addRelations(monitor, tableMap, false);
             }
+            monitor.worked(1);
         }
+        monitor.done();
     }
 
     public boolean containsTable(DBSTable table)

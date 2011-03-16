@@ -151,7 +151,10 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         throws DBException
     {
         // Cache tables
-        tableCache.getObjects(monitor);
+        if ((scope & STRUCT_ENTITIES) != 0) {
+            monitor.subTask("Cache tables");
+            tableCache.getObjects(monitor);
+        }
 
         // Cache attributes
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
@@ -159,6 +162,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             // Cannot be sure that all jdbc drivers support reading of all catalog columns
             // So error here is not fatal
             try {
+                monitor.subTask("Cache tables' columns");
                 tableCache.loadChildren(monitor, null);
             } catch (Exception e) {
                 log.debug(e);
@@ -169,6 +173,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             // Try to read all PKs
             // Try to read all FKs
             try {
+                monitor.subTask("Cache primary keys");
                 primaryKeysCache.getObjects(monitor, null);
             } catch (Exception e) {
                 // Failed - seems to be unsupported feature
@@ -176,10 +181,12 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             }
 
             // Try to read all indexes
+            monitor.subTask("Cache indexes");
             cacheIndexes(monitor, false);
 
             // Try to read all FKs
             try {
+                monitor.subTask("Cache foreign keys");
                 foreignKeysCache.getObjects(monitor, null);
             } catch (Exception e) {
                 // Failed - seems to be unsupported feature

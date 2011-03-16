@@ -125,6 +125,7 @@ public class DiagramLoader
     public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, InputStream in)
         throws IOException, XMLException, DBException
     {
+        monitor.beginTask("Parse diagram", 1);
         final EntityDiagram diagram = diagramPart.getDiagram();
 
         final DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
@@ -135,6 +136,7 @@ public class DiagramLoader
         final Document document = XMLUtils.parseDocument(in);
 
         final Element diagramElem = document.getDocumentElement();
+        monitor.done();
 
         // Check version
         final String diagramVersion = diagramElem.getAttribute(ATTR_VERSION);
@@ -175,9 +177,12 @@ public class DiagramLoader
                 }
                 DBSEntityContainer rootContainer = (DBSEntityContainer)dataSource;
                 // Parse entities
-                for (Element entityElem : XMLUtils.getChildElementList(dsElem, TAG_ENTITY)) {
+                Element[] entityElemList = XMLUtils.getChildElementList(dsElem, TAG_ENTITY);
+                monitor.beginTask("Parse entities", entityElemList.length);
+                for (Element entityElem : entityElemList) {
                     String tableId = entityElem.getAttribute(ATTR_ID);
                     String tableName = entityElem.getAttribute(ATTR_NAME);
+                    monitor.subTask("Load " + tableName);
                     List<String> path = new ArrayList<String>();
                     for (Element pathElem : XMLUtils.getChildElementList(entityElem, TAG_PATH)) {
                         path.add(0, pathElem.getAttribute(ATTR_NAME));
@@ -221,15 +226,20 @@ public class DiagramLoader
                     TableLoadInfo info = new TableLoadInfo(tableId, table, bounds);
                     tableInfos.add(info);
                     tableMap.put(info.objectId, info);
+                    monitor.worked(1);
                 }
+                monitor.done();
             }
         }
 
         final Element relationsElem = XMLUtils.getChildElement(diagramElem, TAG_RELATIONS);
         if (relationsElem != null) {
             // Parse relations
-            for (Element relElem : XMLUtils.getChildElementList(relationsElem, TAG_RELATION)) {
+            Element[] relElemList = XMLUtils.getChildElementList(relationsElem, TAG_RELATION);
+            monitor.beginTask("Parse relations", relElemList.length);
+            for (Element relElem : relElemList) {
                 String relName = relElem.getAttribute(ATTR_NAME);
+                monitor.subTask("Load " + relName);
                 String relType = relElem.getAttribute(ATTR_TYPE);
                 String pkRefId = relElem.getAttribute(ATTR_PK_REF);
                 String fkRefId = relElem.getAttribute(ATTR_FK_REF);
@@ -266,7 +276,9 @@ public class DiagramLoader
                         }
                     }
                 }
+                monitor.worked(1);
             }
+            monitor.done();
         }
 
         // Fill tables
