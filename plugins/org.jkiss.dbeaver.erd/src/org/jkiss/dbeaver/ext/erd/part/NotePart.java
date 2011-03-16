@@ -12,19 +12,15 @@ import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.gef.*;
-import org.eclipse.gef.editpolicies.ResizableEditPolicy;
-import org.eclipse.gef.requests.DirectEditRequest;
+import org.eclipse.gef.ConnectionEditPart;
+import org.eclipse.gef.EditPolicy;
+import org.eclipse.gef.Request;
+import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.tools.DirectEditManager;
-import org.eclipse.jface.viewers.TextCellEditor;
-import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
-import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
-import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
-import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
-import org.jkiss.dbeaver.ext.erd.policy.NoteDirectEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.NoteEditPolicy;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 
 import java.beans.PropertyChangeEvent;
 
@@ -54,7 +50,7 @@ public class NotePart extends NodePart
             //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
             //installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
             installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteEditPolicy());
-            installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new NoteDirectEditPolicy());
+            //installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new NoteDirectEditPolicy());
 
             //installEditPolicy(EditPolicy.SELECTION_FEEDBACK_ROLE, new ResizableEditPolicy());
         }
@@ -64,15 +60,23 @@ public class NotePart extends NodePart
 	{
 		if (request.getType() == RequestConstants.REQ_DIRECT_EDIT)
 		{
+/*
 			if (request instanceof DirectEditRequest
 					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
 				return;
 			performDirectEdit();
+*/
 		} else if (request.getType() == RequestConstants.REQ_OPEN) {
+            final String newText = EditTextDialog.editText(getViewer().getControl().getShell(), "Note", getNote().getObject());
+            if (newText != null) {
+                getNote().setObject(newText);
+                ((NoteFigure)getFigure()).setText(newText);
+            }
             //getTable().openEditor();
         }
 	}
 
+/*
 	private boolean directEditHitTest(Point requestLoc)
 	{
 		NoteFigure figure = (NoteFigure) getFigure();
@@ -93,6 +97,7 @@ public class NotePart extends NodePart
 		}
 		manager.show();
 	}
+*/
 
 	//******************* Miscellaneous stuff *********************/
 
@@ -141,7 +146,16 @@ public class NotePart extends NodePart
 	 */
 	protected IFigure createFigure()
 	{
-        return new NoteFigure(getNote());
+        final NoteFigure noteFigure = new NoteFigure(getNote());
+        Rectangle bounds = ((DiagramPart) getParent()).getDiagram().getInitBounds(getNote());
+        if (bounds != null) {
+            noteFigure.setBounds(bounds);
+            noteFigure.setPreferredSize(bounds.getSize());
+
+            //noteFigure.setLocation(bounds.getLocation());
+            //noteFigure.setSize(bounds.getSize());
+        }
+        return noteFigure;
     }
 
 	/**

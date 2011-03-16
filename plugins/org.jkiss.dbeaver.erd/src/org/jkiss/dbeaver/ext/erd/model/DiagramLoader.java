@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.ext.erd.part.NotePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -70,10 +71,14 @@ public class DiagramLoader
     private static final String TAG_COLUMN = "column";
     public static final String ATTR_X = "x";
     public static final String ATTR_Y = "y";
+    public static final String ATTR_W = "w";
+    public static final String ATTR_H = "h";
 
     public static final int ERD_VERSION_1 = 1;
     private static final String BEND_ABSOLUTE = "abs";
     private static final String BEND_RELATIVE = "rel";
+    public static final String TAG_NOTES = "notes";
+    private static final String TAG_NOTE = "note";
 
     private static class TableSaveInfo {
         final ERDTable erdTable;
@@ -281,6 +286,28 @@ public class DiagramLoader
             monitor.done();
         }
 
+        // Load notes
+        final Element notesElem = XMLUtils.getChildElement(diagramElem, TAG_NOTES);
+        if (notesElem != null) {
+            // Parse relations
+            Element[] noteElemList = XMLUtils.getChildElementList(notesElem, TAG_NOTE);
+            monitor.beginTask("Parse notes", noteElemList.length);
+            for (Element noteElem : noteElemList) {
+                final String noteText = XMLUtils.getElementBody(noteElem);
+                ERDNote note = new ERDNote(noteText);
+                diagram.addNote(note, false);
+                String locX = noteElem.getAttribute(ATTR_X);
+                String locY = noteElem.getAttribute(ATTR_Y);
+                String locW = noteElem.getAttribute(ATTR_W);
+                String locH = noteElem.getAttribute(ATTR_H);
+                if (!CommonUtils.isEmpty(locX) && !CommonUtils.isEmpty(locY) && !CommonUtils.isEmpty(locW) && !CommonUtils.isEmpty(locH)) {
+                    Rectangle bounds = new Rectangle(
+                        Integer.parseInt(locX), Integer.parseInt(locY), Integer.parseInt(locW), Integer.parseInt(locH));
+                    diagram.addInitBounds(note, bounds);
+                }
+            }
+        }
+
         // Fill tables
         List<DBSTable> tableList = new ArrayList<DBSTable>();
         for (TableLoadInfo info : tableInfos) {
@@ -378,16 +405,7 @@ public class DiagramLoader
                 int tableCounter = ERD_VERSION_1;
                 for (ERDTable erdTable : desc.tables) {
                     final DBSTable table = erdTable.getObject();
-                    EntityPart tablePart = null;
-                    if (diagramPart != null) {
-                        for (Object child : diagramPart.getChildren()) {
-                            if (child instanceof EntityPart && ((EntityPart) child).getTable() == erdTable) {
-                                tablePart = (EntityPart) child;
-                                break;
-                            }
-                        }
-                    }
-
+                    EntityPart tablePart = diagramPart == null ? null : diagramPart.getEntityPart(erdTable);
                     TableSaveInfo info = new TableSaveInfo(erdTable, tablePart, tableCounter++);
                     infoMap.put(erdTable, info);
 
@@ -450,13 +468,7 @@ public class DiagramLoader
 
                     // Save bends
                     if (pkInfo.tablePart != null) {
-                        AssociationPart associationPart = null;
-                        for (Object conn : pkInfo.tablePart.getTargetConnections()) {
-                            if (conn instanceof AssociationPart && ((AssociationPart) conn).getAssociation() == rel) {
-                                associationPart = (AssociationPart) conn;
-                                break;
-                            }
-                        }
+                        AssociationPart associationPart = pkInfo.tablePart.getConnectionPart(rel, false);
                         if (associationPart != null) {
                             final List<Bendpoint> bendpoints = associationPart.getBendpoints();
                             if (!CommonUtils.isEmpty(bendpoints)) {
@@ -484,7 +496,22 @@ public class DiagramLoader
             xml.endElement();
 
             // Notes
-            xml.startElement("notes");
+            xml.startElement(TAG_NOTES);
+            for (ERDNote note : diagram.getNotes()) {
+                NotePart notePart = diagramPart == null ? null : diagramPart.getNotePart(note);
+                xml.startElement(TAG_NOTE);
+                if (notePart != null) {
+                    Rectangle noteBounds = notePart.getBounds();
+                    if (noteBounds != null) {
+                        xml.addAttribute(ATTR_X, noteBounds.x);
+                        xml.addAttribute(ATTR_Y, noteBounds.y);
+                        xml.addAttribute(ATTR_W, noteBounds.width);
+                        xml.addAttribute(ATTR_H, noteBounds.height);
+                    }
+                }
+                xml.addText(note.getObject());
+                xml.endElement();
+            }
             xml.endElement();
         }
 

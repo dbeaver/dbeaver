@@ -41,7 +41,7 @@ public abstract class ERDObject<OBJECT> implements IPropertySource, IAdaptable
 
 	protected transient PropertyChangeSupport listeners = new PropertyChangeSupport(this);
 
-    protected final OBJECT object;
+    protected OBJECT object;
     private PropertyCollector propertyCollector = null;
 
 	protected ERDObject(OBJECT object)
@@ -51,6 +51,11 @@ public abstract class ERDObject<OBJECT> implements IPropertySource, IAdaptable
 
     public OBJECT getObject() {
         return object;
+    }
+
+    public void setObject(OBJECT object)
+    {
+        this.object = object;
     }
 
     private PropertyCollector getPropertyCollector()

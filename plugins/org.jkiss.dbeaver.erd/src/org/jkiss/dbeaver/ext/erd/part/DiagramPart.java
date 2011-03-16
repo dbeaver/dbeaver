@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.layout.GraphLayoutAuto;
+import org.jkiss.dbeaver.ext.erd.model.ERDNote;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.DiagramXYLayoutPolicy;
@@ -303,5 +305,25 @@ public class DiagramPart extends PropertyAwarePart {
             }
         }
         return super.getAdapter(key);
+    }
+
+    public EntityPart getEntityPart(ERDTable erdTable)
+    {
+        for (Object child : getChildren()) {
+            if (child instanceof EntityPart && ((EntityPart) child).getTable() == erdTable) {
+                return (EntityPart) child;
+            }
+        }
+        return null;
+    }
+
+    public NotePart getNotePart(ERDNote erdNote)
+    {
+        for (Object child : getChildren()) {
+            if (child instanceof NotePart && ((NotePart) child).getNote() == erdNote) {
+                return (NotePart) child;
+            }
+        }
+        return null;
     }
 }

@@ -29,7 +29,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
     private Map<DBSTable, ERDTable> tableMap = new IdentityHashMap<DBSTable, ERDTable>();
-    private Map<ERDTable, Rectangle> initBounds = new IdentityHashMap<ERDTable, Rectangle>();
+    private Map<ERDObject, Rectangle> initBounds = new IdentityHashMap<ERDObject, Rectangle>();
     private List<ERDNote> notes = new ArrayList<ERDNote>();
     private boolean needsAutoLayout;
 
@@ -249,12 +249,12 @@ public class EntityDiagram extends ERDObject<DBSObject>
         this.initBounds.clear();
     }
 
-    public Rectangle getInitBounds(ERDTable erdTable)
+    public Rectangle getInitBounds(ERDObject erdObject)
     {
-        return initBounds.get(erdTable);
+        return initBounds.get(erdObject);
     }
 
-    public void addInitBounds(ERDTable erdTable, Rectangle bounds)
+    public void addInitBounds(ERDObject erdTable, Rectangle bounds)
     {
         initBounds.put(erdTable, bounds);
     }

@@ -615,9 +615,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             controls.add(new CreationToolEntry(
                 "Note",
                 "Create Note",
-                new ObjectCreationFactory(
-                    new ERDNote("Note"),
-                    RequestConstants.REQ_CREATE),
+                new CreationFactory() {
+                    public Object getNewObject()
+                    {
+                        return new ERDNote("Note");
+                    }
+                    public Object getObjectType()
+                    {
+                        return RequestConstants.REQ_CREATE;
+                    }
+                },
                 noteImage,
                 noteImage));
 /*
