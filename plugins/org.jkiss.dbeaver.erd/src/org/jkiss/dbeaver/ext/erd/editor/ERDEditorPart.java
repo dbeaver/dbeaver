@@ -17,6 +17,7 @@ import org.eclipse.gef.commands.CommandStackListener;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.*;
+import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
@@ -29,6 +30,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
@@ -62,6 +64,8 @@ import org.jkiss.dbeaver.ext.erd.action.DiagramToggleGridAction;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
+import org.jkiss.dbeaver.ext.erd.dnd.ObjectCreationFactory;
+import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
@@ -129,6 +133,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     protected LoadingJob<EntityDiagram> diagramLoadingJob;
     private IPropertyChangeListener configPropertyListener;
+    private PaletteRoot paletteRoot;
 
     /**
      * No-arg constructor
@@ -569,30 +574,21 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     protected PaletteRoot getPaletteRoot()
     {
-        return createPaletteRoot();
-    }
-
-    public boolean isLoaded()
-    {
-        return isLoaded;
-    }
-
-    public void refreshDiagram()
-    {
-        if (isLoaded) {
-            loadDiagram();
+        if (paletteRoot == null) {
+            paletteRoot = createPaletteRoot();
         }
+        return paletteRoot;
     }
-
-    protected abstract void loadDiagram();
 
     public PaletteRoot createPaletteRoot()
     {
         // create root
         PaletteRoot paletteRoot = new PaletteRoot();
+        paletteRoot.setLabel("Tools");
 
         // a group of default control tools
         PaletteGroup controls = new PaletteGroup("Controls");
+
         paletteRoot.add(controls);
 
         // the selection tool
@@ -605,16 +601,25 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         // the marquee selection tool
         controls.add(new MarqueeToolEntry());
 
-        // a separator
-        PaletteSeparator separator = new PaletteSeparator(Activator.PLUGIN_ID + ".palette.separator");
+        // separator
+        PaletteSeparator separator = new PaletteSeparator("tools");
         separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);
-        controls.add(separator);
 
         if (!isReadOnly()) {
-            controls.add(new ConnectionCreationToolEntry("Connections", "Create Connections", null,
-                DBIcon.TREE_FOREIGN_KEY.getImageDescriptor(),
-                DBIcon.TREE_FOREIGN_KEY.getImageDescriptor()));
+            controls.add(separator);
 
+            final ImageDescriptor connectImage = Activator.getImageDescriptor("icons/connect.png");
+            controls.add(new ConnectionCreationToolEntry("Connection", "Create Connection", null, connectImage, connectImage));
+
+            final ImageDescriptor noteImage = Activator.getImageDescriptor("icons/note.png");
+            controls.add(new CreationToolEntry(
+                "Note",
+                "Create Note",
+                new ObjectCreationFactory(
+                    new ERDNote("Note"),
+                    RequestConstants.REQ_CREATE),
+                noteImage,
+                noteImage));
 /*
             PaletteDrawer drawer = new PaletteDrawer("New Component",
                 Activator.getImageDescriptor("icons/connection.gif"));
@@ -643,6 +648,20 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return paletteRoot;
 
     }
+
+    public boolean isLoaded()
+    {
+        return isLoaded;
+    }
+
+    public void refreshDiagram()
+    {
+        if (isLoaded) {
+            loadDiagram();
+        }
+    }
+
+    protected abstract void loadDiagram();
 
     private class ConfigPropertyListener implements IPropertyChangeListener {
         public void propertyChange(PropertyChangeEvent event)

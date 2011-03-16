@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -14,7 +13,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
@@ -22,7 +20,6 @@ import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -175,8 +172,11 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
             EditPart editPart = (EditPart) part;
             if (editPart.getModel() instanceof ERDObject) {
                 final ERDObject model = (ERDObject) editPart.getModel();
-                if (model.getObject() != null && model.getObject().getDataSource() != null) {
-                    return model.getObject().getDataSource().getContainer();
+                if (model.getObject() instanceof DBSObject) {
+                    DBSObject dbObject = (DBSObject) model.getObject();
+                    if (dbObject.getDataSource() != null) {
+                        return dbObject.getDataSource().getContainer();
+                    }
                 }
             }
         }

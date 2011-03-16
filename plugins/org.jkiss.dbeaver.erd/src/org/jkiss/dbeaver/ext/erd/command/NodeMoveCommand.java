@@ -9,7 +9,7 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
-import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.ext.erd.part.NodePart;
 
 /**
  * Command to move the bounds of an existing table. Only used with
@@ -17,17 +17,17 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
  * 
  * @author Serge Rieder
  */
-public class EntityMoveCommand extends Command
+public class NodeMoveCommand extends Command
 {
 
-	private EntityPart entityPart;
+	private NodePart nodePart;
 	private Rectangle oldBounds;
 	private Rectangle newBounds;
 
-	public EntityMoveCommand(EntityPart entityPart, Rectangle oldBounds, Rectangle newBounds)
+	public NodeMoveCommand(NodePart nodePart, Rectangle oldBounds, Rectangle newBounds)
 	{
 		super();
-		this.entityPart = entityPart;
+		this.nodePart = nodePart;
 		this.oldBounds = oldBounds;
 		this.newBounds = newBounds;
 	}
@@ -35,19 +35,19 @@ public class EntityMoveCommand extends Command
 	public void execute()
 	{
 /*
-        List tcList = entityPart.getTargetConnections();
+        List tcList = nodePart.getTargetConnections();
         for (Object tc : tcList) {
             AssociationPart as = (AssociationPart)tc ;
             PolylineConnection pc = (PolylineConnection) as.getFigure();
             pc.getConnectionRouter().route(pc);
         }
 */
-        entityPart.modifyBounds(newBounds);
+        nodePart.modifyBounds(newBounds);
 	}
 
 	public void undo()
 	{
-		entityPart.modifyBounds(oldBounds);
+		nodePart.modifyBounds(oldBounds);
 	}
 
 }

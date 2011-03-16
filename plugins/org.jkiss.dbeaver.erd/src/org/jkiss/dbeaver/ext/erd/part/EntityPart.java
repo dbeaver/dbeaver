@@ -37,72 +37,15 @@ import java.util.List;
  * 
  * @author Serge Rieder
  */
-public class EntityPart extends PropertyAwarePart implements NodeEditPart
+public class EntityPart extends NodePart
 {
-
 	protected DirectEditManager manager;
-    private Rectangle bounds;
 
-
-    /**
-     * @return Returns the bounds.
-     */
-    public Rectangle getBounds()
+    public EntityPart()
     {
-        return bounds;
     }
 
     /**
-     * Sets bounds without firing off any event notifications
-     *
-     * @param bounds
-     *            The bounds to set.
-     */
-    public void setBounds(Rectangle bounds)
-    {
-        this.bounds = bounds;
-    }
-
-    /**
-     * If modified, sets bounds and fires off event notification
-     *
-     * @param bounds
-     *            The bounds to set.
-     */
-    public void modifyBounds(Rectangle bounds)
-    {
-        Rectangle oldBounds = this.bounds;
-        if (!bounds.equals(oldBounds))
-        {
-            this.bounds = bounds;
-
-            EntityFigure entityFigure = (EntityFigure) getFigure();
-            DiagramPart parent = (DiagramPart) getParent();
-            parent.setLayoutConstraint(this, entityFigure, bounds);
-        }
-    }
-
-	//******************* Life-cycle related methods *********************/
-
-	/**
-	 * @see org.eclipse.gef.EditPart#activate()
-	 */
-	public void activate()
-	{
-		super.activate();
-	}
-
-	/**
-	 * @see org.eclipse.gef.EditPart#deactivate()
-	 */
-	public void deactivate()
-	{
-		super.deactivate();
-	}
-
-	//******************* Model related methods *********************/
-
-	/**
 	 * Returns the Table model object represented by this EditPart
 	 */
 	public ERDTable getTable()
@@ -279,35 +222,23 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 		return figure.getColumnsFigure();
 	}
 
-	/**
-	 * @see NodeEditPart#getSourceConnectionAnchor(org.eclipse.gef.ConnectionEditPart)
-	 */
 	public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection)
 	{
 		return new ChopboxAnchor(getFigure());
 	}
 
-	/**
-	 * @see org.eclipse.gef.NodeEditPart#getSourceConnectionAnchor(org.eclipse.gef.Request)
-	 */
 	public ConnectionAnchor getSourceConnectionAnchor(Request request)
 	{
         return new ChopboxAnchor(getFigure());
 		//return new TopAnchor(getFigure());
 	}
 
-	/**
-	 * @see NodeEditPart#getTargetConnectionAnchor(org.eclipse.gef.ConnectionEditPart)
-	 */
 	public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection)
 	{
         return new ChopboxAnchor(getFigure());
 		//return new BottomAnchor(getFigure());
 	}
 
-	/**
-	 * @see org.eclipse.gef.NodeEditPart#getTargetConnectionAnchor(org.eclipse.gef.Request)
-	 */
 	public ConnectionAnchor getTargetConnectionAnchor(Request request)
 	{
 		return new ChopboxAnchor(getFigure());

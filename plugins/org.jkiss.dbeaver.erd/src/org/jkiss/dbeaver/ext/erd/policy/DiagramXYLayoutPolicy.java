@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.policy;
 
+import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.EditPart;
@@ -15,9 +16,9 @@ import org.eclipse.gef.Request;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.XYLayoutEditPolicy;
 import org.eclipse.gef.requests.CreateRequest;
-import org.jkiss.dbeaver.ext.erd.command.EntityMoveCommand;
-import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
+import org.jkiss.dbeaver.ext.erd.command.NodeMoveCommand;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.ext.erd.part.NodePart;
 
 /**
  * Handles manual layout editing for schema diagram. Only available for
@@ -39,24 +40,27 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 	protected Command createChangeConstraintCommand(EditPart child, Object constraint)
 	{
 
-		if (!(child instanceof EntityPart))
+		if (!(child instanceof NodePart))
 			return null;
 		if (!(constraint instanceof Rectangle))
 			return null;
 
-		EntityPart entityPart = (EntityPart) child;
-		EntityFigure figure = (EntityFigure) entityPart.getFigure();
+		NodePart nodePart = (NodePart) child;
+		Figure figure = (Figure) nodePart.getFigure();
 		Rectangle oldBounds = figure.getBounds();
 		Rectangle newBounds = (Rectangle) constraint;
 
-		if (oldBounds.width != newBounds.width && newBounds.width != -1)
-			return null;
-		if (oldBounds.height != newBounds.height && newBounds.height != -1)
-			return null;
+        // Restrict resize for entities
+        if (nodePart instanceof EntityPart) {
+            if (oldBounds.width != newBounds.width && newBounds.width != -1)
+                return null;
+            if (oldBounds.height != newBounds.height && newBounds.height != -1)
+                return null;
+        }
 
-		//DiagramPart diagramPart = (DiagramPart) entityPart.getParent();
+		//DiagramPart diagramPart = (DiagramPart) nodePart.getParent();
 
-		return new EntityMoveCommand(entityPart, oldBounds.getCopy(), newBounds.getCopy());
+		return new NodeMoveCommand(nodePart, oldBounds.getCopy(), newBounds.getCopy());
 	}
 
 	/**

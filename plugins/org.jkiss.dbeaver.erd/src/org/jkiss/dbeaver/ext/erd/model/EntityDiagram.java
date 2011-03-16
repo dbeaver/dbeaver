@@ -30,6 +30,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	private boolean layoutManualAllowed = false;
     private Map<DBSTable, ERDTable> tableMap = new IdentityHashMap<DBSTable, ERDTable>();
     private Map<ERDTable, Rectangle> initBounds = new IdentityHashMap<ERDTable, Rectangle>();
+    private List<ERDNote> notes = new ArrayList<ERDNote>();
     private boolean needsAutoLayout;
 
     public EntityDiagram(DBSObject container, String name)
@@ -100,7 +101,30 @@ public class EntityDiagram extends ERDObject<DBSObject>
 		return tables;
 	}
 
-	/**
+    public synchronized List<ERDNote> getNotes()
+    {
+        return notes;
+    }
+
+    public synchronized void addNote(ERDNote note, boolean reflect)
+    {
+        notes.add(note);
+
+        if (reflect) {
+            firePropertyChange(CHILD, null, note);
+        }
+    }
+
+    public synchronized void removeNote(ERDNote note, boolean reflect)
+    {
+        notes.remove(note);
+
+        if (reflect) {
+            firePropertyChange(CHILD, note, null);
+        }
+    }
+
+    /**
 	 * @return the name of the schema
 	 */
 	public String getName()
@@ -253,4 +277,13 @@ public class EntityDiagram extends ERDObject<DBSObject>
             }
         }
     }
+
+    public List<?> getContents()
+    {
+        List<Object> children = new ArrayList<Object>(tables.size() + notes.size());
+        children.addAll(tables);
+        children.addAll(notes);
+        return children;
+    }
+
 }

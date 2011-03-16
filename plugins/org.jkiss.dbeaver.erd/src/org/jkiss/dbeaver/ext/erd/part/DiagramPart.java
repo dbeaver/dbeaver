@@ -7,7 +7,10 @@ package org.jkiss.dbeaver.ext.erd.part;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
+import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStackListener;
+import org.eclipse.gef.editpolicies.XYLayoutEditPolicy;
+import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
@@ -20,6 +23,7 @@ import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.layout.GraphLayoutAuto;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.DiagramXYLayoutPolicy;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -167,7 +171,7 @@ public class DiagramPart extends PropertyAwarePart {
      */
     protected List<?> getModelChildren()
     {
-        return getDiagram().getTables();
+        return getDiagram().getContents();
     }
 
     /**
@@ -202,7 +206,7 @@ public class DiagramPart extends PropertyAwarePart {
         List<?> entityParts = getChildren();
 
         for (Iterator<?> iter = entityParts.iterator(); iter.hasNext();) {
-            EntityPart entityPart = (EntityPart) iter.next();
+            NodePart entityPart = (NodePart) iter.next();
             IFigure entityFigure = entityPart.getFigure();
 
             //if we don't find a node for one of the children then we should
@@ -232,7 +236,7 @@ public class DiagramPart extends PropertyAwarePart {
         List<?> tableParts = getChildren();
 
         for (Iterator<?> iter = tableParts.iterator(); iter.hasNext();) {
-            EntityPart entityPart = (EntityPart) iter.next();
+            NodePart entityPart = (NodePart) iter.next();
 
             //now check whether we can find an entry in the tableToNodesMap
             Rectangle bounds = entityPart.getBounds();

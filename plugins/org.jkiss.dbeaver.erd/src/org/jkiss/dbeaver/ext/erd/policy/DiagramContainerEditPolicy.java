@@ -17,8 +17,9 @@ import org.eclipse.gef.editpolicies.ContainerEditPolicy;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.GroupRequest;
 import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
+import org.jkiss.dbeaver.ext.erd.command.NoteCreateCommand;
+import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 import java.util.Collection;
@@ -45,8 +46,14 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
      */
     protected Command getCreateCommand(CreateRequest request)
     {
-        Collection<ERDTable> tables = null;
+        DiagramPart diagramPart = (DiagramPart) getHost();
+        Point location = request.getLocation();
+
         Object newObject = request.getNewObject();
+        if (newObject instanceof ERDNote) {
+            return new NoteCreateCommand(diagramPart, (ERDNote)newObject, location);
+        }
+        Collection<ERDTable> tables = null;
         if (newObject instanceof ERDTable) {
             tables = Collections.singletonList((ERDTable) newObject);
         } else if (newObject instanceof Collection) {
@@ -55,10 +62,7 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
         if (CommonUtils.isEmpty(tables)) {
             return null;
         }
-        Point location = request.getLocation();
         //EditPart host = getTargetEditPart(request);
-
-        DiagramPart diagramPart = (DiagramPart) getHost();
 
         return new EntityAddCommand(diagramPart, tables, location);
     }

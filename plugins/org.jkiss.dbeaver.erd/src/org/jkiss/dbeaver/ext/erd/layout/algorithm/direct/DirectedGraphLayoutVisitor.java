@@ -16,6 +16,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.graph.*;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
+import org.eclipse.gef.NodeEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
@@ -69,26 +70,26 @@ public class DirectedGraphLayoutVisitor {
         GraphAnimation.recordInitialState(diagram.getFigure());
         //IFigure fig = diagram.getFigure();
         for (Object child : diagram.getChildren()) {
-            addEntityNode((EntityPart) child);
+            addEntityNode((NodeEditPart) child);
         }
     }
 
     /**
      * Adds nodes to the graph object for use by the GraphLayoutAuto
      */
-    protected void addEntityNode(EntityPart entityPart)
+    protected void addEntityNode(NodeEditPart nodeEditPart)
     {
         Node entityNode;
-        if (entityPart.getTable().hasSelfLinks()) {
-            entityNode = new Subgraph(entityPart);
+        if (nodeEditPart instanceof EntityPart && ((EntityPart)nodeEditPart).getTable().hasSelfLinks()) {
+            entityNode = new Subgraph(nodeEditPart);
         } else {
-            entityNode = new Node(entityPart);
+            entityNode = new Node(nodeEditPart);
         }
-        Dimension preferredSize = entityPart.getFigure().getPreferredSize(400, 300);
+        Dimension preferredSize = nodeEditPart.getFigure().getPreferredSize(400, 300);
         entityNode.width = preferredSize.width;
         entityNode.height = preferredSize.height;
         entityNode.setPadding(new Insets(10, 8, 10, 12));
-        partToNodesMap.put(entityPart, entityNode);
+        partToNodesMap.put(nodeEditPart, entityNode);
         graph.nodes.add(entityNode);
 
         if (entityNode instanceof Subgraph) {

@@ -7,11 +7,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.layout.algorithm.direct;
 
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.graph.*;
+import org.eclipse.gef.NodeEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.swt.graphics.Point;
-import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,8 +58,8 @@ public class StandaloneNodeConnector {
                     final int connCount1 = o2.outgoing.size() + o2.incoming.size();
                     final int connCount2 = o1.outgoing.size() + o1.incoming.size();
                     if (connCount1 == 0 && connCount1 == connCount2) {
-                        if (o1.data instanceof EntityPart && o2.data instanceof EntityPart) {
-                            return ((EntityPart) o1.data).getFigure().getMinimumSize().height - ((EntityPart) o2.data).getFigure().getMinimumSize().height;
+                        if (o1.data instanceof NodeEditPart && o2.data instanceof NodeEditPart) {
+                            return ((NodeEditPart) o1.data).getFigure().getMinimumSize().height - ((NodeEditPart) o2.data).getFigure().getMinimumSize().height;
                         } else {
                             return 0;
                         }

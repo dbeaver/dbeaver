@@ -23,7 +23,7 @@ public class ERDObjectAdapter implements IAdapterFactory {
             if (adaptableObject instanceof EditPart) {
                 Object model = ((EditPart) adaptableObject).getModel();
                 if (model instanceof ERDObject) {
-                    DBSObject object = ((ERDObject<?>) model).getObject();
+                    Object object = ((ERDObject<?>) model).getObject();
                     if (object != null && adapterType.isAssignableFrom(object.getClass())) {
                         return object;
                     }

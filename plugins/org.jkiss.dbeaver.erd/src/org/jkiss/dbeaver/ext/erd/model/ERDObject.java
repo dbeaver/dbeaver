@@ -29,7 +29,7 @@ import java.lang.reflect.InvocationTargetException;
  * Provides base class support for model objects to participate in event handling framework
  * @author Serge Rieder
  */
-public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySource, IAdaptable
+public abstract class ERDObject<OBJECT> implements IPropertySource, IAdaptable
 {
     static final Log log = LogFactory.getLog(ERDObject.class);
 
@@ -105,20 +105,22 @@ public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySo
 
 
     public void openEditor() {
-        DBeaverCore.runUIJob("Open object editor", new DBRRunnableWithProgress() {
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
-                    monitor,
-                    object,
-                    true
-                );
-                if (node != null) {
-                    NavigatorHandlerObjectOpen.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+        if (object instanceof DBSObject) {
+            DBeaverCore.runUIJob("Open object editor", new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
+                        monitor,
+                        (DBSObject) object,
+                        true
+                    );
+                    if (node != null) {
+                        NavigatorHandlerObjectOpen.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     public Object getAdapter(Class adapter) {

@@ -9,14 +9,8 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
-import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
-import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
-import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
-import org.jkiss.dbeaver.ext.erd.part.AttributePart;
-import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.ext.erd.model.*;
+import org.jkiss.dbeaver.ext.erd.part.*;
 
 /**
  * Edit part factory for creating EditPart instances as delegates for model objects
@@ -35,6 +29,8 @@ class ERDEditPartFactory implements EditPartFactory
             part = new AssociationPart();
         } else if (model instanceof ERDTableColumn) {
             part = new AttributePart();
+        } else if (model instanceof ERDNote) {
+            part = new NotePart();
         }
         if (part != null) {
             part.setModel(model);
