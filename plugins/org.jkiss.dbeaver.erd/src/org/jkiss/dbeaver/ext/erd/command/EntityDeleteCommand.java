@@ -76,13 +76,16 @@ public class EntityDeleteCommand extends Command
 	 */
 	protected void primExecute()
 	{
+        // Put table's bound in init map - it could be used by EntityPart on undo
         entityDiagram.addInitBounds(table, entityPart.getBounds());
-        entityPart.modifyBounds(new Rectangle(0, 0, 0, 0));
 
+        // Zero bounds - to let modifyBounds reflect on undo
+        //entityPart.modifyBounds(new Rectangle(0, 0, 0, 0));
+
+        // Delete entity
 		deleteRelationships(table);
 		index = entityDiagram.getTables().indexOf(table);
 		entityDiagram.removeTable(table, true);
-        // Zero bounds - to let modifyBounds reflect on undo
 	}
 
 	/**

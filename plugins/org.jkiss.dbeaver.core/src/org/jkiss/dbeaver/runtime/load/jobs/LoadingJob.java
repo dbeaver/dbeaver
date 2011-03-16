@@ -46,6 +46,8 @@ public class LoadingJob<RESULT>  extends AbstractJob {
 
     protected IStatus run(DBRProgressMonitor monitor)
     {
+        monitor = visualizer.overwriteMonitor(monitor);
+
         LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<RESULT>(this, monitor);
         updateUIJob.schedule();
         this.loadingService.setProgressMonitor(monitor);

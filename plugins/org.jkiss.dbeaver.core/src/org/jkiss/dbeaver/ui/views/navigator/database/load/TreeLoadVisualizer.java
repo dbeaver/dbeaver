@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
@@ -33,6 +34,11 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
 
     public Shell getShell() {
         return viewer.getControl().getShell();
+    }
+
+    public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor)
+    {
+        return monitor;
     }
 
     public boolean isCompleted()

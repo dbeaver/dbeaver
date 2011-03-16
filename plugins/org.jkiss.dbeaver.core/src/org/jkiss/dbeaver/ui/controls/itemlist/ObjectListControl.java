@@ -305,8 +305,9 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
             column.item.dispose();
         }
         columns.clear();
-
-        itemsViewer.setInput(Collections.<Object>emptyList());
+        if (!itemsViewer.getControl().isDisposed()) {
+            itemsViewer.setInput(Collections.<Object>emptyList());
+        }
         //itemMap.clear();
     }
 

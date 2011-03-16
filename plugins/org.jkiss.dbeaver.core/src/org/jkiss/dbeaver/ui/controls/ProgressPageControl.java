@@ -5,11 +5,6 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -19,20 +14,17 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.UIUtils;
-
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * ItemListControl
  */
-public class ProgressPageControl extends Composite implements IRunnableContext
+public class ProgressPageControl extends Composite //implements IRunnableContext
 {
     //static final Log log = LogFactory.getLog(ProgressPageControl.class);
 
@@ -152,6 +144,7 @@ public class ProgressPageControl extends Composite implements IRunnableContext
         return false;
     }
 
+/*
     public void run(boolean fork, boolean cancelable, final IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
     {
         Job job = new Job("Progress") {
@@ -171,13 +164,47 @@ public class ProgressPageControl extends Composite implements IRunnableContext
         job.schedule();
         job.join();
     }
+*/
 
     public class ProgressVisualizer<RESULT> implements ILoadVisualizer<RESULT> {
 
         private boolean completed = false;
+        private String curStatus;
 
         public Shell getShell() {
             return ProgressPageControl.this.getShell();
+        }
+
+        public DBRProgressMonitor overwriteMonitor(final DBRProgressMonitor monitor)
+        {
+            return new ProxyProgressMonitor(monitor) {
+                @Override
+                public void beginTask(final String name, int totalWork)
+                {
+                    super.beginTask(name, totalWork);
+                    curStatus = name;
+                }
+
+                @Override
+                public void done()
+                {
+                    super.done();
+                    curStatus = "";
+                }
+
+                @Override
+                public void subTask(String name)
+                {
+                    super.subTask(name);
+                    curStatus = name;
+                }
+
+                @Override
+                public void worked(int work)
+                {
+                    super.worked(work);
+                }
+            };
         }
 
         public boolean isCompleted()
@@ -195,6 +222,9 @@ public class ProgressPageControl extends Composite implements IRunnableContext
                     progressTools.setVisible(true);
                 }
                 progressBar.setSelection(loadCount);
+                if (curStatus != null) {
+                    listInfoLabel.setText(curStatus);
+                }
                 loadCount++;
                 if (loadCount > PROGRESS_MAX) {
                     loadCount = PROGRESS_MIN;

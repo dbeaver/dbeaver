@@ -15,6 +15,7 @@ import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
@@ -173,6 +174,11 @@ public class PropertySourceAbstract implements IPropertySource
 
         public Shell getShell() {
             return UIUtils.getActiveShell();
+        }
+
+        public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor)
+        {
+            return monitor;
         }
 
         public boolean isCompleted()
