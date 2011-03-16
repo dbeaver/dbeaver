@@ -21,6 +21,7 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -61,9 +63,11 @@ public class DiagramLoader
     public static final String ATTR_TIME = "time";
     public static final String ATTR_ID = "id";
     public static final String ATTR_FQ_NAME = "fq-name";
+    public static final String ATTR_REF_NAME = "ref-name";
     public static final String ATTR_TYPE = "type";
     public static final String ATTR_PK_REF = "pk-ref";
     public static final String ATTR_FK_REF = "fk-ref";
+    private static final String TAG_COLUMN = "column";
     public static final String ATTR_X = "x";
     public static final String ATTR_Y = "y";
 
@@ -102,6 +106,7 @@ public class DiagramLoader
         final String type;
         final TableLoadInfo pkTable;
         final TableLoadInfo fkTable;
+        final Map<String, String> columns = new LinkedHashMap<String, String>();
         final List<Point> bends = new ArrayList<Point>();
 
         private RelationLoadInfo(String name, String type, TableLoadInfo pkTable, TableLoadInfo fkTable)
@@ -241,6 +246,14 @@ public class DiagramLoader
                 RelationLoadInfo relationLoadInfo = new RelationLoadInfo(relName, relType, pkTable, fkTable);
                 relInfos.add(relationLoadInfo);
 
+                // Load columns (present only in logical relations)
+                for (Element columnElem : XMLUtils.getChildElementList(relElem, TAG_COLUMN)) {
+                    String name = columnElem.getAttribute(ATTR_NAME);
+                    String refName = columnElem.getAttribute(ATTR_REF_NAME);
+                    relationLoadInfo.columns.put(name, refName);
+                }
+
+                // Load bends
                 for (Element bendElem : XMLUtils.getChildElementList(relElem, TAG_BEND)) {
                     String type = bendElem.getAttribute(ATTR_TYPE);
                     if (!BEND_RELATIVE.equals(type)) {
@@ -256,6 +269,7 @@ public class DiagramLoader
             }
         }
 
+        // Fill tables
         List<DBSTable> tableList = new ArrayList<DBSTable>();
         for (TableLoadInfo info : tableInfos) {
             tableList.add(info.table);
@@ -267,6 +281,17 @@ public class DiagramLoader
             final ERDTable erdTable = diagram.getERDTable(info.table);
             if (erdTable != null) {
                 diagram.addInitBounds(erdTable, info.bounds);
+            }
+        }
+
+        // Add logical relations
+        for (RelationLoadInfo info : relInfos) {
+            if (info.type.equals(ERDConstants.CONSTRAINT_LOGICAL_FK.getId())) {
+                final ERDTable sourceTable = diagram.getERDTable(info.pkTable.table);
+                final ERDTable targetTable = diagram.getERDTable(info.fkTable.table);
+                if (sourceTable != null && targetTable != null) {
+                    new ERDAssociation(targetTable, sourceTable, false);
+                }
             }
         }
         // Set relations' bends
@@ -387,7 +412,7 @@ public class DiagramLoader
                     xml.startElement(TAG_RELATION);
                     xml.addAttribute(ATTR_NAME, rel.getObject().getName());
                     xml.addAttribute(ATTR_FQ_NAME, rel.getObject().getFullQualifiedName());
-                    xml.addAttribute(ATTR_TYPE, rel.getObject().getConstraintType().getName());
+                    xml.addAttribute(ATTR_TYPE, rel.getObject().getConstraintType().getId());
                     TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryKeyTable());
                     if (pkInfo == null) {
                         log.error("Cannot find PK table '" + rel.getPrimaryKeyTable().getObject().getFullQualifiedName() + "' in info map");
@@ -400,6 +425,16 @@ public class DiagramLoader
                     }
                     xml.addAttribute(ATTR_PK_REF, pkInfo.objectId);
                     xml.addAttribute(ATTR_FK_REF, fkInfo.objectId);
+
+                    if (rel.getObject().getConstraintType() == ERDConstants.CONSTRAINT_LOGICAL_FK) {
+                        // Save columns
+                        for (DBSForeignKeyColumn column : rel.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
+                            xml.startElement(TAG_COLUMN);
+                            xml.addAttribute(ATTR_NAME, column.getName());
+                            xml.addAttribute(ATTR_REF_NAME, column.getReferencedColumn().getName());
+                            xml.endElement();
+                        }
+                    }
 
                     // Save bends
                     if (pkInfo.tablePart != null) {

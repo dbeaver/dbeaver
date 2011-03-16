@@ -24,6 +24,32 @@ public class ERDAssociation extends ERDObject<DBSForeignKey>
 	private ERDTable foreignKeyTable;
     private List<Point> initBends;
 
+    /**
+     * Constructor for logical association
+     * @param foreignTable fk table
+     * @param primaryTable pk table
+     * @param reflect reflect flag
+     */
+    public ERDAssociation(ERDTable foreignTable, ERDTable primaryTable, boolean reflect)
+    {
+        super(new ERDLogicalForeignKey(
+            foreignTable,
+            foreignTable.getObject().getName() + " -> " + primaryTable.getObject().getName(),
+            "",
+            primaryTable.getLogicalPrimaryKey()));
+        this.primaryKeyTable = primaryTable;
+        this.foreignKeyTable = foreignTable;
+        this.primaryKeyTable.addPrimaryKeyRelationship(this, reflect);
+        this.foreignKeyTable.addForeignKeyRelationship(this, reflect);
+    }
+
+    /**
+     * Constructor for physical association
+     * @param object physical FK
+     * @param foreignTable fk table
+     * @param primaryTable pk table
+     * @param reflect reflect flag
+     */
 	public ERDAssociation(DBSForeignKey object, ERDTable foreignTable, ERDTable primaryTable, boolean reflect)
 	{
 		super(object);

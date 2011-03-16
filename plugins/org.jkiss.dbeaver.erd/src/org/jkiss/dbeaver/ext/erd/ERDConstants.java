@@ -26,5 +26,5 @@ public class ERDConstants {
     public static final String PREF_GRID_WIDTH = "erd.grid.width";
     public static final String PREF_GRID_HEIGHT = "erd.grid.height";
 
-    public static DBSConstraintType CONSTRAINT_LOGICAL_FK = new DBSConstraintType("ERD Logical Key", false);
+    public static DBSConstraintType CONSTRAINT_LOGICAL_FK = new DBSConstraintType("erdkey", "Logical Key", false);
 }

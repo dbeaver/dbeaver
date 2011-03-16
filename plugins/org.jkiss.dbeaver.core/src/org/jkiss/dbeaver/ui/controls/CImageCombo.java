@@ -1214,9 +1214,11 @@ public class CImageCombo extends Composite {
     @Override
     public void setRedraw(boolean redraw)
     {
+/*
         if (this.table != null && !this.table.isDisposed()) {
             this.table.setRedraw(redraw);
         }
+*/
         super.setRedraw(redraw);
     }
 

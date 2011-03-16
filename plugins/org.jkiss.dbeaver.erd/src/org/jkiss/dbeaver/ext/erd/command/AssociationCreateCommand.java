@@ -61,12 +61,7 @@ public class AssociationCreateCommand extends Command {
      */
     public void execute()
     {
-        ERDLogicalForeignKey fk = new ERDLogicalForeignKey(
-            foreignTable,
-            foreignTable.getObject().getName() + " -> " + primaryTable.getObject().getName(),
-            "",
-            primaryTable.getLogicalPrimaryKey());
-        association = new ERDAssociation(fk, foreignTable, primaryTable, true);
+        association = new ERDAssociation(foreignTable, primaryTable, true);
     }
 
     /**

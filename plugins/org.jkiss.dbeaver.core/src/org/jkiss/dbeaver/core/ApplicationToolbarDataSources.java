@@ -296,29 +296,31 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
     }
 
     private void fillDataSourceList(boolean force) {
-        connectionCombo.setRedraw(false);
-        try {
-            final List<? extends DBSDataSourceContainer> dataSources = getAvailableDataSources();
+        final List<? extends DBSDataSourceContainer> dataSources = getAvailableDataSources();
 
-            boolean update = force;
-            if (!update) {
-                // Check if there are any changes
-                final List<DBSDataSourceContainer> oldDataSources = new ArrayList<DBSDataSourceContainer>();
-                for (TableItem item : connectionCombo.getItems()) {
-                    if (item.getData() instanceof DBSDataSourceContainer) {
-                        oldDataSources.add((DBSDataSourceContainer) item.getData());
-                    }
+        boolean update = force;
+        if (!update) {
+            // Check if there are any changes
+            final List<DBSDataSourceContainer> oldDataSources = new ArrayList<DBSDataSourceContainer>();
+            for (TableItem item : connectionCombo.getItems()) {
+                if (item.getData() instanceof DBSDataSourceContainer) {
+                    oldDataSources.add((DBSDataSourceContainer) item.getData());
                 }
-                if (oldDataSources.size() == dataSources.size()) {
-                    for (int i = 0; i < dataSources.size(); i++) {
-                        if (dataSources.get(i) != oldDataSources.get(i)) {
-                            update = true;
-                            break;
-                        }
+            }
+            if (oldDataSources.size() == dataSources.size()) {
+                for (int i = 0; i < dataSources.size(); i++) {
+                    if (dataSources.get(i) != oldDataSources.get(i)) {
+                        update = true;
+                        break;
                     }
                 }
             }
+        }
 
+        if (update) {
+            connectionCombo.setRedraw(false);
+        }
+        try {
             if (update) {
                 // Remove all but first item
                 final int itemCount = connectionCombo.getItemCount();
@@ -351,7 +353,9 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
             }
             connectionCombo.select(selectionIndex);
         } finally {
-            connectionCombo.setRedraw(true);
+            if (update) {
+                connectionCombo.setRedraw(true);
+            }
         }
     }
 

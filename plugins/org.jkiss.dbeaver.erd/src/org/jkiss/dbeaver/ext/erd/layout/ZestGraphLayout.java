@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.layout;
 
+/*
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+*/
 
 /**
  * ZestGraphLayout
@@ -39,6 +41,7 @@ import java.util.Map;
 public class ZestGraphLayout
 {
 
+/*
     static final Log log = LogFactory.getLog(ZestGraphLayout.class);
 
     List<LayoutEntity> entities = new ArrayList<LayoutEntity>();
@@ -177,6 +180,7 @@ public class ZestGraphLayout
         }
         return null;
     }
+*/
 
 
 }
