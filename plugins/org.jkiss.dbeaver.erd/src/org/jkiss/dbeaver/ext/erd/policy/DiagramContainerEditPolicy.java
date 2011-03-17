@@ -48,6 +48,7 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
     {
         DiagramPart diagramPart = (DiagramPart) getHost();
         Point location = request.getLocation();
+        diagramPart.getFigure().translateToRelative(location);
 
         Object newObject = request.getNewObject();
         if (newObject instanceof ERDNote) {
