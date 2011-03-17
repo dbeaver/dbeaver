@@ -41,12 +41,14 @@ public class DBeaverApplication implements IApplication
         Display display = PlatformUI.createDisplay();
 
         Location instanceLoc = Platform.getInstanceLocation();
+        String defaultHomePath = getDefaultWorkspaceLocation().getAbsolutePath();
         try {
-            instanceLoc.set(new URL("file", null, getDefaultWorkspaceLocation().getAbsolutePath()), true);
+            URL defaultHomeURL = new URL("file", null, defaultHomePath);
+            instanceLoc.set(defaultHomeURL, true);
         } catch (Throwable e) {
             // Just skip it
             // Error may occur if -data parameter was specified at startup
-            e.printStackTrace();
+            System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());
         }
 /*
         try {
@@ -78,7 +80,7 @@ public class DBeaverApplication implements IApplication
         }
     }
 
-    private File getDefaultWorkspaceLocation() {
+    private static File getDefaultWorkspaceLocation() {
         File userHomeDir = RuntimeUtils.getUserHomeDir();
         return new File(userHomeDir, DBeaverConstants.DBEAVER_DEFAULT_DIR);
     }

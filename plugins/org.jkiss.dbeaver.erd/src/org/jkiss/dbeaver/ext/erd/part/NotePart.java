@@ -10,6 +10,7 @@ package org.jkiss.dbeaver.ext.erd.part;
 import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.ConnectionEditPart;
@@ -154,6 +155,8 @@ public class NotePart extends NodePart
 
             //noteFigure.setLocation(bounds.getLocation());
             //noteFigure.setSize(bounds.getSize());
+        } else if (noteFigure.getSize().isEmpty()) {
+            noteFigure.setPreferredSize(new Dimension(100, 50));
         }
         return noteFigure;
     }

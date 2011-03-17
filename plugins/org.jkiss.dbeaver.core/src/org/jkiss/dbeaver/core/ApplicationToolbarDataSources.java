@@ -315,6 +315,8 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                         break;
                     }
                 }
+            } else {
+                update = true;
             }
         }
 
