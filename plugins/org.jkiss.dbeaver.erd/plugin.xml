@@ -180,6 +180,12 @@
                 </visibleWhen>
             </command>
         </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone.EditorContext">
+            <command commandId="org.eclipse.ui.edit.copy"/>
+            <command commandId="org.eclipse.ui.edit.paste"/>
+        </menuContribution>
+
     </extension>
 
     <extension point="org.eclipse.ui.newWizards">

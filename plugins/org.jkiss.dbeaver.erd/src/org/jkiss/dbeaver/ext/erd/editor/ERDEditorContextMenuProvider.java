@@ -12,6 +12,8 @@ import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.GEFActionConstants;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.actions.ActionFactory;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 
@@ -48,6 +50,14 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
 		GEFActionConstants.addStandardActionGroups(menu);
 
 		IAction action;
+/*
+        action = getActionRegistry().getAction(ActionFactory.COPY.getId());
+        menu.appendToGroup(GEFActionConstants.GROUP_UNDO, action);
+
+        action = getActionRegistry().getAction(ActionFactory.PASTE.getId());
+        menu.appendToGroup(GEFActionConstants.GROUP_UNDO, action);
+*/
+
 		action = getActionRegistry().getAction(ActionFactory.UNDO.getId());
 		menu.appendToGroup(GEFActionConstants.GROUP_UNDO, action);
 
@@ -64,6 +74,8 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
 
         action = new DiagramLayoutAction(editor);
         menu.appendToGroup(GEFActionConstants.GROUP_VIEW, action);
+
+        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         //action = getActionRegistry().getAction(ActionFactory.PRINT.getId());
         //menu.appendToGroup(GEFActionConstants.GROUP_PRINT, action);
         //action = getActionRegistry().getAction(GEFActionConstants.TOGGLE_GRID_VISIBILITY);

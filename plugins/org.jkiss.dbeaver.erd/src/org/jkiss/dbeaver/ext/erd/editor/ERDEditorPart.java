@@ -468,6 +468,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         addStackAction(new RedoAction(this));
         addEditPartAction(new DeleteAction((IWorkbenchPart) this));
 
+        //getActionRegistry().registerAction(ActionFactory.COPY.create(getSite().getWorkbenchWindow()));
+        //getActionRegistry().registerAction(ActionFactory.PASTE.create(getSite().getWorkbenchWindow()));
         getActionRegistry().registerAction(new SelectAllAction(this));
     }
 
