@@ -8,13 +8,11 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.gef.ContextMenuProvider;
-import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.GEFActionConstants;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.actions.ActionFactory;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 
 /**
@@ -24,22 +22,17 @@ import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 public class ERDEditorContextMenuProvider extends ContextMenuProvider
 {
     private ERDEditorPart editor;
-	private ActionRegistry actionRegistry;
 
 	/**
-	 * Creates a new FlowContextMenuProvider assoicated with the given viewer
+	 * Creates a new FlowContextMenuProvider associated with the given viewer
 	 * and action registry.
 	 * 
-	 * @param editor
-	 *            the editor
-	 * @param registry
-	 *            the action registry
+	 * @param editor the editor
 	 */
-	public ERDEditorContextMenuProvider(ERDEditorPart editor, ActionRegistry registry)
+	public ERDEditorContextMenuProvider(ERDEditorPart editor)
 	{
 		super(editor.getViewer());
         this.editor = editor;
-		setActionRegistry(registry);
 	}
 
 	/**
@@ -49,54 +42,9 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
 	{
 		GEFActionConstants.addStandardActionGroups(menu);
 
-		IAction action;
-/*
-        action = getActionRegistry().getAction(ActionFactory.COPY.getId());
-        menu.appendToGroup(GEFActionConstants.GROUP_UNDO, action);
-
-        action = getActionRegistry().getAction(ActionFactory.PASTE.getId());
-        menu.appendToGroup(GEFActionConstants.GROUP_UNDO, action);
-*/
-
-		action = getActionRegistry().getAction(ActionFactory.UNDO.getId());
-		menu.appendToGroup(GEFActionConstants.GROUP_UNDO, action);
-
-		action = getActionRegistry().getAction(ActionFactory.REDO.getId());
-		menu.appendToGroup(GEFActionConstants.GROUP_UNDO, action);
-
-		action = getActionRegistry().getAction(ActionFactory.DELETE.getId());
-		if (action.isEnabled())
-			menu.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
-
-        action = getActionRegistry().getAction(ActionFactory.SELECT_ALL.getId());
-        if (action.isEnabled())
-            menu.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
-
-        action = new DiagramLayoutAction(editor);
+		IAction action = new DiagramLayoutAction(editor);
         menu.appendToGroup(GEFActionConstants.GROUP_VIEW, action);
 
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        //action = getActionRegistry().getAction(ActionFactory.PRINT.getId());
-        //menu.appendToGroup(GEFActionConstants.GROUP_PRINT, action);
-        //action = getActionRegistry().getAction(GEFActionConstants.TOGGLE_GRID_VISIBILITY);
-        //.menu.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
-
 	}
-
-	private ActionRegistry getActionRegistry()
-	{
-		return actionRegistry;
-	}
-
-	/**
-	 * Sets the action registry
-	 * 
-	 * @param registry
-	 *            the action registry
-	 */
-	public void setActionRegistry(ActionRegistry registry)
-	{
-		actionRegistry = registry;
-	}
-
 }

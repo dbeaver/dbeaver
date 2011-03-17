@@ -7,14 +7,15 @@ package org.jkiss.dbeaver.ext.erd.action;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.gef.ui.actions.SelectAllAction;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 
-public class ERDPrintHandler extends AbstractHandler {
-    public ERDPrintHandler() {
+public class ERDHandlerSelectAll extends AbstractHandler {
+    public ERDHandlerSelectAll() {
 
     }
 
@@ -23,7 +24,8 @@ public class ERDPrintHandler extends AbstractHandler {
         if (control != null) {
             ERDEditorPart editor = ERDEditorAdapter.getEditor(control);
             if (editor != null) {
-                editor.printDiagram();
+                SelectAllAction selectAllAction = new SelectAllAction(editor);
+                selectAllAction.run();
             }
         }
         return null;

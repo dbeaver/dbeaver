@@ -2,9 +2,6 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-/*
- * Created on Jul 13, 2004
- */
 package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.ChopboxAnchor;
@@ -17,7 +14,6 @@ import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
-import org.eclipse.gef.tools.DirectEditManager;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.policy.NoteEditPolicy;
@@ -32,8 +28,6 @@ import java.beans.PropertyChangeEvent;
  */
 public class NotePart extends NodePart
 {
-
-	protected DirectEditManager manager;
 
 	public ERDNote getNote()
 	{
@@ -76,29 +70,6 @@ public class NotePart extends NodePart
             //getTable().openEditor();
         }
 	}
-
-/*
-	private boolean directEditHitTest(Point requestLoc)
-	{
-		NoteFigure figure = (NoteFigure) getFigure();
-		figure.translateToRelative(requestLoc);
-        return figure.containsPoint(requestLoc);
-    }
-
-	protected void performDirectEdit()
-	{
-		if (manager == null)
-		{
-			ERDGraphicalViewer viewer = (ERDGraphicalViewer) getViewer();
-			ValidationMessageHandler handler = viewer.getValidationHandler();
-
-			NoteFigure figure = (NoteFigure) getFigure();
-			manager = new ExtendedDirectEditManager(this, TextCellEditor.class, new LabelCellEditorLocator(figure),
-					figure, null);
-		}
-		manager.show();
-	}
-*/
 
 	//******************* Miscellaneous stuff *********************/
 

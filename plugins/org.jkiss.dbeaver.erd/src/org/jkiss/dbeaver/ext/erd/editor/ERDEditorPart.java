@@ -48,7 +48,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
-import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
@@ -64,7 +63,6 @@ import org.jkiss.dbeaver.ext.erd.action.DiagramToggleGridAction;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
-import org.jkiss.dbeaver.ext.erd.dnd.ObjectCreationFactory;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
@@ -361,9 +359,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.setContents(new EntityDiagram(null, "empty"));
 
         // Set context menu
-        ContextMenuProvider provider = new ERDEditorContextMenuProvider(this, getActionRegistry());
+        ContextMenuProvider provider = new ERDEditorContextMenuProvider(this);
         viewer.setContextMenu(provider);
-        getSite().registerContextMenu("org.jkiss.dbeaver.ext.erd.editor.contextmenu", provider, viewer);
+        getSite().registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer);
     }
 
     private GraphicalViewer createViewer(Composite parent)
@@ -394,6 +392,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         GraphicalViewer graphicalViewer = getGraphicalViewer();
 
+/*
+        MenuManager manager = new MenuManager(getClass().getName(), getClass().getName());
+        manager.setRemoveAllWhenShown(true);
+        getEditorSite().registerContextMenu(getClass().getName() + ".EditorContext", manager, graphicalViewer, true); //$NON-NLS-1$
+*/
+
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
         graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
@@ -404,11 +408,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         // initialize actions
         createActions();
-
-        // Set key handler
-        GraphicalViewerKeyHandler graphicalViewerKeyHandler = new GraphicalViewerKeyHandler(graphicalViewer);
-        KeyHandler parentKeyHandler = graphicalViewerKeyHandler.setParent(getCommonKeyHandler());
-        graphicalViewer.setKeyHandler(parentKeyHandler);
 
         // Setup zoom manager
         ZoomManager zoomManager = rootPart.getZoomManager();
@@ -427,19 +426,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         IAction zoomOut = new ZoomOutAction(zoomManager);
         addAction(zoomIn);
         addAction(zoomOut);
-
-
-    }
-
-    protected KeyHandler getCommonKeyHandler()
-    {
-        KeyHandler sharedKeyHandler = new KeyHandler();
-        sharedKeyHandler.put(KeyStroke.getPressed(SWT.DEL, 127, 0), getActionRegistry().getAction(
-            ActionFactory.DELETE.getId()));
-        sharedKeyHandler.put(KeyStroke.getPressed(SWT.F2, 0), getActionRegistry().getAction(
-            GEFActionConstants.DIRECT_EDIT));
-
-        return sharedKeyHandler;
     }
 
     /**
@@ -457,50 +443,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             isDirty = dirty;
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
-    }
-
-    /**
-     * Creates actions and registers them to the ActionRegistry.
-     */
-    protected void createActions()
-    {
-        addStackAction(new UndoAction(this));
-        addStackAction(new RedoAction(this));
-        addEditPartAction(new DeleteAction((IWorkbenchPart) this));
-
-        //getActionRegistry().registerAction(ActionFactory.COPY.create(getSite().getWorkbenchWindow()));
-        //getActionRegistry().registerAction(ActionFactory.PASTE.create(getSite().getWorkbenchWindow()));
-        getActionRegistry().registerAction(new SelectAllAction(this));
-    }
-
-    /**
-     * Adds an <code>EditPart</code> action to this editor.
-     * <p/>
-     * <p/>
-     * <code>EditPart</code> actions are actions that depend and work on the
-     * selected <code>EditPart</code>s.
-     *
-     * @param action the <code>EditPart</code> action
-     */
-    protected void addEditPartAction(SelectionAction action)
-    {
-        getActionRegistry().registerAction(action);
-        editPartActionIDs.add(action.getId());
-    }
-
-    /**
-     * Adds an <code>CommandStack</code> action to this editor.
-     * <p/>
-     * <p/>
-     * <code>CommandStack</code> actions are actions that depend and work on
-     * the <code>CommandStack</code>.
-     *
-     * @param action the <code>CommandStack</code> action
-     */
-    protected void addStackAction(StackAction action)
-    {
-        getActionRegistry().registerAction(action);
-        stackActionIDs.add(action.getId());
     }
 
     /**

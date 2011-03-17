@@ -55,7 +55,28 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ext.erd.action.ERDUndoHandler">
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerDelete">
+            <activeWhen>
+                <and>
+                    <with variable="activeFocusControl">
+                        <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
+                            <test property="org.jkiss.dbeaver.ext.erd.editor.canDelete"/>
+                        </adapt>
+                    </with>
+                    <with variable="selection">
+                        <count value="+"/>
+                    </with>
+                </and>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.selectAll" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerSelectAll">
+            <activeWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerUndo">
             <activeWhen>
                 <with variable="activeFocusControl">
                     <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
@@ -64,7 +85,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ext.erd.action.ERDRedoHandler">
+        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerRedo">
             <activeWhen>
                 <with variable="activeFocusControl">
                     <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
@@ -73,7 +94,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.ext.erd.action.ERDPrintHandler">
+        <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerPrint">
             <activeWhen>
                 <with variable="activeFocusControl">
                     <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
@@ -87,7 +108,7 @@
              class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPropertyTester"
              id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPropertyTester"
              namespace="org.jkiss.dbeaver.ext.erd.editor"
-             properties="canUndo,canRedo"
+             properties="canUndo,canRedo,canDelete,editable"
              type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
        </propertyTester>
     </extension>
@@ -181,9 +202,15 @@
             </command>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone.EditorContext">
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart.EditorContext?after=org.eclipse.gef.group.edit">
+            <command commandId="org.eclipse.ui.edit.undo"/>
+            <command commandId="org.eclipse.ui.edit.redo"/>
+            <separator name="edit" visible="true"/>
             <command commandId="org.eclipse.ui.edit.copy"/>
             <command commandId="org.eclipse.ui.edit.paste"/>
+            <command commandId="org.eclipse.ui.edit.delete"/>
+            <separator name="selection" visible="true"/>
+            <command commandId="org.eclipse.ui.edit.selectAll"/>
         </menuContribution>
 
     </extension>

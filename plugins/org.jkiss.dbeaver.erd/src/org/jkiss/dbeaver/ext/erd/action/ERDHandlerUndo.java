@@ -13,8 +13,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 
-public class ERDSaveImageHandler extends AbstractHandler {
-    public ERDSaveImageHandler() {
+public class ERDHandlerUndo extends AbstractHandler {
+    public ERDHandlerUndo() {
 
     }
 
@@ -22,8 +22,8 @@ public class ERDSaveImageHandler extends AbstractHandler {
         Control control = (Control) HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
         if (control != null) {
             ERDEditorPart editor = ERDEditorAdapter.getEditor(control);
-            if (editor != null) {
-                editor.saveDiagramAsImage();
+            if (editor != null && editor.getCommandStack().canUndo()) {
+                editor.getCommandStack().undo();
             }
         }
         return null;
