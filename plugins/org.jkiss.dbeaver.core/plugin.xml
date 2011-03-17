@@ -277,7 +277,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyName">
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyObject">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -287,7 +287,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyFullName">
+        <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopySpecial">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>

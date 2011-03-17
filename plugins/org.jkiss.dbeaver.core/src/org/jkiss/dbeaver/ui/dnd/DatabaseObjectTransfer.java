@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.dnd;
 
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -14,7 +15,7 @@ import java.util.Collection;
 /**
  * Used to move DBSObject around in a database navigator.
  */
-public final class DatabaseObjectTransfer extends LocalObjectTransfer<Collection<DBSObject>> {
+public final class DatabaseObjectTransfer extends LocalObjectTransfer<Collection<DBPNamedObject>> {
 
 	private static final DatabaseObjectTransfer INSTANCE = new DatabaseObjectTransfer();
 	private static final String TYPE_NAME = "DBSObject Transfer"//$NON-NLS-1$
@@ -47,10 +48,10 @@ public final class DatabaseObjectTransfer extends LocalObjectTransfer<Collection
 		return new String[] { TYPE_NAME };
 	}
 
-    public static Collection<DBSObject> getFromClipboard()
+    public static Collection<DBPNamedObject> getFromClipboard()
     {
         Clipboard clipboard = new Clipboard(Display.getDefault());
-        return (Collection<DBSObject>) clipboard.getContents(DatabaseObjectTransfer.getInstance());
+        return (Collection<DBPNamedObject>) clipboard.getContents(DatabaseObjectTransfer.getInstance());
     }
 
 }

@@ -44,13 +44,11 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
+import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * NavigatorUtils
@@ -295,7 +293,7 @@ public class ViewUtils
 
     public static void addDragAndDropSupport(final Viewer viewer)
     {
-        Transfer[] types = new Transfer[] {TextTransfer.getInstance(), TreeNodeTransfer.getInstance()};
+        Transfer[] types = new Transfer[] {TextTransfer.getInstance(), TreeNodeTransfer.getInstance(), DatabaseObjectTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
         final DragSource source = new DragSource(viewer.getControl(), operations);
@@ -311,6 +309,7 @@ public class ViewUtils
             public void dragSetData (DragSourceEvent event) {
                 if (!selection.isEmpty()) {
                     List<DBNNode> nodes = new ArrayList<DBNNode>();
+                    List<DBPNamedObject> objects = new ArrayList<DBPNamedObject>();
                     String lineSeparator = CommonUtils.getLineSeparator();
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
@@ -326,6 +325,7 @@ public class ViewUtils
                                 continue;
                             }
                             nodeName = object instanceof DBSEntityQualified ? ((DBSEntityQualified)object).getFullQualifiedName() : object.getName();
+                            objects.add(object);
                         } else {
                             nodeName = ((DBNNode)nextSelected).getNodeName();
                         }
@@ -334,16 +334,20 @@ public class ViewUtils
                         }
                         buf.append(nodeName);
                     }
-                    if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                        event.data = buf.toString();
-                    } else {
+                    if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
                         event.data = nodes;
+                    } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = objects;
+                    } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = buf.toString();
                     }
                 } else {
-                    if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                    if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = Collections.emptyList();
+                    } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = Collections.emptyList();
+                    } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                         event.data = "";
-                    } else {
-                        event.data = new ArrayList<DBNNode>();
                     }
                 }
             }

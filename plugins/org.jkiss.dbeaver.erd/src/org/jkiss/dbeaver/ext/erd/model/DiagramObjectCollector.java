@@ -1,16 +1,29 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.erd.model;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
  * Table collector
  */
 public class DiagramObjectCollector {
+
+    static final Log log = LogFactory.getLog(DiagramObjectCollector.class);
 
     private final EntityDiagram diagram;
     private final List<ERDTable> erdTables = new ArrayList<ERDTable>();
@@ -108,6 +121,38 @@ public class DiagramObjectCollector {
     public List<ERDTable> getDiagramTables()
     {
         return erdTables;
+    }
+
+    public static List<ERDTable> generateTableList(final EntityDiagram diagram, Collection<DBPNamedObject> objects)
+    {
+        final List<DBSObject> roots = new ArrayList<DBSObject>();
+        for (DBPNamedObject object : objects) {
+            if (object instanceof DBSObject) {
+                roots.add((DBSObject) object);
+            }
+        }
+
+        final List<ERDTable> tables = new ArrayList<ERDTable>();
+
+        try {
+            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
+                    try {
+                        collector.generateDiagramObjects(monitor, roots);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                    tables.addAll(collector.getDiagramTables());
+                }
+            });
+        } catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        } catch (InterruptedException e) {
+            // interrupted
+        }
+        return tables;
     }
 
 }

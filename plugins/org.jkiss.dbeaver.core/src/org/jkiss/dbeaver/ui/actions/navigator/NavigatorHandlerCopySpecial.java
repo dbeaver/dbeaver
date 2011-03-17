@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 
-public class NavigatorHandlerCopyFullName extends NavigatorHandlerCopyAbstract {
+public class NavigatorHandlerCopySpecial extends NavigatorHandlerCopyAbstract {
 
     @Override
     protected String getObjectDisplayString(Object object)

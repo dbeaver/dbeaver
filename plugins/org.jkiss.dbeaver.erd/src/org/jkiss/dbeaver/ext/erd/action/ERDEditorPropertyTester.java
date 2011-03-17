@@ -2,16 +2,12 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.erd.editor;
+package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.gef.EditPart;
 import org.eclipse.gef.ui.actions.DeleteAction;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-
-import java.util.Iterator;
+import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 
 /**
  * DatabaseEditorPropertyTester

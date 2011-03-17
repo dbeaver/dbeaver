@@ -43,10 +43,7 @@ import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.model.IWorkbenchAdapter;
@@ -60,6 +57,7 @@ import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramToggleGridAction;
+import org.jkiss.dbeaver.ext.erd.action.ERDEditorPropertyTester;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
@@ -74,9 +72,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.ImageUtils;
 
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.EventObject;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 /**

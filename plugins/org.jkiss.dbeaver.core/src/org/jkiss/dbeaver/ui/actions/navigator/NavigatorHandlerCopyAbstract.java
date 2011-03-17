@@ -15,6 +15,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -42,7 +43,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler {
             workbenchWindow.getShell().getDisplay().syncExec(new Runnable() {
                 public void run() {
                     List<DBNNode> selectedNodes = new ArrayList<DBNNode>();
-                    List<DBSObject> selectedObjects = new ArrayList<DBSObject>();
+                    List<DBPNamedObject> selectedObjects = new ArrayList<DBPNamedObject>();
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ){
                         Object object = iter.next();
@@ -51,12 +52,12 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler {
                             continue;
                         }
                         DBNNode node = (DBNNode)Platform.getAdapterManager().getAdapter(object, DBNNode.class);
-                        DBSObject dbObject = null;
+                        DBPNamedObject dbObject = null;
                         if (node instanceof DBNDatabaseNode) {
                             dbObject = ((DBNDatabaseNode)node).getObject();
                         }
                         if (dbObject == null) {
-                            dbObject = (DBSObject)Platform.getAdapterManager().getAdapter(object, DBSObject.class);
+                            dbObject = (DBPNamedObject)Platform.getAdapterManager().getAdapter(object, DBPNamedObject.class);
                         }
                         if (node != null) {
                             selectedNodes.add(node);

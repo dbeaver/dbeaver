@@ -8,7 +8,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
-public class NavigatorHandlerCopyName extends NavigatorHandlerCopyAbstract {
+public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
 
     @Override
     protected String getObjectDisplayString(Object object)

@@ -55,6 +55,16 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerPaste">
+            <activeWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.ext.erd.editor.editable"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+
         <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerDelete">
             <activeWhen>
                 <and>
@@ -105,8 +115,8 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
        <propertyTester
-             class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPropertyTester"
-             id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPropertyTester"
+             class="org.jkiss.dbeaver.ext.erd.action.ERDEditorPropertyTester"
+             id="org.jkiss.dbeaver.ext.erd.action.ERDEditorPropertyTester"
              namespace="org.jkiss.dbeaver.ext.erd.editor"
              properties="canUndo,canRedo,canDelete,editable"
              type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">

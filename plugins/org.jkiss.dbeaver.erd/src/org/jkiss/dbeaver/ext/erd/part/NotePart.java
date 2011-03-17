@@ -17,6 +17,7 @@ import org.eclipse.gef.RequestConstants;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.policy.NoteEditPolicy;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 
 import java.beans.PropertyChangeEvent;
@@ -178,5 +179,14 @@ public class NotePart extends NodePart
     public ConnectionAnchor getTargetConnectionAnchor(Request request)
     {
         return new ChopboxAnchor(getFigure());
+    }
+
+    @Override
+    public Object getAdapter(Class key)
+    {
+        if (key == DBPNamedObject.class) {
+            return getNote();
+        }
+        return super.getAdapter(key);
     }
 }
