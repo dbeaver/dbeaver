@@ -173,6 +173,7 @@ public class DiagramLoader
                     continue;
                 }
                 if (!dataSourceContainer.isConnected()) {
+                    monitor.subTask("Connect to '" + dataSourceContainer.getName() + "'");
                     dataSourceContainer.connect(monitor);
                 }
                 final DBPDataSource dataSource = dataSourceContainer.getDataSource();
