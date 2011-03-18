@@ -74,6 +74,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private SharedTextColors sharedTextColors;
     private ProjectRegistry projectRegistry;
 
+    private boolean isClosing;
+
     public static DBeaverCore getInstance()
     {
         return instance;
@@ -89,6 +91,16 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     DBeaverCore(DBeaverActivator plugin)
     {
         this.plugin = plugin;
+    }
+
+    public boolean isClosing()
+    {
+        return isClosing;
+    }
+
+    void setClosing(boolean closing)
+    {
+        isClosing = closing;
     }
 
     private void initialize()

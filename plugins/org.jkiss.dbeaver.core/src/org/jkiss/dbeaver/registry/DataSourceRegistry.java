@@ -14,7 +14,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
@@ -45,8 +44,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
-
-    private volatile boolean isClosing;
 
     public DataSourceRegistry(IProject project)
     {
@@ -196,11 +193,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     public void flushConfig()
     {
         this.saveDataSources();
-    }
-
-    public boolean isClosing()
-    {
-        return isClosing;
     }
 
     public void addDataSourceListener(DBPEventListener listener)
@@ -540,20 +532,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private class DisconnectTask implements DBRRunnableWithProgress {
         boolean disconnected;
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            isClosing = true;
-            try {
-                for (DataSourceDescriptor dataSource : dataSources) {
-                    if (dataSource.isConnected()) {
-                        try {
-                            // Disconnect
-                            disconnected = dataSource.disconnect(monitor);
-                        } catch (Exception ex) {
-                            log.error("Can't shutdown data source", ex);
-                        }
+            for (DataSourceDescriptor dataSource : dataSources) {
+                if (dataSource.isConnected()) {
+                    try {
+                        // Disconnect
+                        disconnected = dataSource.disconnect(monitor);
+                    } catch (Exception ex) {
+                        log.error("Can't shutdown data source", ex);
                     }
                 }
-            } finally {
-                isClosing = false;
             }
         }
     }

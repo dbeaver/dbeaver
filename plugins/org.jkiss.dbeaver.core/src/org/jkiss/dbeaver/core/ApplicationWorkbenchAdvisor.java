@@ -68,35 +68,40 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     public boolean preShutdown()
     {
+        final DBeaverCore core = DBeaverCore.getInstance();
+        if (core == null) {
+            return true;
+        }
         try {
+            core.setClosing(true);
             if (!saveAndCleanup()) {
                 return false;
             }
             // Disconnect all connections
-            final DBeaverCore core = DBeaverCore.getInstance();
-            if (core != null) {
-                // Try to close all connections
-                for (IProject project : core.getWorkspace().getRoot().getProjects()) {
-                    final DataSourceRegistry dataSourceRegistry = core.getProjectRegistry().getDataSourceRegistry(project);
-                    if (dataSourceRegistry != null && !dataSourceRegistry.closeConnections()) {
-                        return false;
-                    }
+            // Try to close all connections
+            for (IProject project : core.getWorkspace().getRoot().getProjects()) {
+                final DataSourceRegistry dataSourceRegistry = core.getProjectRegistry().getDataSourceRegistry(project);
+                if (dataSourceRegistry != null && !dataSourceRegistry.closeConnections()) {
+                    return false;
                 }
-                // Wait for all datasource jobs to finish
-                core.runInProgressService(new DBRRunnableWithProgress() {
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        Job.getJobManager().join(DBPDataSource.class, monitor.getNestedMonitor());
-                    }
-                });
             }
+            // Wait for all datasource jobs to finish
+            core.runInProgressService(new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    Job.getJobManager().join(DBPDataSource.class, monitor.getNestedMonitor());
+                }
+            });
         } catch (InvocationTargetException e) {
             log.error(e.getTargetException());
         }
         catch (Throwable e) {
             // do nothing
             log.debug("Internal error during shutdown process", e);
+        }
+        finally {
+            core.setClosing(false);
         }
         return super.preShutdown();
     }

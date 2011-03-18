@@ -30,5 +30,4 @@ public interface DBPDataSourceRegistry {
 
     void flushConfig();
 
-    boolean isClosing();
 }
