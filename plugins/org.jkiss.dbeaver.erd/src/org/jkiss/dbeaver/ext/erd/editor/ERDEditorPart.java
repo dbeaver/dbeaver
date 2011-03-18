@@ -125,7 +125,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     private boolean isDirty;
 
-    protected boolean isLoaded;
+    private boolean isLoaded;
 
     protected LoadingJob<EntityDiagram> diagramLoadingJob;
     private IPropertyChangeListener configPropertyListener;
@@ -770,13 +770,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
 
                 if (entityDiagram != null) {
-                    Collection<String> errorMessages = entityDiagram.getErrorMessages();
+                    List<String> errorMessages = entityDiagram.getErrorMessages();
                     if (!errorMessages.isEmpty()) {
-                        StringBuilder messageBuffer = new StringBuilder();
-                        for (String message : errorMessages) {
-                            messageBuffer.append(message).append(ContentUtils.getDefaultLineSeparator());
-                        }
-                        UIUtils.showErrorDialog(control.getShell(), "Diagram loading errors", messageBuffer.toString());
+                        UIUtils.showErrorDialog(
+                            control.getShell(),
+                            "Diagram loading errors",
+                            "Error(s) occurred during diagram loading. If these errors are recoverable then fix errors and then refresh/reopen diagram",
+                            errorMessages);
                     }
                     setInfo(entityDiagram.getEntityCount() + " objects");
                 } else {
@@ -786,6 +786,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 getGraphicalViewer().setContents(entityDiagram);
                 zoomCombo.setZoomManager(rootPart.getZoomManager());
                 toolBarManager.getControl().setEnabled(true);
+                isLoaded = true;
             }
         }
 

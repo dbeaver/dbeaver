@@ -287,7 +287,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
         return children;
     }
 
-    public Collection<String> getErrorMessages()
+    public List<String> getErrorMessages()
     {
         return errorMessages;
     }

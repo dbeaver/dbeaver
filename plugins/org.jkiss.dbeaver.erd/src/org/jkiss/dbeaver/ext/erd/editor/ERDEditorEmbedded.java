@@ -62,11 +62,10 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
 
     public void activatePart()
     {
-        if (isLoaded) {
+        if (isLoaded()) {
             return;
         }
         loadDiagram();
-        isLoaded = true;
     }
 
     public void deactivatePart()
@@ -115,7 +114,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
 
     public void refreshPart(Object source)
     {
-        if (isLoaded) {
+        if (isLoaded()) {
             loadDiagram();
         }
     }

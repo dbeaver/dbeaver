@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
@@ -23,6 +24,7 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -30,6 +32,8 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.SortedMap;
 
 /**
@@ -712,6 +716,36 @@ public class UIUtils {
             title,
             null,
             new Status(IStatus.ERROR, DBeaverConstants.PLUGIN_ID, message),
+            IStatus.ERROR);
+        dialog.open();
+    }
+
+    public static void showErrorDialog(
+        Shell shell,
+        String title,
+        String message,
+        Collection<String> errorMessages)
+    {
+        //log.debug(message);
+        java.util.List<Status> messageStatuses = new ArrayList<Status>(errorMessages.size());
+        for (String error : errorMessages) {
+            messageStatuses.add(new Status(
+                Status.ERROR,
+                DBeaverCore.getInstance().getPluginID(),
+                error));
+        }
+        MultiStatus status = new MultiStatus(
+            DBeaverCore.getInstance().getPluginID(),
+            0,
+            messageStatuses.toArray(new IStatus[messageStatuses.size()]),
+            message,
+            null);
+        // Display the dialog
+        StandardErrorDialog dialog = new StandardErrorDialog(
+            shell,
+            title,
+            null,
+            status,
             IStatus.ERROR);
         dialog.open();
     }
