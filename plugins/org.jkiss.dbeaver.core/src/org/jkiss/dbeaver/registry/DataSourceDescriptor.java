@@ -363,12 +363,14 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                 for (DBPDataSourceUser user : usersStamp) {
                     if (user instanceof Job) {
                         Job job = (Job)user;
-                        monitor.subTask(job.getName());
-                        job.cancel();
-                        try {
-                            job.join();
-                        } catch (InterruptedException e) {
-                            // its ok, do nothing
+                        monitor.subTask("Stop '" + job.getName() + "'");
+                        if (job.getState() == Job.RUNNING) {
+                            job.cancel();
+                            try {
+                                job.join();
+                            } catch (InterruptedException e) {
+                                // its ok, do nothing
+                            }
                         }
                         monitor.worked(1);
                     }

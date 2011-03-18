@@ -211,7 +211,7 @@ public class RuntimeUtils
             switch (choice) {
                 case ISaveablePart2.YES : //yes
                     saveable.doSave(monitor.getNestedMonitor());
-                    result = true;
+                    result = !saveable.isDirty();
                     break;
                 case ISaveablePart2.NO : //no
                     result = true;
