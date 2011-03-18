@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
@@ -21,8 +19,6 @@ import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
  */
 public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseNodeEditorInput> extends EditorPart implements IDatabaseNodeEditor, IDataSourceProvider
 {
-    static final Log log = LogFactory.getLog(AbstractDatabaseEditor.class);
-
     private DatabaseEditorListener listener;
     private Image editorImage;
 

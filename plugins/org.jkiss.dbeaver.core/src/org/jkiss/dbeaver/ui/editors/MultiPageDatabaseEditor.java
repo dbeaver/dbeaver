@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -28,8 +26,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseNodeEditorInput> extends MultiPageEditorPart implements IDatabaseNodeEditor, IDataSourceProvider
 {
-    static final Log log = LogFactory.getLog(MultiPageDatabaseEditor.class);
-
     private DatabaseEditorListener listener;
     private int activePageIndex = -1;
     private Image editorImage;

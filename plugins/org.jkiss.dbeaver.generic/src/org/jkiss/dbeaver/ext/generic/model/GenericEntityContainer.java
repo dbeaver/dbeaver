@@ -600,7 +600,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
 
             GenericTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
             if (tableColumn == null) {
-                log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "' for PK");
+                log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "' for PK '" + object.getFullQualifiedName() + "'");
                 return null;
             }
 
