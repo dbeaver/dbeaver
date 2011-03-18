@@ -267,4 +267,23 @@ public class EntityPart extends NodePart
         }
         return null;
     }
+
+    public ERDGraphicalViewer getViewer() {
+        return (ERDGraphicalViewer)super.getViewer();
+    }
+
+    @Override
+    public void activate()
+    {
+        super.activate();
+        getViewer().handleTableActivate(getTable().getObject());
+    }
+
+    @Override
+    public void deactivate()
+    {
+        getViewer().handleTableDeactivate(getTable().getObject());
+        super.deactivate();
+    }
+
 }

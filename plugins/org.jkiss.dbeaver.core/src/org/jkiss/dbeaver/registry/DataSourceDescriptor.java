@@ -438,6 +438,14 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             firePropertyChange();
         }
 
+        // Clear users
+        synchronized (users) {
+            if (!users.isEmpty()) {
+                log.debug(users.size() + " users still present in datasource '" + getName() + "' after disconnect");
+            }
+            users.clear();
+        }
+
         return true;
     }
 

@@ -288,7 +288,7 @@ public class SQLEditor extends SQLEditorBase
 
     public void resourceChanged(final IResourceChangeEvent event)
     {
-        final IResourceDelta delta = event.getDelta().findMember(getEditorInput().getPath());
+        final IResourceDelta delta = event.getDelta() == null ? null : event.getDelta().findMember(getEditorInput().getPath());
         if (delta != null) {
             final int kind = delta.getKind();
         }

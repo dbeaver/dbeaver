@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
@@ -165,6 +166,9 @@ public class RuntimeUtils
 
     public static boolean validateAndSave(DBRProgressMonitor monitor, ISaveablePart saveable)
     {
+        if (!saveable.isDirty()) {
+            return true;
+        }
         SaveRunner saveRunner = new SaveRunner(monitor, saveable);
         Display.getDefault().syncExec(saveRunner);
         return saveRunner.getResult();
@@ -202,11 +206,16 @@ public class RuntimeUtils
                     shell = DBeaverCore.getActiveWorkbenchShell();
                     saveableName = "Object";
                 }
-                choice = ConfirmationDialog.showConfirmDialog(
+                int confirmResult = ConfirmationDialog.showConfirmDialog(
                     shell,
-                    PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE,
+                    PrefConstants.CONFIRM_EDITOR_CLOSE,
                     ConfirmationDialog.QUESTION_WITH_CANCEL,
                     saveableName);
+                switch (confirmResult) {
+                    case IDialogConstants.YES_ID: choice = ISaveablePart2.YES; break;
+                    case IDialogConstants.NO_ID: choice = ISaveablePart2.NO; break;
+                    default: choice = ISaveablePart2.CANCEL; break;
+                }
             }
             switch (choice) {
                 case ISaveablePart2.YES : //yes

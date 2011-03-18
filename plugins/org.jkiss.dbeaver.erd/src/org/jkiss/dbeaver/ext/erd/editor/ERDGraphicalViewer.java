@@ -7,6 +7,9 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -15,23 +18,38 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSTable;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * GraphicalViewer which also knows about ValidationMessageHandler to output
  * error messages to
  * @author Serge Rieder
  */
-public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPropertyChangeListener
-{
+public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPropertyChangeListener, DBPEventListener {
+    static final Log log = LogFactory.getLog(ERDGraphicalViewer.class);
 
     private ERDEditorPart editor;
 	private ValidationMessageHandler messageHandler;
     private IThemeManager themeManager;
+
+    private static class DataSourceInfo {
+        int tableCount = 0;
+    }
+
+    private final Map<DBSDataSourceContainer, DataSourceInfo> usedDataSources = new IdentityHashMap<DBSDataSourceContainer, DataSourceInfo>();
 
 	/**
 	 * ValidationMessageHandler to receive messages
@@ -127,6 +145,92 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             diagramPart.refresh();
         }
 */
+    }
+
+    @Override
+    public void setContents(EditPart editpart)
+    {
+        super.setContents(editpart);
+    }
+
+    @Override
+    public void setContents(Object contents)
+    {
+        super.setContents(contents);
+    }
+
+    public void handleTableActivate(DBSTable table)
+    {
+        if (table.getDataSource() != null) {
+            DBSDataSourceContainer container = table.getDataSource().getContainer();
+            if (container != null) {
+                synchronized (usedDataSources) {
+                    DataSourceInfo dataSourceInfo = usedDataSources.get(container);
+                    if (dataSourceInfo == null) {
+                        dataSourceInfo = new DataSourceInfo();
+                        usedDataSources.put(container, dataSourceInfo);
+                        acquireContainer(container);
+                    }
+                    dataSourceInfo.tableCount++;
+                }
+            }
+        }
+    }
+
+    public void handleTableDeactivate(DBSTable table)
+    {
+        if (table.getDataSource() != null) {
+            DBSDataSourceContainer container = table.getDataSource().getContainer();
+            if (container != null) {
+                synchronized (usedDataSources) {
+                    DataSourceInfo dataSourceInfo = usedDataSources.get(container);
+                    if (dataSourceInfo == null) {
+                        log.warn("Datasource '" + container + "' not registered in ERD viewer");
+                    } else {
+                        dataSourceInfo.tableCount--;
+                        if (dataSourceInfo.tableCount <= 0) {
+                            usedDataSources.remove(container);
+                            releaseContainer(container);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void acquireContainer(DBSDataSourceContainer container)
+    {
+        container.acquire(editor);
+        container.getRegistry().addDataSourceListener(this);
+    }
+
+    private void releaseContainer(DBSDataSourceContainer container)
+    {
+        container.getRegistry().removeDataSourceListener(this);
+        container.release(editor);
+    }
+
+    public void handleDataSourceEvent(DBPEvent event)
+    {
+        if (!(event.getObject() instanceof DBSDataSourceContainer)) {
+            return;
+        }
+        DBSDataSourceContainer container = (DBSDataSourceContainer)event.getObject();
+        if (usedDataSources.containsKey(container) &&
+            event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
+            Boolean.FALSE.equals(event.getEnabled()) &&
+            !container.getRegistry().isClosing())
+        {
+            // Close editor only if it is simple disconnect
+            // Workbench shutdown doesn't close editor
+            Display.getDefault().asyncExec(new Runnable() {
+                public void run()
+                {
+
+                    editor.getSite().getWorkbenchWindow().getActivePage().closeEditor(editor, false);
+                }
+            });
+        }
     }
 
 }

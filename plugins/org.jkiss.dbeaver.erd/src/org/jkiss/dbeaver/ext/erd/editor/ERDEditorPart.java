@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -82,7 +83,8 @@ import java.util.List;
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     implements
     CommandStackListener,
-    ISelectionListener
+    ISelectionListener,
+    DBPDataSourceUser
 {
     static final Log log = LogFactory.getLog(ERDEditorPart.class);
 

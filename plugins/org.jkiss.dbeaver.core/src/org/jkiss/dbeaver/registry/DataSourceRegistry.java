@@ -46,6 +46,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
 
+    private volatile boolean isClosing;
+
     public DataSourceRegistry(IProject project)
     {
         this.projectId = ProjectRegistry.getProjectId(project);
@@ -87,20 +89,23 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         closeConnections();
 
         // Dispose and clear all descriptors
-
-        for (DataSourceDescriptor dataSourceDescriptor : this.dataSources) {
-            dataSourceDescriptor.dispose();
+        synchronized (dataSources) {
+            for (DataSourceDescriptor dataSourceDescriptor : this.dataSources) {
+                dataSourceDescriptor.dispose();
+            }
+            this.dataSources.clear();
         }
-        this.dataSources.clear();
     }
 
     public synchronized boolean closeConnections()
     {
         boolean hasConnections = false;
-        for (DataSourceDescriptor dataSource : dataSources) {
-            if (dataSource.isConnected()) {
-                hasConnections = true;
-                break;
+        synchronized (dataSources) {
+            for (DataSourceDescriptor dataSource : dataSources) {
+                if (dataSource.isConnected()) {
+                    hasConnections = true;
+                    break;
+                }
             }
         }
         if (!hasConnections) {
@@ -191,6 +196,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     public void flushConfig()
     {
         this.saveDataSources();
+    }
+
+    public boolean isClosing()
+    {
+        return isClosing;
     }
 
     public void addDataSourceListener(DBPEventListener listener)
@@ -530,15 +540,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private class DisconnectTask implements DBRRunnableWithProgress {
         boolean disconnected;
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            for (DataSourceDescriptor dataSource : dataSources) {
-                if (dataSource.isConnected()) {
-                    try {
-                        // Disconnect
-                        disconnected = dataSource.disconnect(monitor);
-                    } catch (Exception ex) {
-                        log.error("Can't shutdown data source", ex);
+            isClosing = true;
+            try {
+                for (DataSourceDescriptor dataSource : dataSources) {
+                    if (dataSource.isConnected()) {
+                        try {
+                            // Disconnect
+                            disconnected = dataSource.disconnect(monitor);
+                        } catch (Exception ex) {
+                            log.error("Can't shutdown data source", ex);
+                        }
                     }
                 }
+            } finally {
+                isClosing = false;
             }
         }
     }

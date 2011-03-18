@@ -23,7 +23,6 @@ import java.util.*;
  */
 public class EntityDiagram extends ERDObject<DBSObject>
 {
-
 	private String name;
 	private List<ERDTable> tables = new ArrayList<ERDTable>();
 	private boolean layoutManualDesired = true;
