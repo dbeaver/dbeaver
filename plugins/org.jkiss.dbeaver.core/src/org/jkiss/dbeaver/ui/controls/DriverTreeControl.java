@@ -120,7 +120,9 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                 Collections.sort(drivers, new Comparator<DriverDescriptor>() {
                     public int compare(DriverDescriptor o1, DriverDescriptor o2)
                     {
-                        if (o2.getUsedBy().isEmpty() || o1.getUsedBy().isEmpty()) {
+                        final boolean empty1 = o1.getUsedBy().isEmpty();
+                        final boolean empty2 = o2.getUsedBy().isEmpty();
+                        if ((empty2 && !empty1) || (empty1 && !empty2)) {
                             return o2.getUsedBy().size() - o1.getUsedBy().size();
                         }
                         return o1.getName().compareTo(o2.getName());
