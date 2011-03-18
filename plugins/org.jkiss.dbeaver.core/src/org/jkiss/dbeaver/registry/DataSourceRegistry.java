@@ -533,8 +533,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             for (DataSourceDescriptor dataSource : dataSources) {
                 if (dataSource.isConnected()) {
                     try {
-                        // Cancel al jobs
-                        Job.getJobManager().cancel(dataSource.getDataSource());
                         // Disconnect
                         disconnected = dataSource.disconnect(monitor);
                     } catch (Exception ex) {

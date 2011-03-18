@@ -110,7 +110,6 @@ public class SQLQueryJob extends DataSourceJob
 
     protected IStatus run(DBRProgressMonitor monitor)
     {
-        startJob();
         try {
             DBCExecutionContext context = getDataSource().openContext(monitor, queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER, "SQL Query");
             try {
@@ -244,8 +243,6 @@ public class SQLQueryJob extends DataSourceJob
             for (ISQLQueryListener listener : queryListeners) {
                 listener.onEndJob(lastError != null);
             }
-
-            super.endJob();
         }
     }
 

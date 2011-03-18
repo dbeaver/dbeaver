@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.runtime.jobs;
 
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -34,26 +36,23 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
         if (image != null) {
             setProperty(IProgressConstants.ICON_PROPERTY, image);
         }
+        addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void aboutToRun(IJobChangeEvent event)
+            {
+                DataSourceJob.this.dataSourceContainer.acquire(DataSourceJob.this);
+            }
+            @Override
+            public void done(IJobChangeEvent event)
+            {
+                DataSourceJob.this.dataSourceContainer.release(DataSourceJob.this);
+            }
+        });
     }
 
     public DBPDataSource getDataSource()
     {
         return dataSourceContainer.getDataSource();
-    }
-
-    protected void startJob()
-    {
-        dataSourceContainer.acquire(this);
-    }
-
-    protected void endJob()
-    {
-        dataSourceContainer.release(this);
-    }
-
-    public boolean needsConnection()
-    {
-        return true;
     }
 
     public boolean belongsTo(Object family)

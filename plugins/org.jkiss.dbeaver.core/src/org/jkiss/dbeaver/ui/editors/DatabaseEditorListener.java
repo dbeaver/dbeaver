@@ -8,9 +8,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.IDBNListener;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
  * DatabaseEditorListener
@@ -19,15 +22,29 @@ public class DatabaseEditorListener implements IDBNListener
 {
 
     private IDatabaseNodeEditor databaseEditor;
+    private DBSDataSourceContainer dataSourceContainer;
 
     DatabaseEditorListener(IDatabaseNodeEditor databaseEditor) {
         this.databaseEditor = databaseEditor;
+        // Acquire datasource
+        DBPDataSource dataSource = databaseEditor.getEditorInput().getDataSource();
+        if (dataSource != null) {
+            dataSourceContainer = dataSource.getContainer();
+            dataSourceContainer.acquire(databaseEditor);
+        }
+        // Register node listener
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
     }
 
     public void dispose()
     {
+        // Remove node listener
         DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
+        // Release datasource
+        if (dataSourceContainer != null) {
+            dataSourceContainer.release(databaseEditor);
+            dataSourceContainer = null;
+        }
     }
 
     public void nodeChanged(final DBNEvent event)

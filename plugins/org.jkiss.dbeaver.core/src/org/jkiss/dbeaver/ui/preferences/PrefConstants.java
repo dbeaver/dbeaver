@@ -32,6 +32,7 @@ public final class PrefConstants
     public static final String CONFIRM_TXN_DISCONNECT = "disconnect.txn";
     public static final String CONFIRM_ENTITY_EDIT_CLOSE = "close.entity.edit";
     public static final String CONFIRM_ENTITY_DELETE = "entity.delete";
+    public static final String CONFIRM_EDITOR_CLOSE = "close.editor.edit";
 
     // Hex editor font identifiers
     public static final String HEX_FONT_NAME = "hex.font.name";

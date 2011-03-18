@@ -13,6 +13,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
@@ -339,21 +341,43 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             log.error("Datasource is not connected");
             return true;
         }
+        {
+            List<DBPDataSourceUser> usersStamp;
+            synchronized (users) {
+                usersStamp = new ArrayList<DBPDataSourceUser>(users);
+            }
+            int jobCount = 0;
+            // Save all unsaved data
+            for (DBPDataSourceUser user : usersStamp) {
+                if (user instanceof Job) {
+                    jobCount++;
+                } else if (user instanceof ISaveablePart) {
+                    if (!RuntimeUtils.validateAndSave(monitor, (ISaveablePart) user)) {
+                        return false;
+                    }
+                }
+            }
+            if (jobCount > 0) {
+                monitor.beginTask("Waiting for all active tasks to finish", jobCount);
+                // Stop all jobs
+                for (DBPDataSourceUser user : usersStamp) {
+                    if (user instanceof Job) {
+                        Job job = (Job)user;
+                        monitor.subTask(job.getName());
+                        job.cancel();
+                        try {
+                            job.join();
+                        } catch (InterruptedException e) {
+                            // its ok, do nothing
+                        }
+                        monitor.worked(1);
+                    }
+                }
+                monitor.done();
+            }
+        }
 
         monitor.beginTask("Disconnect from '" + getName() + "'", 3);
-
-        // Join all running jobs of the same family
-        monitor.subTask("Waiting for all active tasks to finish");
-        try {
-            // Cancel all currently running jobs
-            Job.getJobManager().cancel(dataSource);
-
-            Job.getJobManager().join(dataSource, monitor.getNestedMonitor());
-        } catch (Exception e) {
-            // do nothing
-            log.debug(e);
-        }
-        monitor.worked(1);
 
         // First rollback active transaction
         monitor.subTask("Rollback active transaction");

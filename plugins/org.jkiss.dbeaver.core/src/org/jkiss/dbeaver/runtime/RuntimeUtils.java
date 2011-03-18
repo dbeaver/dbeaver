@@ -15,15 +15,21 @@ import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.ISaveablePart;
+import org.eclipse.ui.ISaveablePart2;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -32,7 +38,6 @@ import java.util.Date;
 public class RuntimeUtils
 {
     static final Log log = LogFactory.getLog(RuntimeUtils.class);
-
 
     public static IStatus makeExceptionStatus(Throwable ex)
     {
@@ -157,4 +162,66 @@ public class RuntimeUtils
         return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + c.get(Calendar.DAY_OF_MONTH) + c.get(Calendar.HOUR_OF_DAY) + c.get(Calendar.MINUTE);
 */
     }
+
+    public static boolean validateAndSave(DBRProgressMonitor monitor, ISaveablePart saveable)
+    {
+        SaveRunner saveRunner = new SaveRunner(monitor, saveable);
+        Display.getDefault().syncExec(saveRunner);
+        return saveRunner.getResult();
+    }
+
+    private static class SaveRunner implements Runnable {
+        private final DBRProgressMonitor monitor;
+        private final ISaveablePart saveable;
+        private boolean result;
+
+        private SaveRunner(DBRProgressMonitor monitor, ISaveablePart saveable)
+        {
+            this.monitor = monitor;
+            this.saveable = saveable;
+        }
+
+        public boolean getResult()
+        {
+            return result;
+        }
+
+        public void run()
+        {
+            int choice = -1;
+            if (saveable instanceof ISaveablePart2) {
+                choice = ((ISaveablePart2)saveable).promptToSaveOnClose();
+            }
+            if (choice == -1 || choice == ISaveablePart2.DEFAULT) {
+                Shell shell;
+                String saveableName;
+                if (saveable instanceof IWorkbenchPart) {
+                    shell = ((IWorkbenchPart) saveable).getSite().getShell();
+                    saveableName = ((IWorkbenchPart) saveable).getTitle();
+                } else {
+                    shell = DBeaverCore.getActiveWorkbenchShell();
+                    saveableName = "Object";
+                }
+                choice = ConfirmationDialog.showConfirmDialog(
+                    shell,
+                    PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE,
+                    ConfirmationDialog.QUESTION_WITH_CANCEL,
+                    saveableName);
+            }
+            switch (choice) {
+                case ISaveablePart2.YES : //yes
+                    saveable.doSave(monitor.getNestedMonitor());
+                    result = true;
+                    break;
+                case ISaveablePart2.NO : //no
+                    result = true;
+                    break;
+                case ISaveablePart2.CANCEL : //cancel
+                default :
+                    result = false;
+                    break;
+            }
+        }
+    }
+
 }
