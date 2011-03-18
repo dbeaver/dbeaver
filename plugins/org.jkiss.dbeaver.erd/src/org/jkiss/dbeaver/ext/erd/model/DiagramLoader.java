@@ -174,11 +174,16 @@ public class DiagramLoader
                 }
                 if (!dataSourceContainer.isConnected()) {
                     monitor.subTask("Connect to '" + dataSourceContainer.getName() + "'");
-                    dataSourceContainer.connect(monitor);
+                    try {
+                        dataSourceContainer.connect(monitor);
+                    } catch (DBException e) {
+                        diagram.addErrorMessage("Can't connect to '" + dataSourceContainer.getName() + "': " + e.getMessage());
+                        continue;
+                    }
                 }
                 final DBPDataSource dataSource = dataSourceContainer.getDataSource();
                 if (!(dataSource instanceof DBSEntityContainer)) {
-                    log.warn("Datasource '" + dataSourceContainer.getName() + "' entities cannot be loaded - no entity container found");
+                    diagram.addErrorMessage("Datasource '" + dataSourceContainer.getName() + "' entities cannot be loaded - no entity container found");
                     continue;
                 }
                 DBSEntityContainer rootContainer = (DBSEntityContainer)dataSource;
@@ -197,14 +202,14 @@ public class DiagramLoader
                     for (String conName : path) {
                         final DBSEntity child = container.getChild(monitor, conName);
                         if (child == null) {
-                            log.warn("Object '" + conName + "' not found within '" + container.getName() + "'");
+                            diagram.addErrorMessage("Object '" + conName + "' not found within '" + container.getName() + "'");
                             container = null;
                             break;
                         }
                         if (child instanceof DBSEntityContainer) {
                             container = (DBSEntityContainer) child;
                         } else {
-                            log.warn("Object '" + child.getName() + "' is not a container");
+                            diagram.addErrorMessage("Object '" + child.getName() + "' is not a container");
                             container = null;
                             break;
                         }
@@ -214,7 +219,7 @@ public class DiagramLoader
                     }
                     final DBSEntity child = container.getChild(monitor, tableName);
                     if (!(child instanceof DBSTable)) {
-                        log.warn("Cannot find table '" + tableName + "' in '" + container.getName() + "'");
+                        diagram.addErrorMessage("Cannot find table '" + tableName + "' in '" + container.getName() + "'");
                         continue;
                     }
                     String locX = entityElem.getAttribute(ATTR_X);
@@ -256,7 +261,7 @@ public class DiagramLoader
                 TableLoadInfo pkTable = tableMap.get(pkRefId);
                 TableLoadInfo fkTable = tableMap.get(fkRefId);
                 if (pkTable == null || fkTable == null) {
-                    log.warn("PK (" + pkRefId + ") or FK (" + fkRefId +") table(s) not found for relation " + relName);
+                    log.debug("PK (" + pkRefId + ") or FK (" + fkRefId +") table(s) not found for relation " + relName);
                     continue;
                 }
                 RelationLoadInfo relationLoadInfo = new RelationLoadInfo(relName, relType, pkTable, fkTable);

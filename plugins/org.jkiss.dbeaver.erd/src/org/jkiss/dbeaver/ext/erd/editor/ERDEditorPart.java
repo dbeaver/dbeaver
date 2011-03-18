@@ -770,9 +770,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
 
                 if (entityDiagram != null) {
+                    Collection<String> errorMessages = entityDiagram.getErrorMessages();
+                    if (!errorMessages.isEmpty()) {
+                        StringBuilder messageBuffer = new StringBuilder();
+                        for (String message : errorMessages) {
+                            messageBuffer.append(message).append(ContentUtils.getDefaultLineSeparator());
+                        }
+                        UIUtils.showErrorDialog(control.getShell(), "Diagram loading errors", messageBuffer.toString());
+                    }
                     setInfo(entityDiagram.getEntityCount() + " objects");
                 } else {
-                    setInfo("Empty diagram due to error");
+                    setInfo("Empty diagram due to error (see error log)");
                 }
                 getCommandStack().flush();
                 getGraphicalViewer().setContents(entityDiagram);

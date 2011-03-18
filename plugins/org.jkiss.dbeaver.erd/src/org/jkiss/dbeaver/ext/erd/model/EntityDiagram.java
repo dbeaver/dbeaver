@@ -32,6 +32,8 @@ public class EntityDiagram extends ERDObject<DBSObject>
     private List<ERDNote> notes = new ArrayList<ERDNote>();
     private boolean needsAutoLayout;
 
+    private List<String> errorMessages = new ArrayList<String>();
+
     public EntityDiagram(DBSObject container, String name)
 	{
 		super(container);
@@ -285,4 +287,13 @@ public class EntityDiagram extends ERDObject<DBSObject>
         return children;
     }
 
+    public Collection<String> getErrorMessages()
+    {
+        return errorMessages;
+    }
+
+    public void addErrorMessage(String message)
+    {
+        errorMessages.add(message);
+    }
 }
