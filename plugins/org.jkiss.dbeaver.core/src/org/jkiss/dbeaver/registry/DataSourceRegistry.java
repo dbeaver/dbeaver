@@ -94,7 +94,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    public synchronized boolean closeConnections()
+    public boolean closeConnections()
     {
         boolean hasConnections = false;
         synchronized (dataSources) {
@@ -126,9 +126,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public DataSourceDescriptor getDataSource(String id)
     {
-        for (DataSourceDescriptor dsd : dataSources) {
-            if (dsd.getId().equals(id)) {
-                return dsd;
+        synchronized (dataSources) {
+            for (DataSourceDescriptor dsd : dataSources) {
+                if (dsd.getId().equals(id)) {
+                    return dsd;
+                }
             }
         }
         return null;
@@ -136,9 +138,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public DataSourceDescriptor getDataSource(DBPDataSource dataSource)
     {
-        for (DataSourceDescriptor dsd : dataSources) {
-            if (dsd.getDataSource() == dataSource) {
-                return dsd;
+        synchronized (dataSources) {
+            for (DataSourceDescriptor dsd : dataSources) {
+                if (dsd.getDataSource() == dataSource) {
+                    return dsd;
+                }
             }
         }
         return null;
@@ -146,9 +150,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public DataSourceDescriptor findDataSourceByName(String name)
     {
-        for (DataSourceDescriptor dsd : dataSources) {
-            if (dsd.getName().equals(name)) {
-                return dsd;
+        synchronized (dataSources) {
+            for (DataSourceDescriptor dsd : dataSources) {
+                if (dsd.getName().equals(name)) {
+                    return dsd;
+                }
             }
         }
         return null;
@@ -156,28 +162,34 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public List<DataSourceDescriptor> getDataSources()
     {
-        List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);
-        Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
-            public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2)
-            {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
-        return dsCopy;
+        synchronized (dataSources) {
+            List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);
+            Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
+                public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2)
+                {
+                    return o1.getName().compareToIgnoreCase(o2.getName());
+                }
+            });
+            return dsCopy;
+        }
     }
 
     public void addDataSource(DataSourceDescriptor dataSource)
     {
-        this.dataSources.add(dataSource);
-        this.saveDataSources();
+        synchronized (dataSources) {
+            this.dataSources.add(dataSource);
+            this.saveDataSources();
+        }
         this.fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, dataSource);
     }
 
     public void removeDataSource(DataSourceDescriptor dataSource)
     {
-        this.dataSources.remove(dataSource);
-        try {
+        synchronized (dataSources) {
+            this.dataSources.remove(dataSource);
             this.saveDataSources();
+        }
+        try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
             dataSource.dispose();
@@ -295,43 +307,47 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private void loadDataSources(InputStream is, PasswordEncrypter encrypter)
         throws DBException, IOException
     {
-        SAXReader parser = new SAXReader(is);
-        try {
-            parser.parse(new DataSourcesParser(encrypter));
-        }
-        catch (XMLException ex) {
-            throw new DBException("Datasource config parse error", ex);
+        synchronized (dataSources) {
+            SAXReader parser = new SAXReader(is);
+            try {
+                parser.parse(new DataSourcesParser(encrypter));
+            }
+            catch (XMLException ex) {
+                throw new DBException("Datasource config parse error", ex);
+            }
         }
     }
 
     private void saveDataSources()
     {
-        PasswordEncrypter encrypter = new SimpleStringEncrypter();
-        IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
-        File projectConfig = configFile.getLocation().toFile();
-        try {
-            OutputStream os = new FileOutputStream(projectConfig);
+        synchronized (dataSources) {
+            PasswordEncrypter encrypter = new SimpleStringEncrypter();
+            IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
+            File projectConfig = configFile.getLocation().toFile();
             try {
-                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET);
-                xml.setButify(true);
-                xml.startElement("data-sources");
-                for (DataSourceDescriptor dataSource : dataSources) {
-                    saveDataSource(xml, dataSource, encrypter);
+                OutputStream os = new FileOutputStream(projectConfig);
+                try {
+                    XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET);
+                    xml.setButify(true);
+                    xml.startElement("data-sources");
+                    for (DataSourceDescriptor dataSource : dataSources) {
+                        saveDataSource(xml, dataSource, encrypter);
+                    }
+                    xml.endElement();
+                    xml.flush();
+                    os.close();
                 }
-                xml.endElement();
-                xml.flush();
-                os.close();
+                catch (IOException ex) {
+                    log.warn("IO error while saving datasources", ex);
+                }
+            } catch (FileNotFoundException ex) {
+                log.error("Can't open config file " + projectConfig.getPath(), ex);
             }
-            catch (IOException ex) {
-                log.warn("IO error while saving datasources", ex);
+            try {
+                configFile.refreshLocal(IFile.DEPTH_ZERO, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+            } catch (CoreException e) {
+                log.error("Can't refresh datasources configuration");
             }
-        } catch (FileNotFoundException ex) {
-            log.error("Can't open config file " + projectConfig.getPath(), ex);
-        }
-        try {
-            configFile.refreshLocal(IFile.DEPTH_ZERO, VoidProgressMonitor.INSTANCE.getNestedMonitor());
-        } catch (CoreException e) {
-            log.error("Can't refresh datasources configuration");
         }
     }
 

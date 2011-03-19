@@ -75,12 +75,13 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     private DBPDataSource dataSource;
 
-    private transient final List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
-    private transient Image iconNormal;
-    private transient Image iconConnected;
-    private transient Image iconError;
-    private transient volatile boolean connectFailed = false;
-    private transient volatile Date connectTime = null;
+    private final List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
+    private Image iconNormal;
+    private Image iconConnected;
+    private Image iconError;
+
+    private volatile boolean connectFailed = false;
+    private volatile Date connectTime = null;
 
 
     public DataSourceDescriptor(

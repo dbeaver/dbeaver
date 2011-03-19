@@ -31,7 +31,7 @@ public class ProjectRegistry implements IResourceChangeListener {
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<ResourceHandlerDescriptor>();
     private final List<DBPResourceHandler> resourceHandlerList = new ArrayList<DBPResourceHandler>();
     private final Map<String, DBPResourceHandler> resourceHandlerMap = new HashMap<String, DBPResourceHandler>();
-    private Map<String, DBPResourceHandler> extensionsMap = new HashMap<String, DBPResourceHandler>();
+    private final Map<String, DBPResourceHandler> extensionsMap = new HashMap<String, DBPResourceHandler>();
 
     private final Map<String, DataSourceRegistry> projectDatabases = new HashMap<String, DataSourceRegistry>();
     private String activeProjectId;
