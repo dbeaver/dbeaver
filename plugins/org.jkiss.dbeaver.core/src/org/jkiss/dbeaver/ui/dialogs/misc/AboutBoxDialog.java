@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
  */
 public class AboutBoxDialog extends Dialog
 {
-    private static final String STR_AUTHOR_INFO = "Authored By Serge Rieder, 2011";
+    private static final String STR_AUTHOR_INFO = "(C) JKISS project, 2011";
     private static final String STR_SITE_URL = "<a>http://dbeaver.jkiss.org/</a>";
     private static final String STR_EMAIL_URL = "<a>serge@jkiss.org</a>";
     private final Font TITLE_FONT;

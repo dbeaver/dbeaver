@@ -22,7 +22,7 @@ public class ConnectJob extends AbstractJob
     static final Log log = LogFactory.getLog(ConnectJob.class);
 
     private DataSourceDescriptor container;
-    private Thread connectThread;
+    private volatile Thread connectThread;
 
     public ConnectJob(
         DataSourceDescriptor container)

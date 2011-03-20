@@ -119,8 +119,9 @@ Section "-DBeaver Core" SecCore
   SetShellVarContext all
   Call GetJRE
   
-  ; If there is previous version of DBeaver - remove it's configuration
+  ; If there is previous version of DBeaver - remove it's configuration and plugins
   RMDir /r $INSTDIR\configuration
+  RMDir /r $INSTDIR\plugins
 
   SetOutPath "$INSTDIR"
   

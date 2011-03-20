@@ -25,7 +25,7 @@ public abstract class AbstractJob extends Job
 
     private DBRProgressMonitor progressMonitor;
     private boolean finished = false;
-    private boolean blockCanceled = false;
+    private volatile boolean blockCanceled = false;
     private int cancelTimeout = TIMEOUT_BEFORE_BLOCK_CANCEL;
 
     protected AbstractJob(String name)
