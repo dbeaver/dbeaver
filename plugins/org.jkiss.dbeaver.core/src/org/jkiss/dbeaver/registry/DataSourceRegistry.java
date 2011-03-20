@@ -453,29 +453,31 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         {
             isDescription = false;
             if (localName.equals("data-source")) {
-                DataSourceProviderDescriptor provider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(atts.getValue("provider"));
+            	String name = atts.getValue("name");
+                String id = atts.getValue("id");
+                if (id == null) {
+                    // Support of old version without ID
+                    id = name;
+                }
+                String providerId = atts.getValue("provider");
+                DataSourceProviderDescriptor provider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(providerId);
                 if (provider == null) {
-                    log.warn("Can't find datasource provider " + atts.getValue("provider"));
+                    log.warn("Can't find datasource provider " + providerId + " for datasource '" + name + "'");
                     curDataSource = null;
                     return;
                 }
                 DriverDescriptor driver = provider.getDriver(atts.getValue("driver"));
                 if (driver == null) {
-                    log.warn("Can't find driver " + atts.getValue("driver") + " in datasource provider " + provider.getId());
+                    log.warn("Can't find driver " + atts.getValue("driver") + " in datasource provider " + provider.getId() + " for datasource '" + name + "'");
                     curDataSource = null;
                     return;
-                }
-                String id = atts.getValue("id");
-                if (id == null) {
-                    // Support of old version without ID
-                    id = atts.getValue("name");
                 }
                 curDataSource = new DataSourceDescriptor(
                     DataSourceRegistry.this,
                     id,
                     driver,
                     new DBPConnectionInfo());
-                curDataSource.setName(atts.getValue("name"));
+                curDataSource.setName(name);
                 String createDate = atts.getValue("create-date");
                 if (!CommonUtils.isEmpty(createDate)) {
                     curDataSource.setCreateDate(new Date(Long.parseLong(createDate)));
