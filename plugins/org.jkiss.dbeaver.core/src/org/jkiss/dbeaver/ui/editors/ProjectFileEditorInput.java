@@ -133,6 +133,9 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
 
     public IPath getPath()
     {
-        return file == null ? null : new Path(file.getLocation().toString());
+        if (file == null) {
+        	return null;
+        }
+        return file.getLocation();
     }
 }

@@ -15,6 +15,9 @@ distDirectory=dist
 buildType=B
 buildId=${archivePrefix}-${productVersion}
 
+equinoxLauncherPluginVersion=1.1.0.v20100507
+pdeBuildPluginVersion=3.6.0.v20100603
+
 ###############################################################################
 # Copyright (c) 2003, 2009 IBM Corporation and others.
 # All rights reserved. This program and the accompanying materials

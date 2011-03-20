@@ -1,8 +1,6 @@
 <project name="dbeaver" default="build">
 	<!--sets the path of the properties file-->
 	<property file="build.properties" />
-	<property name="pdeBuildPluginVersion" value="3.6.0.v20100603"/>
-	<property name="equinoxLauncherPluginVersion" value="1.1.0.v20100507"/>
 
 	<target name="clean">
         <delete dir="${distDirectory}" />

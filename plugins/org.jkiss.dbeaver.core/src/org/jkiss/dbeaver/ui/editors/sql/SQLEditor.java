@@ -8,6 +8,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.IOUtils;
 import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -288,10 +289,13 @@ public class SQLEditor extends SQLEditorBase
 
     public void resourceChanged(final IResourceChangeEvent event)
     {
-        final IResourceDelta delta = event.getDelta() == null ? null : event.getDelta().findMember(getEditorInput().getPath());
-        if (delta != null) {
-            final int kind = delta.getKind();
-        }
+    	IPath path = getEditorInput().getPath();
+    	if (path != null) {
+	        final IResourceDelta delta = event.getDelta() == null ? null : event.getDelta().findMember(path);
+	        if (delta != null) {
+	            final int kind = delta.getKind();
+	        }
+    	}
     }
 
     public void explainQueryPlan()
