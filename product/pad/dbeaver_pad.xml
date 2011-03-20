@@ -47,9 +47,9 @@
   </NewsFeed>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.0.1</Program_Version>
-    <Program_Release_Month>02</Program_Release_Month>
-    <Program_Release_Day>28</Program_Release_Day>
+    <Program_Version>1.0.5</Program_Version>
+    <Program_Release_Month>03</Program_Release_Month>
+    <Program_Release_Day>21</Program_Release_Day>
     <Program_Release_Year>2011</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -57,7 +57,7 @@
     <Program_Install_Support>Install and Uninstall</Program_Install_Support>
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
-    <Program_Change_Info>Projects import/export, 3rd party configuration import. Bugfixes and minor UI changes.</Program_Change_Info>
+    <Program_Change_Info>Entity diagrams plugin major enhancements. Custom diagrams, auto-layout improvement, logical keys, notes, etc. Fixes of driver management on Linux. Many UI and behviour bugfixes.</Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
     <File_Info>
@@ -106,7 +106,7 @@
   <Permissions>
     <Distribution_Permissions>DBeaver is freeware. You can use it for any purpose with no limitations.</Distribution_Permissions>
     <EULA>DBeaver is freeware. You can use it for any purpose with no limitations.
-This software is provided “as is” without express or implied warranty.</EULA>
+This software is provided "as is" without express or implied warranty.</EULA>
   </Permissions>
   <Program_Descriptions>
     <English>
