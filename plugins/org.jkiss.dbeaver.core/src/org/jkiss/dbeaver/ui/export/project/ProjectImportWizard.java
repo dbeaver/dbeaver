@@ -223,7 +223,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     }
                 }
                 if (driver == null) {
-                    // Not found - lets use firs one
+                    // Not found - lets use first one
                     log.warn("Ambiguous driver '" + driverName + "' - multiple drivers with class '" + driverClass + "' found. First one will be used");
                     driver = matchedDrivers.get(0);
                 }
@@ -239,6 +239,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 driver.setDriverDefaultPort(CommonUtils.toInt(driverDefaultPort));
             }
             driver.setSampleURL(driverURL);
+            driver.setModified(true);
             dataSourceProvider.addDriver(driver);
         }
 
