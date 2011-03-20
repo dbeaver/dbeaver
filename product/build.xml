@@ -127,7 +127,9 @@
     <target name="dist-rpm">
 
         <property name="rpmDirectory" value="build/rpm"/>
-
+        
+        <echo message="Make RPM in ${rpmDirectory}"/>
+        
 		<delete dir="${rpmDirectory}" />
 		<mkdir dir="${rpmDirectory}" />
         <mkdir dir="${rpmDirectory}/SOURCES" />
@@ -144,11 +146,18 @@
 			file="build/${buildType}.${buildId}/${buildId}-linux.gtk.x86.zip"
 			todir="${rpmDirectory}/SOURCES"/>
 
-        <rpm
+		<exec executable="rpmb">
+			<arg value="-bb"/>
+            <arg value="--buildroot"/>
+            <arg value="${rpmDirectory}"/>
+            <arg value="dbeaver.spec"/>
+		</exec>
+
+        <!--rpm
             specFile="dbeaver.spec"
             topDir="${rpmDirectory}"
             cleanBuildDir="true"
-            failOnError="true"/>
+            failOnError="true"/-->
 
     </target>
 
