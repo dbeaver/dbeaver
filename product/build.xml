@@ -1,3 +1,7 @@
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <project name="dbeaver" default="build">
 	<!--sets the path of the properties file-->
 	<property file="build.properties" />
@@ -56,7 +60,7 @@
 			/>
 		<filter filtersfile="build.properties"/>
 		<copy todir="${buildDirectory}/installer" filtering="true">
-			<fileset dir="installer">
+			<fileset dir="installer/nsis">
 				<include name="*.ns*" />
 			</fileset>
 		</copy>
@@ -72,14 +76,13 @@
 		<path id="ant-deb.classpath">
 			<fileset dir="lib" includes="*.jar"/>
 		</path>
-		<!--taskdef name="deb" classname="com.googlecode.ant_deb_task.Deb" classpathref="ant-deb.classpath"/-->
 		<taskdef resource="ant_deb_task.properties" classpathref="ant-deb.classpath"/>
 
 		<property name="packageName" value="${archivePrefix}"/>
 		<property name="debDirectory" value="build/deb"/>
 
 		<echo message="Build ${productName} deb package"/>
-		
+
 		<delete dir="${debDirectory}" />
 		<mkdir dir="${debDirectory}" />
 		<unzip 
@@ -121,7 +124,35 @@
 
     </target>
 
-    <target name="all" depends="clean,build,dist-win,dist-deb,dist-macos">
+    <target name="dist-rpm">
+
+        <property name="rpmDirectory" value="build/rpm"/>
+
+		<delete dir="${rpmDirectory}" />
+		<mkdir dir="${rpmDirectory}" />
+        <mkdir dir="${rpmDirectory}/SOURCES" />
+        <mkdir dir="${rpmDirectory}/SPECS" />
+
+		<filter filtersfile="build.properties"/>
+		<copy todir="${rpmDirectory}/SPECS" filtering="true">
+			<fileset dir="installer/rpm">
+				<include name="*.spec" />
+			</fileset>
+		</copy>
+
+		<copy
+			file="build/${buildType}.${buildId}/${buildId}-linux.gtk.x86.zip"
+			todir="${rpmDirectory}/SOURCES"/>
+
+        <rpm
+            specFile="dbeaver.spec"
+            topDir="${rpmDirectory}"
+            cleanBuildDir="true"
+            failOnError="true"/>
+
+    </target>
+
+    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos">
 
     </target>
 
