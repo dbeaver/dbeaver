@@ -125,6 +125,10 @@
     </target>
 
     <target name="dist-rpm">
+		<path id="ant-rpm.classpath">
+			<fileset dir="lib" includes="*.jar"/>
+		</path>
+        <taskdef name="rpm" classname="org.redline_rpm.RedlineTask"  classpathref="ant-rpm.classpath"/>
 
         <property name="rpmDirectory" value="build/rpm"/>
         
@@ -142,16 +146,35 @@
 			</fileset>
 		</copy>
 
-		<copy
+		<!--copy
 			file="build/${buildType}.${buildId}/${buildId}-linux.gtk.x86.zip"
-			todir="${rpmDirectory}/SOURCES"/>
+			todir="${rpmDirectory}/SOURCES"/-->
 
-		<exec executable="rpmb">
+        <rpm 
+            name="${productName}" 
+            version="${productVersion}" 
+            group="Applications/Databases" 
+            url="http://dbeaver.jkiss.org"
+            packager="Serge Rieder"
+            host="jkiss.org"
+            vendor="JKISS"
+            summary="Universal Database Manager and SQL Client"
+            description="Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase and any database which has JDBC driver."
+            destination="dist">
+            <zipfileset 
+                prefix='/usr/share/dbeaver' 
+                file="build/${buildType}.${buildId}/${buildId}-linux.gtk.x86.zip"/>
+                <!--link path="/usr/share/java/test.jar" target="/usr/share/java/test-1.2.3.jar"/-->
+            <depends name="sun-jre" version="1.6"/>
+        </rpm>
+
+            
+		<!--exec executable="rpm">
 			<arg value="-bb"/>
-            <arg value="--buildroot"/>
+            <arg value="- -buildroot"/>
             <arg value="${rpmDirectory}"/>
             <arg value="dbeaver.spec"/>
-		</exec>
+		</exec-->
 
         <!--rpm
             specFile="dbeaver.spec"
