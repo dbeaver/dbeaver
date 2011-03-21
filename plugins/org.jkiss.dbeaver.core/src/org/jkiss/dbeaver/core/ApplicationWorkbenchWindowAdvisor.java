@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.core;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.graphics.Point;
@@ -18,6 +19,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.part.EditorInputTransfer;
+import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -26,13 +28,14 @@ import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
-public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
-{
+public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener {
     //static final Log log = LogFactory.getLog(ApplicationWorkbenchWindowAdvisor.class);
 
     public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
     {
         super(configurer);
+
+        DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
     }
 
     public ActionBarAdvisor createActionBarAdvisor(IActionBarConfigurer configurer)
@@ -70,6 +73,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
         if (activeShell != null) {
             activeShell.setMaximized(true);
         }
+        updateWindowTitle();
     }
 
     public boolean preWindowShellClose()
@@ -115,6 +119,31 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
                 }
             });
         }
+    }
+
+    @Override
+    public void postWindowClose()
+    {
+        ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        if (projectRegistry != null) {
+            projectRegistry.removeProjectListener(this);
+        }
+        super.postWindowClose();
+    }
+
+    private void updateWindowTitle()
+    {
+        IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+        String title = "DBeaver";
+        if (activeProject != null) {
+            title += " - " + activeProject.getName();
+        }
+        getWindowConfigurer().getWindow().getShell().setText(title);
+    }
+
+    public void handleActiveProjectChange(IProject oldValue, IProject newValue)
+    {
+        updateWindowTitle();
     }
 
     public class EditorAreaDropAdapter extends DropTargetAdapter
