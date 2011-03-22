@@ -123,7 +123,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
 
         // Set tool tip
-        Label toolTip = new Label(getAssociation().getObject().getConstraintType().getName() + " " + getAssociation().getObject().getFullQualifiedName());
+        Label toolTip = new Label(getAssociation().getObject().getFullQualifiedName() + " [" + getAssociation().getObject().getConstraintType().getName() + "]");
         toolTip.setIcon(DBIcon.TREE_FOREIGN_KEY.getImage());
         //toolTip.setTextPlacement(PositionConstants.SOUTH);
         //toolTip.setIconTextGap();

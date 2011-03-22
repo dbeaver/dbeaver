@@ -543,6 +543,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         // the marquee selection tool
         controls.add(new MarqueeToolEntry());
 
+        //controls.add(new PanningSelectionToolEntry());
+
         // separator
         PaletteSeparator separator = new PaletteSeparator("tools");
         separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);

@@ -22,7 +22,6 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
 
     private IProgressMonitor nestedMonitor;
     private List<DBRBlockingObject> blocks = null;
-    private boolean taskRunning = false;
 
     public DefaultProgressMonitor(IProgressMonitor nestedMonitor)
     {
@@ -37,13 +36,11 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     public void beginTask(String name, int totalWork)
     {
         nestedMonitor.beginTask(name, totalWork);
-        taskRunning = true;
     }
 
     public void done()
     {
         nestedMonitor.done();
-        taskRunning = false;
     }
 
     public void subTask(String name)
@@ -64,11 +61,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     public synchronized void startBlock(DBRBlockingObject object, String taskName)
     {
         if (taskName != null) {
-            if (taskRunning) {
-                subTask(taskName);
-            } else {
-                beginTask(taskName, 1);
-            }
+            subTask(taskName);
         }
         if (blocks == null) {
             blocks = new ArrayList<DBRBlockingObject>();
@@ -86,9 +79,6 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
         //    this.done();
         //}
         blocks.remove(blocks.size() - 1);
-        if (blocks.isEmpty()) {
-            this.done();
-        }
     }
 
     public DBRBlockingObject getActiveBlock()
