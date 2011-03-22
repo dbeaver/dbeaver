@@ -4,7 +4,8 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -14,19 +15,19 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.UIUtils;
+
+import java.util.ArrayList;
 
 /**
  * ItemListControl
  */
 public class ProgressPageControl extends Composite //implements IRunnableContext
 {
-    //static final Log log = LogFactory.getLog(ProgressPageControl.class);
+    static final Log log = LogFactory.getLog(ProgressPageControl.class);
 
     private final static int PROGRESS_MIN = 0;
     private final static int PROGRESS_MAX = 20;
@@ -166,10 +167,23 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
     }
 */
 
+    private static class TaskInfo {
+        final String name;
+        final int totalWork;
+        int progress;
+
+        private TaskInfo(String name, int totalWork)
+        {
+            this.name = name;
+            this.totalWork = totalWork;
+        }
+    }
+
     public class ProgressVisualizer<RESULT> implements ILoadVisualizer<RESULT> {
 
         private boolean completed = false;
         private String curStatus;
+        private final java.util.List<TaskInfo> tasksRunning = new ArrayList<TaskInfo>();
 
         public Shell getShell() {
             return ProgressPageControl.this.getShell();
@@ -183,6 +197,9 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
                 {
                     super.beginTask(name, totalWork);
                     curStatus = name;
+                    synchronized (tasksRunning) {
+                        tasksRunning.add(new TaskInfo(name, totalWork));
+                    }
                 }
 
                 @Override
@@ -190,6 +207,13 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
                 {
                     super.done();
                     curStatus = "";
+                    synchronized (tasksRunning) {
+                        if (tasksRunning.isEmpty()) {
+                            log.warn("Task end when no tasks are running");
+                        } else {
+                            tasksRunning.remove(tasksRunning.size() - 1);
+                        }
+                    }
                 }
 
                 @Override
@@ -203,8 +227,23 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
                 public void worked(int work)
                 {
                     super.worked(work);
+                    synchronized (tasksRunning) {
+                        if (!tasksRunning.isEmpty()) {
+                            tasksRunning.get(tasksRunning.size() - 1).progress += work;
+                        }
+                    }
                 }
             };
+        }
+
+        private TaskInfo getCurTaskInfo()
+        {
+            for (int i = tasksRunning.size() - 1; i >= 0; i--) {
+                if (tasksRunning.get(i).totalWork > 1) {
+                    return tasksRunning.get(i);
+                }
+            }
+            return null;
         }
 
         public boolean isCompleted()
@@ -221,7 +260,16 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
                     stopButton.setEnabled(true);
                     progressTools.setVisible(true);
                 }
-                progressBar.setSelection(loadCount);
+                synchronized (tasksRunning) {
+                    TaskInfo taskInfo = getCurTaskInfo();
+                    if (taskInfo != null) {
+                        progressBar.setMaximum(taskInfo.totalWork);
+                        progressBar.setSelection(taskInfo.progress);
+                    } else {
+                        progressBar.setMaximum(PROGRESS_MAX);
+                        progressBar.setSelection(loadCount);
+                    }
+                }
                 if (curStatus != null) {
                     listInfoLabel.setText(curStatus);
                 }

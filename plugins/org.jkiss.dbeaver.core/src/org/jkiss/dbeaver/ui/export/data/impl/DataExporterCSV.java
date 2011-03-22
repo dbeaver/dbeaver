@@ -148,7 +148,7 @@ public class DataExporterCSV extends DataExporterAbstract {
                 quote = true;
             }
         }
-        if (value.indexOf(quoteChar) != -1) {
+        if (quote && value.indexOf(quoteChar) != -1) {
             // escape quotes with double quotes
             StringBuilder buf = new StringBuilder(value.length() + 5);
             for (int i = 0; i <value.length(); i++) {
@@ -158,6 +158,7 @@ public class DataExporterCSV extends DataExporterAbstract {
                 }
                 buf.append(c);
             }
+            value = buf.toString();
         }
         if (quote) out.write(quoteChar);
         out.write(value);

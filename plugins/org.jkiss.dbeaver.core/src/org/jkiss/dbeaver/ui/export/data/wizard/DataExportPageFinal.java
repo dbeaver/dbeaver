@@ -40,7 +40,7 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
         {
             Group tablesGroup = UIUtils.createControlGroup(composite, "Tables", 3, GridData.FILL_BOTH, 0);
 
-            resultTable = new Table(tablesGroup, SWT.BORDER | SWT.FULL_SELECTION);
+            resultTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             resultTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultTable.setHeaderVisible(true);
             resultTable.setLinesVisible(true);
