@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -28,20 +26,12 @@ import org.jkiss.dbeaver.utils.ViewUtils;
  */
 class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigatorModelView, IObjectEditorPart
 {
-    static final Log log = LogFactory.getLog(EntityNodeEditor.class);
+    //static final Log log = LogFactory.getLog(EntityNodeEditor.class);
 
     private DBNNode node;
     private DBXTreeNode metaNode;
     private ItemListControl itemControl;
     private boolean activated;
-
-    EntityNodeEditor(DBNNode node)
-    {
-        if (node == null) {
-            throw new IllegalArgumentException("Node can't be null");
-        }
-        this.node = node;
-    }
 
     EntityNodeEditor(DBNNode node, DBXTreeNode metaNode)
     {
@@ -144,4 +134,5 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         }
         super.dispose();
     }
+
 }

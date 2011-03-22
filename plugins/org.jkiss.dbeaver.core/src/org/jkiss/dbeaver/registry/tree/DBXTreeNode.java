@@ -19,19 +19,23 @@ import java.util.List;
 public abstract class DBXTreeNode
 {
     private final AbstractDescriptor source;
-    private DBXTreeNode parent;
+    private final DBXTreeNode parent;
     private List<DBXTreeNode> children;
     private DBXTreeNode recursiveLink;
     private Image defaultIcon;
     private List<DBXTreeIcon> icons;
+    private final boolean navigable;
+    private final boolean inline;
 
-    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent)
+    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, boolean navigable, boolean inline)
     {
         this.source = source;
         this.parent = parent;
         if (parent != null) {
             parent.addChild(this);
         }
+        this.navigable = navigable;
+        this.inline = inline;
     }
 
     public AbstractDescriptor getSource()
@@ -46,7 +50,15 @@ public abstract class DBXTreeNode
         return getLabel();
     }
 
-    public abstract boolean isNavigable();
+    public boolean isNavigable()
+    {
+        return navigable;
+    }
+
+    public boolean isInline()
+    {
+        return inline;
+    }
 
     public DBXTreeNode getParent()
     {

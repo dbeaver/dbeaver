@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * ObjectListControl
  */
-public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IDoubleClickListener
+public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IDoubleClickListener
 {
     static final Log log = LogFactory.getLog(ObjectListControl.class);
 
@@ -94,11 +94,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public ObjectListControl(
         Composite parent,
-        int style)
+        int style,
+        IContentProvider contentProvider)
     {
         super(parent, style);
-
-        IContentProvider contentProvider = createContentProvider();
 
         this.isTree = (contentProvider instanceof ITreeContentProvider);
         this.isFitWidth = false;
@@ -179,8 +178,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
         });
     }
-
-    protected abstract IContentProvider createContentProvider();
 
     private TableItem detectTableItem(int x, int y)
     {

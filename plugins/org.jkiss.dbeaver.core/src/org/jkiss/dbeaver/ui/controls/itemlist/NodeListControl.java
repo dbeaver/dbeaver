@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -16,9 +17,15 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
+import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.utils.ViewUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * NodeListControl
@@ -36,7 +43,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         final IWorkbenchPart workbenchPart,
         DBNNode node)
     {
-        super(parent, style);
+        super(parent, style, createContentProvider(node));
         this.workbenchPart = workbenchPart;
         this.node = node;
 
@@ -55,10 +62,39 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         });
     }
 
-    @Override
-    protected IContentProvider createContentProvider()
+    private static IContentProvider createContentProvider(DBNNode node)
     {
+        if (node instanceof DBNDatabaseNode) {
+            final List<DBXTreeNode> inlineMetas = new ArrayList<DBXTreeNode>();
+
+            DBXTreeNode meta = ((DBNDatabaseNode) node).getMeta();
+            if (meta instanceof DBXTreeFolder) {
+                // If this is a folder - iterate through all its children
+                for (DBXTreeNode metaChild : meta.getChildren()) {
+                    collectInlineChildren(metaChild, inlineMetas);
+                }
+
+            } else {
+                // Just check child metas
+                collectInlineChildren(meta, inlineMetas);
+            }
+
+            if (!inlineMetas.isEmpty()) {
+                return new TreeContentProvider();
+            }
+        }
         return new ListContentProvider();
+    }
+
+    private static void collectInlineChildren(DBXTreeNode meta, List<DBXTreeNode> inlineMetas)
+    {
+        if (!CommonUtils.isEmpty(meta.getChildren())) {
+            for (DBXTreeNode child : meta.getChildren()) {
+                if (child.isInline()) {
+                    inlineMetas.add(child);
+                }
+            }
+        }
     }
 
     public Viewer getNavigatorViewer()

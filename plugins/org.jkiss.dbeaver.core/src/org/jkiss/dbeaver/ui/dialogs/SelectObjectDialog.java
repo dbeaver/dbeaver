@@ -57,13 +57,7 @@ public class SelectObjectDialog<T> extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        ObjectListControl<T> objectList = new ObjectListControl<T>(group, SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI)) {
-            @Override
-            protected IContentProvider createContentProvider()
-            {
-                return new ListContentProvider();
-            }
-        };
+        ObjectListControl<T> objectList = new ObjectListControl<T>(group, SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI), new ListContentProvider());
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.minimumWidth = 300;

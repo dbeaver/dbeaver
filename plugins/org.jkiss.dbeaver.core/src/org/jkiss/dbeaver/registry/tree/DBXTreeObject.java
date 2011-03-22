@@ -17,7 +17,7 @@ public class DBXTreeObject extends DBXTreeNode
 
     public DBXTreeObject(AbstractDescriptor source, DBXTreeNode parent, String label, String description, String editorId)
     {
-        super(source, parent);
+        super(source, parent, true, false);
         this.label = label;
         this.description = description;
         this.editorId = editorId;
@@ -26,11 +26,6 @@ public class DBXTreeObject extends DBXTreeNode
     public String getLabel()
     {
         return label;
-    }
-
-    public boolean isNavigable()
-    {
-        return true;
     }
 
     public String getDescription()

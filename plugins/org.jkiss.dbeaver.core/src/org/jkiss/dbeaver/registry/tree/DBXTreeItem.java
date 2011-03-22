@@ -17,7 +17,6 @@ public class DBXTreeItem extends DBXTreeNode
     private String propertyName;
     private boolean optional;
     private boolean virtual;
-    private boolean navigable;
 
     public DBXTreeItem(
         AbstractDescriptor source,
@@ -28,16 +27,16 @@ public class DBXTreeItem extends DBXTreeNode
         String propertyName,
         boolean optional,
         boolean virtual,
-        boolean navigable)
+        boolean navigable,
+        boolean inline)
     {
-        super(source, parent);
+        super(source, parent, navigable, inline);
         this.label = label;
         this.itemLabel = itemLabel == null ? label : itemLabel;
         this.path = path;
         this.propertyName = propertyName;
         this.optional = optional;
         this.virtual = virtual;
-        this.navigable = navigable;
     }
 
     public String getPath()
@@ -75,9 +74,4 @@ public class DBXTreeItem extends DBXTreeNode
         return itemLabel;
     }
 
-    @Override
-    public boolean isNavigable()
-    {
-        return navigable;
-    }
 }

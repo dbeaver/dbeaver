@@ -260,7 +260,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             null,
             false,
             false,
-            true);
+            true,
+            false);
         loadTreeChildren(config, treeRoot);
         loadTreeIcon(treeRoot, config);
         return treeRoot;
@@ -299,7 +300,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 config.getAttribute("property"),
                 "true".equals(config.getAttribute("optional")),
                 "true".equals(config.getAttribute("virtual")),
-                !"false".equals(config.getAttribute("navigable")));
+                !"false".equals(config.getAttribute("navigable")),
+                "true".equals(config.getAttribute("inline")));
         } else if (nodeType.equals("object")) {
             child = new DBXTreeObject(
                 this,

@@ -1,4 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
@@ -218,21 +222,32 @@
          <attribute name="recursive" type="string">
             <annotation>
                <documentation>
-                  Recursive item reference
+                  Recursive item reference.
+                   Default value is false.
                </documentation>
             </annotation>
          </attribute>
          <attribute name="virtual" type="boolean">
             <annotation>
                <documentation>
-                  
+                   Virtual items are copies of other "real" objects. Navigator will always return real object to user.
+                   Default value is false.
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="navigable" type="boolean">
+          <attribute name="navigable" type="boolean">
+             <annotation>
+                <documentation>
+                    Non-navigable items do not present in navigator tree but still present in entity editor's tabs.
+                    Default value is true.
+                </documentation>
+             </annotation>
+          </attribute>
+         <attribute name="inline" type="boolean">
             <annotation>
                <documentation>
-                  
+                   Inline items are present in item lists as child items.
+                   Default value is false.
                </documentation>
             </annotation>
          </attribute>
