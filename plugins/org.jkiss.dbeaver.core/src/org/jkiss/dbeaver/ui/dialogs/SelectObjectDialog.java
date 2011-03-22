@@ -9,7 +9,6 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -23,7 +22,6 @@ import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -59,7 +57,13 @@ public class SelectObjectDialog<T> extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        ObjectListControl<T> objectList = new ObjectListControl<T>(group, SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI), new ListContentProvider());
+        ObjectListControl<T> objectList = new ObjectListControl<T>(group, SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI)) {
+            @Override
+            protected IContentProvider createContentProvider()
+            {
+                return new ListContentProvider();
+            }
+        };
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.minimumWidth = 300;

@@ -6,12 +6,12 @@ package org.jkiss.dbeaver.ui.editors.sql.plan;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
@@ -83,7 +83,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
 
     public PlanNodesTree(Composite parent, int style, IWorkbenchPart workbenchPart, IDataSourceProvider dataSourceProvider)
     {
-        super(parent, style, CONTENT_PROVIDER);
+        super(parent, style);
         this.dataSourceProvider = dataSourceProvider;
         this.workbenchPart = workbenchPart;
         setFitWidth(true);
@@ -94,6 +94,12 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
     protected DBPDataSource getDataSource()
     {
         return dataSourceProvider.getDataSource();
+    }
+
+    @Override
+    protected IContentProvider createContentProvider()
+    {
+        return CONTENT_PROVIDER;
     }
 
     @Override

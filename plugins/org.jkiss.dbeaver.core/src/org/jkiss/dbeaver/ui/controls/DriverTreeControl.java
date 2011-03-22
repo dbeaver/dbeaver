@@ -73,8 +73,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         UIUtils.packColumns(getTree(), false);
     }
 
-    class ViewContentProvider implements IStructuredContentProvider,
-        ITreeContentProvider
+    class ViewContentProvider implements ITreeContentProvider
     {
         public void inputChanged(Viewer v, Object oldInput, Object newInput)
         {

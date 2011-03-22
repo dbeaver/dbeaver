@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * ObjectListControl
  */
-public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IDoubleClickListener
+public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IDoubleClickListener
 {
     static final Log log = LogFactory.getLog(ObjectListControl.class);
 
@@ -83,6 +83,7 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     private final TextLayout linkLayout;
     private final Color linkColor;
     private final Cursor linkCursor;
+    private final Cursor arrowCursor;
 
     // Current selection coordinates
     private transient int selectedItem = -1;
@@ -93,15 +94,18 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
 
     public ObjectListControl(
         Composite parent,
-        int style,
-        IContentProvider contentProvider)
+        int style)
     {
         super(parent, style);
+
+        IContentProvider contentProvider = createContentProvider();
+
         this.isTree = (contentProvider instanceof ITreeContentProvider);
         this.isFitWidth = false;
         this.linkLayout = new TextLayout(parent.getDisplay());
         this.linkColor = parent.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
         this.linkCursor = parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND);
+        this.arrowCursor = parent.getDisplay().getSystemCursor(SWT.CURSOR_ARROW);
 
         if (isTree) {
             TreeViewer treeViewer = new TreeViewer(this, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
@@ -120,6 +124,7 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
             //UIUtils.applyCustomTolTips(table);
             //TableEditor editor = new TableEditor(table);
         }
+        itemsViewer.getControl().setCursor(arrowCursor);
         itemsViewer.setContentProvider(contentProvider);
         itemsViewer.setLabelProvider(new ItemLabelProvider());
         itemsViewer.addDoubleClickListener(this);
@@ -174,6 +179,8 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
             }
         });
     }
+
+    protected abstract IContentProvider createContentProvider();
 
     private TableItem detectTableItem(int x, int y)
     {
@@ -753,7 +760,7 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
 
         private void resetCursor()
         {
-            getItemsViewer().getControl().setCursor(null);
+            getItemsViewer().getControl().setCursor(arrowCursor);
         }
 
         public void mouseMove(MouseEvent e)

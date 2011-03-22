@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
 import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
@@ -35,7 +36,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         final IWorkbenchPart workbenchPart,
         DBNNode node)
     {
-        super(parent, style, new ListContentProvider());
+        super(parent, style);
         this.workbenchPart = workbenchPart;
         this.node = node;
 
@@ -52,6 +53,12 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 ViewUtils.runCommand(dbmNode.getDefaultCommandId(), workbenchPart);
             }
         });
+    }
+
+    @Override
+    protected IContentProvider createContentProvider()
+    {
+        return new ListContentProvider();
     }
 
     public Viewer getNavigatorViewer()

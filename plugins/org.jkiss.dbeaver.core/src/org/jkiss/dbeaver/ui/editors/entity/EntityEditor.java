@@ -262,6 +262,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_START);
 
+        // Collect tabs from navigator tree model
         final List<TabInfo> tabs = new ArrayList<TabInfo>();
         DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
             public void run(DBRProgressMonitor monitor)
@@ -282,14 +283,8 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             // just go further
         }
 
-        //tabs.addAll(collectTabs(VoidProgressMonitor.INSTANCE));
-
         for (TabInfo tab : tabs) {
-            if (tab.meta == null) {
-                addNodeTab(tab.node);
-            } else {
-                addNodeTab(tab.node, tab.meta);
-            }
+            addNodeTab(tab);
         }
 
         // Add contributed pages
@@ -339,16 +334,20 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     }
 
     private static class TabInfo {
-        DBNNode node;
+        DBNDatabaseNode node;
         DBXTreeNode meta;
-        private TabInfo(DBNNode node)
+        private TabInfo(DBNDatabaseNode node)
         {
             this.node = node;
         }
-        private TabInfo(DBNNode node, DBXTreeNode meta)
+        private TabInfo(DBNDatabaseNode node, DBXTreeNode meta)
         {
             this.node = node;
             this.meta = meta;
+        }
+        public String getName()
+        {
+            return meta == null ? node.getNodeName() : meta.getLabel();
         }
     }
 
@@ -367,7 +366,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
                             monitor.subTask("Add folder '" + child.getNodeName() + "'");
-                            tabs.add(new TabInfo(child));
+                            tabs.add(new TabInfo((DBNDatabaseFolder)child));
                         }
                     }
                 }
@@ -384,7 +383,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
                                     monitor.subTask("Add node '" + node.getNodeName() + "'");
-                                    tabs.add(new TabInfo(node, child));
+                                    tabs.add(new TabInfo((DBNDatabaseNode)node, child));
                                 }
                             } catch (DBException e) {
                                 log.debug("Can't add child items tab", e);
@@ -448,34 +447,25 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
     }
 
-    private void addNodeTab(DBNNode node)
+    private void addNodeTab(TabInfo tabInfo)
     {
         try {
-            EntityNodeEditor nodeEditor = new EntityNodeEditor(node);
+            EntityNodeEditor nodeEditor = new EntityNodeEditor(tabInfo.node, tabInfo.meta);
             int index = addPage(nodeEditor, getEditorInput());
-            setPageText(index, node.getNodeName());
-            setPageImage(index, node.getNodeIconDefault());
-            DBNNode editorNode = getEditorInput().getTreeNode();
-            setPageToolTip(index, editorNode.getNodeType() + " " + node.getNodeName());
-            editorMap.put("node." + node.getNodeName(), nodeEditor);
-        } catch (PartInitException ex) {
-            log.error("Error adding nested editor", ex);
-        }
-    }
-
-    private void addNodeTab(DBNNode node, DBXTreeNode metaItem)
-    {
-        try {
-            EntityNodeEditor nodeEditor = new EntityNodeEditor(node, metaItem);
-            int index = addPage(nodeEditor, getEditorInput());
-            setPageText(index, metaItem.getLabel());
-            if (metaItem.getDefaultIcon() != null) {
-                setPageImage(index, metaItem.getDefaultIcon());
+            if (tabInfo.meta == null) {
+                setPageText(index, tabInfo.node.getNodeName());
+                setPageImage(index, tabInfo.node.getNodeIconDefault());
+                setPageToolTip(index, getEditorInput().getTreeNode().getNodeType() + " " + tabInfo.node.getNodeName());
             } else {
-                setPageImage(index, PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER));
+                setPageText(index, tabInfo.meta.getLabel());
+                if (tabInfo.meta.getDefaultIcon() != null) {
+                    setPageImage(index, tabInfo.meta.getDefaultIcon());
+                } else {
+                    setPageImage(index, PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER));
+                }
+                setPageToolTip(index, tabInfo.meta.getLabel());
             }
-            setPageToolTip(index, metaItem.getLabel());
-            editorMap.put("node." + metaItem.getLabel(), nodeEditor);
+            editorMap.put("node." + tabInfo.getName(), nodeEditor);
         } catch (PartInitException ex) {
             log.error("Error adding nested editor", ex);
         }
@@ -523,12 +513,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySheetPage.class) {
             return new PropertyPageTabbed();
-        }/* else if (adapter == INavigatorModelView.class) {
-            IWorkbenchPart activePart = getActiveEditor();
-            if (activePart instanceof INavigatorModelView) {
-                return activePart;
-            }
-        }*/
+        }
         return super.getAdapter(adapter);
     }
 
@@ -561,4 +546,5 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             return result;
         }
     }
+
 }
