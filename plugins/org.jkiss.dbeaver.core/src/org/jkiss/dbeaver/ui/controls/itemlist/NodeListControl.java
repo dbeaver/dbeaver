@@ -11,16 +11,22 @@ import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Item;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -32,7 +38,7 @@ import java.util.List;
 /**
  * NodeListControl
  */
-public abstract class NodeListControl extends ObjectListControl<DBNNode> implements INavigatorModelView
+public abstract class NodeListControl extends ObjectListControl<DBNNode> implements INavigatorModelView,IDBNListener
 {
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
@@ -62,6 +68,15 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 ViewUtils.runCommand(dbmNode.getDefaultCommandId(), workbenchPart);
             }
         });
+
+        DBeaverCore.getInstance().getNavigatorModel().addListener(this);
+    }
+
+    @Override
+    public void dispose()
+    {
+        DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
+        super.dispose();
     }
 
     private static IContentProvider createContentProvider(DBNNode node)
@@ -186,6 +201,26 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
             if (node != null) {
                 NavigatorHandlerObjectOpen.openEntityEditor(node, null, workbenchPart.getSite().getWorkbenchWindow());
+            }
+        }
+    }
+
+    public void nodeChanged(final DBNEvent event)
+    {
+        if (isDisposed()) {
+            return;
+        }
+        if (event.getNode().isChildOf(getRootNode())) {
+            if (event.getAction() != DBNEvent.Action.UPDATE) {
+                // Add or remove - just reload list content
+                reloadData();
+            } else {
+                Display.getDefault().asyncExec(new Runnable() {
+                    public void run()
+                    {
+                        getItemsViewer().update(event.getNode(), null);
+                    }
+                });
             }
         }
     }

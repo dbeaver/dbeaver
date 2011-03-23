@@ -73,7 +73,7 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     //private boolean showName;
     //private boolean loadProperties;
 
-    private StructuredViewer itemsViewer;
+    private ColumnViewer itemsViewer;
     private List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
     private SortListener sortListener;
     private IDoubleClickListener doubleClickHandler;
@@ -248,7 +248,7 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
         return ((TableViewer)itemsViewer).getTable();
     }
 
-    public Viewer getItemsViewer()
+    public ColumnViewer getItemsViewer()
     {
         return itemsViewer;
     }
@@ -290,7 +290,7 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
 
     public void loadData(LoadingJob<Collection<OBJECT_TYPE>> job)
     {
-        if (loadingJob != null) {
+        if (loadingJob != null && (loadingJob.getState() == Job.WAITING || loadingJob.getState() == Job.RUNNING)) {
             // Don't do it twice
             return;
         }
@@ -298,10 +298,20 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
         loadingJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event) {
-                loadingJob = null;
+                //loadingJob = null;
             }
         });
-        loadingJob.schedule();
+        loadingJob.schedule(LAZY_LOAD_DELAY);
+    }
+
+    protected void reloadData()
+    {
+        if (loadingJob != null) {
+            // Reschedule current loading job
+            if (loadingJob.getState() != Job.WAITING && loadingJob.getState() != Job.RUNNING) {
+                loadingJob.schedule(LAZY_LOAD_DELAY);
+            }
+        }
     }
 
     public void clearData()
