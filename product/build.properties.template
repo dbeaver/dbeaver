@@ -1,22 +1,23 @@
 productName=DBeaver
-productVersion=1.0.0.rc2
+productVersion=@productVersion@
 archivePrefix=dbeaver
 product=/org.jkiss.dbeaver.core/DBeaver.product
 
-baseLocation=D:/Java/eclipse-3.6-dp
-nsisDirectory=C:/Program Files/NSIS
-buildDirectory=D:/Devel/My/dbeaver/product/build
-releaseFilesDirectory=D:\temp\dbeaver.release
+baseLocation=@baseLocation@
+nsisDirectory=@nsisDirectory@
+buildDirectory=@buildDirectory@
+releaseFilesDirectory=@releaseFilesDirectory@
 
 topLevelElementType = plugin
 topLevelElementId = org.jkiss.dbeaver.core
 distDirectory=dist
 
 buildType=B
-buildId=${archivePrefix}-${productVersion}
+buildId=@buildId@
+buildLabel=@buildLabel@
 
-equinoxLauncherPluginVersion=1.1.0.v20100507
-pdeBuildPluginVersion=3.6.0.v20100603
+equinoxLauncherPluginVersion=@equinoxLauncherPluginVersion@
+pdeBuildPluginVersion=@pdeBuildPluginVersion@
 
 ###############################################################################
 # Copyright (c) 2003, 2009 IBM Corporation and others.
@@ -60,29 +61,7 @@ collectingFolder=${archivePrefix}
 #     configs=win32,win32,x86 & linux,motif,x86
 # By default the value is *,*,*
 
-configs=win32, win32, x86
-
-#configs=win32, win32, x86 & \
-#	linux, gtk, x86 & \
-#	macosx, cocoa, ppc
-
-#configs = *, *, *
-#configs=win32, win32, x86 & \
-#	win32,win32,x86_64 & \
-#	win32,win32,wpf & \
-#	linux, gtk, ppc & \
-#	linux, gtk, x86 & \
-#	linux, gtk, x86_64 & \
-#	linux, motif, x86 & \
-#	solaris, motif, sparc & \
-#	solaris, gtk, sparc & \
-#	aix, motif, ppc & \
-#	hpux, motif, ia64_32 & \
-#	macosx, carbon, ppc & \
-#	macosx, carbon, x86 & \
-#	macosx, cocoa, ppc & \
-#	macosx, cocoa, x86 & \
-#	macosx, cocoa, x86_64
+configs=@configs@
 
 # By default PDE creates one archive (result) per entry listed in the configs property.
 # Setting this value to true will cause PDE to only create one output containing all 
@@ -146,9 +125,6 @@ tarargs=
 ############## BUILD NAMING CONTROL ################
 # The directory into which the build elements are fetched and where
 # the build takes place.
-
-# Label for the build.  Used in naming the build output
-buildLabel=${buildType}.${buildId}
 
 # Timestamp for the build.  Used in naming the build output
 timestamp=007

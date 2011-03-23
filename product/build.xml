@@ -4,11 +4,27 @@
 
 <project name="dbeaver" default="build">
 	<!--sets the path of the properties file-->
+	<property file="local.properties" />
+	<property file="../plugins/org.jkiss.dbeaver.core/META-INF/MANIFEST.MF" />
+	<property name="productVersion" value="${Bundle-Version}"/>
+	<property name="buildId" value="dbeaver-${productVersion}"/>
+	<property name="buildLabel" value="${buildId}"/>
+
+	<filter filtersFile="local.properties"/>
+	<filter token="productVersion" value="${productVersion}"/>
+	<filter token="buildId" value="${buildId}"/>
+	<filter token="buildLabel" value="${buildLabel}"/>
+	<delete file="build.properties" />
+	<copy file="build.properties.template" tofile="build.properties" filtering="true"/>
+
 	<property file="build.properties" />
+
+	<echo message="Build ${productName} ${productVersion}"/>
 
 	<target name="clean">
         <delete dir="${distDirectory}" />
 		<delete dir="${buildDirectory}" />
+        <delete file="build.properties" />
 	</target>
 
 	<target name="init">
@@ -54,7 +70,7 @@
 		<mkdir dir="${buildDirectory}/installer" />
 		<mkdir dir="${buildDirectory}/installer/raw" />
 		<unzip 
-			src="${buildDirectory}/${buildType}.${buildId}/${buildId}-win32.win32.x86.zip"
+			src="${buildDirectory}/${buildId}/${buildId}-win32.win32.x86.zip"
 			dest="${buildDirectory}/installer/raw/win32.x86"
 			overwrite="true"
 			/>
@@ -86,7 +102,7 @@
 		<delete dir="${debDirectory}" />
 		<mkdir dir="${debDirectory}" />
 		<unzip 
-			src="build/${buildType}.${buildId}/${buildId}-linux.gtk.x86.zip"
+			src="build/${buildId}/${buildId}-linux.gtk.x86.zip"
 			dest="${debDirectory}"
 			overwrite="true"
 			/>
@@ -147,7 +163,7 @@
 		</copy>
 
 		<!--copy
-			file="build/${buildType}.${buildId}/${buildId}-linux.gtk.x86.zip"
+			file="build/${buildId}/${buildId}-linux.gtk.x86.zip"
 			todir="${rpmDirectory}/SOURCES"/-->
 
         <rpm 
@@ -163,7 +179,7 @@
             destination="dist">
             <zipfileset 
                 prefix='/usr/share/dbeaver' 
-                file="build/${buildType}.${buildId}/${buildId}-linux.gtk.x86.zip"/>
+                file="build/${buildId}/${buildId}-linux.gtk.x86.zip"/>
                 <!--link path="/usr/share/java/test.jar" target="/usr/share/java/test-1.2.3.jar"/-->
             <depends name="sun-jre" version="1.6"/>
         </rpm>
@@ -191,7 +207,7 @@
     <target name="copy-release">
 		<mkdir dir="${releaseFilesDirectory}" />
 		<copy todir="${releaseFilesDirectory}">
-			<fileset dir="${buildDirectory}/${buildType}.${buildId}">
+			<fileset dir="${buildDirectory}/${buildId}">
 				<include name="*.zip" />
 			</fileset>
 			<fileset dir="${distDirectory}">
@@ -203,13 +219,18 @@
     <target name="copy-ea">
 		<mkdir dir="${releaseFilesDirectory}/ea" />
 		<copy todir="${releaseFilesDirectory}/ea">
-			<fileset dir="${buildDirectory}/${buildType}.${buildId}">
+			<fileset dir="${buildDirectory}/${buildId}">
 				<include name="*.zip" />
 			</fileset>
 			<fileset dir="${distDirectory}">
 				<include name="**" />
 			</fileset>
 		</copy>
+    </target>
+
+
+    <target name="dummy">
+
     </target>
 
 </project>
