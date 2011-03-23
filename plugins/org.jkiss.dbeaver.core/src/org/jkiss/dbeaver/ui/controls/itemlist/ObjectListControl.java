@@ -575,11 +575,11 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
 
         //private List<ItemCell<OBJECT_TYPE>> lazyItems = new ArrayList<ItemCell<OBJECT_TYPE>>();
-        private final Class<?>[] baseObjectType;
+        private final Class<?>[] baseTypes;
 
-        public ObjectsLoadVisualizer(Class<?> ... baseObjectType)
+        public ObjectsLoadVisualizer(Class<?> ... baseTypes)
         {
-            this.baseObjectType = baseObjectType;
+            this.baseTypes = baseTypes;
         }
 
         public void completeLoading(Collection<OBJECT_TYPE> items)
@@ -591,12 +591,9 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
             if (itemsControl.isDisposed()) {
                 return;
             }
-            final List<OBJECT_TYPE> objectList = new ArrayList<OBJECT_TYPE>();
             final List<Class<?>> classList = new ArrayList<Class<?>>();
-            if (baseObjectType != null && baseObjectType.length > 0) {
-                for (Class<?> type : baseObjectType) {
-                    classList.add(type);
-                }
+            if (!CommonUtils.isEmpty(baseTypes)) {
+                Collections.addAll(classList, baseTypes);
             }
             if (!CommonUtils.isEmpty(items)) {
                 // Create columns
@@ -605,7 +602,6 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
                     if (!classList.contains(object.getClass())) {
                         classList.add(object.getClass());
                     }
-                    objectList.add(item);
                 }
             }
 
@@ -619,6 +615,7 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
                 }
             }
 
+            final List<OBJECT_TYPE> objectList = new ArrayList<OBJECT_TYPE>(items);
             setInfo(getItemsLoadMessage(objectList.size()));
 
             if (!itemsControl.isDisposed()) {
@@ -914,9 +911,9 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     }
 
 */
-    public ObjectsLoadVisualizer createVisualizer(Class<?> ... baseObjectType)
+    public ObjectsLoadVisualizer createVisualizer(Class<?> ... baseTypes)
     {
-        return new ObjectsLoadVisualizer(baseObjectType);
+        return new ObjectsLoadVisualizer(baseTypes);
     }
 
 }
