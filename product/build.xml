@@ -204,7 +204,7 @@
 
     </target>
 
-    <target name="copy-release">
+    <target name="copy-release" depends="init">
 		<mkdir dir="${releaseFilesDirectory}" />
 		<copy todir="${releaseFilesDirectory}">
 			<fileset dir="${buildDirectory}/${buildId}">
@@ -216,7 +216,7 @@
 		</copy>
     </target>
 	
-    <target name="copy-ea">
+    <target name="copy-ea" depends="init">
 		<mkdir dir="${releaseFilesDirectory}/ea" />
 		<copy todir="${releaseFilesDirectory}/ea">
 			<fileset dir="${buildDirectory}/${buildId}">
