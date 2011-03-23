@@ -24,9 +24,10 @@ public class MySQLForeignKeyColumn extends MySQLConstraintColumn implements DBSF
         this.referencedColumn = referencedColumn;
     }
 
-    @Property(name = "Reference Column", viewable = true, order = 3)
+    @Property(id = "reference", name = "Reference Column", viewable = true, order = 4)
     public MySQLTableColumn getReferencedColumn()
     {
         return referencedColumn;
     }
+
 }

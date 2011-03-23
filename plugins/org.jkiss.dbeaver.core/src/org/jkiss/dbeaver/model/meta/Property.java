@@ -17,6 +17,8 @@ import java.lang.annotation.Target;
 public @interface Property
 {
 
+    String id() default "";
+
     String name();
 
     String category() default "";
@@ -24,6 +26,8 @@ public @interface Property
     String description() default "";
 
     boolean editable() default false;
+
+    boolean updatable() default false;
 
     boolean viewable() default false;
 

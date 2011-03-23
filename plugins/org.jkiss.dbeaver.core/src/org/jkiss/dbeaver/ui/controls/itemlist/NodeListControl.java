@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -19,6 +20,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -65,25 +67,60 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     private static IContentProvider createContentProvider(DBNNode node)
     {
         if (node instanceof DBNDatabaseNode) {
-            final List<DBXTreeNode> inlineMetas = new ArrayList<DBXTreeNode>();
-
-            DBXTreeNode meta = ((DBNDatabaseNode) node).getMeta();
-            if (meta instanceof DBXTreeFolder) {
-                // If this is a folder - iterate through all its children
-                for (DBXTreeNode metaChild : meta.getChildren()) {
-                    collectInlineChildren(metaChild, inlineMetas);
-                }
-
-            } else {
-                // Just check child metas
-                collectInlineChildren(meta, inlineMetas);
-            }
+            final List<DBXTreeNode> inlineMetas = collectInlineMetas((DBNDatabaseNode) node);
 
             if (!inlineMetas.isEmpty()) {
-                return new TreeContentProvider();
+                return new TreeContentProvider() {
+                    @Override
+                    public boolean hasChildren(Object parentElement)
+                    {
+                        if (parentElement instanceof DBNDatabaseNode) {
+                            return ((DBNDatabaseNode) parentElement).hasChildren();
+                        } else {
+                            return false;
+                        }
+                    }
+
+                    @Override
+                    public Object[] getChildren(Object parentElement)
+                    {
+                        if (parentElement instanceof DBNDatabaseNode) {
+                            try {
+                                // Read children with void progress monitor because inline children SHOULD be already cached
+                                List<DBNDatabaseNode> children = ((DBNDatabaseNode) parentElement).getChildren(VoidProgressMonitor.INSTANCE);
+                                if (CommonUtils.isEmpty(children)) {
+                                    return null;
+                                } else {
+                                    return children.toArray();
+                                }
+                            } catch (DBException e) {
+                                log.error(e);
+                            }
+                        }
+                        return null;
+                    }
+                };
             }
         }
         return new ListContentProvider();
+    }
+
+    private static List<DBXTreeNode> collectInlineMetas(DBNDatabaseNode node)
+    {
+        final List<DBXTreeNode> inlineMetas = new ArrayList<DBXTreeNode>();
+
+        DBXTreeNode meta = node.getMeta();
+        if (meta instanceof DBXTreeFolder) {
+            // If this is a folder - iterate through all its children
+            for (DBXTreeNode metaChild : meta.getChildren()) {
+                collectInlineChildren(metaChild, inlineMetas);
+            }
+
+        } else {
+            // Just check child metas
+            collectInlineChildren(meta, inlineMetas);
+        }
+        return inlineMetas;
     }
 
     private static void collectInlineChildren(DBXTreeNode meta, List<DBXTreeNode> inlineMetas)
@@ -95,6 +132,21 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 }
             }
         }
+    }
+
+    protected Class<?>[] getListBaseTypes()
+    {
+        List<Class<?>> baseTypes;
+        // Collect base types for root node
+        if (getRootNode() instanceof DBNDatabaseNode) {
+            DBNDatabaseNode dbNode = (DBNDatabaseNode) getRootNode();
+            baseTypes = dbNode.getChildrenTypes();
+        } else {
+            baseTypes = null;
+        }
+
+        // Collect base types for inline children
+        return baseTypes == null || baseTypes.isEmpty() ? null : baseTypes.toArray(new Class<?>[baseTypes.size()]);
     }
 
     public Viewer getNavigatorViewer()

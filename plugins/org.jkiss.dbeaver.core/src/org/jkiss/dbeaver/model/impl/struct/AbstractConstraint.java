@@ -30,7 +30,7 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
         this.constraintType = constraintType;
     }
 
-    @Property(name = "Owner", viewable = true, order = 2)
+    @Property(id = "owner", name = "Owner", viewable = true, order = 2)
     public TABLE getTable()
     {
         return table;

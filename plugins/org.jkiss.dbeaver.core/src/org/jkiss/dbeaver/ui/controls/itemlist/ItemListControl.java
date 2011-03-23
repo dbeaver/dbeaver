@@ -43,15 +43,9 @@ public class ItemListControl extends NodeListControl
 
     public void fillData(DBXTreeNode metaNode)
     {
-        Class<?>[] baseTypes;
-        if (getRootNode() instanceof DBNDatabaseNode) {
-            baseTypes = ((DBNDatabaseNode) getRootNode()).getChildrenTypes();
-        } else {
-            baseTypes = null;
-        }
         LoadingJob<Collection<DBNNode>> loadingJob = LoadingUtils.createService(
             new ItemLoadService(metaNode),
-            new ObjectsLoadVisualizer(baseTypes));
+            new ObjectsLoadVisualizer());
         super.loadData(loadingJob);
     }
 

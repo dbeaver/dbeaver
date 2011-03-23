@@ -476,7 +476,7 @@ public class SearchObjectsView extends ViewPart {
 
         public ObjectsLoadVisualizer createVisualizer(final ControlEnableState blockEnableState)
         {
-            return new ObjectsLoadVisualizer(DBSObject.class) {
+            return new ObjectsLoadVisualizer() {
                 @Override
                 public void completeLoading(Collection<DBNNode> items)
                 {

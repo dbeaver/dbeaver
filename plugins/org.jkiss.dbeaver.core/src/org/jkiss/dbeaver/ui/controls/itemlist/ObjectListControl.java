@@ -49,12 +49,13 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
         Item item;
         Map<Class<?>, PropertyAnnoDescriptor> propMap = new IdentityHashMap<Class<?>, PropertyAnnoDescriptor>();
 
-        private ObjectColumn(Item item, Class<?> objectClass, PropertyAnnoDescriptor prop) {
-            this.id = CommonUtils.toString(prop.getId());
+        private ObjectColumn(Item item, String id) {
+            this.id = id;
             this.item = item;
+        }
+        void addProperty(Class<?> objectClass, PropertyAnnoDescriptor prop)
+        {
             this.propMap.put(objectClass, prop);
-            //this.objectClass = objectClass;
-            //this.prop = prop;
         }
     }
 
@@ -427,9 +428,9 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
 
         Rectangle itemBounds;
         if (isTree) {
-            itemBounds = ((TreeItem)item).getBounds(column);
+            itemBounds = ((TreeItem)item).getTextBounds(column);
         } else {
-            itemBounds = ((TableItem)item).getBounds(column);
+            itemBounds = ((TableItem)item).getTextBounds(column);
         }
 
         Rectangle linkBounds = linkLayout.getBounds();
@@ -438,6 +439,11 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
         linkBounds.height -= 2;
 
         return linkBounds;
+    }
+
+    protected Class<?>[] getListBaseTypes()
+    {
+        return null;
     }
 
     /**
@@ -485,11 +491,12 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
                 column.addListener(SWT.Selection, sortListener);
                 newColumn = column;
             }
-            objectColumn = new ObjectColumn(newColumn, objectClass, prop);
+            objectColumn = new ObjectColumn(newColumn, CommonUtils.toString(prop.getId()));
+            objectColumn.addProperty(objectClass, prop);
             this.columns.add(objectColumn);
             newColumn.setData(DATA_OBJECT_COLUMN, objectColumn);
         } else {
-            objectColumn.propMap.put(objectClass, prop);
+            objectColumn.addProperty(objectClass, prop);
             String oldTitle = objectColumn.item.getText();
             if (!oldTitle.contains(prop.getDisplayName())) {
                 objectColumn.item.setText(CommonUtils.capitalizeWord(objectColumn.id));
@@ -575,11 +582,9 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
 
         //private List<ItemCell<OBJECT_TYPE>> lazyItems = new ArrayList<ItemCell<OBJECT_TYPE>>();
-        private final Class<?>[] baseTypes;
 
-        public ObjectsLoadVisualizer(Class<?> ... baseTypes)
+        public ObjectsLoadVisualizer()
         {
-            this.baseTypes = baseTypes;
         }
 
         public void completeLoading(Collection<OBJECT_TYPE> items)
@@ -592,6 +597,7 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
                 return;
             }
             final List<Class<?>> classList = new ArrayList<Class<?>>();
+            Class<?>[] baseTypes = getListBaseTypes();
             if (!CommonUtils.isEmpty(baseTypes)) {
                 Collections.addAll(classList, baseTypes);
             }
@@ -602,13 +608,16 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
                     if (!classList.contains(object.getClass())) {
                         classList.add(object.getClass());
                     }
+                    if (isTree) {
+                        collectItemClasses(item, classList);
+                    }
                 }
             }
 
             for (Class<?> objectClass : classList) {
                 List<PropertyAnnoDescriptor> props = PropertyAnnoDescriptor.extractAnnotations(objectClass);
                 for (PropertyAnnoDescriptor prop : props) {
-                    if (isBrief && !prop.isViewable()) {
+                    if (!prop.isViewable()) {
                         continue;
                     }
                     createColumn(objectClass, prop);
@@ -648,6 +657,25 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
                         new ValuesLoadVisualizer());
                 }
 */
+            }
+        }
+
+        private void collectItemClasses(OBJECT_TYPE item, List<Class<?>> classList)
+        {
+            ITreeContentProvider contentProvider = (ITreeContentProvider) itemsViewer.getContentProvider();
+            if (!contentProvider.hasChildren(item)) {
+                return;
+            }
+            Object[] children = contentProvider.getChildren(item);
+            if (!CommonUtils.isEmpty(children)) {
+                for (Object child : children) {
+                    OBJECT_TYPE childItem = (OBJECT_TYPE)child;
+                    Object objectValue = getObjectValue(childItem);
+                    if (!classList.contains(objectValue.getClass())) {
+                        classList.add(objectValue.getClass());
+                    }
+                    collectItemClasses(childItem, classList);
+                }
             }
         }
 
@@ -740,7 +768,13 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
                             boolean isSelected = linkColor.equals(gc.getBackground());
                             // Print link
                             prepareLinkStyle(cellValue, isSelected ? gc.getForeground() : linkColor);
-                            linkLayout.draw(gc, event.x, event.y + 1);
+                            Rectangle textBounds;
+                            if (event.item instanceof TreeItem) {
+                                textBounds = ((TreeItem) event.item).getTextBounds(event.index);
+                            } else {
+                                textBounds = ((TableItem) event.item).getTextBounds(event.index);
+                            }
+                            linkLayout.draw(gc, textBounds.x, textBounds.y + 1);
                         }
                     }
 					break;
@@ -911,9 +945,9 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     }
 
 */
-    public ObjectsLoadVisualizer createVisualizer(Class<?> ... baseTypes)
+    public ObjectsLoadVisualizer createVisualizer()
     {
-        return new ObjectsLoadVisualizer(baseTypes);
+        return new ObjectsLoadVisualizer();
     }
 
 }

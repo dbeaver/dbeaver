@@ -436,7 +436,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     protected abstract void reloadObject(DBRProgressMonitor monitor, DBSObject object);
 
-    public Class<?>[] getChildrenTypes()
+    public List<Class<?>> getChildrenTypes()
     {
         List<DBXTreeNode> childMetas = getMeta().getChildren();
         if (CommonUtils.isEmpty(childMetas)) {
@@ -451,7 +451,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                     }
                 }
             }
-            return result.isEmpty() ? null : result.toArray(new Class<?>[result.size()]);
+            return result;
         }
     }
 

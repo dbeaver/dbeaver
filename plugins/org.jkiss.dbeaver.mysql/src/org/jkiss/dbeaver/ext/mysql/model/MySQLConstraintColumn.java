@@ -30,21 +30,22 @@ public class MySQLConstraintColumn extends AbstractConstraintColumn
         return constraint;
     }
 
-    @Property(name = "Column", viewable = true, order = 2)
+    //@Property(name = "Name", viewable = true, order = 1)
+    public String getName()
+    {
+        return tableColumn.getName();
+    }
+
+    @Property(id = "name", name = "Column", viewable = true, order = 1)
     public MySQLTableColumn getTableColumn()
     {
         return tableColumn;
     }
 
-    @Property(name = "Position", viewable = true, order = 1)
+    @Property(name = "Position", viewable = false, order = 2)
     public int getOrdinalPosition()
     {
         return ordinalPosition;
-    }
-
-    public String getName()
-    {
-        return tableColumn.getName();
     }
 
     public String getDescription()

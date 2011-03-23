@@ -24,7 +24,7 @@ public class GenericForeignKeyColumn extends GenericConstraintColumn implements 
         this.referencedColumn = referencedColumn;
     }
 
-    @Property(name = "Reference Column", viewable = true, order = 3)
+    @Property(id = "reference", name = "Reference Column", viewable = true, order = 4)
     public GenericTableColumn getReferencedColumn()
     {
         return referencedColumn;
@@ -36,9 +36,4 @@ public class GenericForeignKeyColumn extends GenericConstraintColumn implements 
         return getName();
     }
 
-    @Override
-    public int hashCode()
-    {
-        return getName().hashCode();
-    }
 }

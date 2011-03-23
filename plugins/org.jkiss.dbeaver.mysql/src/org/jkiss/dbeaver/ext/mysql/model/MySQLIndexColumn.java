@@ -40,27 +40,28 @@ public class MySQLIndexColumn extends AbstractIndexColumn
         return index;
     }
 
-    @Property(name = "Position", viewable = true, order = 1)
-    public int getOrdinalPosition()
+    //@Property(name = "Name", viewable = true, order = 1)
+    public String getName()
     {
-        return ordinalPosition;
+        return tableColumn.getName();
     }
 
-    @Property(name = "Ascending", viewable = true, order = 2)
-    public boolean isAscending()
-    {
-        return ascending;
-    }
-
-    @Property(name = "Column", viewable = true, order = 3)
+    @Property(id = "name", name = "Column", viewable = true, order = 1)
     public MySQLTableColumn getTableColumn()
     {
         return tableColumn;
     }
 
-    public String getName()
+    @Property(name = "Ascending", viewable = false, order = 2)
+    public int getOrdinalPosition()
     {
-        return tableColumn.getName();
+        return ordinalPosition;
+    }
+
+    @Property(name = "Ascending", viewable = true, order = 3)
+    public boolean isAscending()
+    {
+        return ascending;
     }
 
     public String getDescription()

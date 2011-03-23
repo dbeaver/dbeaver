@@ -42,7 +42,10 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
         if (getter.getParameterTypes().length == 1 && getter.getParameterTypes()[0] == DBRProgressMonitor.class) {
             this.isLazy = true;
         }
-        this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
+        this.id = propInfo.id();
+        if (CommonUtils.isEmpty(this.id)) {
+            this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
+        }
         this.setter = BeanUtils.getSetMethod(getter.getDeclaringClass(), id);
     }
 

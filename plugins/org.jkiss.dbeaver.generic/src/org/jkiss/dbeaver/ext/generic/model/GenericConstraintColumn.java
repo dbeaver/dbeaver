@@ -37,23 +37,24 @@ public class GenericConstraintColumn extends AbstractConstraintColumn
         return constraint;
     }
 
-    @Property(name = "Column", viewable = true, order = 2)
-    public GenericTableColumn getTableColumn()
-    {
-        return tableColumn;
-    }
-
-    @Property(name = "Position", viewable = true, order = 1)
-    public int getOrdinalPosition()
-    {
-        return ordinalPosition;
-    }
-
     public String getName()
     {
         return tableColumn.getName();
     }
 
+    @Property(id = "name", name = "Column", viewable = true, order = 1)
+    public GenericTableColumn getTableColumn()
+    {
+        return tableColumn;
+    }
+
+    @Property(name = "Position", viewable = false, order = 2)
+    public int getOrdinalPosition()
+    {
+        return ordinalPosition;
+    }
+
+    @Property(name = "Description", viewable = true, order = 100)
     public String getDescription()
     {
         return tableColumn.getDescription();

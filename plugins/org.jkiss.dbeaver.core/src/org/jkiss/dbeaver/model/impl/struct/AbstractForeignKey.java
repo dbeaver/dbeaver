@@ -43,7 +43,7 @@ public abstract class AbstractForeignKey<
         return referencedKey.getTable();
     }
 
-    @Property(name = "Ref Constraint", viewable = true, order = 4)
+    @Property(id = "reference", name = "Ref Object", viewable = true, order = 4)
     public PRIMARY_KEY getReferencedKey()
     {
         return referencedKey;

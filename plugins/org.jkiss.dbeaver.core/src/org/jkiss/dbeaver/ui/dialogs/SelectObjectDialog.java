@@ -13,7 +13,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
@@ -94,7 +93,7 @@ public class SelectObjectDialog<T> extends Dialog {
                     return SelectObjectDialog.this;
                 }
             },
-            objectList.createVisualizer(DBSObject.class));
+            objectList.createVisualizer());
         objectList.loadData(loadingJob);
 
         return group;
