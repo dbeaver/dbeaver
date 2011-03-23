@@ -640,6 +640,7 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
                     itemsViewer.setInput(sampleList);
 
                     if (isTree) {
+                        ((TreeViewer)itemsViewer).expandAll();
                         UIUtils.packColumns(getTree(), isFitWidth);
                     } else {
                         UIUtils.packColumns(getTable());
