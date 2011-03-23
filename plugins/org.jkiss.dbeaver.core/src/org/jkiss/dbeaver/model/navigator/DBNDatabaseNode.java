@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,10 +22,9 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.*;
 
 /**
  * DBNDatabaseNode
@@ -435,5 +435,39 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public abstract DBXTreeNode getMeta();
 
     protected abstract void reloadObject(DBRProgressMonitor monitor, DBSObject object);
+
+    public Class<?>[] getChildrenTypes()
+    {
+        List<DBXTreeNode> childMetas = getMeta().getChildren();
+        if (CommonUtils.isEmpty(childMetas)) {
+            return null;
+        } else {
+            List<Class<?>> result = new ArrayList<Class<?>>();
+            for (DBXTreeNode childMeta : childMetas) {
+                if (childMeta instanceof DBXTreeItem) {
+                    Class<?> childrenType = getChildrenType((DBXTreeItem) childMeta);
+                    if (childrenType != null) {
+                        result.add(childrenType);
+                    }
+                }
+            }
+            return result.isEmpty() ? null : result.toArray(new Class<?>[result.size()]);
+        }
+    }
+
+    private Class<?> getChildrenType(DBXTreeItem childMeta)
+    {
+        Object valueObject = getValueObject();
+        if (valueObject == null) {
+            return null;
+        }
+        String propertyName = childMeta.getPropertyName();
+        Method getter = LoadingUtils.findPropertyReadMethod(valueObject.getClass(), propertyName);
+        if (getter == null) {
+            return null;
+        }
+        Type propType = getter.getGenericReturnType();
+        return BeanUtils.getCollectionType(propType);
+    }
 
 }

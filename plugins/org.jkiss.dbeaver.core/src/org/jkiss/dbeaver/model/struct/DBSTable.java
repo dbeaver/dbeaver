@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Table
@@ -26,7 +27,7 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSTableColumn> getColumns(DBRProgressMonitor monitor) throws DBException;
+    List<? extends DBSTableColumn> getColumns(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Retrieve table column by it's name (case insensitive)
@@ -42,7 +43,7 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException  on any DB error
      * @param monitor
      */
-    Collection<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
+    List<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Keys are: primary keys and unique keys.
@@ -51,7 +52,7 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSConstraint> getUniqueKeys(DBRProgressMonitor monitor) throws DBException;
+    List<? extends DBSConstraint> getUniqueKeys(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets this table foreign keys
@@ -59,7 +60,7 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
+    List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets foreign keys which refers this table
@@ -67,6 +68,6 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException;
+    List<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException;
 
 }

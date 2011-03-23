@@ -186,7 +186,7 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
         private final java.util.List<TaskInfo> tasksRunning = new ArrayList<TaskInfo>();
 
         public Shell getShell() {
-            return ProgressPageControl.this.getShell();
+            return ProgressPageControl.this.isDisposed() ? null : ProgressPageControl.this.getShell();
         }
 
         public DBRProgressMonitor overwriteMonitor(final DBRProgressMonitor monitor)

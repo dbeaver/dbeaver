@@ -575,20 +575,31 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
 
         //private List<ItemCell<OBJECT_TYPE>> lazyItems = new ArrayList<ItemCell<OBJECT_TYPE>>();
+        private final Class<?>[] baseObjectType;
+
+        public ObjectsLoadVisualizer(Class<?> ... baseObjectType)
+        {
+            this.baseObjectType = baseObjectType;
+        }
 
         public void completeLoading(Collection<OBJECT_TYPE> items)
         {
             super.completeLoading(items);
             clearData();
 
-            Control itemsControl = itemsViewer.getControl();
+            final Control itemsControl = itemsViewer.getControl();
             if (itemsControl.isDisposed()) {
                 return;
             }
-            List<OBJECT_TYPE> objectList = new ArrayList<OBJECT_TYPE>();
+            final List<OBJECT_TYPE> objectList = new ArrayList<OBJECT_TYPE>();
+            final List<Class<?>> classList = new ArrayList<Class<?>>();
+            if (baseObjectType != null && baseObjectType.length > 0) {
+                for (Class<?> type : baseObjectType) {
+                    classList.add(type);
+                }
+            }
             if (!CommonUtils.isEmpty(items)) {
                 // Create columns
-                List<Class<?>> classList = new ArrayList<Class<?>>();
                 for (OBJECT_TYPE item : items) {
                     Object object = getObjectValue(item);
                     if (!classList.contains(object.getClass())) {
@@ -596,17 +607,18 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
                     }
                     objectList.add(item);
                 }
+            }
 
-                for (Class<?> objectClass : classList) {
-                    List<PropertyAnnoDescriptor> props = PropertyAnnoDescriptor.extractAnnotations(objectClass);
-                    for (PropertyAnnoDescriptor prop : props) {
-                        if (isBrief && !prop.isViewable()) {
-                            continue;
-                        }
-                        createColumn(objectClass, prop);
+            for (Class<?> objectClass : classList) {
+                List<PropertyAnnoDescriptor> props = PropertyAnnoDescriptor.extractAnnotations(objectClass);
+                for (PropertyAnnoDescriptor prop : props) {
+                    if (isBrief && !prop.isViewable()) {
+                        continue;
                     }
+                    createColumn(objectClass, prop);
                 }
             }
+
             setInfo(getItemsLoadMessage(objectList.size()));
 
             if (!itemsControl.isDisposed()) {
@@ -902,9 +914,9 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     }
 
 */
-    public ObjectsLoadVisualizer createVisualizer()
+    public ObjectsLoadVisualizer createVisualizer(Class<?> ... baseObjectType)
     {
-        return new ObjectsLoadVisualizer();
+        return new ObjectsLoadVisualizer(baseObjectType);
     }
 
 }

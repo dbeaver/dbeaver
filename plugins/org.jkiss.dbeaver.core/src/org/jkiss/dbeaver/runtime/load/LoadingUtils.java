@@ -59,9 +59,12 @@ public class LoadingUtils {
     public static Method findPropertyReadMethod(Class<?> clazz, String propertyName)
     {
         String methodName = BeanUtils.propertyNameToMethodName(propertyName);
-        String getName = "get" + methodName;
-        String isName = "is" + methodName;
-        Method[] methods = clazz.getMethods();
+        return findPropertyGetter(clazz, "get" + methodName, "is" + methodName);
+    }
+
+    private static Method findPropertyGetter(Class<?> clazz, String getName, String isName)
+    {
+        Method[] methods = clazz.getDeclaredMethods();
 
         for (Method method : methods) {
             if (
@@ -78,7 +81,7 @@ public class LoadingUtils {
                 }
             }
         }
-        return null;
+        return clazz == Object.class ? null : findPropertyGetter(clazz.getSuperclass(), getName, isName);
     }
 
     public static <RESULT> LoadingJob<RESULT> createService(

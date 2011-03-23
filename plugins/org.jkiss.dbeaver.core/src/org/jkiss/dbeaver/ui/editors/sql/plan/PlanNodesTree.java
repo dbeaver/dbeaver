@@ -107,7 +107,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
         super.loadData(
             LoadingUtils.createService(
                 new ExplainPlanService(planner, query),
-                new ObjectsLoadVisualizer()));
+                new ObjectsLoadVisualizer(DBCPlanNode.class)));
     }
 
     private void createContextMenu()

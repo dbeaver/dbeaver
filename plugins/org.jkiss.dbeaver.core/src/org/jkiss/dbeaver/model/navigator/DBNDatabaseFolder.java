@@ -125,18 +125,6 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return (Class<DBSObject>)aClass ;
     }
 
-    private Class<?> getChildrenType(DBXTreeItem childMeta)
-    {
-        Object valueObject = getValueObject();
-        if (valueObject == null) {
-            return null;
-        }
-        String propertyName = childMeta.getPropertyName();
-        Method getter = LoadingUtils.findPropertyReadMethod(valueObject.getClass(), propertyName);
-        Type propType = getter.getGenericReturnType();
-        return BeanUtils.getCollectionType(propType);
-    }
-
     public DBNDatabaseItem addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException
     {
         List<DBXTreeNode> childMetas = getMeta().getChildren();
