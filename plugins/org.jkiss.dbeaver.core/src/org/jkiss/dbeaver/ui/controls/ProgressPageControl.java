@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ui.controls;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
@@ -50,6 +52,12 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
         //layout.horizontalSpacing = 0;
         //layout.verticalSpacing = 0;
         this.setLayout(layout);
+        addDisposeListener(new DisposeListener() {
+            public void widgetDisposed(DisposeEvent e)
+            {
+                dispose();
+            }
+        });
     }
 
     public void setInfo(String info)
@@ -135,8 +143,6 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
     @Override
     public void dispose()
     {
-        UIUtils.dispose(listInfoLabel);
-        UIUtils.dispose(progressBar);
         super.dispose();
     }
 

@@ -12,7 +12,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Item;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -26,7 +25,6 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -213,7 +211,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         if (event.getNode().isChildOf(getRootNode())) {
             if (event.getAction() != DBNEvent.Action.UPDATE) {
                 // Add or remove - just reload list content
-                reloadData();
+                loadData();
             } else {
                 Display.getDefault().asyncExec(new Runnable() {
                     public void run()

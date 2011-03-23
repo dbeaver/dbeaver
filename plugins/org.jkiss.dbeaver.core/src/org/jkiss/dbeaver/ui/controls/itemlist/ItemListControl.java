@@ -27,26 +27,24 @@ import java.util.List;
 public class ItemListControl extends NodeListControl
 {
 
+    private DBXTreeNode metaNode;
     public ItemListControl(
         Composite parent,
         int style,
         final IWorkbenchPart workbenchPart,
-        DBNNode node)
+        DBNNode node,
+        DBXTreeNode metaNode)
     {
         super(parent, style, workbenchPart, node);
+        this.metaNode = metaNode;
     }
 
-    public void fillData()
+    @Override
+    protected LoadingJob<Collection<DBNNode>> createLoadService()
     {
-        this.fillData(null);
-    }
-
-    public void fillData(DBXTreeNode metaNode)
-    {
-        LoadingJob<Collection<DBNNode>> loadingJob = LoadingUtils.createService(
+        return LoadingUtils.createService(
             new ItemLoadService(metaNode),
             new ObjectsLoadVisualizer());
-        super.loadData(loadingJob);
     }
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {

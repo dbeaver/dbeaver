@@ -57,7 +57,25 @@ public class SelectObjectDialog<T> extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        ObjectListControl<T> objectList = new ObjectListControl<T>(group, SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI), new ListContentProvider());
+        ObjectListControl<T> objectList = new ObjectListControl<T>(group, SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI), new ListContentProvider()) {
+            @Override
+            protected LoadingJob<Collection<T>> createLoadService()
+            {
+                return LoadingUtils.createService(
+                    new AbstractLoadService<Collection<T>>() {
+                        public Collection<T> evaluate() throws InvocationTargetException, InterruptedException
+                        {
+                            return objects;
+                        }
+
+                        public Object getFamily()
+                        {
+                            return SelectObjectDialog.this;
+                        }
+                    },
+                    new ObjectsLoadVisualizer());
+            }
+        };
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.minimumWidth = 300;
@@ -81,20 +99,7 @@ public class SelectObjectDialog<T> extends Dialog {
             }
         });
 
-        LoadingJob<Collection<T>> loadingJob = LoadingUtils.createService(
-            new AbstractLoadService<Collection<T>>() {
-                public Collection<T> evaluate() throws InvocationTargetException, InterruptedException
-                {
-                    return objects;
-                }
-
-                public Object getFamily()
-                {
-                    return SelectObjectDialog.this;
-                }
-            },
-            objectList.createVisualizer());
-        objectList.loadData(loadingJob);
+        objectList.loadData();
 
         return group;
     }

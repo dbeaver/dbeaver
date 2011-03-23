@@ -399,49 +399,7 @@ public class SearchObjectsView extends ViewPart {
 
     private void performSearch()
     {
-        DBNNode selectedNode = getSelectedNode();
-        DBSEntityContainer parentObject = null;
-        if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSEntityContainer) {
-            parentObject = (DBSEntityContainer) ((DBSWrapper)selectedNode).getObject();
-        }
-
-        DBPDataSource dataSource = getSelectedDataSource();
-        DBSStructureAssistant assistant = getSelectedStructureAssistant();
-        if (dataSource == null || assistant == null) {
-            return;
-        }
-        java.util.List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
-        for (TableItem item : typesTable.getItems()) {
-            if (item.getChecked()) {
-                objectTypes.add((DBSObjectType) item.getData());
-            }
-        }
-        String objectNameMask = nameMask;
-
-        // Save search query
-        if (!searchHistory.contains(objectNameMask)) {
-            searchHistory.add(objectNameMask);
-            searchText.add(objectNameMask);
-        }
-
-        if (matchTypeIndex == MATCH_INDEX_STARTS_WITH) {
-            if (!objectNameMask.endsWith("%")) {
-                objectNameMask = objectNameMask + "%";
-            }
-        } else if (matchTypeIndex == MATCH_INDEX_CONTAINS) {
-            if (!objectNameMask.startsWith("%")) {
-                objectNameMask = "%" + objectNameMask;
-            }
-            if (!objectNameMask.endsWith("%")) {
-                objectNameMask = objectNameMask + "%";
-            }
-        }
-
-        // Start separate service for each data source
-        LoadingJob<Collection<DBNNode>> loadingJob = LoadingUtils.createService(
-            new ObjectSearchService(dataSource, assistant, parentObject, objectTypes, objectNameMask, maxResults),
-            itemList.createVisualizer(ControlEnableState.disable(searchGroup)));
-        itemList.loadData(loadingJob);
+        itemList.loadData();
     }
 
     @Override
@@ -493,6 +451,52 @@ public class SearchObjectsView extends ViewPart {
                     }
                 }
             };
+        }
+
+        @Override
+        protected LoadingJob<Collection<DBNNode>> createLoadService()
+        {
+            DBNNode selectedNode = getSelectedNode();
+            DBSEntityContainer parentObject = null;
+            if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSEntityContainer) {
+                parentObject = (DBSEntityContainer) ((DBSWrapper)selectedNode).getObject();
+            }
+
+            DBPDataSource dataSource = getSelectedDataSource();
+            DBSStructureAssistant assistant = getSelectedStructureAssistant();
+            if (dataSource == null || assistant == null) {
+                return null;
+            }
+            java.util.List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
+            for (TableItem item : typesTable.getItems()) {
+                if (item.getChecked()) {
+                    objectTypes.add((DBSObjectType) item.getData());
+                }
+            }
+            String objectNameMask = nameMask;
+
+            // Save search query
+            if (!searchHistory.contains(objectNameMask)) {
+                searchHistory.add(objectNameMask);
+                searchText.add(objectNameMask);
+            }
+
+            if (matchTypeIndex == MATCH_INDEX_STARTS_WITH) {
+                if (!objectNameMask.endsWith("%")) {
+                    objectNameMask = objectNameMask + "%";
+                }
+            } else if (matchTypeIndex == MATCH_INDEX_CONTAINS) {
+                if (!objectNameMask.startsWith("%")) {
+                    objectNameMask = "%" + objectNameMask;
+                }
+                if (!objectNameMask.endsWith("%")) {
+                    objectNameMask = objectNameMask + "%";
+                }
+            }
+
+            return LoadingUtils.createService(
+                new ObjectSearchService(dataSource, assistant, parentObject, objectTypes, objectNameMask, maxResults),
+                itemList.createVisualizer(ControlEnableState.disable(searchGroup)));
         }
     }
 

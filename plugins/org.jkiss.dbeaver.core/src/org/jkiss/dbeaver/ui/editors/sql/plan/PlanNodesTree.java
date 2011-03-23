@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
 
 import java.lang.reflect.InvocationTargetException;
@@ -80,6 +81,9 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
     private IDataSourceProvider dataSourceProvider;
     private IWorkbenchPart workbenchPart;
 
+    private DBCQueryPlanner planner;
+    private String query;
+
     public PlanNodesTree(Composite parent, int style, IWorkbenchPart workbenchPart, IDataSourceProvider dataSourceProvider)
     {
         super(parent, style, CONTENT_PROVIDER);
@@ -96,18 +100,18 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
     }
 
     @Override
+    protected LoadingJob<Collection<DBCPlanNode>> createLoadService()
+    {
+        return LoadingUtils.createService(
+                new ExplainPlanService(),
+                new ObjectsLoadVisualizer());
+    }
+
+    @Override
     public void clearData()
     {
         super.clearData();
         //createColumn("", "", null);
-    }
-
-    public void fillData(DBCQueryPlanner planner, String query)
-    {
-        super.loadData(
-            LoadingUtils.createService(
-                new ExplainPlanService(planner, query),
-                new ObjectsLoadVisualizer()));
     }
 
     private void createContextMenu()
@@ -144,17 +148,18 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
         workbenchPart.getSite().registerContextMenu(menuMgr, getItemsViewer());
     }
 
+    public void init(DBCQueryPlanner planner, String query)
+    {
+        this.planner = planner;
+        this.query = query;
+    }
+
 
     private class ExplainPlanService extends DatabaseLoadService<Collection<DBCPlanNode>> {
 
-        private DBCQueryPlanner planner;
-        private String query;
-
-        protected ExplainPlanService(DBCQueryPlanner planner, String query)
+        protected ExplainPlanService()
         {
             super("Explain plan", getDataSource());
-            this.planner = planner;
-            this.query = query;
         }
 
         public Collection<DBCPlanNode> evaluate()

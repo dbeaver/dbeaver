@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -27,8 +28,8 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
 
     public void createPartControl(Composite parent)
     {
-        itemControl = new ItemListControl(parent, SWT.NONE, this, getEditorInput().getTreeNode());
-        itemControl.fillData();
+        itemControl = new ItemListControl(parent, SWT.NONE, this, getEditorInput().getTreeNode(), null);
+        itemControl.loadData();
         // Hook context menu
         ViewUtils.addContextMenu(this, itemControl.getNavigatorViewer());
         // Add drag and drop support
@@ -46,12 +47,15 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
     }
 
     public void refreshDatabaseContent(DBNEvent event) {
-        getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run()
+            {
 
-            if (!itemControl.isDisposed()) {
-                itemControl.fillData();
+                if (!itemControl.isDisposed()) {
+                    itemControl.loadData();
+                }
+
             }
-
-        }});
+        });
     }
 }

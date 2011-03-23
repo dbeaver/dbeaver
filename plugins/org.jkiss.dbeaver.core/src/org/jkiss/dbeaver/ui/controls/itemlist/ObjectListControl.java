@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * ObjectListControl
  */
-public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IDoubleClickListener
+public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IDoubleClickListener
 {
     static final Log log = LogFactory.getLog(ObjectListControl.class);
 
@@ -77,7 +77,6 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     private List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
     private SortListener sortListener;
     private IDoubleClickListener doubleClickHandler;
-    private LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
     private Map<Item, LazyObject> lazyObjects;
     private Job lazyLoadingJob = null;
 
@@ -92,6 +91,8 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     // Sample flag. True only when initial content is packed. Used to provide actual cell data to Tree/Table pack() methods
     // After content is loaded is always false (and all hyperlink cells have empty text)
     private transient boolean sampleItems = false;
+
+    private volatile LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
 
     public ObjectListControl(
         Composite parent,
@@ -169,16 +170,9 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
         super.createProgressPanel();
 
         sortListener = new SortListener();
-
-        itemsViewer.getControl().addDisposeListener(new DisposeListener() {
-            public void widgetDisposed(DisposeEvent e) {
-                if (loadingJob != null) {
-                    loadingJob.cancel();
-                    loadingJob = null;
-                }
-            }
-        });
     }
+
+    protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService();
 
     private TableItem detectTableItem(int x, int y)
     {
@@ -281,37 +275,29 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
     @Override
     public void dispose()
     {
-        UIUtils.dispose(linkLayout);
-        if (!itemsViewer.getControl().isDisposed()) {
-            itemsViewer.getControl().dispose();
+        if (loadingJob != null) {
+            // Cancel running job
+            loadingJob.cancel();
+            loadingJob = null;
         }
+        UIUtils.dispose(linkLayout);
         super.dispose();
     }
 
-    public void loadData(LoadingJob<Collection<OBJECT_TYPE>> job)
+    public void loadData()
     {
-        if (loadingJob != null && (loadingJob.getState() == Job.WAITING || loadingJob.getState() == Job.RUNNING)) {
-            // Don't do it twice
+        if (loadingJob != null) {
             return;
         }
-        loadingJob = job;
+        loadingJob = createLoadService();
         loadingJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
-            public void done(IJobChangeEvent event) {
-                //loadingJob = null;
+            public void done(IJobChangeEvent event)
+            {
+                loadingJob = null;
             }
         });
         loadingJob.schedule(LAZY_LOAD_DELAY);
-    }
-
-    protected void reloadData()
-    {
-        if (loadingJob != null) {
-            // Reschedule current loading job
-            if (loadingJob.getState() != Job.WAITING && loadingJob.getState() != Job.RUNNING) {
-                loadingJob.schedule(LAZY_LOAD_DELAY);
-            }
-        }
     }
 
     public void clearData()
@@ -634,7 +620,7 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
                 }
             }
 
-            final List<OBJECT_TYPE> objectList = new ArrayList<OBJECT_TYPE>(items);
+            final List<OBJECT_TYPE> objectList = CommonUtils.isEmpty(items) ? Collections.<OBJECT_TYPE>emptyList() : new ArrayList<OBJECT_TYPE>(items);
             setInfo(getItemsLoadMessage(objectList.size()));
 
             if (!itemsControl.isDisposed()) {
@@ -947,18 +933,6 @@ public class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implemen
 
             return Status.OK_STATUS;
         }
-    }
-
-/*
-    public ProgressVisualizer<Collection<OBJECT_TYPE>> createVisualizer()
-    {
-        return new ProgressVisualizer<Collection<OBJECT_TYPE>>();
-    }
-
-*/
-    public ObjectsLoadVisualizer createVisualizer()
-    {
-        return new ObjectsLoadVisualizer();
     }
 
 }

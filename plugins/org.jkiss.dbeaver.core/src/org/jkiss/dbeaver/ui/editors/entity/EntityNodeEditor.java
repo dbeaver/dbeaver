@@ -66,7 +66,7 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
 
     public void createPartControl(Composite parent)
     {
-        itemControl = new ItemListControl(parent, SWT.NONE, this, node);
+        itemControl = new ItemListControl(parent, SWT.NONE, this, node, metaNode);
 
         // Hook context menu
         ViewUtils.addContextMenu(this, itemControl.getNavigatorViewer());
@@ -92,7 +92,7 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
     {
         if (!activated) {
             activated = true;
-            itemControl.fillData(metaNode);
+            itemControl.loadData();
         }
     }
 
@@ -121,17 +121,13 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         if (!itemControl.isDisposed()) {
             itemControl.clearData();
             if (loadNewData) {
-                itemControl.fillData(metaNode);
+                itemControl.loadData();
             }
         }
     }
 
     @Override
     public void dispose() {
-        if (itemControl != null) {
-            itemControl.dispose();
-            itemControl = null;
-        }
         super.dispose();
     }
 

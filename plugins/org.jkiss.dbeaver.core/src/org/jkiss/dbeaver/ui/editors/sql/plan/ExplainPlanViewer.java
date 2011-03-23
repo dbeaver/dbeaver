@@ -133,6 +133,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         }
 
         planTree.clearData();
-        planTree.fillData(planner, query);
+        planTree.init(planner, query);
+        planTree.loadData();
     }
 }
