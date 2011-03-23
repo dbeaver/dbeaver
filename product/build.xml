@@ -10,17 +10,6 @@
 	<property name="buildId" value="dbeaver-${productVersion}"/>
 	<property name="buildLabel" value="${buildId}"/>
 
-	<filter filtersFile="local.properties"/>
-	<filter token="productVersion" value="${productVersion}"/>
-	<filter token="buildId" value="${buildId}"/>
-	<filter token="buildLabel" value="${buildLabel}"/>
-	<delete file="build.properties" />
-	<copy file="build.properties.template" tofile="build.properties" filtering="true"/>
-
-	<property file="build.properties" />
-
-	<echo message="Build ${productName} ${productVersion}"/>
-
 	<target name="clean">
         <delete dir="${distDirectory}" />
 		<delete dir="${buildDirectory}" />
@@ -28,6 +17,17 @@
 	</target>
 
 	<target name="init">
+        <filter filtersFile="local.properties"/>
+        <filter token="productVersion" value="${productVersion}"/>
+        <filter token="buildId" value="${buildId}"/>
+        <filter token="buildLabel" value="${buildLabel}"/>
+        <delete file="build.properties" />
+        <copy file="build.properties.template" tofile="build.properties" filtering="true"/>
+
+        <property file="build.properties" />
+
+        <echo message="Build ${productName} ${productVersion}"/>
+
 		<mkdir dir="${buildDirectory}" />
 		<mkdir dir="${buildDirectory}/plugins" />
 		<mkdir dir="${buildDirectory}/features" />
@@ -45,7 +45,7 @@
 		This target actually executes the PDE Build process by launching the 
 		Eclipse antRunner application.
 	-->
-	<target name="pde-build">
+	<target name="pde-build" depends="init">
 		<java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
 			<arg value="-application" />
 			<arg value="org.eclipse.ant.core.antRunner" />
@@ -64,7 +64,7 @@
 	</target>-->
 
 	<!--This target defines the run-order of the targets-->
-	<target name="build" depends="init, pde-build" />
+	<target name="build" depends="pde-build" />
 
 	<target name="dist-win">
 		<mkdir dir="${buildDirectory}/installer" />
@@ -229,7 +229,7 @@
     </target>
 
 
-    <target name="dummy">
+    <target name="dummy" depends="init">
 
     </target>
 
