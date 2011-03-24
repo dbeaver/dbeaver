@@ -20,9 +20,14 @@ public class PropertyCollector extends PropertySourceAbstract
 {
     static final Log log = LogFactory.getLog(PropertyCollector.class);
 
+    public PropertyCollector(Object sourceObject, Object object, boolean loadLazyProps)
+    {
+        super(sourceObject, object, loadLazyProps);
+    }
+
     public PropertyCollector(Object object, boolean loadLazyProps)
     {
-        super(object, loadLazyProps);
+        super(object, object, loadLazyProps);
     }
 
     public void collectProperties()

@@ -5,24 +5,15 @@
 package org.jkiss.dbeaver.ui.views.properties;
 
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.part.IPage;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-import org.eclipse.ui.views.properties.PropertySheet;
-import org.eclipse.ui.views.properties.tabbed.ISection;
-import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -32,6 +23,7 @@ import java.util.*;
  */
 public class PropertySourceAbstract implements IPropertySource
 {
+    private Object sourceObject;
     private Object object;
     private boolean loadLazyProps;
     private List<IPropertyDescriptor> props = new ArrayList<IPropertyDescriptor>();
@@ -41,8 +33,9 @@ public class PropertySourceAbstract implements IPropertySource
      * constructs property source
      * @param object object
      */
-    public PropertySourceAbstract(Object object, boolean loadLazyProps)
+    public PropertySourceAbstract(Object sourceObject, Object object, boolean loadLazyProps)
     {
+        this.sourceObject = sourceObject;
         this.object = object;
         this.loadLazyProps = loadLazyProps;
     }
@@ -185,6 +178,7 @@ public class PropertySourceAbstract implements IPropertySource
         {
             return completed;
         }
+
         public void visualizeLoading()
         {
             String dots;
@@ -195,66 +189,19 @@ public class PropertySourceAbstract implements IPropertySource
             case 3: default: dots = "..."; break;
             }
             propValues.put(propertyId, loadText + dots);
-            refreshProperties();
+            refreshProperties(false);
         }
+
         public void completeLoading(Object result)
         {
             completed = true;
             propValues.put(propertyId, result);
-            refreshProperties();
-        }
-        private void refreshProperties()
-        {
-            {
-                // If some view or editor contains properties page for current object - refresh it first
-                PropertyPageStandard pageStandard = PropertyPageStandard.getPageByObject(object);
-                if (pageStandard != null) {
-                    refreshProperties(pageStandard);
-                }
-            }
-
-            // Find our property page within views (PropertySheet view actually)
-            PropertyPageStandard pageStandard = null;
-            IViewPart view = ViewUtils.findView(
-                DBeaverCore.getActiveWorkbenchWindow(),
-                IPageLayout.ID_PROP_SHEET);
-            if (view != null && view instanceof PropertySheet) {
-                IPage testPage = ((PropertySheet)view).getCurrentPage();
-                if (testPage instanceof PropertyPageStandard) {
-                    pageStandard = (PropertyPageStandard)testPage;
-                } else if (testPage instanceof TabbedPropertySheetPage) {
-                    TabbedPropertySheetPage tabbedPage = (TabbedPropertySheetPage)testPage;
-                    if (tabbedPage.getCurrentTab() != null) {
-                        for (ISection section : tabbedPage.getCurrentTab().getSections()) {
-                            if (section instanceof PropertySectionStandard) {
-                                pageStandard = ((PropertySectionStandard)section).getPage();
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if (pageStandard != null) {
-                refreshProperties(pageStandard);
-            }
+            refreshProperties(true);
         }
 
-        private void refreshProperties(PropertyPageStandard pageStandard)
+        private void refreshProperties(boolean completed)
         {
-            Object curObject = pageStandard.getCurrentObject();
-            if (curObject instanceof DBSWrapper) {
-                curObject = ((DBSWrapper)curObject).getObject();
-            }
-            // Refresh only if current property sheet object is the same as for collector
-            if (curObject == object) {
-                DBeaverCore.getInstance().getNavigatorModel().getNodesAdapter().addToCache(object, PropertySourceAbstract.this);
-                try {
-                    pageStandard.refresh();
-                }
-                finally {
-                    DBeaverCore.getInstance().getNavigatorModel().getNodesAdapter().removeFromCache(object);
-                }
-            }
+            PropertiesContributor.getInstance().notifyPropertyLoad(sourceObject, propertyId, propValues.get(propertyId), completed);
         }
 
     }

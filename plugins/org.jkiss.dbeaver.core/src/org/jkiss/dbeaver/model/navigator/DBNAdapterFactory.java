@@ -20,27 +20,12 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
-import java.util.Hashtable;
-import java.util.Map;
-
 /**
  * Navigator AdapterFactory
  */
 public class DBNAdapterFactory implements IAdapterFactory
 {
     private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBSEntityQualified.class, DBPObject.class, DBPNamedObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IProject.class, IFolder.class, IFile.class, IResource.class, IWorkbenchAdapter.class };
-
-    private Map<Object, IPropertySource> propertySourceCache = new Hashtable<Object, IPropertySource>();
-
-    public void addToCache(Object object, IPropertySource adapter)
-    {
-        propertySourceCache.put(object, adapter);
-    }
-
-    public void removeFromCache(Object object)
-    {
-        propertySourceCache.remove(object);
-    }
 
     public Object getAdapter(Object adaptableObject, Class adapterType)
     {
@@ -96,11 +81,7 @@ public class DBNAdapterFactory implements IAdapterFactory
                 }
             }
             if (dbObject != null) {
-                IPropertySource cached = propertySourceCache.get(dbObject);
-                if (cached != null) {
-                    return cached;
-                }
-                PropertyCollector props = new PropertyCollector(dbObject , true);
+                PropertyCollector props = new PropertyCollector(adaptableObject, dbObject , true);
                 props.collectProperties();
                 if (props.isEmpty() && adaptableObject instanceof DBSObject) {
                     // Add default properties

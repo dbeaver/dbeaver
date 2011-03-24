@@ -4,21 +4,32 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
+import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.views.properties.IPropertySheetEntry;
-import org.eclipse.ui.views.properties.PropertySheetEntry;
-import org.eclipse.ui.views.properties.PropertySheetPage;
-import org.eclipse.ui.views.properties.PropertySheetSorter;
+import org.eclipse.ui.internal.views.ViewsPlugin;
+import org.eclipse.ui.views.properties.*;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.*;
 
-public class PropertyPageStandard extends PropertySheetPage
-{
-    private static Map<Object, PropertyPageStandard> pagesMap = new Hashtable<Object, PropertyPageStandard>();
-    private Object curObject;
+public class PropertyPageStandard extends PropertySheetPage implements ILazyPropertyLoadListener, IPropertySourceProvider {
+
+    private static class PropertySourceCache {
+        Object object;
+        IPropertySource propertySource;
+        boolean cached;
+
+        public PropertySourceCache(Object object)
+        {
+            this.object = object;
+        }
+    }
+    private PropertySourceCache[] curSelection = null;
 
     public PropertyPageStandard()
     {
@@ -31,52 +42,68 @@ public class PropertyPageStandard extends PropertySheetPage
                 }
             }
         );
+        setPropertySourceProvider(this);
+        // Register lazy load listener
+        PropertiesContributor.getInstance().addLazyListener(this);
     }
 
     @Override
     public void dispose()
     {
-        if (curObject != null) {
-            pagesMap.remove(curObject);
-            if (curObject instanceof DBSWrapper && ((DBSWrapper)curObject).getObject() != null) {
-                pagesMap.remove(((DBSWrapper)curObject).getObject());
-            }
-            curObject = null;
-        }
+        // Unregister lazy load listener
+        PropertiesContributor.getInstance().removeLazyListener(this);
         super.dispose();
     }
 
-    public static PropertyPageStandard getPageByObject(Object object)
+    public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
     {
-        return pagesMap.get(object);
+        if (!CommonUtils.isEmpty(curSelection)) {
+            for (PropertySourceCache cache : curSelection) {
+                if (cache.object == object) {
+                    refresh();
+                    return;
+                }
+            }
+        }
+        //System.out.println("HEY: " + object + " | " + propertyId + " | " + propertyValue + " : " + completed);
     }
 
-    public void setCurrentObject(IWorkbenchPart sourcePart, Object object)
+    @Override
+    public void selectionChanged(IWorkbenchPart part, ISelection selection)
     {
-        assert this.curObject == null;
-        this.curObject = object;
-        pagesMap.put(object, this);
-        if (object instanceof DBSWrapper && ((DBSWrapper)object).getObject() != null) {
-            pagesMap.put(((DBSWrapper)object).getObject(), this);
+        if (selection instanceof IStructuredSelection) {
+            IStructuredSelection ss = (IStructuredSelection)selection;
+            curSelection = new PropertySourceCache[ss.size()];
+            if (ss.size() == 1) {
+                curSelection[0] = new PropertySourceCache(ss.getFirstElement());
+            } else {
+                int index = 0;
+                for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
+                    curSelection[index++] = new PropertySourceCache(iter.next());
+                }
+            }
         }
-
-        this.selectionChanged(sourcePart, new StructuredSelection(object));
+        super.selectionChanged(part, selection);
     }
 
-    public Object getCurrentObject()
+    public IPropertySource getPropertySource(Object object)
     {
-        if (this.curObject != null) {
-            return this.curObject;
-        }
-        if (getControl().isDisposed()) {
+        if (object == null || object.getClass().isPrimitive() || object instanceof CharSequence || object instanceof Number || object instanceof Boolean) {
+            // Just for better performance
             return null;
         }
-        PropertySheetEntry curPropsObject = (PropertySheetEntry)getControl().getData();
-        Object[] curObjects = curPropsObject.getValues();
-        // Refresh only if current property sheet object is the same as for collector
-        if (curObjects != null && curObjects.length > 0) {
-            return curObjects[0];
+        if (!CommonUtils.isEmpty(curSelection)) {
+            for (PropertySourceCache cache : curSelection) {
+                if (cache.object == object) {
+                    if (!cache.cached) {
+                        cache.propertySource = (IPropertySource) Platform.getAdapterManager().getAdapter(object, IPropertySource.class);
+                        cache.cached = true;
+                    }
+                    return cache.propertySource;
+                }
+            }
         }
-        return null;
+        return (IPropertySource) Platform.getAdapterManager().getAdapter(object, IPropertySource.class);
     }
+
 }

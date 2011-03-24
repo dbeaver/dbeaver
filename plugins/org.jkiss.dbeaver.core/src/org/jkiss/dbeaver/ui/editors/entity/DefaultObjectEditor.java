@@ -11,6 +11,8 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -26,6 +28,7 @@ import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
@@ -96,12 +99,11 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
         }
 
         {
-            Group propsGroup = new Group(container, SWT.NONE);
-            propsGroup.setText("Properties");
-            gl = new GridLayout(2, false);
-            propsGroup.setLayout(gl);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            propsGroup.setLayoutData(gd);
+            Group propsGroup = UIUtils.createControlGroup(container, "Properties", 1, GridData.FILL_BOTH, 0);
+
+            Composite propsPlaceholder = new Composite(propsGroup, SWT.BORDER);
+            propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+            propsPlaceholder.setLayout(new FormLayout());
 
             DBNNode itemObject = entityInput.getTreeNode();
             //final PropertyCollector propertyCollector = new PropertyCollector(itemObject);
@@ -109,10 +111,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
 
             properties = new PropertyPageTabbed();
             properties.init(new ProxyPageSite(getSite()));
-            properties.createControl(propsGroup);
-            gd = new GridData(GridData.FILL_BOTH);
-            //gd.heightHint = 100;
-            properties.getControl().setLayoutData(gd);
+            properties.createControl(propsPlaceholder);
             if (itemObject != null) {
                 properties.selectionChanged(this, new StructuredSelection(itemObject));
             }

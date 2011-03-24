@@ -17,7 +17,7 @@ public class PropertySourceCollection extends PropertySourceAbstract {
 
     public PropertySourceCollection(Object id, boolean loadLazyProps, Collection<?> value)
     {
-        super(value, loadLazyProps);
+        super(value, value, loadLazyProps);
         this.id = id;
 
         int propIndex = 0;

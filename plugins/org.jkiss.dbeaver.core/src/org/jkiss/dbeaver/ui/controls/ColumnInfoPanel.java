@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -14,7 +16,8 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
+import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,23 +43,17 @@ public class ColumnInfoPanel extends Composite {
             infoItem.addProperty("Key", "Key", new CellKeyInfo(valueController) );
         }
 
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
         this.setLayoutData(gd);
-
+        this.setLayout(new FormLayout());
         {
-            PropertyPageStandard properties = new PropertyPageStandard();
+            PropertyPageTabbed properties = new PropertyPageTabbed(false);
+            properties.init(new ProxyPageSite(valueController.getValueSite()));
             properties.createControl(this);
-            gd = new GridData(GridData.FILL_BOTH);
-            properties.getControl().setLayoutData(gd);
-            properties.setCurrentObject(valueController.getValueSite().getPart(), infoItem);
+            properties.selectionChanged(valueController.getValueSite().getPart(), new StructuredSelection(infoItem));
         }
-
-        GridLayout layout = new GridLayout(1, false);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        this.setLayout(layout);
     }
 
     public static class KeyColumnValue implements DBPNamedObject {
