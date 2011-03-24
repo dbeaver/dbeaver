@@ -52,8 +52,8 @@ public class ResultSetPropertyTester extends PropertyTester
                 return currentRow < rsv.getRowsCount() - 1;
             }
         } else if (PROP_EDITABLE.equals(property)) {
-            GridPos pos = rsv.getCurrentPosition();
             if ("edit".equals(expectedValue)) {
+                GridPos pos = rsv.getCurrentPosition();
                 return pos != null && rsv.isCellEditable(pos);
             } else if ("add".equals(expectedValue) || "copy".equals(expectedValue)) {
                 return rsv.isInsertable();

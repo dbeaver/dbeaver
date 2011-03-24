@@ -208,7 +208,12 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         }
     }
 
-    public boolean isReadOnly()
+    public boolean isReadOnlyData()
+    {
+        return readOnly;
+    }
+
+    public boolean isReadOnlyMetaData()
     {
         return readOnly;
     }

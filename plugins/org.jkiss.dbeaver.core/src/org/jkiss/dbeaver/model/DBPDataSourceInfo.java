@@ -19,7 +19,13 @@ public interface DBPDataSourceInfo
      *
      * @return <code>true</code> if so; <code>false</code> otherwise
      */
-    boolean isReadOnly();
+    boolean isReadOnlyData();
+    /**
+     * Retrieves whether this database is in read-only mode.
+     *
+     * @return <code>true</code> if so; <code>false</code> otherwise
+     */
+    boolean isReadOnlyMetaData();
 
     /**
      * Retrieves the name of this database product.

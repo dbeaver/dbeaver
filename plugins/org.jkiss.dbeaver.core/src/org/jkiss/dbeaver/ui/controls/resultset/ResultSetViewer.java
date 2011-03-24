@@ -712,10 +712,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public boolean isEditable()
     {
-        return !updateInProgress;
+        if (updateInProgress) {
+            return true;
+        }
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return false;
+        }
+        DBPDataSource dataSource = dataContainer.getDataSource();
+        return dataSource != null && dataSource.isConnected() && !dataSource.getInfo().isReadOnlyData();
     }
 
     public boolean isCellEditable(GridPos pos) {
+        if (!isEditable()) {
+            return false;
+        }
         boolean validPosition;
         if (mode == ResultSetMode.GRID) {
             validPosition = (pos.col >= 0 && pos.row >= 0);
@@ -734,6 +745,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public boolean isInsertable()
     {
+        if (!isEditable()) {
+            return false;
+        }
         return singleSourceCells && !CommonUtils.isEmpty(metaColumns);
     }
 
