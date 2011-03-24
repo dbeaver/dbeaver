@@ -34,6 +34,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -81,10 +83,7 @@ import java.util.List;
  * an editor </i> in chapter <i>Introduction to GEF </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
-    implements
-    CommandStackListener,
-    ISelectionListener,
-    DBPDataSourceUser
+    implements CommandStackListener, DBPDataSourceUser
 {
     static final Log log = LogFactory.getLog(ERDEditorPart.class);
 
@@ -159,7 +158,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         getCommandStack().addCommandStackListener(this);
 
         // add selection change listener
-        getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
+        //getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
 
         configPropertyListener = new ConfigPropertyListener();
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(configPropertyListener);
@@ -173,14 +172,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         super.createPartControl(progressControl.createContentContainer());
 
         progressControl.createProgressPanel();
-    }
-
-    /**
-     * the selection listener implementation
-     */
-    public void selectionChanged(IWorkbenchPart part, ISelection selection)
-    {
-        updateActions(editPartActionIDs);
     }
 
     /**
@@ -213,7 +204,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         // remove CommandStackListener
         getCommandStack().removeCommandStackListener(this);
         // remove selection listener
-        getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(this);
+        //getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(this);
         // dispose the ActionRegistry (will dispose all actions)
         getActionRegistry().dispose();
         // important: always call super implementation of dispose
@@ -424,6 +415,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         IAction zoomOut = new ZoomOutAction(zoomManager);
         addAction(zoomIn);
         addAction(zoomOut);
+
+        graphicalViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event)
+            {
+                updateActions(editPartActionIDs);
+            }
+        });
     }
 
     /**
