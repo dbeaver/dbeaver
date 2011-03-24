@@ -10,7 +10,7 @@ import org.eclipse.ui.views.properties.tabbed.ISectionDescriptor;
 import java.util.List;
 
 /**
- * PropertyTabDescriptorProvider
+ * PropertyTabDescriptor
  */
 public class PropertyTabDescriptor extends AbstractTabDescriptor {
 

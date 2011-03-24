@@ -124,6 +124,9 @@ public abstract class JDBCDataSource
         catch (SQLException ex) {
             throw new DBException(ex);
         }
+        catch (Throwable e) {
+            throw new DBException("Unexpected driver error occurred while connecting to database", e);
+        }
     }
 
     protected Driver getDriverInstance()

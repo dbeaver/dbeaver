@@ -26,7 +26,7 @@ public class PropertyPageStandard extends PropertySheetPage
             new PropertySheetSorter() {
                 public int compare(IPropertySheetEntry entryA, IPropertySheetEntry entryB)
                 {
-                    // No dumn sorting
+                    // No damn sorting
                     return 0;
                 }
             }

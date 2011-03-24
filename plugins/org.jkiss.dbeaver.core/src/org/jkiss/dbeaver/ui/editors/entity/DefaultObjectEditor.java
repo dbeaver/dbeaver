@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -26,7 +27,8 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
+import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +40,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
 {
     static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
-    private PropertyPageStandard properties;
+    private PropertyPageTabbed properties;
 
     public DefaultObjectEditor()
     {
@@ -105,14 +107,14 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
             //final PropertyCollector propertyCollector = new PropertyCollector(itemObject);
             //List<PropertyAnnoDescriptor> annoProps = PropertyAnnoDescriptor.extractAnnotations(itemObject);
 
-            properties = new PropertyPageStandard();
-            //propertiesView.
+            properties = new PropertyPageTabbed();
+            properties.init(new ProxyPageSite(getSite()));
             properties.createControl(propsGroup);
             gd = new GridData(GridData.FILL_BOTH);
             //gd.heightHint = 100;
             properties.getControl().setLayoutData(gd);
             if (itemObject != null) {
-                properties.setCurrentObject(this, itemObject);
+                properties.selectionChanged(this, new StructuredSelection(itemObject));
             }
         }
     }

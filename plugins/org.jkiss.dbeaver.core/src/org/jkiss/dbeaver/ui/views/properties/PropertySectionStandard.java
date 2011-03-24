@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -50,7 +51,7 @@ public class PropertySectionStandard extends AbstractPropertySection {
 	}
 
 	public void setInput(IWorkbenchPart part, ISelection newSelection) {
-        if (getSelection() == null || newSelection == null || !getSelection().equals(newSelection)) {
+        if (!CommonUtils.equalObjects(getSelection(), newSelection)) {
 		    super.setInput(part, newSelection);
 		    pageStandard.selectionChanged(part, newSelection);
         }
@@ -62,7 +63,6 @@ public class PropertySectionStandard extends AbstractPropertySection {
 			pageStandard.dispose();
 			pageStandard = null;
 		}
-
 	}
 
 	public void refresh() {
