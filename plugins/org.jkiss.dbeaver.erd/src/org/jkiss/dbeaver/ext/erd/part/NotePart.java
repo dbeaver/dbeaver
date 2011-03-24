@@ -189,4 +189,5 @@ public class NotePart extends NodePart
         }
         return super.getAdapter(key);
     }
+
 }

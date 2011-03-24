@@ -227,4 +227,10 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     private void updateBendpoints(List<Bendpoint> bendpoints) {
         getConnectionFigure().setRoutingConstraint(bendpoints);
     }
+
+    @Override
+    public String toString()
+    {
+        return getAssociation().getObject().getConstraintType().getName() + " " + getAssociation().getObject().getName();
+    }
 }

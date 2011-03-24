@@ -326,4 +326,10 @@ public class DiagramPart extends PropertyAwarePart {
         }
         return null;
     }
+
+    @Override
+    public String toString()
+    {
+        return "Entity Diagram " + getDiagram().getName();
+    }
 }

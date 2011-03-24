@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -35,6 +36,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -419,6 +421,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         graphicalViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event)
             {
+                String status;
+                IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+                if (selection.isEmpty()) {
+                    status = "";
+                } else if (selection.size() == 1) {
+                    status = CommonUtils.toString(selection.getFirstElement());
+                } else {
+                    status = String.valueOf(selection.size()) + " objects";
+                }
+                progressControl.setInfo(status);
+
                 updateActions(editPartActionIDs);
             }
         });

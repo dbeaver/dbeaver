@@ -184,6 +184,11 @@ public class AttributePart extends PropertyAwarePart
 		return (ERDTableColumn) getModel();
 	}
 	
-	
+    @Override
+    public String toString()
+    {
+        return "Column " + getColumn().getLabelText();
+    }
+
 
 }
