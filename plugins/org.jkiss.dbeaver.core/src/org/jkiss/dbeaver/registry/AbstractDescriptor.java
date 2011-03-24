@@ -77,13 +77,15 @@ public class AbstractDescriptor {
         Class<?> objectClass = null;
         try {
             objectClass = DBeaverCore.getInstance().getPlugin().getBundle().loadClass(className);
-        } catch (ClassNotFoundException ex) {
+        } catch (Throwable ex) {
             // do nothing
+            //log.warn("Can't load object class '" + className + "'", ex);
         }
+
         if (objectClass == null) {
             try {
                 objectClass = getContributorBundle().loadClass(className);
-            } catch (ClassNotFoundException ex) {
+            } catch (Throwable ex) {
                 log.error("Can't determine object class '" + className + "'", ex);
             }
         }

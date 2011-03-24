@@ -57,7 +57,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public String getNodeName()
     {
-        String objectName = getObject().getName();
+        String objectName = getObject() == null ? null : getObject().getName();
         if (objectName == null) {
             objectName = "?";
         }
@@ -66,7 +66,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public String getNodeDescription()
     {
-        return getObject().getDescription();
+        return getObject() == null ? null : getObject().getDescription();
     }
 
     public Image getNodeIcon()
@@ -408,12 +408,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     }
 
     public boolean testAttribute(Object target, String name, String value) {
-        if (name.equals("targetType")) {
-            try {
-                Class<?> targetClass = Class.forName(value);
-                return targetClass.isAssignableFrom(getObject().getClass());
-            } catch (ClassNotFoundException e) {
-                log.warn("Unknown target type: " + value);
+        if (getObject() != null) {
+            if (name.equals("targetType")) {
+                try {
+                    Class<?> targetClass = Class.forName(value);
+                    return targetClass.isAssignableFrom(getObject().getClass());
+                } catch (ClassNotFoundException e) {
+                    log.warn("Unknown target type: " + value);
+                }
             }
         }
         return false;

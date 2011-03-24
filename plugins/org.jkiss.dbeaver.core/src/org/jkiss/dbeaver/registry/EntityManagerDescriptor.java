@@ -81,7 +81,7 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         }
         try {
             return (DBOManager) clazz.newInstance();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             log.error("Error instantiating entity manager '" + className + "'", ex);
             return null;
         }

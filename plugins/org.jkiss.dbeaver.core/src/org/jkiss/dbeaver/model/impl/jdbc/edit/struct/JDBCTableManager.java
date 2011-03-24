@@ -8,17 +8,18 @@ import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.DBOEditorJDBC;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
 import java.util.Map;
 
 /**
  * JDBC table manager
  */
-public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable>  extends DBOEditorJDBC<OBJECT_TYPE> implements DBOCreator<OBJECT_TYPE> {
+public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_TYPE extends DBSEntityContainer>  extends DBOEditorJDBC<OBJECT_TYPE> implements DBOCreator<OBJECT_TYPE> {
 
     public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, OBJECT_TYPE copyFrom)
     {
-        OBJECT_TYPE newUser = createNewTable((JDBCDataSource) parent, copyFrom);
+        OBJECT_TYPE newUser = createNewTable((CONTAINER_TYPE) parent, copyFrom);
         setObject(newUser);
 
         return CreateResult.OPEN_EDITOR;
@@ -70,7 +71,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable>  extends D
         }
     }
 
-    protected abstract OBJECT_TYPE createNewTable(JDBCDataSource parent, OBJECT_TYPE copyFrom);
+    protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, OBJECT_TYPE copyFrom);
 
 }
 
