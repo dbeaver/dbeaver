@@ -57,6 +57,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
 
     public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
     {
+        // Make page refresh if our main object was updated
         if (!CommonUtils.isEmpty(curSelection)) {
             for (PropertySourceCache cache : curSelection) {
                 if (cache.object == object) {
@@ -71,6 +72,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
     @Override
     public void selectionChanged(IWorkbenchPart part, ISelection selection)
     {
+        // Create objects cache
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection ss = (IStructuredSelection)selection;
             curSelection = new PropertySourceCache[ss.size()];
@@ -92,6 +94,9 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
             // Just for better performance
             return null;
         }
+        // Seek in cached property sources
+        // Without cache we'll fall in infinite recursion when refreshing lazy props
+        // (get prop source from adapter, load props, load lazy props -> refresh -> get prop source from adapter, etc).
         if (!CommonUtils.isEmpty(curSelection)) {
             for (PropertySourceCache cache : curSelection) {
                 if (cache.object == object) {

@@ -122,16 +122,11 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         tree.getViewer().getControl().setFocus();
     }
 
-    private DBNNode getSelectedNode()
-    {
-        return ViewUtils.getSelectedNode(this.tree.getViewer());
-    }
-
     @Override
     public Object getAdapter(Class adapter)
     {
         if (adapter == IPropertySheetPage.class) {
-            return new PropertyPageTabbed();
+            //return new PropertyPageTabbed();
         }
         return super.getAdapter(adapter);
     }

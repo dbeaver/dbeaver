@@ -28,8 +28,11 @@ import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 
@@ -64,6 +67,28 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
             gl = new GridLayout(3, false);
             infoGroup.setLayout(gl);
 
+            if (node instanceof DBNDatabaseNode) {
+                DBNDatabaseNode dbNode = (DBNDatabaseNode)node;
+                if (dbNode.getObject() != null && dbNode.getObject().getDataSource() != null) {
+                    final DBSDataSourceContainer dsContainer = dbNode.getObject().getDataSource().getContainer();
+                    Label objectIcon = new Label(infoGroup, SWT.NONE);
+                    objectIcon.setImage(dsContainer.getDriver().getIcon());
+
+                    Label objectLabel = new Label(infoGroup, SWT.NONE);
+                    objectLabel.setText("Driver:");
+
+                    Link objectLink = new Link(infoGroup, SWT.NONE);
+                    objectLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                    objectLink.setText("<A>" + dsContainer.getDriver().getName() + "</A>");
+                    objectLink.addSelectionListener(new SelectionAdapter() {
+                        public void widgetSelected(SelectionEvent e)
+                        {
+                            DriverEditDialog dialog = new DriverEditDialog(getSite().getShell(), (DriverDescriptor) dsContainer.getDriver());
+                            dialog.open();
+                        }
+                    });
+                }
+            }
             List<DBNDatabaseNode> nodeList = new ArrayList<DBNDatabaseNode>();
             for (DBNNode n = node; n != null; n = n.getParentNode()) {
                 if (n instanceof DBNDatabaseNode && !(n instanceof DBNDatabaseFolder)) {
@@ -78,9 +103,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
                 objectLabel.setText(databaseNode.getMeta().getItemLabel() + ":");
 
                 Link objectLink = new Link(infoGroup, SWT.NONE);
-                //Text objectText = new Text(infoGroup, SWT.BORDER);
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                objectLink.setLayoutData(gd);
+                objectLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
                 if (databaseNode == node) {
                     objectLink.setText(databaseNode.getNodeName());
@@ -99,7 +122,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
         }
 
         {
-            Group propsGroup = UIUtils.createControlGroup(container, "Properties", 1, GridData.FILL_BOTH, 0);
+            Composite propsGroup = container;
 
             Composite propsPlaceholder = new Composite(propsGroup, SWT.BORDER);
             propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));

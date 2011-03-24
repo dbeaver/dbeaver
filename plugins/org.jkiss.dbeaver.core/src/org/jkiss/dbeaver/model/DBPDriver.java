@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
@@ -20,6 +21,8 @@ public interface DBPDriver extends DBPObject
     String getName();
 
     String getDescription();
+
+    Image getIcon();
 
     String getDriverClassName();
 
