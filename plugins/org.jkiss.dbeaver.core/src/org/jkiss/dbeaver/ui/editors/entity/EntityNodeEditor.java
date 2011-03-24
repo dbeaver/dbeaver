@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -72,6 +72,7 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         ViewUtils.addContextMenu(this, itemControl.getNavigatorViewer());
         // Add drag and drop support
         ViewUtils.addDragAndDropSupport(itemControl.getNavigatorViewer());
+        //ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
     }
 

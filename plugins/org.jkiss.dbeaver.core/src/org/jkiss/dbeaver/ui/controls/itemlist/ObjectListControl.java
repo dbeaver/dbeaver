@@ -14,7 +14,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -170,6 +173,24 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         super.createProgressPanel();
 
         sortListener = new SortListener();
+
+        // Add selection listener
+        itemsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event)
+            {
+                String status;
+                IStructuredSelection selection = (IStructuredSelection)itemsViewer.getSelection();
+                if (selection.isEmpty()) {
+                    status = "";
+                } else if (selection.size() == 1) {
+                    Object selectedNode = selection.getFirstElement();
+                    status = getCellString(selectedNode);
+                } else {
+                    status = String.valueOf(selection.size()) + " objects";
+                }
+                setInfo(status);
+            }
+        });
     }
 
     protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService();

@@ -42,12 +42,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
+import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,6 +67,8 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
     private Text resultSetSize;
     private CImageCombo connectionCombo;
     private CImageCombo databaseCombo;
+
+    private SoftReference<DBSDataSourceContainer> curDataSourceContainer = null;
 
     private class CurrentDatabasesInfo {
         Collection<? extends DBSObject> list;
@@ -427,7 +429,13 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     private void updateDatabaseList(boolean force)
     {
-        //fillDatabaseCombo(VoidProgressMonitor.INSTANCE);
+        if (!force) {
+            DBSDataSourceContainer dsContainer = getDataSourceContainer();
+            if (curDataSourceContainer != null && dsContainer == curDataSourceContainer.get()) {
+                // The same DS container - nothing to change in DB list
+                return;
+            }
+        }
 
         // Update databases combo
         DBeaverCore.runUIJob("Populate current database list", new DBRRunnableWithProgress() {
@@ -497,6 +505,9 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                             }
                         }
                     }
+                    curDataSourceContainer = new SoftReference<DBSDataSourceContainer>(dsContainer);
+                } else {
+                    curDataSourceContainer = null;
                 }
                 databaseCombo.setEnabled(isEnabled);
             }

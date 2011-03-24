@@ -37,7 +37,7 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
     private ProgressBar progressBar;
     private ToolBar progressTools;
     private ToolItem stopButton;
-    private Label listInfoLabel;
+    private Text listInfoLabel;
 
     private int loadCount = 0;
 
@@ -94,7 +94,7 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
         gl.marginWidth = 0;
         infoGroup.setLayout(gl);
 
-        listInfoLabel = new Label(infoGroup, SWT.NONE);
+        listInfoLabel = new Text(infoGroup, SWT.READ_ONLY);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.minimumWidth = 100;
         listInfoLabel.setLayoutData(gd);
@@ -132,7 +132,10 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
         Composite customControls = new Composite(infoGroup, SWT.NONE);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         customControls.setLayoutData(gd);
-        customControls.setLayout(new FillLayout());
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        customControls.setLayout(gl);
 
         Label phLabel = new Label(customControls, SWT.NONE);
         phLabel.setText(" ");
