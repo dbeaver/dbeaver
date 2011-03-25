@@ -10,25 +10,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Property
+ * Property group
  */
 @Target(value = {ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Property
+public @interface PropertyGroup
 {
+
     String id() default "";
 
-    String name();
+    String name() default "";
 
     String category() default "";
 
     String description() default "";
-
-    boolean editable() default false;
-
-    boolean updatable() default false;
-
-    boolean viewable() default false;
 
     int order() default Integer.MAX_VALUE;
 

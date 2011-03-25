@@ -19,7 +19,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
@@ -44,6 +47,50 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     private static final String INNODB_COMMENT = "InnoDB free";
 
+    private static class AdditionalInfo {
+        private long rowCount;
+        private long autoIncrement;
+        private String description;
+        private String createTime;
+        private String collation;
+
+        @Property(name = "Row Count", viewable = true, order = 5)
+        public long getRowCount()
+        {
+            return rowCount;
+        }
+
+        @Property(name = "Auto increment", viewable = true, order = 5)
+        public long getAutoIncrement()
+        {
+            return autoIncrement;
+        }
+
+        @Property(name = "Description", viewable = true, order = 5)
+        public String getDescription()
+        {
+            return description;
+        }
+
+        @Property(name = "Auto increment", viewable = true, order = 5)
+        public String getCreateTime()
+        {
+            return createTime;
+        }
+
+        public String getCollation()
+        {
+            return collation;
+        }
+    }
+
+    public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLTable> {
+        public boolean isPropertyCached(MySQLTable object)
+        {
+            return object.additionalInfo != null;
+        }
+    }
+
     private MySQLEngine engine;
     private boolean isView;
     private boolean isSystem;
@@ -61,6 +108,8 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     private String createTime;
     private String collation;
 
+    private AdditionalInfo additionalInfo;
+
     public MySQLTable(
         MySQLCatalog catalog,
         ResultSet dbResult)
@@ -74,6 +123,16 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer().getName(),
             getName());
+    }
+
+    @PropertyGroup()
+    @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
+    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    {
+        if (additionalInfo == null) {
+            loadAdditionalInfo(monitor);
+        }
+        return additionalInfo;
     }
 
     @Property(name = "Engine", viewable = true, order = 3)
@@ -202,7 +261,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return collation;
     }
 
-    //    @Property(name = "Description", viewable = true, order = 100)
+    @Property(name = "Description", viewable = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) throws DBCException
     {
         if (!extraInfoLoaded) {
