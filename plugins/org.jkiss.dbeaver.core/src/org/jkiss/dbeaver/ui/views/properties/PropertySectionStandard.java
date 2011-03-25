@@ -6,12 +6,15 @@ package org.jkiss.dbeaver.ui.views.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.internal.views.properties.tabbed.view.TabbedPropertyComposite;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 
@@ -30,24 +33,23 @@ public class PropertySectionStandard extends AbstractPropertySection {
     public void createControls(Composite parent,
 			final TabbedPropertySheetPage atabbedPropertySheetPage) {
 		super.createControls(parent, atabbedPropertySheetPage);
-		Composite composite = getWidgetFactory()
-			.createFlatFormComposite(parent);
+
+        TabbedPropertyComposite tpc = (TabbedPropertyComposite) atabbedPropertySheetPage.getControl();
+//        tpc.getScrolledComposite().setExpandVertical(false);
+//        tpc.getScrolledComposite().setExpandHorizontal(false);
+//        tpc.getScrolledComposite().setAlwaysShowScrollBars(false);
+
 		pageStandard = new PropertyPageStandard();
+		pageStandard.createControl(parent);
 
-		pageStandard.createControl(composite);
-		FormData data = new FormData();
-		data.left = new FormAttachment(0, 0);
-		data.right = new FormAttachment(100, 0);
-		data.top = new FormAttachment(0, 0);
-		data.bottom = new FormAttachment(100, 0);
-		pageStandard.getControl().setLayoutData(data);
+/*
+        pageStandard.getControl().addControlListener(new ControlAdapter() {
 
-		pageStandard.getControl().addControlListener(new ControlAdapter() {
-
-			public void controlResized(ControlEvent e) {
-				atabbedPropertySheetPage.resizeScrolledComposite();
-			}
-		});
+            public void controlResized(ControlEvent e) {
+                atabbedPropertySheetPage.resizeScrolledComposite();
+            }
+        });
+*/
 	}
 
 	public void setInput(IWorkbenchPart part, ISelection newSelection) {
