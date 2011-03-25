@@ -100,7 +100,7 @@
                     <folder type="org.jkiss.dbeaver.model.struct.DBSRepl" label="Replication Status" iconId="#repl" description="Replication Status"/>
                     -->
                 </folder>
-                <folder type="" label="Information" iconId="#information" description="Database information">
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLInformation" label="Information" iconId="#information" description="Database information">
                     <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="Session Status" iconId="#info" description="Session status">
                         <items label="Variable" path="sessionStatus" property="sessionStatus" iconId="#info" navigable="false" virtual="true"/>
                     </folder>

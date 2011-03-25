@@ -55,42 +55,17 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         private java.util.Date createTime;
         private String collation;
         private MySQLEngine engine;
+        private long avgRowLength;
+        private long dataLength;
 
-        @Property(name = "Engine", viewable = true, order = 3)
-        public MySQLEngine getEngine(DBRProgressMonitor monitor)
-        {
-            return engine;
-        }
-
-        @Property(name = "Row Count", viewable = true, order = 5)
-        public long getRowCount()
-        {
-            return rowCount;
-        }
-
-        @Property(name = "Auto Increment", viewable = true, order = 6)
-        public long getAutoIncrement()
-        {
-            return autoIncrement;
-        }
-
-        @Property(name = "Create Time", viewable = true, order = 7)
-        public java.util.Date getCreateTime()
-        {
-            return createTime;
-        }
-
-        @Property(name = "Collation", viewable = true, order = 7)
-        public String getCollation()
-        {
-            return collation;
-        }
-
-        @Property(name = "Description", viewable = true, order = 100)
-        public String getDescription()
-        {
-            return description;
-        }
+        @Property(name = "Engine", viewable = true, order = 3) public MySQLEngine getEngine() { return engine; }
+        @Property(name = "Row Count", viewable = true, order = 5) public long getRowCount() { return rowCount; }
+        @Property(name = "Auto Increment", viewable = true, order = 6) public long getAutoIncrement() { return autoIncrement; }
+        @Property(name = "Create Time", viewable = true, order = 7) public java.util.Date getCreateTime() { return createTime; }
+        @Property(name = "Collation", viewable = true, order = 8) public String getCollation() { return collation; }
+        @Property(name = "Avg Row Length", viewable = true, order = 9) public long getAvgRowLength() { return avgRowLength; }
+        @Property(name = "Data Length", viewable = true, order = 10) public long getDataLength() { return dataLength; }
+        @Property(name = "Description", viewable = true, order = 100) public String getDescription() { return description; }
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLTable> {
@@ -307,6 +282,8 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         additionalInfo.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);
                         additionalInfo.createTime = JDBCUtils.safeGetTimestamp(dbResult, MySQLConstants.COL_CREATE_TIME);
                         additionalInfo.collation = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION);
+                        additionalInfo.avgRowLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AVG_ROW_LENGTH);
+                        additionalInfo.dataLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_DATA_LENGTH);
                     }
                     additionalInfo.loaded = true;
                 } finally {

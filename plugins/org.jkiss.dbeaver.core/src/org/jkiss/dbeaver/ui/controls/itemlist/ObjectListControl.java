@@ -594,7 +594,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             return getCellString(cellValue);
         }
-
     }
 
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
@@ -871,10 +870,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private static String getCellString(Object value)
     {
-        if (value == null) {
-            return "";
-        }
-        if (value instanceof Boolean) {
+        if (value == null || value instanceof Boolean) {
             return "";
         }
         if (value instanceof DBPNamedObject) {
@@ -915,7 +911,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         ObjectPropertyDescriptor prop = column.propMap.get(object.getClass());
                         if (prop != null) {
                             Object lazyValue = prop.readValue(object, monitor);
-                            stringValues.add(getCellString(lazyValue));
+                            if (isHyperlink(lazyValue)) {
+                                stringValues.add("");
+                            } else {
+                                stringValues.add(getCellString(lazyValue));
+                            }
                         } else {
                             stringValues.add("");
                         }

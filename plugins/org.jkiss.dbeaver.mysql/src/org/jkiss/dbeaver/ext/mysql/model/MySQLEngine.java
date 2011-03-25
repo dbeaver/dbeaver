@@ -16,7 +16,7 @@ import java.sql.SQLException;
 /**
  * MySQLEngine
  */
-public class MySQLEngine implements DBSObject {
+public class MySQLEngine implements MySQLInformation {
 
     public static enum Support {
         YES,

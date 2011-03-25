@@ -49,6 +49,8 @@ public class MySQLConstants {
     public static final String COL_ORDINAL_POSITION = "ORDINAL_POSITION";
     public static final String COL_CREATE_TIME = "CREATE_TIME";
     public static final String COL_COLLATION = "COLLATION";
+    public static final String COL_AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
+    public static final String COL_DATA_LENGTH = "DATA_LENGTH";
     
     public static final String COL_COLUMN_NAME = "COLUMN_NAME";
     public static final String COL_COLUMN_KEY = "COLUMN_KEY";

@@ -155,23 +155,28 @@ public class DBNModel implements IResourceChangeListener {
                 return null;
             }
             try {
-                List<? extends DBNDatabaseNode> children = node.getChildren(monitor);
-                if (!CommonUtils.isEmpty(children)) {
-                    for (DBNDatabaseNode child : children) {
-                        if (child instanceof DBNDatabaseFolder) {
-                            Class<?> itemsClass = ((DBNDatabaseFolder) child).getItemsClass();
-                            if (itemsClass != null && itemsClass.isAssignableFrom(nextItem.getClass())) {
-                                child.getChildren(monitor);
-                            }
-                        }
-                    }
-                }
+                cacheNodeChildren(monitor, node, nextItem.getClass());
             } catch (DBException e) {
                 log.error(e.getMessage());
                 return null;
             }
         }
         return getNodeByObject(object);
+    }
+
+    private void cacheNodeChildren(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> objectType) throws DBException
+    {
+        List<? extends DBNDatabaseNode> children = node.getChildren(monitor);
+        if (!CommonUtils.isEmpty(children)) {
+            for (DBNDatabaseNode child : children) {
+                if (child instanceof DBNDatabaseFolder) {
+                    Class<?> itemsClass = ((DBNDatabaseFolder) child).getItemsClass();
+                    if (itemsClass != null && itemsClass.isAssignableFrom(objectType)) {
+                        cacheNodeChildren(monitor, child, objectType);
+                    }
+                }
+            }
+        }
     }
 
     public DBNDatabaseNode getParentNode(DBSObject object)
