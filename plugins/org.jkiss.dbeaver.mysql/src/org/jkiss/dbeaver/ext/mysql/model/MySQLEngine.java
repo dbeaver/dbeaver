@@ -62,7 +62,7 @@ public class MySQLEngine implements DBSObject {
         return name;
     }
 
-    @Property(name = "Description", viewable = true, order = 100)
+//    @Property(name = "Description", viewable = true, order = 100)
     public String getDescription()
     {
         return description;

@@ -70,7 +70,7 @@ public class MySQLPrivilege implements DBAPrivilege
         return context;
     }
 
-    @Property(name = "Description", viewable = true, order = 100)
+//    @Property(name = "Description", viewable = true, order = 100)
     public String getDescription() {
         return comment;
     }

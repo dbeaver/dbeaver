@@ -58,6 +58,8 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     private long rowCount;
     private long autoIncrement;
     private String description;
+    private String createTime;
+    private String collation;
 
     public MySQLTable(
         MySQLCatalog catalog,
@@ -190,7 +192,17 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return autoIncrement;
     }
 
-    @Property(name = "Description", viewable = true, order = 100)
+    public String getCreateTime()
+    {
+        return createTime;
+    }
+
+    public String getCollation()
+    {
+        return collation;
+    }
+
+    //    @Property(name = "Description", viewable = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) throws DBCException
     {
         if (!extraInfoLoaded) {
@@ -278,6 +290,8 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         this.engine = getDataSource().getEngine(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
                         this.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);
                         this.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);
+                        this.createTime = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CREATE_TIME);
+                        this.collation = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION);
                     }
                     extraInfoLoaded = true;
                 } finally {
@@ -598,6 +612,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     public String getDescription()
     {
-        return getName();
+        return description;
     }
+
 }

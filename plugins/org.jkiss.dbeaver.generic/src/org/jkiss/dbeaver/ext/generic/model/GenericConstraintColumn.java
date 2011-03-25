@@ -54,7 +54,7 @@ public class GenericConstraintColumn extends AbstractConstraintColumn
         return ordinalPosition;
     }
 
-    @Property(name = "Description", viewable = true, order = 100)
+//    @Property(name = "Description", viewable = true, order = 100)
     public String getDescription()
     {
         return tableColumn.getDescription();

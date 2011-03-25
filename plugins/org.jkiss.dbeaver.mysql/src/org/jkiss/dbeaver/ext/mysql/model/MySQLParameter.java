@@ -40,7 +40,7 @@ public class MySQLParameter implements DBSObject
         return value;
     }
 
-    @Property(name = "Description", viewable = true, order = 100)
+//    @Property(name = "Description", viewable = true, order = 100)
     public String getDescription()
     {
         return description;
