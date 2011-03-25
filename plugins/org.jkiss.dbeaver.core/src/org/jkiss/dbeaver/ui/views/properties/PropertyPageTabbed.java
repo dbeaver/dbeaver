@@ -12,6 +12,8 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
  */
 public class PropertyPageTabbed extends TabbedPropertySheetPage {
 
+    private boolean allowContentScroll;
+
     public PropertyPageTabbed()
     {
         this(true);
@@ -20,6 +22,27 @@ public class PropertyPageTabbed extends TabbedPropertySheetPage {
     public PropertyPageTabbed(boolean showTitle)
     {
         super(DEFAULT_PROP_SHEET_CONTRIBUTOR, showTitle);
+    }
+
+    public boolean isAllowContentScroll()
+    {
+        return allowContentScroll;
+    }
+
+    public void setAllowContentScroll(boolean allowContentScroll)
+    {
+        this.allowContentScroll = allowContentScroll;
+    }
+
+    /**
+     * This is empty implementation of resizeScrolledComposite()
+     * to avoid scrolled composite scroll-bars
+     */
+    public void resizeScrolledComposite()
+    {
+        if (allowContentScroll) {
+            super.resizeScrolledComposite();
+        }
     }
 
     private static ITabbedPropertySheetPageContributor DEFAULT_PROP_SHEET_CONTRIBUTOR = new ITabbedPropertySheetPageContributor() {
