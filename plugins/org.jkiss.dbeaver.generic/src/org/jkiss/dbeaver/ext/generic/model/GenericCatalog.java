@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -69,6 +70,7 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         return DBUtils.findObject(getSchemas(monitor), name);
     }
 
+    @Property(name = "Catalog Name", viewable = true, order = 1)
     public String getName()
     {
         return catalogName;

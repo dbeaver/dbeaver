@@ -12,7 +12,7 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
  */
 public class PropertyPageTabbed extends TabbedPropertySheetPage {
 
-    private boolean allowContentScroll;
+    private boolean allowContentScroll = false;
 
     public PropertyPageTabbed()
     {

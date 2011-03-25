@@ -105,6 +105,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
         this.defaultCharset = defaultCharset;
     }
 
+    @Property(name = "Default Collation", viewable = true, order = 3)
     public String getDefaultCollation()
     {
         return defaultCollation;
