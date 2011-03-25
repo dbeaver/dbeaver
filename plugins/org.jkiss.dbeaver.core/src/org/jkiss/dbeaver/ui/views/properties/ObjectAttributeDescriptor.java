@@ -1,0 +1,146 @@
+package org.jkiss.dbeaver.ui.views.properties;
+
+import net.sf.jkiss.utils.BeanUtils;
+import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyGroup;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.lang.reflect.Method;
+import java.util.*;
+
+/**
+ * Abstract object attribute
+ */
+public abstract class ObjectAttributeDescriptor {
+
+    static final Log log = LogFactory.getLog(ObjectAttributeDescriptor.class);
+
+    private ObjectPropertyGroupDescriptor parent;
+    private int orderNumber;
+    private String id;
+    private Method getter;
+    private boolean isLazy;
+    private IPropertyCacheValidator cacheValidator;
+
+    public ObjectAttributeDescriptor(
+        ObjectPropertyGroupDescriptor parent,
+        Method getter,
+        String id,
+        int orderNumber)
+    {
+        this.parent = parent;
+        this.getter = getter;
+        this.orderNumber = orderNumber;
+        this.id = id;
+        if (CommonUtils.isEmpty(this.id)) {
+            this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
+        }
+
+        if (this.getter.getParameterTypes().length == 1 && getter.getParameterTypes()[0] == DBRProgressMonitor.class) {
+            this.isLazy = true;
+        }
+
+        if (isLazy) {
+            final LazyProperty lazyInfo = getter.getAnnotation(LazyProperty.class);
+            if (lazyInfo != null) {
+                try {
+                    cacheValidator = lazyInfo.cacheValidator().newInstance();
+                } catch (Exception e) {
+                    log.warn("Can't instantiate lazy cache validator '" + lazyInfo.cacheValidator().getName() + "'", e);
+                }
+            }
+        }
+    }
+
+    public int getOrderNumber()
+    {
+        return orderNumber;
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public Method getGetter()
+    {
+        return getter;
+    }
+
+    public boolean isLazy(boolean checkParent)
+    {
+        return isLazy || (checkParent && parent != null && parent.isLazy(checkParent));
+    }
+
+    public IPropertyCacheValidator getCacheValidator()
+    {
+        return cacheValidator;
+    }
+
+    public ObjectPropertyGroupDescriptor getParent()
+    {
+        return parent;
+    }
+
+    public abstract String getCategory();
+
+    public abstract String getDescription();
+
+    public static List<ObjectPropertyDescriptor> extractProperties(IPropertySource propertySource)
+    {
+        List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
+        IPropertyDescriptor[] descs = propertySource.getPropertyDescriptors();
+        for (int i = 0; i < descs.length; i++) {
+            IPropertyDescriptor descriptor = descs[i];
+            annoProps.add(new ObjectPropertyDescriptor(propertySource, descriptor, i));
+        }
+        return annoProps;
+    }
+
+    public static List<ObjectPropertyDescriptor> extractAnnotations(Object object)
+    {
+        return extractAnnotations(object.getClass());
+    }
+
+    public static List<ObjectPropertyDescriptor> extractAnnotations(Class<?> theClass)
+    {
+        List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
+        extractAnnotations(null, theClass, annoProps);
+        return annoProps;
+    }
+
+    public static void extractAnnotations(ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps)
+    {
+        Method[] methods = theClass.getMethods();
+        for (Method method : methods) {
+            final PropertyGroup propGroupInfo = method.getAnnotation(PropertyGroup.class);
+            if (propGroupInfo != null && method.getReturnType() != null) {
+                // Property group
+                ObjectPropertyGroupDescriptor groupDescriptor = new ObjectPropertyGroupDescriptor(parent, method, propGroupInfo);
+                annoProps.addAll(groupDescriptor.getChildren());
+            } else {
+                final Property propInfo = method.getAnnotation(Property.class);
+                if (propInfo == null || !BeanUtils.isGetterName(method.getName()) || method.getReturnType() == null) {
+                    continue;
+                }
+                // Single property
+                ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(parent, propInfo, method);
+                annoProps.add(desc);
+            }
+        }
+        Collections.sort(annoProps, new Comparator<ObjectAttributeDescriptor>() {
+            public int compare(ObjectAttributeDescriptor o1, ObjectAttributeDescriptor o2)
+            {
+                return o1.getOrderNumber() - o2.getOrderNumber();
+            }
+        });
+    }
+
+}

@@ -77,10 +77,10 @@ public class PropertySourceAbstract implements IPropertySource
     public Object getPropertyValue(final Object id)
     {
         Object value = propValues.get(id);
-        if (value instanceof PropertyAnnoDescriptor) {
+        if (value instanceof ObjectPropertyDescriptor) {
             try {
-                PropertyAnnoDescriptor annoDescriptor = (PropertyAnnoDescriptor) value;
-                if (annoDescriptor.isLazy()) {
+                ObjectPropertyDescriptor annoDescriptor = (ObjectPropertyDescriptor) value;
+                if (annoDescriptor.isLazy(true)) {
                     if (!loadLazyProps) {
                         return null;
                     } else {
@@ -126,8 +126,8 @@ public class PropertySourceAbstract implements IPropertySource
 
     private class PropertySheetLoadService extends AbstractLoadService<Object> {
 
-        private PropertyAnnoDescriptor annoDescriptor;
-        public PropertySheetLoadService(PropertyAnnoDescriptor annoDescriptor)
+        private ObjectPropertyDescriptor annoDescriptor;
+        public PropertySheetLoadService(ObjectPropertyDescriptor annoDescriptor)
         {
             super("Loading");
             this.annoDescriptor = annoDescriptor;

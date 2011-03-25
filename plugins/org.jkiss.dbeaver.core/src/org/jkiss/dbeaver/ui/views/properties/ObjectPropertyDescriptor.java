@@ -19,41 +19,30 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collection;
 
 /**
- * PropertyAnnoDescriptor
+ * ObjectPropertyDescriptor
 */
-public class PropertyAnnoDescriptor implements IPropertyDescriptor
+public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements IPropertyDescriptor
 {
-    private IPropertySource propertySource;
     private IPropertyDescriptor propertyDescriptor;
-    private int orderNumber;
-    private String id;
     private Property propInfo;
-    private Method getter;
     private Method setter;
-    private boolean isLazy;
+    private IPropertySource propertySource;
 
-    public PropertyAnnoDescriptor(Property propInfo, Method getter)
+    public ObjectPropertyDescriptor(ObjectPropertyGroupDescriptor parent, Property propInfo, Method getter)
     {
+        super(parent, getter, propInfo.id(), propInfo.order());
         this.propInfo = propInfo;
-        this.getter = getter;
-        if (getter.getParameterTypes().length == 1 && getter.getParameterTypes()[0] == DBRProgressMonitor.class) {
-            this.isLazy = true;
-        }
-        this.id = propInfo.id();
-        if (CommonUtils.isEmpty(this.id)) {
-            this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
-        }
-        this.setter = BeanUtils.getSetMethod(getter.getDeclaringClass(), id);
+        this.setter = BeanUtils.getSetMethod(getter.getDeclaringClass(), getId());
     }
 
-    public PropertyAnnoDescriptor(IPropertySource propertySource, IPropertyDescriptor propertyDescriptor, int orderNumber)
+    public ObjectPropertyDescriptor(IPropertySource propertySource, IPropertyDescriptor propertyDescriptor, int orderNumber)
     {
+        super(null, null, CommonUtils.toString(propertyDescriptor.getId()), orderNumber);
         this.propertySource = propertySource;
         this.propertyDescriptor = propertyDescriptor;
-        this.orderNumber = orderNumber;
     }
 
 /*
@@ -63,19 +52,9 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
     }
 */
 
-    public int getOrder()
-    {
-        return propInfo == null ? orderNumber : propInfo.order();
-    }
-
     public boolean isViewable()
     {
         return propInfo == null || propInfo.viewable();
-    }
-
-    public boolean isLazy()
-    {
-        return isLazy;
     }
 
     public CellEditor createPropertyEditor(Composite parent)
@@ -132,15 +111,6 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
         }
     }
 
-    public Object getId()
-    {
-        if (propertyDescriptor != null) {
-            return propertyDescriptor.getId();
-        } else {
-            return id;
-        }
-    }
-
     public ILabelProvider getLabelProvider()
     {
         if (propertyDescriptor != null) {
@@ -189,13 +159,16 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
         if (propertyDescriptor != null) {
             value = propertySource.getPropertyValue(propertyDescriptor.getId());
         } else {
-            if (isLazy) {
+            if (getParent() != null) {
+                object = getParent().getGroupObject(object, progressMonitor);
+            }
+            if (isLazy(false)) {
                 if (progressMonitor == null) {
-                    throw new IllegalAccessException("Can't read lazy poperties with null progress monitor");
+                    throw new IllegalAccessException("Can't read lazy properties with null progress monitor");
                 }
-                value = getter.invoke(object, progressMonitor);
+                value = getGetter().invoke(object, progressMonitor);
             } else {
-                value = getter.invoke(object);
+                value = getGetter().invoke(object);
             }
         }
         return value;
@@ -209,50 +182,13 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
         } else if (setter != null) {
             setter.invoke(object, value);
         } else {
-            throw new IllegalAccessError("No setter found for property " + id);
+            throw new IllegalAccessError("No setter found for property " + getId());
         }
-    }
-
-    public static List<PropertyAnnoDescriptor> extractProperties(IPropertySource propertySource)
-    {
-        List<PropertyAnnoDescriptor> annoProps = new ArrayList<PropertyAnnoDescriptor>();
-        IPropertyDescriptor[] descs = propertySource.getPropertyDescriptors();
-        for (int i = 0; i < descs.length; i++) {
-            IPropertyDescriptor descriptor = descs[i];
-            annoProps.add(new PropertyAnnoDescriptor(propertySource, descriptor, i));
-        }
-        return annoProps;
-    }
-
-    public static List<PropertyAnnoDescriptor> extractAnnotations(Object object)
-    {
-        return extractAnnotations(object.getClass());
-    }
-    
-    public static List<PropertyAnnoDescriptor> extractAnnotations(Class<?> theClass)
-    {
-        Method[] methods = theClass.getMethods();
-        List<PropertyAnnoDescriptor> annoProps = new ArrayList<PropertyAnnoDescriptor>();
-        for (Method method : methods) {
-            final Property propInfo = method.getAnnotation(Property.class);
-            if (propInfo == null || !BeanUtils.isGetterName(method.getName()) || method.getReturnType() == null) {
-                continue;
-            }
-            PropertyAnnoDescriptor desc = new PropertyAnnoDescriptor(propInfo, method);
-            annoProps.add(desc);
-        }
-        Collections.sort(annoProps, new Comparator<PropertyAnnoDescriptor>()
-        {
-            public int compare(PropertyAnnoDescriptor o1, PropertyAnnoDescriptor o2)
-            {
-                return o1.getOrder() - o2.getOrder();
-            }
-        });
-        return annoProps;
     }
 
     public boolean isCollectionAnno()
     {
-        return Collection.class.isAssignableFrom(getter.getReturnType());
+        return Collection.class.isAssignableFrom(getGetter().getReturnType());
     }
+
 }

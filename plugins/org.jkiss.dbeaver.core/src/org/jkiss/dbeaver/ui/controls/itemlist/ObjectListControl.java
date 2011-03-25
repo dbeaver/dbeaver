@@ -29,7 +29,8 @@ import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
-import org.jkiss.dbeaver.ui.views.properties.PropertyAnnoDescriptor;
+import org.jkiss.dbeaver.ui.views.properties.ObjectAttributeDescriptor;
+import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
@@ -50,13 +51,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private static class ObjectColumn {
         String id;
         Item item;
-        Map<Class<?>, PropertyAnnoDescriptor> propMap = new IdentityHashMap<Class<?>, PropertyAnnoDescriptor>();
+        Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<Class<?>, ObjectPropertyDescriptor>();
 
         private ObjectColumn(Item item, String id) {
             this.id = id;
             this.item = item;
         }
-        void addProperty(Class<?> objectClass, PropertyAnnoDescriptor prop)
+        void addProperty(Class<?> objectClass, ObjectPropertyDescriptor prop)
         {
             this.propMap.put(objectClass, prop);
         }
@@ -420,11 +421,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (objectValue == null) {
             return null;
         }
-        PropertyAnnoDescriptor prop = column.propMap.get(objectValue.getClass());
+        ObjectPropertyDescriptor prop = column.propMap.get(objectValue.getClass());
         if (prop == null) {
             return null;
         }
-        if (prop.isLazy()) {
+        if (prop.isLazy(true)) {
             return LOADING_LABEL;
         }
         try {
@@ -482,7 +483,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return null;
     }
 
-    protected void createColumn(Class<?> objectClass, PropertyAnnoDescriptor prop)
+    protected void createColumn(Class<?> objectClass, ObjectPropertyDescriptor prop)
     {
         ObjectColumn objectColumn = null;
         for (ObjectColumn col : columns) {
@@ -632,8 +633,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
 
             for (Class<?> objectClass : classList) {
-                List<PropertyAnnoDescriptor> props = PropertyAnnoDescriptor.extractAnnotations(objectClass);
-                for (PropertyAnnoDescriptor prop : props) {
+                List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(objectClass);
+                for (ObjectPropertyDescriptor prop : props) {
                     if (!prop.isViewable()) {
                         continue;
                     }
@@ -911,7 +912,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         break;
                     }
                     try {
-                        PropertyAnnoDescriptor prop = column.propMap.get(object.getClass());
+                        ObjectPropertyDescriptor prop = column.propMap.get(object.getClass());
                         if (prop != null) {
                             Object lazyValue = prop.readValue(object, monitor);
                             stringValues.add(getCellString(lazyValue));

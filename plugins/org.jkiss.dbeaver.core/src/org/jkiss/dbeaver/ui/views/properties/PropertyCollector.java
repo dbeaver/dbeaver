@@ -37,8 +37,8 @@ public class PropertyCollector extends PropertySourceAbstract
 
     public void collectProperties(Object object)
     {
-        List<PropertyAnnoDescriptor> annoProps = PropertyAnnoDescriptor.extractAnnotations(object);
-        for (final PropertyAnnoDescriptor desc : annoProps) {
+        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(object);
+        for (final ObjectPropertyDescriptor desc : annoProps) {
             if (desc.isCollectionAnno()) {
                 DBRRunnableWithProgress loader = new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
@@ -53,7 +53,7 @@ public class PropertyCollector extends PropertySourceAbstract
                 };
                 // Add as collection
                 try {
-                    if (desc.isLazy()) {
+                    if (desc.isLazy(true)) {
                         DBeaverCore.getInstance().runInProgressService(loader);
                     } else {
                         loader.run(null);

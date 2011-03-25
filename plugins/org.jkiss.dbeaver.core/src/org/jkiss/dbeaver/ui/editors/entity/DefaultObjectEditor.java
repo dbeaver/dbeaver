@@ -150,7 +150,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart,
 
             DBNNode itemObject = getTreeNode();
             //final PropertyCollector propertyCollector = new PropertyCollector(itemObject);
-            //List<PropertyAnnoDescriptor> annoProps = PropertyAnnoDescriptor.extractAnnotations(itemObject);
+            //List<ObjectPropertyDescriptor> annoProps = ObjectPropertyDescriptor.extractAnnotations(itemObject);
 
             properties = new PropertyPageTabbed();
             properties.init(new ProxyPageSite(getSite()));
