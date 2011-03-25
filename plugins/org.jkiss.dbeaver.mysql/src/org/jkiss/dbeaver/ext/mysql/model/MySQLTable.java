@@ -52,7 +52,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         private long rowCount;
         private long autoIncrement;
         private String description;
-        private String createTime;
+        private java.util.Date createTime;
         private String collation;
         private MySQLEngine engine;
 
@@ -68,14 +68,14 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
             return rowCount;
         }
 
-        @Property(name = "Auto increment", viewable = true, order = 6)
+        @Property(name = "Auto Increment", viewable = true, order = 6)
         public long getAutoIncrement()
         {
             return autoIncrement;
         }
 
-        @Property(name = "Auto increment", viewable = true, order = 7)
-        public String getCreateTime()
+        @Property(name = "Create Time", viewable = true, order = 7)
+        public java.util.Date getCreateTime()
         {
             return createTime;
         }
@@ -96,7 +96,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLTable> {
         public boolean isPropertyCached(MySQLTable object)
         {
-            return object.additionalInfo != null;
+            return object.additionalInfo.loaded;
         }
     }
 
@@ -305,7 +305,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         additionalInfo.engine = getDataSource().getEngine(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
                         additionalInfo.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);
                         additionalInfo.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);
-                        additionalInfo.createTime = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CREATE_TIME);
+                        additionalInfo.createTime = JDBCUtils.safeGetTimestamp(dbResult, MySQLConstants.COL_CREATE_TIME);
                         additionalInfo.collation = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION);
                     }
                     additionalInfo.loaded = true;

@@ -80,7 +80,7 @@ public class PropertySourceAbstract implements IPropertySource
         if (value instanceof ObjectPropertyDescriptor) {
             try {
                 ObjectPropertyDescriptor annoDescriptor = (ObjectPropertyDescriptor) value;
-                if (annoDescriptor.isLazy(true)) {
+                if (annoDescriptor.isLazy(object, true)) {
                     if (!loadLazyProps) {
                         return null;
                     } else {

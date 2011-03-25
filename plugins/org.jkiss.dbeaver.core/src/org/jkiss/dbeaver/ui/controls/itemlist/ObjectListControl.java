@@ -425,7 +425,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (prop == null) {
             return null;
         }
-        if (prop.isLazy(true)) {
+        if (prop.isLazy(objectValue, true)) {
             return LOADING_LABEL;
         }
         try {
@@ -556,7 +556,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         result = -1;
                     } else if (value2 == null) {
                         result = 1;
-                    } else if (value1 instanceof Comparable) {
+                    } else if (value1 instanceof Comparable && value1.getClass() == value2.getClass()) {
                         result = ((Comparable)value1).compareTo(value2);
                     } else {
                         result = value1.toString().compareToIgnoreCase(value2.toString());

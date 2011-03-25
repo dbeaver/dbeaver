@@ -95,6 +95,26 @@ public class JDBCUtils {
         }
     }
 
+    public static Timestamp safeGetTimestamp(ResultSet dbResult, String columnName)
+    {
+        try {
+            return dbResult.getTimestamp(columnName);
+        } catch (SQLException e) {
+            log.debug(e.getMessage());
+            return null;
+        }
+    }
+
+    public static Timestamp safeGetTimestamp(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getTimestamp(columnIndex);
+        } catch (SQLException e) {
+            log.debug(e.getMessage());
+            return null;
+        }
+    }
+
     public static int getDataTypeByName(int valueType, String typeName)
     {
         if (valueType == java.sql.Types.OTHER) {

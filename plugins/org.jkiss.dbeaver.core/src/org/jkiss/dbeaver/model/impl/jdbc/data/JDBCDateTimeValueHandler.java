@@ -31,9 +31,9 @@ import java.util.Date;
  */
 public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
-    private static final String TYPE_NAME_DATE = "date";
-    private static final String TYPE_NAME_TIME = "time";
-    private static final String TYPE_NAME_TIMESTAMP = "timestamp";
+    public static final String TYPE_NAME_DATE = "date";
+    public static final String TYPE_NAME_TIME = "time";
+    public static final String TYPE_NAME_TIMESTAMP = "timestamp";
 
     private DBDDataFormatterProfile formatterProfile;
     private DBDDataFormatter formatter;

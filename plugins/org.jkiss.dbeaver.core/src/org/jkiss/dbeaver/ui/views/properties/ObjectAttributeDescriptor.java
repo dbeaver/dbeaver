@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -74,9 +75,24 @@ public abstract class ObjectAttributeDescriptor {
         return getter;
     }
 
-    public boolean isLazy(boolean checkParent)
+    public boolean isLazy(Object object, boolean checkParent)
     {
-        return isLazy || (checkParent && parent != null && parent.isLazy(checkParent));
+        if (isLazy && cacheValidator != null) {
+            if (parent != null) {
+                if (parent.isLazy(object, true)) {
+                    return true;
+                }
+                try {
+                    // Parent isn't lazy so use null progress monitor
+                    object = parent.getGroupObject(object, null);
+                } catch (Exception e) {
+                    log.debug(e);
+                    return true;
+                }
+            }
+            return !cacheValidator.isPropertyCached(object);
+        }
+        return isLazy || (checkParent && parent != null && parent.isLazy(object, checkParent));
     }
 
     public IPropertyCacheValidator getCacheValidator()

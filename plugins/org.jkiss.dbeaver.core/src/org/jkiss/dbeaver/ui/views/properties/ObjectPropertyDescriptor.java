@@ -162,7 +162,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             if (getParent() != null) {
                 object = getParent().getGroupObject(object, progressMonitor);
             }
-            if (isLazy(false)) {
+            if (isLazy(object, false)) {
                 if (progressMonitor == null) {
                     throw new IllegalAccessException("Can't read lazy properties with null progress monitor");
                 }

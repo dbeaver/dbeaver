@@ -53,7 +53,7 @@ public class PropertyCollector extends PropertySourceAbstract
                 };
                 // Add as collection
                 try {
-                    if (desc.isLazy(true)) {
+                    if (desc.isLazy(object, true)) {
                         DBeaverCore.getInstance().runInProgressService(loader);
                     } else {
                         loader.run(null);

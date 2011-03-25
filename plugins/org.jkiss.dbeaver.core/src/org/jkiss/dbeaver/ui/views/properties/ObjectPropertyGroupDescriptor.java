@@ -49,10 +49,12 @@ public class ObjectPropertyGroupDescriptor extends ObjectAttributeDescriptor
         if (getParent() != null) {
             object = getParent().getGroupObject(object, progressMonitor);
         }
-        if (isLazy(false)) {
+        if (isLazy(object, false)) {
             if (progressMonitor == null) {
                 throw new IllegalAccessException("Can't read lazy properties with null progress monitor");
             }
+        }
+        if (getGetter().getParameterTypes().length > 0) {
             return getGetter().invoke(object, progressMonitor);
         } else {
             return getGetter().invoke(object);
