@@ -12,7 +12,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class DefaultDatabaseObjectManager extends DBEObjectManagerImpl<DBSObject> {
 
-    public DefaultDatabaseObjectManager() {
+    public DefaultDatabaseObjectManager(DBSObject object) {
+        setObject(object);
     }
 
 }

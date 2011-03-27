@@ -11,11 +11,14 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -178,6 +181,26 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public boolean initializeNode(Runnable onFinish)
     {
         return true;
+    }
+
+    @Override
+    public void rename(DBRProgressMonitor monitor, String newName) throws DBException
+    {
+        final DBSObject object = getObject();
+        DBEObjectRenamer objectRenamer = (DBEObjectRenamer) DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(object.getClass()).createManager(object);
+        objectRenamer.renameObject(monitor, newName);
+    }
+
+    @Override
+    public boolean supportsRename()
+    {
+        final DBSObject object = getObject();
+        if (object == null || !object.isPersisted()) {
+            return false;
+        }
+        EntityManagerDescriptor entityManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(object.getClass());
+        return entityManager != null &&
+            DBEObjectRenamer.class.isAssignableFrom(entityManager.getManagerClass());
     }
 
     /**

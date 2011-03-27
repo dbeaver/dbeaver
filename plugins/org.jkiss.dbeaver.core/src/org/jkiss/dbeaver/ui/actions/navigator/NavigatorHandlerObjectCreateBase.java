@@ -62,7 +62,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             log.error("Object manager not found for type '" + childType.getName() + "'");
             return false;
         }
-        DBEObjectManager<?> objectManager = entityManager.createManager();
+        DBEObjectManager<?> objectManager = entityManager.createManager(null);
         if (!(objectManager instanceof DBEObjectMaker<?>)) {
             log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object creation");
             return false;

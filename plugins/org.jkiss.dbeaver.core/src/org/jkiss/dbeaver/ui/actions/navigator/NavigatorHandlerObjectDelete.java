@@ -123,7 +123,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             log.error("Object manager not found for type '" + object.getClass().getName() + "'");
             return false;
         }
-        DBEObjectManager<?> objectManager = entityManager.createManager();
+        DBEObjectManager<?> objectManager = entityManager.createManager(node.getObject());
         if (!(objectManager instanceof DBEObjectMaker<?>)) {
             log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object deletion");
             return false;
@@ -131,8 +131,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
 
         DBEObjectMaker objectMaker = (DBEObjectMaker)objectManager;
         Map<String, Object> deleteOptions = null;
-
-        objectMaker.setObject(node.getObject());
 
         ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, objectManager instanceof DBEObjectCommander);
         if (confirmResult == ConfirmResult.NO) {

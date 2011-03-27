@@ -218,17 +218,15 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             // Instantiate new object manager
             EntityManagerDescriptor managerDescriptor = editorsRegistry.getEntityManager(databaseObject.getClass());
             if (managerDescriptor != null) {
-                this.objectManager = managerDescriptor.createManager();
+                this.objectManager = managerDescriptor.createManager(databaseObject);
                 if (this.objectManager == null) {
                     log.warn("Could not instantiate object manager '" + managerDescriptor.getName() + "'");
                 }
             }
             if (this.objectManager == null) {
                 // Create default object manager
-                this.objectManager = new DefaultDatabaseObjectManager();
+                this.objectManager = new DefaultDatabaseObjectManager(databaseObject);
             }
-
-            this.objectManager.setObject(databaseObject);
         }
 
         // Add object editor page
