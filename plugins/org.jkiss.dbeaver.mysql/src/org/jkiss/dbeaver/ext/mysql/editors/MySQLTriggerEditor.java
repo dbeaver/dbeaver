@@ -10,13 +10,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
-import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 /**
  * MySQLTriggerEditor
  */
-public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<MySQLTrigger, DBOManager<MySQLTrigger>>
+public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<MySQLTrigger, DBEObjectManager<MySQLTrigger>>
 {
     static final Log log = LogFactory.getLog(MySQLTriggerEditor.class);
 

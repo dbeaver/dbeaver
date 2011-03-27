@@ -19,7 +19,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
-import org.jkiss.dbeaver.model.edit.DBOCommandReflector;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -164,7 +164,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         curCatalog,
                         curTable,
                         privilege),
-                    new DBOCommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
+                    new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
                         public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {

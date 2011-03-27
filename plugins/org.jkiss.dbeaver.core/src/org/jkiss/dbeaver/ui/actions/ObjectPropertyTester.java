@@ -8,7 +8,7 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.edit.DBOCreator;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -97,7 +97,7 @@ public class ObjectPropertyTester extends PropertyTester
     {
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
         EntityManagerDescriptor entityManager = editorsRegistry.getEntityManager(objectType);
-        return entityManager != null && DBOCreator.class.isAssignableFrom(entityManager.getManagerClass());
+        return entityManager != null && DBEObjectMaker.class.isAssignableFrom(entityManager.getManagerClass());
     }
 
     public static void firePropertyChange(String propName)

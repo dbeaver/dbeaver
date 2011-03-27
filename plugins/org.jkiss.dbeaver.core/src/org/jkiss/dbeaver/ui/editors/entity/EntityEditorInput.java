@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
@@ -15,20 +15,20 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
  */
 public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
 {
-    private DBOManager<?> objectManager;
+    private DBEObjectManager<?> objectManager;
 
     public EntityEditorInput(DBNDatabaseNode dbmNode)
     {
         super(dbmNode);
     }
 
-    public EntityEditorInput(DBNDatabaseNode dbnNode, DBOManager<?> objectManager)
+    public EntityEditorInput(DBNDatabaseNode dbnNode, DBEObjectManager<?> objectManager)
     {
         super(dbnNode);
         this.objectManager = objectManager;
     }
 
-    public DBOManager<?> getObjectManager()
+    public DBEObjectManager<?> getObjectManager()
     {
         return objectManager;
     }

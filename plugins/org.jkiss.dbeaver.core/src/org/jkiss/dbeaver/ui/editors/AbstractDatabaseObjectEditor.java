@@ -11,16 +11,16 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBOCommand;
-import org.jkiss.dbeaver.model.edit.DBOCommandReflector;
-import org.jkiss.dbeaver.model.edit.DBOEditor;
-import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * AbstractDatabaseObjectEditor
  */
-public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject, OBJECT_MANAGER extends DBOManager<OBJECT_TYPE>>
+public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject, OBJECT_MANAGER extends DBEObjectManager<OBJECT_TYPE>>
     extends EditorPart implements IDatabaseObjectEditor<OBJECT_MANAGER>
 {
     private OBJECT_MANAGER objectManager;
@@ -47,7 +47,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
 
     public boolean isDirty()
     {
-        return objectManager instanceof DBOEditor<?> && ((DBOEditor<?>) objectManager).isDirty();
+        return objectManager instanceof DBEObjectCommander<?> && ((DBEObjectCommander<?>) objectManager).isDirty();
     }
 
     public boolean isSaveAsAllowed()
@@ -80,37 +80,37 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     }
 
     /*
-    protected void addChangeCommand(DBOCommand<OBJECT_TYPE> command)
+    protected void addChangeCommand(DBECommand<OBJECT_TYPE> command)
     {
         this.objectManager.addCommand(command, null);
         firePropertyChange(PROP_DIRTY);
     }
 */
 
-    private DBOEditor<OBJECT_TYPE> getObjectEditor()
+    private DBEObjectCommander<OBJECT_TYPE> getObjectEditor()
     {
-        if (objectManager instanceof DBOEditor<?>) {
-            return (DBOEditor<OBJECT_TYPE>)objectManager;
+        if (objectManager instanceof DBEObjectCommander<?>) {
+            return (DBEObjectCommander<OBJECT_TYPE>)objectManager;
         } else {
             throw new IllegalStateException("Object manager do not provide editor facilities");
         }
     }
 
-    public <COMMAND extends DBOCommand<OBJECT_TYPE>> void addChangeCommand(
+    public <COMMAND extends DBECommand<OBJECT_TYPE>> void addChangeCommand(
         COMMAND command,
-        DBOCommandReflector<OBJECT_TYPE, COMMAND> reflector)
+        DBECommandReflector<OBJECT_TYPE, COMMAND> reflector)
     {
         getObjectEditor().addCommand(command, reflector);
         firePropertyChange(PROP_DIRTY);
     }
 
-    public void removeChangeCommand(DBOCommand<OBJECT_TYPE> command)
+    public void removeChangeCommand(DBECommand<OBJECT_TYPE> command)
     {
         getObjectEditor().removeCommand(command);
         firePropertyChange(PROP_DIRTY);
     }
 
-    public void updateChangeCommand(DBOCommand<OBJECT_TYPE> command)
+    public void updateChangeCommand(DBECommand<OBJECT_TYPE> command)
     {
         getObjectEditor().updateCommand(command);
         firePropertyChange(PROP_DIRTY);

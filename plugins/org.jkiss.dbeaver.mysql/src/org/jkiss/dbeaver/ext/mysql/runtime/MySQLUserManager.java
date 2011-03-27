@@ -7,10 +7,10 @@ package org.jkiss.dbeaver.ext.mysql.runtime;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
-import org.jkiss.dbeaver.model.edit.DBOCreator;
-import org.jkiss.dbeaver.model.edit.prop.DBOCommandProperty;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectScriptCommand;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.DBOEditorJDBC;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.DBEObjectCommanderJDBC;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * MySQLUserManager
  */
-public class MySQLUserManager extends DBOEditorJDBC<MySQLUser> implements DBOCreator<MySQLUser> {
+public class MySQLUserManager extends DBEObjectCommanderJDBC<MySQLUser> implements DBEObjectMaker<MySQLUser> {
 
     protected void filterCommands(List<CommandInfo> commands)
     {
@@ -51,7 +51,7 @@ public class MySQLUserManager extends DBOEditorJDBC<MySQLUser> implements DBOCre
         addCommand(new MySQLCommandDropUser(), null);
     }
 
-    private static class NewUserPropertyCommand extends DBOCommandProperty<MySQLUser> {
+    private static class NewUserPropertyCommand extends DBECommandProperty<MySQLUser> {
         public NewUserPropertyCommand(UserPropertyHandler property, Object value)
         {
             super(property, value);

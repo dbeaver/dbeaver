@@ -10,16 +10,16 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBOCommand;
+import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
 
 import java.util.Map;
 
 /**
  * Grant/Revoke privilege command
  */
-public class MySQLCommandGrantPrivilege extends DBOCommandImpl<MySQLUser> {
+public class MySQLCommandGrantPrivilege extends DBECommandImpl<MySQLUser> {
 
     private boolean grant;
     private MySQLCatalog schema;
@@ -57,7 +57,7 @@ public class MySQLCommandGrantPrivilege extends DBOCommandImpl<MySQLUser> {
     }
 
     @Override
-    public DBOCommand<MySQLUser> merge(DBOCommand<MySQLUser> prevCommand, Map<String, Object> userParams)
+    public DBECommand<MySQLUser> merge(DBECommand<MySQLUser> prevCommand, Map<String, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege)prevCommand;

@@ -7,9 +7,11 @@ package org.jkiss.dbeaver.model.edit;
 import org.eclipse.ui.IWorkbenchWindow;
 
 /**
- * DBOEditorInline
+ * Private editor.
+ * Doesn't participates in common object edit framework. All object's modifications are done
+ * by some external dialogs/tools/whatever.
  */
-public interface DBOEditorInline {
+public interface DBEPrivateObjectEditor {
 
     void editObject(IWorkbenchWindow workbenchWindow);
 

@@ -13,9 +13,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.edit.DBOCreator;
-import org.jkiss.dbeaver.model.edit.DBOEditor;
-import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -62,22 +62,22 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             log.error("Object manager not found for type '" + childType.getName() + "'");
             return false;
         }
-        DBOManager<?> objectManager = entityManager.createManager();
-        if (!(objectManager instanceof DBOCreator<?>)) {
+        DBEObjectManager<?> objectManager = entityManager.createManager();
+        if (!(objectManager instanceof DBEObjectMaker<?>)) {
             log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object creation");
             return false;
         }
 
-        DBOCreator objectCreator = (DBOCreator) objectManager;
-        DBOCreator.CreateResult result = objectCreator.createNewObject(workbenchWindow, container.getValueObject(), sourceObject);
-        if (result == DBOCreator.CreateResult.CANCEL) {
+        DBEObjectMaker objectMaker = (DBEObjectMaker) objectManager;
+        DBEObjectMaker.CreateResult result = objectMaker.createNewObject(workbenchWindow, container.getValueObject(), sourceObject);
+        if (result == DBEObjectMaker.CreateResult.CANCEL) {
             return false;
         }
 
         // Save object manager's content
         IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
         try {
-            ObjectSaver objectSaver = new ObjectSaver(container, objectCreator, result == DBOCreator.CreateResult.SAVE);
+            ObjectSaver objectSaver = new ObjectSaver(container, objectMaker, result == DBEObjectMaker.CreateResult.SAVE);
             try {
                 workbenchWindow.run(true, true, objectSaver);
             } catch (InvocationTargetException e) {
@@ -97,7 +97,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         }
                     }
                 });
-                if (result == DBOCreator.CreateResult.OPEN_EDITOR) {
+                if (result == DBEObjectMaker.CreateResult.OPEN_EDITOR) {
                     // Can open editor only for database nodes
                     if (newChild instanceof DBNDatabaseNode) {
                         EntityEditorInput editorInput = new EntityEditorInput((DBNDatabaseNode)newChild, objectManager);
@@ -126,11 +126,11 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 
     private static class ObjectSaver implements IRunnableWithProgress {
         private final DBNContainer container;
-        private final DBOCreator<?> objectManager;
+        private final DBEObjectMaker<?> objectManager;
         private final boolean saveObject;
         DBNNode newChild;
 
-        public ObjectSaver(DBNContainer container, DBOCreator<?> objectManager, boolean saveObject)
+        public ObjectSaver(DBNContainer container, DBEObjectMaker<?> objectManager, boolean saveObject)
         {
             this.container = container;
             this.objectManager = objectManager;
@@ -141,8 +141,8 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         {
             try {
                 DefaultProgressMonitor progressMonitor = new DefaultProgressMonitor(monitor);
-                if (saveObject && objectManager instanceof DBOEditor) {
-                    ((DBOEditor)objectManager).saveChanges(progressMonitor);
+                if (saveObject && objectManager instanceof DBEObjectCommander) {
+                    ((DBEObjectCommander)objectManager).saveChanges(progressMonitor);
                 }
 
                 DBSObject newObject = objectManager.getObject();

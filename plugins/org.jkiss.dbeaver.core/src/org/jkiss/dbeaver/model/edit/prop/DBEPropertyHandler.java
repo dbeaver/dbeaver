@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * Database object property handler
  */
-public interface DBOPropertyHandler<OBJECT_TYPE extends DBSObject> {
+public interface DBEPropertyHandler<OBJECT_TYPE extends DBSObject> {
 
-    DBOCommandComposite<OBJECT_TYPE, ? extends DBOPropertyHandler<OBJECT_TYPE>> createCompositeCommand();
+    DBECommandComposite<OBJECT_TYPE, ? extends DBEPropertyHandler<OBJECT_TYPE>> createCompositeCommand();
 }

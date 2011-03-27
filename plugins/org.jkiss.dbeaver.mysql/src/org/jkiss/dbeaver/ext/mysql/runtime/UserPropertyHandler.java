@@ -7,13 +7,13 @@ package org.jkiss.dbeaver.ext.mysql.runtime;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.edit.prop.DBOPropertyHandler;
-import org.jkiss.dbeaver.model.edit.prop.DBOPropertyReflector;
+import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
+import org.jkiss.dbeaver.model.edit.prop.DBEPropertyReflector;
 
 /**
 * User property handler
 */
-public enum UserPropertyHandler implements DBOPropertyHandler<MySQLUser>, DBOPropertyReflector<MySQLUser> {
+public enum UserPropertyHandler implements DBEPropertyHandler<MySQLUser>, DBEPropertyReflector<MySQLUser> {
     NAME,
     HOST,
     PASSWORD,

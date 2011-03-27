@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Updates UI on command undo/redo actions.
  * Note: reflector isn't invoked after command creation (because command is created AFTER UI changes).
  */
-public interface DBOCommandReflector<OBJECT_TYPE extends DBSObject, COMMAND extends DBOCommand<OBJECT_TYPE>> {
+public interface DBECommandReflector<OBJECT_TYPE extends DBSObject, COMMAND extends DBECommand<OBJECT_TYPE>> {
 
     void redoCommand(COMMAND command);
 

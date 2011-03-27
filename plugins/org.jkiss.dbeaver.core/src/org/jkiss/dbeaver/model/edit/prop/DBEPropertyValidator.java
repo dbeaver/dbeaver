@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * Database object validator
  */
-public interface DBOPropertyValidator<OBJECT_TYPE extends DBSObject> extends DBOPropertyHandler<OBJECT_TYPE> {
+public interface DBEPropertyValidator<OBJECT_TYPE extends DBSObject> extends DBEPropertyHandler<OBJECT_TYPE> {
 
     void validate(OBJECT_TYPE object, Object value) throws DBException;
 

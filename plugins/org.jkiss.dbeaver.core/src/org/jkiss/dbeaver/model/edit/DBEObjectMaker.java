@@ -10,9 +10,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.util.Map;
 
 /**
- * DBOManager
+ * DBEObjectManager
  */
-public interface DBOCreator<OBJECT_TYPE extends DBSObject> extends DBOManager<OBJECT_TYPE> {
+public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject> extends DBEObjectManager<OBJECT_TYPE> {
 
     public static final long FEATURE_SAVE_IMMEDIATELY = 1;
     public static final long FEATURE_CREATE_FROM_PASTE = 2;

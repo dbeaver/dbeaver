@@ -26,10 +26,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.edit.DBOCommand;
-import org.jkiss.dbeaver.model.edit.DBOCreator;
-import org.jkiss.dbeaver.model.edit.DBOEditor;
-import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -124,34 +123,34 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             log.error("Object manager not found for type '" + object.getClass().getName() + "'");
             return false;
         }
-        DBOManager<?> objectManager = entityManager.createManager();
-        if (!(objectManager instanceof DBOCreator<?>)) {
+        DBEObjectManager<?> objectManager = entityManager.createManager();
+        if (!(objectManager instanceof DBEObjectMaker<?>)) {
             log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object deletion");
             return false;
         }
 
-        DBOCreator objectCreator = (DBOCreator)objectManager;
+        DBEObjectMaker objectMaker = (DBEObjectMaker)objectManager;
         Map<String, Object> deleteOptions = null;
 
-        objectCreator.setObject(node.getObject());
+        objectMaker.setObject(node.getObject());
 
-        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, objectManager instanceof DBOEditor);
+        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, objectManager instanceof DBEObjectCommander);
         if (confirmResult == ConfirmResult.NO) {
             return false;
         }
 
-        objectCreator.deleteObject(deleteOptions);
+        objectMaker.deleteObject(deleteOptions);
 
         if (confirmResult == ConfirmResult.DETAILS) {
-            if (!showScript(workbenchWindow, (DBOEditor<?>) objectManager)) {
-                ((DBOEditor)objectCreator).resetChanges();
+            if (!showScript(workbenchWindow, (DBEObjectCommander<?>) objectManager)) {
+                ((DBEObjectCommander) objectMaker).resetChanges();
                 return false;
             }
         }
 
-        if (objectCreator instanceof DBOEditor) {
+        if (objectMaker instanceof DBEObjectCommander) {
             // Delete object
-            ObjectDeleter deleter = new ObjectDeleter((DBOEditor)objectCreator);
+            ObjectDeleter deleter = new ObjectDeleter((DBEObjectCommander) objectMaker);
             try {
                 workbenchWindow.run(true, true, deleter);
             } catch (InvocationTargetException e) {
@@ -177,11 +176,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         return true;
     }
 
-    private boolean showScript(IWorkbenchWindow workbenchWindow, DBOEditor<?> objectManager)
+    private boolean showScript(IWorkbenchWindow workbenchWindow, DBEObjectCommander<?> objectManager)
     {
-        Collection<? extends DBOCommand> commands = objectManager.getCommands();
+        Collection<? extends DBECommand> commands = objectManager.getCommands();
         StringBuilder script = new StringBuilder();
-        for (DBOCommand command : commands) {
+        for (DBECommand command : commands) {
             IDatabasePersistAction[] persistActions = command.getPersistActions(objectManager.getObject());
             if (!CommonUtils.isEmpty(persistActions)) {
                 for (IDatabasePersistAction action : persistActions) {
@@ -268,9 +267,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
     }
 
     private static class ObjectDeleter implements IRunnableWithProgress {
-        private final DBOEditor objectManager;
+        private final DBEObjectCommander objectManager;
 
-        public ObjectDeleter(DBOEditor objectCreator)
+        public ObjectDeleter(DBEObjectCommander objectCreator)
         {
             this.objectManager = objectCreator;
         }

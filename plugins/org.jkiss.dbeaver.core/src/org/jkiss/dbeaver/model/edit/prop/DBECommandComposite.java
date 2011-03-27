@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.model.edit.prop;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.HashMap;
@@ -15,17 +15,17 @@ import java.util.Map;
 /**
  * Composite object command
  */
-public abstract class DBOCommandComposite<OBJECT_TYPE extends DBSObject, HANDLER_TYPE extends DBOPropertyHandler<OBJECT_TYPE>>
-    extends DBOCommandImpl<OBJECT_TYPE> {
+public abstract class DBECommandComposite<OBJECT_TYPE extends DBSObject, HANDLER_TYPE extends DBEPropertyHandler<OBJECT_TYPE>>
+    extends DBECommandImpl<OBJECT_TYPE> {
 
     private Map<HANDLER_TYPE, Object> properties = new HashMap<HANDLER_TYPE, Object>();
 
-    protected DBOCommandComposite(String title, Image icon)
+    protected DBECommandComposite(String title, Image icon)
     {
         super(title, icon);
     }
 
-    protected DBOCommandComposite(String title)
+    protected DBECommandComposite(String title)
     {
         super(title);
     }

@@ -8,9 +8,9 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * DBOManager
+ * DBEObjectManager
  */
-public interface DBOManager<OBJECT_TYPE extends DBSObject> extends IDataSourceProvider {
+public interface DBEObjectManager<OBJECT_TYPE extends DBSObject> extends IDataSourceProvider {
 
     OBJECT_TYPE getObject();
 

@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * Database object validator
  */
-public interface DBOPropertyPersister<OBJECT_TYPE extends DBSObject> extends DBOPropertyHandler<OBJECT_TYPE> {
+public interface DBEPropertyPersister<OBJECT_TYPE extends DBSObject> extends DBEPropertyHandler<OBJECT_TYPE> {
 
     IDatabasePersistAction[] getPersistActions(OBJECT_TYPE object, Object value);
 

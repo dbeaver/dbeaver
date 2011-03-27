@@ -9,10 +9,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.model.edit.DBOCreator;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.DBOEditorJDBC;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.DBEObjectCommanderJDBC;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 
 import java.util.Map;
@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * MySQLCatalogManager
  */
-public class MySQLCatalogManager extends DBOEditorJDBC<MySQLCatalog> implements DBOCreator<MySQLCatalog> {
+public class MySQLCatalogManager extends DBEObjectCommanderJDBC<MySQLCatalog> implements DBEObjectMaker<MySQLCatalog> {
 
     public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, MySQLCatalog copyFrom)
     {
@@ -41,7 +41,7 @@ public class MySQLCatalogManager extends DBOEditorJDBC<MySQLCatalog> implements 
         addCommand(new CommandDropCatalog(), null);
     }
 
-    private class CommandCreateCatalog extends DBOCommandImpl<MySQLCatalog> {
+    private class CommandCreateCatalog extends DBECommandImpl<MySQLCatalog> {
         protected CommandCreateCatalog()
         {
             super("Create schema");
@@ -61,7 +61,7 @@ public class MySQLCatalogManager extends DBOEditorJDBC<MySQLCatalog> implements 
         }
     }
 
-    private class CommandDropCatalog extends DBOCommandImpl<MySQLCatalog> {
+    private class CommandDropCatalog extends DBECommandImpl<MySQLCatalog> {
         protected CommandDropCatalog()
         {
             super("Drop schema");

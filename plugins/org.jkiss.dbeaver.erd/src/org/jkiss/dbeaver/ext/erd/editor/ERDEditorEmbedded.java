@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
@@ -28,9 +28,9 @@ import java.util.Set;
 /**
  * Embedded ERD editor
  */
-public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectEditor<DBOManager<DBSObject>>, IRefreshablePart {
+public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectEditor<DBEObjectManager<DBSObject>>, IRefreshablePart {
 
-    private DBOManager<DBSObject> objectManager;
+    private DBEObjectManager<DBSObject> objectManager;
 
     /**
      * No-arg constructor
@@ -50,12 +50,12 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
         return objectManager.getObject();
     }
 
-    public DBOManager<DBSObject> getObjectManager()
+    public DBEObjectManager<DBSObject> getObjectManager()
     {
         return objectManager;
     }
 
-    public void initObjectEditor(DBOManager<DBSObject> manager)
+    public void initObjectEditor(DBEObjectManager<DBSObject> manager)
     {
         objectManager = manager;
     }

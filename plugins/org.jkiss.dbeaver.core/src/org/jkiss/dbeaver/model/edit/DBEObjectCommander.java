@@ -11,9 +11,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.util.Collection;
 
 /**
- * DBOManager
+ * Object commander.
+ * Provides facilities for object edit commands, undo/redo, save/revert
  */
-public interface DBOEditor<OBJECT_TYPE extends DBSObject> extends DBOManager<OBJECT_TYPE> {
+public interface DBEObjectCommander<OBJECT_TYPE extends DBSObject> extends DBEObjectManager<OBJECT_TYPE> {
 
     boolean isDirty();
 
@@ -29,18 +30,18 @@ public interface DBOEditor<OBJECT_TYPE extends DBSObject> extends DBOManager<OBJ
 
     void redoCommand();
 
-    Collection<? extends DBOCommand<OBJECT_TYPE>> getCommands();
+    Collection<? extends DBECommand<OBJECT_TYPE>> getCommands();
 
-    <COMMAND extends DBOCommand<OBJECT_TYPE>>
-    void addCommand(COMMAND command, DBOCommandReflector<OBJECT_TYPE, COMMAND> reflector);
+    <COMMAND extends DBECommand<OBJECT_TYPE>>
+    void addCommand(COMMAND command, DBECommandReflector<OBJECT_TYPE, COMMAND> reflector);
 
-    <COMMAND extends DBOCommand<OBJECT_TYPE>>
+    <COMMAND extends DBECommand<OBJECT_TYPE>>
     void removeCommand(COMMAND command);
 
-    <COMMAND extends DBOCommand<OBJECT_TYPE>>
+    <COMMAND extends DBECommand<OBJECT_TYPE>>
     void updateCommand(COMMAND command);
 
-    void addCommandListener(DBOCommandListener listener);
+    void addCommandListener(DBECommandListener listener);
 
-    void removeCommandListener(DBOCommandListener listener);
+    void removeCommandListener(DBECommandListener listener);
 }

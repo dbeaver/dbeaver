@@ -10,13 +10,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
-import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 /**
  * MySQLProcedureEditor
  */
-public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProcedure, DBOManager<MySQLProcedure>>
+public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProcedure, DBEObjectManager<MySQLProcedure>>
 {
     static final Log log = LogFactory.getLog(MySQLProcedureEditor.class);
 

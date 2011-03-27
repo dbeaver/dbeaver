@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Object change command
  */
-public interface DBOCommand<OBJECT_TYPE extends DBSObject> {
+public interface DBECommand<OBJECT_TYPE extends DBSObject> {
 
     String getTitle();
 
@@ -32,8 +32,8 @@ public interface DBOCommand<OBJECT_TYPE extends DBSObject> {
 
     void updateModel(OBJECT_TYPE object);
 
-    DBOCommand<OBJECT_TYPE> merge(
-        DBOCommand<OBJECT_TYPE> prevCommand,
+    DBECommand<OBJECT_TYPE> merge(
+        DBECommand<OBJECT_TYPE> prevCommand,
         Map<String, Object> userParams);
 
     IDatabasePersistAction[] getPersistActions(OBJECT_TYPE object);

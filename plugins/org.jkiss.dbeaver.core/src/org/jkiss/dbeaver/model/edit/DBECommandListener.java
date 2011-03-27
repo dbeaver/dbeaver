@@ -5,16 +5,16 @@
 package org.jkiss.dbeaver.model.edit;
 
 /**
- * DBOManager
+ * DBEObjectManager
  */
-public interface DBOCommandListener {
+public interface DBECommandListener {
 
     void onSave();
 
     void onReset();
 
-    void onCommandDo(DBOCommand command);
+    void onCommandDo(DBECommand command);
 
-    void onCommandUndo(DBOCommand command);
+    void onCommandUndo(DBECommand command);
 
 }

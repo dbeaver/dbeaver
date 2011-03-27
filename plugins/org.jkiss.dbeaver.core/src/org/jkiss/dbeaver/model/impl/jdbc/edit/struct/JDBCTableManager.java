@@ -1,12 +1,15 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.edit.DBOCreator;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.DBOEditorJDBC;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.DBEObjectCommanderJDBC;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
@@ -15,7 +18,7 @@ import java.util.Map;
 /**
  * JDBC table manager
  */
-public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_TYPE extends DBSEntityContainer>  extends DBOEditorJDBC<OBJECT_TYPE> implements DBOCreator<OBJECT_TYPE> {
+public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_TYPE extends DBSEntityContainer>  extends DBEObjectCommanderJDBC<OBJECT_TYPE> implements DBEObjectMaker<OBJECT_TYPE> {
 
     public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, OBJECT_TYPE copyFrom)
     {
@@ -30,7 +33,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         addCommand(new CommandDropTable(), null);
     }
 
-    private class CommandCreateTable extends DBOCommandImpl<OBJECT_TYPE> {
+    private class CommandCreateTable extends DBECommandImpl<OBJECT_TYPE> {
         protected CommandCreateTable()
         {
             super("Create table");
@@ -50,7 +53,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         }
     }
 
-    private class CommandDropTable extends DBOCommandImpl<OBJECT_TYPE> {
+    private class CommandDropTable extends DBECommandImpl<OBJECT_TYPE> {
         protected CommandDropTable()
         {
             super("Drop table");

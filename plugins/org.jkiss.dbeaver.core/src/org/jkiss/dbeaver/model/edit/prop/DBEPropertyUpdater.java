@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * Database object property updater
  */
-public interface DBOPropertyUpdater<OBJECT_TYPE extends DBSObject> extends DBOPropertyHandler<OBJECT_TYPE> {
+public interface DBEPropertyUpdater<OBJECT_TYPE extends DBSObject> extends DBEPropertyHandler<OBJECT_TYPE> {
 
     void updateModel(OBJECT_TYPE object, Object value);
 

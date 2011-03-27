@@ -19,9 +19,9 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.model.edit.DBOCommand;
-import org.jkiss.dbeaver.model.edit.DBOEditor;
-import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -56,17 +56,17 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     private static Map<Class<?>, String> defaultPageMap = new HashMap<Class<?>, String>();
 
-    private DBOManager objectManager;
+    private DBEObjectManager objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
 
-    public DBOManager<?> getObjectManager()
+    public DBEObjectManager<?> getObjectManager()
     {
         return objectManager;
     }
 
-    public DBOEditor<?> getObjectEditor()
+    public DBEObjectCommander<?> getObjectEditor()
     {
-        return objectManager instanceof DBOEditor ? (DBOEditor<?>) objectManager : null;
+        return objectManager instanceof DBEObjectCommander ? (DBEObjectCommander<?>) objectManager : null;
     }
 
     @Override
@@ -93,7 +93,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     @Override
     public boolean isDirty()
     {
-        return objectManager instanceof DBOEditor && ((DBOEditor) objectManager).isDirty();
+        return objectManager instanceof DBEObjectCommander && ((DBEObjectCommander) objectManager).isDirty();
     }
 
     /**
@@ -159,9 +159,9 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         if (getObjectEditor() == null) {
             return IDialogConstants.CANCEL_ID;
         }
-        Collection<? extends DBOCommand> commands = getObjectEditor().getCommands();
+        Collection<? extends DBECommand> commands = getObjectEditor().getCommands();
         StringBuilder script = new StringBuilder();
-        for (DBOCommand command : commands) {
+        for (DBECommand command : commands) {
             try {
                 command.validateCommand(getObjectManager().getObject());
             } catch (DBException e) {
@@ -415,7 +415,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             Object object = this.objectManager.getObject();
             if (editor instanceof IDatabaseObjectEditor) {
                 try {
-                    Method initMethod = editor.getClass().getMethod("initObjectEditor", DBOManager.class);
+                    Method initMethod = editor.getClass().getMethod("initObjectEditor", DBEObjectManager.class);
                     Type initParam = initMethod.getGenericParameterTypes()[0];
                     if (initParam instanceof ParameterizedType) {
                         Type typeArgument = ((ParameterizedType) initParam).getActualTypeArguments()[0];

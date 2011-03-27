@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.SQLUtils;
-import org.jkiss.dbeaver.model.edit.prop.DBOCommandComposite;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * Grant/Revoke privilege command
  */
-public class MySQLCommandChangeUser extends DBOCommandComposite<MySQLUser, UserPropertyHandler> {
+public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserPropertyHandler> {
 
     protected MySQLCommandChangeUser()
     {

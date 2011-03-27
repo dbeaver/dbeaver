@@ -6,8 +6,8 @@ package org.jkiss.dbeaver.model.edit.prop;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.edit.DBOCommand;
-import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
@@ -15,27 +15,27 @@ import java.util.Map;
 /**
  * Abstract object command
  */
-public class DBOCommandProperty<OBJECT_TYPE extends DBSObject> extends DBOCommandImpl<OBJECT_TYPE> {
+public class DBECommandProperty<OBJECT_TYPE extends DBSObject> extends DBECommandImpl<OBJECT_TYPE> {
 
     public static final String PROP_COMPOSITE_COMMAND = ".composite";
 
-    private DBOPropertyHandler<OBJECT_TYPE> handler;
+    private DBEPropertyHandler<OBJECT_TYPE> handler;
     private Object oldValue;
     private Object newValue;
 
-    public DBOCommandProperty(DBOPropertyHandler<OBJECT_TYPE> handler)
+    public DBECommandProperty(DBEPropertyHandler<OBJECT_TYPE> handler)
     {
         super("Change property " + handler, null);
         this.handler = handler;
     }
 
-    public DBOCommandProperty(DBOPropertyHandler<OBJECT_TYPE> handler, Object newValue)
+    public DBECommandProperty(DBEPropertyHandler<OBJECT_TYPE> handler, Object newValue)
     {
         this(handler);
         this.newValue = newValue;
     }
 
-    public DBOPropertyHandler<OBJECT_TYPE> getHandler()
+    public DBEPropertyHandler<OBJECT_TYPE> getHandler()
     {
         return handler;
     }
@@ -62,16 +62,16 @@ public class DBOCommandProperty<OBJECT_TYPE extends DBSObject> extends DBOComman
             prevValue = this.oldValue;
         }
         this.newValue = newValue;
-        if (handler instanceof DBOPropertyReflector) {
-            ((DBOPropertyReflector<OBJECT_TYPE>)handler).reflectValueChange(object, prevValue, this.newValue);
+        if (handler instanceof DBEPropertyReflector) {
+            ((DBEPropertyReflector<OBJECT_TYPE>)handler).reflectValueChange(object, prevValue, this.newValue);
         }
     }
 
     @Override
-    public DBOCommand<OBJECT_TYPE> merge(DBOCommand<OBJECT_TYPE> prevCommand, Map<String, Object> userParams)
+    public DBECommand<OBJECT_TYPE> merge(DBECommand<OBJECT_TYPE> prevCommand, Map<String, Object> userParams)
     {
         String compositeName = handler.getClass().getName() + PROP_COMPOSITE_COMMAND;
-        DBOCommandComposite compositeCommand = (DBOCommandComposite)userParams.get(compositeName);
+        DBECommandComposite compositeCommand = (DBECommandComposite)userParams.get(compositeName);
         if (compositeCommand == null) {
             compositeCommand = handler.createCompositeCommand();
             userParams.put(compositeName, compositeCommand);
@@ -83,22 +83,22 @@ public class DBOCommandProperty<OBJECT_TYPE extends DBSObject> extends DBOComman
     @Override
     public void validateCommand(OBJECT_TYPE object) throws DBException
     {
-        if (handler instanceof DBOPropertyValidator) {
-            ((DBOPropertyValidator<OBJECT_TYPE>)handler).validate(object, newValue);
+        if (handler instanceof DBEPropertyValidator) {
+            ((DBEPropertyValidator<OBJECT_TYPE>)handler).validate(object, newValue);
         }
     }
 
     public void updateModel(OBJECT_TYPE object)
     {
-        if (handler instanceof DBOPropertyUpdater) {
-            ((DBOPropertyUpdater<OBJECT_TYPE>)handler).updateModel(object, newValue);
+        if (handler instanceof DBEPropertyUpdater) {
+            ((DBEPropertyUpdater<OBJECT_TYPE>)handler).updateModel(object, newValue);
         }
     }
 
     public IDatabasePersistAction[] getPersistActions(OBJECT_TYPE object)
     {
-        if (handler instanceof DBOPropertyPersister) {
-            return ((DBOPropertyPersister<OBJECT_TYPE>)handler).getPersistActions(object, newValue);
+        if (handler instanceof DBEPropertyPersister) {
+            return ((DBEPropertyPersister<OBJECT_TYPE>)handler).getPersistActions(object, newValue);
         }
         return null;
     }

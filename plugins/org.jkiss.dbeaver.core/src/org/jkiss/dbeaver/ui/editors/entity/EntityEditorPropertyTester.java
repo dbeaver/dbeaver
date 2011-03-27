@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
-import org.jkiss.dbeaver.model.edit.DBOEditor;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 
 /**
  * EntityEditorPropertyTester
@@ -32,14 +32,14 @@ public class EntityEditorPropertyTester extends PropertyTester
             return false;
         }
         EntityEditor editor = (EntityEditor)receiver;
-        if (editor.getObjectManager() instanceof DBOEditor) {
-            DBOEditor objectEditor = (DBOEditor)editor.getObjectManager();
+        if (editor.getObjectManager() instanceof DBEObjectCommander) {
+            DBEObjectCommander objectCommander = (DBEObjectCommander)editor.getObjectManager();
             if (property.equals(PROP_CAN_UNDO)) {
-                return objectEditor.canUndoCommand();
+                return objectCommander.canUndoCommand();
             } else if (property.equals(PROP_CAN_REDO)) {
-                return objectEditor.canRedoCommand();
+                return objectCommander.canRedoCommand();
             } else if (property.equals(PROP_DIRTY)) {
-                return objectEditor.isDirty();
+                return objectCommander.isDirty();
             }
         }
         return false;

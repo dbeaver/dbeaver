@@ -7,10 +7,10 @@ package org.jkiss.dbeaver.model.impl.edit;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.edit.DBOCommand;
-import org.jkiss.dbeaver.model.edit.DBOCommandListener;
-import org.jkiss.dbeaver.model.edit.DBOCommandReflector;
-import org.jkiss.dbeaver.model.edit.DBOEditor;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandListener;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -19,9 +19,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.util.*;
 
 /**
- * DBOEditorImpl
+ * DBEObjectCommanderImpl
  */
-public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOManagerImpl<OBJECT_TYPE> implements DBOEditor<OBJECT_TYPE> {
+public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> extends DBEObjectManagerImpl<OBJECT_TYPE> implements DBEObjectCommander<OBJECT_TYPE> {
 
     private static class PersistInfo {
         final IDatabasePersistAction action;
@@ -35,24 +35,24 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
     }
 
     protected class CommandInfo {
-        final DBOCommand<OBJECT_TYPE> command;
-        final DBOCommandReflector reflector;
+        final DBECommand<OBJECT_TYPE> command;
+        final DBECommandReflector reflector;
         List<PersistInfo> persistActions;
         CommandInfo mergedBy = null;
         boolean executed = false;
 
-        public CommandInfo(DBOCommand<OBJECT_TYPE> command, DBOCommandReflector reflector)
+        public CommandInfo(DBECommand<OBJECT_TYPE> command, DBECommandReflector reflector)
         {
             this.command = command;
             this.reflector = reflector;
         }
 
-        public DBOCommand<OBJECT_TYPE> getCommand()
+        public DBECommand<OBJECT_TYPE> getCommand()
         {
             return command;
         }
 
-        public DBOCommandReflector getReflector()
+        public DBECommandReflector getReflector()
         {
             return reflector;
         }
@@ -62,7 +62,7 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
     private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
     private List<CommandInfo> mergedCommands = null;
 
-    private final List<DBOCommandListener> listeners = new ArrayList<DBOCommandListener>();
+    private final List<DBECommandListener> listeners = new ArrayList<DBECommandListener>();
 
     public boolean isDirty()
     {
@@ -138,7 +138,7 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
                 clearMergedCommands();
                 clearUndidCommands();
 
-                for (DBOCommandListener listener : getListeners()) {
+                for (DBECommandListener listener : getListeners()) {
                     listener.onSave();
                 }
             }
@@ -155,17 +155,17 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
                 clearUndidCommands();
                 clearMergedCommands();
             } finally {
-                for (DBOCommandListener listener : getListeners()) {
+                for (DBECommandListener listener : getListeners()) {
                     listener.onReset();
                 }
             }
         }
     }
 
-    public Collection<? extends DBOCommand<OBJECT_TYPE>> getCommands()
+    public Collection<? extends DBECommand<OBJECT_TYPE>> getCommands()
     {
         synchronized (commands) {
-            List<DBOCommand<OBJECT_TYPE>> cmdCopy = new ArrayList<DBOCommand<OBJECT_TYPE>>(commands.size());
+            List<DBECommand<OBJECT_TYPE>> cmdCopy = new ArrayList<DBECommand<OBJECT_TYPE>>(commands.size());
             for (CommandInfo cmdInfo : getMergedCommands()) {
                 if (cmdInfo.mergedBy != null) {
                     cmdInfo = cmdInfo.mergedBy;
@@ -178,9 +178,9 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
         }
     }
 
-    public <COMMAND extends DBOCommand<OBJECT_TYPE>> void addCommand(
+    public <COMMAND extends DBECommand<OBJECT_TYPE>> void addCommand(
         COMMAND command,
-        DBOCommandReflector<OBJECT_TYPE, COMMAND> reflector)
+        DBECommandReflector<OBJECT_TYPE, COMMAND> reflector)
     {
         synchronized (commands) {
             commands.add(new CommandInfo(command, reflector));
@@ -190,7 +190,7 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
         }
     }
 
-    public <COMMAND extends DBOCommand<OBJECT_TYPE>> void removeCommand(COMMAND command)
+    public <COMMAND extends DBECommand<OBJECT_TYPE>> void removeCommand(COMMAND command)
     {
         synchronized (commands) {
             for (CommandInfo cmd : commands) {
@@ -204,7 +204,7 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
         }
     }
 
-    public <COMMAND extends DBOCommand<OBJECT_TYPE>> void updateCommand(COMMAND command)
+    public <COMMAND extends DBECommand<OBJECT_TYPE>> void updateCommand(COMMAND command)
     {
         synchronized (commands) {
             clearUndidCommands();
@@ -212,24 +212,24 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
         }
     }
 
-    public void addCommandListener(DBOCommandListener listener)
+    public void addCommandListener(DBECommandListener listener)
     {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
-    public void removeCommandListener(DBOCommandListener listener)
+    public void removeCommandListener(DBECommandListener listener)
     {
         synchronized (listeners) {
             listeners.remove(listener);
         }
     }
 
-    DBOCommandListener[] getListeners()
+    DBECommandListener[] getListeners()
     {
         synchronized (listeners) {
-            return listeners.toArray(new DBOCommandListener[listeners.size()]);
+            return listeners.toArray(new DBECommandListener[listeners.size()]);
         }
     }
 
@@ -294,13 +294,13 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
         }
         mergedCommands = new ArrayList<CommandInfo>();
 
-        final Map<DBOCommand, CommandInfo> mergedByMap = new IdentityHashMap<DBOCommand, CommandInfo>();
+        final Map<DBECommand, CommandInfo> mergedByMap = new IdentityHashMap<DBECommand, CommandInfo>();
         final Map<String, Object> userParams = new HashMap<String, Object>();
         for (int i = 0; i < commands.size(); i++) {
             CommandInfo lastCommand = commands.get(i);
             lastCommand.mergedBy = null;
             CommandInfo firstCommand = null;
-            DBOCommand<OBJECT_TYPE> result = lastCommand.command;
+            DBECommand<OBJECT_TYPE> result = lastCommand.command;
             if (mergedCommands.isEmpty()) {
                 result = lastCommand.command.merge(null, userParams);
             } else {
@@ -360,7 +360,7 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
 
     protected DBCExecutionContext openCommandPersistContext(
         DBRProgressMonitor monitor,
-        DBOCommand<OBJECT_TYPE> command)
+        DBECommand<OBJECT_TYPE> command)
         throws DBException
     {
         return getDataSource().openContext(

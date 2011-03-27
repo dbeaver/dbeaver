@@ -11,8 +11,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.model.edit.DBOCommandReflector;
-import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
@@ -26,25 +26,25 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
 
     static final Log log = LogFactory.getLog(ControlPropertyCommandListener.class);
 
-    private final AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends DBOManager<OBJECT_TYPE>> objectEditor;
+    private final AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends DBEObjectManager<OBJECT_TYPE>> objectEditor;
     private final Widget widget;
-    private final DBOPropertyHandler<OBJECT_TYPE> handler;
+    private final DBEPropertyHandler<OBJECT_TYPE> handler;
     private Object originalValue;
     //private Object newValue;
-    private DBOCommandProperty<OBJECT_TYPE> curCommand;
+    private DBECommandProperty<OBJECT_TYPE> curCommand;
 
     public static <OBJECT_TYPE extends DBSObject> void create(
-        AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends DBOManager<OBJECT_TYPE>> objectEditor,
+        AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends DBEObjectManager<OBJECT_TYPE>> objectEditor,
         Widget widget,
-        DBOPropertyHandler<OBJECT_TYPE> handler)
+        DBEPropertyHandler<OBJECT_TYPE> handler)
     {
         new ControlPropertyCommandListener<OBJECT_TYPE>(objectEditor, widget, handler);
     }
 
     public ControlPropertyCommandListener(
-        AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends DBOManager<OBJECT_TYPE>> objectEditor,
+        AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends DBEObjectManager<OBJECT_TYPE>> objectEditor,
         Widget widget,
-        DBOPropertyHandler<OBJECT_TYPE> handler)
+        DBEPropertyHandler<OBJECT_TYPE> handler)
     {
         this.objectEditor = objectEditor;
         this.widget = widget;
@@ -148,16 +148,16 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                     final Object newValue = readWidgetValue();
                     if (curCommand == null) {
                         if (!CommonUtils.equalObjects(newValue, originalValue)) {
-                            final DBOCommandProperty<OBJECT_TYPE> command = new DBOCommandProperty<OBJECT_TYPE>(handler);
+                            final DBECommandProperty<OBJECT_TYPE> command = new DBECommandProperty<OBJECT_TYPE>(handler);
                             command.setOldValue(originalValue);
                             command.setNewValue(objectEditor.getDatabaseObject(), newValue);
                             curCommand = command;
-                            objectEditor.addChangeCommand(curCommand, new DBOCommandReflector<OBJECT_TYPE, DBOCommandProperty<OBJECT_TYPE>>() {
-                                public void redoCommand(DBOCommandProperty<OBJECT_TYPE> object_typeControlDBOCommand)
+                            objectEditor.addChangeCommand(curCommand, new DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>>() {
+                                public void redoCommand(DBECommandProperty<OBJECT_TYPE> object_typeControlDBOCommand)
                                 {
                                     writeWidgetValue(command.getNewValue());
                                 }
-                                public void undoCommand(DBOCommandProperty<OBJECT_TYPE> object_typeControlDBOCommand)
+                                public void undoCommand(DBECommandProperty<OBJECT_TYPE> object_typeControlDBOCommand)
                                 {
                                     writeWidgetValue(command.getOldValue());
                                 }

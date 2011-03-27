@@ -4,13 +4,13 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.jkiss.dbeaver.model.impl.edit.DBOManagerImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBEObjectManagerImpl;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DefaultDatabaseObjectManager
  */
-public class DefaultDatabaseObjectManager extends DBOManagerImpl<DBSObject> {
+public class DefaultDatabaseObjectManager extends DBEObjectManagerImpl<DBSObject> {
 
     public DefaultDatabaseObjectManager() {
     }

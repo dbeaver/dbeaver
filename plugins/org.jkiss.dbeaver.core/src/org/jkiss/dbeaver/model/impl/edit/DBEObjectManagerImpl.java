@@ -5,13 +5,13 @@
 package org.jkiss.dbeaver.model.impl.edit;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * DBOManagerImpl
+ * DBEObjectManagerImpl
  */
-public abstract class DBOManagerImpl<OBJECT_TYPE extends DBSObject> implements DBOManager<OBJECT_TYPE> {
+public abstract class DBEObjectManagerImpl<OBJECT_TYPE extends DBSObject> implements DBEObjectManager<OBJECT_TYPE> {
 
 
     private OBJECT_TYPE object;

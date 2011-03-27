@@ -16,7 +16,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.edit.DBOEditorInline;
+import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
@@ -78,8 +78,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
 
     public static void openEntityEditor(DBNDatabaseNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
     {
-        if (selectedNode.getObject() instanceof DBOEditorInline) {
-            ((DBOEditorInline)selectedNode.getObject()).editObject(workbenchWindow);
+        if (selectedNode.getObject() instanceof DBEPrivateObjectEditor) {
+            ((DBEPrivateObjectEditor)selectedNode.getObject()).editObject(workbenchWindow);
             return;
         }
         IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();

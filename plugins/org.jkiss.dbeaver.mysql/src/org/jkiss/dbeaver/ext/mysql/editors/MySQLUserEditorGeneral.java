@@ -14,9 +14,9 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.mysql.runtime.UserPropertyHandler;
-import org.jkiss.dbeaver.model.edit.DBOCommandReflector;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.prop.ControlPropertyCommandListener;
-import org.jkiss.dbeaver.model.impl.edit.DBOCommandAdapter;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -106,7 +106,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                             null,
                             null,
                             privilege),
-                        new DBOCommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
+                        new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
                             public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                             {
                                 if (!privTable.isDisposed()) {
@@ -189,7 +189,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
     }
 
-    private class CommandListener extends DBOCommandAdapter {
+    private class CommandListener extends DBECommandAdapter {
         public void onSave()
         {
             if (newUser && getObjectManager().getObject().isPersisted()) {
