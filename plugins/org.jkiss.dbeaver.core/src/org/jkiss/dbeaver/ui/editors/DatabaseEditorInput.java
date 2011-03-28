@@ -10,6 +10,8 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -20,10 +22,12 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
 {
     private NODE node;
     private String defaultPageId;
+    private DBEObjectCommander objectCommander;
 
     protected DatabaseEditorInput(NODE node)
     {
         this.node = node;
+        this.objectCommander = new DBEObjectCommanderImpl(getDataSource().getContainer());
     }
 
     public boolean exists()
@@ -88,6 +92,11 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     public String getDefaultPageId()
     {
         return defaultPageId;
+    }
+
+    public DBEObjectCommander getObjectCommander()
+    {
+        return objectCommander;
     }
 
     public void setDefaultPageId(String defaultPageId)

@@ -21,9 +21,9 @@ import java.util.Map;
  */
 public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserPropertyHandler> {
 
-    protected MySQLCommandChangeUser()
+    protected MySQLCommandChangeUser(MySQLUser user)
     {
-        super("Update user");
+        super(user, "Update user");
     }
 
     public void updateModel(MySQLUser object)
@@ -41,7 +41,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     }
 
     @Override
-    public void validateCommand(MySQLUser object) throws DBException
+    public void validateCommand() throws DBException
     {
         String passValue = CommonUtils.toString(getProperty(UserPropertyHandler.PASSWORD));
         String confirmValue = CommonUtils.toString(getProperty(UserPropertyHandler.PASSWORD_CONFIRM));
@@ -50,18 +50,18 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         }
     }
 
-    public IDatabasePersistAction[] getPersistActions(final MySQLUser object)
+    public IDatabasePersistAction[] getPersistActions()
     {
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        boolean newUser = !object.isPersisted();
+        boolean newUser = !getObject().isPersisted();
         if (newUser) {
             actions.add(
-                new AbstractDatabasePersistAction("Create new user", "CREATE USER " + object.getFullName()) {
+                new AbstractDatabasePersistAction("Create new user", "CREATE USER " + getObject().getFullName()) {
                     @Override
                     public void handleExecute(Throwable error)
                     {
                         if (error == null) {
-                            object.setPersisted(true);
+                            getObject().setPersisted(true);
                         }
                     }
                 });
@@ -83,7 +83,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
                 default: break;
             }
         }
-        script.append(" WHERE User='").append(object.getUserName()).append("' AND Host='").append(object.getHost()).append("'");
+        script.append(" WHERE User='").append(getObject().getUserName()).append("' AND Host='").append(getObject().getHost()).append("'");
         if (hasSet) {
             actions.add(new AbstractDatabasePersistAction("Update user record", script.toString()));
         }

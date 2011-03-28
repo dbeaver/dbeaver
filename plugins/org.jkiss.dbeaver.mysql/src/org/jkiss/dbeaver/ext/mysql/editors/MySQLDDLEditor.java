@@ -12,7 +12,6 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
@@ -22,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * MySQLDDLEditor
  */
-public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<MySQLTable, DBEObjectManager<MySQLTable>>
+public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<MySQLTable>
 {
     static final Log log = LogFactory.getLog(MySQLDDLEditor.class);
 
@@ -43,7 +42,7 @@ public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<MySQLTable, DBE
                 throws InvocationTargetException, InterruptedException
             {
                 try {
-                    ddl.append(getObjectManager().getObject().getDDL(monitor));
+                    ddl.append(getDatabaseObject().getDDL(monitor));
                 } catch (DBException e) {
                     log.error("Can't obtain table DDL", e);
                 }

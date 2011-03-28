@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.edit.prop;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -20,14 +19,9 @@ public abstract class DBECommandComposite<OBJECT_TYPE extends DBSObject, HANDLER
 
     private Map<HANDLER_TYPE, Object> properties = new HashMap<HANDLER_TYPE, Object>();
 
-    protected DBECommandComposite(String title, Image icon)
+    protected DBECommandComposite(OBJECT_TYPE object, String title)
     {
-        super(title, icon);
-    }
-
-    protected DBECommandComposite(String title)
-    {
-        super(title);
+        super(object, title);
     }
 
     public Map<HANDLER_TYPE, Object> getProperties()
@@ -46,11 +40,11 @@ public abstract class DBECommandComposite<OBJECT_TYPE extends DBSObject, HANDLER
     }
 
     @Override
-    public void validateCommand(OBJECT_TYPE object) throws DBException
+    public void validateCommand() throws DBException
     {
     }
 
-    public void updateModel(OBJECT_TYPE object)
+    public void updateModel()
     {
     }
 

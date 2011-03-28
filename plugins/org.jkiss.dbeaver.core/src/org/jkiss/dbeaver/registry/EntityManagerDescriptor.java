@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.editors.entity.DefaultDatabaseObjectManager;
 
 /**
  * EntityEditorDescriptor
@@ -20,8 +20,9 @@ public class EntityManagerDescriptor extends AbstractDescriptor
 
     private Class objectClass;
     private Class managerClass;
+    private DBEObjectManager managerInstance;
 
-    public EntityManagerDescriptor(IConfigurationElement config)
+    EntityManagerDescriptor(IConfigurationElement config)
     {
         super(config.getContributor());
 
@@ -29,6 +30,13 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         this.className = config.getAttribute("class");
         this.objectType = config.getAttribute("objectType");
         this.name = config.getAttribute("label");
+    }
+
+    void dispose()
+    {
+        objectClass = null;
+        managerClass = null;
+        managerInstance = null;
     }
 
     public String getId()
@@ -74,21 +82,23 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         return managerClass;
     }
 
-    public DBEObjectManager<?> createManager(DBSObject databaseObject)
+    public synchronized DBEObjectManager getManager()
     {
+        if (managerInstance != null) {
+            return managerInstance;
+        }
         Class clazz = getManagerClass();
         if (clazz == null) {
-            return null;
+            log.error("Can't load manager class '" + className + "'");
         }
         try {
-            final DBEObjectManager objectManager = (DBEObjectManager) clazz.newInstance();
-            if (databaseObject != null) {
-                objectManager.setObject(databaseObject);
-            }
-            return objectManager;
+            managerInstance = (DBEObjectManager) clazz.newInstance();
         } catch (Throwable ex) {
             log.error("Error instantiating entity manager '" + className + "'", ex);
-            return null;
         }
+        if (managerInstance == null) {
+            managerInstance = new DefaultDatabaseObjectManager();
+        }
+        return managerInstance;
     }
 }

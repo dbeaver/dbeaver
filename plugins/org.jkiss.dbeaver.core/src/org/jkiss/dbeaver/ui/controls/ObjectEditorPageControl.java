@@ -68,7 +68,8 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     protected Composite createProgressPanel(Composite container) {
         Composite panel = super.createProgressPanel(container);
 
-        if (getEditorPart().getObjectManager() instanceof DBEObjectCommander) {
+        DBEObjectCommander objectCommander = getEditorPart().getEditorInput().getObjectCommander();
+        if (objectCommander != null) {
             saveChangesButton = new Button(panel, SWT.PUSH);
             saveChangesButton.setText("Save / Preview");
             saveChangesButton.setImage(DBIcon.SAVE_TO_DATABASE.getImage());

@@ -16,12 +16,9 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject> extends DBEObject
 
     public static final long FEATURE_SAVE_IMMEDIATELY = 1;
     public static final long FEATURE_CREATE_FROM_PASTE = 2;
+    public static final long FEATURE_EDITOR_ON_CREATE = 4;
 
-    public static enum CreateResult {
-        OPEN_EDITOR,
-        SAVE,
-        CANCEL
-    }
+    long getMakerOptions();
 
     /**
      * Creates new object and sets it as manager's object.
@@ -29,19 +26,21 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject> extends DBEObject
      * Real object creation will be performed by saveChanges function.
      * Additionally implementation could add initial command(s) to this manager.
      * This function can be invoked only once per one manager.
-     * @param workbenchWindow
+     *
+     * @param workbenchWindow workbench window
+     * @param commander
      * @param parent parent object
-     * @param copyFrom template for new object (usually result of "paste" operation)
-     * @return true to show object's editor. Otherwise object will be just saved
-     */
-    CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, OBJECT_TYPE copyFrom);
+     * @param copyFrom template for new object (usually result of "paste" operation)   @return null if no additional actions should be performed
+     * */
+    OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBEObjectCommander commander, Object parent, Object copyFrom);
 
     /**
      * Deletes specified object.
      * Actually this function should not delete object but add command(s) to the manager.
      * Real object's delete will be performed by saveChanges function.
+     * @param commander
      * @param options delete options. Options are set by delete wizard.
      */
-    void deleteObject(Map<String, Object> options);
+    void deleteObject(DBEObjectCommander commander, OBJECT_TYPE object, Map<String, Object> options);
 
 }

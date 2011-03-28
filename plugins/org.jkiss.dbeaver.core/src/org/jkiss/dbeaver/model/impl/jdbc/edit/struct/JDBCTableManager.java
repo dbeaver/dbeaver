@@ -6,10 +6,11 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.DBEObjectCommanderJDBC;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
@@ -18,30 +19,35 @@ import java.util.Map;
 /**
  * JDBC table manager
  */
-public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_TYPE extends DBSEntityContainer>  extends DBEObjectCommanderJDBC<OBJECT_TYPE> implements DBEObjectMaker<OBJECT_TYPE> {
-
-    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, OBJECT_TYPE copyFrom)
+public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_TYPE extends DBSEntityContainer>  extends JDBCObjectManager<OBJECT_TYPE> implements DBEObjectMaker<OBJECT_TYPE> {
+    public long getMakerOptions()
     {
-        OBJECT_TYPE newUser = createNewTable((CONTAINER_TYPE) parent, copyFrom);
-        setObject(newUser);
-
-        return CreateResult.OPEN_EDITOR;
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void deleteObject(Map<String, Object> options)
+    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBEObjectCommander commander, Object parent, Object copyFrom)
     {
-        addCommand(new CommandDropTable(), null);
+        OBJECT_TYPE newTable = createNewTable((CONTAINER_TYPE) parent, copyFrom);
+
+        commander.addCommand(new CommandCreateTable(newTable), null);
+
+        return newTable;
+    }
+
+    public void deleteObject(DBEObjectCommander commander, OBJECT_TYPE object, Map<String, Object> options)
+    {
+        commander.addCommand(new CommandDropTable(object), null);
     }
 
     private class CommandCreateTable extends DBECommandImpl<OBJECT_TYPE> {
-        protected CommandCreateTable()
+        protected CommandCreateTable(OBJECT_TYPE table)
         {
-            super("Create table");
+            super(table, "Create table");
         }
-        public IDatabasePersistAction[] getPersistActions(final OBJECT_TYPE object)
+        public IDatabasePersistAction[] getPersistActions()
         {
             return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction("Create table", "CREATE TABLE " + object.getFullQualifiedName()) {
+                new AbstractDatabasePersistAction("Create table", "CREATE TABLE " + getObject().getFullQualifiedName()) {
                     @Override
                     public void handleExecute(Throwable error)
                     {
@@ -54,15 +60,15 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     }
 
     private class CommandDropTable extends DBECommandImpl<OBJECT_TYPE> {
-        protected CommandDropTable()
+        protected CommandDropTable(OBJECT_TYPE table)
         {
-            super("Drop table");
+            super(table, "Drop table");
         }
 
-        public IDatabasePersistAction[] getPersistActions(final OBJECT_TYPE object)
+        public IDatabasePersistAction[] getPersistActions()
         {
             return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction("Drop schema", "DROP TABLE " + object.getFullQualifiedName()) {
+                new AbstractDatabasePersistAction("Drop schema", "DROP TABLE " + getObject().getFullQualifiedName()) {
                     @Override
                     public void handleExecute(Throwable error)
                     {
@@ -74,7 +80,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         }
     }
 
-    protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, OBJECT_TYPE copyFrom);
+    protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, Object copyFrom);
 
 }
 

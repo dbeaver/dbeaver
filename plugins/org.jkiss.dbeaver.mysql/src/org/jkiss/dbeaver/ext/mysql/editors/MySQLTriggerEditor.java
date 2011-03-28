@@ -10,13 +10,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 /**
  * MySQLTriggerEditor
  */
-public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<MySQLTrigger, DBEObjectManager<MySQLTrigger>>
+public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<MySQLTrigger>
 {
     static final Log log = LogFactory.getLog(MySQLTriggerEditor.class);
 
@@ -32,7 +31,7 @@ public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<MySQLTrigge
     public void activatePart()
     {
         try {
-            ddlText.setText(getObjectManager().getObject().getBody());
+            ddlText.setText(getDatabaseObject().getBody());
         }
         catch (Exception ex) {
             log.error("Can't obtain trigger body", ex);

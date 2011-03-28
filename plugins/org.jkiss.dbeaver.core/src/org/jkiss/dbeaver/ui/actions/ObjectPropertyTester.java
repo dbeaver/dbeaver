@@ -9,6 +9,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -16,7 +17,6 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
-import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
 import java.util.Collection;
@@ -52,7 +52,7 @@ public class ObjectPropertyTester extends PropertyTester
             } else if (node.isManagable() && node instanceof DBSWrapper) {
                 objectType = ((DBSWrapper)node).getObject() == null ? null : ((DBSWrapper)node).getObject().getClass();
             }
-            if (objectType == null || !hasExtendedManager(objectType)) {
+            if (objectType == null || !hasObjectMaker(objectType)) {
                 return false;
             }
             if (property.equals(PROP_CAN_CREATE)) {
@@ -81,7 +81,7 @@ public class ObjectPropertyTester extends PropertyTester
                     node.getParentNode() instanceof DBNContainer &&
                     object != null &&
                     object.isPersisted() &&
-                    hasExtendedManager(object.getClass());
+                    hasObjectMaker(object.getClass());
             } else if (node instanceof DBNResource) {
                 if ((((DBNResource)node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
                     return true;
@@ -93,11 +93,11 @@ public class ObjectPropertyTester extends PropertyTester
         return false;
     }
 
-    private static boolean hasExtendedManager(Class objectType)
+    private static boolean hasObjectMaker(Class objectType)
     {
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
-        EntityManagerDescriptor entityManager = editorsRegistry.getEntityManager(objectType);
-        return entityManager != null && DBEObjectMaker.class.isAssignableFrom(entityManager.getManagerClass());
+        DBEObjectManager<?> objectManager = editorsRegistry.getObjectManager(objectType);
+        return objectManager != null && DBEObjectMaker.class.isAssignableFrom(objectManager.getClass());
     }
 
     public static void firePropertyChange(String propName)

@@ -15,22 +15,9 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
  */
 public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
 {
-    private DBEObjectManager<?> objectManager;
-
     public EntityEditorInput(DBNDatabaseNode dbmNode)
     {
         super(dbmNode);
-    }
-
-    public EntityEditorInput(DBNDatabaseNode dbnNode, DBEObjectManager<?> objectManager)
-    {
-        super(dbnNode);
-        this.objectManager = objectManager;
-    }
-
-    public DBEObjectManager<?> getObjectManager()
-    {
-        return objectManager;
     }
 
     public String getToolTipText()

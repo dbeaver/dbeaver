@@ -19,12 +19,14 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -41,7 +43,7 @@ import java.io.*;
 /**
  * ContentEditorInput
  */
-public class ContentEditorInput implements IPathEditorInput, IDatabaseNodeEditorInput
+public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
 {
     static final Log log = LogFactory.getLog(ContentEditorInput.class);
 
@@ -296,22 +298,6 @@ public class ContentEditorInput implements IPathEditorInput, IDatabaseNodeEditor
 
     public DBPDataSource getDataSource() {
         return valueController.getDataSource();
-    }
-
-    public DBNDatabaseNode getTreeNode() {
-        if (databaseNode == null) {
-            databaseNode = DBeaverCore.getInstance().getNavigatorModel().findNode(valueController.getDataSource().getContainer());
-        }
-        return databaseNode;
-    }
-
-    public DBSObject getDatabaseObject() {
-        DBNNode node = getTreeNode();
-        return node instanceof DBSWrapper ? ((DBSWrapper)node).getObject() : null;
-    }
-
-    public String getDefaultPageId() {
-        return null;
     }
 
 }

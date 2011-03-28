@@ -6,14 +6,14 @@ package org.jkiss.dbeaver.model.impl.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBECommandListener;
-import org.jkiss.dbeaver.model.edit.DBECommandReflector;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.*;
@@ -21,7 +21,7 @@ import java.util.*;
 /**
  * DBEObjectCommanderImpl
  */
-public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> extends DBEObjectManagerImpl<OBJECT_TYPE> implements DBEObjectCommander<OBJECT_TYPE> {
+public class DBEObjectCommanderImpl implements DBEObjectCommander {
 
     private static class PersistInfo {
         final IDatabasePersistAction action;
@@ -34,50 +34,54 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
         }
     }
 
-    protected class CommandInfo {
-        final DBECommand<OBJECT_TYPE> command;
-        final DBECommandReflector reflector;
+    public static class CommandInfo {
+        final DBECommand<?> command;
+        final DBECommandReflector<?, DBECommand<?>> reflector;
         List<PersistInfo> persistActions;
         CommandInfo mergedBy = null;
         boolean executed = false;
 
-        public CommandInfo(DBECommand<OBJECT_TYPE> command, DBECommandReflector reflector)
+        CommandInfo(DBECommand<?> command, DBECommandReflector<?, DBECommand<?>> reflector)
         {
             this.command = command;
             this.reflector = reflector;
         }
-
-        public DBECommand<OBJECT_TYPE> getCommand()
-        {
-            return command;
-        }
-
-        public DBECommandReflector getReflector()
-        {
-            return reflector;
-        }
     }
 
+    private final DBSDataSourceContainer dataSourceContainer;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
     private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
     private List<CommandInfo> mergedCommands = null;
 
     private final List<DBECommandListener> listeners = new ArrayList<DBECommandListener>();
 
+    public DBEObjectCommanderImpl(DBSDataSourceContainer dataSourceContainer)
+    {
+        this.dataSourceContainer = dataSourceContainer;
+    }
+
+    public DBSDataSourceContainer getDataSourceContainer()
+    {
+        return dataSourceContainer;
+    }
+
     public boolean isDirty()
     {
         synchronized (commands) {
-            return !getObject().isPersisted() || !getMergedCommands().isEmpty();
+            return !getMergedCommands().isEmpty();
         }
     }
 
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
+        if (!dataSourceContainer.isConnected()) {
+            throw new DBException("Not connected to database");
+        }
         synchronized (commands) {
             List<CommandInfo> mergedCommands = getMergedCommands();
 
             // Validate commands
             for (CommandInfo cmd : mergedCommands) {
-                cmd.command.validateCommand(getObject());
+                cmd.command.validateCommand();
             }
             try {
                 // Make list of not-executed commands
@@ -95,7 +99,7 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
                     }
                     // Persist changes
                     if (CommonUtils.isEmpty(cmd.persistActions)) {
-                        IDatabasePersistAction[] persistActions = cmd.command.getPersistActions(getObject());
+                        IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
                         if (!CommonUtils.isEmpty(persistActions)) {
                             cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
                             for (IDatabasePersistAction action : persistActions) {
@@ -104,7 +108,7 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
                         }
                     }
                     if (!CommonUtils.isEmpty(cmd.persistActions)) {
-                        DBCExecutionContext context = openCommandPersistContext(monitor, cmd.command);
+                        DBCExecutionContext context = openCommandPersistContext(monitor, dataSourceContainer.getDataSource(), cmd.command);
                         try {
                             for (PersistInfo persistInfo : cmd.persistActions) {
                                 if (persistInfo.executed) {
@@ -114,7 +118,7 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
                                     break;
                                 }
                                 try {
-                                    executePersistAction(context, persistInfo.action);
+                                    getObjectManager(cmd.command.getObject()).executePersistAction(context, cmd.command, persistInfo.action);
                                     persistInfo.executed = true;
                                 } catch (DBException e) {
                                     persistInfo.error = e;
@@ -127,7 +131,7 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
                         }
                     }
                     // Update model
-                    cmd.command.updateModel(getObject());
+                    cmd.command.updateModel();
                     cmd.executed = true;
 
                     // Remove original command from stack
@@ -143,6 +147,11 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
                 }
             }
         }
+    }
+
+    private DBEObjectManager getObjectManager(DBSObject object)
+    {
+        return DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
     }
 
     public void resetChanges()
@@ -162,10 +171,10 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
         }
     }
 
-    public Collection<? extends DBECommand<OBJECT_TYPE>> getCommands()
+    public Collection<? extends DBECommand<?>> getCommands()
     {
         synchronized (commands) {
-            List<DBECommand<OBJECT_TYPE>> cmdCopy = new ArrayList<DBECommand<OBJECT_TYPE>>(commands.size());
+            List<DBECommand<?>> cmdCopy = new ArrayList<DBECommand<?>>(commands.size());
             for (CommandInfo cmdInfo : getMergedCommands()) {
                 if (cmdInfo.mergedBy != null) {
                     cmdInfo = cmdInfo.mergedBy;
@@ -178,9 +187,9 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
         }
     }
 
-    public <COMMAND extends DBECommand<OBJECT_TYPE>> void addCommand(
-        COMMAND command,
-        DBECommandReflector<OBJECT_TYPE, COMMAND> reflector)
+    public void addCommand(
+        DBECommand<?> command,
+        DBECommandReflector<?, DBECommand<?>> reflector)
     {
         synchronized (commands) {
             commands.add(new CommandInfo(command, reflector));
@@ -190,7 +199,7 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
         }
     }
 
-    public <COMMAND extends DBECommand<OBJECT_TYPE>> void removeCommand(COMMAND command)
+    public void removeCommand(DBECommand<?> command)
     {
         synchronized (commands) {
             for (CommandInfo cmd : commands) {
@@ -204,7 +213,7 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
         }
     }
 
-    public <COMMAND extends DBECommand<OBJECT_TYPE>> void updateCommand(COMMAND command)
+    public void updateCommand(DBECommand<?> command)
     {
         synchronized (commands) {
             clearUndidCommands();
@@ -300,7 +309,7 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
             CommandInfo lastCommand = commands.get(i);
             lastCommand.mergedBy = null;
             CommandInfo firstCommand = null;
-            DBECommand<OBJECT_TYPE> result = lastCommand.command;
+            DBECommand<?> result = lastCommand.command;
             if (mergedCommands.isEmpty()) {
                 result = lastCommand.command.merge(null, userParams);
             } else {
@@ -349,7 +358,10 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
                 }
             }
         }
-        filterCommands(mergedCommands);
+        if (!mergedCommands.isEmpty()) {
+            // Add special commands
+            filterCommands(mergedCommands);
+        }
         return mergedCommands;
     }
 
@@ -360,10 +372,11 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
 
     protected DBCExecutionContext openCommandPersistContext(
         DBRProgressMonitor monitor,
-        DBECommand<OBJECT_TYPE> command)
+        DBPDataSource dataSource,
+        DBECommand<?> command)
         throws DBException
     {
-        return getDataSource().openContext(
+        return dataSource.openContext(
             monitor,
             DBCExecutionPurpose.USER_SCRIPT,
             "Execute " + command.getTitle());
@@ -377,15 +390,97 @@ public abstract class DBEObjectCommanderImpl<OBJECT_TYPE extends DBSObject> exte
     protected void filterCommands(List<CommandInfo> commands)
     {
         // do nothing by default
+        Map<DBSObject, CommandQueue> queueMap = new LinkedHashMap<DBSObject, CommandQueue>();
+        //new ArrayList<DBECommand<?>>(mergedCommands.size());
+        for (CommandInfo commandInfo : mergedCommands) {
+            DBSObject object = commandInfo.command.getObject();
+            CommandQueue queue = queueMap.get(object);
+            if (queue == null) {
+                queue = new CommandQueue(object);
+                queueMap.put(object, queue);
+            }
+            queue.addCommand(commandInfo);
+        }
+        // Filter queues
+        boolean queuesFiltered = false;
+        for (CommandQueue queue : queueMap.values()) {
+            DBSObject object = queue.getObject();
+            DBEObjectManager objectManager = getObjectManager(object);
+            if (objectManager instanceof DBECommandFilter) {
+                ((DBECommandFilter) objectManager).filterCommands(queue);
+                if (queue.modified) {
+                    queuesFiltered = true;
+                }
+            }
+        }
+
+        if (queuesFiltered) {
+            mergedCommands.clear();
+            for (CommandQueue queue : queueMap.values()) {
+                mergedCommands.addAll(queue.commands);
+            }
+        }
     }
 
+    private static class CommandQueue extends AbstractCollection<DBECommand<DBSObject>> implements DBECommandQueue<DBSObject> {
+        private final DBSObject object;
+        private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
+        private boolean modified = false;
 
-    protected void executePersistAction(
-        DBCExecutionContext context,
-        IDatabasePersistAction action)
-        throws DBException
-    {
-        throw new DBException("Object persistence is not implemented");
+        private CommandQueue(DBSObject object)
+        {
+            this.object = object;
+        }
+
+        void addCommand(CommandInfo info)
+        {
+            commands.add(info);
+        }
+
+        public DBSObject getObject()
+        {
+            return object;
+        }
+
+        public boolean add(DBECommand dbeCommand)
+        {
+            if (commands.add(new CommandInfo(dbeCommand, null))) {
+                modified = true;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public Iterator<DBECommand<DBSObject>> iterator()
+        {
+            return new Iterator<DBECommand<DBSObject>>() {
+                private int index = -1;
+                public boolean hasNext()
+                {
+                    return index <= commands.size() - 1;
+                }
+
+                public DBECommand<DBSObject> next()
+                {
+                    index++;
+                    return (DBECommand<DBSObject>) commands.get(index).command;
+                }
+
+                public void remove()
+                {
+                    commands.remove(index);
+                    modified = true;
+                }
+            };
+        }
+
+        @Override
+        public int size()
+        {
+            return commands.size();
+        }
     }
 
 }

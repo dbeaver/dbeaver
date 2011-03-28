@@ -4,16 +4,22 @@
 
 package org.jkiss.dbeaver.model.edit;
 
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DBEObjectManager
  */
-public interface DBEObjectManager<OBJECT_TYPE extends DBSObject> extends IDataSourceProvider {
+public interface DBEObjectManager<OBJECT_TYPE extends DBSObject> {
 
-    OBJECT_TYPE getObject();
+    //void filterCommands(DBECommandQueue queue);
 
-    void setObject(OBJECT_TYPE object);
+    void executePersistAction(
+        DBCExecutionContext context,
+        DBECommand<OBJECT_TYPE> command,
+        IDatabasePersistAction action)
+        throws DBException;
 
 }

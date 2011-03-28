@@ -20,7 +20,7 @@ public interface DBEObjectRenamer<OBJECT_TYPE extends DBSObject> extends DBEObje
      * @param newName new name
      * @throws DBException on any error
      */
-    void renameObject(DBRProgressMonitor monitor, String newName)
+    void renameObject(DBRProgressMonitor monitor, OBJECT_TYPE object, String newName)
         throws DBException;
 
 }

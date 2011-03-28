@@ -4,15 +4,16 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.IDBNListener;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
@@ -27,9 +28,8 @@ public class DatabaseEditorListener implements IDBNListener
     DatabaseEditorListener(IDatabaseNodeEditor databaseEditor) {
         this.databaseEditor = databaseEditor;
         // Acquire datasource
-        DBPDataSource dataSource = databaseEditor.getEditorInput().getDataSource();
-        if (dataSource != null) {
-            dataSourceContainer = dataSource.getContainer();
+        dataSourceContainer = (DBSDataSourceContainer) Platform.getAdapterManager().getAdapter(databaseEditor, DBSDataSourceContainer.class);
+        if (dataSourceContainer != null) {
             dataSourceContainer.acquire(databaseEditor);
         }
         // Register node listener
@@ -47,6 +47,15 @@ public class DatabaseEditorListener implements IDBNListener
         }
     }
 
+    public DBNNode getTreeNode()
+    {
+        if (databaseEditor.getEditorInput() instanceof IDatabaseNodeEditorInput) {
+            return ((IDatabaseNodeEditorInput) databaseEditor.getEditorInput()).getTreeNode();
+        } else {
+            return null;
+        }
+    }
+
     public void nodeChanged(final DBNEvent event)
     {
         if (isValuableNode(event.getNode())) {
@@ -57,7 +66,7 @@ public class DatabaseEditorListener implements IDBNListener
                 if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH ||
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
                 {
-                    if (databaseEditor.getEditorInput().getTreeNode() == event.getNode()) {
+                    if (getTreeNode() == event.getNode()) {
                         databaseEditor.refreshDatabaseContent(event);
                     }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
@@ -77,7 +86,7 @@ public class DatabaseEditorListener implements IDBNListener
 
     protected boolean isValuableNode(DBNNode node)
     {
-        DBNNode editorNode = databaseEditor.getEditorInput().getTreeNode();
+        DBNNode editorNode = getTreeNode();
         return node == editorNode || editorNode.isChildOf(node);
     }
 

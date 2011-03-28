@@ -13,9 +13,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -43,41 +44,43 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 container = (DBNContainer) parentNode;
             }
         }
-        if (container == null) {
+        if (!(container instanceof DBNDatabaseNode)) {
             log.error("Can't create child object - no container found");
             return false;
         }
+        DBNDatabaseNode dbContainer = (DBNDatabaseNode)container;
         Class<?> childType = container.getItemsClass();
         if (childType == null) {
             log.error("Can't determine child element type for container '" + container + "'");
             return false;
         }
+
         DBSObject sourceObject = copyFrom == null ? null : copyFrom.getObject();
         if (sourceObject != null && sourceObject.getClass() != childType) {
             log.error("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
             return false;
         }
-        EntityManagerDescriptor entityManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(childType);
-        if (entityManager == null) {
+        DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(childType);
+        if (objectManager == null) {
             log.error("Object manager not found for type '" + childType.getName() + "'");
             return false;
         }
-        DBEObjectManager<?> objectManager = entityManager.createManager(null);
-        if (!(objectManager instanceof DBEObjectMaker<?>)) {
-            log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object creation");
-            return false;
-        }
-
         DBEObjectMaker objectMaker = (DBEObjectMaker) objectManager;
-        DBEObjectMaker.CreateResult result = objectMaker.createNewObject(workbenchWindow, container.getValueObject(), sourceObject);
-        if (result == DBEObjectMaker.CreateResult.CANCEL) {
+        DBEObjectCommander commander = new DBEObjectCommanderImpl(dbContainer.getObject().getDataSource().getContainer());
+
+        DBSObject result = objectMaker.createNewObject(workbenchWindow, commander, container.getValueObject(), sourceObject);
+        if (result == null) {
             return false;
         }
 
         // Save object manager's content
         IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
         try {
-            ObjectSaver objectSaver = new ObjectSaver(container, objectMaker, result == DBEObjectMaker.CreateResult.SAVE);
+            ObjectSaver objectSaver = new ObjectSaver(
+                container,
+                commander,
+                result,
+                (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0);
             try {
                 workbenchWindow.run(true, true, objectSaver);
             } catch (InvocationTargetException e) {
@@ -97,10 +100,10 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         }
                     }
                 });
-                if (result == DBEObjectMaker.CreateResult.OPEN_EDITOR) {
+                if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_EDITOR_ON_CREATE) != 0) {
                     // Can open editor only for database nodes
                     if (newChild instanceof DBNDatabaseNode) {
-                        EntityEditorInput editorInput = new EntityEditorInput((DBNDatabaseNode)newChild, objectManager);
+                        EntityEditorInput editorInput = new EntityEditorInput((DBNDatabaseNode)newChild);
                         try {
                             workbenchWindow.getActivePage().openEditor(
                                 editorInput,
@@ -126,14 +129,16 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 
     private static class ObjectSaver implements IRunnableWithProgress {
         private final DBNContainer container;
-        private final DBEObjectMaker<?> objectManager;
+        private final DBEObjectCommander commander;
+        private final DBSObject newObject;
         private final boolean saveObject;
         DBNNode newChild;
 
-        public ObjectSaver(DBNContainer container, DBEObjectMaker<?> objectManager, boolean saveObject)
+        public ObjectSaver(DBNContainer container, DBEObjectCommander commander, DBSObject newObject, boolean saveObject)
         {
             this.container = container;
-            this.objectManager = objectManager;
+            this.commander = commander;
+            this.newObject = newObject;
             this.saveObject = saveObject;
         }
 
@@ -141,12 +146,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         {
             try {
                 DefaultProgressMonitor progressMonitor = new DefaultProgressMonitor(monitor);
-                if (saveObject && objectManager instanceof DBEObjectCommander) {
-                    ((DBEObjectCommander)objectManager).saveChanges(progressMonitor);
+                if (saveObject) {
+                    commander.saveChanges(progressMonitor);
                 }
-
-                DBSObject newObject = objectManager.getObject();
-
                 newChild = container.addChildItem(progressMonitor, newObject);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);

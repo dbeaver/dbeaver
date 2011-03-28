@@ -52,13 +52,13 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         {
             Composite loginGroup = UIUtils.createControlGroup(container, "Login", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
 
-            userNameText = UIUtils.createLabelText(loginGroup, "User Name", getUser().getUserName());
+            userNameText = UIUtils.createLabelText(loginGroup, "User Name", getDatabaseObject().getUserName());
             userNameText.setEditable(newUser);
             if (newUser) {
                 ControlPropertyCommandListener.create(this, userNameText, UserPropertyHandler.NAME);
             }
 
-            hostText = UIUtils.createLabelText(loginGroup, "Host", getUser().getHost());
+            hostText = UIUtils.createLabelText(loginGroup, "Host", getDatabaseObject().getHost());
             hostText.setEditable(newUser);
             if (newUser) {
                 ControlPropertyCommandListener.create(this, hostText, UserPropertyHandler.HOST);
@@ -75,16 +75,16 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         {
             Composite limitsGroup = UIUtils.createControlGroup(container, "Limits", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            Spinner maxQueriesText = UIUtils.createLabelSpinner(limitsGroup, "Max Queries", getUser().getMaxQuestions(), 0, Integer.MAX_VALUE);
+            Spinner maxQueriesText = UIUtils.createLabelSpinner(limitsGroup, "Max Queries", getDatabaseObject().getMaxQuestions(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxQueriesText, UserPropertyHandler.MAX_QUERIES);
 
-            Spinner maxUpdatesText = UIUtils.createLabelSpinner(limitsGroup, "Max Updates",  getUser().getMaxUpdates(), 0, Integer.MAX_VALUE);
+            Spinner maxUpdatesText = UIUtils.createLabelSpinner(limitsGroup, "Max Updates",  getDatabaseObject().getMaxUpdates(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxUpdatesText, UserPropertyHandler.MAX_UPDATES);
 
-            Spinner maxConnectionsText = UIUtils.createLabelSpinner(limitsGroup, "Max Connections", getUser().getMaxConnections(), 0, Integer.MAX_VALUE);
+            Spinner maxConnectionsText = UIUtils.createLabelSpinner(limitsGroup, "Max Connections", getDatabaseObject().getMaxConnections(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxConnectionsText, UserPropertyHandler.MAX_CONNECTIONS);
 
-            Spinner maxUserConnectionsText = UIUtils.createLabelSpinner(limitsGroup, "Max User Connections", getUser().getMaxUserConnections(), 0, Integer.MAX_VALUE);
+            Spinner maxUserConnectionsText = UIUtils.createLabelSpinner(limitsGroup, "Max User Connections", getDatabaseObject().getMaxUserConnections(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxUserConnectionsText, UserPropertyHandler.MAX_USER_CONNECTIONS);
         }
 
@@ -102,6 +102,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                     final boolean grant = event.detail == 1;
                     addChangeCommand(
                         new MySQLCommandGrantPrivilege(
+                            getDatabaseObject(),
                             grant,
                             null,
                             null,
@@ -127,14 +128,14 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         pageControl.createProgressPanel();
 
         commandlistener = new CommandListener();
-        getObjectManager().addCommandListener(commandlistener);
+        getEditorInput().getObjectCommander().addCommandListener(commandlistener);
     }
 
     @Override
     public void dispose()
     {
         if (commandlistener != null) {
-            getObjectManager().removeCommandListener(commandlistener);
+            getEditorInput().getObjectCommander().removeCommandListener(commandlistener);
         }
         super.dispose();
     }
@@ -146,11 +147,11 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         }
         isLoaded = true;
         LoadingUtils.createService(
-            new DatabaseLoadService<List<MySQLPrivilege>>("Load catalog privileges", getUser().getDataSource()) {
+            new DatabaseLoadService<List<MySQLPrivilege>>("Load catalog privileges", getDataSource()) {
                 public List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        return getUser().getDataSource().getPrivilegesByKind(getProgressMonitor(), MySQLPrivilege.Kind.ADMIN);
+                        return getDatabaseObject().getDataSource().getPrivilegesByKind(getProgressMonitor(), MySQLPrivilege.Kind.ADMIN);
                     }
                     catch (DBException e) {
                         throw new InvocationTargetException(e);
@@ -192,10 +193,15 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     private class CommandListener extends DBECommandAdapter {
         public void onSave()
         {
-            if (newUser && getObjectManager().getObject().isPersisted()) {
+            if (newUser && getDatabaseObject().isPersisted()) {
                 newUser = false;
-                userNameText.setEditable(false);
-                hostText.setEditable(false);
+                Display.getDefault().asyncExec(new Runnable() {
+                    public void run()
+                    {
+                        userNameText.setEditable(false);
+                        hostText.setEditable(false);
+                    }
+                });
             }
         }
     }

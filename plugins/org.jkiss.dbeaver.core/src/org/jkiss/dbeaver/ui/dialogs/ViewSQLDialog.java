@@ -21,6 +21,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
@@ -29,14 +30,14 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 public class ViewSQLDialog extends Dialog {
 
     private IEditorSite subSite;
-    private DBPDataSource dataSource;
+    private DBSDataSourceContainer dataSource;
     private String title;
     private String text;
     private SQLEditorBase sqlViewer;
     private Image image;
     private boolean showSaveButton = false;
 
-    public ViewSQLDialog(final IWorkbenchPartSite parentSite, DBPDataSource dataSource, String title, String text)
+    public ViewSQLDialog(final IWorkbenchPartSite parentSite, DBSDataSourceContainer dataSource, String title, String text)
     {
         super(parentSite.getShell());
         this.dataSource = dataSource;
@@ -78,7 +79,7 @@ public class ViewSQLDialog extends Dialog {
         sqlViewer = new SQLEditorBase() {
             public DBPDataSource getDataSource()
             {
-                return dataSource;
+                return dataSource.getDataSource();
             }
         };
         try {

@@ -5,7 +5,9 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
@@ -14,7 +16,7 @@ import java.util.Collection;
  * Object commander.
  * Provides facilities for object edit commands, undo/redo, save/revert
  */
-public interface DBEObjectCommander<OBJECT_TYPE extends DBSObject> extends DBEObjectManager<OBJECT_TYPE> {
+public interface DBEObjectCommander extends IDataSourceContainerProvider {
 
     boolean isDirty();
 
@@ -30,16 +32,13 @@ public interface DBEObjectCommander<OBJECT_TYPE extends DBSObject> extends DBEOb
 
     void redoCommand();
 
-    Collection<? extends DBECommand<OBJECT_TYPE>> getCommands();
+    Collection<? extends DBECommand<?>> getCommands();
 
-    <COMMAND extends DBECommand<OBJECT_TYPE>>
-    void addCommand(COMMAND command, DBECommandReflector<OBJECT_TYPE, COMMAND> reflector);
+    void addCommand(DBECommand<?> command, DBECommandReflector<?, DBECommand<?>> reflector);
 
-    <COMMAND extends DBECommand<OBJECT_TYPE>>
-    void removeCommand(COMMAND command);
+    void removeCommand(DBECommand<?> command);
 
-    <COMMAND extends DBECommand<OBJECT_TYPE>>
-    void updateCommand(COMMAND command);
+    void updateCommand(DBECommand<?> command);
 
     void addCommandListener(DBECommandListener listener);
 

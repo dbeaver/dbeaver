@@ -10,13 +10,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 /**
  * MySQLProcedureEditor
  */
-public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProcedure, DBEObjectManager<MySQLProcedure>>
+public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProcedure>
 {
     static final Log log = LogFactory.getLog(MySQLProcedureEditor.class);
 
@@ -32,7 +31,7 @@ public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProc
     public void activatePart()
     {
         try {
-            ddlText.setText(getObjectManager().getObject().getBody());
+            ddlText.setText(getDatabaseObject().getBody());
         }
         catch (Exception ex) {
             log.error("Can't obtain procedure body", ex);

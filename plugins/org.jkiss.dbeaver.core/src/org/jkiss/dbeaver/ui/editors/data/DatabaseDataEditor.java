@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -14,12 +13,12 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 /**
  * DatabaseDataEditor
  */
-public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer, DBEObjectManager<DBSDataContainer>> implements ResultSetProvider
+public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer> implements ResultSetProvider
 {
 
     private ResultSetViewer resultSetView;
     private boolean loaded = false;
-    private boolean running = false;
+    //private boolean running = false;
 
     public void createPartControl(Composite parent)
     {
@@ -40,7 +39,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
 
     public DBSDataContainer getDataContainer()
     {
-        return getObjectManager().getObject();
+        return (DBSDataContainer)getEditorInput().getDatabaseObject();
     }
 
     public boolean isReadyToRun()

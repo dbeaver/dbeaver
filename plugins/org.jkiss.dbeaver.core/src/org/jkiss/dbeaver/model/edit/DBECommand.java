@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.edit;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -18,7 +17,7 @@ public interface DBECommand<OBJECT_TYPE extends DBSObject> {
 
     String getTitle();
 
-    Image getIcon();
+    OBJECT_TYPE getObject();
 
     boolean isUndoable();
 
@@ -26,16 +25,15 @@ public interface DBECommand<OBJECT_TYPE extends DBSObject> {
      * Validates command.
      * If command is fine then just returns, otherwise throws an exception
      * @throws DBException contains information about invalid command state
-     * @param object
      */
-    void validateCommand(OBJECT_TYPE object) throws DBException;
+    void validateCommand() throws DBException;
 
-    void updateModel(OBJECT_TYPE object);
+    void updateModel();
 
-    DBECommand<OBJECT_TYPE> merge(
-        DBECommand<OBJECT_TYPE> prevCommand,
+    DBECommand<?> merge(
+        DBECommand<?> prevCommand,
         Map<String, Object> userParams);
 
-    IDatabasePersistAction[] getPersistActions(OBJECT_TYPE object);
+    IDatabasePersistAction[] getPersistActions();
 
 }

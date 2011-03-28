@@ -88,7 +88,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 item.setText("% (All)");
                 item.setImage(DBIcon.TREE_CATALOG.getImage());
             }
-            for (MySQLCatalog catalog : getUser().getDataSource().getCatalogs()) {
+            for (MySQLCatalog catalog : getDatabaseObject().getDataSource().getCatalogs()) {
                 TableItem item = new TableItem(catalogsTable, SWT.NONE);
                 item.setText(catalog.getName());
                 item.setImage(DBIcon.TREE_CATALOG.getImage());
@@ -160,6 +160,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 // Add command
                 addChangeCommand(
                     new MySQLCommandGrantPrivilege(
+                        getDatabaseObject(),
                         isGrant,
                         curCatalog,
                         curTable,
@@ -187,7 +188,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, MySQLCatalog curCatalog, MySQLTable curTable)
     {
         // Modify local grants (and clear grants cache in user objects)
-        getUser().clearGrantsCache();
+        getDatabaseObject().clearGrantsCache();
         boolean found = false;
         for (MySQLGrant grant : grants) {
             if (grant.matches(curCatalog) && grant.matches(curTable)) {
@@ -210,7 +211,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 privileges.add(privilege);
             }
             MySQLGrant grant = new MySQLGrant(
-                getUser(),
+                getDatabaseObject(),
                 privileges,
                 curCatalog == null ? "*" : curCatalog.getName(),
                 curTable == null ? "*" : curTable.getName(),
@@ -225,7 +226,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private void showCatalogTables()
     {
         LoadingUtils.createService(
-            new DatabaseLoadService<Collection<MySQLTable>>("Load tables", getUser().getDataSource()) {
+            new DatabaseLoadService<Collection<MySQLTable>>("Load tables", getDataSource()) {
                 public Collection<MySQLTable> evaluate()
                     throws InvocationTargetException, InterruptedException
                 {
@@ -267,11 +268,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
         isLoaded = true;
         LoadingUtils.createService(
-            new DatabaseLoadService<java.util.List<MySQLPrivilege>>("Load privileges", getUser().getDataSource()) {
+            new DatabaseLoadService<java.util.List<MySQLPrivilege>>("Load privileges", getDataSource()) {
                 public java.util.List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        return getUser().getDataSource().getPrivileges(getProgressMonitor());
+                        return getDatabaseObject().getDataSource().getPrivileges(getProgressMonitor());
                     }
                     catch (DBException e) {
                         throw new InvocationTargetException(e);

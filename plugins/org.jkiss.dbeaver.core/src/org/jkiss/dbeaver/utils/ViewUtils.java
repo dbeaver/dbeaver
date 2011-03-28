@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -191,7 +192,7 @@ public class ViewUtils
                             if (ICommandIds.CMD_OBJECT_OPEN.equals(contribId)) {
                                 String actionName = "Open";
                                 if (node instanceof DBNDatabaseNode) {
-                                    EntityManagerDescriptor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(((DBNDatabaseNode)node).getObject().getClass());
+                                    DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(((DBNDatabaseNode) node).getObject().getClass());
                                     actionName = objectManager == null ? "View" : "Edit";
                                 }
                                 if (multipleSelection) {

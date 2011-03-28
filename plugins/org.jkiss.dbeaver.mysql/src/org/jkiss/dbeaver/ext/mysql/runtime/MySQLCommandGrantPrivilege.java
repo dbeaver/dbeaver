@@ -26,29 +26,29 @@ public class MySQLCommandGrantPrivilege extends DBECommandImpl<MySQLUser> {
     private MySQLTable table;
     private MySQLPrivilege privilege;
 
-    public MySQLCommandGrantPrivilege(boolean grant, MySQLCatalog schema, MySQLTable table, MySQLPrivilege privilege)
+    public MySQLCommandGrantPrivilege(MySQLUser user, boolean grant, MySQLCatalog schema, MySQLTable table, MySQLPrivilege privilege)
     {
-        super(grant ? "Grant privilege" : "Revoke privilege");
+        super(user, grant ? "Grant privilege" : "Revoke privilege");
         this.grant = grant;
         this.schema = schema;
         this.table = table;
         this.privilege = privilege;
     }
 
-    public void updateModel(MySQLUser object)
+    public void updateModel()
     {
-        object.clearGrantsCache();
+        getObject().clearGrantsCache();
     }
 
-    public IDatabasePersistAction[] getPersistActions(MySQLUser object)
+    public IDatabasePersistAction[] getPersistActions()
     {
         String privName = privilege.getName();
         String grantScript = "GRANT " + privName +
             " ON " + getObjectName() +
-            " TO " + object.getFullName() + "";
+            " TO " + getObject().getFullName() + "";
         String revokeScript = "REVOKE " + privName +
             " ON " + getObjectName() +
-            " FROM " + object.getFullName() + "";
+            " FROM " + getObject().getFullName() + "";
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
                 "Grant privilege",
@@ -57,7 +57,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandImpl<MySQLUser> {
     }
 
     @Override
-    public DBECommand<MySQLUser> merge(DBECommand<MySQLUser> prevCommand, Map<String, Object> userParams)
+    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<String, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege)prevCommand;

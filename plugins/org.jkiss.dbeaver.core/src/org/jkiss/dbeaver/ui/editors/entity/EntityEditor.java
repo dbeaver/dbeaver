@@ -16,19 +16,16 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
-import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -42,9 +39,6 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -56,23 +50,29 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     private static Map<Class<?>, String> defaultPageMap = new HashMap<Class<?>, String>();
 
-    private DBEObjectManager objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
 
-    public DBEObjectManager<?> getObjectManager()
+    public EntityEditor()
     {
-        return objectManager;
     }
 
-    public DBEObjectCommander<?> getObjectEditor()
+    public DBSObject getDatabaseObject()
     {
-        return objectManager instanceof DBEObjectCommander ? (DBEObjectCommander<?>) objectManager : null;
+        return getEditorInput().getDatabaseObject();
+    }
+
+    public DBEObjectCommander getObjectCommander()
+    {
+        return getEditorInput().getObjectCommander();
     }
 
     @Override
     public void dispose()
     {
-        if (objectManager != null && objectManager.getObject() != null && !objectManager.getObject().isPersisted()) {
+        if (getObjectCommander() != null && getObjectCommander().isDirty()) {
+            getObjectCommander().resetChanges();
+        }
+        if (getDatabaseObject() != null && !getDatabaseObject().isPersisted()) {
             // If edited object is still not persisted then remove object's node
             DBNNode treeNode = getEditorInput().getTreeNode();
             if (treeNode instanceof DBNDatabaseItem) {
@@ -86,14 +86,14 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                 }
             }
         }
-        objectManager = null;
+
         super.dispose();
     }
 
     @Override
     public boolean isDirty()
     {
-        return objectManager instanceof DBEObjectCommander && ((DBEObjectCommander) objectManager).isDirty();
+        return getObjectCommander() != null && getObjectCommander().isDirty();
     }
 
     /**
@@ -113,7 +113,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         if (previewResult == IDialogConstants.PROCEED_ID) {
             Throwable error = null;
             try {
-                getObjectEditor().saveChanges(new DefaultProgressMonitor(monitor));
+                getObjectCommander().saveChanges(new DefaultProgressMonitor(monitor));
             } catch (DBException e) {
                 error = e;
             }
@@ -122,7 +122,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                 public void run()
                 {
                     if (showError != null) {
-                        UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + objectManager.getObject().getName() + "'", null, showError);
+                        UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + getDatabaseObject().getName() + "'", null, showError);
                     }
                     firePropertyChange(IEditorPart.PROP_DIRTY);
                 }
@@ -133,49 +133,49 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     public void revertChanges()
     {
         if (isDirty()) {
-            getObjectEditor().resetChanges();
+            getObjectCommander().resetChanges();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void undoChanges()
     {
-        if (getObjectEditor() != null && getObjectEditor().canUndoCommand()) {
-            getObjectEditor().undoCommand();
+        if (getObjectCommander() != null && getObjectCommander().canUndoCommand()) {
+            getObjectCommander().undoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void redoChanges()
     {
-        if (getObjectEditor() != null && getObjectEditor().canRedoCommand()) {
-            getObjectEditor().redoCommand();
+        if (getObjectCommander() != null && getObjectCommander().canRedoCommand()) {
+            getObjectCommander().redoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public int showChanges(boolean allowSave)
     {
-        if (getObjectEditor() == null) {
+        if (getObjectCommander() == null) {
             return IDialogConstants.CANCEL_ID;
         }
-        Collection<? extends DBECommand> commands = getObjectEditor().getCommands();
+        Collection<? extends DBECommand> commands = getObjectCommander().getCommands();
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
             try {
-                command.validateCommand(getObjectManager().getObject());
+                command.validateCommand();
             } catch (DBException e) {
                 UIUtils.showErrorDialog(getSite().getShell(), "Validation", e.getMessage());
                 return IDialogConstants.CANCEL_ID;
             }
-            IDatabasePersistAction[] persistActions = command.getPersistActions(getObjectManager().getObject());
+            IDatabasePersistAction[] persistActions = command.getPersistActions();
             if (!CommonUtils.isEmpty(persistActions)) {
                 for (IDatabasePersistAction action : persistActions) {
                     if (script.length() > 0) {
                         script.append('\n');
                     }
                     script.append(action.getScript());
-                    script.append(getObjectManager().getDataSource().getInfo().getScriptDelimiter());
+                    script.append(getObjectCommander().getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
                 }
             }
         }
@@ -211,23 +211,6 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
-
-        this.objectManager = getEditorInput().getObjectManager();
-
-        if (this.objectManager == null) {
-            // Instantiate new object manager
-            EntityManagerDescriptor managerDescriptor = editorsRegistry.getEntityManager(databaseObject.getClass());
-            if (managerDescriptor != null) {
-                this.objectManager = managerDescriptor.createManager(databaseObject);
-                if (this.objectManager == null) {
-                    log.warn("Could not instantiate object manager '" + managerDescriptor.getName() + "'");
-                }
-            }
-            if (this.objectManager == null) {
-                // Create default object manager
-                this.objectManager = new DefaultDatabaseObjectManager(databaseObject);
-            }
-        }
 
         // Add object editor page
         EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject.getClass());
@@ -320,7 +303,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             getSite().getShell(),
             PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,
-            getObjectManager().getObject().getName());
+            getDatabaseObject().getName());
         if (result == IDialogConstants.YES_ID) {
 //            getWorkbenchPart().getSite().getPage().saveEditor(this, false);
             return ISaveablePart2.YES;
@@ -410,25 +393,6 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             if (editor == null) {
                 return false;
             }
-            Object object = this.objectManager.getObject();
-            if (editor instanceof IDatabaseObjectEditor) {
-                try {
-                    Method initMethod = editor.getClass().getMethod("initObjectEditor", DBEObjectManager.class);
-                    Type initParam = initMethod.getGenericParameterTypes()[0];
-                    if (initParam instanceof ParameterizedType) {
-                        Type typeArgument = ((ParameterizedType) initParam).getActualTypeArguments()[0];
-                        if (typeArgument instanceof Class && !((Class<?>) typeArgument).isAssignableFrom(object.getClass())) {
-                            // Bad parameter type
-                            log.error(descriptor.getName() + " editor misconfiguration - invalid object type '" + object.getClass().getName() + "' specified while '" + ((Class<?>) typeArgument).getName() + "' was expected");
-                            return false;
-                        }
-                    }
-                } catch (Throwable e) {
-                    log.error(e);
-                    return false;
-                }
-                ((IDatabaseObjectEditor)editor).initObjectEditor(this.objectManager);
-            }
             int index = addPage(editor, getEditorInput());
             setPageText(index, descriptor.getName());
             if (descriptor.getIcon() != null) {
@@ -472,15 +436,11 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     public void refreshDatabaseContent(final DBNEvent event)
     {
         // Reinit object manager
-        final boolean persisted = objectManager.getObject().isPersisted();
-        if (objectManager != null) {
-            if (persisted) {
-                this.objectManager.setObject(((DBNDatabaseNode)event.getNode()).getObject());
-            }
-        }
-        // Refresh visual content in parts
-        getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
-            if (persisted) {
+        final boolean persisted = getEditorInput().getDatabaseObject().isPersisted();
+        if (persisted) {
+            // Refresh visual content in parts
+            getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+
                 int pageCount = getPageCount();
                 for (int i = 0; i < pageCount; i++) {
                     IWorkbenchPart part = getEditor(i);
@@ -488,10 +448,10 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                         ((IRefreshablePart)part).refreshPart(event);
                     }
                 }
-            }
-            setPartName(getEditorInput().getName());
-            setTitleImage(getEditorInput().getImageDescriptor());
-        }});
+                setPartName(getEditorInput().getName());
+                setTitleImage(getEditorInput().getImageDescriptor());
+            }});
+        }
     }
 
     public DBNNode getRootNode() {
@@ -531,7 +491,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         {
             ViewSQLDialog dialog = new ViewSQLDialog(
                 getEditorSite(),
-                getDataSource(),
+                getDataSource().getContainer(),
                 allowSave ? "Persist Changes" : "Preview Changes", 
                 script.toString());
             dialog.setShowSaveButton(allowSave);

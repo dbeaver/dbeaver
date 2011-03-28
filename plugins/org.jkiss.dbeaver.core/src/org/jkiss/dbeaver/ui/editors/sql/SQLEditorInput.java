@@ -14,6 +14,7 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -24,7 +25,7 @@ import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 /**
  * SQLEditorInput
  */
-public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IAutoSaveEditorInput, IDatabaseNodeEditorInput, IDataSourceContainerProvider
+public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IAutoSaveEditorInput, IDataSourceProvider, IDataSourceContainerProvider
 {
     public static final QualifiedName PROP_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", "sql-editor-data-source-id");
 
@@ -126,21 +127,6 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     public boolean isAutoSaveEnabled()
     {
         return true;
-    }
-
-    public DBNDatabaseNode getTreeNode()
-    {
-        return DBeaverCore.getInstance().getNavigatorModel().findNode(getDataSourceContainer());
-    }
-
-    public DBSObject getDatabaseObject()
-    {
-        return getDataSourceContainer();
-    }
-
-    public String getDefaultPageId()
-    {
-        return null;
     }
 
     public DBPDataSource getDataSource()

@@ -9,21 +9,20 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * AbstractDatabaseObjectEditor
  */
-public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject, OBJECT_MANAGER extends DBEObjectManager<OBJECT_TYPE>>
-    extends EditorPart implements IDatabaseObjectEditor<OBJECT_MANAGER>
+public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject>
+    extends EditorPart implements IDatabaseObjectEditor
 {
-    private OBJECT_MANAGER objectManager;
 
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
@@ -47,7 +46,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
 
     public boolean isDirty()
     {
-        return objectManager instanceof DBEObjectCommander<?> && ((DBEObjectCommander<?>) objectManager).isDirty();
+        return getEditorInput().getObjectCommander().isDirty();
     }
 
     public boolean isSaveAsAllowed()
@@ -64,19 +63,24 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     }
 
     public DBPDataSource getDataSource() {
-        return getObjectManager().getDataSource();
-    }
-
-    public OBJECT_MANAGER getObjectManager() {
-        return objectManager;
+        OBJECT_TYPE object = getDatabaseObject();
+        return object == null ? null : object.getDataSource();
     }
 
     public OBJECT_TYPE getDatabaseObject() {
-        return objectManager.getObject();
+        return (OBJECT_TYPE) getEditorInput().getDatabaseObject();
     }
 
-    public void initObjectEditor(OBJECT_MANAGER objectManager) {
-        this.objectManager = objectManager;
+    @Override
+    public IDatabaseNodeEditorInput getEditorInput()
+    {
+        return (IDatabaseNodeEditorInput)super.getEditorInput();
+    }
+
+    @Override
+    protected void setInput(IEditorInput input)
+    {
+        super.setInput(input);
     }
 
     /*
@@ -87,32 +91,28 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     }
 */
 
-    private DBEObjectCommander<OBJECT_TYPE> getObjectEditor()
+    private DBEObjectCommander getObjectCommander()
     {
-        if (objectManager instanceof DBEObjectCommander<?>) {
-            return (DBEObjectCommander<OBJECT_TYPE>)objectManager;
-        } else {
-            throw new IllegalStateException("Object manager do not provide editor facilities");
-        }
+        return getEditorInput().getObjectCommander();
     }
 
-    public <COMMAND extends DBECommand<OBJECT_TYPE>> void addChangeCommand(
-        COMMAND command,
-        DBECommandReflector<OBJECT_TYPE, COMMAND> reflector)
+    public void addChangeCommand(
+        DBECommand<OBJECT_TYPE> command,
+        DBECommandReflector<OBJECT_TYPE, ? extends DBECommand<OBJECT_TYPE>> reflector)
     {
-        getObjectEditor().addCommand(command, reflector);
+        getObjectCommander().addCommand(command, (DBECommandReflector) reflector);
         firePropertyChange(PROP_DIRTY);
     }
 
     public void removeChangeCommand(DBECommand<OBJECT_TYPE> command)
     {
-        getObjectEditor().removeCommand(command);
+        getObjectCommander().removeCommand(command);
         firePropertyChange(PROP_DIRTY);
     }
 
     public void updateChangeCommand(DBECommand<OBJECT_TYPE> command)
     {
-        getObjectEditor().updateCommand(command);
+        getObjectCommander().updateCommand(command);
         firePropertyChange(PROP_DIRTY);
     }
 }

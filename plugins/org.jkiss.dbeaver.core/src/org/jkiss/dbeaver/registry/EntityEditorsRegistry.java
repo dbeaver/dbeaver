@@ -6,6 +6,8 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,16 @@ public class EntityEditorsRegistry {
 
     }
 
+    public void dispose()
+    {
+        entityEditors.clear();
+
+        for (EntityManagerDescriptor descriptor : entityManagers) {
+            descriptor.dispose();
+        }
+        entityManagers.clear();
+    }
+
     public List<EntityEditorDescriptor> getEntityEditors()
     {
         return entityEditors;
@@ -66,7 +78,7 @@ public class EntityEditorsRegistry {
         return editors;
     }
 
-    public EntityManagerDescriptor getEntityManager(Class objectType)
+    private EntityManagerDescriptor getEntityManager(Class objectType)
     {
         for (EntityManagerDescriptor descriptor : entityManagers) {
             if (descriptor.appliesToType(objectType)) {
@@ -76,4 +88,9 @@ public class EntityEditorsRegistry {
         return null;
     }
 
+    public DBEObjectManager<?> getObjectManager(Class<?> aClass)
+    {
+        EntityManagerDescriptor entityManager = getEntityManager(aClass);
+        return entityManager == null ? null : entityManager.getManager();
+    }
 }

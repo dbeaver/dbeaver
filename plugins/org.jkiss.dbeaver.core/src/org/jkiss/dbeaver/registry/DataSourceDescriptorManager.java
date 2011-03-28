@@ -7,8 +7,9 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.impl.edit.DBEObjectManagerImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
@@ -18,24 +19,30 @@ import java.util.Map;
 /**
  * DataSourceDescriptorManager
  */
-public class DataSourceDescriptorManager extends DBEObjectManagerImpl<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor> {
+public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor> {
 
-    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, DataSourceDescriptor copyFrom)
+    public long getMakerOptions()
+    {
+        return 0;
+    }
+
+    public DataSourceDescriptor createNewObject(IWorkbenchWindow workbenchWindow, DBEObjectCommander commander, Object parent, Object copyFrom)
     {
         if (copyFrom != null) {
-            DataSourceRegistry registry = parent instanceof DataSourceRegistry ? (DataSourceRegistry)parent : copyFrom.getRegistry();
+            DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;
+            DataSourceRegistry registry = parent instanceof DataSourceRegistry ? (DataSourceRegistry)parent : dsTpl.getRegistry();
             DataSourceDescriptor dataSource = new DataSourceDescriptor(
                 registry,
-                DataSourceDescriptor.generateNewId(copyFrom.getDriver()),
-                copyFrom.getDriver(),
-                new DBPConnectionInfo(copyFrom.getConnectionInfo()));
-            dataSource.setSchemaFilter(copyFrom.getSchemaFilter());
-            dataSource.setCatalogFilter(copyFrom.getCatalogFilter());
-            dataSource.setDescription(copyFrom.getDescription());
-            dataSource.setSavePassword(copyFrom.isSavePassword());
-            dataSource.setShowSystemObjects(copyFrom.isShowSystemObjects());
+                DataSourceDescriptor.generateNewId(dsTpl.getDriver()),
+                dsTpl.getDriver(),
+                new DBPConnectionInfo(dsTpl.getConnectionInfo()));
+            dataSource.setSchemaFilter(dsTpl.getSchemaFilter());
+            dataSource.setCatalogFilter(dsTpl.getCatalogFilter());
+            dataSource.setDescription(dsTpl.getDescription());
+            dataSource.setSavePassword(dsTpl.isSavePassword());
+            dataSource.setShowSystemObjects(dsTpl.isShowSystemObjects());
             // Generate new name
-            String origName = copyFrom.getName();
+            String origName = dsTpl.getName();
             String newName = origName;
             for (int i = 0; ; i++) {
                 if (registry.findDataSourceByName(newName) == null) {
@@ -56,22 +63,23 @@ public class DataSourceDescriptorManager extends DBEObjectManagerImpl<DataSource
                 new NewConnectionWizard(registry));
             dialog.open();
         }
-        return CreateResult.CANCEL;
+        return null;
     }
 
-    public void deleteObject(Map<String, Object> options)
+    public void deleteObject(DBEObjectCommander commander, final DataSourceDescriptor object, Map<String, Object> options)
     {
         Runnable remover = new Runnable() {
             public void run()
             {
-                getObject().getRegistry().removeDataSource(getObject());
+                object.getRegistry().removeDataSource(object);
             }
         };
-        if (getObject().isConnected()) {
-            DataSourceDisconnectHandler.execute(getObject(), remover);
+        if (object.isConnected()) {
+            DataSourceDisconnectHandler.execute(object, remover);
         } else {
             remover.run();
         }
     }
+
 
 }

@@ -11,7 +11,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
@@ -26,7 +25,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
 
     static final Log log = LogFactory.getLog(ControlPropertyCommandListener.class);
 
-    private final AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends DBEObjectManager<OBJECT_TYPE>> objectEditor;
+    private final AbstractDatabaseObjectEditor<OBJECT_TYPE> objectEditor;
     private final Widget widget;
     private final DBEPropertyHandler<OBJECT_TYPE> handler;
     private Object originalValue;
@@ -34,7 +33,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
     private DBECommandProperty<OBJECT_TYPE> curCommand;
 
     public static <OBJECT_TYPE extends DBSObject> void create(
-        AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends DBEObjectManager<OBJECT_TYPE>> objectEditor,
+        AbstractDatabaseObjectEditor<OBJECT_TYPE> objectEditor,
         Widget widget,
         DBEPropertyHandler<OBJECT_TYPE> handler)
     {
@@ -42,7 +41,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
     }
 
     public ControlPropertyCommandListener(
-        AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends DBEObjectManager<OBJECT_TYPE>> objectEditor,
+        AbstractDatabaseObjectEditor<OBJECT_TYPE> objectEditor,
         Widget widget,
         DBEPropertyHandler<OBJECT_TYPE> handler)
     {
@@ -148,20 +147,22 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                     final Object newValue = readWidgetValue();
                     if (curCommand == null) {
                         if (!CommonUtils.equalObjects(newValue, originalValue)) {
-                            final DBECommandProperty<OBJECT_TYPE> command = new DBECommandProperty<OBJECT_TYPE>(handler);
+                            final DBECommandProperty<OBJECT_TYPE> command = new DBECommandProperty<OBJECT_TYPE>(objectEditor.getDatabaseObject(), handler);
                             command.setOldValue(originalValue);
                             command.setNewValue(objectEditor.getDatabaseObject(), newValue);
                             curCommand = command;
-                            objectEditor.addChangeCommand(curCommand, new DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>>() {
+                            DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>> commandReflector = new DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>>() {
                                 public void redoCommand(DBECommandProperty<OBJECT_TYPE> object_typeControlDBOCommand)
                                 {
                                     writeWidgetValue(command.getNewValue());
                                 }
+
                                 public void undoCommand(DBECommandProperty<OBJECT_TYPE> object_typeControlDBOCommand)
                                 {
                                     writeWidgetValue(command.getOldValue());
                                 }
-                            });
+                            };
+                            objectEditor.addChangeCommand(curCommand, commandReflector);
                         }
                     } else {
                         if (CommonUtils.equalObjects(originalValue, newValue)) {

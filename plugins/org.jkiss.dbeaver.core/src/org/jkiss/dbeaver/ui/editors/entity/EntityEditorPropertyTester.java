@@ -32,16 +32,15 @@ public class EntityEditorPropertyTester extends PropertyTester
             return false;
         }
         EntityEditor editor = (EntityEditor)receiver;
-        if (editor.getObjectManager() instanceof DBEObjectCommander) {
-            DBEObjectCommander objectCommander = (DBEObjectCommander)editor.getObjectManager();
-            if (property.equals(PROP_CAN_UNDO)) {
-                return objectCommander.canUndoCommand();
-            } else if (property.equals(PROP_CAN_REDO)) {
-                return objectCommander.canRedoCommand();
-            } else if (property.equals(PROP_DIRTY)) {
-                return objectCommander.isDirty();
-            }
+        DBEObjectCommander objectCommander = editor.getEditorInput().getObjectCommander();
+        if (property.equals(PROP_CAN_UNDO)) {
+            return objectCommander.canUndoCommand();
+        } else if (property.equals(PROP_CAN_REDO)) {
+            return objectCommander.canRedoCommand();
+        } else if (property.equals(PROP_DIRTY)) {
+            return objectCommander.isDirty();
         }
+
         return false;
     }
 

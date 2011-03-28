@@ -14,20 +14,20 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
  */
 public class MySQLCommandDropUser extends DBECommandComposite<MySQLUser, UserPropertyHandler> {
 
-    protected MySQLCommandDropUser()
+    protected MySQLCommandDropUser(MySQLUser user)
     {
-        super("Drop user");
+        super(user, "Drop user");
     }
 
-    public IDatabasePersistAction[] getPersistActions(final MySQLUser object)
+    public IDatabasePersistAction[] getPersistActions()
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop user", "DROP USER " + object.getFullName()) {
+            new AbstractDatabasePersistAction("Drop user", "DROP USER " + getObject().getFullName()) {
                 @Override
                 public void handleExecute(Throwable error)
                 {
                     if (error == null) {
-                        object.setPersisted(false);
+                        getObject().setPersisted(false);
                     }
                 }
             }};

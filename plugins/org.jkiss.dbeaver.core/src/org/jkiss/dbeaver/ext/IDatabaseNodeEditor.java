@@ -13,7 +13,5 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
  */
 public interface IDatabaseNodeEditor extends IEditorPart, DBPDataSourceUser
 {
-    IDatabaseNodeEditorInput getEditorInput();
-
     void refreshDatabaseContent(DBNEvent event);
 }

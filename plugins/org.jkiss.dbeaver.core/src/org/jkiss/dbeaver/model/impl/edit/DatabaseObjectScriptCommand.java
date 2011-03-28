@@ -14,17 +14,17 @@ public class DatabaseObjectScriptCommand<OBJECT_TYPE extends DBSObject> extends 
 
     private String script;
 
-    public DatabaseObjectScriptCommand(String title, String script)
+    public DatabaseObjectScriptCommand(OBJECT_TYPE object, String title, String script)
     {
-        super(title);
+        super(object, title);
         this.script = script;
     }
 
-    public void updateModel(OBJECT_TYPE object)
+    public void updateModel()
     {
     }
 
-    public IDatabasePersistAction[] getPersistActions(OBJECT_TYPE object)
+    public IDatabasePersistAction[] getPersistActions()
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(

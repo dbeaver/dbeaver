@@ -7,19 +7,19 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * JDBC DatabaseObjectManager implementation
+ * JDBCObjectManager
  */
-public abstract class DBEObjectCommanderJDBC<OBJECT_TYPE extends DBSObject> extends DBEObjectCommanderImpl<OBJECT_TYPE> {
+public abstract class JDBCObjectManager<OBJECT_TYPE extends DBSObject> implements DBEObjectManager<OBJECT_TYPE> {
 
-    @Override
-    protected void executePersistAction(DBCExecutionContext context, IDatabasePersistAction action) throws DBException
+    public void executePersistAction(DBCExecutionContext context, DBECommand<OBJECT_TYPE> command, IDatabasePersistAction action) throws DBException
     {
         String script = action.getScript();
 
@@ -34,4 +34,5 @@ public abstract class DBEObjectCommanderJDBC<OBJECT_TYPE extends DBSObject> exte
             dbStat.close();
         }
     }
+
 }

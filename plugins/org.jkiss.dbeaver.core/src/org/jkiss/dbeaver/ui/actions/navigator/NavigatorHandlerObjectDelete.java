@@ -26,15 +26,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -118,12 +119,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             log.error("Can't delete node with null object");
             return false;
         }
-        EntityManagerDescriptor entityManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(object.getClass());
-        if (entityManager == null) {
+        DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
+        if (objectManager == null) {
             log.error("Object manager not found for type '" + object.getClass().getName() + "'");
             return false;
         }
-        DBEObjectManager<?> objectManager = entityManager.createManager(node.getObject());
         if (!(objectManager instanceof DBEObjectMaker<?>)) {
             log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object deletion");
             return false;
@@ -136,37 +136,35 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         if (confirmResult == ConfirmResult.NO) {
             return false;
         }
-
-        objectMaker.deleteObject(deleteOptions);
+        DBEObjectCommander commander = new DBEObjectCommanderImpl(node.getObject().getDataSource().getContainer());
+        objectMaker.deleteObject(commander, node.getObject(), deleteOptions);
 
         if (confirmResult == ConfirmResult.DETAILS) {
-            if (!showScript(workbenchWindow, (DBEObjectCommander<?>) objectManager)) {
-                ((DBEObjectCommander) objectMaker).resetChanges();
+            if (!showScript(workbenchWindow, commander)) {
+                commander.resetChanges();
                 return false;
             }
         }
 
-        if (objectMaker instanceof DBEObjectCommander) {
-            // Delete object
-            ObjectDeleter deleter = new ObjectDeleter((DBEObjectCommander) objectMaker);
-            try {
-                workbenchWindow.run(true, true, deleter);
-            } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't delete object", null, e.getTargetException());
-                return false;
-            } catch (InterruptedException e) {
-                // do nothing
-            }
+        // Delete object
+        ObjectDeleter deleter = new ObjectDeleter(commander);
+        try {
+            workbenchWindow.run(true, true, deleter);
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't delete object", null, e.getTargetException());
+            return false;
+        } catch (InterruptedException e) {
+            // do nothing
+        }
 
-            // Remove node
-            if (!node.isDisposed()) {
-                DBNNode parent = node.getParentNode();
-                if (parent instanceof DBNContainer) {
-                    try {
-                        ((DBNContainer)parent).removeChildItem(node);
-                    } catch (DBException e) {
-                        log.error(e);
-                    }
+        // Remove node
+        if (!node.isDisposed()) {
+            DBNNode parent = node.getParentNode();
+            if (parent instanceof DBNContainer) {
+                try {
+                    ((DBNContainer)parent).removeChildItem(node);
+                } catch (DBException e) {
+                    log.error(e);
                 }
             }
         }
@@ -174,19 +172,19 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         return true;
     }
 
-    private boolean showScript(IWorkbenchWindow workbenchWindow, DBEObjectCommander<?> objectManager)
+    private boolean showScript(IWorkbenchWindow workbenchWindow, DBEObjectCommander commander)
     {
-        Collection<? extends DBECommand> commands = objectManager.getCommands();
+        Collection<? extends DBECommand> commands = commander.getCommands();
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
-            IDatabasePersistAction[] persistActions = command.getPersistActions(objectManager.getObject());
+            IDatabasePersistAction[] persistActions = command.getPersistActions();
             if (!CommonUtils.isEmpty(persistActions)) {
                 for (IDatabasePersistAction action : persistActions) {
                     if (script.length() > 0) {
                         script.append('\n');
                     }
                     script.append(action.getScript());
-                    script.append(objectManager.getDataSource().getInfo().getScriptDelimiter());
+                    script.append(commander.getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
                 }
             }
         }
@@ -194,7 +192,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         if (view != null) {
             ViewSQLDialog dialog = new ViewSQLDialog(
                 view.getSite(),
-                objectManager.getDataSource(),
+                commander.getDataSourceContainer(),
                 "Delete script",
                 script.toString());
             dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
@@ -265,17 +263,17 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
     }
 
     private static class ObjectDeleter implements IRunnableWithProgress {
-        private final DBEObjectCommander objectManager;
+        private final DBEObjectCommander commander;
 
-        public ObjectDeleter(DBEObjectCommander objectCreator)
+        public ObjectDeleter(DBEObjectCommander objectCommander)
         {
-            this.objectManager = objectCreator;
+            this.commander = objectCommander;
         }
 
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
-                objectManager.saveChanges(new DefaultProgressMonitor(monitor));
+                commander.saveChanges(new DefaultProgressMonitor(monitor));
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }

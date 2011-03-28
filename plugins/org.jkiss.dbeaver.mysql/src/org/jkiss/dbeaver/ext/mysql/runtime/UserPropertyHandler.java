@@ -24,9 +24,9 @@ public enum UserPropertyHandler implements DBEPropertyHandler<MySQLUser>, DBEPro
     MAX_USER_CONNECTIONS;
 
 
-    public MySQLCommandChangeUser createCompositeCommand()
+    public MySQLCommandChangeUser createCompositeCommand(MySQLUser object)
     {
-        return new MySQLCommandChangeUser();
+        return new MySQLCommandChangeUser(object);
     }
 
     public void reflectValueChange(MySQLUser object, Object oldValue, Object newValue)

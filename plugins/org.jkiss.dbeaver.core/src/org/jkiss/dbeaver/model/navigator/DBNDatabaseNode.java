@@ -13,6 +13,7 @@ import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -187,8 +188,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
         final DBSObject object = getObject();
-        DBEObjectRenamer objectRenamer = (DBEObjectRenamer) DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(object.getClass()).createManager(object);
-        objectRenamer.renameObject(monitor, newName);
+        DBEObjectRenamer objectRenamer = (DBEObjectRenamer) DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
+        objectRenamer.renameObject(monitor, object, newName);
     }
 
     @Override
@@ -198,9 +199,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         if (object == null || !object.isPersisted()) {
             return false;
         }
-        EntityManagerDescriptor entityManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(object.getClass());
-        return entityManager != null &&
-            DBEObjectRenamer.class.isAssignableFrom(entityManager.getManagerClass());
+        DBEObjectManager objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
+        return objectManager != null && DBEObjectRenamer.class.isAssignableFrom(objectManager.getClass());
     }
 
     /**

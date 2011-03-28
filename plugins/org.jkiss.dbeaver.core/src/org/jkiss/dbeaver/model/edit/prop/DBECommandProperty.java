@@ -23,15 +23,15 @@ public class DBECommandProperty<OBJECT_TYPE extends DBSObject> extends DBEComman
     private Object oldValue;
     private Object newValue;
 
-    public DBECommandProperty(DBEPropertyHandler<OBJECT_TYPE> handler)
+    public DBECommandProperty(OBJECT_TYPE object, DBEPropertyHandler<OBJECT_TYPE> handler)
     {
-        super("Change property " + handler, null);
+        super(object, "Change property " + handler);
         this.handler = handler;
     }
 
-    public DBECommandProperty(DBEPropertyHandler<OBJECT_TYPE> handler, Object newValue)
+    public DBECommandProperty(OBJECT_TYPE object, DBEPropertyHandler<OBJECT_TYPE> handler, Object newValue)
     {
-        this(handler);
+        this(object, handler);
         this.newValue = newValue;
     }
 
@@ -68,12 +68,12 @@ public class DBECommandProperty<OBJECT_TYPE extends DBSObject> extends DBEComman
     }
 
     @Override
-    public DBECommand<OBJECT_TYPE> merge(DBECommand<OBJECT_TYPE> prevCommand, Map<String, Object> userParams)
+    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<String, Object> userParams)
     {
         String compositeName = handler.getClass().getName() + PROP_COMPOSITE_COMMAND;
         DBECommandComposite compositeCommand = (DBECommandComposite)userParams.get(compositeName);
         if (compositeCommand == null) {
-            compositeCommand = handler.createCompositeCommand();
+            compositeCommand = handler.createCompositeCommand(getObject());
             userParams.put(compositeName, compositeCommand);
         }
         compositeCommand.addPropertyHandler(handler, newValue);
@@ -81,24 +81,24 @@ public class DBECommandProperty<OBJECT_TYPE extends DBSObject> extends DBEComman
     }
 
     @Override
-    public void validateCommand(OBJECT_TYPE object) throws DBException
+    public void validateCommand() throws DBException
     {
         if (handler instanceof DBEPropertyValidator) {
-            ((DBEPropertyValidator<OBJECT_TYPE>)handler).validate(object, newValue);
+            ((DBEPropertyValidator<OBJECT_TYPE>)handler).validate(getObject(), newValue);
         }
     }
 
-    public void updateModel(OBJECT_TYPE object)
+    public void updateModel()
     {
         if (handler instanceof DBEPropertyUpdater) {
-            ((DBEPropertyUpdater<OBJECT_TYPE>)handler).updateModel(object, newValue);
+            ((DBEPropertyUpdater<OBJECT_TYPE>)handler).updateModel(getObject(), newValue);
         }
     }
 
-    public IDatabasePersistAction[] getPersistActions(OBJECT_TYPE object)
+    public IDatabasePersistAction[] getPersistActions()
     {
         if (handler instanceof DBEPropertyPersister) {
-            return ((DBEPropertyPersister<OBJECT_TYPE>)handler).getPersistActions(object, newValue);
+            return ((DBEPropertyPersister<OBJECT_TYPE>)handler).getPersistActions(getObject(), newValue);
         }
         return null;
     }

@@ -7,11 +7,11 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
@@ -28,9 +28,7 @@ import java.util.Set;
 /**
  * Embedded ERD editor
  */
-public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectEditor<DBEObjectManager<DBSObject>>, IRefreshablePart {
-
-    private DBEObjectManager<DBSObject> objectManager;
+public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectEditor, IRefreshablePart {
 
     /**
      * No-arg constructor
@@ -39,25 +37,15 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
     {
     }
 
+    public IDatabaseNodeEditorInput getEditorInput()
+    {
+        return (IDatabaseNodeEditorInput)super.getEditorInput();
+    }
+
     @Override
     public boolean isReadOnly()
     {
         return true;
-    }
-
-    DBSObject getSourceObject()
-    {
-        return objectManager.getObject();
-    }
-
-    public DBEObjectManager<DBSObject> getObjectManager()
-    {
-        return objectManager;
-    }
-
-    public void initObjectEditor(DBEObjectManager<DBSObject> manager)
-    {
-        objectManager = manager;
     }
 
     public void activatePart()
@@ -74,7 +62,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
 
     protected synchronized void loadDiagram()
     {
-        DBSObject object = getSourceObject();
+        DBSObject object = getEditorInput().getDatabaseObject();
         if (object == null) {
             return;
         }
@@ -109,7 +97,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
 
     public DBPDataSource getDataSource()
     {
-        return objectManager.getDataSource();
+        return getEditorInput().getDataSource();
     }
 
     public void refreshPart(Object source)
@@ -122,11 +110,11 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectE
     private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (getSourceObject() == null) {
+        DBSObject dbObject = getEditorInput().getDatabaseObject();
+        if (dbObject == null) {
             log.error("Database object must be entity container to render ERD diagram");
             return null;
         }
-        DBSObject dbObject = getSourceObject();
         EntityDiagram diagram = new EntityDiagram(dbObject, dbObject.getName());
 
         diagram.fillTables(

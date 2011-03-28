@@ -9,7 +9,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
-import org.jkiss.dbeaver.ext.mysql.runtime.MySQLUserManager;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
@@ -21,21 +20,17 @@ import java.util.List;
 /**
  * MySQLUserEditorAbstract
  */
-public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEditor<MySQLUser, MySQLUserManager>
+public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEditor<MySQLUser>
 {
-
-    public MySQLUser getUser() {
-        return getObjectManager().getObject();
-    }
 
     void loadGrants()
     {
         LoadingUtils.createService(
-            new DatabaseLoadService<List<MySQLGrant>>("Load grants", getUser().getDataSource()) {
+            new DatabaseLoadService<List<MySQLGrant>>("Load grants", getDatabaseObject().getDataSource()) {
                 public java.util.List<MySQLGrant> evaluate() throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        return getUser().getGrants(getProgressMonitor());
+                        return getDatabaseObject().getGrants(getProgressMonitor());
                     }
                     catch (DBException e) {
                         throw new InvocationTargetException(e);

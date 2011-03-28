@@ -11,7 +11,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
 
 
     @Override
-    protected GenericTable createNewTable(GenericEntityContainer parent, GenericTable copyFrom)
+    protected GenericTable createNewTable(GenericEntityContainer parent, Object copyFrom)
     {
         return new GenericTable(parent, null, null, null);
     }
