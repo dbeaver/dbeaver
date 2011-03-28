@@ -23,35 +23,11 @@ import java.util.*;
  */
 public class DBEObjectCommanderImpl implements DBEObjectCommander {
 
-    private static class PersistInfo {
-        final IDatabasePersistAction action;
-        boolean executed = false;
-        Throwable error;
-
-        public PersistInfo(IDatabasePersistAction action)
-        {
-            this.action = action;
-        }
-    }
-
-    public static class CommandInfo {
-        final DBECommand<?> command;
-        final DBECommandReflector<?, DBECommand<?>> reflector;
-        List<PersistInfo> persistActions;
-        CommandInfo mergedBy = null;
-        boolean executed = false;
-
-        CommandInfo(DBECommand<?> command, DBECommandReflector<?, DBECommand<?>> reflector)
-        {
-            this.command = command;
-            this.reflector = reflector;
-        }
-    }
-
     private final DBSDataSourceContainer dataSourceContainer;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
     private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
-    private List<CommandInfo> mergedCommands = null;
+    //private List<CommandInfo> mergedCommands = null;
+    private List<CommandQueue> commandQueues;
 
     private final List<DBECommandListener> listeners = new ArrayList<DBECommandListener>();
 
@@ -68,7 +44,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
     public boolean isDirty()
     {
         synchronized (commands) {
-            return !getMergedCommands().isEmpty();
+            return !getCommandQueues().isEmpty();
         }
     }
 
@@ -77,73 +53,73 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
             throw new DBException("Not connected to database");
         }
         synchronized (commands) {
-            List<CommandInfo> mergedCommands = getMergedCommands();
+            List<CommandQueue> commandQueues = getCommandQueues();
 
             // Validate commands
-            for (CommandInfo cmd : mergedCommands) {
-                cmd.command.validateCommand();
-            }
-            try {
-                // Make list of not-executed commands
-                for (int i = 0; i < mergedCommands.size(); i++) {
-                    CommandInfo cmd = mergedCommands.get(i);
-                    if (cmd.mergedBy != null) {
-                        cmd = cmd.mergedBy;
-                    }
-                    if (cmd.executed) {
-                        commands.remove(mergedCommands.get(i));
-                        continue;
-                    }
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    // Persist changes
-                    if (CommonUtils.isEmpty(cmd.persistActions)) {
-                        IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
-                        if (!CommonUtils.isEmpty(persistActions)) {
-                            cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
-                            for (IDatabasePersistAction action : persistActions) {
-                                cmd.persistActions.add(new PersistInfo(action));
-                            }
-                        }
-                    }
-                    if (!CommonUtils.isEmpty(cmd.persistActions)) {
-                        DBCExecutionContext context = openCommandPersistContext(monitor, dataSourceContainer.getDataSource(), cmd.command);
-                        try {
-                            for (PersistInfo persistInfo : cmd.persistActions) {
-                                if (persistInfo.executed) {
-                                    continue;
-                                }
-                                if (monitor.isCanceled()) {
-                                    break;
-                                }
-                                try {
-                                    getObjectManager(cmd.command.getObject()).executePersistAction(context, cmd.command, persistInfo.action);
-                                    persistInfo.executed = true;
-                                } catch (DBException e) {
-                                    persistInfo.error = e;
-                                    persistInfo.executed = false;
-                                    throw e;
-                                }
-                            }
-                        } finally {
-                            closePersistContext(context);
-                        }
-                    }
-                    // Update model
-                    cmd.command.updateModel();
-                    cmd.executed = true;
-
-                    // Remove original command from stack
-                    commands.remove(mergedCommands.get(i));
+            for (CommandQueue queue : commandQueues) {
+                for (CommandInfo cmd : queue.commands) {
+                    cmd.command.validateCommand();
                 }
-            }
-            finally {
-                clearMergedCommands();
-                clearUndidCommands();
+                try {
+                    // Make list of not-executed commands
+                    for (int i = 0; i < queue.commands.size(); i++) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
 
-                for (DBECommandListener listener : getListeners()) {
-                    listener.onSave();
+                        CommandInfo cmd = queue.commands.get(i);
+                        if (cmd.mergedBy != null) {
+                            cmd = cmd.mergedBy;
+                        }
+                        if (!cmd.executed) {
+                            // Persist changes
+                            if (CommonUtils.isEmpty(cmd.persistActions)) {
+                                IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
+                                if (!CommonUtils.isEmpty(persistActions)) {
+                                    cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
+                                    for (IDatabasePersistAction action : persistActions) {
+                                        cmd.persistActions.add(new PersistInfo(action));
+                                    }
+                                }
+                            }
+                            if (!CommonUtils.isEmpty(cmd.persistActions)) {
+                                DBCExecutionContext context = openCommandPersistContext(monitor, dataSourceContainer.getDataSource(), cmd.command);
+                                try {
+                                    for (PersistInfo persistInfo : cmd.persistActions) {
+                                        if (persistInfo.executed) {
+                                            continue;
+                                        }
+                                        if (monitor.isCanceled()) {
+                                            break;
+                                        }
+                                        try {
+                                            queue.objectManager.executePersistAction(context, cmd.command, persistInfo.action);
+                                            persistInfo.executed = true;
+                                        } catch (DBException e) {
+                                            persistInfo.error = e;
+                                            persistInfo.executed = false;
+                                            throw e;
+                                        }
+                                    }
+                                } finally {
+                                    closePersistContext(context);
+                                }
+                            }
+                            // Update model
+                            cmd.command.updateModel();
+                            cmd.executed = true;
+                        }
+                        // Remove original command from stack
+                        commands.remove(queue.commands.get(i));
+                    }
+                }
+                finally {
+                    clearCommandQueues();
+                    clearUndidCommands();
+
+                    for (DBECommandListener listener : getListeners()) {
+                        listener.onSave();
+                    }
                 }
             }
         }
@@ -162,7 +138,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
                     undoCommand();
                 }
                 clearUndidCommands();
-                clearMergedCommands();
+                clearCommandQueues();
             } finally {
                 for (DBECommandListener listener : getListeners()) {
                     listener.onReset();
@@ -175,12 +151,14 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
     {
         synchronized (commands) {
             List<DBECommand<?>> cmdCopy = new ArrayList<DBECommand<?>>(commands.size());
-            for (CommandInfo cmdInfo : getMergedCommands()) {
-                if (cmdInfo.mergedBy != null) {
-                    cmdInfo = cmdInfo.mergedBy;
-                }
-                if (!cmdCopy.contains(cmdInfo.command)) {
-                    cmdCopy.add(cmdInfo.command);
+            for (CommandQueue queue : getCommandQueues()) {
+                for (CommandInfo cmdInfo : queue.commands) {
+                    if (cmdInfo.mergedBy != null) {
+                        cmdInfo = cmdInfo.mergedBy;
+                    }
+                    if (!cmdCopy.contains(cmdInfo.command)) {
+                        cmdCopy.add(cmdInfo.command);
+                    }
                 }
             }
             return cmdCopy;
@@ -195,7 +173,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
             commands.add(new CommandInfo(command, reflector));
 
             clearUndidCommands();
-            clearMergedCommands();
+            clearCommandQueues();
         }
     }
 
@@ -209,7 +187,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
                 }
             }
             clearUndidCommands();
-            clearMergedCommands();
+            clearCommandQueues();
         }
     }
 
@@ -217,7 +195,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
     {
         synchronized (commands) {
             clearUndidCommands();
-            clearMergedCommands();
+            clearCommandQueues();
         }
     }
 
@@ -271,7 +249,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
                 lastCommand.reflector.undoCommand(lastCommand.command);
             }
             undidCommands.add(lastCommand);
-            clearMergedCommands();
+            clearCommandQueues();
         }
     }
 
@@ -287,7 +265,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
                 commandInfo.reflector.redoCommand(commandInfo.command);
             }
             commands.add(commandInfo);
-            clearMergedCommands();
+            clearCommandQueues();
         }
     }
 
@@ -296,78 +274,106 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
         undidCommands.clear();
     }
 
-    private List<CommandInfo> getMergedCommands()
+    private List<CommandQueue> getCommandQueues()
     {
-        if (mergedCommands != null) {
-            return mergedCommands;
+        if (commandQueues != null) {
+            return commandQueues;
         }
-        mergedCommands = new ArrayList<CommandInfo>();
+        commandQueues = new ArrayList<CommandQueue>();
 
-        final Map<DBECommand, CommandInfo> mergedByMap = new IdentityHashMap<DBECommand, CommandInfo>();
-        final Map<String, Object> userParams = new HashMap<String, Object>();
-        for (int i = 0; i < commands.size(); i++) {
-            CommandInfo lastCommand = commands.get(i);
-            lastCommand.mergedBy = null;
-            CommandInfo firstCommand = null;
-            DBECommand<?> result = lastCommand.command;
-            if (mergedCommands.isEmpty()) {
-                result = lastCommand.command.merge(null, userParams);
-            } else {
-                for (int k = mergedCommands.size(); k > 0; k--) {
-                    firstCommand = mergedCommands.get(k - 1);
-                    result = lastCommand.command.merge(firstCommand.command, userParams);
-                    if (result != lastCommand.command) {
+        // Create queues from commands
+        for (CommandInfo commandInfo : commands) {
+            DBSObject object = commandInfo.command.getObject();
+            CommandQueue queue = null;
+            if (!commandQueues.isEmpty()) {
+                for (CommandQueue tmpQueue : commandQueues) {
+                    if (tmpQueue.getObject() == object) {
+                        queue = tmpQueue;
                         break;
                     }
                 }
             }
-            if (result == null) {
-                // Remove first and skip last command
-                mergedCommands.remove(firstCommand);
-                continue;
+            if (queue == null) {
+                queue = new CommandQueue(null, object);
+                commandQueues.add(queue);
             }
+            queue.addCommand(commandInfo);
+        }
 
-            mergedCommands.add(lastCommand);
-            if (result == lastCommand.command) {
-                // No changes
-                //firstCommand.mergedBy = lastCommand;
-            } else if (firstCommand != null && result == firstCommand.command) {
-                // Remove last command from queue
-                lastCommand.mergedBy = firstCommand;
-            } else {
-                // Some other command
-                // May be it is some earlier command from queue or some new command (e.g. composite)
-                CommandInfo mergedBy = mergedByMap.get(result);
-                if (mergedBy == null) {
-                    // Try to find in command stack
-                    for (int k = i; k >= 0; k--) {
-                        if (commands.get(k).command == result) {
-                            mergedBy = commands.get(k);
+        // Merge commands
+        for (CommandQueue queue : commandQueues) {
+            final Map<DBECommand, CommandInfo> mergedByMap = new IdentityHashMap<DBECommand, CommandInfo>();
+            final Map<String, Object> userParams = new HashMap<String, Object>();
+            final List<CommandInfo> mergedCommands = new ArrayList<CommandInfo>();
+            for (int i = 0; i < queue.commands.size(); i++) {
+                CommandInfo lastCommand = queue.commands.get(i);
+                lastCommand.mergedBy = null;
+                CommandInfo firstCommand = null;
+                DBECommand<?> result = lastCommand.command;
+                if (mergedCommands.isEmpty()) {
+                    result = lastCommand.command.merge(null, userParams);
+                } else {
+                    for (int k = mergedCommands.size(); k > 0; k--) {
+                        firstCommand = mergedCommands.get(k - 1);
+                        result = lastCommand.command.merge(firstCommand.command, userParams);
+                        if (result != lastCommand.command) {
                             break;
                         }
                     }
-                    if (mergedBy == null) {
-                        // Create new command info
-                        mergedBy = new CommandInfo(result, null);
-                    }
-                    mergedByMap.put(result, mergedBy);
                 }
-                lastCommand.mergedBy = mergedBy;
-                if (!mergedCommands.contains(mergedBy)) {
-                    mergedCommands.add(mergedBy);
+                if (result == null) {
+                    // Remove first and skip last command
+                    commands.remove(firstCommand);
+                    continue;
+                }
+
+                mergedCommands.add(lastCommand);
+                if (result == lastCommand.command) {
+                    // No changes
+                    //firstCommand.mergedBy = lastCommand;
+                } else if (firstCommand != null && result == firstCommand.command) {
+                    // Remove last command from queue
+                    lastCommand.mergedBy = firstCommand;
+                } else {
+                    // Some other command
+                    // May be it is some earlier command from queue or some new command (e.g. composite)
+                    CommandInfo mergedBy = mergedByMap.get(result);
+                    if (mergedBy == null) {
+                        // Try to find in command stack
+                        for (int k = i; k >= 0; k--) {
+                            if (queue.commands.get(k).command == result) {
+                                mergedBy = queue.commands.get(k);
+                                break;
+                            }
+                        }
+                        if (mergedBy == null) {
+                            // Create new command info
+                            mergedBy = new CommandInfo(result, null);
+                        }
+                        mergedByMap.put(result, mergedBy);
+                    }
+                    lastCommand.mergedBy = mergedBy;
+                    if (!mergedCommands.contains(mergedBy)) {
+                        mergedCommands.add(mergedBy);
+                    }
                 }
             }
+            queue.commands = mergedCommands;
         }
-        if (!mergedCommands.isEmpty()) {
-            // Add special commands
-            filterCommands(mergedCommands);
+
+        // Filter commands
+        for (CommandQueue queue : commandQueues) {
+            if (queue.objectManager instanceof DBECommandFilter) {
+                ((DBECommandFilter) queue.objectManager).filterCommands(queue);
+            }
         }
-        return mergedCommands;
+
+        return commandQueues;
     }
 
-    private void clearMergedCommands()
+    private void clearCommandQueues()
     {
-        mergedCommands = null;
+        commandQueues = null;
     }
 
     protected DBCExecutionContext openCommandPersistContext(
@@ -387,49 +393,57 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
         context.close();
     }
 
-    protected void filterCommands(List<CommandInfo> commands)
-    {
-        // do nothing by default
-        Map<DBSObject, CommandQueue> queueMap = new LinkedHashMap<DBSObject, CommandQueue>();
-        //new ArrayList<DBECommand<?>>(mergedCommands.size());
-        for (CommandInfo commandInfo : mergedCommands) {
-            DBSObject object = commandInfo.command.getObject();
-            CommandQueue queue = queueMap.get(object);
-            if (queue == null) {
-                queue = new CommandQueue(object);
-                queueMap.put(object, queue);
-            }
-            queue.addCommand(commandInfo);
-        }
-        // Filter queues
-        boolean queuesFiltered = false;
-        for (CommandQueue queue : queueMap.values()) {
-            DBSObject object = queue.getObject();
-            DBEObjectManager objectManager = getObjectManager(object);
-            if (objectManager instanceof DBECommandFilter) {
-                ((DBECommandFilter) objectManager).filterCommands(queue);
-                if (queue.modified) {
-                    queuesFiltered = true;
-                }
-            }
-        }
+    private static class PersistInfo {
+        final IDatabasePersistAction action;
+        boolean executed = false;
+        Throwable error;
 
-        if (queuesFiltered) {
-            mergedCommands.clear();
-            for (CommandQueue queue : queueMap.values()) {
-                mergedCommands.addAll(queue.commands);
-            }
+        public PersistInfo(IDatabasePersistAction action)
+        {
+            this.action = action;
+        }
+    }
+
+    public static class CommandInfo {
+        final DBECommand<?> command;
+        final DBECommandReflector<?, DBECommand<?>> reflector;
+        List<PersistInfo> persistActions;
+        CommandInfo mergedBy = null;
+        boolean executed = false;
+
+        CommandInfo(DBECommand<?> command, DBECommandReflector<?, DBECommand<?>> reflector)
+        {
+            this.command = command;
+            this.reflector = reflector;
         }
     }
 
     private static class CommandQueue extends AbstractCollection<DBECommand<DBSObject>> implements DBECommandQueue<DBSObject> {
+        private final CommandQueue parent;
+        private List<DBECommandQueue> subQueues;
         private final DBSObject object;
-        private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
-        private boolean modified = false;
+        private final DBEObjectManager objectManager;
+        private List<CommandInfo> commands = new ArrayList<CommandInfo>();
 
-        private CommandQueue(DBSObject object)
+        private CommandQueue(CommandQueue parent, DBSObject object)
         {
+            this.parent = parent;
             this.object = object;
+            this.objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
+            if (this.objectManager == null) {
+                throw new IllegalStateException("Can't find object manager for '" + object.getClass().getName() + "'");
+            }
+            if (parent != null) {
+                parent.addSubQueue(this);
+            }
+        }
+
+        void addSubQueue(CommandQueue queue)
+        {
+            if (subQueues == null) {
+                subQueues = new ArrayList<DBECommandQueue>();
+            }
+            subQueues.add(queue);
         }
 
         void addCommand(CommandInfo info)
@@ -442,14 +456,19 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
             return object;
         }
 
+        public DBECommandQueue getParentQueue()
+        {
+            return parent;
+        }
+
+        public Collection<DBECommandQueue> getSubQueues()
+        {
+            return subQueues;
+        }
+
         public boolean add(DBECommand dbeCommand)
         {
-            if (commands.add(new CommandInfo(dbeCommand, null))) {
-                modified = true;
-                return true;
-            } else {
-                return false;
-            }
+            return commands.add(new CommandInfo(dbeCommand, null));
         }
 
         @Override
@@ -459,7 +478,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
                 private int index = -1;
                 public boolean hasNext()
                 {
-                    return index <= commands.size() - 1;
+                    return index < commands.size() - 1;
                 }
 
                 public DBECommand<DBSObject> next()
@@ -471,7 +490,6 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
                 public void remove()
                 {
                     commands.remove(index);
-                    modified = true;
                 }
             };
         }

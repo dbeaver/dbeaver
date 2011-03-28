@@ -26,14 +26,14 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         super(user, "Update user");
     }
 
-    public void updateModel(MySQLUser object)
+    public void updateModel()
     {
         for (Map.Entry<UserPropertyHandler, Object> entry : getProperties().entrySet()) {
             switch (entry.getKey()) {
-                case MAX_QUERIES: object.setMaxQuestions(CommonUtils.toInt(entry.getValue())); break;
-                case MAX_UPDATES: object.setMaxUpdates(CommonUtils.toInt(entry.getValue())); break;
-                case MAX_CONNECTIONS: object.setMaxConnections(CommonUtils.toInt(entry.getValue())); break;
-                case MAX_USER_CONNECTIONS: object.setMaxUserConnections(CommonUtils.toInt(entry.getValue())); break;
+                case MAX_QUERIES: getObject().setMaxQuestions(CommonUtils.toInt(entry.getValue())); break;
+                case MAX_UPDATES: getObject().setMaxUpdates(CommonUtils.toInt(entry.getValue())); break;
+                case MAX_CONNECTIONS: getObject().setMaxConnections(CommonUtils.toInt(entry.getValue())); break;
+                case MAX_USER_CONNECTIONS: getObject().setMaxUserConnections(CommonUtils.toInt(entry.getValue())); break;
                 default:
                     break;
             }
@@ -89,4 +89,5 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         }
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
+
 }

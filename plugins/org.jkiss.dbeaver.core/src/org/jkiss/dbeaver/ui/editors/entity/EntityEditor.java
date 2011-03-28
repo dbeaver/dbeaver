@@ -69,9 +69,9 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     @Override
     public void dispose()
     {
-        if (getObjectCommander() != null && getObjectCommander().isDirty()) {
-            getObjectCommander().resetChanges();
-        }
+//        if (getObjectCommander() != null && getObjectCommander().isDirty()) {
+//            getObjectCommander().resetChanges();
+//        }
         if (getDatabaseObject() != null && !getDatabaseObject().isPersisted()) {
             // If edited object is still not persisted then remove object's node
             DBNNode treeNode = getEditorInput().getTreeNode();
@@ -164,8 +164,13 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         for (DBECommand command : commands) {
             try {
                 command.validateCommand();
-            } catch (DBException e) {
-                UIUtils.showErrorDialog(getSite().getShell(), "Validation", e.getMessage());
+            } catch (final DBException e) {
+                Display.getDefault().syncExec(new Runnable() {
+                    public void run()
+                    {
+                        UIUtils.showErrorDialog(getSite().getShell(), "Validation", e.getMessage());
+                    }
+                });
                 return IDialogConstants.CANCEL_ID;
             }
             IDatabasePersistAction[] persistActions = command.getPersistActions();

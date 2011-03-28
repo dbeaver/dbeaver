@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
@@ -16,5 +17,9 @@ import java.util.List;
 public interface DBECommandQueue<OBJECT_TYPE extends DBSObject> extends Collection<DBECommand<OBJECT_TYPE>> {
 
     OBJECT_TYPE getObject();
+
+    DBECommandQueue getParentQueue();
+
+    Collection<DBECommandQueue> getSubQueues();
 
 }
