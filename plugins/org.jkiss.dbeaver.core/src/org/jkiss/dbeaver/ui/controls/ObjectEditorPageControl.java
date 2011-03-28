@@ -79,7 +79,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     try {
-                        getMainEditorPart().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
+                        workbenchPart.getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
                             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
                                 getMainEditorPart().doSave(monitor);

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.views.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.ui.views.properties.PropertiesContributor;
@@ -66,10 +67,12 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart,
         // Add lazy props listener
         PropertiesContributor.getInstance().addLazyListener(this);
 
+        ProgressPageControl pageControl = new ProgressPageControl(parent, SWT.NONE);
+
         DBNNode node = getTreeNode();
 
-        Composite container = new Composite(parent, SWT.NONE);
-        container.setLayout(new GridLayout(2, false));
+        Composite container = UIUtils.createPlaceholder(pageControl, 2);
+        container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         if (node == null) {
             return;
@@ -159,6 +162,8 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart,
                 properties.selectionChanged(this, new StructuredSelection(itemObject));
             }
         }
+
+        pageControl.createProgressPanel();
     }
 
     @Override

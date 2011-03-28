@@ -20,7 +20,6 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 
