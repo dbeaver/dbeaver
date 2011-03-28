@@ -309,7 +309,8 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
         protected Composite createProgressPanel(Composite container) {
             Composite panel = super.createProgressPanel(container);
 
-            killSessionButton = new Button(panel, SWT.PUSH);
+            Composite buttonsPanel = UIUtils.createPlaceholder(panel, 3);
+            killSessionButton = new Button(buttonsPanel, SWT.PUSH);
             killSessionButton.setText("Kill session");
             killSessionButton.setEnabled(false);
             killSessionButton.addSelectionListener(new SelectionAdapter() {
@@ -322,7 +323,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
                 }
             });
 
-            killQueryButton = new Button(panel, SWT.PUSH);
+            killQueryButton = new Button(buttonsPanel, SWT.PUSH);
             killQueryButton.setText("Terminate query");
             killQueryButton.setEnabled(false);
             killQueryButton.addSelectionListener(new SelectionAdapter() {
@@ -335,7 +336,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
                 }
             });
 
-            Button refreshButton = new Button(panel, SWT.PUSH);
+            Button refreshButton = new Button(buttonsPanel, SWT.PUSH);
             refreshButton.setText("Refresh sessions");
             refreshButton.addSelectionListener(new SelectionAdapter() {
                 @Override
