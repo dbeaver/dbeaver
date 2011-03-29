@@ -22,6 +22,9 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.edit.DBEObjectDescriber;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -59,6 +62,26 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     {
         EntityEditorInput entityInput = (EntityEditorInput) getEditorInput();
         return entityInput.getTreeNode();
+    }
+
+    public boolean isNameEditable()
+    {
+        if (getDataSource().getInfo().isReadOnlyMetaData()) {
+            return false;
+        }
+        if (!getDatabaseObject().isPersisted() || getEditorInput().getObjectManager() instanceof DBEObjectRenamer) {
+            // Name always editable for new objects
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isDescriptionEditable()
+    {
+        if (getDataSource().getInfo().isReadOnlyMetaData()) {
+            return false;
+        }
+        return getEditorInput().getObjectManager() instanceof DBEObjectDescriber;
     }
 
     public void createPartControl(Composite parent)
@@ -127,7 +150,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             gd.widthHint = 200;
             nameText.setLayoutData(gd);
             nameText.setText(node.getNodeName());
-            nameText.setEditable(false);
+            nameText.setEditable(isNameEditable());
 
             Label descriptionLabel = UIUtils.createControlLabel(infoGroup, "Description");
             descriptionLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
@@ -139,7 +162,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             if (!CommonUtils.isEmpty(node.getNodeDescription())) {
                 descriptionText.setText(node.getNodeDescription());
             }
-            descriptionText.setEditable(false);
+            descriptionText.setEditable(isDescriptionEditable());
         }
 
         {
