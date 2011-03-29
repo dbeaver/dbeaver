@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.controls.itemlist;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -15,6 +16,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+import org.jkiss.dbeaver.ui.controls.ObjectEditorHandler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -26,8 +28,9 @@ import java.util.List;
  */
 public class ItemListControl extends NodeListControl
 {
-
+    private ObjectEditorHandler objectEditorHandler;
     private DBXTreeNode metaNode;
+
     public ItemListControl(
         Composite parent,
         int style,
@@ -37,6 +40,29 @@ public class ItemListControl extends NodeListControl
     {
         super(parent, style, workbenchPart, node);
         this.metaNode = metaNode;
+    }
+
+    @Override
+    public void dispose()
+    {
+        if (objectEditorHandler != null) {
+            objectEditorHandler.dispose();
+            objectEditorHandler = null;
+        }
+        super.dispose();
+    }
+
+    @Override
+    protected Composite createProgressPanel(Composite container)
+    {
+        Composite panel = super.createProgressPanel(container);
+
+        if (getWorkbenchPart() instanceof IDatabaseObjectEditor) {
+            objectEditorHandler = new ObjectEditorHandler((IDatabaseObjectEditor)getWorkbenchPart());
+            objectEditorHandler.createEditorControls(panel);
+        }
+
+        return panel;
     }
 
     @Override

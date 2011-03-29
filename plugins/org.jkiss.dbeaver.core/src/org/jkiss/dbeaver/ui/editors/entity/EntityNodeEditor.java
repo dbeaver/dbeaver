@@ -12,9 +12,12 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -24,7 +27,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 /**
  * EntityNodeEditor
  */
-class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigatorModelView, IObjectEditorPart
+class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigatorModelView, IDatabaseObjectEditor
 {
     //static final Log log = LogFactory.getLog(EntityNodeEditor.class);
 
@@ -132,4 +135,13 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         super.dispose();
     }
 
+    public IDatabaseNodeEditorInput getEditorInput()
+    {
+        return (IDatabaseNodeEditorInput)super.getEditorInput();
+    }
+
+    public DBPDataSource getDataSource()
+    {
+        return getEditorInput().getDataSource();
+    }
 }

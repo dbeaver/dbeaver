@@ -16,13 +16,11 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -31,8 +29,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
+import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.views.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.ui.views.properties.PropertiesContributor;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
@@ -44,7 +43,7 @@ import java.util.List;
 /**
  * DefaultObjectEditor
  */
-public class DefaultObjectEditor extends EditorPart implements IRefreshablePart, ILazyPropertyLoadListener
+public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, ILazyPropertyLoadListener
 {
     static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
@@ -67,7 +66,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart,
         // Add lazy props listener
         PropertiesContributor.getInstance().addLazyListener(this);
 
-        ProgressPageControl pageControl = new ProgressPageControl(parent, SWT.NONE);
+        ObjectEditorPageControl pageControl = new ObjectEditorPageControl(parent, SWT.NONE, this);
 
         DBNNode node = getTreeNode();
 
@@ -244,4 +243,5 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart,
             }
         }
     }
+
 }

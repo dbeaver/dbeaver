@@ -58,6 +58,11 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
 
     }
 
+    public void activatePart()
+    {
+        // do nothing by default
+    }
+
     public void deactivatePart() {
         // do nothing by default
     }

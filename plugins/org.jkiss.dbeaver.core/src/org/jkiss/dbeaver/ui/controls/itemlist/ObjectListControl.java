@@ -21,6 +21,7 @@ import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -71,6 +72,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             this.object = object;
         }
     }
+
+    private IWorkbenchPart workbenchPart;
     private boolean isTree;
     private boolean isFitWidth;
     private boolean isBrief;
@@ -101,10 +104,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public ObjectListControl(
         Composite parent,
         int style,
+        IWorkbenchPart workbenchPart,
         IContentProvider contentProvider)
     {
         super(parent, style);
-
+        this.workbenchPart = workbenchPart;
         this.isTree = (contentProvider instanceof ITreeContentProvider);
         this.isFitWidth = false;
         this.linkLayout = new TextLayout(parent.getDisplay());
@@ -192,6 +196,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 setInfo(status);
             }
         });
+    }
+
+    public IWorkbenchPart getWorkbenchPart()
+    {
+        return workbenchPart;
     }
 
     protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService();

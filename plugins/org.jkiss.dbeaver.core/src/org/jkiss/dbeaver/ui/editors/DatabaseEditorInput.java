@@ -8,9 +8,11 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -97,6 +99,12 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     public DBEObjectCommander getObjectCommander()
     {
         return objectCommander;
+    }
+
+    public DBEObjectManager getObjectManager()
+    {
+        DBSObject databaseObject = getDatabaseObject();
+        return databaseObject == null ? null : DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(databaseObject.getClass());
     }
 
     public void setDefaultPageId(String defaultPageId)

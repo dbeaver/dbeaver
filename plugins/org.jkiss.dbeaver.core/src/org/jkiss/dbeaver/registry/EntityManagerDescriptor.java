@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.ui.editors.entity.DefaultDatabaseObjectManager;
 
 /**
  * EntityEditorDescriptor
@@ -89,15 +88,12 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         }
         Class clazz = getManagerClass();
         if (clazz == null) {
-            log.error("Can't load manager class '" + className + "'");
+            throw new IllegalStateException("Can't load manager class '" + className + "'");
         }
         try {
             managerInstance = (DBEObjectManager) clazz.newInstance();
         } catch (Throwable ex) {
-            log.error("Error instantiating entity manager '" + className + "'", ex);
-        }
-        if (managerInstance == null) {
-            managerInstance = new DefaultDatabaseObjectManager();
+            throw new IllegalStateException("Error instantiating entity manager '" + className + "'", ex);
         }
         return managerInstance;
     }

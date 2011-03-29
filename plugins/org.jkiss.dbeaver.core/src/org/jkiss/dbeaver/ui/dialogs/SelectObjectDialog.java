@@ -57,7 +57,11 @@ public class SelectObjectDialog<T> extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        ObjectListControl<T> objectList = new ObjectListControl<T>(group, SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI), new ListContentProvider()) {
+        ObjectListControl<T> objectList = new ObjectListControl<T>(
+            group,
+            SWT.BORDER | (singleSelection ? SWT.SINGLE : SWT.MULTI),
+            null,
+            new ListContentProvider()) {
             @Override
             protected LoadingJob<Collection<T>> createLoadService()
             {

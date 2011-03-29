@@ -41,7 +41,6 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
     private DBNNode node;
-    private IWorkbenchPart workbenchPart;
 
     public NodeListControl(
         Composite parent,
@@ -49,8 +48,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         final IWorkbenchPart workbenchPart,
         DBNNode node)
     {
-        super(parent, style, createContentProvider(node));
-        this.workbenchPart = workbenchPart;
+        super(parent, style, workbenchPart, createContentProvider(node));
         this.node = node;
 
         ViewUtils.addContextMenu(workbenchPart, getItemsViewer());
@@ -198,7 +196,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         if (cellValue instanceof DBSObject) {
             DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
             if (node != null) {
-                NavigatorHandlerObjectOpen.openEntityEditor(node, null, workbenchPart.getSite().getWorkbenchWindow());
+                NavigatorHandlerObjectOpen.openEntityEditor(node, null, getWorkbenchPart().getSite().getWorkbenchWindow());
             }
         }
     }
