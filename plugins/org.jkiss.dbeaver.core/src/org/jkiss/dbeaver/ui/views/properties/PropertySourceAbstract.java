@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -83,6 +84,16 @@ public abstract class PropertySourceAbstract implements IPropertySource
     public IPropertyDescriptor[] getPropertyDescriptors()
     {
         return props.toArray(new IPropertyDescriptor[props.size()]);
+    }
+
+    public IPropertyDescriptor getPropertyDescriptor(final Object id)
+    {
+        for (IPropertyDescriptor prop : props) {
+            if (CommonUtils.equalObjects(prop.getId(), id)) {
+                return prop;
+            }
+        }
+        return null;
     }
 
     public Object getPropertyValue(final Object id)

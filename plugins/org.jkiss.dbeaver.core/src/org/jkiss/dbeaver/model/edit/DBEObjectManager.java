@@ -6,13 +6,13 @@ package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DBEObjectManager
  */
-public interface DBEObjectManager<OBJECT_TYPE extends DBSObject> {
+public interface DBEObjectManager<OBJECT_TYPE extends DBPObject> {
 
     //void filterCommands(DBECommandQueue queue);
 

@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -33,14 +34,29 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 {
     static final Log log = LogFactory.getLog(JDBCTable.class);
 
-    protected JDBCTable(CONTAINER container)
+    private boolean persisted;
+
+    protected JDBCTable(CONTAINER container, boolean persisted)
     {
         super(container);
+        this.persisted = persisted;
     }
 
-    protected JDBCTable(CONTAINER container, String tableName, String tableType)
+    protected JDBCTable(CONTAINER container, String tableName, String tableType, boolean persisted)
     {
         super(container, tableName, tableType);
+        this.persisted = persisted;
+    }
+
+    public boolean isPersisted()
+    {
+        return persisted;
+    }
+
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
+        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this));
     }
 
     public int getSupportedFeatures()

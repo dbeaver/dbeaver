@@ -55,7 +55,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
         }
         if (this.labelProvider == null) {
-            this.labelProvider = new DefaultLabelProvider();;
+            this.labelProvider = new DefaultLabelProvider();
         }
 
         // Obtain value editor
@@ -71,6 +71,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             valueEditor = new DefaultValueEditor();
         }
         //valueEditor.initEditor();
+    }
+
+    public Property getPropInfo()
+    {
+        return propInfo;
     }
 
     public boolean isViewable()

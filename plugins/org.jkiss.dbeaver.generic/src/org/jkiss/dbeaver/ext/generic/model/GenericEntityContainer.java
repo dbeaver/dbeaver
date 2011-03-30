@@ -393,10 +393,8 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 GenericEntityContainer.this,
                 tableName,
                 tableType,
-                remarks/*,
-                typeName,
-                typeCatalog,
-                typeSchema*/);
+                remarks,
+                true);
         }
 
         protected boolean isChildrenCached(GenericTable table)

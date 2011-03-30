@@ -90,7 +90,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         MySQLCatalog catalog,
         ResultSet dbResult)
     {
-        super(catalog);
+        super(catalog, true);
         this.loadInfo(dbResult);
     }
 

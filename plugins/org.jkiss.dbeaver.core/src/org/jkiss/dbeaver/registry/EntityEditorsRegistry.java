@@ -93,4 +93,15 @@ public class EntityEditorsRegistry {
         EntityManagerDescriptor entityManager = getEntityManager(aClass);
         return entityManager == null ? null : entityManager.getManager();
     }
+
+    public <T> T getObjectManager(Class<?> aClass, Class<T> managerType)
+    {
+        final DBEObjectManager<?> objectManager = getObjectManager(aClass);
+        if (objectManager != null && managerType.isAssignableFrom(objectManager.getClass())) {
+            return managerType.cast(objectManager);
+        } else {
+            return null;
+        }
+    }
+
 }
