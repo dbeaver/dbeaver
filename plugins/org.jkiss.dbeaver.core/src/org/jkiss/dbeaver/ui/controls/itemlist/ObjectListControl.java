@@ -22,6 +22,8 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -41,37 +43,13 @@ import java.util.List;
 /**
  * ObjectListControl
  */
-public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IDoubleClickListener
+public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 {
     static final Log log = LogFactory.getLog(ObjectListControl.class);
 
     private final static String LOADING_LABEL = "...";
     private final static String DATA_OBJECT_COLUMN = "objectColumn";
     private final static int LAZY_LOAD_DELAY = 100;
-
-    private static class ObjectColumn {
-        String id;
-        Item item;
-        Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<Class<?>, ObjectPropertyDescriptor>();
-
-        private ObjectColumn(Item item, String id) {
-            this.id = id;
-            this.item = item;
-        }
-        void addProperty(Class<?> objectClass, ObjectPropertyDescriptor prop)
-        {
-            this.propMap.put(objectClass, prop);
-        }
-    }
-
-    private static class LazyObject {
-        final Object object;
-        final List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
-        private LazyObject(Object object)
-        {
-            this.object = object;
-        }
-    }
 
     private IWorkbenchPart workbenchPart;
     private boolean isTree;
@@ -85,6 +63,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private SortListener sortListener;
     private IDoubleClickListener doubleClickHandler;
     private Map<Item, LazyObject> lazyObjects;
+    private ListPropertySource listPropertySource;
     private Job lazyLoadingJob = null;
 
     private final TextLayout linkLayout;
@@ -99,6 +78,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     // After content is loaded is always false (and all hyperlink cells have empty text)
     private transient boolean sampleItems = false;
 
+    private volatile Object curListObject;
     private volatile LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
 
     public ObjectListControl(
@@ -136,7 +116,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         itemsViewer.getControl().setCursor(arrowCursor);
         itemsViewer.setContentProvider(contentProvider);
         itemsViewer.setLabelProvider(new ItemLabelProvider());
-        itemsViewer.addDoubleClickListener(this);
+        itemsViewer.addDoubleClickListener(new IDoubleClickListener() {
+            public void doubleClick(DoubleClickEvent event)
+            {
+                if (doubleClickHandler != null) {
+                    // Uee provided double click
+                    doubleClickHandler.doubleClick(event);
+                }
+            }
+        });
         itemsViewer.getControl().addListener(SWT.PaintItem, new PaintListener());
         CellTrackListener mouseListener = new CellTrackListener();
         itemsViewer.getControl().addMouseListener(new MouseAdapter() {
@@ -171,12 +159,23 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         itemsViewer.getControl().addMouseTrackListener(mouseListener);
         itemsViewer.getControl().addMouseMoveListener(mouseListener);
-
+        itemsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event)
+            {
+                IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+                if (selection.isEmpty()) {
+                    curListObject = null;
+                } else {
+                    curListObject = selection.getFirstElement();
+                }
+            }
+        });
         GridData gd = new GridData(GridData.FILL_BOTH);
         itemsViewer.getControl().setLayoutData(gd);
 
         super.createProgressPanel();
 
+        listPropertySource = new ListPropertySource();
         sortListener = new SortListener();
 
         // Add selection listener
@@ -300,7 +299,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected void navigateHyperlink(Object cellValue)
     {
-        // do nothing. by defalt all cells are not navigable
+        // do nothing. by default all cells are not navigable
     }
 
     @Override
@@ -351,14 +350,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public void setDoubleClickHandler(IDoubleClickListener doubleClickHandler)
     {
         this.doubleClickHandler = doubleClickHandler;
-    }
-
-    public void doubleClick(DoubleClickEvent event)
-    {
-        if (doubleClickHandler != null) {
-            // USe provided double click
-            doubleClickHandler.doubleClick(event);
-        }
     }
 
     private synchronized void addLazyObject(Item item, ObjectColumn column)
@@ -531,6 +522,77 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
+    //////////////////////////////////////////////////////
+    // Property source implementation
+
+    private class ListPropertySource implements IPropertySource {
+
+        public Object getEditableValue()
+        {
+            return curListObject;
+        }
+
+        public IPropertyDescriptor[] getPropertyDescriptors()
+        {
+            Set<IPropertyDescriptor> props = new LinkedHashSet<IPropertyDescriptor>();
+            for (ObjectColumn column : columns) {
+                props.addAll(column.propMap.values());
+            }
+            return props.toArray(new IPropertyDescriptor[props.size()]);
+        }
+
+        public Object getPropertyValue(Object id)
+        {
+            return null;
+        }
+
+        public boolean isPropertySet(Object id)
+        {
+            return false;
+        }
+
+        public void resetPropertyValue(Object id)
+        {
+        }
+
+        public void setPropertyValue(Object id, Object value)
+        {
+        }
+    }
+
+    //////////////////////////////////////////////////////
+    // Column descriptor
+
+    private static class ObjectColumn {
+        String id;
+        Item item;
+        Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<Class<?>, ObjectPropertyDescriptor>();
+
+        private ObjectColumn(Item item, String id) {
+            this.id = id;
+            this.item = item;
+        }
+        void addProperty(Class<?> objectClass, ObjectPropertyDescriptor prop)
+        {
+            this.propMap.put(objectClass, prop);
+        }
+    }
+
+    //////////////////////////////////////////////////////
+    // Lazy object info
+
+    private static class LazyObject {
+        final Object object;
+        final List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
+        private LazyObject(Object object)
+        {
+            this.object = object;
+        }
+    }
+
+    //////////////////////////////////////////////////////
+    // List sorter
+
     private class SortListener implements Listener
     {
         int sortDirection = SWT.DOWN;
@@ -607,8 +669,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
 
-        //private List<ItemCell<OBJECT_TYPE>> lazyItems = new ArrayList<ItemCell<OBJECT_TYPE>>();
-
         public ObjectsLoadVisualizer()
         {
         }
@@ -622,13 +682,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (itemsControl.isDisposed()) {
                 return;
             }
+
+            // Collect list of items' classes
             final List<Class<?>> classList = new ArrayList<Class<?>>();
             Class<?>[] baseTypes = getListBaseTypes();
             if (!CommonUtils.isEmpty(baseTypes)) {
                 Collections.addAll(classList, baseTypes);
             }
             if (!CommonUtils.isEmpty(items)) {
-                // Create columns
                 for (OBJECT_TYPE item : items) {
                     Object object = getObjectValue(item);
                     if (!classList.contains(object.getClass())) {
@@ -640,8 +701,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
 
+            // Create columns from classes' annotations
             for (Class<?> objectClass : classList) {
-                List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(objectClass);
+                List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass);
                 for (ObjectPropertyDescriptor prop : props) {
                     if (!prop.isViewable()) {
                         continue;
@@ -650,6 +712,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
 
+            // Set viewer content
             final List<OBJECT_TYPE> objectList = CommonUtils.isEmpty(items) ? Collections.<OBJECT_TYPE>emptyList() : new ArrayList<OBJECT_TYPE>(items);
             setInfo(getItemsLoadMessage(objectList.size()));
 
@@ -674,16 +737,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 } finally {
                     sampleItems = false;
                 }
-                itemsViewer.setInput(objectList);
 
-/*
-                // Load all lazy items in one job
-                if (!CommonUtils.isEmpty(lazyItems)) {
-                    LoadingUtils.createService(
-                        new ValueLoadService(lazyItems),
-                        new ValuesLoadVisualizer());
-                }
-*/
+                // Set real content
+                itemsViewer.setInput(objectList);
             }
         }
 
@@ -716,51 +772,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
     }
-
-/*
-    private class ValueLoadService extends DatabaseLoadService<Object> {
-        private Collection<ItemCell<OBJECT_TYPE>> lazyItems;
-        public ValueLoadService(Collection<ItemCell<OBJECT_TYPE>> lazyItems)
-        {
-            super("Load item values", getDataSource());
-            this.lazyItems = lazyItems;
-        }
-
-        public Object evaluate()
-            throws InvocationTargetException, InterruptedException
-        {
-            for (ItemCell<OBJECT_TYPE> item : lazyItems) {
-                // Check control is disposed
-                if (isDisposed() || getProgressMonitor().isCanceled()) {
-                    break;
-                }
-                // Extract value with progress monitor
-                try {
-                    item.value = item.prop.readValue(getObjectValue(item.object), getProgressMonitor());
-                }
-                catch (InvocationTargetException e) {
-                    log.warn(e.getTargetException());
-                    item.value = "???";
-                }
-                catch (IllegalAccessException e) {
-                    log.warn(e);
-                    item.value = "???";
-                }
-            }
-            return null;
-        }
-    }
-
-    private class ValuesLoadVisualizer extends ProgressVisualizer<Object> {
-
-        public void visualizeLoading()
-        {
-            super.visualizeLoading();if (!getItemsViewer().getControl().isDisposed()) {
-                getItemsViewer().refresh();
-            }
-        }
-    }
-*/
 
 	class PaintListener implements Listener {
 

@@ -6,11 +6,12 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPPersistedObject;
 
 /**
  * Meta object
  */
-public interface DBSObject extends DBPNamedObject
+public interface DBSObject extends DBPNamedObject, DBPPersistedObject
 {
 
     /**
@@ -32,11 +33,5 @@ public interface DBSObject extends DBPNamedObject
      * @return datasource reference
      */
     DBPDataSource getDataSource();
-
-    /**
-     * Object's persisted flag
-     * @return true if object is persisted in external data source
-     */
-    boolean isPersisted();
 
 }

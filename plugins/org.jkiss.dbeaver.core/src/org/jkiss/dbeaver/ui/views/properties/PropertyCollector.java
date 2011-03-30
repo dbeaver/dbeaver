@@ -37,7 +37,7 @@ public class PropertyCollector extends PropertySourceAbstract
 
     public void collectProperties(Object object)
     {
-        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(object);
+        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, object.getClass());
         for (final ObjectPropertyDescriptor desc : annoProps) {
             if (desc.isCollectionAnno()) {
                 DBRRunnableWithProgress loader = new DBRRunnableWithProgress() {

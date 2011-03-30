@@ -6,12 +6,13 @@ package org.jkiss.dbeaver.ui.views.properties;
 
 import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.model.DBPPersistedObject;
+import org.jkiss.dbeaver.model.meta.IPropertyValueEditor;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -25,14 +26,51 @@ import java.util.Collection;
 */
 public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements IPropertyDescriptor
 {
+    private static ILabelProvider DEFAULT_LABEL_PROVIDER = new DefaultLabelProvider();
+
     private Property propInfo;
     private Method setter;
+    private ILabelProvider labelProvider;
+    private IPropertyValueEditor valueEditor;
 
-    public ObjectPropertyDescriptor(ObjectPropertyGroupDescriptor parent, Property propInfo, Method getter)
+    public ObjectPropertyDescriptor(
+        IPropertySource source,
+        ObjectPropertyGroupDescriptor parent,
+        Property propInfo,
+        Method getter)
     {
-        super(parent, getter, propInfo.id(), propInfo.order());
+        super(source, parent, getter, propInfo.id(), propInfo.order());
         this.propInfo = propInfo;
-        this.setter = BeanUtils.getSetMethod(getter.getDeclaringClass(), getId());
+        this.setter = BeanUtils.getSetMethod(
+            getter.getDeclaringClass(),
+            BeanUtils.getPropertyNameFromGetter(getter.getName()));
+
+        // Obtain label provider
+        Class<ILabelProvider> labelProviderClass = propInfo.labelProvider();
+        if (labelProviderClass != null && labelProviderClass != ILabelProvider.class) {
+            try {
+                this.labelProvider = labelProviderClass.newInstance();
+            } catch (Throwable e) {
+                log.warn(e);
+            }
+        }
+        if (this.labelProvider == null) {
+            this.labelProvider = DEFAULT_LABEL_PROVIDER;
+        }
+
+        // Obtain value editor
+        Class<IPropertyValueEditor> valueEditorClass = propInfo.valueEditor();
+        if (valueEditorClass != null && valueEditorClass != IPropertyValueEditor.class) {
+            try {
+                valueEditor = valueEditorClass.newInstance();
+            } catch (Throwable e) {
+                log.warn(e);
+            }
+        }
+        if (valueEditor == null) {
+            valueEditor = new DefaultValueEditor();
+        }
+        //valueEditor.initEditor();
     }
 
     public boolean isViewable()
@@ -42,7 +80,21 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public CellEditor createPropertyEditor(Composite parent)
     {
-        return null;
+        if (!propInfo.editable() || !isNewObject(getSource()) && !propInfo.updatable()) {
+            // Read-only or non-updatable property for non-new object
+            return null;
+        }
+
+        return valueEditor.createCellEditor(parent, propInfo);
+    }
+
+    private boolean isNewObject(IPropertySource source)
+    {
+        Object value = source.getEditableValue();
+        if (value instanceof DBPPersistedObject) {
+            return !((DBPPersistedObject)value).isPersisted();
+        }
+        return false;
     }
 
     public String getCategory()
@@ -67,41 +119,18 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public Object getHelpContextIds()
     {
-        return null;
+        return propInfo.helpContextId();
     }
 
     public ILabelProvider getLabelProvider()
     {
-        return new LabelProvider() {
-
-            public Image getImage(Object element)
-            {
-/*
-                if (element instanceof DBSObject) {
-                    DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject((DBSObject) element, true);
-                    if (node != null) {
-                        return node.getNodeIconDefault();
-                    }
-                }
-                return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
-*/
-                return null;
-            }
-
-            public String getText(Object element)
-            {
-                return element == null ?
-                    "" :
-                    element instanceof DBSObject ?
-                        ((DBSObject)element).getName() :
-                        element.toString();
-            }
-        };
+        return this.labelProvider;
     }
 
     public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
     {
-        return false;
+        return anotherProperty instanceof ObjectPropertyDescriptor &&
+            ((ObjectPropertyDescriptor)anotherProperty).propInfo == propInfo;
     }
 
     public Object readValue(Object object, DBRProgressMonitor progressMonitor)
@@ -140,4 +169,47 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return Collection.class.isAssignableFrom(getGetter().getReturnType());
     }
 
+    private static class DefaultLabelProvider extends LabelProvider {
+
+        public Image getImage(Object element)
+        {
+/*
+            if (element instanceof DBSObject) {
+                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject((DBSObject) element, true);
+                if (node != null) {
+                    return node.getNodeIconDefault();
+                }
+            }
+            return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
+*/
+            return null;
+        }
+
+        public String getText(Object element)
+        {
+            return element == null ?
+                "" :
+                element instanceof DBSObject ?
+                    ((DBSObject)element).getName() :
+                    element.toString();
+        }
+    }
+
+    private class DefaultValueEditor implements IPropertyValueEditor {
+
+        public CellEditor createCellEditor(Composite parent, Property property)
+        {
+            Class<?> propertyType = getGetter().getReturnType();
+            if (CharSequence.class.isAssignableFrom(propertyType)) {
+                return new TextCellEditor(parent);
+            } else if (Number.class.isAssignableFrom(propertyType)) {
+                return new TextCellEditor(parent);
+            } else if (Boolean.class.isAssignableFrom(propertyType)) {
+                return new CheckboxCellEditor(parent);
+            } else {
+                return null;
+            }
+        }
+
+    }
 }

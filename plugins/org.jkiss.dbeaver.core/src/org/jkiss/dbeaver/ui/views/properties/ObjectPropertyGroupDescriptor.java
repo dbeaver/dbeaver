@@ -4,14 +4,15 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * ObjectPropertyDescriptor
@@ -21,11 +22,15 @@ public class ObjectPropertyGroupDescriptor extends ObjectAttributeDescriptor
     private PropertyGroup groupInfo;
     private List<ObjectPropertyDescriptor> children = new ArrayList<ObjectPropertyDescriptor>();
 
-    public ObjectPropertyGroupDescriptor(ObjectPropertyGroupDescriptor parent, Method getter, PropertyGroup groupInfo)
+    public ObjectPropertyGroupDescriptor(
+        IPropertySource source,
+        ObjectPropertyGroupDescriptor parent,
+        Method getter,
+        PropertyGroup groupInfo)
     {
-        super(parent, getter, groupInfo.id(), groupInfo.order());
+        super(source, parent, getter, groupInfo.id(), groupInfo.order());
         this.groupInfo = groupInfo;
-        extractAnnotations(this, getGetter().getReturnType(), children);
+        extractAnnotations(source, this, getGetter().getReturnType(), children);
     }
 
     public String getCategory()

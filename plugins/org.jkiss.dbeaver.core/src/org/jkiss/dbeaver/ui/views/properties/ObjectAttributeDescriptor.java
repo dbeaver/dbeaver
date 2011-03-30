@@ -8,17 +8,19 @@ import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Abstract object attribute
@@ -27,6 +29,7 @@ public abstract class ObjectAttributeDescriptor {
 
     static final Log log = LogFactory.getLog(ObjectAttributeDescriptor.class);
 
+    private final IPropertySource source;
     private ObjectPropertyGroupDescriptor parent;
     private int orderNumber;
     private String id;
@@ -35,11 +38,13 @@ public abstract class ObjectAttributeDescriptor {
     private IPropertyCacheValidator cacheValidator;
 
     public ObjectAttributeDescriptor(
+        IPropertySource source,
         ObjectPropertyGroupDescriptor parent,
         Method getter,
         String id,
         int orderNumber)
     {
+        this.source = source;
         this.parent = parent;
         this.getter = getter;
         this.orderNumber = orderNumber;
@@ -62,6 +67,11 @@ public abstract class ObjectAttributeDescriptor {
                 }
             }
         }
+    }
+
+    public IPropertySource getSource()
+    {
+        return source;
     }
 
     public int getOrderNumber()
@@ -113,26 +123,28 @@ public abstract class ObjectAttributeDescriptor {
 
     public abstract String getDescription();
 
-    public static List<ObjectPropertyDescriptor> extractAnnotations(Object object)
+    public static List<ObjectPropertyDescriptor> extractAnnotations(IPropertySource source)
     {
-        return extractAnnotations(object.getClass());
+        return extractAnnotations(
+            source,
+            source.getEditableValue().getClass());
     }
 
-    public static List<ObjectPropertyDescriptor> extractAnnotations(Class<?> theClass)
+    public static List<ObjectPropertyDescriptor> extractAnnotations(IPropertySource source, Class<?> theClass)
     {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
-        extractAnnotations(null, theClass, annoProps);
+        extractAnnotations(source, null, theClass, annoProps);
         return annoProps;
     }
 
-    public static void extractAnnotations(ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps)
+    static void extractAnnotations(IPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps)
     {
         Method[] methods = theClass.getMethods();
         for (Method method : methods) {
             final PropertyGroup propGroupInfo = method.getAnnotation(PropertyGroup.class);
             if (propGroupInfo != null && method.getReturnType() != null) {
                 // Property group
-                ObjectPropertyGroupDescriptor groupDescriptor = new ObjectPropertyGroupDescriptor(parent, method, propGroupInfo);
+                ObjectPropertyGroupDescriptor groupDescriptor = new ObjectPropertyGroupDescriptor(source, parent, method, propGroupInfo);
                 annoProps.addAll(groupDescriptor.getChildren());
             } else {
                 final Property propInfo = method.getAnnotation(Property.class);
@@ -140,7 +152,7 @@ public abstract class ObjectAttributeDescriptor {
                     continue;
                 }
                 // Single property
-                ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(parent, propInfo, method);
+                ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method);
                 annoProps.add(desc);
             }
         }

@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.meta;
 
+import org.eclipse.jface.viewers.ILabelProvider;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,5 +33,11 @@ public @interface Property
     boolean viewable() default false;
 
     int order() default Integer.MAX_VALUE;
+
+    String helpContextId() default "";
+
+    Class<ILabelProvider> labelProvider() default ILabelProvider.class;
+
+    Class<IPropertyValueEditor> valueEditor() default IPropertyValueEditor.class;
 
 }
