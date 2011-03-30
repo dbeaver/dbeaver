@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -14,7 +15,7 @@ import java.util.List;
  * Object commander.
  * Provides facilities for object edit commands, undo/redo, save/revert
  */
-public interface DBECommandQueue<OBJECT_TYPE extends DBSObject> extends Collection<DBECommand<OBJECT_TYPE>> {
+public interface DBECommandQueue<OBJECT_TYPE extends DBPObject> extends Collection<DBECommand<OBJECT_TYPE>> {
 
     OBJECT_TYPE getObject();
 

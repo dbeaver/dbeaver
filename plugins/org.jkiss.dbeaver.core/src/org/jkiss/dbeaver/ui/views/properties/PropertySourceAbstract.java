@@ -10,6 +10,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
@@ -24,7 +28,7 @@ import java.util.*;
 /**
  * PropertyCollector
  */
-public class PropertySourceAbstract implements IPropertySource
+public abstract class PropertySourceAbstract implements IPropertySource
 {
     private Object sourceObject;
     private Object object;
@@ -56,7 +60,7 @@ public class PropertySourceAbstract implements IPropertySource
     {
         if (value instanceof Collection) {
             props.add(new PropertyDescriptor(id, name));
-            propValues.put(id, new PropertySourceCollection(id, loadLazyProps, (Collection<?>) value));
+            propValues.put(id, new PropertySourceCollection(this, id, loadLazyProps, (Collection<?>) value));
         } else {
             props.add(new PropertyDescriptor(id, name));
             propValues.put(id, value);
@@ -144,7 +148,22 @@ public class PropertySourceAbstract implements IPropertySource
 
     public void setPropertyValue(Object id, Object value)
     {
+        if (getEditableValue() instanceof DBPObject) {
+            DBEObjectCommander objectCommander = getObjectCommander();
+            if (objectCommander != null) {
+                objectCommander.addCommand(
+                    new DBECommandProperty<DBPObject>(
+                        (DBPObject) getEditableValue(),
+                        null,
+                        value),
+                    null);
+            }
+        }
     }
+
+    protected abstract DBEObjectCommander getObjectCommander();
+
+    protected abstract DBEObjectManager getObjectManager();
 
     private class PropertySheetLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
 

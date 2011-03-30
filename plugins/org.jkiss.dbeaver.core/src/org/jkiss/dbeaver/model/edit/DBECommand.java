@@ -6,14 +6,14 @@ package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.DBPObject;
 
 import java.util.Map;
 
 /**
  * Object change command
  */
-public interface DBECommand<OBJECT_TYPE extends DBSObject> {
+public interface DBECommand<OBJECT_TYPE extends DBPObject> {
 
     String getTitle();
 

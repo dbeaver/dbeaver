@@ -23,7 +23,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -551,6 +554,27 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             return props.toArray(new IPropertyDescriptor[props.size()]);
         }
+
+        @Override
+        protected DBEObjectCommander getObjectCommander()
+        {
+            if (getWorkbenchPart() instanceof IDatabaseObjectEditor) {
+                return ((IDatabaseObjectEditor) getWorkbenchPart()).getEditorInput().getObjectCommander();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        protected DBEObjectManager getObjectManager()
+        {
+            if (getWorkbenchPart() instanceof IDatabaseObjectEditor) {
+                return ((IDatabaseObjectEditor) getWorkbenchPart()).getEditorInput().getObjectManager();
+            } else {
+                return null;
+            }
+        }
+
     }
 
     //////////////////////////////////////////////////////

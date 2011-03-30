@@ -5,19 +5,23 @@
 package org.jkiss.dbeaver.ui.views.properties;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 
 import java.util.Collection;
 
 /**
  *
  */
-public class PropertySourceCollection extends PropertySourceAbstract {
+class PropertySourceCollection extends PropertySourceAbstract {
 
+    private PropertySourceAbstract parentSource;
     private Object id;
 
-    public PropertySourceCollection(Object id, boolean loadLazyProps, Collection<?> value)
+    PropertySourceCollection(PropertySourceAbstract parentSource, Object id, boolean loadLazyProps, Collection<?> value)
     {
         super(value, value, loadLazyProps);
+        this.parentSource = parentSource;
         this.id = id;
 
         int propIndex = 0;
@@ -44,4 +48,17 @@ public class PropertySourceCollection extends PropertySourceAbstract {
     {
         return "[" + ((Collection<?>)super.getEditableValue()).size() + "]"; 
     }
+
+    @Override
+    protected DBEObjectCommander getObjectCommander()
+    {
+        return parentSource.getObjectCommander();
+    }
+
+    @Override
+    protected DBEObjectManager getObjectManager()
+    {
+        return parentSource.getObjectManager();
+    }
+
 }

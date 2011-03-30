@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -11,7 +12,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Updates UI on command undo/redo actions.
  * Note: reflector isn't invoked after command creation (because command is created AFTER UI changes).
  */
-public interface DBECommandReflector<OBJECT_TYPE extends DBSObject, COMMAND extends DBECommand<OBJECT_TYPE>> {
+public interface DBECommandReflector<OBJECT_TYPE extends DBPObject, COMMAND extends DBECommand<OBJECT_TYPE>> {
 
     void redoCommand(COMMAND command);
 

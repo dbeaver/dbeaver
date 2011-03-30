@@ -6,16 +6,16 @@ package org.jkiss.dbeaver.model.edit.prop;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
 
 /**
  * Abstract object command
  */
-public class DBECommandProperty<OBJECT_TYPE extends DBSObject> extends DBECommandImpl<OBJECT_TYPE> {
+public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBECommandImpl<OBJECT_TYPE> {
 
     public static final String PROP_COMPOSITE_COMMAND = ".composite";
 

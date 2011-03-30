@@ -7,8 +7,14 @@ package org.jkiss.dbeaver.ui.views.properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -20,9 +26,35 @@ public class PropertyCollector extends PropertySourceAbstract
 {
     static final Log log = LogFactory.getLog(PropertyCollector.class);
 
+    private DBEObjectCommander commander;
+    private DBEObjectManager manager;
+
     public PropertyCollector(Object sourceObject, Object object, boolean loadLazyProps)
     {
         super(sourceObject, object, loadLazyProps);
+
+        DBSDataSourceContainer container = null;
+        if (sourceObject instanceof IDataSourceContainerProvider) {
+            container = ((IDataSourceContainerProvider) sourceObject).getDataSourceContainer();
+        } else if (sourceObject instanceof IDataSourceProvider) {
+            container = ((IDataSourceProvider) sourceObject).getDataSource().getContainer();
+        }
+        if (container != null) {
+            commander = new DBEObjectCommanderImpl(container);
+            manager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(sourceObject.getClass());
+        }
+    }
+
+    @Override
+    protected DBEObjectCommander getObjectCommander()
+    {
+        return commander;
+    }
+
+    @Override
+    protected DBEObjectManager getObjectManager()
+    {
+        return manager;
     }
 
     public PropertyCollector(Object object, boolean loadLazyProps)

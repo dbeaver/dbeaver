@@ -9,12 +9,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.*;
 
@@ -123,11 +123,6 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
                 }
             }
         }
-    }
-
-    private DBEObjectManager getObjectManager(DBSObject object)
-    {
-        return DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
     }
 
     public void resetChanges()
@@ -283,7 +278,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
 
         // Create queues from commands
         for (CommandInfo commandInfo : commands) {
-            DBSObject object = commandInfo.command.getObject();
+            DBPObject object = commandInfo.command.getObject();
             CommandQueue queue = null;
             if (!commandQueues.isEmpty()) {
                 for (CommandQueue tmpQueue : commandQueues) {
@@ -418,14 +413,14 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
         }
     }
 
-    private static class CommandQueue extends AbstractCollection<DBECommand<DBSObject>> implements DBECommandQueue<DBSObject> {
+    private static class CommandQueue extends AbstractCollection<DBECommand<DBPObject>> implements DBECommandQueue<DBPObject> {
         private final CommandQueue parent;
         private List<DBECommandQueue> subQueues;
-        private final DBSObject object;
+        private final DBPObject object;
         private final DBEObjectManager objectManager;
         private List<CommandInfo> commands = new ArrayList<CommandInfo>();
 
-        private CommandQueue(CommandQueue parent, DBSObject object)
+        private CommandQueue(CommandQueue parent, DBPObject object)
         {
             this.parent = parent;
             this.object = object;
@@ -451,7 +446,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
             commands.add(info);
         }
 
-        public DBSObject getObject()
+        public DBPObject getObject()
         {
             return object;
         }
@@ -472,19 +467,19 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
         }
 
         @Override
-        public Iterator<DBECommand<DBSObject>> iterator()
+        public Iterator<DBECommand<DBPObject>> iterator()
         {
-            return new Iterator<DBECommand<DBSObject>>() {
+            return new Iterator<DBECommand<DBPObject>>() {
                 private int index = -1;
                 public boolean hasNext()
                 {
                     return index < commands.size() - 1;
                 }
 
-                public DBECommand<DBSObject> next()
+                public DBECommand<DBPObject> next()
                 {
                     index++;
-                    return (DBECommand<DBSObject>) commands.get(index).command;
+                    return (DBECommand<DBPObject>) commands.get(index).command;
                 }
 
                 public void remove()
