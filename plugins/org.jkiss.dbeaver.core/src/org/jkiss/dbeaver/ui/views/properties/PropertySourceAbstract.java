@@ -161,6 +161,9 @@ public class PropertySourceAbstract implements IPropertySource
             try {
                 Map<ObjectPropertyDescriptor, Object> result = new IdentityHashMap<ObjectPropertyDescriptor, Object>();
                 for (ObjectPropertyDescriptor prop : obtainLazyProperties()) {
+                    if (getProgressMonitor().isCanceled()) {
+                        break;
+                    }
                     result.put(prop, prop.readValue(object, getProgressMonitor()));
                 }
                 return result;

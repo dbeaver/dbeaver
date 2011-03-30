@@ -22,9 +22,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.navigator.INavigatorContentExtension;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -33,8 +31,7 @@ import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
-import org.jkiss.dbeaver.ui.views.properties.ObjectAttributeDescriptor;
-import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.ui.views.properties.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
@@ -44,8 +41,7 @@ import java.util.List;
 /**
  * ObjectListControl
  */
-public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
-{
+public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl {
     static final Log log = LogFactory.getLog(ObjectListControl.class);
 
     private final static String LOADING_LABEL = "...";
@@ -173,6 +169,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         });
         GridData gd = new GridData(GridData.FILL_BOTH);
         itemsViewer.getControl().setLayoutData(gd);
+        //PropertiesContributor.getInstance().addLazyListener(this);
 
         super.createProgressPanel();
 
@@ -306,6 +303,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     @Override
     public void dispose()
     {
+        //PropertiesContributor.getInstance().removeLazyListener(this);
         if (loadingJob != null) {
             // Cancel running job
             loadingJob.cancel();
@@ -523,10 +521,22 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
+    public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
+    {
+        if (completed) {
+            itemsViewer.update(object, null);
+        }
+    }
+
     //////////////////////////////////////////////////////
     // Property source implementation
 
-    private class ListPropertySource implements IPropertySource {
+    private class ListPropertySource extends PropertySourceAbstract {
+
+        public ListPropertySource()
+        {
+            super(ObjectListControl.this, ObjectListControl.this, true);
+        }
 
         public Object getEditableValue()
         {
@@ -540,24 +550,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 props.addAll(column.propMap.values());
             }
             return props.toArray(new IPropertyDescriptor[props.size()]);
-        }
-
-        public Object getPropertyValue(Object id)
-        {
-            return null;
-        }
-
-        public boolean isPropertySet(Object id)
-        {
-            return false;
-        }
-
-        public void resetPropertyValue(Object id)
-        {
-        }
-
-        public void setPropertyValue(Object id, Object value)
-        {
         }
     }
 
