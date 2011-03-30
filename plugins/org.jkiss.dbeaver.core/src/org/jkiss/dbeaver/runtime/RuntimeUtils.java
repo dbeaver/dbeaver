@@ -186,6 +186,7 @@ public class RuntimeUtils
         synchronized (RuntimeUtils.class) {
             if (jexlEngine == null) {
                 jexlEngine = new JexlEngine(null, null, null, log);
+                jexlEngine.setCache(100);
             }
         }
         try {

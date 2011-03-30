@@ -413,7 +413,7 @@ public class SearchObjectsView extends ViewPart {
     private class SearchResultsControl extends NodeListControl {
         public SearchResultsControl(Composite resultsGroup)
         {
-            super(resultsGroup, SWT.BORDER, SearchObjectsView.this, DBeaverCore.getInstance().getNavigatorModel().getRoot());
+            super(resultsGroup, SWT.BORDER, SearchObjectsView.this, DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
         }
 
         @Override

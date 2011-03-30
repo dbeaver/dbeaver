@@ -515,4 +515,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
         return super.get(s);
     }
+
+    @Override
+    public String toString()
+    {
+        return getNodeType() + " " + getNodeName();
+    }
 }

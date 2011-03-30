@@ -29,7 +29,6 @@ import java.util.List;
 public class ItemListControl extends NodeListControl
 {
     private ObjectEditorHandler objectEditorHandler;
-    private DBXTreeNode metaNode;
 
     public ItemListControl(
         Composite parent,
@@ -38,8 +37,7 @@ public class ItemListControl extends NodeListControl
         DBNNode node,
         DBXTreeNode metaNode)
     {
-        super(parent, style, workbenchPart, node);
-        this.metaNode = metaNode;
+        super(parent, style, workbenchPart, node, metaNode);
     }
 
     @Override
@@ -69,7 +67,7 @@ public class ItemListControl extends NodeListControl
     protected LoadingJob<Collection<DBNNode>> createLoadService()
     {
         return LoadingUtils.createService(
-            new ItemLoadService(metaNode),
+            new ItemLoadService(getNodeMeta()),
             new ObjectsLoadVisualizer());
     }
 

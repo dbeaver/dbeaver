@@ -41,15 +41,18 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
     private DBNNode node;
+    private DBXTreeNode nodeMeta;
 
     public NodeListControl(
         Composite parent,
         int style,
         final IWorkbenchPart workbenchPart,
-        DBNNode node)
+        DBNNode node,
+        DBXTreeNode nodeMeta)
     {
-        super(parent, style, workbenchPart, createContentProvider(node));
+        super(parent, style, workbenchPart, createContentProvider(node, nodeMeta));
         this.node = node;
+        this.nodeMeta = nodeMeta;
 
         ViewUtils.addContextMenu(workbenchPart, getItemsViewer());
 
@@ -75,10 +78,14 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         super.dispose();
     }
 
-    private static IContentProvider createContentProvider(DBNNode node)
+    private static IContentProvider createContentProvider(DBNNode node, DBXTreeNode metaNode)
     {
         if (node instanceof DBNDatabaseNode) {
-            final List<DBXTreeNode> inlineMetas = collectInlineMetas((DBNDatabaseNode) node);
+            final DBNDatabaseNode dbNode = (DBNDatabaseNode) node;
+            if (metaNode == null) {
+                metaNode = dbNode.getMeta();
+            }
+            final List<DBXTreeNode> inlineMetas = collectInlineMetas(dbNode, metaNode);
 
             if (!inlineMetas.isEmpty()) {
                 return new TreeContentProvider() {
@@ -116,11 +123,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         return new ListContentProvider();
     }
 
-    private static List<DBXTreeNode> collectInlineMetas(DBNDatabaseNode node)
+    private static List<DBXTreeNode> collectInlineMetas(DBNDatabaseNode node, DBXTreeNode meta)
     {
         final List<DBXTreeNode> inlineMetas = new ArrayList<DBXTreeNode>();
 
-        DBXTreeNode meta = node.getMeta();
         if (meta instanceof DBXTreeFolder) {
             // If this is a folder - iterate through all its children
             for (DBXTreeNode metaChild : meta.getChildren(node)) {
@@ -168,6 +174,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
     public DBNNode getRootNode() {
         return node;
+    }
+
+    public DBXTreeNode getNodeMeta()
+    {
+        return nodeMeta;
     }
 
     @Override

@@ -82,7 +82,18 @@ public abstract class DBXTreeNode
 
     public boolean hasChildren(JexlContext context)
     {
-        return !CommonUtils.isEmpty(getChildren(context));
+        if (CommonUtils.isEmpty(children)) {
+            return false;
+        }
+        if (context == null) {
+            return true;
+        }
+        for (DBXTreeNode child : children) {
+            if (child.isVisible(context)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<DBXTreeNode> getChildren(JexlContext context)
@@ -98,7 +109,7 @@ public abstract class DBXTreeNode
             if (hasExpr) {
                 List<DBXTreeNode> filteredChildren = new ArrayList<DBXTreeNode>(children.size());
                 for (DBXTreeNode child : children) {
-                    if (child.getVisibleIf() == null || Boolean.TRUE.equals(child.getVisibleIf().evaluate(context))) {
+                    if (child.isVisible(context)) {
                         filteredChildren.add(child);
                     }
                 }
@@ -106,6 +117,11 @@ public abstract class DBXTreeNode
             }
         }
         return children;
+    }
+
+    private boolean isVisible(JexlContext context)
+    {
+        return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(context));
     }
 
     private void addChild(DBXTreeNode child)

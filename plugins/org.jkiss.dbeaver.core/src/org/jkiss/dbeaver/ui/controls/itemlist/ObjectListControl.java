@@ -873,7 +873,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         String text = getCellString(cellValue);
         linkLayout.setText(text);
-        linkLayout.setIndent(3);
+        linkLayout.setIndent(0);
         linkLayout.setStyle(linkStyle, 0, text.length());
     }
 
