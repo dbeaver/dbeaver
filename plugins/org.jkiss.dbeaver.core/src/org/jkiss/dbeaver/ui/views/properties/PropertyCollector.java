@@ -30,14 +30,14 @@ public class PropertyCollector extends PropertySourceAbstract
         super(object, object, loadLazyProps);
     }
 
-    public void collectProperties()
+    public void collectProperties(IPropertyFilter filter)
     {
-        this.collectProperties(this.getEditableValue());
+        this.collectProperties(this.getEditableValue(), filter);
     }
 
-    public void collectProperties(Object object)
+    public void collectProperties(Object object, IPropertyFilter filter)
     {
-        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, object.getClass());
+        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, object.getClass(), filter);
         for (final ObjectPropertyDescriptor desc : annoProps) {
             if (desc.isCollectionAnno()) {
                 DBRRunnableWithProgress loader = new DBRRunnableWithProgress() {

@@ -9,7 +9,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.ui.views.properties.IPropertySource;
-import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -123,28 +122,24 @@ public abstract class ObjectAttributeDescriptor {
 
     public abstract String getDescription();
 
-    public static List<ObjectPropertyDescriptor> extractAnnotations(IPropertySource source)
-    {
-        return extractAnnotations(
-            source,
-            source.getEditableValue().getClass());
-    }
-
-    public static List<ObjectPropertyDescriptor> extractAnnotations(IPropertySource source, Class<?> theClass)
+    public static List<ObjectPropertyDescriptor> extractAnnotations(
+        IPropertySource source,
+        Class<?> theClass,
+        IPropertyFilter filter)
     {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
-        extractAnnotations(source, null, theClass, annoProps);
+        extractAnnotations(source, null, theClass, annoProps, filter);
         return annoProps;
     }
 
-    static void extractAnnotations(IPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps)
+    static void extractAnnotations(IPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IPropertyFilter filter)
     {
         Method[] methods = theClass.getMethods();
         for (Method method : methods) {
             final PropertyGroup propGroupInfo = method.getAnnotation(PropertyGroup.class);
             if (propGroupInfo != null && method.getReturnType() != null) {
                 // Property group
-                ObjectPropertyGroupDescriptor groupDescriptor = new ObjectPropertyGroupDescriptor(source, parent, method, propGroupInfo);
+                ObjectPropertyGroupDescriptor groupDescriptor = new ObjectPropertyGroupDescriptor(source, parent, method, propGroupInfo, filter);
                 annoProps.addAll(groupDescriptor.getChildren());
             } else {
                 final Property propInfo = method.getAnnotation(Property.class);
@@ -153,6 +148,9 @@ public abstract class ObjectAttributeDescriptor {
                 }
                 // Single property
                 ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method);
+                if (filter != null && !filter.isValid(desc)) {
+                    continue;
+                }
                 annoProps.add(desc);
             }
         }

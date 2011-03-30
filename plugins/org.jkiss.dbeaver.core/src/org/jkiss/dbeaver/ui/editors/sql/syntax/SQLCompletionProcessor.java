@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLQueryInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.assist.SQLAssistProposalsService;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.views.properties.PropertyViewFilter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -407,7 +408,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         StringBuilder info = new StringBuilder();
         PropertyCollector collector = new PropertyCollector(object, false);
-        collector.collectProperties();
+        collector.collectProperties(null);
         for (IPropertyDescriptor descriptor : collector.getPropertyDescriptors()) {
             Object propValue = collector.getPropertyValue(descriptor.getId());
             if (propValue == null) {

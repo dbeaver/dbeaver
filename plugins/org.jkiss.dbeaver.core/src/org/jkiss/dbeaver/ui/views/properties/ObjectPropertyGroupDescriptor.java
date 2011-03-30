@@ -26,11 +26,12 @@ public class ObjectPropertyGroupDescriptor extends ObjectAttributeDescriptor
         IPropertySource source,
         ObjectPropertyGroupDescriptor parent,
         Method getter,
-        PropertyGroup groupInfo)
+        PropertyGroup groupInfo,
+        IPropertyFilter filter)
     {
         super(source, parent, getter, groupInfo.id(), groupInfo.order());
         this.groupInfo = groupInfo;
-        extractAnnotations(source, this, getGetter().getReturnType(), children);
+        extractAnnotations(source, this, getGetter().getReturnType(), children, filter);
     }
 
     public String getCategory()

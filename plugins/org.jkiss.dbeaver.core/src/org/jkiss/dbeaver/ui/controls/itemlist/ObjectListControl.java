@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.navigator.INavigatorContentExtension;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -576,6 +577,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         {
             this.propMap.put(objectClass, prop);
         }
+
+        public ObjectPropertyDescriptor getProperty(Object element)
+        {
+            return propMap.get(element.getClass());
+        }
     }
 
     //////////////////////////////////////////////////////
@@ -654,6 +660,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 return rotateImages[loadCount % 4];
             }
 */
+            //ObjectPropertyDescriptor property = columns.get(columnIndex).getProperty(element);
+            //return property == null ? null : property.getLabelProvider().getImage(element);
             return null;
         }
 
@@ -703,7 +711,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
             // Create columns from classes' annotations
             for (Class<?> objectClass : classList) {
-                List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass);
+                List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass, null);
                 for (ObjectPropertyDescriptor prop : props) {
                     if (!prop.isViewable()) {
                         continue;

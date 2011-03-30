@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.views.properties.PropertyViewFilter;
 
 /**
  * Navigator AdapterFactory
@@ -82,7 +83,7 @@ public class DBNAdapterFactory implements IAdapterFactory
             }
             if (dbObject != null) {
                 PropertyCollector props = new PropertyCollector(adaptableObject, dbObject , true);
-                props.collectProperties();
+                props.collectProperties(PropertyViewFilter.INSTANCE);
                 if (props.isEmpty() && adaptableObject instanceof DBSObject) {
                     // Add default properties
                     DBSObject meta = (DBSObject)adaptableObject;
