@@ -11,6 +11,11 @@ import org.jkiss.dbeaver.model.edit.DBECommandListener;
  * Command adapter
  */
 public abstract class DBECommandAdapter implements DBECommandListener {
+
+    public void onCommandChange(DBECommand command)
+    {
+    }
+
     public void onSave()
     {
     }

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.views.properties;
 import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -16,6 +17,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueEditor;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,8 +28,6 @@ import java.util.Collection;
 */
 public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements IPropertyDescriptor
 {
-    private static ILabelProvider DEFAULT_LABEL_PROVIDER = new DefaultLabelProvider();
-
     private Property propInfo;
     private Method setter;
     private ILabelProvider labelProvider;
@@ -55,7 +55,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
         }
         if (this.labelProvider == null) {
-            this.labelProvider = DEFAULT_LABEL_PROVIDER;
+            this.labelProvider = new DefaultLabelProvider();;
         }
 
         // Obtain value editor
@@ -80,12 +80,20 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public CellEditor createPropertyEditor(Composite parent)
     {
-        if (!propInfo.editable() || !isNewObject(getSource()) && !propInfo.updatable()) {
-            // Read-only or non-updatable property for non-new object
+        if (!isEditable()) {
             return null;
         }
-
         return valueEditor.createCellEditor(parent, propInfo);
+    }
+
+    private boolean isEditable()
+    {
+        final IPropertySource propertySource = getSource();
+        if (!(propertySource instanceof IPropertySourceEditable) || !((IPropertySourceEditable) propertySource).isEditable()) {
+            return false;
+        }
+        // Read-only or non-updatable property for non-new object
+        return isNewObject(propertySource) ? propInfo.editable() : propInfo.updatable();
     }
 
     private boolean isNewObject(IPropertySource source)
@@ -169,10 +177,17 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return Collection.class.isAssignableFrom(getGetter().getReturnType());
     }
 
-    private static class DefaultLabelProvider extends LabelProvider {
+    private class DefaultLabelProvider extends LabelProvider implements IFontProvider {
 
         public Image getImage(Object element)
         {
+            if (getSource() instanceof IPropertySourceEditable) {
+                if (isEditable()) {
+                    return DBIcon.BULLET_GREEN.getImage();
+                } else {
+                    return DBIcon.BULLET_RED.getImage();
+                }
+            }
 /*
             if (element instanceof DBSObject) {
                 DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject((DBSObject) element, true);
@@ -192,6 +207,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 element instanceof DBSObject ?
                     ((DBSObject)element).getName() :
                     element.toString();
+        }
+
+        public Font getFont(Object element)
+        {
+            return null;
         }
     }
 

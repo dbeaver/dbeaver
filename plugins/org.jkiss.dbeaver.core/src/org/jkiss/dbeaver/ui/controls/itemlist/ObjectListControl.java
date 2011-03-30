@@ -23,10 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -34,7 +31,9 @@ import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
-import org.jkiss.dbeaver.ui.views.properties.*;
+import org.jkiss.dbeaver.ui.views.properties.ObjectAttributeDescriptor;
+import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
@@ -524,13 +523,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
-    {
-        if (completed) {
-            itemsViewer.update(object, null);
-        }
-    }
-
     //////////////////////////////////////////////////////
     // Property source implementation
 
@@ -553,26 +545,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 props.addAll(column.propMap.values());
             }
             return props.toArray(new IPropertyDescriptor[props.size()]);
-        }
-
-        @Override
-        protected DBEObjectCommander getObjectCommander()
-        {
-            if (getWorkbenchPart() instanceof IDatabaseObjectEditor) {
-                return ((IDatabaseObjectEditor) getWorkbenchPart()).getEditorInput().getObjectCommander();
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        protected DBEObjectManager getObjectManager()
-        {
-            if (getWorkbenchPart() instanceof IDatabaseObjectEditor) {
-                return ((IDatabaseObjectEditor) getWorkbenchPart()).getEditorInput().getObjectManager();
-            } else {
-                return null;
-            }
         }
 
     }

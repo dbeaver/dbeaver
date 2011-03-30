@@ -73,9 +73,11 @@ public class DBNAdapterFactory implements IAdapterFactory
             } else if (adaptableObject instanceof DBPObject) {
                 dbObject = (DBPObject) adaptableObject;
             }
-
+            if (dbObject instanceof IPropertySource) {
+                return dbObject;
+            }
             if (dbObject instanceof IAdaptable) {
-                Object adapter = ((IAdaptable) dbObject).getAdapter(adapterType);
+                Object adapter = ((IAdaptable) dbObject).getAdapter(IPropertySource.class);
                 if (adapter != null) {
                     return adapter;
                 }

@@ -4,17 +4,17 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
@@ -30,6 +30,8 @@ import java.util.*;
  */
 public abstract class PropertySourceAbstract implements IPropertySource
 {
+    static final Log log = LogFactory.getLog(PropertySourceAbstract.class);
+
     private Object sourceObject;
     private Object object;
     private boolean loadLazyProps;
@@ -144,10 +146,13 @@ public abstract class PropertySourceAbstract implements IPropertySource
 
     public void resetPropertyValue(Object id)
     {
+        throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
 
     public void setPropertyValue(Object id, Object value)
     {
+        throw new UnsupportedOperationException("Cannot update property in non-editable property source");
+/*
         if (getEditableValue() instanceof DBPObject) {
             DBEObjectCommander objectCommander = getObjectCommander();
             if (objectCommander != null) {
@@ -159,11 +164,43 @@ public abstract class PropertySourceAbstract implements IPropertySource
                     null);
             }
         }
+*/
     }
 
-    protected abstract DBEObjectCommander getObjectCommander();
-
-    protected abstract DBEObjectManager getObjectManager();
+    public void collectProperties(IPropertyFilter filter)
+    {
+        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, object.getClass(), filter);
+        for (final ObjectPropertyDescriptor desc : annoProps) {
+            if (desc.isCollectionAnno()) {
+                DBRRunnableWithProgress loader = new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            Object value = desc.readValue(getEditableValue(), monitor);
+                            addProperty(desc.getId(), desc.getDisplayName(), value);
+                        } catch (IllegalAccessException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                };
+                // Add as collection
+                try {
+                    if (desc.isLazy(object, true)) {
+                        DBeaverCore.getInstance().runInProgressService(loader);
+                    } else {
+                        loader.run(null);
+                    }
+                }
+                catch (InvocationTargetException e) {
+                    log.error(e.getTargetException());
+                } catch (InterruptedException e) {
+                    // Do nothing
+                }
+            } else {
+                addProperty(desc);
+            }
+        }
+    }
 
     private class PropertySheetLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
 

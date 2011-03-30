@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -51,6 +52,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     private static Map<Class<?>, String> defaultPageMap = new HashMap<Class<?>, String>();
 
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
+    private DBECommandAdapter commandListener;
 
     public EntityEditor()
     {
@@ -72,6 +74,10 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 //        if (getObjectCommander() != null && getObjectCommander().isDirty()) {
 //            getObjectCommander().resetChanges();
 //        }
+        if (commandListener != null && getObjectCommander() != null) {
+            getObjectCommander().removeCommandListener(commandListener);
+            commandListener = null;
+        }
         if (getDatabaseObject() != null && !getDatabaseObject().isPersisted()) {
             // If edited object is still not persisted then remove object's node
             DBNNode treeNode = getEditorInput().getTreeNode();
@@ -201,6 +207,17 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     protected void createPages()
     {
+        // Command listener
+        commandListener = new DBECommandAdapter() {
+            @Override
+            public void onCommandChange(DBECommand command)
+            {
+                firePropertyChange(IEditorPart.PROP_DIRTY);
+            }
+        };
+        getObjectCommander().addCommandListener(commandListener);
+
+        // Property listener
         addPropertyListener(new IPropertyListener() {
             public void propertyChanged(Object source, int propId)
             {

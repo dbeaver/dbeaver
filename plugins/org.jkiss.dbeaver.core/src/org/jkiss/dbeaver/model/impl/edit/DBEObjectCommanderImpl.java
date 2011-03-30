@@ -170,6 +170,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
             clearUndidCommands();
             clearCommandQueues();
         }
+        fireCommandChange(command);
     }
 
     public void removeCommand(DBECommand<?> command)
@@ -184,6 +185,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
             clearUndidCommands();
             clearCommandQueues();
         }
+        fireCommandChange(command);
     }
 
     public void updateCommand(DBECommand<?> command)
@@ -192,6 +194,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
             clearUndidCommands();
             clearCommandQueues();
         }
+        fireCommandChange(command);
     }
 
     public void addCommandListener(DBECommandListener listener)
@@ -205,6 +208,13 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
     {
         synchronized (listeners) {
             listeners.remove(listener);
+        }
+    }
+
+    private void fireCommandChange(DBECommand<?> command)
+    {
+        for (DBECommandListener listener : getListeners()) {
+            listener.onCommandChange(command);
         }
     }
 

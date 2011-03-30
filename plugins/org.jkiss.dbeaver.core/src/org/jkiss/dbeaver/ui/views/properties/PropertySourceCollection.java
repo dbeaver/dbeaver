@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.ui.views.properties;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 
 import java.util.Collection;
 
@@ -47,18 +45,6 @@ class PropertySourceCollection extends PropertySourceAbstract {
     public Object getEditableValue()
     {
         return "[" + ((Collection<?>)super.getEditableValue()).size() + "]"; 
-    }
-
-    @Override
-    protected DBEObjectCommander getObjectCommander()
-    {
-        return parentSource.getObjectCommander();
-    }
-
-    @Override
-    protected DBEObjectManager getObjectManager()
-    {
-        return parentSource.getObjectManager();
     }
 
 }

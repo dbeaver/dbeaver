@@ -13,7 +13,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.*;
+import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Link;
@@ -22,19 +25,17 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.edit.DBEObjectDescriber;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
 
 import java.util.ArrayList;
@@ -57,28 +58,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
 
     private DBNNode getTreeNode()
     {
-        EntityEditorInput entityInput = (EntityEditorInput) getEditorInput();
-        return entityInput.getTreeNode();
-    }
-
-    public boolean isNameEditable()
-    {
-        if (getDataSource().getInfo().isReadOnlyMetaData()) {
-            return false;
-        }
-        if (!getDatabaseObject().isPersisted() || getEditorInput().getObjectManager() instanceof DBEObjectRenamer) {
-            // Name always editable for new objects
-            return true;
-        }
-        return false;
-    }
-
-    public boolean isDescriptionEditable()
-    {
-        if (getDataSource().getInfo().isReadOnlyMetaData()) {
-            return false;
-        }
-        return getEditorInput().getObjectManager() instanceof DBEObjectDescriber;
+        return getEditorInput().getTreeNode();
     }
 
     public void createPartControl(Composite parent)
@@ -167,7 +147,12 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             properties.init(new ProxyPageSite(getSite()));
             properties.createControl(propsPlaceholder);
             if (itemObject != null) {
-                properties.selectionChanged(this, new StructuredSelection(itemObject));
+                DBEObjectCommander commander = getEditorInput().getObjectCommander();
+                PropertySourceEditable propertySource = new PropertySourceEditable(
+                    itemObject instanceof DBNDatabaseNode ? ((DBNDatabaseNode) itemObject).getObject() : itemObject,
+                    commander);
+                propertySource.collectProperties(null);
+                properties.selectionChanged(this, new StructuredSelection(propertySource));
             }
         }
 

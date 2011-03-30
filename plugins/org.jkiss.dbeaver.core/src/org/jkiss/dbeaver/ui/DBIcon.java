@@ -79,6 +79,8 @@ public enum DBIcon
     FIT_WINDOW("fit_window", "/icons/misc/fit-window.png"),
     ORIGINAL_SIZE("original_size", "/icons/misc/original-size.png"),
     ASTERISK("asterisk", "/icons/misc/asterisk.png"),
+    BULLET_GREEN("bullet_green", "/icons/misc/bullet_green.png"),
+    BULLET_RED("bullet_red", "/icons/misc/bullet_red.png"),
     BULLET_STAR("bullet_star", "/icons/misc/bullet_star.png"),
     ARROW_UP("arrow_up", "/icons/misc/arrow_up.png"),
     ARROW_DOWN("arrow_down", "/icons/misc/arrow_down.png"),

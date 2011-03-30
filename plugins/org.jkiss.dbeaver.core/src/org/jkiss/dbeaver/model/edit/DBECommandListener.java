@@ -9,6 +9,8 @@ package org.jkiss.dbeaver.model.edit;
  */
 public interface DBECommandListener {
 
+    void onCommandChange(DBECommand command);
+
     void onSave();
 
     void onReset();

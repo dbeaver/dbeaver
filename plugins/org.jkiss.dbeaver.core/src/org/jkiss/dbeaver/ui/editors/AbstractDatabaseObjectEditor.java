@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -106,18 +107,15 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         DBECommandReflector<OBJECT_TYPE, ? extends DBECommand<OBJECT_TYPE>> reflector)
     {
         getObjectCommander().addCommand(command, (DBECommandReflector) reflector);
-        firePropertyChange(PROP_DIRTY);
     }
 
     public void removeChangeCommand(DBECommand<OBJECT_TYPE> command)
     {
         getObjectCommander().removeCommand(command);
-        firePropertyChange(PROP_DIRTY);
     }
 
     public void updateChangeCommand(DBECommand<OBJECT_TYPE> command)
     {
         getObjectCommander().updateCommand(command);
-        firePropertyChange(PROP_DIRTY);
     }
 }
