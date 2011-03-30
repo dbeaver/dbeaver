@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.runtime.sql.SQLQueryInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.assist.SQLAssistProposalsService;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.views.properties.PropertyViewFilter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

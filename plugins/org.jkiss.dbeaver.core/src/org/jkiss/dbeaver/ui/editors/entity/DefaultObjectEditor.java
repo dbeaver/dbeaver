@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -14,16 +13,16 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.layout.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.edit.DBEObjectDescriber;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -35,8 +34,6 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
-import org.jkiss.dbeaver.ui.views.properties.ILazyPropertyLoadListener;
-import org.jkiss.dbeaver.ui.views.properties.PropertiesContributor;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
 
@@ -46,13 +43,13 @@ import java.util.List;
 /**
  * DefaultObjectEditor
  */
-public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, ILazyPropertyLoadListener
+public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart//, ILazyPropertyLoadListener
 {
     static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
     private PropertyPageTabbed properties;
-    private Text nameText;
-    private Text descriptionText;
+    //private Text nameText;
+    //private Text descriptionText;
 
     public DefaultObjectEditor()
     {
@@ -87,13 +84,20 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     public void createPartControl(Composite parent)
     {
         // Add lazy props listener
-        PropertiesContributor.getInstance().addLazyListener(this);
+        //PropertiesContributor.getInstance().addLazyListener(this);
 
         ObjectEditorPageControl pageControl = new ObjectEditorPageControl(parent, SWT.NONE, this);
 
         DBNNode node = getTreeNode();
 
-        Composite container = UIUtils.createPlaceholder(pageControl, 2);
+        Composite container = new Composite(pageControl, SWT.NONE);
+        GridLayout gl = new GridLayout(2, false);
+        gl.verticalSpacing = 5;
+        gl.horizontalSpacing = 0;
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        container.setLayout(gl);
+
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         if (node == null) {
@@ -102,7 +106,9 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         {
             // Path
             Group infoGroup = UIUtils.createControlGroup(container, "Path", 3, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            infoGroup.setLayout(new RowLayout());
 
+/*
             if (node instanceof DBNDatabaseNode) {
                 DBNDatabaseNode dbNode = (DBNDatabaseNode)node;
                 if (dbNode.getObject() != null && dbNode.getObject().getDataSource() != null) {
@@ -121,9 +127,10 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
                         });
                 }
             }
+*/
             List<DBNDatabaseNode> nodeList = new ArrayList<DBNDatabaseNode>();
-            for (DBNNode n = node.getParentNode(); n != null; n = n.getParentNode()) {
-                if (n instanceof DBNDatabaseNode && !(n instanceof DBNDatabaseFolder)) {
+            for (DBNNode n = node; n != null; n = n.getParentNode()) {
+                if (n instanceof DBNDatabaseNode) {
                     nodeList.add(0, (DBNDatabaseNode)n);
                 }
             }
@@ -141,29 +148,8 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
                     });
             }
         }
-        {
-            // General options
-            Group infoGroup = UIUtils.createControlGroup(container, "General", 2, GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            UIUtils.createControlLabel(infoGroup, "Name");
-            nameText = new Text(infoGroup, SWT.BORDER);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.widthHint = 200;
-            nameText.setLayoutData(gd);
-            nameText.setText(node.getNodeName());
-            nameText.setEditable(isNameEditable());
 
-            Label descriptionLabel = UIUtils.createControlLabel(infoGroup, "Description");
-            descriptionLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            descriptionText = new Text(infoGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-            gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
-            gd.widthHint = 200;
-            gd.heightHint = descriptionLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y * 3;
-            descriptionText.setLayoutData(gd);
-            if (!CommonUtils.isEmpty(node.getNodeDescription())) {
-                descriptionText.setText(node.getNodeDescription());
-            }
-            descriptionText.setEditable(isDescriptionEditable());
-        }
+        createNamePanel(node, container);
 
         {
             // Properties
@@ -188,11 +174,38 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         pageControl.createProgressPanel();
     }
 
+    private void createNamePanel(DBNNode node, Composite container)
+    {
+/*
+        // General options
+        Group infoGroup = UIUtils.createControlGroup(container, "General", 2, GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        UIUtils.createControlLabel(infoGroup, "Name");
+        nameText = new Text(infoGroup, SWT.BORDER);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 200;
+        nameText.setLayoutData(gd);
+        nameText.setText(node.getNodeName());
+        nameText.setEditable(isNameEditable());
+
+        Label descriptionLabel = UIUtils.createControlLabel(infoGroup, "Description");
+        descriptionLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        descriptionText = new Text(infoGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
+        gd.widthHint = 200;
+        gd.heightHint = descriptionLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y * 3;
+        descriptionText.setLayoutData(gd);
+        if (!CommonUtils.isEmpty(node.getNodeDescription())) {
+            descriptionText.setText(node.getNodeDescription());
+        }
+        descriptionText.setEditable(isDescriptionEditable());
+*/
+    }
+
     @Override
     public void dispose()
     {
-        // Add lazy props listener
-        PropertiesContributor.getInstance().removeLazyListener(this);
+        // Remove lazy props listener
+        //PropertiesContributor.getInstance().removeLazyListener(this);
 
         if (properties != null) {
             properties.dispose();
@@ -241,18 +254,21 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     private void createPathRow(Composite infoGroup, Image image, String label, String value, SelectionListener selectionListener)
     {
         UIUtils.createImageLabel(infoGroup, image);
-        UIUtils.createControlLabel(infoGroup, label);
+        //UIUtils.createControlLabel(infoGroup, label);
 
         Link objectLink = new Link(infoGroup, SWT.NONE);
-        objectLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        //objectLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (selectionListener == null) {
             objectLink.setText(value);
+            objectLink.setToolTipText(label);
         } else {
-            objectLink.setText("<A>" + value + "</A>");
+            objectLink.setText("<A>" + value + "</A>   ");
             objectLink.addSelectionListener(selectionListener);
+            objectLink.setToolTipText("Open " + label + " Editor");
         }
     }
 
+/*
     public void handlePropertyLoad(final Object object, final Object propertyId, final Object propertyValue, final boolean completed)
     {
         if (completed && object == getTreeNode()) {
@@ -266,5 +282,6 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             }
         }
     }
+*/
 
 }

@@ -511,7 +511,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public Object get(String s)
     {
         if (JEXL_VAR_OBJECT.equals(s)) {
-            return getObject();
+            return getValueObject();
         }
         return super.get(s);
     }
