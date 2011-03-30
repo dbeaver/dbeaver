@@ -15,9 +15,9 @@ public class DBXTreeFolder extends DBXTreeNode
     private String label;
     private String description;
 
-    public DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, String type, String label, boolean navigable)
+    public DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, String type, String label, boolean navigable, String visibleIf)
     {
-        super(source, parent, navigable, false);
+        super(source, parent, navigable, false, visibleIf);
         this.type = type;
         this.label = label;
     }

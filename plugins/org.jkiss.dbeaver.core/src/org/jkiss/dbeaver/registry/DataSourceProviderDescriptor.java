@@ -28,6 +28,27 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider";
 
+    public static final String TREE_NODE_TYPE_FOLDER = "folder";
+    public static final String TREE_NODE_TYPE_ITEMS = "items";
+    public static final String TREE_NODE_TYPE_OBJECT = "object";
+
+    public static final String TREE_ATTR_PATH = "path";
+    public static final String TREE_ATTR_VISIBLE_IF = "visibleIf";
+    public static final String TREE_ATTR_TYPE = "type";
+    public static final String TREE_ATTR_LABEL = "label";
+    public static final String TREE_ATTR_NAVIGABLE = "navigable";
+    public static final String TREE_ATTR_DESCRIPTION = "description";
+    public static final String TREE_ATTR_ITEM_LABEL = "itemLabel";
+    public static final String TREE_ATTR_PROPERTY = "property";
+    public static final String TREE_ATTR_OPTIONAL = "optional";
+    public static final String TREE_ATTR_VIRTUAL = "virtual";
+    public static final String TREE_ATTR_INLINE = "inline";
+    public static final String TREE_ATTR_EDITOR = "editor";
+    public static final String TREE_ATTR_ICON = "icon";
+    public static final String TREE_ATTR_ICON_ID = "iconId";
+    public static final String TREE_ATTR_IF = "if";
+    public static final String TREE_ATTR_DEFAULT = "default";
+
     private DataSourceProviderRegistry registry;
     private String id;
     private String implClassName;
@@ -48,9 +69,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
         this.id = config.getAttribute("id");
         this.implClassName = config.getAttribute("class");
-        this.name = config.getAttribute("label");
-        this.description = config.getAttribute("description");
-        String iconName = config.getAttribute("icon");
+        this.name = config.getAttribute(TREE_ATTR_LABEL);
+        this.description = config.getAttribute(TREE_ATTR_DESCRIPTION);
+        String iconName = config.getAttribute(TREE_ATTR_ICON);
         if (!CommonUtils.isEmpty(iconName)) {
             this.icon = iconToImage(iconName);
         }
@@ -256,12 +277,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             null,
             "Connection",
             "Connection",
-            config.getAttribute("path"),
+            config.getAttribute(TREE_ATTR_PATH),
             null,
             false,
             false,
             true,
-            false);
+            false,
+            config.getAttribute(TREE_ATTR_VISIBLE_IF));
         loadTreeChildren(config, treeRoot);
         loadTreeIcon(treeRoot, config);
         return treeRoot;
@@ -281,34 +303,37 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         DBXTreeNode child = null;
         String nodeType = config.getName();
-        if (nodeType.equals("folder")) {
+        if (nodeType.equals(TREE_NODE_TYPE_FOLDER)) {
             DBXTreeFolder folder = new DBXTreeFolder(
                 this,
                 parent,
-                config.getAttribute("type"),
-                config.getAttribute("label"),
-                !"false".equals(config.getAttribute("navigable")));
-            folder.setDescription(config.getAttribute("description"));
+                config.getAttribute(TREE_ATTR_TYPE),
+                config.getAttribute(TREE_ATTR_LABEL),
+                !"false".equals(config.getAttribute(TREE_ATTR_NAVIGABLE)),
+                config.getAttribute(TREE_ATTR_VISIBLE_IF));
+            folder.setDescription(config.getAttribute(TREE_ATTR_DESCRIPTION));
             child = folder;
-        } else if (nodeType.equals("items")) {
+        } else if (nodeType.equals(TREE_NODE_TYPE_ITEMS)) {
             child = new DBXTreeItem(
                 this,
                 parent,
-                config.getAttribute("label"),
-                config.getAttribute("itemLabel"),
-                config.getAttribute("path"),
-                config.getAttribute("property"),
-                "true".equals(config.getAttribute("optional")),
-                "true".equals(config.getAttribute("virtual")),
-                !"false".equals(config.getAttribute("navigable")),
-                "true".equals(config.getAttribute("inline")));
-        } else if (nodeType.equals("object")) {
+                config.getAttribute(TREE_ATTR_LABEL),
+                config.getAttribute(TREE_ATTR_ITEM_LABEL),
+                config.getAttribute(TREE_ATTR_PATH),
+                config.getAttribute(TREE_ATTR_PROPERTY),
+                "true".equals(config.getAttribute(TREE_ATTR_OPTIONAL)),
+                "true".equals(config.getAttribute(TREE_ATTR_VIRTUAL)),
+                !"false".equals(config.getAttribute(TREE_ATTR_NAVIGABLE)),
+                "true".equals(config.getAttribute(TREE_ATTR_INLINE)),
+                config.getAttribute(TREE_ATTR_VISIBLE_IF));
+        } else if (nodeType.equals(TREE_NODE_TYPE_OBJECT)) {
             child = new DBXTreeObject(
                 this,
                 parent,
-                config.getAttribute("label"),
-                config.getAttribute("description"),
-                config.getAttribute("editor"));
+                config.getAttribute(TREE_ATTR_VISIBLE_IF),
+                config.getAttribute(TREE_ATTR_LABEL),
+                config.getAttribute(TREE_ATTR_DESCRIPTION),
+                config.getAttribute(TREE_ATTR_EDITOR));
         } else {
             // Unknown node type
         }
@@ -320,19 +345,19 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     private void loadTreeIcon(DBXTreeNode node, IConfigurationElement config)
     {
-        String defaultIcon = config.getAttribute("icon");
+        String defaultIcon = config.getAttribute(TREE_ATTR_ICON);
         if (defaultIcon == null) {
-            defaultIcon = config.getAttribute("iconId");
+            defaultIcon = config.getAttribute(TREE_ATTR_ICON_ID);
         }
-        IConfigurationElement[] iconElements = config.getChildren("icon");
+        IConfigurationElement[] iconElements = config.getChildren(TREE_ATTR_ICON);
         if (!CommonUtils.isEmpty(iconElements)) {
             for (IConfigurationElement iconElement : iconElements) {
-                String icon = iconElement.getAttribute("icon");
+                String icon = iconElement.getAttribute(TREE_ATTR_ICON);
                 if (icon == null) {
-                    icon = iconElement.getAttribute("iconId");
+                    icon = iconElement.getAttribute(TREE_ATTR_ICON_ID);
                 }
-                String expr = iconElement.getAttribute("if");
-                boolean isDefault = "true".equals(iconElement.getAttribute("default"));
+                String expr = iconElement.getAttribute(TREE_ATTR_IF);
+                boolean isDefault = "true".equals(iconElement.getAttribute(TREE_ATTR_DEFAULT));
                 if (isDefault && CommonUtils.isEmpty(expr)) {
                     defaultIcon = icon;
                 } else {

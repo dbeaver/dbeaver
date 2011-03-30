@@ -36,25 +36,25 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="Unique Keys" iconId="#constraints" description="Table unique keys" if="!view">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="Unique Keys" iconId="#constraints" description="Table unique keys" visibleIf="!object.view">
                                     <items label="Unique Key" path="uniqueKey" property="uniqueKeys" iconId="#unique-key">
                                         <items label="Unique key columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys" if="!view">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys" visibleIf="!object.view">
                                     <items label="Foreign Key" path="foreignKey" property="foreignKeys" iconId="#foreign-key">
                                         <items label="Foreign key columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="References" iconId="#references" description="Table references" if="!view">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="References" iconId="#references" description="Table references" visibleIf="!object.view">
                                     <items label="Reference" path="reference" property="references" iconId="#reference">
                                         <items label="Reference columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <items label="Sub-table" optional="true" path="subtable" property="subTables" iconId="#table" recursive=".." if="!view">
+                                <items label="Sub-table" optional="true" path="subtable" property="subTables" iconId="#table" recursive=".." visibleIf="!object.view">
                                 </items>
                             </items>
                         </folder>

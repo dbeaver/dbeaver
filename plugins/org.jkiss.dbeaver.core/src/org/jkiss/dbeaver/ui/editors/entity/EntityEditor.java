@@ -362,7 +362,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             // Add itself as tab (if it has child items)
             if (node instanceof DBNDatabaseNode) {
                 DBNDatabaseNode databaseNode = (DBNDatabaseNode)node;
-                List<DBXTreeNode> subNodes = databaseNode.getMeta().getChildren();
+                List<DBXTreeNode> subNodes = databaseNode.getMeta().getChildren(databaseNode);
                 if (subNodes != null) {
                     for (DBXTreeNode child : subNodes) {
                         if (child instanceof DBXTreeItem) {

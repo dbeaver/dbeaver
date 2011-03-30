@@ -91,15 +91,17 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public boolean hasChildren()
     {
-        return this.getMeta().hasChildren();
+        return this.getMeta().hasChildren(this);
     }
 
     public boolean hasNavigableChildren()
     {
-        if (!this.getMeta().hasChildren()) {
+        final List<DBXTreeNode> metaChildren = this.getMeta().getChildren(this);
+
+        if (CommonUtils.isEmpty(metaChildren)) {
             return false;
         } else {
-            for (DBXTreeNode child : this.getMeta().getChildren()) {
+            for (DBXTreeNode child : metaChildren) {
                 if (child.isNavigable()) {
                     return true;
                 }
@@ -142,7 +144,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     void addChildItem(DBSObject object)
     {
-        final List<DBXTreeNode> metaChildren = getMeta().getChildren();
+        final List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
         if (!CommonUtils.isEmpty(metaChildren) && metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
             final DBNDatabaseItem newChild = new DBNDatabaseItem(this, (DBXTreeItem) metaChildren.get(0), object, false);
             childNodes.add(newChild);
@@ -272,13 +274,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         final List<DBNDatabaseNode> toList)
         throws DBException
     {
-        if (!meta.hasChildren()) {
+        List<DBXTreeNode> childMetas = meta.getChildren(this);
+        if (CommonUtils.isEmpty(childMetas)) {
             return;
         }
-        List<DBXTreeNode> childMetas = meta.getChildren();
         monitor.beginTask("Load items ...", childMetas.size());
 
-        for (DBXTreeNode child : meta.getChildren()) {
+        for (DBXTreeNode child : childMetas) {
             if (monitor.isCanceled()) {
                 break;
             }
@@ -464,7 +466,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public List<Class<?>> getChildrenTypes()
     {
-        List<DBXTreeNode> childMetas = getMeta().getChildren();
+        List<DBXTreeNode> childMetas = getMeta().getChildren(this);
         if (CommonUtils.isEmpty(childMetas)) {
             return null;
         } else {

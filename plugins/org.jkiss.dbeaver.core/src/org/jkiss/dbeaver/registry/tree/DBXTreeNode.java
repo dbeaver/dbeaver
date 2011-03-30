@@ -5,12 +5,15 @@
 package org.jkiss.dbeaver.registry.tree;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.jexl2.JexlException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +33,9 @@ public abstract class DBXTreeNode
     private List<DBXTreeIcon> icons;
     private final boolean navigable;
     private final boolean inline;
+    private Expression visibleIf;
 
-    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, boolean navigable, boolean inline)
+    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, boolean navigable, boolean inline, String visibleIf)
     {
         this.source = source;
         this.parent = parent;
@@ -40,6 +44,13 @@ public abstract class DBXTreeNode
         }
         this.navigable = navigable;
         this.inline = inline;
+        if (!CommonUtils.isEmpty(visibleIf)) {
+            try {
+                this.visibleIf = RuntimeUtils.parseExpression(visibleIf);
+            } catch (DBException e) {
+                log.warn(e);
+            }
+        }
     }
 
     public AbstractDescriptor getSource()
@@ -69,13 +80,31 @@ public abstract class DBXTreeNode
         return parent;
     }
 
-    public boolean hasChildren()
+    public boolean hasChildren(JexlContext context)
     {
-        return !CommonUtils.isEmpty(children);
+        return !CommonUtils.isEmpty(getChildren(context));
     }
 
-    public List<DBXTreeNode> getChildren()
+    public List<DBXTreeNode> getChildren(JexlContext context)
     {
+        if (context != null && !CommonUtils.isEmpty(children)) {
+            boolean hasExpr = false;
+            for (DBXTreeNode child : children) {
+                if (child.getVisibleIf() != null) {
+                    hasExpr = true;
+                    break;
+                }
+            }
+            if (hasExpr) {
+                List<DBXTreeNode> filteredChildren = new ArrayList<DBXTreeNode>(children.size());
+                for (DBXTreeNode child : children) {
+                    if (child.getVisibleIf() == null || Boolean.TRUE.equals(child.getVisibleIf().evaluate(context))) {
+                        filteredChildren.add(child);
+                    }
+                }
+                return filteredChildren;
+            }
+        }
         return children;
     }
 
@@ -118,24 +147,6 @@ public abstract class DBXTreeNode
     public Image getIcon(JexlContext context)
     {
         List<DBXTreeIcon> extIcons = getIcons();
-/*
-        if (!CommonUtils.isEmpty(extIcons)) {
-            // Try to get some icon depending on it's condition
-            for (DBXTreeIcon icon : extIcons) {
-                if (CommonUtils.isEmpty(icon.getExprString())) {
-                    continue;
-                }
-                try {
-                    Object propValue = BeanUtils.readObjectProperty(forObject, icon.getExprString());
-                    if (Boolean.TRUE.equals(propValue) || (propValue instanceof String && Boolean.TRUE.equals(Boolean.valueOf((String)propValue)))) {
-                        return icon.getIcon();
-                    }
-                } catch (Exception e) {
-                    // do nothing
-                }
-            }
-        }
-*/
         if (!CommonUtils.isEmpty(extIcons)) {
             // Try to get some icon depending on it's condition
             for (DBXTreeIcon icon : extIcons) {
@@ -154,5 +165,10 @@ public abstract class DBXTreeNode
             }
         }
         return getDefaultIcon();
+    }
+
+    public Expression getVisibleIf()
+    {
+        return visibleIf;
     }
 }

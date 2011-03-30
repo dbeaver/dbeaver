@@ -41,29 +41,29 @@
                                     <items label="Column" path="column" property="columns" iconId="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="Unique Keys" iconId="#constraints" description="Table unique keys">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="Unique Keys" iconId="#constraints" description="Table unique keys" visibleIf="!object.view">
                                     <items label="Unique Key" path="uniqueKey" property="uniqueKeys" iconId="#unique-key">
                                         <items label="Unique key columns" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys" visibleIf="!object.view">
                                     <items label="Foreign Key" path="foreignKey" property="foreignKeys" iconId="#foreign-key">
                                         <items label="Foreign key columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="References" iconId="#references" description="Table references">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="References" iconId="#references" description="Table references" visibleIf="!object.view">
                                     <items label="Reference Key" path="referenceKey" property="references" iconId="#reference">
                                         <items label="Reference key columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSTrigger" label="Triggers" iconId="#triggers" description="Triggers">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSTrigger" label="Triggers" iconId="#triggers" description="Triggers" visibleIf="!object.view">
                                     <items label="Trigger" path="trigger" property="triggers" iconId="#trigger">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" iconId="#indexes" description="Table indexes">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" iconId="#indexes" description="Table indexes" visibleIf="!object.view">
                                     <items label="Index" path="index" property="indexes" iconId="#index">
                                         <items label="Index columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>

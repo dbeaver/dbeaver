@@ -123,21 +123,22 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         DBXTreeNode meta = node.getMeta();
         if (meta instanceof DBXTreeFolder) {
             // If this is a folder - iterate through all its children
-            for (DBXTreeNode metaChild : meta.getChildren()) {
-                collectInlineChildren(metaChild, inlineMetas);
+            for (DBXTreeNode metaChild : meta.getChildren(node)) {
+                collectInlineChildren(node, metaChild, inlineMetas);
             }
 
         } else {
             // Just check child metas
-            collectInlineChildren(meta, inlineMetas);
+            collectInlineChildren(node, meta, inlineMetas);
         }
         return inlineMetas;
     }
 
-    private static void collectInlineChildren(DBXTreeNode meta, List<DBXTreeNode> inlineMetas)
+    private static void collectInlineChildren(DBNDatabaseNode node, DBXTreeNode meta, List<DBXTreeNode> inlineMetas)
     {
-        if (!CommonUtils.isEmpty(meta.getChildren())) {
-            for (DBXTreeNode child : meta.getChildren()) {
+        final List<DBXTreeNode> metaChildren = meta.getChildren(node);
+        if (!CommonUtils.isEmpty(metaChildren)) {
+            for (DBXTreeNode child : metaChildren) {
                 if (child.isInline()) {
                     inlineMetas.add(child);
                 }

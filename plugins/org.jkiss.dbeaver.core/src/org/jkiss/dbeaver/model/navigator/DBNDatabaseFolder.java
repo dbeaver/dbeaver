@@ -70,10 +70,11 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
 
     public String getItemsLabel()
     {
-        if (CommonUtils.isEmpty(meta.getChildren())) {
+        final List<DBXTreeNode> metaChildren = meta.getChildren(this);
+        if (CommonUtils.isEmpty(metaChildren)) {
             return "?";
         } else {
-            return meta.getChildren().get(0).getLabel();
+            return metaChildren.get(0).getLabel();
         }
     }
 
@@ -127,7 +128,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
 
     public DBNDatabaseItem addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException
     {
-        List<DBXTreeNode> childMetas = getMeta().getChildren();
+        List<DBXTreeNode> childMetas = getMeta().getChildren(this);
         if (childMetas.size() != 1 || !(childMetas.get(0) instanceof DBXTreeItem)) {
             throw new DBException("It's not allowed to add child items to node '" + getNodeName() + "'");
         }
