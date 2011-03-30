@@ -185,7 +185,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 if (isEditable()) {
                     return DBIcon.BULLET_GREEN.getImage();
                 } else {
-                    return DBIcon.BULLET_RED.getImage();
+                    return DBIcon.BULLET_BLACK.getImage();
                 }
             }
 /*
