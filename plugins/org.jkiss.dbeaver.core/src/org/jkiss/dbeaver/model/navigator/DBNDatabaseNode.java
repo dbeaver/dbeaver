@@ -6,8 +6,6 @@ package org.jkiss.dbeaver.model.navigator;
 
 import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
@@ -19,7 +17,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -28,13 +25,17 @@ import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * DBNDatabaseNode
  */
 public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, DBSWrapper {
-    static final Log log = LogFactory.getLog(DBNDatabaseNode.class);
+
+    public static final String JEXL_VAR_OBJECT = "object";
 
     private boolean locked;
     protected List<DBNDatabaseNode> childNodes;
@@ -83,7 +84,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
         DBXTreeNode meta = getMeta();
         if (meta != null) {
-            return meta.getIcon(getObject());
+            return meta.getIcon(this);
         }
         return null;
     }
@@ -495,4 +496,21 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return BeanUtils.getCollectionType(propType);
     }
 
+    ////////////////////////////////////////////////////////////////
+    // Jexl context implementation
+
+    @Override
+    public boolean has(String s)
+    {
+        return JEXL_VAR_OBJECT.equals(s) || super.has(s);
+    }
+
+    @Override
+    public Object get(String s)
+    {
+        if (JEXL_VAR_OBJECT.equals(s)) {
+            return getObject();
+        }
+        return super.get(s);
+    }
 }

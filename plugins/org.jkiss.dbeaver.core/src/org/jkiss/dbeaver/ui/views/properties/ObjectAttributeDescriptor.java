@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.views.properties;
 
 import net.sf.jkiss.utils.BeanUtils;
@@ -108,17 +112,6 @@ public abstract class ObjectAttributeDescriptor {
     public abstract String getCategory();
 
     public abstract String getDescription();
-
-    public static List<ObjectPropertyDescriptor> extractProperties(IPropertySource propertySource)
-    {
-        List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
-        IPropertyDescriptor[] descs = propertySource.getPropertyDescriptors();
-        for (int i = 0; i < descs.length; i++) {
-            IPropertyDescriptor descriptor = descs[i];
-            annoProps.add(new ObjectPropertyDescriptor(propertySource, descriptor, i));
-        }
-        return annoProps;
-    }
 
     public static List<ObjectPropertyDescriptor> extractAnnotations(Object object)
     {

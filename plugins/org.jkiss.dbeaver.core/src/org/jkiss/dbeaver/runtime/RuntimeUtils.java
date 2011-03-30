@@ -4,7 +4,11 @@
 
 package org.jkiss.dbeaver.runtime;
 
+import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.jexl2.Expression;
+import org.apache.commons.jexl2.JexlEngine;
+import org.apache.commons.jexl2.JexlException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -21,6 +25,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -39,6 +44,8 @@ import java.util.Date;
 public class RuntimeUtils
 {
     static final Log log = LogFactory.getLog(RuntimeUtils.class);
+
+    private static JexlEngine jexlEngine;
 
     public static IStatus makeExceptionStatus(Throwable ex)
     {
@@ -172,6 +179,20 @@ public class RuntimeUtils
         SaveRunner saveRunner = new SaveRunner(monitor, saveable);
         Display.getDefault().syncExec(saveRunner);
         return saveRunner.getResult();
+    }
+
+    public static Expression parseExpression(String exprString) throws DBException
+    {
+        synchronized (RuntimeUtils.class) {
+            if (jexlEngine == null) {
+                jexlEngine = new JexlEngine(null, null, null, log);
+            }
+        }
+        try {
+            return jexlEngine.createExpression(exprString);
+        } catch (JexlException e) {
+            throw new DBException(e);
+        }
     }
 
     private static class SaveRunner implements Runnable {

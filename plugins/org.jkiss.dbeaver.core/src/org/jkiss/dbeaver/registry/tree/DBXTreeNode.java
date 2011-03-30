@@ -4,10 +4,12 @@
 
 package org.jkiss.dbeaver.registry.tree;
 
-import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.jexl2.JexlContext;
+import org.apache.commons.jexl2.JexlException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
 
 import java.util.ArrayList;
@@ -18,6 +20,8 @@ import java.util.List;
  */
 public abstract class DBXTreeNode
 {
+    static final Log log = LogFactory.getLog(DBXTreeNode.class);
+
     private final AbstractDescriptor source;
     private final DBXTreeNode parent;
     private List<DBXTreeNode> children;
@@ -111,9 +115,10 @@ public abstract class DBXTreeNode
         this.icons.add(icon);
     }
 
-    public Image getIcon(DBSObject forObject)
+    public Image getIcon(JexlContext context)
     {
         List<DBXTreeIcon> extIcons = getIcons();
+/*
         if (!CommonUtils.isEmpty(extIcons)) {
             // Try to get some icon depending on it's condition
             for (DBXTreeIcon icon : extIcons) {
@@ -127,6 +132,24 @@ public abstract class DBXTreeNode
                     }
                 } catch (Exception e) {
                     // do nothing
+                }
+            }
+        }
+*/
+        if (!CommonUtils.isEmpty(extIcons)) {
+            // Try to get some icon depending on it's condition
+            for (DBXTreeIcon icon : extIcons) {
+                if (icon.getExpression() == null) {
+                    continue;
+                }
+                try {
+                    Object result = icon.getExpression().evaluate(context);
+                    if (Boolean.TRUE.equals(result)) {
+                        return icon.getIcon();
+                    }
+                } catch (JexlException e) {
+                    // do nothing
+                    log.debug("Error evaluating expression '" + icon.getExprString() + "'", e);
                 }
             }
         }

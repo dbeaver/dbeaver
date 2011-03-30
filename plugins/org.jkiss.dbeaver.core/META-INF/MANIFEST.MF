@@ -118,6 +118,7 @@ Export-Package: net.sf.jkiss.utils,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: lib/jkiss-utils-1.0.1.jar,
  lib/commons-logging-1.0.4.jar,
+ lib/commons-jexl-2.0.1.jar,
  .
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.5.0",
  org.eclipse.core.resources;bundle-version="3.5.0",

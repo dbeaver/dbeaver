@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
@@ -19,9 +20,11 @@ import java.util.List;
 /**
  * DBNNode
  */
-public abstract class DBNNode implements DBPNamedObject
+public abstract class DBNNode implements DBPNamedObject, JexlContext
 {
     static final Log log = LogFactory.getLog(DBNNode.class);
+
+    public static final String JEXL_VAR_NODE = "node";
 
     private DBNModel model;
     private DBNNode parentNode;
@@ -172,6 +175,27 @@ public abstract class DBNNode implements DBPNamedObject
             }
         }
         return false;
+    }
+
+    ////////////////////////////////////////////////////////////////
+    // Jexl context implementation
+
+    public Object get(String s)
+    {
+        if (JEXL_VAR_NODE.equals(s)) {
+            return this;
+        }
+        return null;
+    }
+
+    public void set(String s, Object o)
+    {
+        log.warn("Try to set jexl property '" + s + "' in read-only DBN node context");
+    }
+
+    public boolean has(String s)
+    {
+        return JEXL_VAR_NODE.equals(s);
     }
 
 }

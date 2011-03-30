@@ -25,7 +25,7 @@
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="Tables" iconId="#tables" description="Tables">
                             <items label="Table" path="table" property="tables">
                                 <icon iconId="#table" default="true"/>
-                                <icon iconId="#view" if="view"/>
+                                <icon iconId="#view" if="object.view"/>
                                 <folder type="org.jkiss.dbeaver.model.struct.DBSTableColumn" label="Columns" iconId="#columns" description="Table columns">
                                     <items label="Column" path="column" property="columns" iconId="#column">
                                     </items>
@@ -36,25 +36,25 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="Unique Keys" iconId="#constraints" description="Table unique keys">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="Unique Keys" iconId="#constraints" description="Table unique keys" if="!view">
                                     <items label="Unique Key" path="uniqueKey" property="uniqueKeys" iconId="#unique-key">
                                         <items label="Unique key columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys" if="!view">
                                     <items label="Foreign Key" path="foreignKey" property="foreignKeys" iconId="#foreign-key">
                                         <items label="Foreign key columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="References" iconId="#references" description="Table references">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="References" iconId="#references" description="Table references" if="!view">
                                     <items label="Reference" path="reference" property="references" iconId="#reference">
                                         <items label="Reference columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <items label="Sub-table" optional="true" path="subtable" property="subTables" iconId="#table" recursive="..">
+                                <items label="Sub-table" optional="true" path="subtable" property="subTables" iconId="#table" recursive=".." if="!view">
                                 </items>
                             </items>
                         </folder>
