@@ -14,9 +14,9 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
@@ -42,7 +42,15 @@ class NodeEditorSection implements ISection
 
     public void createControls(Composite parent, TabbedPropertySheetPage tabbedPropertySheetPage)
     {
-        itemControl = new ItemListControl(parent, SWT.NONE, editor, node, metaNode);
+        itemControl = new ItemListControl(parent, SWT.SHEET, editor, node, metaNode);
+        //itemControl.getLayout().marginHeight = 0;
+        //itemControl.getLayout().marginWidth = 0;
+        ProgressPageControl progressControl = editor.getProgressControl();
+        if (progressControl != null) {
+            itemControl.substituteProgressPanel(progressControl);
+        } else {
+            itemControl.createProgressPanel();
+        }
 
         // Hook context menu
         ViewUtils.addContextMenu(editor, itemControl.getNavigatorViewer());

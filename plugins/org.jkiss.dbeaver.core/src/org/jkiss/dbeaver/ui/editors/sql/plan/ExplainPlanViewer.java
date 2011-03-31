@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.plan;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
@@ -27,7 +25,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
@@ -35,7 +32,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
  */
 public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
 {
-    static final Log log = LogFactory.getLog(ResultSetViewer.class);
+    //static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private SQLEditor editor;
     private Composite planPanel;
@@ -50,6 +47,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         this.planPanel = UIUtils.createPlaceholder(parent, 1);
 
         this.planTree = new PlanNodesTree(planPanel, SWT.NONE, editor, editor);
+        this.planTree.createProgressPanel();
         GridData gd = new GridData(GridData.FILL_BOTH);
         planTree.setLayoutData(gd);
 

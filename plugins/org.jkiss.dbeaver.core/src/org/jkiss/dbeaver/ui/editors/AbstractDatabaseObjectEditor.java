@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
 /**
  * AbstractDatabaseObjectEditor
@@ -81,6 +82,11 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     public IDatabaseNodeEditorInput getEditorInput()
     {
         return (IDatabaseNodeEditorInput)super.getEditorInput();
+    }
+
+    public ProgressPageControl getProgressControl()
+    {
+        return null;
     }
 
     @Override

@@ -29,6 +29,7 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
     public void createPartControl(Composite parent)
     {
         itemControl = new ItemListControl(parent, SWT.NONE, this, getEditorInput().getTreeNode(), null);
+        itemControl.createProgressPanel();
         itemControl.loadData();
         // Hook context menu
         ViewUtils.addContextMenu(this, itemControl.getNavigatorViewer());

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceEditable;
@@ -48,6 +49,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
     private PropertyPageTabbed properties;
+    private ObjectEditorPageControl pageControl;
     //private Text nameText;
     //private Text descriptionText;
 
@@ -65,7 +67,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         // Add lazy props listener
         //PropertiesContributor.getInstance().addLazyListener(this);
 
-        ObjectEditorPageControl pageControl = new ObjectEditorPageControl(parent, SWT.NONE, this);
+        pageControl = new ObjectEditorPageControl(parent, SWT.NONE, this);
 
         DBNNode node = getTreeNode();
 
@@ -272,5 +274,10 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         }
     }
 */
+
+    public ProgressPageControl getProgressControl()
+    {
+        return pageControl;
+    }
 
 }

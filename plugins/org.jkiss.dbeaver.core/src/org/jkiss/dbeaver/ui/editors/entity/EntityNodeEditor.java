@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
@@ -70,6 +71,7 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
     public void createPartControl(Composite parent)
     {
         itemControl = new ItemListControl(parent, SWT.NONE, this, node, metaNode);
+        itemControl.createProgressPanel();
 
         // Hook context menu
         ViewUtils.addContextMenu(this, itemControl.getNavigatorViewer());
@@ -138,6 +140,11 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
     public IDatabaseNodeEditorInput getEditorInput()
     {
         return (IDatabaseNodeEditorInput)super.getEditorInput();
+    }
+
+    public ProgressPageControl getProgressControl()
+    {
+        return null;
     }
 
     public DBPDataSource getDataSource()

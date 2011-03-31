@@ -52,6 +52,7 @@ public class SelectDataSourceDialog extends Dialog {
         DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
 
         ItemListControl dsList = new ItemListControl(group, SWT.BORDER, null, rootNode.getDatabases(), null);
+        dsList.createProgressPanel();
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.minimumWidth = 300;

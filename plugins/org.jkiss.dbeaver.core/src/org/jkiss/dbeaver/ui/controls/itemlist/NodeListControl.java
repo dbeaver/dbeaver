@@ -40,6 +40,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 {
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
+    private IWorkbenchPart workbenchPart;
     private DBNNode node;
     private DBXTreeNode nodeMeta;
 
@@ -50,7 +51,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         DBNNode node,
         DBXTreeNode nodeMeta)
     {
-        super(parent, style, workbenchPart, createContentProvider(node, nodeMeta));
+        super(parent, style, createContentProvider(node, nodeMeta));
+        this.workbenchPart = workbenchPart;
         this.node = node;
         this.nodeMeta = nodeMeta;
 
@@ -69,6 +71,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         });
 
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
+    }
+
+    public IWorkbenchPart getWorkbenchPart()
+    {
+        return workbenchPart;
     }
 
     @Override

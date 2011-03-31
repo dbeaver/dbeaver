@@ -21,7 +21,6 @@ import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -50,7 +49,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final static String DATA_OBJECT_COLUMN = "objectColumn";
     private final static int LAZY_LOAD_DELAY = 100;
 
-    private IWorkbenchPart workbenchPart;
     private boolean isTree;
     private boolean isFitWidth;
     private boolean isBrief;
@@ -83,11 +81,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public ObjectListControl(
         Composite parent,
         int style,
-        IWorkbenchPart workbenchPart,
         IContentProvider contentProvider)
     {
         super(parent, style);
-        this.workbenchPart = workbenchPart;
         this.isTree = (contentProvider instanceof ITreeContentProvider);
         this.isFitWidth = false;
         this.linkLayout = new TextLayout(parent.getDisplay());
@@ -95,16 +91,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         this.linkCursor = parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND);
         this.arrowCursor = parent.getDisplay().getSystemCursor(SWT.CURSOR_ARROW);
 
+        int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION;
+        if ((style & SWT.SHEET) == 0) {
+            viewerStyle |= SWT.BORDER;
+        }
+
         if (isTree) {
-            TreeViewer treeViewer = new TreeViewer(this, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
+            TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
             final Tree tree = treeViewer.getTree();
             tree.setLinesVisible (true);
             tree.setHeaderVisible(true);
             itemsViewer = treeViewer;
             //TreeEditor editor = new TreeEditor(tree);
-            
         } else {
-            TableViewer tableViewer = new TableViewer(this, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
+            TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
             table.setLinesVisible (true);
             table.setHeaderVisible(true);
@@ -173,8 +173,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         itemsViewer.getControl().setLayoutData(gd);
         //PropertiesContributor.getInstance().addLazyListener(this);
 
-        super.createProgressPanel();
-
         listPropertySource = new ListPropertySource();
         sortListener = new SortListener();
 
@@ -195,11 +193,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 setInfo(status);
             }
         });
-    }
-
-    public IWorkbenchPart getWorkbenchPart()
-    {
-        return workbenchPart;
     }
 
     protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService();

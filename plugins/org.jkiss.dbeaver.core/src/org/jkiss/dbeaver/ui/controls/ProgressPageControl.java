@@ -39,6 +39,7 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
     private Text listInfoLabel;
 
     private int loadCount = 0;
+    private ProgressPageControl externalPageControl = null;
 
     public ProgressPageControl(
         Composite parent,
@@ -46,8 +47,10 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
     {
         super(parent, style);
         GridLayout layout = new GridLayout(1, true);
-        //layout.marginHeight = 0;
-        //layout.marginWidth = 0;
+        if ((style & SWT.SHEET) != 0) {
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
+        }
         //layout.horizontalSpacing = 0;
         //layout.verticalSpacing = 0;
         this.setLayout(layout);
@@ -59,9 +62,17 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
         });
     }
 
+    @Override
+    public GridLayout getLayout()
+    {
+        return (GridLayout)super.getLayout();
+    }
+
     public void setInfo(String info)
     {
-        if (!listInfoLabel.isDisposed()) {
+        if (externalPageControl != null) {
+            externalPageControl.setInfo(info);
+        } else if (!listInfoLabel.isDisposed()) {
             listInfoLabel.setText(info);
         }
     }
@@ -69,6 +80,16 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
     public final Composite createProgressPanel()
     {
         return createProgressPanel(this);
+    }
+
+    public final void substituteProgressPanel(ProgressPageControl externalPageControl)
+    {
+        this.externalPageControl = externalPageControl;
+    }
+
+    ProgressPageControl getProgressControl()
+    {
+        return externalPageControl != null ? externalPageControl : this;
     }
 
     public Composite createContentContainer()
@@ -85,6 +106,9 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
 
     protected Composite createProgressPanel(Composite container)
     {
+        if (this.externalPageControl != null) {
+            throw new IllegalStateException("Can't create page control while substitution control already set");
+        }
         Composite infoGroup = new Composite(container, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         infoGroup.setLayoutData(gd);
@@ -194,7 +218,7 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
         private final java.util.List<TaskInfo> tasksRunning = new ArrayList<TaskInfo>();
 
         public Shell getShell() {
-            return ProgressPageControl.this.isDisposed() ? null : ProgressPageControl.this.getShell();
+            return getProgressControl().isDisposed() ? null : getProgressControl().getShell();
         }
 
         public DBRProgressMonitor overwriteMonitor(final DBRProgressMonitor monitor)
@@ -261,25 +285,25 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
 
         public void visualizeLoading()
         {
-            if (!progressBar.isDisposed()) {
-                if (!progressBar.isVisible()) {
-                    progressBar.setVisible(true);
-                    stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
-                    stopButton.setEnabled(true);
-                    progressTools.setVisible(true);
+            if (!getProgressControl().progressBar.isDisposed()) {
+                if (!getProgressControl().progressBar.isVisible()) {
+                    getProgressControl().progressBar.setVisible(true);
+                    getProgressControl().stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
+                    getProgressControl().stopButton.setEnabled(true);
+                    getProgressControl().progressTools.setVisible(true);
                 }
                 synchronized (tasksRunning) {
                     TaskInfo taskInfo = getCurTaskInfo();
                     if (taskInfo != null) {
-                        progressBar.setMaximum(taskInfo.totalWork);
-                        progressBar.setSelection(taskInfo.progress);
+                        getProgressControl().progressBar.setMaximum(taskInfo.totalWork);
+                        getProgressControl().progressBar.setSelection(taskInfo.progress);
                     } else {
-                        progressBar.setMaximum(PROGRESS_MAX);
-                        progressBar.setSelection(loadCount);
+                        getProgressControl().progressBar.setMaximum(PROGRESS_MAX);
+                        getProgressControl().progressBar.setSelection(loadCount);
                     }
                 }
                 if (curStatus != null) {
-                    listInfoLabel.setText(curStatus);
+                    setInfo(curStatus);
                 }
                 loadCount++;
                 if (loadCount > PROGRESS_MAX) {
@@ -297,10 +321,10 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
             }
             visualizeLoading();
             loadCount = 0;
-            if (!progressBar.isDisposed()) {
-                progressBar.setState(SWT.PAUSED);
-                progressBar.setVisible(false);
-                progressTools.setVisible(false);
+            if (!getProgressControl().progressBar.isDisposed()) {
+                getProgressControl().progressBar.setState(SWT.PAUSED);
+                getProgressControl().progressBar.setVisible(false);
+                getProgressControl().progressTools.setVisible(false);
             }
         }
 

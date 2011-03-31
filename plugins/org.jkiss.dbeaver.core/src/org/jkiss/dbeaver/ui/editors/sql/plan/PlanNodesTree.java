@@ -86,7 +86,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
 
     public PlanNodesTree(Composite parent, int style, IWorkbenchPart workbenchPart, IDataSourceProvider dataSourceProvider)
     {
-        super(parent, style, workbenchPart, CONTENT_PROVIDER);
+        super(parent, style, CONTENT_PROVIDER);
         this.dataSourceProvider = dataSourceProvider;
         this.workbenchPart = workbenchPart;
         setFitWidth(true);
