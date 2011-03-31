@@ -98,10 +98,10 @@ public abstract class JDBCDataSource
             connectProps.putAll(connectionInfo.getProperties());
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            connectProps.put(DBConstants.PROPERTY_USER, connectionInfo.getUserName());
+            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, connectionInfo.getUserName());
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            connectProps.put(DBConstants.PROPERTY_PASSWORD, connectionInfo.getUserPassword());
+            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, connectionInfo.getUserPassword());
         }
 
         // Obtain connection

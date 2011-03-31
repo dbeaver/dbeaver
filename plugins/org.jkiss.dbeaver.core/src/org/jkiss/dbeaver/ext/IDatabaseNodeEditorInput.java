@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext;
 
 import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -23,6 +24,6 @@ public interface IDatabaseNodeEditorInput extends IEditorInput, IDataSourceProvi
 
     DBEObjectCommander getObjectCommander();
 
-    DBEObjectManager getObjectManager();
+    DBEObjectEditor getObjectEditor();
 
 }

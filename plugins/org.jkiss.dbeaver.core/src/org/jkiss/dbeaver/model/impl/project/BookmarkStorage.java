@@ -32,6 +32,12 @@ import java.util.List;
  */
 public class BookmarkStorage {
 
+    public static final String ATTR_TITLE = "title"; //NON-NLS-1
+    public static final String ATTR_DESCRIPTION = "description"; //NON-NLS-1
+    public static final String ATTR_DATA_SOURCE = "data-source"; //NON-NLS-1
+    public static final String TAG_PATH = "path"; //NON-NLS-1
+    public static final String TAG_IMAGE = "image"; //NON-NLS-1
+    public static final String TAG_BOOKMARK = "bookmark"; //NON-NLS-1
     private String title;
     private String description;
     private Image image;
@@ -46,19 +52,19 @@ public class BookmarkStorage {
             try {
                 final Document document = XMLUtils.parseDocument(contents);
                 final Element root = document.getDocumentElement();
-                this.title = root.getAttribute("title");
-                this.description = root.getAttribute("description");
-                this.dataSourceId = root.getAttribute("data-source");
+                this.title = root.getAttribute(ATTR_TITLE);
+                this.description = root.getAttribute(ATTR_DESCRIPTION);
+                this.dataSourceId = root.getAttribute(ATTR_DATA_SOURCE);
                 if (dataSourceId == null) {
                     throw new DBException("Data source ID missing in bookmark definition");
                 }
                 this.dataSourcePath = new ArrayList<String>();
-                final Element[] pathElements = XMLUtils.getChildElementList(root, "path");
+                final Element[] pathElements = XMLUtils.getChildElementList(root, TAG_PATH);
                 for (Element elem : pathElements) {
                     this.dataSourcePath.add(XMLUtils.getElementBody(elem));
                 }
                 if (loadImage) {
-                    Element imgElement = XMLUtils.getChildElement(root, "image");
+                    Element imgElement = XMLUtils.getChildElement(root, TAG_IMAGE);
                     if (imgElement != null) {
                         String imgString = XMLUtils.getElementBody(imgElement);
                         final byte[] imgBytes = Base64.decode(imgString);
@@ -132,20 +138,20 @@ public class BookmarkStorage {
     {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(5000);
         XMLBuilder xml = new XMLBuilder(buffer, ContentUtils.getDefaultFileEncoding());
-        xml.startElement("bookmark");
-        xml.addAttribute("title", title);
+        xml.startElement(TAG_BOOKMARK);
+        xml.addAttribute(ATTR_TITLE, title);
         if (description != null) {
-            xml.addAttribute("description", description);
+            xml.addAttribute(ATTR_DESCRIPTION, description);
         }
-        xml.addAttribute("data-source", dataSourceId);
+        xml.addAttribute(ATTR_DATA_SOURCE, dataSourceId);
         for (String path : dataSourcePath) {
-            xml.startElement("path");
+            xml.startElement(TAG_PATH);
             xml.addText(path);
             xml.endElement();
         }
 
         {
-            xml.startElement("image");
+            xml.startElement(TAG_IMAGE);
 
             ImageLoader loader = new ImageLoader();
             loader.data = new ImageData[] {image.getImageData()};

@@ -17,7 +17,10 @@ import java.util.List;
  */
 public class PropertyGroupDescriptor implements DBPPropertyGroup
 {
-    public static final String PROPERTY_GROUP_TAG = "propertyGroup";
+    public static final String TAG_PROPERTY_GROUP = "propertyGroup"; //NON-NLS-1
+    public static final String ATTR_LABEL = "label"; //NON-NLS-1
+    public static final String ATTR_DESCRIPTION = "description"; //NON-NLS-1
+    public static final String NAME_UNDEFINED = "<undefined>"; //NON-NLS-1
 
     private String name;
     private String description;
@@ -25,12 +28,12 @@ public class PropertyGroupDescriptor implements DBPPropertyGroup
 
     public PropertyGroupDescriptor(IConfigurationElement config)
     {
-        this.name = config.getAttribute("label");
+        this.name = config.getAttribute(ATTR_LABEL);
         if (CommonUtils.isEmpty(this.name)) {
-            this.name = "<undefined>";
+            this.name = NAME_UNDEFINED;
         }
-        this.description = config.getAttribute("description");
-        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.PROPERTY_TAG);
+        this.description = config.getAttribute(ATTR_DESCRIPTION);
+        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY);
         for (IConfigurationElement prop : propElements) {
             addProperty(new PropertyDescriptor(this, prop));
         }
@@ -60,4 +63,5 @@ public class PropertyGroupDescriptor implements DBPPropertyGroup
     {
         return properties;
     }
+
 }

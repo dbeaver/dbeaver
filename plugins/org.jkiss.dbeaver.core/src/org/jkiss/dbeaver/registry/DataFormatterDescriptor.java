@@ -35,7 +35,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
 
-        IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
+        IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.TAG_PROPERTY_GROUP);
         for (IConfigurationElement prop : propElements) {
             propertyGroups.add(new PropertyGroupDescriptor(prop));
         }

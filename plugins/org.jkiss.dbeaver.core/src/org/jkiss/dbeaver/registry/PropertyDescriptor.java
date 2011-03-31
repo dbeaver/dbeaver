@@ -18,7 +18,15 @@ public class PropertyDescriptor implements DBPProperty
 
     static final Log log = LogFactory.getLog(PropertyDescriptor.class);
 
-    public static final String PROPERTY_TAG = "property";
+    public static final String TAG_PROPERTY = "property"; //NON-NLS-1
+    public static final String ATTR_ID = "id"; //NON-NLS-1
+    public static final String ATTR_LABEL = "label"; //NON-NLS-1
+    public static final String ATTR_DESCRIPTION = "description"; //NON-NLS-1
+    public static final String ATTR_REQUIRED = "required"; //NON-NLS-1
+    public static final String ATTR_TYPE = "type"; //NON-NLS-1
+    public static final String ATTR_DEFAULT_VALUE = "defaultValue"; //NON-NLS-1
+    public static final String ATTR_VALID_VALUES = "validValues"; //NON-NLS-1
+    public static final String VALUE_SPLITTER = ","; //NON-NLS-1
 
     private DBPPropertyGroup group;
     private String id;
@@ -32,11 +40,11 @@ public class PropertyDescriptor implements DBPProperty
     public PropertyDescriptor(PropertyGroupDescriptor group, IConfigurationElement config)
     {
         this.group = group;
-        this.id = config.getAttribute("id");
-        this.name = config.getAttribute("label");
-        this.description = config.getAttribute("description");
-        this.required = "true".equals(config.getAttribute("required"));
-        String typeString = config.getAttribute("type");
+        this.id = config.getAttribute(ATTR_ID);
+        this.name = config.getAttribute(ATTR_LABEL);
+        this.description = config.getAttribute(ATTR_DESCRIPTION);
+        this.required = "true".equals(config.getAttribute(ATTR_REQUIRED));
+        String typeString = config.getAttribute(ATTR_TYPE);
         if (typeString == null) {
             type = PropertyType.STRING;
         } else {
@@ -48,10 +56,10 @@ public class PropertyDescriptor implements DBPProperty
                 type = PropertyType.STRING;
             }
         }
-        this.defaultValue = config.getAttribute("defaultValue");
-        String valueList = config.getAttribute("validValues");
+        this.defaultValue = config.getAttribute(ATTR_DEFAULT_VALUE);
+        String valueList = config.getAttribute(ATTR_VALID_VALUES);
         if (valueList != null) {
-            validValues = valueList.split(",");
+            validValues = valueList.split(VALUE_SPLITTER);
         }
     }
 

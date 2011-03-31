@@ -8,14 +8,10 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.internal.views.ViewsPlugin;
 import org.eclipse.ui.views.properties.*;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
 
-import java.util.*;
+import java.util.Iterator;
 
 public class PropertyPageStandard extends PropertySheetPage implements ILazyPropertyLoadListener, IPropertySourceProvider {
 
@@ -26,7 +22,12 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
 
         public PropertySourceCache(Object object)
         {
-            this.object = object;
+            if (object instanceof IPropertySource) {
+                // Sometimes IPropertySource wrapper (e.g. PropertySourceEditable) may be used instead of real object
+                this.object = ((IPropertySource)object).getEditableValue();
+            } else {
+                this.object = object;
+            }
         }
     }
     private PropertySourceCache[] curSelection = null;

@@ -15,7 +15,6 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
@@ -122,7 +121,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         {
             // Connection property groups
-            IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
+            IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.TAG_PROPERTY_GROUP);
             for (IConfigurationElement prop : propElements) {
                 connectionPropertyGroups.add(new PropertyGroupDescriptor(prop));
             }

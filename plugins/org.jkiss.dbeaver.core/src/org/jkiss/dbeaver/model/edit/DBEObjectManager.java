@@ -14,8 +14,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
  */
 public interface DBEObjectManager<OBJECT_TYPE extends DBPObject> {
 
-    //void filterCommands(DBECommandQueue queue);
-
     void executePersistAction(
         DBCExecutionContext context,
         DBECommand<OBJECT_TYPE> command,

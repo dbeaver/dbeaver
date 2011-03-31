@@ -89,7 +89,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         IConfigurationElement[] driverPropsGroup = config.getChildren("driver-properties");
         if (!CommonUtils.isEmpty(driverPropsGroup)) {
             for (IConfigurationElement propsElement : driverPropsGroup) {
-                IConfigurationElement[] propElements = propsElement.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
+                IConfigurationElement[] propElements = propsElement.getChildren(PropertyGroupDescriptor.TAG_PROPERTY_GROUP);
                 for (IConfigurationElement prop : propElements) {
                     driverPropertyGroups.add(new PropertyGroupDescriptor(prop));
                 }

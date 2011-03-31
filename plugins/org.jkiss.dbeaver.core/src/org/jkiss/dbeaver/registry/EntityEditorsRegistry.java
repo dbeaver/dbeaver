@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +16,8 @@ import java.util.List;
  */
 public class EntityEditorsRegistry {
 
-    private static final String CFG_EDITOR = "editor";
-    private static final String CFG_MANAGER = "manager";
+    private static final String TAG_EDITOR = "editor"; //NON-NLS-1
+    private static final String TAG_MANAGER = "manager"; //NON-NLS-1
 
     private EntityEditorDescriptor defaultEditor;
     private List<EntityEditorDescriptor> entityEditors = new ArrayList<EntityEditorDescriptor>();
@@ -31,10 +30,10 @@ public class EntityEditorsRegistry {
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EntityEditorDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
-            if (CFG_EDITOR.equals(ext.getName())) {
+            if (TAG_EDITOR.equals(ext.getName())) {
                 EntityEditorDescriptor descriptor = new EntityEditorDescriptor(ext);
                 entityEditors.add(descriptor);
-            } else if (CFG_MANAGER.equals(ext.getName())) {
+            } else if (TAG_MANAGER.equals(ext.getName())) {
                 EntityManagerDescriptor descriptor = new EntityManagerDescriptor(ext);
                 entityManagers.add(descriptor);
             }

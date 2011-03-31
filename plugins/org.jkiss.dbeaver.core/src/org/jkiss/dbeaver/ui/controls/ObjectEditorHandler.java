@@ -80,7 +80,7 @@ public class ObjectEditorHandler {
         if (dataSource.getInfo().isReadOnlyMetaData()) {
             return false;
         }
-        return getEditorPart().getEditorInput().getObjectManager() != null;
+        return getEditorPart().getEditorInput().getObjectEditor() != null;
     }
 
     private IEditorPart getMainEditorPart()

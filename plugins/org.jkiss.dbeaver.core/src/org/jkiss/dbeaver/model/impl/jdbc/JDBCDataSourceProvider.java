@@ -64,7 +64,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
 
         PropertyGroupDescriptor propGroup = new PropertyGroupDescriptor("Driver properties", "JDBC Driver Properties");
         for (DriverPropertyInfo desc : propDescs) {
-            if (DBConstants.PROPERTY_USER.equals(desc.name) || DBConstants.PROPERTY_PASSWORD.equals(desc.name)) {
+            if (DBConstants.DATA_SOURCE_PROPERTY_USER.equals(desc.name) || DBConstants.DATA_SOURCE_PROPERTY_PASSWORD.equals(desc.name)) {
                 // Skip user/password properties
                 continue;
             }
