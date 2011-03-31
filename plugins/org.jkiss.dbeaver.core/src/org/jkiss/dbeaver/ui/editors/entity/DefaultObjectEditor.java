@@ -86,7 +86,8 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         }
         {
             // Path
-            Group infoGroup = UIUtils.createControlGroup(container, "Path", 3, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite infoGroup = new Composite(container, SWT.BORDER);//createControlGroup(container, "Path", 3, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             infoGroup.setLayout(new RowLayout());
 
 /*
