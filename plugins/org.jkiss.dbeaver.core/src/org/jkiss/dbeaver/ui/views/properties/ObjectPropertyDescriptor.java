@@ -186,22 +186,13 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
         public Image getImage(Object element)
         {
-            if (getSource() instanceof IPropertySourceEditable) {
-                if (isEditable()) {
-                    return DBIcon.BULLET_GREEN.getImage();
-                } else {
-                    return DBIcon.BULLET_BLACK.getImage();
-                }
-            }
-/*
-            if (element instanceof DBSObject) {
-                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject((DBSObject) element, true);
-                if (node != null) {
-                    return node.getNodeIconDefault();
-                }
-            }
-            return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
-*/
+//            if (getSource() instanceof IPropertySourceEditable) {
+//                if (isEditable()) {
+//                    return DBIcon.BULLET_GREEN.getImage();
+//                } else {
+//                    return DBIcon.BULLET_BLACK.getImage();
+//                }
+//            }
             return null;
         }
 

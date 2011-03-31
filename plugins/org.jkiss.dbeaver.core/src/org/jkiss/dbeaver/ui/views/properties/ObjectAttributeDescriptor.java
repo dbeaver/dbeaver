@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
@@ -125,14 +126,14 @@ public abstract class ObjectAttributeDescriptor {
     public static List<ObjectPropertyDescriptor> extractAnnotations(
         IPropertySource source,
         Class<?> theClass,
-        IPropertyFilter filter)
+        IFilter filter)
     {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
         extractAnnotations(source, null, theClass, annoProps, filter);
         return annoProps;
     }
 
-    static void extractAnnotations(IPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IPropertyFilter filter)
+    static void extractAnnotations(IPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IFilter filter)
     {
         Method[] methods = theClass.getMethods();
         for (Method method : methods) {
@@ -148,7 +149,7 @@ public abstract class ObjectAttributeDescriptor {
                 }
                 // Single property
                 ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method);
-                if (filter != null && !filter.isValid(desc)) {
+                if (filter != null && !filter.select(desc)) {
                     continue;
                 }
                 annoProps.add(desc);

@@ -45,7 +45,12 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             new PropertyTabDescriptor(
                 PropertiesContributor.CATEGORY_MAIN,
                 PropertiesContributor.TAB_STANDARD,
-                "Info",
+                "Edit",
+                standardSections),
+            new PropertyTabDescriptor(
+                PropertiesContributor.CATEGORY_MAIN,
+                PropertiesContributor.TAB_STANDARD,
+                "Information",
                 standardSections)
         };
     }

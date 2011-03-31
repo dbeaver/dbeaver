@@ -4,17 +4,18 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
+import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
 /**
  * Standard filter for property view
  */
-public class PropertyViewFilter implements IPropertyFilter {
+public class PropertyViewFilter implements IFilter {
 
     public static final PropertyViewFilter INSTANCE = new PropertyViewFilter();
 
-    public boolean isValid(IPropertyDescriptor property)
+    public boolean select(Object toTest)
     {
-        return !"name".equals(property.getId());
+        return toTest instanceof IPropertyDescriptor && !"name".equals(((IPropertyDescriptor)toTest).getId());
     }
 }

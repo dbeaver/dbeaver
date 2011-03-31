@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
+import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,7 +28,7 @@ public class ObjectPropertyGroupDescriptor extends ObjectAttributeDescriptor
         ObjectPropertyGroupDescriptor parent,
         Method getter,
         PropertyGroup groupInfo,
-        IPropertyFilter filter)
+        IFilter filter)
     {
         super(source, parent, getter, groupInfo.id(), groupInfo.order());
         this.groupInfo = groupInfo;

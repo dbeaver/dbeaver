@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
@@ -178,7 +179,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
 */
     }
 
-    public void collectProperties(IPropertyFilter filter)
+    public void collectProperties(IFilter filter)
     {
         List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, object.getClass(), filter);
         for (final ObjectPropertyDescriptor desc : annoProps) {

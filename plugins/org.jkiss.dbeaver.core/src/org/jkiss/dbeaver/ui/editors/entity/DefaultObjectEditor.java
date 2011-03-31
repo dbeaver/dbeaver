@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -24,18 +25,14 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
-import org.jkiss.dbeaver.model.edit.DBEObjectDescriber;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
-import org.jkiss.dbeaver.ui.views.properties.IPropertyFilter;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
@@ -153,10 +150,9 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
                 PropertySourceEditable propertySource = new PropertySourceEditable(
                     itemObject instanceof DBNDatabaseNode ? ((DBNDatabaseNode) itemObject).getObject() : itemObject,
                     commander);
-                propertySource.collectProperties(new IPropertyFilter() {
-                    public boolean isValid(IPropertyDescriptor property)
+                propertySource.collectProperties(new IFilter() {
+                    public boolean select(Object toTest)
                     {
-                        //if (property.get)
                         return true;
                     }
                 });
