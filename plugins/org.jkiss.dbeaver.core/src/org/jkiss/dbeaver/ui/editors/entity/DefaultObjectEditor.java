@@ -24,6 +24,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.edit.DBEObjectDescriber;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.views.properties.IPropertyFilter;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
@@ -151,7 +153,13 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
                 PropertySourceEditable propertySource = new PropertySourceEditable(
                     itemObject instanceof DBNDatabaseNode ? ((DBNDatabaseNode) itemObject).getObject() : itemObject,
                     commander);
-                propertySource.collectProperties(null);
+                propertySource.collectProperties(new IPropertyFilter() {
+                    public boolean isValid(IPropertyDescriptor property)
+                    {
+                        //if (property.get)
+                        return true;
+                    }
+                });
                 properties.selectionChanged(this, new StructuredSelection(propertySource));
             }
         }
