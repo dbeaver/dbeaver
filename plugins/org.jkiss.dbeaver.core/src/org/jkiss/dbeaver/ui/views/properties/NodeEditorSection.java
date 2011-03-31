@@ -1,0 +1,135 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
+package org.jkiss.dbeaver.ui.views.properties;
+
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.views.properties.tabbed.ISection;
+import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
+import org.jkiss.dbeaver.utils.ViewUtils;
+
+/**
+ * EntityNodeEditor
+ */
+class NodeEditorSection implements ISection
+{
+    //static final Log log = LogFactory.getLog(EntityNodeEditor.class);
+
+    private IDatabaseObjectEditor editor;
+    private DBNNode node;
+    private DBXTreeNode metaNode;
+    private ItemListControl itemControl;
+    private boolean activated;
+
+    NodeEditorSection(IDatabaseObjectEditor editor, DBNNode node, DBXTreeNode metaNode)
+    {
+        this.editor = editor;
+        this.node = node;
+        this.metaNode = metaNode;
+    }
+
+    public void createControls(Composite parent, TabbedPropertySheetPage tabbedPropertySheetPage)
+    {
+        itemControl = new ItemListControl(parent, SWT.NONE, editor, node, metaNode);
+
+        // Hook context menu
+        ViewUtils.addContextMenu(editor, itemControl.getNavigatorViewer());
+        // Add drag and drop support
+        ViewUtils.addDragAndDropSupport(itemControl.getNavigatorViewer());
+        //ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
+        editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
+    }
+
+    public void setFocus()
+    {
+    }
+
+    public DBNNode getRootNode() {
+        return node;
+    }
+
+    public Viewer getNavigatorViewer()
+    {
+        return itemControl.getNavigatorViewer();
+    }
+
+    public void setInput(IWorkbenchPart part, ISelection selection)
+    {
+        this.editor = (IDatabaseObjectEditor)part;
+    }
+
+    public void aboutToBeShown()
+    {
+        if (!activated) {
+            activated = true;
+            itemControl.loadData();
+        }
+    }
+
+    public void aboutToBeHidden()
+    {
+
+    }
+
+    public void dispose() {
+
+    }
+
+    public int getMinimumHeight()
+    {
+        return SWT.DEFAULT;
+    }
+
+    public boolean shouldUseExtraSpace()
+    {
+        return true;
+    }
+
+    public void refresh()
+    {
+        if (activated) {
+            return;
+        }
+        // Check - do we need to load new content in editor
+        // If this is DBM event then check node change type
+        // UNLOAD usually means that connection was closed on connection's node is not removed but
+        // is in "unloaded" state.
+        // Without this check editor will try to reload it's content and thus will reopen just closed connection
+        // (by calling getChildren() on DBNNode)
+        boolean loadNewData = true;
+//        if (source instanceof DBNEvent) {
+//            DBNEvent.NodeChange nodeChange = ((DBNEvent) source).getNodeChange();
+//            if (nodeChange == DBNEvent.NodeChange.UNLOAD) {
+//                loadNewData = false;
+//            }
+//        }
+        if (!itemControl.isDisposed()) {
+            itemControl.clearData();
+            if (loadNewData) {
+                itemControl.loadData();
+            }
+        }
+    }
+
+    public IDatabaseNodeEditorInput getEditorInput()
+    {
+        return editor.getEditorInput();
+    }
+
+    public DBPDataSource getDataSource()
+    {
+        return getEditorInput().getDataSource();
+    }
+}

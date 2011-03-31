@@ -286,9 +286,11 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             // just go further
         }
 
+/*
         for (TabInfo tab : tabs) {
             addNodeTab(tab);
         }
+*/
 
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_END);
