@@ -4,16 +4,13 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.IDBNListener;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
@@ -28,7 +25,7 @@ public class DatabaseEditorListener implements IDBNListener
     DatabaseEditorListener(IDatabaseNodeEditor databaseEditor) {
         this.databaseEditor = databaseEditor;
         // Acquire datasource
-        dataSourceContainer = (DBSDataSourceContainer) Platform.getAdapterManager().getAdapter(databaseEditor, DBSDataSourceContainer.class);
+        dataSourceContainer = databaseEditor.getEditorInput().getDataSource().getContainer();
         if (dataSourceContainer != null) {
             dataSourceContainer.acquire(databaseEditor);
         }
@@ -49,11 +46,7 @@ public class DatabaseEditorListener implements IDBNListener
 
     public DBNNode getTreeNode()
     {
-        if (databaseEditor.getEditorInput() instanceof IDatabaseNodeEditorInput) {
-            return ((IDatabaseNodeEditorInput) databaseEditor.getEditorInput()).getTreeNode();
-        } else {
-            return null;
-        }
+        return databaseEditor.getEditorInput().getTreeNode();
     }
 
     public void nodeChanged(final DBNEvent event)
@@ -67,7 +60,7 @@ public class DatabaseEditorListener implements IDBNListener
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
                 {
                     if (getTreeNode() == event.getNode()) {
-                        databaseEditor.refreshDatabaseContent(event);
+                        databaseEditor.refreshPart(event);
                     }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
                     closeEditor = true;

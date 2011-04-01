@@ -11,8 +11,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -27,13 +28,13 @@ class NodeEditorSection implements ISection
 {
     //static final Log log = LogFactory.getLog(EntityNodeEditor.class);
 
-    private IDatabaseObjectEditor editor;
+    private IDatabaseNodeEditor editor;
     private DBNNode node;
     private DBXTreeNode metaNode;
     private ItemListControl itemControl;
     private boolean activated;
 
-    NodeEditorSection(IDatabaseObjectEditor editor, DBNNode node, DBXTreeNode metaNode)
+    NodeEditorSection(IDatabaseNodeEditor editor, DBNNode node, DBXTreeNode metaNode)
     {
         this.editor = editor;
         this.node = node;
@@ -45,7 +46,10 @@ class NodeEditorSection implements ISection
         itemControl = new ItemListControl(parent, SWT.SHEET, editor, node, metaNode);
         //itemControl.getLayout().marginHeight = 0;
         //itemControl.getLayout().marginWidth = 0;
-        ProgressPageControl progressControl = editor.getProgressControl();
+        ProgressPageControl progressControl = null;
+        if (editor instanceof IProgressControlProvider) {
+            progressControl = ((IProgressControlProvider)editor).getProgressControl();
+        }
         if (progressControl != null) {
             itemControl.substituteProgressPanel(progressControl);
         } else {
@@ -75,7 +79,7 @@ class NodeEditorSection implements ISection
 
     public void setInput(IWorkbenchPart part, ISelection selection)
     {
-        this.editor = (IDatabaseObjectEditor)part;
+        this.editor = (IDatabaseNodeEditor)part;
     }
 
     public void aboutToBeShown()

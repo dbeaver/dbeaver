@@ -38,4 +38,8 @@ public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<MySQLTrigge
         }
     }
 
+    public void refreshPart(Object source)
+    {
+        activatePart();
+    }
 }

@@ -338,6 +338,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
+    public void refreshPart(Object source)
+    {
+        // do nothing
+    }
+
     private class PageControl extends UserPageControl {
         public PageControl(Composite parent) {
             super(parent);

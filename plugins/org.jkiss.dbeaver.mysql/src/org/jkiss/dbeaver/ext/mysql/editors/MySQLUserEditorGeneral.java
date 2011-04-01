@@ -174,6 +174,11 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         privTable.fillGrants(grants);
     }
 
+    public void refreshPart(Object source)
+    {
+        // do nothing
+    }
+
     private class PageControl extends UserPageControl {
         public PageControl(Composite parent) {
             super(parent);

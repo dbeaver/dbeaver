@@ -16,14 +16,15 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * MultiPageDatabaseEditor
  */
-public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IEditorInput> extends MultiPageEditorPart implements IDatabaseNodeEditor, IDataSourceProvider
+public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implements IDatabaseNodeEditor, IDataSourceProvider
 {
     private DatabaseEditorListener listener;
     private int activePageIndex = -1;
@@ -62,9 +63,8 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IEditorInput> e
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public INPUT_TYPE getEditorInput() {
-        return (INPUT_TYPE )super.getEditorInput();
+    public IDatabaseNodeEditorInput getEditorInput() {
+        return (IDatabaseNodeEditorInput)super.getEditorInput();
     }
 
     public void doSave(IProgressMonitor monitor)
@@ -130,8 +130,8 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IEditorInput> e
         // Deactivate the nested services from the last active service locator.
         if (activePageIndex >= 0) {
             final IWorkbenchPart part = getEditor(activePageIndex);
-            if (part instanceof IObjectEditorPart) {
-                ((IObjectEditorPart) part).deactivatePart();
+            if (part instanceof IActiveWorkbenchPart) {
+                ((IActiveWorkbenchPart) part).deactivatePart();
             }
         }
     }
@@ -141,13 +141,13 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IEditorInput> e
         final int pageIndex = getActivePage();
         final IWorkbenchPart part = getEditor(pageIndex);
 
-        if (part instanceof IObjectEditorPart) {
-            ((IObjectEditorPart) part).activatePart();
+        if (part instanceof IActiveWorkbenchPart) {
+            ((IActiveWorkbenchPart) part).activatePart();
         }
     }
 
     public DBPDataSource getDataSource() {
-        return getEditorInput() instanceof IDataSourceProvider ? ((IDataSourceProvider)getEditorInput()).getDataSource() : null;
+        return getEditorInput().getDataSource();
     }
 
     public IEditorPart getActiveEditor()

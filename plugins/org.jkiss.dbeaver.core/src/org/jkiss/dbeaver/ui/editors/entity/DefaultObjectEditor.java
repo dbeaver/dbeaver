@@ -19,12 +19,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -44,7 +44,7 @@ import java.util.List;
 /**
  * DefaultObjectEditor
  */
-public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart//, ILazyPropertyLoadListener
+public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, IProgressControlProvider//, ILazyPropertyLoadListener
 {
     static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 

@@ -17,9 +17,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -40,8 +42,13 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> implements IDataSourceProvider, DBDValueEditor, IResourceChangeListener
+public class ContentEditor extends MultiPageEditorPart implements IDataSourceProvider, DBDValueEditor, IResourceChangeListener
 {
+    public ContentEditorInput getEditorInput()
+    {
+        return (ContentEditorInput)super.getEditorInput();
+    }
+
     public static boolean openEditor(DBDValueController valueController, IContentEditorPart[] editorParts)
     {
         ContentEditorInput editorInput;
@@ -74,8 +81,9 @@ public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> i
 
     static final Log log = LogFactory.getLog(ContentEditor.class);
 
-    public void refreshDatabaseContent(DBNEvent event) {
-
+    public DBPDataSource getDataSource()
+    {
+        return getEditorInput().getDataSource();
     }
 
     static class ContentPartInfo {
@@ -193,10 +201,17 @@ public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> i
         });
     }
 
+    @Override
+    public void doSaveAs()
+    {
+
+    }
+
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
         super.init(site, input);
+        setPartName(input.getName());
 
         getValueController().registerEditor(this);
         valueEditorRegistered = true;
@@ -379,12 +394,6 @@ public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> i
         infoPanel.setLayoutData(gd);
         infoPanel.setVisible(visible);
         infoPanel.getParent().layout();
-    }
-
-    DBDValueHandler getValueHandler()
-    {
-        DBDValueController valueController = getValueController();
-        return valueController == null ? null : valueController.getValueHandler();
     }
 
     DBDContent getContent()

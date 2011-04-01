@@ -45,7 +45,7 @@ import java.util.*;
 /**
  * EntityEditor
  */
-public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> implements INavigatorModelView, ISaveablePart2
+public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorModelView, ISaveablePart2
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
@@ -457,7 +457,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
     }
 
-    public void refreshDatabaseContent(final DBNEvent event)
+    public void refreshPart(final Object source)
     {
         // Reinit object manager
         final boolean persisted = getEditorInput().getDatabaseObject().isPersisted();
@@ -469,7 +469,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                 for (int i = 0; i < pageCount; i++) {
                     IWorkbenchPart part = getEditor(i);
                     if (part instanceof IRefreshablePart) {
-                        ((IRefreshablePart)part).refreshPart(event);
+                        ((IRefreshablePart)part).refreshPart(source);
                     }
                 }
                 setPartName(getEditorInput().getName());

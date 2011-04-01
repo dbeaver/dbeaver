@@ -24,6 +24,6 @@ public interface IDatabaseNodeEditorInput extends IEditorInput, IDataSourceProvi
 
     DBEObjectCommander getObjectCommander();
 
-    DBEObjectEditor getObjectEditor();
+    <T extends DBEObjectManager> T getObjectManager(Class<T> aClass);
 
 }

@@ -95,7 +95,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
         sessionInfo.setEditable(false);
         sessionInfo.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        sash.setWeights(new int[] {70, 30});
+        sash.setWeights(new int[]{70, 30});
 
         pageControl = new PageControl(composite, SWT.NONE);
         pageControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -259,8 +259,9 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
         return null;
     }
 
-    public void refreshDatabaseContent(DBNEvent event) {
-
+    public void refreshPart(Object source)
+    {
+        refreshSessions();
     }
 
     class SessionLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider

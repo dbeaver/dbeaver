@@ -5,13 +5,13 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 
 public class ObjectEditorPageControl extends ProgressPageControl {
 
     private ObjectEditorHandler objectEditorHandler;
 
-    public ObjectEditorPageControl(Composite parent, int style, IDatabaseObjectEditor workbenchPart)
+    public ObjectEditorPageControl(Composite parent, int style, IDatabaseNodeEditor workbenchPart)
     {
         super(parent, style);
         objectEditorHandler = new ObjectEditorHandler(workbenchPart);

@@ -38,4 +38,8 @@ public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProc
         }
     }
 
+    public void refreshPart(Object source)
+    {
+        activatePart();
+    }
 }

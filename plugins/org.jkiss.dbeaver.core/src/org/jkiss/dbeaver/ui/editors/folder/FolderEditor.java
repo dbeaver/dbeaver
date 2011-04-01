@@ -47,7 +47,8 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         return itemControl.getNavigatorViewer();
     }
 
-    public void refreshDatabaseContent(DBNEvent event) {
+    public void refreshPart(Object source)
+    {
         Display.getDefault().asyncExec(new Runnable() {
             public void run()
             {
@@ -59,4 +60,5 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
             }
         });
     }
+
 }

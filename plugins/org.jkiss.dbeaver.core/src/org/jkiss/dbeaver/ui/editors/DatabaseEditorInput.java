@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -101,10 +102,10 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         return objectCommander;
     }
 
-    public DBEObjectEditor getObjectEditor()
+    public <T extends DBEObjectManager> T getObjectManager(Class<T> aClass)
     {
         DBSObject databaseObject = getDatabaseObject();
-        return databaseObject == null ? null : DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(databaseObject.getClass(), DBEObjectEditor.class);
+        return databaseObject == null ? null : DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(databaseObject.getClass(), aClass);
     }
 
     public void setDefaultPageId(String defaultPageId)

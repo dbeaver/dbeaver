@@ -26,8 +26,8 @@ public class DatabaseEditorPropertyTester extends PropertyTester
         IDatabaseNodeEditor databaseEditor = (IDatabaseNodeEditor) receiver;
         if (property.equals(PROP_ACTIVE)) {
             String typeName = String.valueOf(expectedValue);
-            if (databaseEditor instanceof MultiPageDatabaseEditor<?>) {
-                MultiPageDatabaseEditor<?> mpEditor = (MultiPageDatabaseEditor<?>)databaseEditor;
+            if (databaseEditor instanceof MultiPageDatabaseEditor) {
+                MultiPageDatabaseEditor mpEditor = (MultiPageDatabaseEditor)databaseEditor;
                 IEditorPart activeEditor = mpEditor.getActiveEditor();
                 return activeEditor != null && testObjectClass(activeEditor, typeName);
             } else {

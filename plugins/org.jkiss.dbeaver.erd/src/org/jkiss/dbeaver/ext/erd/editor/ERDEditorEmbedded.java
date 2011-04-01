@@ -7,10 +7,10 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
-import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * Embedded ERD editor
  */
-public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseObjectEditor, IRefreshablePart {
+public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseNodeEditor, IActiveWorkbenchPart {
 
     /**
      * No-arg constructor

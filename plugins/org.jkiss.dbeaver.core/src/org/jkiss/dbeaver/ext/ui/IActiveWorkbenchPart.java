@@ -7,9 +7,9 @@ package org.jkiss.dbeaver.ext.ui;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
- * Embedded workbench part
+ * Active workbench part
  */
-public interface IObjectEditorPart extends IWorkbenchPart
+public interface IActiveWorkbenchPart extends IWorkbenchPart
 {
     /**
      * Activates editor part.

@@ -52,4 +52,12 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     {
         resultSetView.getControl().setFocus();
     }
+
+    public void refreshPart(Object source)
+    {
+        if (loaded) {
+            resultSetView.refresh();
+        }
+    }
+
 }

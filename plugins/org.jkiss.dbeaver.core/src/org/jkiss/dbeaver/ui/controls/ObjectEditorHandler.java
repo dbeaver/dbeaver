@@ -15,9 +15,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -26,14 +27,14 @@ import java.lang.reflect.InvocationTargetException;
 public class ObjectEditorHandler {
 
     private Button saveChangesButton;
-    private IDatabaseObjectEditor workbenchPart;
+    private IDatabaseNodeEditor workbenchPart;
     private IPropertyListener propertyListener;
 /*
     private Button viewChangesButton;
     private Button resetChangesButton;
 */
 
-    public ObjectEditorHandler(IDatabaseObjectEditor workbenchPart)
+    public ObjectEditorHandler(IDatabaseNodeEditor workbenchPart)
     {
         this.workbenchPart = workbenchPart;
 
@@ -53,11 +54,6 @@ public class ObjectEditorHandler {
         }
     }
 
-    public IDatabaseObjectEditor getPart()
-    {
-        return workbenchPart;
-    }
-
     public void dispose()
     {
         if (propertyListener != null) {
@@ -66,7 +62,7 @@ public class ObjectEditorHandler {
         }
     }
 
-    public IDatabaseObjectEditor getEditorPart()
+    public IDatabaseNodeEditor getEditorPart()
     {
         return workbenchPart;
     }
@@ -80,7 +76,7 @@ public class ObjectEditorHandler {
         if (dataSource.getInfo().isReadOnlyMetaData()) {
             return false;
         }
-        return getEditorPart().getEditorInput().getObjectEditor() != null;
+        return getEditorPart().getEditorInput().getObjectManager(DBEObjectManager.class) != null;
     }
 
     private IEditorPart getMainEditorPart()

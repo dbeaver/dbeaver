@@ -57,4 +57,8 @@ public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<MySQLTable>
         ddlText.setText(ddl.toString());
     }
 
+    public void refreshPart(Object source)
+    {
+        activatePart();
+    }
 }

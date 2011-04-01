@@ -9,21 +9,20 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
 /**
  * AbstractDatabaseObjectEditor
  */
 public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject>
-    extends EditorPart implements IDatabaseObjectEditor
+    extends EditorPart implements IDatabaseNodeEditor, IActiveWorkbenchPart
 {
 
     public void init(IEditorSite site, IEditorInput input)
@@ -82,11 +81,6 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     public IDatabaseNodeEditorInput getEditorInput()
     {
         return (IDatabaseNodeEditorInput)super.getEditorInput();
-    }
-
-    public ProgressPageControl getProgressControl()
-    {
-        return null;
     }
 
     @Override

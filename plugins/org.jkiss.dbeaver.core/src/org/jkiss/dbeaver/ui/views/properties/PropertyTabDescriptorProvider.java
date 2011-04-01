@@ -11,7 +11,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.tabbed.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -37,8 +37,8 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
     {
         List<ITabDescriptor> tabList = new ArrayList<ITabDescriptor>();
         makeStandardPropertiesTabs(part, selection, tabList);
-        if (part instanceof IDatabaseObjectEditor) {
-            makeDatabaseEditorTabs((IDatabaseObjectEditor)part, selection, tabList);
+        if (part instanceof IDatabaseNodeEditor) {
+            makeDatabaseEditorTabs((IDatabaseNodeEditor)part, selection, tabList);
         }
         return tabList.toArray(new ITabDescriptor[tabList.size()]);
     }
@@ -93,7 +93,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         }
     }
 
-    private void makeDatabaseEditorTabs(IDatabaseObjectEditor part, ISelection selection, List<ITabDescriptor> tabList)
+    private void makeDatabaseEditorTabs(IDatabaseNodeEditor part, ISelection selection, List<ITabDescriptor> tabList)
     {
         final DBNDatabaseNode node = part.getEditorInput().getTreeNode();
 
@@ -166,7 +166,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         return tabs;
     }
 
-    private void addNodeTab(final IDatabaseObjectEditor part, List<ITabDescriptor> tabList, final TabInfo tabInfo)
+    private void addNodeTab(final IDatabaseNodeEditor part, List<ITabDescriptor> tabList, final TabInfo tabInfo)
     {
         List<ISectionDescriptor> tabSections = new ArrayList<ISectionDescriptor>();
 

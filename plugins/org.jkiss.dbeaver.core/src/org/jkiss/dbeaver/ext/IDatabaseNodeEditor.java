@@ -5,13 +5,15 @@
 package org.jkiss.dbeaver.ext;
 
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
 
 /**
  * IDatabaseNodeEditor
  */
-public interface IDatabaseNodeEditor extends IEditorPart, DBPDataSourceUser
+public interface IDatabaseNodeEditor extends IEditorPart, DBPDataSourceUser, IDataSourceProvider, IRefreshablePart
 {
-    void refreshDatabaseContent(DBNEvent event);
+
+    IDatabaseNodeEditorInput getEditorInput();
+
 }
