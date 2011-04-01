@@ -6,15 +6,15 @@ package org.jkiss.dbeaver.ui.views.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
-import org.jkiss.dbeaver.model.meta.Property;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,25 +24,25 @@ import java.util.Map;
  */
 public class PropertySourceEditable extends PropertySourceAbstract implements DBPObject, IPropertySourceEditable
 {
-    private DBEObjectCommander objectCommander;
+    private IDatabaseNodeEditorInput editorInput;
     private DBEObjectEditor objectManager;
     private Map<Object, Object> updatedValues = new HashMap<Object, Object>();
 
-    public PropertySourceEditable(DBPObject object, DBEObjectCommander objectCommander)
+    public PropertySourceEditable(IDatabaseNodeEditorInput editorInput)
     {
-        super(object, object, true);
-        this.objectCommander = objectCommander;
-        this.objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectEditor.class);
+        super(editorInput.getDatabaseObject(), editorInput.getDatabaseObject(), true);
+        this.editorInput = editorInput;
+        this.objectManager = editorInput.getObjectManager(DBEObjectEditor.class);
     }
 
     public boolean isEditable()
     {
-        return objectCommander != null && this.objectManager != null;
+        return editorInput.getObjectCommander() != null && this.objectManager != null;
     }
 
     public DBEObjectCommander getObjectCommander()
     {
-        return objectCommander;
+        return editorInput.getObjectCommander();
     }
 
     @Override
@@ -75,11 +75,33 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             return;
         }
         final DBEPropertyHandler<DBPObject> propertyHandler = objectManager.makePropertyHandler((DBPObject) getEditableValue(), propertyDescriptor);
-        final DBECommandProperty<DBPObject> command = new DBECommandProperty<DBPObject>(
+        final DBECommandProperty<? extends DBPObject> command = new DBECommandProperty<DBPObject>(
             (DBPObject) getEditableValue(),
             propertyHandler,
             value);
-        getObjectCommander().addCommand(command, null);
+        final CommandReflector reflector = new CommandReflector();
+        getObjectCommander().addCommand(command, reflector);
+
+        handlePropertyChange(id, value);
     }
 
+    private void handlePropertyChange(Object id, Object value)
+    {
+        if (DBConstants.PROP_ID_NAME.equals(id)) {
+            // Update object in navigator
+            editorInput.getTreeNode().setNodeName(CommonUtils.toString(value));
+        }
+    }
+
+    private class CommandReflector <T extends DBPObject>  implements DBECommandReflector<T, DBECommand<T>> {
+        public void redoCommand(DBECommand<T> tdbeCommand)
+        {
+
+        }
+
+        public void undoCommand(DBECommand<T> tdbeCommand)
+        {
+
+        }
+    }
 }

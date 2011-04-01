@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
+import org.jkiss.dbeaver.model.edit.prop.DBEPropertyReflector;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
@@ -56,6 +57,11 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
             handler = new TablePropertyHandler(property);
             handlerMap.put(property, handler);
         }
+//        if (DBConstants.PROP_ID_NAME.equals(property.getId())) {
+//            // Update object in navigator
+//            object.getDataSource().getContainer().fireEvent(
+//                new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object));
+//        }
         return handler;
     }
 
@@ -104,7 +110,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
 
     protected abstract TableCompositeCommand createTableCommand(OBJECT_TYPE table);
 
-    protected class TablePropertyHandler implements DBEPropertyHandler<OBJECT_TYPE> {
+    protected class TablePropertyHandler implements DBEPropertyHandler<OBJECT_TYPE>, DBEPropertyReflector<OBJECT_TYPE> {
 
         private final IPropertyDescriptor property;
 
@@ -121,6 +127,10 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         public DBECommandComposite<OBJECT_TYPE, ? extends DBEPropertyHandler<OBJECT_TYPE>> createCompositeCommand(OBJECT_TYPE object)
         {
             return createTableCommand(object);
+        }
+
+        public void reflectValueChange(OBJECT_TYPE object, Object oldValue, Object newValue)
+        {
         }
     }
 

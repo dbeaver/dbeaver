@@ -78,16 +78,21 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             getObjectCommander().removeCommandListener(commandListener);
             commandListener = null;
         }
-        if (getDatabaseObject() != null && !getDatabaseObject().isPersisted()) {
-            // If edited object is still not persisted then remove object's node
-            DBNNode treeNode = getEditorInput().getTreeNode();
-            if (treeNode instanceof DBNDatabaseItem) {
-                DBNNode parentNode = treeNode.getParentNode();
-                if (parentNode instanceof DBNDatabaseFolder) {
-                    try {
-                        ((DBNDatabaseFolder)parentNode).removeChildItem(treeNode);
-                    } catch (DBException e) {
-                        log.error(e);
+        if (getDatabaseObject() != null) {
+            DBNDatabaseNode treeNode = getEditorInput().getTreeNode();
+            if (getDatabaseObject().isPersisted()) {
+                // Reset node name (if it was set by editor)
+                treeNode.setNodeName(null);
+            } else {
+                // If edited object is still not persisted then remove object's node
+                if (treeNode instanceof DBNDatabaseItem) {
+                    DBNNode parentNode = treeNode.getParentNode();
+                    if (parentNode instanceof DBNDatabaseFolder) {
+                        try {
+                            ((DBNDatabaseFolder)parentNode).removeChildItem(treeNode);
+                        } catch (DBException e) {
+                            log.error(e);
+                        }
                     }
                 }
             }
@@ -265,6 +270,26 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_START);
 
+        // Add navigator tabs
+        //addNavigatorTabs();
+
+        // Add contributed pages
+        addContributions(EntityEditorDescriptor.POSITION_END);
+
+        String defPageId = getEditorInput().getDefaultPageId();
+        if (defPageId == null) {
+            defPageId = defaultPageMap.get(getEditorInput().getDatabaseObject().getClass()); 
+        }
+        if (defPageId != null) {
+            IEditorPart defEditorPage = editorMap.get(defPageId);
+            if (defEditorPage != null) {
+                setActiveEditor(defEditorPage);
+            }
+        }
+    }
+
+    private void addNavigatorTabs()
+    {
         // Collect tabs from navigator tree model
         final List<TabInfo> tabs = new ArrayList<TabInfo>();
         DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
@@ -286,24 +311,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             // just go further
         }
 
-/*
         for (TabInfo tab : tabs) {
             addNodeTab(tab);
-        }
-*/
-
-        // Add contributed pages
-        addContributions(EntityEditorDescriptor.POSITION_END);
-
-        String defPageId = getEditorInput().getDefaultPageId();
-        if (defPageId == null) {
-            defPageId = defaultPageMap.get(getEditorInput().getDatabaseObject().getClass()); 
-        }
-        if (defPageId != null) {
-            IEditorPart defEditorPage = editorMap.get(defPageId);
-            if (defEditorPage != null) {
-                setActiveEditor(defEditorPage);
-            }
         }
     }
 
@@ -472,10 +481,10 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                         ((IRefreshablePart)part).refreshPart(source);
                     }
                 }
-                setPartName(getEditorInput().getName());
-                setTitleImage(getEditorInput().getImageDescriptor());
             }});
         }
+        setPartName(getEditorInput().getName());
+        setTitleImage(getEditorInput().getImageDescriptor());
     }
 
     public DBNNode getRootNode() {

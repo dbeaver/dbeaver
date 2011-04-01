@@ -57,11 +57,6 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     {
     }
 
-    private DBNNode getTreeNode()
-    {
-        return getEditorInput().getTreeNode();
-    }
-
     public void createPartControl(Composite parent)
     {
         // Add lazy props listener
@@ -69,7 +64,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
 
         pageControl = new ObjectEditorPageControl(parent, SWT.NONE, this);
 
-        DBNNode node = getTreeNode();
+        DBNNode node = getEditorInput().getTreeNode();
 
         Composite container = new Composite(pageControl, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
@@ -141,26 +136,21 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             propsPlaceholder.setLayoutData(gd);
             propsPlaceholder.setLayout(new FormLayout());
 
-            DBNNode itemObject = getTreeNode();
             //final PropertyCollector propertyCollector = new PropertyCollector(itemObject);
             //List<ObjectPropertyDescriptor> annoProps = ObjectPropertyDescriptor.extractAnnotations(itemObject);
 
             properties = new PropertyPageTabbed();
             properties.init(new ProxyPageSite(getSite()));
             properties.createControl(propsPlaceholder);
-            if (itemObject != null) {
-                DBEObjectCommander commander = getEditorInput().getObjectCommander();
-                PropertySourceEditable propertySource = new PropertySourceEditable(
-                    itemObject instanceof DBNDatabaseNode ? ((DBNDatabaseNode) itemObject).getObject() : itemObject,
-                    commander);
-                propertySource.collectProperties(new IFilter() {
-                    public boolean select(Object toTest)
-                    {
-                        return true;
-                    }
-                });
-                properties.selectionChanged(this, new StructuredSelection(propertySource));
-            }
+
+            PropertySourceEditable propertySource = new PropertySourceEditable(getEditorInput());
+            propertySource.collectProperties(new IFilter() {
+                public boolean select(Object toTest)
+                {
+                    return true;
+                }
+            });
+            properties.selectionChanged(this, new StructuredSelection(propertySource));
         }
 
         pageControl.createProgressPanel();

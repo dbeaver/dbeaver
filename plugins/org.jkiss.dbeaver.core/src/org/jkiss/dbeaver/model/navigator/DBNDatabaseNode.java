@@ -11,6 +11,7 @@ import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,6 +40,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     private boolean locked;
     protected List<DBNDatabaseNode> childNodes;
+    private String nodeName;
 
     protected DBNDatabaseNode(DBNNode parentNode)
     {
@@ -62,11 +64,23 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public String getNodeName()
     {
-        String objectName = getObject() == null ? null : getObject().getName();
-        if (objectName == null) {
+        if (!CommonUtils.isEmpty(nodeName)) {
+            return nodeName;
+        }
+        if (getObject() == null) {
+            return DBConstants.NULL_VALUE_LABEL;
+        }
+        String objectName = getObject().getName();
+        if (CommonUtils.isEmpty(objectName)) {
             objectName = "?";
         }
         return objectName;
+    }
+
+    public void setNodeName(String name)
+    {
+        this.nodeName = name;
+        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
     }
 
     public String getNodeDescription()
@@ -521,4 +535,5 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     {
         return getNodeType() + " " + getNodeName();
     }
+
 }

@@ -12,7 +12,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
-import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -23,9 +22,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IDatabaseNodeEditorInput
 {
-    private NODE node;
+    private final NODE node;
+    private final DBEObjectCommander objectCommander;
     private String defaultPageId;
-    private DBEObjectCommander objectCommander;
 
     protected DatabaseEditorInput(NODE node)
     {
