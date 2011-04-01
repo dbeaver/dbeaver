@@ -52,6 +52,7 @@ public class DatabaseEditorListener implements IDBNListener
     public void nodeChanged(final DBNEvent event)
     {
         if (isValuableNode(event.getNode())) {
+            Runnable runner = null;
             boolean closeEditor = false;
             if (event.getAction() == DBNEvent.Action.REMOVE) {
                 closeEditor = true;
@@ -60,19 +61,24 @@ public class DatabaseEditorListener implements IDBNListener
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
                 {
                     if (getTreeNode() == event.getNode()) {
-                        databaseEditor.refreshPart(event);
+                        runner = new Runnable() { public void run() {
+                            databaseEditor.refreshPart(event);
+                        }};
                     }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
                     closeEditor = true;
                 }
             }
             if (closeEditor) {
-                Display.getDefault().asyncExec(new Runnable() { public void run() {
+                runner = new Runnable() { public void run() {
                     IWorkbenchPage workbenchPage = databaseEditor.getSite().getWorkbenchWindow().getActivePage();
                     if (workbenchPage != null) {
                         workbenchPage.closeEditor(databaseEditor, false);
                     }
-                }});
+                }};
+            }
+            if (runner != null) {
+                Display.getDefault().asyncExec(runner);
             }
         }
     }

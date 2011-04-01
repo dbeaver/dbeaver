@@ -468,20 +468,18 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
     public void refreshPart(final Object source)
     {
+        getEditorInput().getObjectCommander().resetChanges();
         // Reinit object manager
-        final boolean persisted = getEditorInput().getDatabaseObject().isPersisted();
-        if (persisted) {
+        DBSObject databaseObject = getEditorInput().getDatabaseObject();
+        if (databaseObject != null && databaseObject.isPersisted()) {
             // Refresh visual content in parts
-            getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
-
-                int pageCount = getPageCount();
-                for (int i = 0; i < pageCount; i++) {
-                    IWorkbenchPart part = getEditor(i);
-                    if (part instanceof IRefreshablePart) {
-                        ((IRefreshablePart)part).refreshPart(source);
-                    }
+            int pageCount = getPageCount();
+            for (int i = 0; i < pageCount; i++) {
+                IWorkbenchPart part = getEditor(i);
+                if (part instanceof IRefreshablePart) {
+                    ((IRefreshablePart)part).refreshPart(source);
                 }
-            }});
+            }
         }
         setPartName(getEditorInput().getName());
         setTitleImage(getEditorInput().getImageDescriptor());
