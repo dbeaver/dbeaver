@@ -311,7 +311,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
             completed = true;
             for (Map.Entry<ObjectPropertyDescriptor, Object> entry : result.entrySet()) {
                 propValues.put(entry.getKey().getId(), entry.getValue());
-                PropertiesContributor.getInstance().notifyPropertyLoad(sourceObject, entry.getKey().getId(), entry.getValue(), true);
+                PropertiesContributor.getInstance().notifyPropertyLoad(getEditableValue(), entry.getKey().getId(), entry.getValue(), true);
             }
         }
 
