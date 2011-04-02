@@ -5,8 +5,7 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.generic.model.GenericEntityContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 
@@ -42,6 +41,16 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
                 }
                 return actions.toArray(new IDatabasePersistAction[actions.size()]);
             }
+        };
+    }
+
+    public Class<?>[] getChildTypes()
+    {
+        return new Class[] {
+            GenericTableColumn.class,
+            GenericPrimaryKey.class,
+            GenericForeignKey.class,
+            GenericIndex.class,
         };
     }
 }

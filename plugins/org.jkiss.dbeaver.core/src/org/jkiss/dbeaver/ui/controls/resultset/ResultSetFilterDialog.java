@@ -276,10 +276,10 @@ public class ResultSetFilterDialog extends Dialog {
 
         public void mouseUp(MouseEvent e)
         {
-            handleColumnClick(e, false);
+            handleColumnClick(e);
         }
 
-        private void handleColumnClick(MouseEvent e, boolean isDef) {
+        private void handleColumnClick(MouseEvent e) {
             // Clean up any previous editor control
             disposeOldEditor();
 

@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.views.properties;
 
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -33,6 +34,7 @@ class NodeEditorSection implements ISection
     private DBXTreeNode metaNode;
     private ItemListControl itemControl;
     private boolean activated;
+    private ISelectionProvider prevSelectionProvider;
 
     NodeEditorSection(IDatabaseNodeEditor editor, DBNNode node, DBXTreeNode metaNode)
     {
@@ -88,11 +90,15 @@ class NodeEditorSection implements ISection
             activated = true;
             itemControl.loadData();
         }
+        prevSelectionProvider = editor.getSite().getSelectionProvider();
+        editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
     }
 
     public void aboutToBeHidden()
     {
-
+        if (prevSelectionProvider != null) {
+            editor.getSite().setSelectionProvider(prevSelectionProvider);
+        }
     }
 
     public void dispose() {

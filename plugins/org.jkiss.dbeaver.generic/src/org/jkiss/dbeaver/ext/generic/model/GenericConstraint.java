@@ -22,7 +22,7 @@ public abstract class GenericConstraint extends JDBCConstraint<GenericDataSource
      * Copy constructor
      * @param constraint
      */
-    GenericConstraint(GenericConstraint constraint)
+    protected GenericConstraint(GenericConstraint constraint)
     {
         super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType());
     }

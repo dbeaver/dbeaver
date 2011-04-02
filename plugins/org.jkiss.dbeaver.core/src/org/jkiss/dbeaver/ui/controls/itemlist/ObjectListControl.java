@@ -51,11 +51,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private boolean isTree;
     private boolean isFitWidth;
-    private boolean isBrief;
     //private boolean showName;
     //private boolean loadProperties;
 
     private ColumnViewer itemsViewer;
+    //private ColumnViewerEditor itemsEditor;
     private List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
     private SortListener sortListener;
     private IDoubleClickListener doubleClickHandler;
@@ -102,7 +102,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             tree.setLinesVisible (true);
             tree.setHeaderVisible(true);
             itemsViewer = treeViewer;
-            //TreeEditor editor = new TreeEditor(tree);
+            TreeViewerEditor.create(treeViewer, new ColumnViewerEditorActivationStrategy(treeViewer), ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
         } else {
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
@@ -110,7 +110,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             table.setHeaderVisible(true);
             itemsViewer = tableViewer;
             //UIUtils.applyCustomTolTips(table);
-            //TableEditor editor = new TableEditor(table);
+            //itemsEditor = new TableEditor(table);
+            TableViewerEditor.create(tableViewer, new ColumnViewerEditorActivationStrategy(tableViewer), ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
         }
         itemsViewer.getControl().setCursor(arrowCursor);
         itemsViewer.setContentProvider(contentProvider);
@@ -126,35 +127,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         });
         itemsViewer.getControl().addListener(SWT.PaintItem, new PaintListener());
         CellTrackListener mouseListener = new CellTrackListener();
-        itemsViewer.getControl().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDown(MouseEvent e)
-            {
-                if (isTree) {
-                    detectTreeItem(e.x, e.y);
-                } else {
-                    detectTableItem(e.x, e.y);
-                }
-            }
-            @Override
-            public void mouseUp(MouseEvent e)
-            {
-                Item hoverItem;
-                if (isTree) {
-                    hoverItem = detectTreeItem(e.x, e.y);
-                } else {
-                    hoverItem = detectTableItem(e.x, e.y);
-                }
-                if (hoverItem != null && selectedColumn >= 0 && e.button == 1) {
-                    Object element = hoverItem.getData();
-                    int checkColumn = selectedColumn;
-                    Object cellValue = getCellValue(element, checkColumn);
-                    if (isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(e.x, e.y)) {
-                        navigateHyperlink(cellValue);
-                    }
-                }
-            }
-        });
+        itemsViewer.getControl().addMouseListener(new MouseListener());
 
         itemsViewer.getControl().addMouseTrackListener(mouseListener);
         itemsViewer.getControl().addMouseMoveListener(mouseListener);
@@ -270,19 +243,25 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return itemsViewer;
     }
 
+    public Composite getControl()
+    {
+        // Both table and tree are composites so its ok
+        return (Composite) itemsViewer.getControl();
+    }
+
     public ISelectionProvider getSelectionProvider()
     {
         return itemsViewer;
     }
 
+    protected ObjectPropertyDescriptor getObjectProperty(OBJECT_TYPE object, int columnIndex)
+    {
+        return columns.get(columnIndex).getProperty(getObjectValue(object));
+    }
+
     public void setFitWidth(boolean fitWidth)
     {
         isFitWidth = fitWidth;
-    }
-
-    public void setBrief(boolean brief)
-    {
-        isBrief = brief;
     }
 
     protected boolean isHyperlink(Object cellValue)
@@ -487,26 +466,34 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
         }
         if (objectColumn == null) {
-            Item newColumn;
+            Item columnItem;
+            ViewerColumn newColumn;
             if (isTree) {
-                TreeColumn column = new TreeColumn (getTree(), SWT.NONE);
-                column.setText(prop.getDisplayName());
-                column.setToolTipText(prop.getDescription());
-                //column.setData(prop);
-                column.addListener(SWT.Selection, sortListener);
-                newColumn = column;
+                TreeViewerColumn viewerColumn = new TreeViewerColumn ((TreeViewer) itemsViewer, SWT.NONE);
+                viewerColumn.getColumn().setText(prop.getDisplayName());
+                viewerColumn.getColumn().setToolTipText(prop.getDescription());
+                viewerColumn.getColumn().addListener(SWT.Selection, sortListener);
+                viewerColumn.getColumn().setData(DATA_OBJECT_COLUMN, objectColumn);
+                newColumn = viewerColumn;
+                columnItem = viewerColumn.getColumn();
             } else {
-                TableColumn column = new TableColumn (getTable(), SWT.NONE);
-                column.setText(prop.getDisplayName());
-                column.setToolTipText(prop.getDescription());
+                TableViewerColumn viewerColumn = new TableViewerColumn ((TableViewer) itemsViewer, SWT.NONE);
+                viewerColumn.getColumn().setText(prop.getDisplayName());
+                viewerColumn.getColumn().setToolTipText(prop.getDescription());
                 //column.setData(prop);
-                column.addListener(SWT.Selection, sortListener);
-                newColumn = column;
+                viewerColumn.getColumn().addListener(SWT.Selection, sortListener);
+                viewerColumn.getColumn().setData(DATA_OBJECT_COLUMN, objectColumn);
+                newColumn = viewerColumn;
+                columnItem = viewerColumn.getColumn();
             }
-            objectColumn = new ObjectColumn(newColumn, CommonUtils.toString(prop.getId()));
+            newColumn.setLabelProvider(new ObjectColumnLabelProvider(columns.size()));
+            final EditingSupport editingSupport = makeEditingSupport(newColumn, columns.size());
+            if (editingSupport != null) {
+                newColumn.setEditingSupport(editingSupport);
+            }
+            objectColumn = new ObjectColumn(newColumn, columnItem, CommonUtils.toString(prop.getId()));
             objectColumn.addProperty(objectClass, prop);
             this.columns.add(objectColumn);
-            newColumn.setData(DATA_OBJECT_COLUMN, objectColumn);
         } else {
             objectColumn.addProperty(objectClass, prop);
             String oldTitle = objectColumn.item.getText();
@@ -514,6 +501,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 objectColumn.item.setText(CommonUtils.capitalizeWord(objectColumn.id));
             }
         }
+    }
+
+    //////////////////////////////////////////////////////
+    // Edit
+
+    protected EditingSupport makeEditingSupport(ViewerColumn viewerColumn, int columnIndex)
+    {
+        return null;
+    }
+
+    protected CellEditor createCellEditor(Composite parent, OBJECT_TYPE object, ObjectPropertyDescriptor property)
+    {
+        return null;
     }
 
     //////////////////////////////////////////////////////
@@ -548,10 +548,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private static class ObjectColumn {
         String id;
         Item item;
+        ViewerColumn column;
         Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<Class<?>, ObjectPropertyDescriptor>();
 
-        private ObjectColumn(Item item, String id) {
+        private ObjectColumn(ViewerColumn column, Item item, String id) {
             this.id = id;
+            this.column = column;
             this.item = item;
         }
         void addProperty(Class<?> objectClass, ObjectPropertyDescriptor prop)
@@ -628,7 +630,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     /**
      * ItemLabelProvider
      */
-    class ItemLabelProvider extends LabelProvider implements ITableLabelProvider
+    class ItemLabelProvider extends ColumnLabelProvider implements ITableLabelProvider
     {
         public Image getColumnImage(Object element, int columnIndex)
         {
@@ -654,6 +656,35 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             return getCellString(cellValue);
         }
+
+    }
+
+    class ObjectColumnLabelProvider extends ColumnLabelProvider
+    {
+        private final int columnIndex;
+
+        ObjectColumnLabelProvider(int columnIndex)
+        {
+            this.columnIndex = columnIndex;
+        }
+
+        public Image getImage(Object element)
+        {
+            if (columnIndex == 0) {
+                return getObjectImage((OBJECT_TYPE) element);
+            }
+            return null;
+        }
+
+        public String getText(Object element)
+        {
+            Object cellValue = getCellValue(element, columnIndex);
+            if (!sampleItems && isHyperlink(cellValue)) {
+                return "";
+            }
+            return getCellString(cellValue);
+        }
+
     }
 
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
@@ -963,6 +994,38 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
 
             return Status.OK_STATUS;
+        }
+    }
+
+    private class MouseListener extends MouseAdapter {
+
+        @Override
+        public void mouseDown(MouseEvent e)
+        {
+            if (isTree) {
+                detectTreeItem(e.x, e.y);
+            } else {
+                detectTableItem(e.x, e.y);
+            }
+        }
+
+        @Override
+        public void mouseUp(MouseEvent e)
+        {
+            Item hoverItem;
+            if (isTree) {
+                hoverItem = detectTreeItem(e.x, e.y);
+            } else {
+                hoverItem = detectTableItem(e.x, e.y);
+            }
+            if (hoverItem != null && selectedColumn >= 0 && e.button == 1) {
+                Object element = hoverItem.getData();
+                int checkColumn = selectedColumn;
+                Object cellValue = getCellValue(element, checkColumn);
+                if (isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(e.x, e.y)) {
+                    navigateHyperlink(cellValue);
+                }
+            }
         }
     }
 

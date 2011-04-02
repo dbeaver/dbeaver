@@ -91,7 +91,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return valueEditor.createCellEditor(parent, propInfo);
     }
 
-    private boolean isEditable()
+    public boolean isEditable()
     {
         final IPropertySource propertySource = getSource();
         if (!(propertySource instanceof IPropertySourceEditable) || !((IPropertySourceEditable) propertySource).isEditable()) {

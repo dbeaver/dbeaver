@@ -299,6 +299,18 @@ public class UIUtils {
         return -1;
     }
 
+    public static int getColumnAtPos(Tree table, TreeItem item, int x, int y)
+    {
+        int columnCount = table.getColumnCount();
+        for (int i = 0; i < columnCount; i++) {
+            Rectangle rect = item.getBounds(i);
+            if (rect.contains(x, y)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public static void dispose(Widget widget)
     {
         if (widget != null && !widget.isDisposed()) {

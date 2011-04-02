@@ -58,7 +58,7 @@ public class SelectDataSourceDialog extends Dialog {
         gd.minimumWidth = 300;
         dsList.setLayoutData(gd);
         //dsList.setLoadProperties(false);
-        dsList.setBrief(true);
+        //dsList.setBrief(true);
         dsList.loadData();
         dsList.getNavigatorViewer().addSelectionChangedListener(new ISelectionChangedListener()
         {
