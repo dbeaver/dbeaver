@@ -67,7 +67,7 @@ public abstract class JDBCStructCache<
         }
         if (forObject == null) {
             super.loadObjects(monitor);
-        } else if (isChildrenCached(forObject)) {
+        } else if (!forObject.isPersisted() || isChildrenCached(forObject)) {
             return;
         }
 

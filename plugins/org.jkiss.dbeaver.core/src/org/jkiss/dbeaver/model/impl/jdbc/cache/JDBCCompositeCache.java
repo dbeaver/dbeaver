@@ -109,7 +109,7 @@ public abstract class JDBCCompositeCache<
         // Load tables and columns first
         if (forParent == null) {
             parentCache.loadObjects(monitor);
-        } else if (isObjectsCached(forParent)) {
+        } else if (!forParent.isPersisted() || isObjectsCached(forParent)) {
             return;
         }
 

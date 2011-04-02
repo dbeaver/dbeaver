@@ -318,6 +318,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     private List<GenericForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException
     {
+        if (!isPersisted()) {
+            return new ArrayList<GenericForeignKey>();
+        }
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
             // Read foreign keys in two passes
