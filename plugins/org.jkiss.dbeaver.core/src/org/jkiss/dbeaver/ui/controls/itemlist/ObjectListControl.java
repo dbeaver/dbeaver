@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -60,7 +61,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private SortListener sortListener;
     private IDoubleClickListener doubleClickHandler;
     private Map<Item, LazyObject> lazyObjects;
-    private ListPropertySource listPropertySource;
+    private IPropertySource listPropertySource;
     private Job lazyLoadingJob = null;
 
     private final TextLayout linkLayout;
@@ -75,7 +76,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     // After content is loaded is always false (and all hyperlink cells have empty text)
     private transient boolean sampleItems = false;
 
-    private volatile Object curListObject;
+    private volatile OBJECT_TYPE curListObject;
     private volatile LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
 
     public ObjectListControl(
@@ -138,7 +139,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 if (selection.isEmpty()) {
                     curListObject = null;
                 } else {
-                    curListObject = selection.getFirstElement();
+                    curListObject = (OBJECT_TYPE) selection.getFirstElement();
                 }
             }
         });
@@ -146,7 +147,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         itemsViewer.getControl().setLayoutData(gd);
         //PropertiesContributor.getInstance().addLazyListener(this);
 
-        listPropertySource = new ListPropertySource();
         sortListener = new SortListener();
 
         // Add selection listener
@@ -166,6 +166,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 setInfo(status);
             }
         });
+    }
+
+    public IPropertySource getListPropertySource()
+    {
+        return listPropertySource;
+    }
+
+    protected IPropertySource createListPropertySource()
+    {
+        return new DefaultListPropertySource();
     }
 
     protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService();
@@ -228,14 +238,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return false;
     }
 
-    private Tree getTree()
+    public OBJECT_TYPE getCurrentListObject()
     {
-        return ((TreeViewer)itemsViewer).getTree();
-    }
-
-    private Table getTable()
-    {
-        return ((TableViewer)itemsViewer).getTable();
+        return curListObject;
     }
 
     public ColumnViewer getItemsViewer()
@@ -292,6 +297,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (loadingJob != null) {
             return;
         }
+        if (listPropertySource == null) {
+            listPropertySource = createListPropertySource();
+        }
+
         loadingJob = createLoadService();
         loadingJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
@@ -323,6 +332,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public void setDoubleClickHandler(IDoubleClickListener doubleClickHandler)
     {
         this.doubleClickHandler = doubleClickHandler;
+    }
+
+    private Tree getTree()
+    {
+        return ((TreeViewer)itemsViewer).getTree();
+    }
+
+    private Table getTable()
+    {
+        return ((TableViewer)itemsViewer).getTable();
     }
 
     private synchronized void addLazyObject(Item item, ObjectColumn column)
@@ -456,6 +475,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return null;
     }
 
+    protected Set<IPropertyDescriptor> getAllProperties()
+    {
+        Set<IPropertyDescriptor> props = new LinkedHashSet<IPropertyDescriptor>();
+        for (ObjectColumn column : columns) {
+            props.addAll(column.propMap.values());
+        }
+        return props;
+    }
+
     protected void createColumn(Class<?> objectClass, ObjectPropertyDescriptor prop)
     {
         ObjectColumn objectColumn = null;
@@ -511,32 +539,29 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return null;
     }
 
-    protected CellEditor createCellEditor(Composite parent, OBJECT_TYPE object, ObjectPropertyDescriptor property)
-    {
-        return null;
-    }
-
     //////////////////////////////////////////////////////
     // Property source implementation
 
-    private class ListPropertySource extends PropertySourceAbstract {
+    private class DefaultListPropertySource extends PropertySourceAbstract {
 
-        public ListPropertySource()
+        public DefaultListPropertySource()
         {
             super(ObjectListControl.this, ObjectListControl.this, true);
         }
 
+        public Object getSourceObject()
+        {
+            return getCurrentListObject();
+        }
+
         public Object getEditableValue()
         {
-            return curListObject;
+            return getObjectValue(getCurrentListObject());
         }
 
         public IPropertyDescriptor[] getPropertyDescriptors()
         {
-            Set<IPropertyDescriptor> props = new LinkedHashSet<IPropertyDescriptor>();
-            for (ObjectColumn column : columns) {
-                props.addAll(column.propMap.values());
-            }
+            Set<IPropertyDescriptor> props = getAllProperties();
             return props.toArray(new IPropertyDescriptor[props.size()]);
         }
 

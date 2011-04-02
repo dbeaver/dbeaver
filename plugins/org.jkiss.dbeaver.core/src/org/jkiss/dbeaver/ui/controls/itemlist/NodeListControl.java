@@ -13,9 +13,13 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -28,10 +32,12 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * NodeListControl
@@ -220,6 +226,16 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
     }
 
+    @Override
+    protected IPropertySource createListPropertySource()
+    {
+        if (workbenchPart instanceof IDatabaseNodeEditor) {
+            return new NodeListPropertySource(((IDatabaseNodeEditor) workbenchPart).getEditorInput().getObjectCommander());
+        } else {
+            return super.createListPropertySource();
+        }
+    }
+
     public void nodeChanged(final DBNEvent event)
     {
         if (isDisposed()) {
@@ -239,5 +255,31 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             }
         }
     }
+
+    private class NodeListPropertySource extends PropertySourceEditable {
+
+        private NodeListPropertySource(DBEObjectCommander objectCommander)
+        {
+            super(objectCommander, NodeListControl.this, NodeListControl.this);
+        }
+
+        public Object getSourceObject()
+        {
+            return getCurrentListObject();
+        }
+
+        public Object getEditableValue()
+        {
+            return getObjectValue(getCurrentListObject());
+        }
+
+        public IPropertyDescriptor[] getPropertyDescriptors()
+        {
+            Set<IPropertyDescriptor> props = getAllProperties();
+            return props.toArray(new IPropertyDescriptor[props.size()]);
+        }
+
+    }
+
 
 }

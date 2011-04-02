@@ -77,6 +77,11 @@ public abstract class PropertySourceAbstract implements IPropertySource
         return props.isEmpty();
     }
 
+    public Object getSourceObject()
+    {
+        return sourceObject;
+    }
+
     public Object getEditableValue()
     {
         return object;
@@ -103,7 +108,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
         if (value instanceof ObjectPropertyDescriptor) {
             try {
                 ObjectPropertyDescriptor annoDescriptor = (ObjectPropertyDescriptor) value;
-                if (annoDescriptor.isLazy(object, true)) {
+                if (annoDescriptor.isLazy(getEditableValue(), true)) {
                     if (!loadLazyProps) {
                         return null;
                     } else {
@@ -136,7 +141,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
                         return PropertySheetLoadService.TEXT_LOADING;
                     }
                 } else {
-                    value = annoDescriptor.readValue(object, null);
+                    value = annoDescriptor.readValue(getEditableValue(), null);
                 }
             } catch (Exception e) {
                 return e.getMessage();
@@ -181,7 +186,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
 
     public void collectProperties(IFilter filter)
     {
-        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, object.getClass(), filter);
+        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, getEditableValue().getClass(), filter);
         for (final ObjectPropertyDescriptor desc : annoProps) {
             if (desc.isCollectionAnno()) {
                 DBRRunnableWithProgress loader = new DBRRunnableWithProgress() {
@@ -197,7 +202,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
                 };
                 // Add as collection
                 try {
-                    if (desc.isLazy(object, true)) {
+                    if (desc.isLazy(getEditableValue(), true)) {
                         DBeaverCore.getInstance().runInProgressService(loader);
                     } else {
                         loader.run(null);
@@ -232,7 +237,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
                     if (getProgressMonitor().isCanceled()) {
                         break;
                     }
-                    result.put(prop, prop.readValue(object, getProgressMonitor()));
+                    result.put(prop, prop.readValue(getEditableValue(), getProgressMonitor()));
                 }
                 return result;
             } catch (Throwable ex) {
@@ -245,7 +250,8 @@ public abstract class PropertySourceAbstract implements IPropertySource
         }
 
         public Object getFamily() {
-            return object instanceof DBSObject ? ((DBSObject)object).getDataSource() : object;
+            final Object editableValue = getEditableValue();
+            return editableValue instanceof DBSObject ? ((DBSObject) editableValue).getDataSource() : editableValue;
         }
     }
 

@@ -143,7 +143,10 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             properties.init(new ProxyPageSite(getSite()));
             properties.createControl(propsPlaceholder);
 
-            PropertySourceEditable propertySource = new PropertySourceEditable(getEditorInput());
+            PropertySourceEditable propertySource = new PropertySourceEditable(
+                getEditorInput().getObjectCommander(),
+                getEditorInput().getTreeNode(),
+                getEditorInput().getDatabaseObject());
             propertySource.collectProperties(new IFilter() {
                 public boolean select(Object toTest)
                 {

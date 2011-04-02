@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ui.views.properties;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
@@ -68,15 +67,6 @@ class NodeEditorSection implements ISection
 
     public void setFocus()
     {
-    }
-
-    public DBNNode getRootNode() {
-        return node;
-    }
-
-    public Viewer getNavigatorViewer()
-    {
-        return itemControl.getNavigatorViewer();
     }
 
     public void setInput(IWorkbenchPart part, ISelection selection)
