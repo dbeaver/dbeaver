@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * GenericDataSource
@@ -49,6 +46,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
     private List<MySQLPrivilege> privileges;
     private List<MySQLUser> users;
     private MySQLCatalog activeCatalog;
+    private List<MySQLInformationFolder> informationFolders;
 
     public MySQLDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -74,16 +72,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
     public MySQLCatalog getCatalog(String name)
     {
         return DBUtils.findObject(catalogs, name);
-    }
-
-    public List<MySQLEngine> getEngines()
-    {
-        return engines;
-    }
-
-    public MySQLEngine getEngine(String name)
-    {
-        return DBUtils.findObject(engines, name);
     }
 
     public void initialize(DBRProgressMonitor monitor)
@@ -155,6 +143,47 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         finally {
             context.close();
         }
+
+/*
+        // Construct information folders
+        informationFolders = new ArrayList<MySQLInformationFolder>();
+        informationFolders.add(new MySQLInformationFolder(this, "Session Status") {
+            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
+            {
+                return getSessionStatus(monitor);
+            }
+        });
+        informationFolders.add(new MySQLInformationFolder(this, "Global Status") {
+            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
+            {
+                return getGlobalStatus(monitor);
+            }
+        });
+        informationFolders.add(new MySQLInformationFolder(this, "Session Variables") {
+            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
+            {
+                return getSessionVariables(monitor);
+            }
+        });
+        informationFolders.add(new MySQLInformationFolder(this, "Global Variables") {
+            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
+            {
+                return getGlobalVariables(monitor);
+            }
+        });
+        informationFolders.add(new MySQLInformationFolder(this, "Engines") {
+            public Collection getObjects(DBRProgressMonitor monitor)
+            {
+                return getEngines();
+            }
+        });
+        informationFolders.add(new MySQLInformationFolder(this, "User Privileges") {
+            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
+            {
+                return getPrivileges(monitor);
+            }
+        });
+*/
     }
 
     public boolean refreshEntity(DBRProgressMonitor monitor)
@@ -362,6 +391,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         }
     }
 
+    public List<MySQLEngine> getEngines()
+    {
+        return engines;
+    }
+
+    public MySQLEngine getEngine(String name)
+    {
+        return DBUtils.findObject(engines, name);
+    }
+
     public List<MySQLPrivilege> getPrivileges(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -443,6 +482,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         return loadParameters(monitor, false, true);
     }
 
+    public List<MySQLDataSource> getInformation()
+    {
+        return Collections.singletonList(this);
+    }
+
     private List<MySQLParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException
     {
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load status");
@@ -503,4 +547,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         }
         return null;
     }
+
+
 }

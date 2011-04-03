@@ -25,6 +25,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
+import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -44,7 +45,7 @@ import java.util.List;
 /**
  * DefaultObjectEditor
  */
-public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, IProgressControlProvider//, ILazyPropertyLoadListener
+public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, IProgressControlProvider, IFolderedPart//, ILazyPropertyLoadListener
 {
     static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
@@ -283,4 +284,8 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         return pageControl;
     }
 
+    public void switchFolder(String folderId)
+    {
+        properties.setSelectedTab(folderId);
+    }
 }

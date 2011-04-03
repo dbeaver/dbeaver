@@ -16,6 +16,7 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -45,7 +46,7 @@ import java.util.*;
 /**
  * EntityEditor
  */
-public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorModelView, ISaveablePart2
+public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorModelView, ISaveablePart2, IFolderedPart
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
@@ -345,6 +346,17 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             return ISaveablePart2.NO;
         } else {
             return ISaveablePart2.CANCEL;
+        }
+    }
+
+    public void switchFolder(String folderId)
+    {
+        int pageCount = getPageCount();
+        for (int i = 0; i < pageCount; i++) {
+            IWorkbenchPart part = getEditor(i);
+            if (part instanceof IFolderedPart) {
+                ((IFolderedPart)part).switchFolder(folderId);
+            }
         }
     }
 
