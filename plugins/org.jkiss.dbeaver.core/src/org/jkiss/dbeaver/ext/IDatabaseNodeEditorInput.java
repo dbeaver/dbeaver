@@ -20,7 +20,17 @@ public interface IDatabaseNodeEditorInput extends IEditorInput, IDataSourceProvi
 
     DBSObject getDatabaseObject();
 
+    /**
+     * Default editor page ID
+     * @return page ID or null
+     */
     String getDefaultPageId();
+
+    /**
+     * Default editor folder (tab) ID
+     * @return folder ID or null
+     */
+    String getDefaultFolderId();
 
     DBEObjectCommander getObjectCommander();
 

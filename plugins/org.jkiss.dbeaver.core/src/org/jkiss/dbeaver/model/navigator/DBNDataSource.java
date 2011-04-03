@@ -67,6 +67,12 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         return dataSource.getDescription();
     }
 
+    @Override
+    public String getNodePathName()
+    {
+        return getNodeName();
+    }
+
     public String getDefaultCommandId()
     {
         return ICommandIds.CMD_OBJECT_OPEN;

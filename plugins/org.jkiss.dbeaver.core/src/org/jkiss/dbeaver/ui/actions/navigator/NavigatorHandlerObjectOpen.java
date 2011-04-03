@@ -17,17 +17,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
-import org.jkiss.dbeaver.ui.editors.folder.FolderEditor;
-import org.jkiss.dbeaver.ui.editors.folder.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 
 import java.util.Iterator;
@@ -90,13 +85,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
                     return;
                 }
             }
-            if (selectedNode instanceof DBNDatabaseFolder) {
-                FolderEditorInput folderInput = new FolderEditorInput((DBNDatabaseFolder)selectedNode);
-                folderInput.setDefaultPageId(defaultPageId);
-                workbenchWindow.getActivePage().openEditor(
-                    folderInput,
-                    FolderEditor.class.getName());
-            } else if (selectedNode instanceof DBNDatabaseObject) {
+            if (selectedNode instanceof DBNDatabaseObject) {
                 DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
                 ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
                 workbenchWindow.getActivePage().openEditor(
@@ -104,8 +93,27 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
                     objectNode.getMeta().getEditorId());
 
             } else if (selectedNode.getObject() != null) {
-                EntityEditorInput editorInput = new EntityEditorInput(selectedNode);
+                DBNDatabaseNode nodeToOpen = null;
+                String defaultFolderId = null;
+                if (selectedNode instanceof DBNDatabaseFolder) {
+                    defaultFolderId = selectedNode.getMeta().getLabel();
+                    for (DBNNode parentNode = selectedNode.getParentNode(); parentNode != null; parentNode = parentNode.getParentNode()) {
+                        if (parentNode instanceof DBNDatabaseNode && !(parentNode instanceof DBNDatabaseFolder)) {
+                            nodeToOpen = (DBNDatabaseNode) parentNode;
+                            break;
+                        }
+                    }
+                    if (nodeToOpen == null) {
+                        log.error("Can't detect folder's parent object");
+                        return;
+                    }
+                } else {
+                    nodeToOpen = selectedNode;
+                }
+
+                EntityEditorInput editorInput = new EntityEditorInput(nodeToOpen);
                 editorInput.setDefaultPageId(defaultPageId);
+                editorInput.setDefaultFolderId(defaultFolderId);
                 workbenchWindow.getActivePage().openEditor(
                     editorInput,
                     EntityEditor.class.getName());

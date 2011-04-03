@@ -161,6 +161,11 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             }
         });
         properties.selectionChanged(this, new StructuredSelection(propertySource));
+
+        final String folderId = getEditorInput().getDefaultFolderId();
+        if (folderId != null) {
+            properties.setSelectedTab(folderId);
+        }
     }
 
     private void createNamePanel(DBNNode node, Composite container)

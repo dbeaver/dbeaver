@@ -102,6 +102,7 @@ public abstract class DBNNode implements DBPNamedObject, JexlContext
     {
         StringBuilder pathName = new StringBuilder();
         pathName.append(getNodeName());
+
         for (DBNNode parent = getParentNode(); parent != null && !(parent instanceof DBNDataSource); parent = parent.getParentNode()) {
             if (parent instanceof DBNDatabaseFolder) {
                 // skip folders

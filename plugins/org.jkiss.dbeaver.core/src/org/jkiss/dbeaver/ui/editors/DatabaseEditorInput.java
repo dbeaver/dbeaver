@@ -25,6 +25,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     private final NODE node;
     private final DBEObjectCommander objectCommander;
     private String defaultPageId;
+    private String defaultFolderId;
 
     protected DatabaseEditorInput(NODE node)
     {
@@ -96,6 +97,11 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         return defaultPageId;
     }
 
+    public String getDefaultFolderId()
+    {
+        return defaultFolderId;
+    }
+
     public DBEObjectCommander getObjectCommander()
     {
         return objectCommander;
@@ -110,6 +116,11 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     public void setDefaultPageId(String defaultPageId)
     {
         this.defaultPageId = defaultPageId;
+    }
+
+    public void setDefaultFolderId(String defaultFolderId)
+    {
+        this.defaultFolderId = defaultFolderId;
     }
 
     @Override
