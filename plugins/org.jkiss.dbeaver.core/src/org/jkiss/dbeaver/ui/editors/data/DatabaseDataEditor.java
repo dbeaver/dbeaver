@@ -28,8 +28,10 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     public void activatePart()
     {
         if (!loaded) {
-            resultSetView.refresh();
-            loaded = true;
+            if (getDatabaseObject() != null && getDatabaseObject().isPersisted()) {
+                resultSetView.refresh();
+                loaded = true;
+            }
         }
     }
 

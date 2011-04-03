@@ -86,9 +86,11 @@ class NodeEditorSection implements ISection
 
     public void aboutToBeHidden()
     {
+/*
         if (prevSelectionProvider != null) {
             editor.getSite().setSelectionProvider(prevSelectionProvider);
         }
+*/
     }
 
     public void dispose() {

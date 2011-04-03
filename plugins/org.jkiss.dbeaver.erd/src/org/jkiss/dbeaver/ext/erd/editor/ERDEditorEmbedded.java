@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -115,12 +116,17 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseNodeEdi
             log.error("Database object must be entity container to render ERD diagram");
             return null;
         }
-        EntityDiagram diagram = new EntityDiagram(dbObject, dbObject.getName());
+        EntityDiagram diagram;
+        if (!dbObject.isPersisted()) {
+            diagram = new EntityDiagram(dbObject, "New Object");
+        } else {
+            diagram = new EntityDiagram(dbObject, dbObject.getName());
 
-        diagram.fillTables(
-            monitor,
-            collectDatabaseTables(monitor, dbObject),
-            dbObject);
+            diagram.fillTables(
+                monitor,
+                collectDatabaseTables(monitor, dbObject),
+                dbObject);
+        }
 
         return diagram;
     }

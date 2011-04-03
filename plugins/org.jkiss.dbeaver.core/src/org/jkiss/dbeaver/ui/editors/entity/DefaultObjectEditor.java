@@ -79,11 +79,19 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         if (node == null) {
             return;
         }
-        {
-            // Path
-            Composite infoGroup = new Composite(container, SWT.BORDER);//createControlGroup(container, "Path", 3, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            infoGroup.setLayout(new RowLayout());
+        createPathPanel(node, container);
+        createNamePanel(node, container);
+        createPropertyBrowser(container);
+
+        pageControl.createProgressPanel();
+    }
+
+    private void createPathPanel(DBNNode node, Composite container)
+    {
+        // Path
+        Composite infoGroup = new Composite(container, SWT.BORDER);//createControlGroup(container, "Path", 3, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        infoGroup.setLayout(new RowLayout());
 
 /*
             if (node instanceof DBNDatabaseNode) {
@@ -105,58 +113,54 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
                 }
             }
 */
-            List<DBNDatabaseNode> nodeList = new ArrayList<DBNDatabaseNode>();
-            for (DBNNode n = node; n != null; n = n.getParentNode()) {
-                if (n instanceof DBNDatabaseNode) {
-                    nodeList.add(0, (DBNDatabaseNode)n);
-                }
-            }
-            for (final DBNDatabaseNode databaseNode : nodeList) {
-                createPathRow(
-                    infoGroup,
-                    databaseNode.getNodeIconDefault(),
-                    databaseNode.getMeta().getItemLabel(),
-                    databaseNode.getNodeName(),
-                    databaseNode == node ? null : new SelectionAdapter() {
-                        public void widgetSelected(SelectionEvent e)
-                        {
-                            NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-                        }
-                    });
+        List<DBNDatabaseNode> nodeList = new ArrayList<DBNDatabaseNode>();
+        for (DBNNode n = node; n != null; n = n.getParentNode()) {
+            if (n instanceof DBNDatabaseNode) {
+                nodeList.add(0, (DBNDatabaseNode)n);
             }
         }
-
-        createNamePanel(node, container);
-
-        {
-            // Properties
-            Composite propsPlaceholder = new Composite(container, SWT.BORDER);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalSpan = 2;
-            propsPlaceholder.setLayoutData(gd);
-            propsPlaceholder.setLayout(new FormLayout());
-
-            //final PropertyCollector propertyCollector = new PropertyCollector(itemObject);
-            //List<ObjectPropertyDescriptor> annoProps = ObjectPropertyDescriptor.extractAnnotations(itemObject);
-
-            properties = new PropertyPageTabbed();
-            properties.init(new ProxyPageSite(getSite()));
-            properties.createControl(propsPlaceholder);
-
-            PropertySourceEditable propertySource = new PropertySourceEditable(
-                getEditorInput().getObjectCommander(),
-                getEditorInput().getTreeNode(),
-                getEditorInput().getDatabaseObject());
-            propertySource.collectProperties(new IFilter() {
-                public boolean select(Object toTest)
-                {
-                    return true;
-                }
-            });
-            properties.selectionChanged(this, new StructuredSelection(propertySource));
+        for (final DBNDatabaseNode databaseNode : nodeList) {
+            createPathRow(
+                infoGroup,
+                databaseNode.getNodeIconDefault(),
+                databaseNode.getMeta().getItemLabel(),
+                databaseNode.getNodeName(),
+                databaseNode == node ? null : new SelectionAdapter() {
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                    }
+                });
         }
+    }
 
-        pageControl.createProgressPanel();
+    private void createPropertyBrowser(Composite container)
+    {
+        // Properties
+        Composite propsPlaceholder = new Composite(container, SWT.BORDER);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.horizontalSpan = 2;
+        propsPlaceholder.setLayoutData(gd);
+        propsPlaceholder.setLayout(new FormLayout());
+
+        //final PropertyCollector propertyCollector = new PropertyCollector(itemObject);
+        //List<ObjectPropertyDescriptor> annoProps = ObjectPropertyDescriptor.extractAnnotations(itemObject);
+
+        properties = new PropertyPageTabbed();
+        properties.init(new ProxyPageSite(getSite()));
+        properties.createControl(propsPlaceholder);
+
+        PropertySourceEditable propertySource = new PropertySourceEditable(
+            getEditorInput().getObjectCommander(),
+            getEditorInput().getTreeNode(),
+            getEditorInput().getDatabaseObject());
+        propertySource.collectProperties(new IFilter() {
+            public boolean select(Object toTest)
+            {
+                return true;
+            }
+        });
+        properties.selectionChanged(this, new StructuredSelection(propertySource));
     }
 
     private void createNamePanel(DBNNode node, Composite container)
