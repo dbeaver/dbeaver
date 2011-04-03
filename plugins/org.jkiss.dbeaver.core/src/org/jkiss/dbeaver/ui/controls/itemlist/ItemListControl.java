@@ -103,9 +103,11 @@ public class ItemListControl extends NodeListControl
                     if (getProgressMonitor().isCanceled()) {
                         break;
                     }
+/*
                     if (item instanceof DBNDatabaseFolder) {
                         continue;
                     }
+*/
                     if (metaNode != null) {
                         if (!(item instanceof DBNDatabaseNode)) {
                             continue;

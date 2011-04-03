@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -78,6 +79,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         }
     }
 
+    @Property(name = "Name", viewable = true)
     public String getName()
     {
         return meta.getLabel();
