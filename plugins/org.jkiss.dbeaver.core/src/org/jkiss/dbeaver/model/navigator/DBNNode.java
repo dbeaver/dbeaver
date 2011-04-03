@@ -41,7 +41,7 @@ public abstract class DBNNode implements DBPNamedObject, JexlContext
         this.parentNode = parentNode;
     }
 
-    public final boolean isDisposed()
+    public boolean isDisposed()
     {
         return model == null;
     }

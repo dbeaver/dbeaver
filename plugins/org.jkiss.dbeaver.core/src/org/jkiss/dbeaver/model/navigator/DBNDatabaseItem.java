@@ -27,6 +27,12 @@ public class DBNDatabaseItem extends DBNDatabaseNode
         }
     }
 
+    @Override
+    public boolean isDisposed()
+    {
+        return object == null || super.isDisposed();
+    }
+
     protected void dispose(boolean reflect)
     {
         if (this.getModel() != null) {

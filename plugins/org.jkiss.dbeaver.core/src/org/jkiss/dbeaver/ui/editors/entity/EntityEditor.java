@@ -104,7 +104,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     @Override
     public boolean isDirty()
     {
-        return getObjectCommander() != null && getObjectCommander().isDirty();
+        final DBEObjectCommander objectCommander = getObjectCommander();
+        return objectCommander != null && objectCommander.isDirty();
     }
 
     /**
@@ -468,8 +469,12 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
     public void refreshPart(final Object source)
     {
+        // TODO: make smart content refresh
+        // Lists and commands should be refreshed only if we make real refresh from remote storage
+        // Otherwise just update object's properties
+/*
         getEditorInput().getObjectCommander().resetChanges();
-        // Reinit object manager
+*/
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
         if (databaseObject != null && databaseObject.isPersisted()) {
             // Refresh visual content in parts
@@ -481,6 +486,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 }
             }
         }
+
         setPartName(getEditorInput().getName());
         setTitleImage(getEditorInput().getImageDescriptor());
     }

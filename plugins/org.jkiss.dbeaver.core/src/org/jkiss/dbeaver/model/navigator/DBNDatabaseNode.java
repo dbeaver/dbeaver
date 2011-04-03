@@ -105,11 +105,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public boolean hasChildren()
     {
-        return this.getMeta().hasChildren(this);
+        return !isDisposed() && this.getMeta().hasChildren(this);
     }
 
     public boolean hasNavigableChildren()
     {
+        if (isDisposed()) {
+            return false;
+        }
         final List<DBXTreeNode> metaChildren = this.getMeta().getChildren(this);
 
         if (CommonUtils.isEmpty(metaChildren)) {
@@ -127,6 +130,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)
         throws DBException
     {
+        if (isDisposed()) {
+            return false;
+        }
         List<DBNDatabaseNode> children = getChildren(monitor);
         if (!CommonUtils.isEmpty(children)) {
             for (DBNDatabaseNode child : children) {
