@@ -20,6 +20,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
+import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -271,6 +273,31 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         public Object getEditableValue()
         {
             return getObjectValue(getCurrentListObject());
+        }
+
+        @Override
+        public boolean isEditable()
+        {
+            final DBNNode rootNode = getRootNode();
+            if (!(rootNode instanceof DBNDatabaseNode)) {
+                return false;
+            }
+            final Object editableValue = ((DBNDatabaseNode) rootNode).getValueObject();
+            if (editableValue == null) {
+                return false;
+            }
+            final Class<? extends Object> curClass = editableValue.getClass();
+            DBEStructEditor structEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(curClass, DBEStructEditor.class);
+            if (structEditor == null) {
+                return false;
+            }
+            final Class[] childTypes = structEditor.getChildTypes();
+            for (Class aClass : childTypes) {
+                if (aClass == curClass) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public IPropertyDescriptor[] getPropertyDescriptors()
