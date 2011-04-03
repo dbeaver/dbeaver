@@ -37,6 +37,7 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
     private ToolBar progressTools;
     private ToolItem stopButton;
     private Text listInfoLabel;
+    private String curInfo;
 
     private int loadCount = 0;
     private ProgressPageControl externalPageControl = null;
@@ -70,10 +71,18 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
 
     public void setInfo(String info)
     {
+        this.curInfo = info;
         if (externalPageControl != null) {
             externalPageControl.setInfo(info);
         } else if (!listInfoLabel.isDisposed()) {
             listInfoLabel.setText(info);
+        }
+    }
+
+    public void refreshInfo()
+    {
+        if (curInfo != null) {
+            setInfo(curInfo);
         }
     }
 
