@@ -7,10 +7,8 @@ package org.jkiss.dbeaver.ui.controls;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -22,6 +20,7 @@ import org.jkiss.dbeaver.ext.ui.ISearchTextRunner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 
@@ -35,15 +34,18 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     private final static int PROGRESS_MIN = 0;
     private final static int PROGRESS_MAX = 20;
 
-    private ProgressBar progressBar;
-    private ToolBar progressTools;
-    private ToolItem stopButton;
     private Text listInfoLabel;
-    private String curInfo;
+
+    private ProgressBar progressBar;
+    private Text searchText;
 
     private int loadCount = 0;
     private ProgressPageControl externalPageControl = null;
     private Composite controlComposite;
+
+    private String curInfo;
+    private String curSearchText;
+    private Color searchColor;
 
     public ProgressPageControl(
         Composite parent,
@@ -64,6 +66,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 dispose();
             }
         });
+        searchColor = new Color(getDisplay(), 255, 128, 128);
     }
 
     @Override
@@ -82,11 +85,12 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         }
     }
 
-    public void refreshInfo()
+    public void restoreState()
     {
         if (curInfo != null) {
             setInfo(curInfo);
         }
+        //getProgressControl().hideControls();
     }
 
     public final Composite createProgressPanel()
@@ -162,12 +166,14 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             child.dispose();
         }
         progressBar = null;
-        progressTools = null;
-        stopButton = null;
+        searchText = null;
     }
 
     private void createProgressControls()
     {
+        if (progressBar != null) {
+            return;
+        }
         GridLayout layout = new GridLayout(2, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -181,8 +187,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         progressBar.setToolTipText("Loading progress");
         progressBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        progressTools = new ToolBar(controlComposite, SWT.HORIZONTAL);
-        stopButton = new ToolItem(progressTools, SWT.PUSH);
+        ToolBar progressTools = new ToolBar(controlComposite, SWT.HORIZONTAL);
+        final ToolItem stopButton = new ToolItem(progressTools, SWT.PUSH);
         stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
         stopButton.setToolTipText("Cancel current operation");
         stopButton.addSelectionListener(new SelectionAdapter() {
@@ -201,9 +207,71 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         controlComposite.layout();
     }
 
+    private void createSearchControls()
+    {
+        if (searchText != null) {
+            return;
+        }
+        GridLayout layout = new GridLayout(2, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        controlComposite.setLayout(layout);
+
+        searchText = new Text(controlComposite, SWT.BORDER);
+        if (curSearchText != null) {
+            searchText.setText(curSearchText);
+            searchText.setSelection(curSearchText.length());
+        }
+        searchText.setBackground(searchColor);
+        searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        searchText.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e)
+            {
+                if (e.character == SWT.ESC) {
+                    hideControls();
+                }
+            }
+        });
+        searchText.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e)
+            {
+                curSearchText = searchText.getText();
+            }
+        });
+
+        ToolBar searchTools = new ToolBar(controlComposite, SWT.HORIZONTAL);
+        ToolItem searchButton = new ToolItem(searchTools, SWT.PUSH);
+        searchButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_FORWARD));
+        searchButton.setToolTipText("Search");
+        searchButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+            }
+        });
+
+        ToolItem closeButton = new ToolItem(searchTools, SWT.PUSH);
+        closeButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_REMOVE));
+        closeButton.setToolTipText("Close search panel");
+        closeButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                hideControls();
+            }
+        });
+
+        controlComposite.layout();
+
+    }
+
     @Override
     public void dispose()
     {
+        UIUtils.dispose(searchColor);
+
         super.dispose();
     }
 
@@ -229,7 +297,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     public void performSearch(SearchType searchType)
     {
-
+        getProgressControl().createSearchControls();
+        getProgressControl().searchText.setFocus();
     }
 
 /*
@@ -341,9 +410,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         public void visualizeLoading()
         {
             if (!getProgressControl().isDisposed()) {
-                if (getProgressControl().progressBar == null) {
-                    getProgressControl().createProgressControls();
-                }
+                getProgressControl().createProgressControls();
                 synchronized (tasksRunning) {
                     TaskInfo taskInfo = getCurTaskInfo();
                     if (taskInfo != null) {
