@@ -58,11 +58,6 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
 
     protected abstract TableCompositeCommand createTableCommand(OBJECT_TYPE table);
 
-    public DBEStructHandler<OBJECT_TYPE> makeStructHandler(DBECommandQueue queue)
-    {
-        return null;
-    }
-
     private class CommandCreateTable extends DBECommandImpl<OBJECT_TYPE> {
         protected CommandCreateTable(OBJECT_TYPE table)
         {
