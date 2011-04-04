@@ -12,9 +12,6 @@ import org.jkiss.dbeaver.model.edit.prop.DBEPropertyReflector;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
-
 /**
  * JDBC object editor
  */
@@ -22,16 +19,9 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends JDBCTable>
     extends JDBCObjectManager<OBJECT_TYPE>
     implements DBEObjectEditor<OBJECT_TYPE>
 {
-    private final Map<IPropertyDescriptor, PropertyHandler> handlerMap = new IdentityHashMap<IPropertyDescriptor, PropertyHandler>();
-
     public DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
     {
-        PropertyHandler handler = handlerMap.get(property);
-        if (handler == null) {
-            handler = new PropertyHandler(property);
-            handlerMap.put(property, handler);
-        }
-        return handler;
+        return new PropertyHandler(property);
     }
 
     protected class PropertyHandler implements DBEPropertyHandler<OBJECT_TYPE>, DBEPropertyReflector<OBJECT_TYPE> {
@@ -57,9 +47,19 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends JDBCTable>
         public void reflectValueChange(OBJECT_TYPE object, Object oldValue, Object newValue)
         {
         }
+
+        @Override
+        public int hashCode()
+        {
+            return property.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            return obj instanceof PropertyHandler && property.equals(((PropertyHandler) obj).property);
+        }
     }
-
-
 
 }
 

@@ -19,7 +19,6 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
@@ -29,7 +28,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     extends JDBCStructEditor<OBJECT_TYPE>
     implements DBEObjectMaker<OBJECT_TYPE>
 {
-    private final Map<IPropertyDescriptor, TablePropertyHandler> handlerMap = new IdentityHashMap<IPropertyDescriptor, TablePropertyHandler>();
+    //private final Map<IPropertyDescriptor, TablePropertyHandler> handlerMap = new IdentityHashMap<IPropertyDescriptor, TablePropertyHandler>();
 
     public long getMakerOptions()
     {
@@ -52,17 +51,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
 
     public DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
     {
-        TablePropertyHandler handler = handlerMap.get(property);
-        if (handler == null) {
-            handler = new TablePropertyHandler(property);
-            handlerMap.put(property, handler);
-        }
-//        if (DBConstants.PROP_ID_NAME.equals(property.getId())) {
-//            // Update object in navigator
-//            object.getDataSource().getContainer().fireEvent(
-//                new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object));
-//        }
-        return handler;
+        return new TablePropertyHandler(property);
     }
 
     protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, Object copyFrom);
@@ -136,6 +125,18 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
 
         public void reflectValueChange(OBJECT_TYPE object, Object oldValue, Object newValue)
         {
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return property.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            return obj instanceof TablePropertyHandler && property.equals(((TablePropertyHandler) obj).property);
         }
     }
 
