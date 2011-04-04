@@ -41,10 +41,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     private Text listInfoLabel;
     private String curInfo;
 
-    private ISearchTextRunner searcher;
-
     private int loadCount = 0;
     private ProgressPageControl externalPageControl = null;
+    private Composite controlComposite;
 
     public ProgressPageControl(
         Composite parent,
@@ -65,11 +64,6 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 dispose();
             }
         });
-    }
-
-    public void setSearcher(ISearchTextRunner searcher)
-    {
-        this.searcher = searcher;
     }
 
     @Override
@@ -140,16 +134,54 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         gd.minimumWidth = 100;
         listInfoLabel.setLayoutData(gd);
 
-        progressBar = new ProgressBar(infoGroup, SWT.SMOOTH | SWT.HORIZONTAL);
+        controlComposite = new Composite(infoGroup, SWT.NONE);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        //gd.heightHint = listInfoLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, false).y + gl.verticalSpacing;
+        controlComposite.setLayoutData(gd);
+        controlComposite.setLayout(new GridLayout(1, false));
+        Label ctrlLabel = new Label(controlComposite, SWT.NONE);
+        ctrlLabel.setText(" ");
+
+        Composite customControls = new Composite(infoGroup, SWT.NONE);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        customControls.setLayoutData(gd);
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        customControls.setLayout(gl);
+
+        Label phLabel = new Label(customControls, SWT.NONE);
+        phLabel.setText(" ");
+
+        return customControls;
+    }
+
+    private void hideControls()
+    {
+        for (Control child : controlComposite.getChildren()) {
+            child.dispose();
+        }
+        progressBar = null;
+        progressTools = null;
+        stopButton = null;
+    }
+
+    private void createProgressControls()
+    {
+        GridLayout layout = new GridLayout(2, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        controlComposite.setLayout(layout);
+        progressBar = new ProgressBar(controlComposite, SWT.SMOOTH | SWT.HORIZONTAL);
         progressBar.setSize(300, 16);
         progressBar.setState(SWT.NORMAL);
         progressBar.setMinimum(PROGRESS_MIN);
         progressBar.setMaximum(PROGRESS_MAX);
         progressBar.setToolTipText("Loading progress");
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        progressBar.setLayoutData(gd);
+        progressBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        progressTools = new ToolBar(infoGroup, SWT.HORIZONTAL);
+        progressTools = new ToolBar(controlComposite, SWT.HORIZONTAL);
         stopButton = new ToolItem(progressTools, SWT.PUSH);
         stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
         stopButton.setToolTipText("Cancel current operation");
@@ -166,22 +198,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 }
             }
         });
-
-        progressBar.setVisible(false);
-        progressTools.setVisible(false);
-
-        Composite customControls = new Composite(infoGroup, SWT.NONE);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        customControls.setLayoutData(gd);
-        gl = new GridLayout(2, false);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        customControls.setLayout(gl);
-
-        Label phLabel = new Label(customControls, SWT.NONE);
-        phLabel.setText(" ");
-
-        return customControls;
+        controlComposite.layout();
     }
 
     @Override
@@ -195,14 +212,19 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         return false;
     }
 
+    protected ISearchTextRunner getSearcher()
+    {
+        return null;
+    }
+
     public boolean isSearchPossible()
     {
-        return searcher != null;
+        return getSearcher() != null;
     }
 
     public boolean isSearchEnabled()
     {
-        return false;
+        return getProgressControl().progressBar == null;
     }
 
     public void performSearch(SearchType searchType)
@@ -318,12 +340,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
         public void visualizeLoading()
         {
-            if (!getProgressControl().progressBar.isDisposed()) {
-                if (!getProgressControl().progressBar.isVisible()) {
-                    getProgressControl().progressBar.setVisible(true);
-                    getProgressControl().stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
-                    getProgressControl().stopButton.setEnabled(true);
-                    getProgressControl().progressTools.setVisible(true);
+            if (!getProgressControl().isDisposed()) {
+                if (getProgressControl().progressBar == null) {
+                    getProgressControl().createProgressControls();
                 }
                 synchronized (tasksRunning) {
                     TaskInfo taskInfo = getCurTaskInfo();
@@ -356,8 +375,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             loadCount = 0;
             if (!getProgressControl().progressBar.isDisposed()) {
                 getProgressControl().progressBar.setState(SWT.PAUSED);
-                getProgressControl().progressBar.setVisible(false);
-                getProgressControl().progressTools.setVisible(false);
+                getProgressControl().hideControls();
             }
         }
 

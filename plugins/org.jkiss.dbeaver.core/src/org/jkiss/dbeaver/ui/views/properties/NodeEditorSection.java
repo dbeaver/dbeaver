@@ -14,6 +14,7 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
+import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -24,7 +25,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 /**
  * EntityNodeEditor
  */
-class NodeEditorSection implements ISection
+class NodeEditorSection implements ISection, ISearchContextProvider
 {
     //static final Log log = LogFactory.getLog(EntityNodeEditor.class);
 
@@ -142,5 +143,20 @@ class NodeEditorSection implements ISection
     public DBPDataSource getDataSource()
     {
         return getEditorInput().getDataSource();
+    }
+
+    public boolean isSearchPossible()
+    {
+        return itemControl.isSearchPossible();
+    }
+
+    public boolean isSearchEnabled()
+    {
+        return itemControl.isSearchEnabled();
+    }
+
+    public void performSearch(SearchType searchType)
+    {
+        itemControl.performSearch(searchType);
     }
 }

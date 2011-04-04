@@ -8,9 +8,11 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ViewerColumn;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.ext.ui.ISearchTextRunner;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -19,6 +21,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -54,16 +57,14 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
-    protected Composite createProgressPanel(Composite container)
+    protected ISearchTextRunner getSearcher()
     {
-        Composite panel = super.createProgressPanel(container);
-
-//        if (getWorkbenchPart() instanceof IDatabaseObjectEditor) {
-//            objectEditorHandler = new ObjectEditorHandler((IDatabaseObjectEditor)getWorkbenchPart());
-//            objectEditorHandler.createEditorControls(panel);
-//        }
-
-        return panel;
+        return new ISearchTextRunner() {
+            public void performSearch(String searchString, int options)
+            {
+                UIUtils.showMessageBox(getShell(), "Search", searchString, SWT.ICON_INFORMATION);
+            }
+        };
     }
 
     @Override
@@ -129,7 +130,6 @@ public class ItemListControl extends NodeListControl
         }
     }
 
-
     private class CellEditingSupport extends EditingSupport {
 
         private int columnIndex;
@@ -171,19 +171,11 @@ public class ItemListControl extends NodeListControl
 
         protected void setValue(Object element, Object value)
         {
-
-        }
-
-        private void showEditor(final Item item, final int columnIndex)
-        {
-            DBNNode object = (DBNNode) item.getData();
+            DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
-            if (property == null) {
-                log.error("Cannot detect object '" + object + "' property for column " + columnIndex + " ");
-                return;
+            if (property != null) {
+                getListPropertySource().setPropertyValue(element, value);
             }
-            property.isViewable();
-            //curCellEditor = createCellEditor(getControl(), object, property);
         }
 
     }
