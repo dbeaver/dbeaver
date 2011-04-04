@@ -7,9 +7,12 @@ package org.jkiss.dbeaver.ui.controls.itemlist;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.ViewerColumn;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.ISearchTextRunner;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -19,7 +22,6 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -60,7 +62,16 @@ public class ItemListControl extends NodeListControl
         return new ISearchTextRunner() {
             public boolean performSearch(String searchString, int options)
             {
-                getItemsViewer().getInput();
+                searchString = searchString.toUpperCase();
+                Collection<DBNNode> nodes = (Collection<DBNNode>) getItemsViewer().getInput();
+                if (!CommonUtils.isEmpty(nodes)) {
+                    for (DBNNode node : nodes) {
+                        if (node.getNodeName().toUpperCase().indexOf(searchString) != -1) {
+                            getItemsViewer().setSelection(new StructuredSelection(node));
+                            return true;
+                        }
+                    }
+                }
                 return false;
             }
         };

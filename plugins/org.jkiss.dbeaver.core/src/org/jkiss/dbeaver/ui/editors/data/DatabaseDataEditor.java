@@ -19,14 +19,20 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     private ResultSetViewer resultSetView;
     private boolean loaded = false;
     //private boolean running = false;
+    private Composite parent;
 
     public void createPartControl(Composite parent)
     {
-        resultSetView = new ResultSetViewer(parent, getSite(), this);
+        this.parent = parent;
     }
 
     public void activatePart()
     {
+        if (resultSetView == null) {
+            resultSetView = new ResultSetViewer(parent, getSite(), this);
+            parent.layout();
+        }
+
         if (!loaded) {
             if (getDatabaseObject() != null && getDatabaseObject().isPersisted()) {
                 resultSetView.refresh();
@@ -52,7 +58,9 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     @Override
     public void setFocus()
     {
-        resultSetView.getControl().setFocus();
+        if (resultSetView != null) {
+            resultSetView.getControl().setFocus();
+        }
     }
 
     public void refreshPart(Object source)
