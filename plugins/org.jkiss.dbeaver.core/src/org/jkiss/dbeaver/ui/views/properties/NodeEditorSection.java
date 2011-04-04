@@ -71,7 +71,19 @@ class NodeEditorSection implements ISection, ISearchContextProvider
         }
         prevSelectionProvider = editor.getSite().getSelectionProvider();
         editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
-        itemControl.restoreState();
+        itemControl.activate(true);
+    }
+
+    public void aboutToBeHidden()
+    {
+        if (itemControl != null) {
+            itemControl.activate(false);
+        }
+/*
+        if (prevSelectionProvider != null) {
+            editor.getSite().setSelectionProvider(prevSelectionProvider);
+        }
+*/
     }
 
     private void createSectionControls()
@@ -101,15 +113,6 @@ class NodeEditorSection implements ISection, ISearchContextProvider
         editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
 
         parent.layout();
-    }
-
-    public void aboutToBeHidden()
-    {
-/*
-        if (prevSelectionProvider != null) {
-            editor.getSite().setSelectionProvider(prevSelectionProvider);
-        }
-*/
     }
 
     public void dispose() {

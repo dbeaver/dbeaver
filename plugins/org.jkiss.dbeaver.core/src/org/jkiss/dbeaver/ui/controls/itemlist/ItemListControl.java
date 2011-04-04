@@ -60,7 +60,7 @@ public class ItemListControl extends NodeListControl
         return new ISearchTextRunner() {
             public boolean performSearch(String searchString, int options)
             {
-                UIUtils.showMessageBox(getShell(), "Search", searchString, SWT.ICON_INFORMATION);
+                getItemsViewer().getInput();
                 return false;
             }
         };

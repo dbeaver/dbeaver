@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
@@ -40,14 +41,13 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     private Text searchText;
 
     private int loadCount = 0;
-    private ProgressPageControl externalPageControl = null;
+    private ProgressPageControl ownerPageControl = null;
+    private ProgressPageControl childPageControl = null;
     private Composite controlComposite;
 
     private String curInfo;
     private String curSearchText;
     private Color searchNotFoundColor;
-
-    private ISearchTextRunner searcher;
 
     public ProgressPageControl(
         Composite parent,
@@ -69,6 +69,18 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             }
         });
         searchNotFoundColor = new Color(getDisplay(), 255, 128, 128);
+        parent.addListener(SWT.Show, new Listener() {
+            public void handleEvent(Event event)
+            {
+
+            }
+        });
+        parent.addListener(SWT.Hide, new Listener() {
+            public void handleEvent(Event event)
+            {
+
+            }
+        });
     }
 
     @Override
@@ -80,19 +92,11 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     public void setInfo(String info)
     {
         this.curInfo = info;
-        if (externalPageControl != null) {
-            externalPageControl.setInfo(info);
+        if (ownerPageControl != null) {
+            ownerPageControl.setInfo(info);
         } else if (!listInfoLabel.isDisposed()) {
             listInfoLabel.setText(info);
         }
-    }
-
-    public void restoreState()
-    {
-        if (curInfo != null) {
-            setInfo(curInfo);
-        }
-        //getProgressControl().hideControls();
     }
 
     public final Composite createProgressPanel()
@@ -102,12 +106,20 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     public final void substituteProgressPanel(ProgressPageControl externalPageControl)
     {
-        this.externalPageControl = externalPageControl;
+        this.ownerPageControl = externalPageControl;
+    }
+
+    private void setChildControl(ProgressPageControl progressPageControl)
+    {
+        if (this.childPageControl != null && progressPageControl != null) {
+            log.warn("Overwrite of child page control '" + this.childPageControl);
+        }
+        this.childPageControl = progressPageControl;
     }
 
     ProgressPageControl getProgressControl()
     {
-        return externalPageControl != null ? externalPageControl : this;
+        return ownerPageControl != null ? ownerPageControl : this;
     }
 
     public Composite createContentContainer()
@@ -124,7 +136,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     protected Composite createProgressPanel(Composite container)
     {
-        if (this.externalPageControl != null) {
+        if (this.ownerPageControl != null) {
             throw new IllegalStateException("Can't create page control while substitution control already set");
         }
         Composite infoGroup = new Composite(container, SWT.NONE);
@@ -241,8 +253,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             {
                 curSearchText = searchText.getText();
                 if (curSearchText.length() > 0) {
-                    boolean success = performSearch(SearchType.NEXT);
-                    searchText.setBackground(success ? searchNotFoundColor : null);
+                    performSearch(SearchType.NEXT);
                 } else {
                     searchText.setBackground(null);
                 }
@@ -290,6 +301,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     protected ISearchTextRunner getSearchRunner()
     {
+        if (childPageControl != null) {
+            return childPageControl.getSearchRunner();
+        }
         return null;
     }
 
@@ -305,30 +319,37 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     public boolean performSearch(SearchType searchType)
     {
-        getProgressControl().setSearcher(getSearchRunner());
         getProgressControl().createSearchControls();
         getProgressControl().searchText.setFocus();
-        if (searchType != SearchType.NONE) {
+        if (!CommonUtils.isEmpty(getProgressControl().curSearchText)) {
             int options = 0;
             if (searchType == SearchType.PREVIOUS) {
                 options |= ISearchTextRunner.SEARCH_BACKWARD;
             } else {
                 options |= ISearchTextRunner.SEARCH_FORWARD;
             }
-            return getSearchRunner().performSearch(curSearchText, options);
+            boolean success = getSearchRunner().performSearch(getProgressControl().curSearchText, options);
+            getProgressControl().searchText.setBackground(success ? null : searchNotFoundColor);
+            return success;
         } else {
             return true;
         }
     }
 
-    private ISearchTextRunner getSearcher()
+    public void activate(boolean active)
     {
-        return searcher;
-    }
+        if (curInfo != null) {
+            setInfo(curInfo);
+        }
+        //getProgressControl().hideControls();
 
-    private void setSearcher(ISearchTextRunner searcher)
-    {
-        this.searcher = searcher;
+        if (this.ownerPageControl != null) {
+            if (active) {
+                this.ownerPageControl.setChildControl(this);
+            } else {
+                this.ownerPageControl.setChildControl(null);
+            }
+        }
     }
 
 /*
