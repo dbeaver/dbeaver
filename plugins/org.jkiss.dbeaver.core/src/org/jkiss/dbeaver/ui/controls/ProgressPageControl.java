@@ -17,6 +17,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
+import org.jkiss.dbeaver.ext.ui.ISearchTextRunner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
@@ -26,7 +28,7 @@ import java.util.ArrayList;
 /**
  * ItemListControl
  */
-public class ProgressPageControl extends Composite //implements IRunnableContext
+public class ProgressPageControl extends Composite implements ISearchContextProvider
 {
     static final Log log = LogFactory.getLog(ProgressPageControl.class);
 
@@ -38,6 +40,8 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
     private ToolItem stopButton;
     private Text listInfoLabel;
     private String curInfo;
+
+    private ISearchTextRunner searcher;
 
     private int loadCount = 0;
     private ProgressPageControl externalPageControl = null;
@@ -61,6 +65,11 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
                 dispose();
             }
         });
+    }
+
+    public void setSearcher(ISearchTextRunner searcher)
+    {
+        this.searcher = searcher;
     }
 
     @Override
@@ -184,6 +193,21 @@ public class ProgressPageControl extends Composite //implements IRunnableContext
     protected boolean cancelProgress()
     {
         return false;
+    }
+
+    public boolean isSearchPossible()
+    {
+        return searcher != null;
+    }
+
+    public boolean isSearchEnabled()
+    {
+        return false;
+    }
+
+    public void performSearch(SearchType searchType)
+    {
+
     }
 
 /*

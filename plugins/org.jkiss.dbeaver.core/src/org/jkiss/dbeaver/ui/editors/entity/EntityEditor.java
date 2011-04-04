@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -349,14 +348,18 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         }
     }
 
+    public Object getActiveFolder()
+    {
+        if (getActiveEditor() instanceof IFolderedPart) {
+            ((IFolderedPart)getActiveEditor()).getActiveFolder();
+        }
+        return null;
+    }
+
     public void switchFolder(String folderId)
     {
-        int pageCount = getPageCount();
-        for (int i = 0; i < pageCount; i++) {
-            IWorkbenchPart part = getEditor(i);
-            if (part instanceof IFolderedPart) {
-                ((IFolderedPart)part).switchFolder(folderId);
-            }
+        if (getActiveEditor() instanceof IFolderedPart) {
+            ((IFolderedPart)getActiveEditor()).switchFolder(folderId);
         }
     }
 
@@ -519,7 +522,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySheetPage.class) {
-            return new PropertyPageTabbed();
+            //return new PropertyPageTabbed();
         }
         return super.getAdapter(adapter);
     }

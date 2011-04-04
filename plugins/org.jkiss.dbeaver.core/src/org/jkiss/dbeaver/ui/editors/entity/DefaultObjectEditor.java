@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -24,9 +25,12 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.views.properties.tabbed.ISection;
+import org.eclipse.ui.views.properties.tabbed.TabContents;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -44,7 +48,7 @@ import java.util.List;
 /**
  * DefaultObjectEditor
  */
-public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, IProgressControlProvider, IFolderedPart//, ILazyPropertyLoadListener
+public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, IProgressControlProvider, IFolderedPart, ISearchContextProvider//, ILazyPropertyLoadListener
 {
     static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
@@ -283,8 +287,49 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         return pageControl;
     }
 
+    public Object getActiveFolder()
+    {
+        TabContents currentTab = properties.getCurrentTab();
+        if (currentTab != null) {
+            ISection[] sections = currentTab.getSections();
+            if (CommonUtils.isEmpty(sections)) {
+                return null;
+            } else if (sections.length == 1) {
+                return sections[0];
+            } else {
+                return sections;
+            }
+        }
+        return null;
+    }
+
     public void switchFolder(String folderId)
     {
         properties.setSelectedTab(folderId);
+    }
+
+    private ISearchContextProvider getFolderSearch()
+    {
+        Object activeFolder = getActiveFolder();
+        if (activeFolder instanceof ISearchContextProvider) {
+            return (ISearchContextProvider)activeFolder;
+        }
+        return null;
+    }
+
+    public boolean isSearchPossible()
+    {
+        return true;
+    }
+
+    public boolean isSearchEnabled()
+    {
+        ISearchContextProvider provider = getFolderSearch();
+        return provider != null && provider.isSearchEnabled();
+    }
+
+    public void performSearch(SearchType searchType)
+    {
+        getFolderSearch().performSearch(searchType);
     }
 }

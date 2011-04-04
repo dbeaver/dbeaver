@@ -107,24 +107,15 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
         // Register any global actions with the site's IActionBars.
         IActionBars bars = getEditorSite().getActionBars();
-        String id = IWorkbenchCommandConstants.EDIT_UNDO;
-        bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchCommandConstants.EDIT_REDO;
-        bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchCommandConstants.EDIT_CUT;
-        bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchCommandConstants.EDIT_COPY;
-        bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchCommandConstants.EDIT_PASTE;
-        bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchCommandConstants.EDIT_DELETE;
-        bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchCommandConstants.EDIT_SELECT_ALL;
-        bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE;
-        bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = ITextEditorActionConstants.GOTO_LINE;
-        bars.setGlobalActionHandler(id, new EditorAction(id));
+        createEditorAction(bars, IWorkbenchCommandConstants.EDIT_UNDO);
+        createEditorAction(bars, IWorkbenchCommandConstants.EDIT_REDO);
+        createEditorAction(bars, IWorkbenchCommandConstants.EDIT_CUT);
+        createEditorAction(bars, IWorkbenchCommandConstants.EDIT_COPY);
+        createEditorAction(bars, IWorkbenchCommandConstants.EDIT_PASTE);
+        createEditorAction(bars, IWorkbenchCommandConstants.EDIT_DELETE);
+        createEditorAction(bars, IWorkbenchCommandConstants.EDIT_SELECT_ALL);
+        createEditorAction(bars, IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
+        createEditorAction(bars, ITextEditorActionConstants.GOTO_LINE);
 
         manager.addListener(new Listener() {
             public void handleEvent(Event event)
@@ -171,6 +162,11 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
              });
 //	getSite().setSelectionProvider(this);
 
+    }
+
+    private void createEditorAction(IActionBars bars, String id)
+    {
+        bars.setGlobalActionHandler(id, new EditorAction(id));
     }
 
     private void loadBinaryContent()

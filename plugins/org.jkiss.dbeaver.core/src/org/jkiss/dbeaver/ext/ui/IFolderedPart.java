@@ -11,5 +11,7 @@ import org.eclipse.ui.IWorkbenchPart;
  */
 public interface IFolderedPart extends IWorkbenchPart
 {
+    Object getActiveFolder();
+
     void switchFolder(String folderId);
 }
