@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * ItemListControl
@@ -32,8 +34,8 @@ public class ItemListControl extends NodeListControl
     private SearchColorProvider searchColorProvider;
     private Color searchHighlightColor;
 
-    private String curSearchString;
-    private boolean caseSensitiveSearch;
+    private Pattern curSearchPattern;
+    private int curSearchIndex;
     private Set<DBNNode> curSearchResult = null;
 
     public ItemListControl(
@@ -46,7 +48,7 @@ public class ItemListControl extends NodeListControl
         super(parent, style, workbenchPart, node, metaNode);
         searcher = new Searcher();
         searchColorProvider = new SearchColorProvider();
-        searchHighlightColor = new Color(parent.getDisplay(), 128, 255, 128);
+        searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
     }
 
     @Override
@@ -88,16 +90,12 @@ public class ItemListControl extends NodeListControl
 
     private boolean matchesSearch(Object element)
     {
-        if (CommonUtils.isEmpty(curSearchString)) {
+        if (curSearchPattern == null) {
             return false;
         }
         if (element instanceof DBNNode) {
             DBNNode node = (DBNNode)element;
-            String nodeName = node.getNodeName();
-            if (!caseSensitiveSearch) {
-                nodeName = nodeName.toUpperCase();
-            }
-            return nodeName.indexOf(curSearchString) != -1;
+            return curSearchPattern.matcher(node.getNodeName()).find();
         } else {
             return false;
         }
@@ -206,12 +204,15 @@ public class ItemListControl extends NodeListControl
 
         public boolean performSearch(String searchString, int options)
         {
-            caseSensitiveSearch = (options & SEARCH_CASE_SENSITIVE) != 0;
-            if (!caseSensitiveSearch) {
-                searchString = searchString.toUpperCase();
-            }
-            if (!CommonUtils.equalObjects(curSearchString, searchString)) {
-                curSearchString = searchString;
+            boolean caseSensitiveSearch = (options & SEARCH_CASE_SENSITIVE) != 0;
+            if (!CommonUtils.isEmpty(searchString) && curSearchPattern == null || !CommonUtils.equalObjects(curSearchPattern.pattern(), makeLikePattern(searchString))) {
+                try {
+                    curSearchPattern = Pattern.compile(makeLikePattern(searchString), caseSensitiveSearch ? 0 : Pattern.CASE_INSENSITIVE);
+                } catch (PatternSyntaxException e) {
+                    setInfo(e.getMessage());
+                    return false;
+                }
+                curSearchIndex = -1;
                 Set<DBNNode> oldSearchResult = curSearchResult;
                 curSearchResult = null;
                 boolean found = false;
@@ -224,6 +225,11 @@ public class ItemListControl extends NodeListControl
                             }
                             curSearchResult.add(node);
                             getItemsViewer().update(node, null);
+                            if (!found) {
+                                curSearchIndex++;
+                                getItemsViewer().setSelection(new StructuredSelection(node));
+                                getItemsViewer().reveal(node);
+                            }
                             found = true;
                         }
                     }
@@ -237,14 +243,38 @@ public class ItemListControl extends NodeListControl
                 }
                 return found;
             } else {
-                return true;
+                boolean findNext = ((options & SEARCH_NEXT) != 0);
+                boolean findPrev = ((options & SEARCH_PREVIOUS) != 0);
+                if ((findNext || findPrev) && !CommonUtils.isEmpty(curSearchResult)) {
+                    if (findNext) {
+                        curSearchIndex++;
+                        if (curSearchIndex >= curSearchResult.size()) {
+                            curSearchIndex = 0;
+                        }
+                    } else {
+                        curSearchIndex--;
+                        if (curSearchIndex < 0) {
+                            curSearchIndex = curSearchResult.size() - 1;
+                        }
+                    }
+                    int index = 0;
+                    for (DBNNode node : curSearchResult) {
+                        if (index++ == curSearchIndex) {
+                            getItemsViewer().setSelection(new StructuredSelection(node));
+                            getItemsViewer().reveal(node);
+                            break;
+                        }
+                    }
+                }
+                return !CommonUtils.isEmpty(curSearchResult);
             }
         }
 
         public void cancelSearch()
         {
-            if (curSearchString != null) {
-                curSearchString = null;
+            if (curSearchPattern != null) {
+                curSearchPattern = null;
+                curSearchIndex = 0;
                 if (curSearchResult != null) {
                     Set<DBNNode> oldSearchResult = curSearchResult;
                     curSearchResult = null;
@@ -268,4 +298,20 @@ public class ItemListControl extends NodeListControl
             return curSearchResult != null && curSearchResult.contains((DBNNode) element) ? searchHighlightColor : null;
         }
     }
+
+    public static String makeLikePattern(String like)
+    {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < like.length(); i++) {
+            char c = like.charAt(i);
+            if (c == '*') result.append(".*");
+            else if (c == '?') result.append(".");
+            else if (Character.isLetterOrDigit(c)) result.append(c);
+            else result.append("\\").append(c);
+        }
+
+        return result.toString();
+    }
+
+
 }

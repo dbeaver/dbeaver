@@ -17,13 +17,16 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.internal.views.properties.tabbed.view.TabbedPropertyComposite;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IProgressControlProvider;
 
 /**
- * PropertySectionStandard
+ * StandardPropertiesSection
  */
-public class PropertySectionStandard extends AbstractPropertySection {
+public class StandardPropertiesSection extends AbstractPropertySection {
 
 	protected PropertyPageStandard pageStandard;
+    private IDatabaseNodeEditor editor;
 
     public PropertyPageStandard getPage()
     {
@@ -31,31 +34,21 @@ public class PropertySectionStandard extends AbstractPropertySection {
     }
 
     public void createControls(Composite parent,
-			final TabbedPropertySheetPage atabbedPropertySheetPage) {
-		super.createControls(parent, atabbedPropertySheetPage);
-
-        TabbedPropertyComposite tpc = (TabbedPropertyComposite) atabbedPropertySheetPage.getControl();
-//        tpc.getScrolledComposite().setExpandVertical(false);
-//        tpc.getScrolledComposite().setExpandHorizontal(false);
-//        tpc.getScrolledComposite().setAlwaysShowScrollBars(false);
+			final TabbedPropertySheetPage tabbedPropertySheetPage) {
+		super.createControls(parent, tabbedPropertySheetPage);
 
 		pageStandard = new PropertyPageStandard();
 		pageStandard.createControl(parent);
 
-/*
-        pageStandard.getControl().addControlListener(new ControlAdapter() {
-
-            public void controlResized(ControlEvent e) {
-                atabbedPropertySheetPage.resizeScrolledComposite();
-            }
-        });
-*/
 	}
 
 	public void setInput(IWorkbenchPart part, ISelection newSelection) {
         if (!CommonUtils.equalObjects(getSelection(), newSelection)) {
 		    super.setInput(part, newSelection);
 		    pageStandard.selectionChanged(part, newSelection);
+        }
+        if (part instanceof IDatabaseNodeEditor) {
+            this.editor = (IDatabaseNodeEditor)part;
         }
 	}
 
@@ -75,4 +68,18 @@ public class PropertySectionStandard extends AbstractPropertySection {
     {
 		return true;
 	}
+
+    @Override
+    public void aboutToBeShown()
+    {
+//        if (editor instanceof IProgressControlProvider) {
+//            ((IProgressControlProvider)editor).getProgressControl().activate(true);
+//        }
+    }
+
+    @Override
+    public void aboutToBeHidden()
+    {
+
+    }
 }

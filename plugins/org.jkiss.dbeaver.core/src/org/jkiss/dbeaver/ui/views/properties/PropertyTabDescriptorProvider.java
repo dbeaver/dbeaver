@@ -54,7 +54,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 
             public ISection getSectionClass()
             {
-                return new PropertySectionStandard();
+                return new StandardPropertiesSection();
             }
 
             public String getTargetTab()

@@ -1283,6 +1283,7 @@
         <key commandId="org.eclipse.ui.navigate.backwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+CTRL+ARROW_LEFT"/>
         <key commandId="org.eclipse.ui.navigate.forwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+CTRL+ARROW_RIGHT"/>
         <key commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+BS"/>
+
         <key commandId="org.eclipse.ui.edit.text.goto.line" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+G"/>
         <key commandId="org.eclipse.ui.edit.text.moveLineDown" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_DOWN"/>
         <key commandId="org.eclipse.ui.edit.text.moveLineUp" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_UP"/>

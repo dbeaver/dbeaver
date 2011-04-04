@@ -80,10 +80,14 @@ public final class SQLUtils {
         return false;
     }
 
+    public static String makeLikePattern(String like)
+    {
+        return like.replace("%", ".*").replace("_", ".");
+    }
+
     public static boolean matchesLike(String string, String like)
     {
-        like = like.replace("%", ".*").replace("_", ".");
-        Pattern pattern = Pattern.compile(like, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+        Pattern pattern = Pattern.compile(makeLikePattern(like), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
         return pattern.matcher(string).matches();
     }
 
