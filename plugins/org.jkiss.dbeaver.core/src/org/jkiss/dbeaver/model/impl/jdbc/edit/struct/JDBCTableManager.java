@@ -49,14 +49,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         commander.addCommand(new CommandDropTable(object), null);
     }
 
-    public DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
-    {
-        return new TablePropertyHandler(property);
-    }
-
     protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, Object copyFrom);
-
-    protected abstract TableCompositeCommand createTableCommand(OBJECT_TYPE table);
 
     private class CommandCreateTable extends DBECommandImpl<OBJECT_TYPE> {
         protected CommandCreateTable(OBJECT_TYPE table)
@@ -99,60 +92,6 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         }
     }
 
-    protected class TablePropertyHandler implements DBEPropertyHandler<OBJECT_TYPE>, DBEPropertyReflector<OBJECT_TYPE> {
-
-        private final IPropertyDescriptor property;
-
-        public TablePropertyHandler(IPropertyDescriptor property)
-        {
-            this.property = property;
-        }
-
-        public IPropertyDescriptor getProperty()
-        {
-            return property;
-        }
-
-        public DBECommandComposite<OBJECT_TYPE, ? extends DBEPropertyHandler<OBJECT_TYPE>> createCompositeCommand(OBJECT_TYPE object)
-        {
-            return createTableCommand(object);
-        }
-
-        public void reflectValueChange(OBJECT_TYPE object, Object oldValue, Object newValue)
-        {
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return property.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            return obj instanceof TablePropertyHandler && property.equals(((TablePropertyHandler) obj).property);
-        }
-    }
-
-    protected abstract class TableCompositeCommand extends DBECommandComposite<OBJECT_TYPE, TablePropertyHandler> {
-
-        protected TableCompositeCommand(OBJECT_TYPE object)
-        {
-            super(object, "Alter table");
-        }
-
-        protected Object getProperty(String id)
-        {
-            for (Map.Entry<TablePropertyHandler,Object> entry : getProperties().entrySet()) {
-                if (id.equals(entry.getKey().getProperty().getId())) {
-                    return entry.getValue();
-                }
-            }
-            return null;
-        }
-
-    }
 
 }
 

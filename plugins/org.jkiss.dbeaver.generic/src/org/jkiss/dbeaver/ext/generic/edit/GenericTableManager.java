@@ -7,9 +7,11 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -25,23 +27,18 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
     }
 
     @Override
-    protected TableCompositeCommand createTableCommand(final GenericTable table)
+    protected Collection<IDatabasePersistAction> makePersistActions(PropertiesChangeCommand command)
     {
-        return new TableCompositeCommand(table) {
-            @Override
-            public IDatabasePersistAction[] getPersistActions()
-            {
-                final Object tableName = getProperty("name");
-                List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-                boolean newObject = !getObject().isPersisted();
-                if (newObject) {
-                    actions.add( new AbstractDatabasePersistAction("Create new table", "CREATE TABLE " + tableName) );
-                } else {
-                    actions.add( new AbstractDatabasePersistAction("Alter table", "ALTER TABLE " + table.getName()) );
-                }
-                return actions.toArray(new IDatabasePersistAction[actions.size()]);
-            }
-        };
+        GenericTable table = command.getObject();
+        final Object tableName = command.getProperty("name");
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        boolean newObject = !table.isPersisted();
+        if (newObject) {
+            actions.add( new AbstractDatabasePersistAction("Create new table", "CREATE TABLE " + tableName) );
+        } else {
+            actions.add( new AbstractDatabasePersistAction("Alter table", "ALTER TABLE " + table.getName()) );
+        }
+        return actions;
     }
 
     public Class<?>[] getChildTypes()
@@ -53,4 +50,5 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
             GenericIndex.class,
         };
     }
+
 }

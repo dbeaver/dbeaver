@@ -126,7 +126,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     public Object getAdapter(Class adapter)
     {
         if (adapter == IPropertySheetPage.class) {
-            return new PropertyPageTabbed();
+            //return new PropertyPageTabbed();
         }
         return super.getAdapter(adapter);
     }
