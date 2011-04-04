@@ -36,6 +36,8 @@ class NodeEditorSection implements ISection, ISearchContextProvider
     private boolean activated;
     private ISelectionProvider prevSelectionProvider;
 
+    private Composite parent;
+
     NodeEditorSection(IDatabaseNodeEditor editor, DBNNode node, DBXTreeNode metaNode)
     {
         this.editor = editor;
@@ -45,6 +47,39 @@ class NodeEditorSection implements ISection, ISearchContextProvider
 
     public void createControls(Composite parent, TabbedPropertySheetPage tabbedPropertySheetPage)
     {
+        this.parent = parent;
+    }
+
+    public void setFocus()
+    {
+    }
+
+    public void setInput(IWorkbenchPart part, ISelection selection)
+    {
+        this.editor = (IDatabaseNodeEditor)part;
+    }
+
+    public void aboutToBeShown()
+    {
+        if (itemControl == null) {
+            createSectionControls();
+        }
+
+        if (!activated) {
+            activated = true;
+            itemControl.loadData();
+        }
+        prevSelectionProvider = editor.getSite().getSelectionProvider();
+        editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
+        itemControl.restoreState();
+    }
+
+    private void createSectionControls()
+    {
+        if (itemControl != null) {
+            return;
+        }
+
         itemControl = new ItemListControl(parent, SWT.SHEET, editor, node, metaNode);
         //itemControl.getLayout().marginHeight = 0;
         //itemControl.getLayout().marginWidth = 0;
@@ -64,26 +99,8 @@ class NodeEditorSection implements ISection, ISearchContextProvider
         ViewUtils.addDragAndDropSupport(itemControl.getNavigatorViewer());
         //ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
         editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
-    }
 
-    public void setFocus()
-    {
-    }
-
-    public void setInput(IWorkbenchPart part, ISelection selection)
-    {
-        this.editor = (IDatabaseNodeEditor)part;
-    }
-
-    public void aboutToBeShown()
-    {
-        if (!activated) {
-            activated = true;
-            itemControl.loadData();
-        }
-        prevSelectionProvider = editor.getSite().getSelectionProvider();
-        editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
-        itemControl.restoreState();
+        parent.layout();
     }
 
     public void aboutToBeHidden()
@@ -155,8 +172,8 @@ class NodeEditorSection implements ISection, ISearchContextProvider
         return itemControl.isSearchEnabled();
     }
 
-    public void performSearch(SearchType searchType)
+    public boolean performSearch(SearchType searchType)
     {
-        itemControl.performSearch(searchType);
+        return itemControl.performSearch(searchType);
     }
 }

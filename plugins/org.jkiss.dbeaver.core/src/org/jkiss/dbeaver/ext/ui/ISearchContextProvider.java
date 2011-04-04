@@ -19,6 +19,6 @@ public interface ISearchContextProvider
 
     boolean isSearchEnabled();
 
-    void performSearch(SearchType searchType);
+    boolean performSearch(SearchType searchType);
 
 }

@@ -55,12 +55,13 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
-    protected ISearchTextRunner getSearcher()
+    protected ISearchTextRunner getSearchRunner()
     {
         return new ISearchTextRunner() {
-            public void performSearch(String searchString, int options)
+            public boolean performSearch(String searchString, int options)
             {
                 UIUtils.showMessageBox(getShell(), "Search", searchString, SWT.ICON_INFORMATION);
+                return false;
             }
         };
     }

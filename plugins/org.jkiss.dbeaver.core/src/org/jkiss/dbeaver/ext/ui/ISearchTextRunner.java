@@ -13,6 +13,6 @@ public interface ISearchTextRunner
     public static final int SEARCH_FORWARD          = 2;
     public static final int SEARCH_BACKWARD         = 4;
 
-    void performSearch(String searchString, int options);
+    boolean performSearch(String searchString, int options);
 
 }

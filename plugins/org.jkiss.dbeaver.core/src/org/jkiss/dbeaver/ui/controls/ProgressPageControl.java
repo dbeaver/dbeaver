@@ -45,7 +45,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     private String curInfo;
     private String curSearchText;
-    private Color searchColor;
+    private Color searchNotFoundColor;
+
+    private ISearchTextRunner searcher;
 
     public ProgressPageControl(
         Composite parent,
@@ -66,7 +68,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 dispose();
             }
         });
-        searchColor = new Color(getDisplay(), 255, 128, 128);
+        searchNotFoundColor = new Color(getDisplay(), 255, 128, 128);
     }
 
     @Override
@@ -223,7 +225,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             searchText.setText(curSearchText);
             searchText.setSelection(curSearchText.length());
         }
-        searchText.setBackground(searchColor);
+        //searchText.setBackground(searchNotFoundColor);
         searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         searchText.addKeyListener(new KeyAdapter() {
             @Override
@@ -238,6 +240,12 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             public void modifyText(ModifyEvent e)
             {
                 curSearchText = searchText.getText();
+                if (curSearchText.length() > 0) {
+                    boolean success = performSearch(SearchType.NEXT);
+                    searchText.setBackground(success ? searchNotFoundColor : null);
+                } else {
+                    searchText.setBackground(null);
+                }
             }
         });
 
@@ -270,7 +278,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     @Override
     public void dispose()
     {
-        UIUtils.dispose(searchColor);
+        UIUtils.dispose(searchNotFoundColor);
 
         super.dispose();
     }
@@ -280,14 +288,14 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         return false;
     }
 
-    protected ISearchTextRunner getSearcher()
+    protected ISearchTextRunner getSearchRunner()
     {
         return null;
     }
 
     public boolean isSearchPossible()
     {
-        return getSearcher() != null;
+        return getSearchRunner() != null;
     }
 
     public boolean isSearchEnabled()
@@ -295,10 +303,32 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         return getProgressControl().progressBar == null;
     }
 
-    public void performSearch(SearchType searchType)
+    public boolean performSearch(SearchType searchType)
     {
+        getProgressControl().setSearcher(getSearchRunner());
         getProgressControl().createSearchControls();
         getProgressControl().searchText.setFocus();
+        if (searchType != SearchType.NONE) {
+            int options = 0;
+            if (searchType == SearchType.PREVIOUS) {
+                options |= ISearchTextRunner.SEARCH_BACKWARD;
+            } else {
+                options |= ISearchTextRunner.SEARCH_FORWARD;
+            }
+            return getSearchRunner().performSearch(curSearchText, options);
+        } else {
+            return true;
+        }
+    }
+
+    private ISearchTextRunner getSearcher()
+    {
+        return searcher;
+    }
+
+    private void setSearcher(ISearchTextRunner searcher)
+    {
+        this.searcher = searcher;
     }
 
 /*

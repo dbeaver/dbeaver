@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -22,7 +20,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
  */
 public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> implements INavigatorModelView, ISearchContextProvider
 {
-    static final Log log = LogFactory.getLog(FolderEditor.class);
+    //static final Log log = LogFactory.getLog(FolderEditor.class);
 
     private ItemListControl itemControl;
 
@@ -71,8 +69,8 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         return itemControl.isSearchEnabled();
     }
 
-    public void performSearch(SearchType searchType)
+    public boolean performSearch(SearchType searchType)
     {
-        itemControl.performSearch(searchType);
+        return itemControl.performSearch(searchType);
     }
 }

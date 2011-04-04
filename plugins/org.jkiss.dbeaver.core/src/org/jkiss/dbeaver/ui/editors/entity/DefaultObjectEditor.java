@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -50,7 +48,7 @@ import java.util.List;
  */
 public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, IProgressControlProvider, IFolderedPart, ISearchContextProvider//, ILazyPropertyLoadListener
 {
-    static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
+    //static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
     private PropertyPageTabbed properties;
     private ObjectEditorPageControl pageControl;
@@ -84,7 +82,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             return;
         }
         createPathPanel(node, container);
-        createNamePanel(node, container);
+        //createNamePanel(node, container);
         createPropertyBrowser(container);
 
         pageControl.createProgressPanel();
@@ -172,9 +170,9 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         }
     }
 
+/*
     private void createNamePanel(DBNNode node, Composite container)
     {
-/*
         // General options
         Group infoGroup = UIUtils.createControlGroup(container, "General", 2, GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
         UIUtils.createControlLabel(infoGroup, "Name");
@@ -196,8 +194,8 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             descriptionText.setText(node.getNodeDescription());
         }
         descriptionText.setEditable(isDescriptionEditable());
-*/
     }
+*/
 
     @Override
     public void dispose()
@@ -328,8 +326,8 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         return provider != null && provider.isSearchEnabled();
     }
 
-    public void performSearch(SearchType searchType)
+    public boolean performSearch(SearchType searchType)
     {
-        getFolderSearch().performSearch(searchType);
+        return getFolderSearch().performSearch(searchType);
     }
 }
