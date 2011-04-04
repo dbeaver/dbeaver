@@ -5,15 +5,9 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBECommandQueue;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.DBEStructHandler;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
-import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
-import org.jkiss.dbeaver.model.edit.prop.DBEPropertyReflector;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;

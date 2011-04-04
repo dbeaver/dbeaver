@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+import org.eclipse.jface.bindings.Scheme;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -19,6 +20,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -33,6 +35,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -105,6 +108,14 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     private void initialize()
     {
+        // Disable all schemas except our own
+        final IBindingService bindingService = (IBindingService)plugin.getWorkbench().getService(IBindingService.class);
+        for (Scheme scheme : bindingService.getDefinedSchemes()) {
+            if (!scheme.getId().equals(DBeaverConstants.DBEAVER_SCHEME_NAME)) {
+                scheme.undefine();
+            }
+        }
+
         //progressProvider = new DBeaverProgressProvider();
         this.sharedTextColors = new SharedTextColors();
 

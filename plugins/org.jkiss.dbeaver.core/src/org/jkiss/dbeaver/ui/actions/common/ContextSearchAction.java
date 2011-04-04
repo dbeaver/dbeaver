@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.actions.common;
 
 import org.eclipse.jface.action.Action;
@@ -10,18 +14,20 @@ import org.jkiss.dbeaver.ui.DBIcon;
 public class ContextSearchAction extends Action {
 
     private final ISearchContextProvider contextProvider;
+    private final ISearchContextProvider.SearchType searchType;
 
-    public ContextSearchAction(ISearchContextProvider contextProvider)
+    public ContextSearchAction(ISearchContextProvider contextProvider, ISearchContextProvider.SearchType searchType)
     {
         super("Context search", DBIcon.FIND.getImageDescriptor());
         this.contextProvider = contextProvider;
+        this.searchType = searchType;
     }
 
     @Override
     public void run()
     {
         if (contextProvider.isSearchEnabled()) {
-            contextProvider.performSearch(ISearchContextProvider.SearchType.NONE);
+            contextProvider.performSearch(searchType);
         }
     }
 }

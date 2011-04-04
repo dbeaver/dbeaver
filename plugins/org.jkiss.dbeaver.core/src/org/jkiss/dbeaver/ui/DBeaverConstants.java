@@ -13,4 +13,6 @@ public class DBeaverConstants
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core";
 
     public static final String DBEAVER_DEFAULT_DIR = ".dbeaver";
+
+    public static final String DBEAVER_SCHEME_NAME = "org.jkiss.dbeaver.defaultKeyScheme";
 }

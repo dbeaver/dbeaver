@@ -10,9 +10,11 @@ package org.jkiss.dbeaver.ext.ui;
 public interface ISearchTextRunner
 {
     public static final int SEARCH_CASE_SENSITIVE   = 1;
-    public static final int SEARCH_FORWARD          = 2;
-    public static final int SEARCH_BACKWARD         = 4;
+    public static final int SEARCH_NEXT = 2;
+    public static final int SEARCH_PREVIOUS = 4;
 
     boolean performSearch(String searchString, int options);
+
+    void cancelSearch();
 
 }

@@ -1236,49 +1236,59 @@
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
-        <scheme id="DBeaverKeyScheme" name="DBeaver" parentId="org.eclipse.ui.defaultAcceleratorConfiguration" description="DBeaver accelerators"/>
+        <scheme id="org.jkiss.dbeaver.defaultKeyScheme" name="DBeaver" description="DBeaver scheme"/>
 
-        <key commandId="org.jkiss.dbeaver.core.resultset.toggleMode" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.first" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_LEFT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_LEFT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.next" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_RIGHT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.last" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_RIGHT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="INSERT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+S"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.toggleMode" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="TAB"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.first" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_LEFT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ARROW_LEFT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.next" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ARROW_RIGHT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.last" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_RIGHT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="SHIFT+ENTER"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.add" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+DELETE"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+S"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+R"/>
 
-        <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
-        <key commandId="org.jkiss.dbeaver.core.object.find" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+H"/>
-        <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+D"/>
+        <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+C"/>
+        <key commandId="org.jkiss.dbeaver.core.object.find" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+H"/>
+        <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+D"/>
 
         <!-- SQL Editor -->
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+X"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+Enter"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Enter"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+X"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+Enter"/>
 
-        <key commandId="org.jkiss.dbeaver.core.new.sql.editor" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+L"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
+        <key commandId="org.jkiss.dbeaver.core.new.sql.editor" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+L"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+O"/>
 
         <!-- Text editors -->
-        <key commandId="org.jkiss.dbeaver.ui.editors.text.content.format" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.text.content.format" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+F"/>
 
+        <key commandId="org.eclipse.ui.edit.copy" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+C"/>
+        <key commandId="org.eclipse.ui.edit.paste" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+V"/>
+        <key commandId="org.eclipse.ui.edit.cut" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+X"/>
+        <key commandId="org.eclipse.ui.edit.undo" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Z"/>
+        <key commandId="org.eclipse.ui.edit.redo" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+Z"/>
 
-        <key commandId="org.eclipse.ui.navigate.backwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="ALT+CTRL+ARROW_LEFT"/>
-        <key commandId="org.eclipse.ui.navigate.forwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="ALT+CTRL+ARROW_RIGHT"/>
-        <key commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+BS"/>
-        <key commandId="org.eclipse.ui.edit.text.goto.line" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+G"/>
-        <key commandId="org.eclipse.ui.edit.findNext" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="F3"/>
-        <key commandId="org.eclipse.ui.edit.findPrevious" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="SHIFT+F3"/>
-        <key commandId="org.eclipse.ui.edit.text.moveLineDown" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+ARROW_DOWN"/>
-        <key commandId="org.eclipse.ui.edit.text.moveLineUp" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+ARROW_UP"/>
-        <key commandId="org.eclipse.ui.edit.text.copyLineUp" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+D"/>
-        <key commandId="org.eclipse.ui.edit.text.delete.line" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+Y"/>
-        <key commandId="org.eclipse.ui.edit.redo" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+Z"/>
-        <key commandId="org.eclipse.ui.edit.text.join.lines" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+J"/>
-        <key commandId="org.eclipse.ui.edit.findIncremental" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="ALT+F3"/>
+        <key commandId="org.eclipse.ui.edit.findReplace" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+F"/>
+        <key commandId="org.eclipse.ui.edit.findNext" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F3"/>
+        <key commandId="org.eclipse.ui.edit.findPrevious" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="SHIFT+F3"/>
+        <key commandId="org.eclipse.ui.edit.findIncremental" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+F3"/>
+
+        <key commandId="org.eclipse.ui.window.nextEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+TAB"/>
+        <key commandId="org.eclipse.ui.window.previousEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+TAB"/>
+        <key commandId="org.eclipse.ui.window.switchToEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+E"/>
+
+        <key commandId="org.eclipse.ui.navigate.backwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+CTRL+ARROW_LEFT"/>
+        <key commandId="org.eclipse.ui.navigate.forwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+CTRL+ARROW_RIGHT"/>
+        <key commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+BS"/>
+        <key commandId="org.eclipse.ui.edit.text.goto.line" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+G"/>
+        <key commandId="org.eclipse.ui.edit.text.moveLineDown" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_DOWN"/>
+        <key commandId="org.eclipse.ui.edit.text.moveLineUp" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_UP"/>
+        <key commandId="org.eclipse.ui.edit.text.copyLineUp" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+D"/>
+        <key commandId="org.eclipse.ui.edit.text.delete.line" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Y"/>
+        <key commandId="org.eclipse.ui.edit.text.join.lines" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+J"/>
 
     </extension>
     <extension point="org.eclipse.ui.contexts">

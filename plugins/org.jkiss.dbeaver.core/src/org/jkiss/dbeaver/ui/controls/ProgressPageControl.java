@@ -7,6 +7,10 @@ package org.jkiss.dbeaver.ui.controls;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
@@ -16,6 +20,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ext.ui.ISearchTextRunner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,6 +52,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     private String curInfo;
     private String curSearchText;
+    private volatile Job curSearchJob;
+
     private Color searchNotFoundColor;
 
     public ProgressPageControl(
@@ -244,7 +251,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             public void keyReleased(KeyEvent e)
             {
                 if (e.character == SWT.ESC) {
-                    hideControls();
+                    cancelSearch(true);
                 }
             }
         });
@@ -252,25 +259,25 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             public void modifyText(ModifyEvent e)
             {
                 curSearchText = searchText.getText();
-                if (curSearchText.length() > 0) {
-                    performSearch(SearchType.NEXT);
-                } else {
-                    searchText.setBackground(null);
+                if (curSearchJob == null) {
+                    curSearchJob = new UIJob("Search") {
+                        @Override
+                        public IStatus runInUIThread(IProgressMonitor monitor)
+                        {
+                            if (monitor.isCanceled()) {
+                                return Status.CANCEL_STATUS;
+                            }
+                            performSearch(SearchType.NEXT);
+                            curSearchJob = null;
+                            return Status.OK_STATUS;
+                        }
+                    };
+                    curSearchJob.schedule(200);
                 }
             }
         });
 
         ToolBar searchTools = new ToolBar(controlComposite, SWT.HORIZONTAL);
-        ToolItem searchButton = new ToolItem(searchTools, SWT.PUSH);
-        searchButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_FORWARD));
-        searchButton.setToolTipText("Search");
-        searchButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-            }
-        });
-
         ToolItem closeButton = new ToolItem(searchTools, SWT.PUSH);
         closeButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_REMOVE));
         closeButton.setToolTipText("Close search panel");
@@ -278,7 +285,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                hideControls();
+                cancelSearch(true);
             }
         });
 
@@ -324,15 +331,31 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (!CommonUtils.isEmpty(getProgressControl().curSearchText)) {
             int options = 0;
             if (searchType == SearchType.PREVIOUS) {
-                options |= ISearchTextRunner.SEARCH_BACKWARD;
+                options |= ISearchTextRunner.SEARCH_PREVIOUS;
             } else {
-                options |= ISearchTextRunner.SEARCH_FORWARD;
+                options |= ISearchTextRunner.SEARCH_NEXT;
             }
             boolean success = getSearchRunner().performSearch(getProgressControl().curSearchText, options);
             getProgressControl().searchText.setBackground(success ? null : searchNotFoundColor);
             return success;
         } else {
+            cancelSearch(false);
             return true;
+        }
+    }
+
+    private void cancelSearch(boolean hide)
+    {
+        if (curSearchJob != null) {
+            curSearchJob.cancel();
+            curSearchJob = null;
+        }
+        getSearchRunner().cancelSearch();
+
+        if (hide) {
+            hideControls();
+        } else {
+            getProgressControl().searchText.setBackground(null);
         }
     }
 

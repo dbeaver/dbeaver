@@ -180,6 +180,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService();
 
+    public IColorProvider getObjectColorProvider()
+    {
+        return null;
+    }
+
     private TableItem detectTableItem(int x, int y)
     {
         selectedItem = -1;
@@ -710,6 +715,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return getCellString(cellValue);
         }
 
+        @Override
+        public Color getForeground(Object element)
+        {
+            final IColorProvider colorProvider = getObjectColorProvider();
+            return colorProvider == null ? null : colorProvider.getForeground(element);
+        }
+
+        @Override
+        public Color getBackground(Object element)
+        {
+            final IColorProvider colorProvider = getObjectColorProvider();
+            return colorProvider == null ? null : colorProvider.getBackground(element);
+        }
     }
 
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
