@@ -27,7 +27,6 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -152,7 +151,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         properties.createControl(propsPlaceholder);
 
         PropertySourceEditable propertySource = new PropertySourceEditable(
-            getEditorInput().getObjectCommander(),
+            getEditorInput().getCommandContext(),
             getEditorInput().getTreeNode(),
             getEditorInput().getDatabaseObject());
         propertySource.collectProperties(new IFilter() {

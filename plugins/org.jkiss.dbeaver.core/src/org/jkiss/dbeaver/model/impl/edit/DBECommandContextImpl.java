@@ -19,9 +19,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import java.util.*;
 
 /**
- * DBEObjectCommanderImpl
+ * DBECommandContextImpl
  */
-public class DBEObjectCommanderImpl implements DBEObjectCommander {
+public class DBECommandContextImpl implements DBECommandContext {
 
     private final DBSDataSourceContainer dataSourceContainer;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
@@ -31,7 +31,7 @@ public class DBEObjectCommanderImpl implements DBEObjectCommander {
 
     private final List<DBECommandListener> listeners = new ArrayList<DBECommandListener>();
 
-    public DBEObjectCommanderImpl(DBSDataSourceContainer dataSourceContainer)
+    public DBECommandContextImpl(DBSDataSourceContainer dataSourceContainer)
     {
         this.dataSourceContainer = dataSourceContainer;
     }

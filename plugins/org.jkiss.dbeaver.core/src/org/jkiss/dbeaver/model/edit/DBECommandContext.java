@@ -13,10 +13,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.util.Collection;
 
 /**
- * Object commander.
+ * Command context.
  * Provides facilities for object edit commands, undo/redo, save/revert
  */
-public interface DBEObjectCommander extends IDataSourceContainerProvider {
+public interface DBECommandContext extends IDataSourceContainerProvider {
 
     boolean isDirty();
 

@@ -7,8 +7,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandQueue;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEStructHandler;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
@@ -36,7 +36,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBEObjectCommander commander, Object parent, Object copyFrom)
+    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commander, Object parent, Object copyFrom)
     {
         OBJECT_TYPE newTable = createNewTable((CONTAINER_TYPE) parent, copyFrom);
 
@@ -45,7 +45,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         return newTable;
     }
 
-    public void deleteObject(DBEObjectCommander commander, OBJECT_TYPE object, Map<String, Object> options)
+    public void deleteObject(DBECommandContext commander, OBJECT_TYPE object, Map<String, Object> options)
     {
         commander.addCommand(new CommandDropTable(object), null);
     }

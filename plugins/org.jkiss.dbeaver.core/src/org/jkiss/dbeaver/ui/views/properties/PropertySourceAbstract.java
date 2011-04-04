@@ -171,7 +171,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
         throw new UnsupportedOperationException("Cannot update property in non-editable property source");
 /*
         if (getEditableValue() instanceof DBPObject) {
-            DBEObjectCommander objectCommander = getObjectCommander();
+            DBECommandContext objectCommander = getCommandContext();
             if (objectCommander != null) {
                 objectCommander.addCommand(
                     new DBECommandProperty<DBPObject>(

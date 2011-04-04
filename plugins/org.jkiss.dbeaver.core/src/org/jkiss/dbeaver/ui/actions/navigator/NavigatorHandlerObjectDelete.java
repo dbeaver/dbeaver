@@ -27,10 +27,10 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -132,11 +132,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         DBEObjectMaker objectMaker = (DBEObjectMaker)objectManager;
         Map<String, Object> deleteOptions = null;
 
-        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, objectManager instanceof DBEObjectCommander);
+        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, objectManager instanceof DBECommandContext);
         if (confirmResult == ConfirmResult.NO) {
             return false;
         }
-        DBEObjectCommander commander = new DBEObjectCommanderImpl(node.getObject().getDataSource().getContainer());
+        DBECommandContext commander = new DBECommandContextImpl(node.getObject().getDataSource().getContainer());
         objectMaker.deleteObject(commander, node.getObject(), deleteOptions);
 
         if (confirmResult == ConfirmResult.DETAILS) {
@@ -172,7 +172,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         return true;
     }
 
-    private boolean showScript(IWorkbenchWindow workbenchWindow, DBEObjectCommander commander)
+    private boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commander)
     {
         Collection<? extends DBECommand> commands = commander.getCommands();
         StringBuilder script = new StringBuilder();
@@ -263,11 +263,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
     }
 
     private static class ObjectDeleter implements IRunnableWithProgress {
-        private final DBEObjectCommander commander;
+        private final DBECommandContext commander;
 
-        public ObjectDeleter(DBEObjectCommander objectCommander)
+        public ObjectDeleter(DBECommandContext commandContext)
         {
-            this.commander = objectCommander;
+            this.commander = commandContext;
         }
 
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException

@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
@@ -26,7 +26,7 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
         return 0;
     }
 
-    public DataSourceDescriptor createNewObject(IWorkbenchWindow workbenchWindow, DBEObjectCommander commander, Object parent, Object copyFrom)
+    public DataSourceDescriptor createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commander, Object parent, Object copyFrom)
     {
         if (copyFrom != null) {
             DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;
@@ -66,7 +66,7 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
         return null;
     }
 
-    public void deleteObject(DBEObjectCommander commander, final DataSourceDescriptor object, Map<String, Object> options)
+    public void deleteObject(DBECommandContext commander, final DataSourceDescriptor object, Map<String, Object> options)
     {
         Runnable remover = new Runnable() {
             public void run()

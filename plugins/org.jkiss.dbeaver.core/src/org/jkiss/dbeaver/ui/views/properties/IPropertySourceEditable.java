@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 
 /**
  * Editable property source
@@ -13,5 +13,5 @@ public interface IPropertySourceEditable {
 
     boolean isEditable();
 
-    DBEObjectCommander getObjectCommander();
+    DBECommandContext getCommandContext();
 }

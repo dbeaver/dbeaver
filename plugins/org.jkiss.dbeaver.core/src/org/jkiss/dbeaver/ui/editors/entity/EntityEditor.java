@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -64,16 +64,16 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         return getEditorInput().getDatabaseObject();
     }
 
-    public DBEObjectCommander getObjectCommander()
+    public DBECommandContext getObjectCommander()
     {
-        return getEditorInput().getObjectCommander();
+        return getEditorInput().getCommandContext();
     }
 
     @Override
     public void dispose()
     {
-//        if (getObjectCommander() != null && getObjectCommander().isDirty()) {
-//            getObjectCommander().resetChanges();
+//        if (getCommandContext() != null && getCommandContext().isDirty()) {
+//            getCommandContext().resetChanges();
 //        }
         if (commandListener != null && getObjectCommander() != null) {
             getObjectCommander().removeCommandListener(commandListener);
@@ -105,8 +105,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     @Override
     public boolean isDirty()
     {
-        final DBEObjectCommander objectCommander = getObjectCommander();
-        return objectCommander != null && objectCommander.isDirty();
+        final DBECommandContext commandContext = getObjectCommander();
+        return commandContext != null && commandContext.isDirty();
     }
 
     /**
@@ -485,7 +485,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         // Lists and commands should be refreshed only if we make real refresh from remote storage
         // Otherwise just update object's properties
 /*
-        getEditorInput().getObjectCommander().resetChanges();
+        getEditorInput().getCommandContext().resetChanges();
 */
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
         if (databaseObject != null && databaseObject.isPersisted()) {

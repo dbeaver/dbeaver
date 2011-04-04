@@ -19,8 +19,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
-import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -232,7 +231,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     protected IPropertySource createListPropertySource()
     {
         if (workbenchPart instanceof IDatabaseNodeEditor) {
-            return new NodeListPropertySource(((IDatabaseNodeEditor) workbenchPart).getEditorInput().getObjectCommander());
+            return new NodeListPropertySource(((IDatabaseNodeEditor) workbenchPart).getEditorInput().getCommandContext());
         } else {
             return super.createListPropertySource();
         }
@@ -260,9 +259,9 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
     private class NodeListPropertySource extends PropertySourceEditable {
 
-        private NodeListPropertySource(DBEObjectCommander objectCommander)
+        private NodeListPropertySource(DBECommandContext commandContext)
         {
-            super(objectCommander, NodeListControl.this, NodeListControl.this);
+            super(commandContext, NodeListControl.this, NodeListControl.this);
         }
 
         public Object getSourceObject()

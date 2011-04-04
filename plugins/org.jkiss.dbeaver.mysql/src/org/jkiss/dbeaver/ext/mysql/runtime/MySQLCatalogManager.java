@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
@@ -32,7 +32,7 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
-    public MySQLCatalog createNewObject(IWorkbenchWindow workbenchWindow, DBEObjectCommander commander, Object parent, Object copyFrom)
+    public MySQLCatalog createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commander, Object parent, Object copyFrom)
     {
         String schemaName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Schema name");
         if (CommonUtils.isEmpty(schemaName)) {
@@ -45,7 +45,7 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         return newCatalog;
     }
 
-    public void deleteObject(DBEObjectCommander commander, MySQLCatalog object, Map<String, Object> options)
+    public void deleteObject(DBECommandContext commander, MySQLCatalog object, Map<String, Object> options)
     {
         commander.addCommand(new CommandDropCatalog(object), null);
     }

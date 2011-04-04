@@ -14,8 +14,8 @@ import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -47,7 +47,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
 
     public boolean isDirty()
     {
-        return getEditorInput().getObjectCommander().isDirty();
+        return getEditorInput().getCommandContext().isDirty();
     }
 
     public boolean isSaveAsAllowed()
@@ -97,9 +97,9 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     }
 */
 
-    private DBEObjectCommander getObjectCommander()
+    private DBECommandContext getObjectCommander()
     {
-        return getEditorInput().getObjectCommander();
+        return getEditorInput().getCommandContext();
     }
 
     public void addChangeCommand(

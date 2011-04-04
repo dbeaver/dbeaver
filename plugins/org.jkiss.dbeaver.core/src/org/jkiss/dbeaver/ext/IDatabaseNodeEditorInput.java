@@ -5,8 +5,7 @@
 package org.jkiss.dbeaver.ext;
 
 import org.eclipse.ui.IEditorInput;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
-import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -32,8 +31,10 @@ public interface IDatabaseNodeEditorInput extends IEditorInput, IDataSourceProvi
      */
     String getDefaultFolderId();
 
-    DBEObjectCommander getObjectCommander();
-
-    <T extends DBEObjectManager> T getObjectManager(Class<T> aClass);
+    /**
+     * Command context
+     * @return command context
+     */
+    DBECommandContext getCommandContext();
 
 }

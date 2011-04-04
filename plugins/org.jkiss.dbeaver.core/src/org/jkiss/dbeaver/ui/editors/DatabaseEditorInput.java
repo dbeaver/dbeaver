@@ -11,9 +11,9 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -23,14 +23,14 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IDatabaseNodeEditorInput
 {
     private final NODE node;
-    private final DBEObjectCommander objectCommander;
+    private final DBECommandContext commandContext;
     private String defaultPageId;
     private String defaultFolderId;
 
     protected DatabaseEditorInput(NODE node)
     {
         this.node = node;
-        this.objectCommander = new DBEObjectCommanderImpl(getDataSource().getContainer());
+        this.commandContext = new DBECommandContextImpl(getDataSource().getContainer());
     }
 
     public boolean exists()
@@ -102,15 +102,9 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         return defaultFolderId;
     }
 
-    public DBEObjectCommander getObjectCommander()
+    public DBECommandContext getCommandContext()
     {
-        return objectCommander;
-    }
-
-    public <T extends DBEObjectManager> T getObjectManager(Class<T> aClass)
-    {
-        DBSObject databaseObject = getDatabaseObject();
-        return databaseObject == null ? null : DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(databaseObject.getClass(), aClass);
+        return commandContext;
     }
 
     public void setDefaultPageId(String defaultPageId)

@@ -10,8 +10,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
@@ -25,19 +25,19 @@ import java.util.Map;
  */
 public class PropertySourceEditable extends PropertySourceAbstract implements DBPObject, IPropertySourceEditable
 {
-    private DBEObjectCommander objectCommander;
+    private DBECommandContext commandContext;
     private Map<Object, Object> updatedValues = new HashMap<Object, Object>();
 
-    public PropertySourceEditable(DBEObjectCommander objectCommander, Object sourceObject, Object object)
+    public PropertySourceEditable(DBECommandContext commandContext, Object sourceObject, Object object)
     {
         super(sourceObject, object, true);
-        this.objectCommander = objectCommander;
+        this.commandContext = commandContext;
         //this.objectManager = editorInput.getObjectManager(DBEObjectEditor.class);
     }
 
     public boolean isEditable()
     {
-        return objectCommander != null && getObjectEditor() != null;
+        return commandContext != null && getObjectEditor() != null;
     }
 
     private DBEObjectEditor getObjectEditor()
@@ -46,9 +46,9 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         return editableValue == null ? null : DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(editableValue.getClass(), DBEObjectEditor.class);
     }
 
-    public DBEObjectCommander getObjectCommander()
+    public DBECommandContext getCommandContext()
     {
-        return objectCommander;
+        return commandContext;
     }
 
     @Override
@@ -91,7 +91,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             propertyHandler,
             value);
         final CommandReflector reflector = new CommandReflector();
-        getObjectCommander().addCommand(command, reflector);
+        getCommandContext().addCommand(command, reflector);
 
         handlePropertyChange(id, value);
     }

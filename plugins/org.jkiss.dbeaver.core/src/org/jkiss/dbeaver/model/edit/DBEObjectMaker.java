@@ -32,7 +32,7 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject> extends DBEObject
      * @param parent parent object
      * @param copyFrom template for new object (usually result of "paste" operation)   @return null if no additional actions should be performed
      * */
-    OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBEObjectCommander commander, Object parent, Object copyFrom);
+    OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commander, Object parent, Object copyFrom);
 
     /**
      * Deletes specified object.
@@ -41,6 +41,6 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject> extends DBEObject
      * @param commander
      * @param options delete options. Options are set by delete wizard.
      */
-    void deleteObject(DBEObjectCommander commander, OBJECT_TYPE object, Map<String, Object> options);
+    void deleteObject(DBECommandContext commander, OBJECT_TYPE object, Map<String, Object> options);
 
 }

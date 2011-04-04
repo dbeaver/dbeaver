@@ -5,11 +5,8 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Object commander.

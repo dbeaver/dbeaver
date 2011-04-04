@@ -13,15 +13,14 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.impl.edit.DBEObjectCommanderImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -66,7 +65,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             return false;
         }
         DBEObjectMaker objectMaker = (DBEObjectMaker) objectManager;
-        DBEObjectCommander commander = new DBEObjectCommanderImpl(dbContainer.getObject().getDataSource().getContainer());
+        DBECommandContext commander = new DBECommandContextImpl(dbContainer.getObject().getDataSource().getContainer());
 
         DBSObject result = objectMaker.createNewObject(workbenchWindow, commander, container.getValueObject(), sourceObject);
         if (result == null) {
@@ -129,12 +128,12 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 
     private static class ObjectSaver implements IRunnableWithProgress {
         private final DBNContainer container;
-        private final DBEObjectCommander commander;
+        private final DBECommandContext commander;
         private final DBSObject newObject;
         private final boolean saveObject;
         DBNNode newChild;
 
-        public ObjectSaver(DBNContainer container, DBEObjectCommander commander, DBSObject newObject, boolean saveObject)
+        public ObjectSaver(DBNContainer container, DBECommandContext commander, DBSObject newObject, boolean saveObject)
         {
             this.container = container;
             this.commander = commander;

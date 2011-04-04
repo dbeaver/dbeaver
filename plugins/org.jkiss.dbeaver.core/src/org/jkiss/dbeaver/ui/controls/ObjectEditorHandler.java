@@ -15,10 +15,12 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBEObjectCommander;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -76,7 +78,8 @@ public class ObjectEditorHandler {
         if (dataSource.getInfo().isReadOnlyMetaData()) {
             return false;
         }
-        return getEditorPart().getEditorInput().getObjectManager(DBEObjectManager.class) != null;
+        DBSObject databaseObject = getEditorPart().getEditorInput().getDatabaseObject();
+        return databaseObject != null && DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(databaseObject.getClass(), DBEObjectManager.class) != null;
     }
 
     private IEditorPart getMainEditorPart()
@@ -90,8 +93,8 @@ public class ObjectEditorHandler {
     }
 
     public Composite createEditorControls(Composite panel) {
-        DBEObjectCommander objectCommander = getEditorPart().getEditorInput().getObjectCommander();
-        if (objectCommander != null && isObjectEditable()) {
+        DBECommandContext commandContext = getEditorPart().getEditorInput().getCommandContext();
+        if (commandContext != null && isObjectEditable()) {
             saveChangesButton = new Button(panel, SWT.PUSH);
             saveChangesButton.setText("Save / Preview");
             saveChangesButton.setImage(DBIcon.SAVE_TO_DATABASE.getImage());

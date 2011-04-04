@@ -128,14 +128,14 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         pageControl.createProgressPanel();
 
         commandlistener = new CommandListener();
-        getEditorInput().getObjectCommander().addCommandListener(commandlistener);
+        getEditorInput().getCommandContext().addCommandListener(commandlistener);
     }
 
     @Override
     public void dispose()
     {
         if (commandlistener != null) {
-            getEditorInput().getObjectCommander().removeCommandListener(commandlistener);
+            getEditorInput().getCommandContext().removeCommandListener(commandlistener);
         }
         super.dispose();
     }
