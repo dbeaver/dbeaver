@@ -34,20 +34,7 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
     public void setActivePage(IEditorPart activeEditor) {
         curPage = activeEditor;
 
-        IActionBars actionBars = activeEditor.getEditorSite().getActionBars();
-
-        if (activeEditor instanceof ISearchContextProvider) {
-            ISearchContextProvider provider = (ISearchContextProvider)activeEditor;
-            if (provider.isSearchPossible()) {
-                //IWorkbenchActionDefinitionIds
-                ContextSearchAction action = new ContextSearchAction(provider);
-                action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
-                actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, action);
-            }
-        } else {
-            actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, null);
-        }
-        actionBars.updateActionBars();
+        registerSearchActions(activeEditor);
     }
 
     @Override
@@ -67,6 +54,24 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
     public void init(IActionBars bars)
     {
         super.init(bars);
+    }
+
+    public static void registerSearchActions(IEditorPart activeEditor)
+    {
+        IActionBars actionBars = activeEditor.getEditorSite().getActionBars();
+
+        if (activeEditor instanceof ISearchContextProvider) {
+            ISearchContextProvider provider = (ISearchContextProvider)activeEditor;
+            if (provider.isSearchPossible()) {
+                //IWorkbenchActionDefinitionIds
+                ContextSearchAction action = new ContextSearchAction(provider);
+                action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
+                actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, action);
+            }
+        } else {
+            actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, null);
+        }
+        actionBars.updateActionBars();
     }
 
 }

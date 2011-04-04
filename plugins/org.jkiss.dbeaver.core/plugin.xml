@@ -1301,9 +1301,9 @@
         <editor
                 name="Folder Editor"
                 icon="icons/properties.png"
-                contributorClass="org.jkiss.dbeaver.ui.editors.folder.FolderEditorContributor"
-                class="org.jkiss.dbeaver.ui.editors.folder.FolderEditor"
-                id="org.jkiss.dbeaver.ui.editors.folder.FolderEditor">
+                contributorClass="org.jkiss.dbeaver.ui.editors.entity.FolderEditorContributor"
+                class="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"
+                id="org.jkiss.dbeaver.ui.editors.entity.FolderEditor">
         </editor>
         <editor
                 name="Entity Editor"

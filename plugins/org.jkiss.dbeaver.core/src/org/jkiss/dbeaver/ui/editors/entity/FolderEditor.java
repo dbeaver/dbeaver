@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.folder;
+package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,7 +11,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 /**
  * FolderEditor
  */
-public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> implements INavigatorModelView
+public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> implements INavigatorModelView, ISearchContextProvider
 {
     static final Log log = LogFactory.getLog(FolderEditor.class);
 
@@ -61,4 +61,18 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         });
     }
 
+    public boolean isSearchPossible()
+    {
+        return itemControl.isSearchPossible();
+    }
+
+    public boolean isSearchEnabled()
+    {
+        return itemControl.isSearchEnabled();
+    }
+
+    public void performSearch(SearchType searchType)
+    {
+        itemControl.performSearch(searchType);
+    }
 }

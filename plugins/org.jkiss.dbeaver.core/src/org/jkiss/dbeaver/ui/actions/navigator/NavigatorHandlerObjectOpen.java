@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
-import org.jkiss.dbeaver.ui.editors.folder.FolderEditor;
-import org.jkiss.dbeaver.ui.editors.folder.FolderEditorInput;
+import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
+import org.jkiss.dbeaver.ui.editors.entity.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 
 import java.util.Iterator;
