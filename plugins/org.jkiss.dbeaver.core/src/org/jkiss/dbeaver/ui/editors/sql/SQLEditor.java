@@ -8,7 +8,9 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.IOUtils;
 import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -698,6 +700,15 @@ public class SQLEditor extends SQLEditorBase
 
     public void dispose()
     {
+        IFile fileToDelete = null;
+
+        // If it is close then delete it
+        final IDocument document = getDocument();
+        if (document != null) {
+            if (document.get().trim().isEmpty()) {
+                fileToDelete = getEditorInput().getFile();
+            }
+        }
         closeSession();
 
         IProject project = getEditorInput().getProject();
@@ -719,6 +730,14 @@ public class SQLEditor extends SQLEditorBase
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 
         super.dispose();
+
+        if (fileToDelete != null) {
+            try {
+                fileToDelete.delete(true, new NullProgressMonitor());
+            } catch (CoreException e) {
+                log.error("Can't delete empty script file", e);
+            }
+        }
     }
 
     public void handleDataSourceEvent(final DBPEvent event)

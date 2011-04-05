@@ -94,6 +94,15 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
+    public String getResourceDescription(IResource resource)
+    {
+        if (resource instanceof IFile) {
+            return new SQLEditorInput((IFile)resource).getName();
+        }
+        return super.getResourceDescription(resource);
+    }
+
+    @Override
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
         final IFolder scriptsFolder = getScriptsFolder(project);

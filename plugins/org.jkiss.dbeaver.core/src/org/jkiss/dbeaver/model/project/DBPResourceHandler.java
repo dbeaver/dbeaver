@@ -37,4 +37,6 @@ public interface DBPResourceHandler {
     void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException;
 
     String getTypeName(IResource resource);
+
+    String getResourceDescription(IResource resource);
 }

@@ -74,7 +74,7 @@ public class DBNResource extends DBNNode
 
     public String getNodeDescription()
     {
-        return getNodeName();
+        return handler.getResourceDescription(getResource());
     }
 
     @Override
