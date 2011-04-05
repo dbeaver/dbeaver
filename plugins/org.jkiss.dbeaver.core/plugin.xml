@@ -918,7 +918,7 @@
             <separator name="session" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.commit"/>
             <command commandId="org.jkiss.dbeaver.core.rollback"/>
-            <menu label="Transaction mode" commandId="org.jkiss.dbeaver.core.txn.autocommit">
+            <menu label="Transaction mode">
                 <dynamic id="org.jkiss.dbeaver.core.menu.txn.isolation" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
             </menu>
         </menuContribution>

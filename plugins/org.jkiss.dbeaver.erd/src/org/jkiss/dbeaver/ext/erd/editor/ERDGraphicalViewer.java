@@ -9,7 +9,14 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.EditPart;
+import org.eclipse.gef.GraphicalViewer;
+import org.eclipse.gef.Tool;
+import org.eclipse.gef.palette.PaletteContainer;
+import org.eclipse.gef.palette.PaletteDrawer;
+import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef.tools.SelectionTool;
 import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -25,13 +32,15 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.ui.DBIcon;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * GraphicalViewer which also knows about ValidationMessageHandler to output
@@ -44,6 +53,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     private ERDEditorPart editor;
 	private ValidationMessageHandler messageHandler;
     private IThemeManager themeManager;
+    private boolean loadContents = false;
 
     private static class DataSourceInfo {
         int tableCount = 0;
@@ -150,17 +160,66 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     @Override
     public void setContents(EditPart editpart)
     {
-        super.setContents(editpart);
+        loadContents = true;
+        try {
+            super.setContents(editpart);
+            // Reset palette contents
+            if (editpart instanceof DiagramPart) {
+                List<DBSTable> tables = new ArrayList<DBSTable>();
+                for (Object child : editpart.getChildren()) {
+                    if (child instanceof EntityPart) {
+                        tables.add(((EntityPart) child).getTable().getObject());
+                    }
+                }
+                Collections.sort(tables, new Comparator<DBSTable>() {
+                    public int compare(DBSTable o1, DBSTable o2)
+                    {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                });
+                List<ToolEntryTable> tools = new ArrayList<ToolEntryTable>(tables.size());
+                for (DBSTable table : tables) {
+                    tools.add(new ToolEntryTable(table));
+                }
+                editor.getPaletteContents().setChildren(tools);
+            }
+        }
+        finally {
+            loadContents = false;
+        }
     }
 
     @Override
     public void setContents(Object contents)
     {
-        super.setContents(contents);
+        loadContents = true;
+        try {
+            super.setContents(contents);
+        }
+        finally {
+            loadContents = false;
+        }
     }
 
     public void handleTableActivate(DBSTable table)
     {
+        if (!loadContents) {
+            final PaletteContainer drawer = editor.getPaletteContents();
+            // Add entry (with right order)
+            List children = drawer.getChildren();
+            int index = 0;
+            for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+                Object child = children.get(i);
+                if (child instanceof ToolEntryTable) {
+                    if (((ToolEntryTable) child).table.getName().compareTo(table.getName()) > 0) {
+                        index = i;
+                        break;
+                    }
+                }
+            }
+            drawer.add(index, new ToolEntryTable(table));
+        }
+
         if (table.getDataSource() != null) {
             DBSDataSourceContainer container = table.getDataSource().getContainer();
             if (container != null) {
@@ -179,6 +238,13 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 
     public void handleTableDeactivate(DBSTable table)
     {
+        final PaletteContainer drawer = editor.getPaletteContents();
+        for (Object entry : drawer.getChildren()) {
+            if (entry instanceof ToolEntryTable && ((ToolEntryTable)entry).table == table) {
+                drawer.remove((ToolEntryTable)entry);
+                break;
+            }
+        }
         if (table.getDataSource() != null) {
             DBSDataSourceContainer container = table.getDataSource().getContainer();
             if (container != null) {
@@ -230,6 +296,48 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                     editor.getSite().getWorkbenchWindow().getActivePage().closeEditor(editor, false);
                 }
             });
+        }
+    }
+
+    private class ToolEntryTable extends ToolEntry {
+        private final DBSTable table;
+        public ToolEntryTable(DBSTable table)
+        {
+            super(table.getName(), table.getDescription(), DBIcon.TREE_TABLE.getImageDescriptor(), null);
+            this.setUserModificationPermission(PERMISSION_NO_MODIFICATION);
+            this.table = table;
+        }
+        public Tool createTool()
+        {
+            return new ToolSelectTable(table);
+        }
+    }
+
+    public static class ToolSelectTable extends SelectionTool {
+        private final DBSTable table;
+
+        public ToolSelectTable(DBSTable table)
+        {
+            this.table = table;
+        }
+
+        @Override
+        public void activate()
+        {
+            //ERDGraphicalViewer.this.reveal(part);
+            DefaultEditDomain editDomain = (DefaultEditDomain) getDomain();
+            final ERDEditorPart editorPart = (ERDEditorPart)editDomain.getEditorPart();
+            final GraphicalViewer viewer = editorPart.getViewer();
+            for (Object child : editorPart.getDiagramPart().getChildren()) {
+                if (child instanceof EntityPart) {
+                    if (((EntityPart)child).getTable().getObject() == table) {
+                        viewer.reveal((EditPart) child);
+                        viewer.select((EditPart) child);
+                        break;
+                    }
+                }
+            }
+            super.activate();
         }
     }
 

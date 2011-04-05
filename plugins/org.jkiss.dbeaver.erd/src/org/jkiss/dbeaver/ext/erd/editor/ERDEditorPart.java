@@ -68,7 +68,6 @@ import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
-import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
@@ -138,6 +137,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected LoadingJob<EntityDiagram> diagramLoadingJob;
     private IPropertyChangeListener configPropertyListener;
     private PaletteRoot paletteRoot;
+    private PaletteContainer paletteContents;
 
     /**
      * No-arg constructor
@@ -305,6 +305,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public DiagramPart getDiagramPart()
     {
         return rootPart == null ? null : (DiagramPart) rootPart.getContents();
+    }
+
+    public PaletteContainer getPaletteContents()
+    {
+        return paletteContents;
     }
 
     /**
@@ -539,51 +544,62 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         // create root
         PaletteRoot paletteRoot = new PaletteRoot();
-        paletteRoot.setLabel("Tools");
+        paletteRoot.setLabel("Entity Diagram");
 
-        // a group of default control tools
-        PaletteGroup controls = new PaletteGroup("Controls");
+        {
+            // a group of default control tools
+            PaletteDrawer controls = new PaletteDrawer("Tools", DBIcon.CONFIGURATION.getImageDescriptor());
 
-        paletteRoot.add(controls);
+            paletteRoot.add(controls);
 
-        // the selection tool
-        ToolEntry selectionTool = new SelectionToolEntry();
-        controls.add(selectionTool);
+            // the selection tool
+            ToolEntry selectionTool = new SelectionToolEntry();
+            controls.add(selectionTool);
 
-        // use selection tool as default entry
-        paletteRoot.setDefaultEntry(selectionTool);
+            // use selection tool as default entry
+            paletteRoot.setDefaultEntry(selectionTool);
 
-        // the marquee selection tool
-        controls.add(new MarqueeToolEntry());
+            // the marquee selection tool
+            controls.add(new MarqueeToolEntry());
 
-        //controls.add(new PanningSelectionToolEntry());
 
-        // separator
-        PaletteSeparator separator = new PaletteSeparator("tools");
-        separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);
+            if (!isReadOnly()) {
+                // separator
+                PaletteSeparator separator = new PaletteSeparator("tools");
+                separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);
+                controls.add(separator);
 
-        if (!isReadOnly()) {
-            controls.add(separator);
+                final ImageDescriptor connectImage = Activator.getImageDescriptor("icons/connect.png");
+                controls.add(new ConnectionCreationToolEntry("Connection", "Create Connection", null, connectImage, connectImage));
 
-            final ImageDescriptor connectImage = Activator.getImageDescriptor("icons/connect.png");
-            controls.add(new ConnectionCreationToolEntry("Connection", "Create Connection", null, connectImage, connectImage));
+                final ImageDescriptor noteImage = Activator.getImageDescriptor("icons/note.png");
+                controls.add(new CreationToolEntry(
+                    "Note",
+                    "Create Note",
+                    new CreationFactory() {
+                        public Object getNewObject()
+                        {
+                            return new ERDNote("Note");
+                        }
+                        public Object getObjectType()
+                        {
+                            return RequestConstants.REQ_CREATE;
+                        }
+                    },
+                    noteImage,
+                    noteImage));
+            }
+        }
 
-            final ImageDescriptor noteImage = Activator.getImageDescriptor("icons/note.png");
-            controls.add(new CreationToolEntry(
-                "Note",
-                "Create Note",
-                new CreationFactory() {
-                    public Object getNewObject()
-                    {
-                        return new ERDNote("Note");
-                    }
-                    public Object getObjectType()
-                    {
-                        return RequestConstants.REQ_CREATE;
-                    }
-                },
-                noteImage,
-                noteImage));
+        {
+            // Contents
+            paletteContents = new PaletteDrawer("Contents", DBIcon.TREE_DATABASE.getImageDescriptor());
+            //List<PaletteEntry> entries = new ArrayList<PaletteEntry>();
+            //paletteContents.addAll(entries);
+
+            paletteRoot.add(paletteContents);
+        }
+
 /*
             PaletteDrawer drawer = new PaletteDrawer("New Component",
                 Activator.getImageDescriptor("icons/connection.gif"));
@@ -607,7 +623,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
             paletteRoot.add(drawer);
 */
-        }
 
         return paletteRoot;
 
