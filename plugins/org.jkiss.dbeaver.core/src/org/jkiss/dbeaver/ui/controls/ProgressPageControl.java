@@ -194,6 +194,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (progressBar != null) {
             return;
         }
+        hideControls();
         GridLayout layout = new GridLayout(2, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -232,6 +233,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (searchText != null) {
             return;
         }
+        hideControls();
         GridLayout layout = new GridLayout(2, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
