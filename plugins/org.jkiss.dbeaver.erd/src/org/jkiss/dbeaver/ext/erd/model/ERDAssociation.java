@@ -109,4 +109,8 @@ public class ERDAssociation extends ERDObject<DBSForeignKey>
         return getObject() + " [" + primaryKeyTable + "->" + foreignKeyTable + "]";
     }
 
+    public String getName()
+    {
+        return getObject().getName();
+    }
 }

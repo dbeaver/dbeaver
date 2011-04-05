@@ -34,7 +34,6 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -47,7 +46,10 @@ import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.model.IWorkbenchAdapter;
@@ -66,26 +68,30 @@ import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
+import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
+import org.jkiss.dbeaver.ext.ui.ISearchExecutor;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.ImageUtils;
 
 import java.io.FileOutputStream;
 import java.util.*;
-import java.util.List;
 
 /**
  * Editor implementation based on the the example editor skeleton that is built in <i>Building
  * an editor </i> in chapter <i>Introduction to GEF </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
-    implements CommandStackListener, DBPDataSourceUser
+    implements CommandStackListener, DBPDataSourceUser, ISearchContextProvider
 {
     static final Log log = LogFactory.getLog(ERDEditorPart.class);
 
@@ -135,13 +141,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * No-arg constructor
      */
-    public ERDEditorPart()
+    protected ERDEditorPart()
     {
-    }
-
-    public ProgressControl getProgressControl()
-    {
-        return progressControl;
     }
 
     /**
@@ -623,6 +624,136 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
+    public void showPreferences()
+    {
+        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
+            getSite().getShell(),
+            this,
+            ERDPreferencePage.PAGE_ID,
+            null,//new String[]{pageId},
+            null);
+        if (propDialog != null) {
+            propDialog.open();
+        }
+    }
+
+    public void saveDiagramAsImage()
+    {
+        final Shell shell = getSite().getShell();
+        FileDialog saveDialog = new FileDialog(shell, SWT.SAVE);
+        saveDialog.setFilterExtensions(new String[]{"*.png", "*.gif", "*.jpg", "*.bmp"});
+        saveDialog.setFilterNames(new String[]{
+            "PNG format (*.png)",
+            "GIF format (*.gif)",
+            "JPEG format (*.jpg)",
+            "Bitmap format (*.bmp)"});
+
+        String filePath = saveDialog.open();
+        if (filePath == null || filePath.trim().length() == 0) {
+            return;
+        }
+
+        int imageType = SWT.IMAGE_BMP;
+        if (filePath.toLowerCase().endsWith(".jpg")) {
+            imageType = SWT.IMAGE_JPEG;
+        } else if (filePath.toLowerCase().endsWith(".png")) {
+            imageType = SWT.IMAGE_PNG;
+        } else if (filePath.toLowerCase().endsWith(".gif")) {
+            imageType = SWT.IMAGE_GIF;
+        }
+
+        IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
+        Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
+        try {
+            FileOutputStream fos = new FileOutputStream(filePath);
+            try {
+                Rectangle r = figure.getBounds();
+                GC gc = null;
+                Graphics g = null;
+                try {
+                    Image image = new Image(null, contentBounds.x * 2 + contentBounds.width, contentBounds.y * 2 + contentBounds.height);
+                    try {
+                        gc = new GC(image);
+                        gc.setClipping(contentBounds.x, contentBounds.y, contentBounds.width, contentBounds.height);
+                        g = new SWTGraphics(gc);
+                        g.translate(r.x * -1, r.y * -1);
+                        figure.paint(g);
+                        ImageLoader imageLoader = new ImageLoader();
+                        imageLoader.data = new ImageData[1];
+                        if (imageType != SWT.IMAGE_JPEG) {
+                            // Convert to 8bit color
+                            imageLoader.data[0] = ImageUtils.makeWebImageData(image);
+                        } else {
+                            // Use maximum colors for JPEG
+                            imageLoader.data[0] = image.getImageData();
+                        }
+                        imageLoader.save(fos, imageType);
+                    } finally {
+                        UIUtils.dispose(image);
+                    }
+                } finally {
+                    if (g != null) {
+                        g.dispose();
+                    }
+                    UIUtils.dispose(gc);
+                }
+
+                fos.flush();
+            } finally {
+                ContentUtils.close(fos);
+            }
+            Program.launch(filePath);
+            //UIUtils.showMessageBox(shell, "Save ERD", "Diagram has been exported to " + filePath, SWT.ICON_INFORMATION);
+        } catch (Exception e) {
+            UIUtils.showErrorDialog(getSite().getShell(), "Save ERD as image", null, e);
+        }
+
+    }
+
+    public void printDiagram()
+    {
+        GraphicalViewer viewer = getGraphicalViewer();
+
+        PrintDialog dialog = new PrintDialog(viewer.getControl().getShell(), SWT.NULL);
+        PrinterData data = dialog.open();
+
+        if (data != null) {
+            IFigure rootFigure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
+            //EntityDiagramFigure diagramFigure = findFigure(rootFigure, EntityDiagramFigure.class);
+            if (rootFigure != null) {
+                PrintFigureOperation printOp = new PrintFigureOperation(new Printer(data), rootFigure);
+
+                // Set print preferences
+                IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+                printOp.setPrintMode(store.getInt(ERDConstants.PREF_PRINT_PAGE_MODE));
+                printOp.setPrintMargin(new Insets(
+                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_TOP),
+                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_LEFT),
+                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_BOTTOM),
+                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_RIGHT)
+                ));
+                // Run print
+                printOp.run("Print ER diagram");
+            }
+        }
+        //new PrintAction(this).run();
+    }
+
+    public boolean isSearchPossible()
+    {
+        return progressControl != null && progressControl.isSearchPossible();
+    }
+
+    public boolean isSearchEnabled()
+    {
+        return progressControl != null && progressControl.isSearchEnabled();
+    }
+
+    public boolean performSearch(SearchType searchType)
+    {
+        return progressControl != null ? progressControl.performSearch(searchType) : false;
+    }
+
     protected abstract void loadDiagram();
 
     private class ConfigPropertyListener implements IPropertyChangeListener {
@@ -643,12 +774,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     protected class ProgressControl extends ProgressPageControl {
 
+        private Searcher searcher;
         private ToolBarManager toolBarManager;
         private ZoomComboContributionItem zoomCombo;
 
         private ProgressControl(Composite parent, int style)
         {
             super(parent, style);
+            searcher = new Searcher();
         }
 
         @Override
@@ -772,6 +905,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             return infoGroup;
         }
 
+        @Override
+        protected ISearchExecutor getSearchRunner()
+        {
+            return searcher;
+        }
+
         private class LoadVisualizer extends ProgressVisualizer<EntityDiagram> {
             @Override
             public void completeLoading(EntityDiagram entityDiagram)
@@ -805,119 +944,36 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     }
 
-    public void showPreferences()
-    {
-        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
-            getSite().getShell(),
-            this,
-            ERDPreferencePage.PAGE_ID,
-            null,//new String[]{pageId},
-            null);
-        if (propDialog != null) {
-            propDialog.open();
-        }
-    }
+    private class Searcher extends ObjectSearcher<DBPNamedObject> {
 
-    public void saveDiagramAsImage()
-    {
-        final Shell shell = getSite().getShell();
-        FileDialog saveDialog = new FileDialog(shell, SWT.SAVE);
-        saveDialog.setFilterExtensions(new String[]{"*.png", "*.gif", "*.jpg", "*.bmp"});
-        saveDialog.setFilterNames(new String[]{
-            "PNG format (*.png)",
-            "GIF format (*.gif)",
-            "JPEG format (*.jpg)",
-            "Bitmap format (*.bmp)"});
-
-        String filePath = saveDialog.open();
-        if (filePath == null || filePath.trim().length() == 0) {
-            return;
+        protected void setInfo(String message)
+        {
+            progressControl.setInfo(message);
         }
 
-        int imageType = SWT.IMAGE_BMP;
-        if (filePath.toLowerCase().endsWith(".jpg")) {
-            imageType = SWT.IMAGE_JPEG;
-        } else if (filePath.toLowerCase().endsWith(".png")) {
-            imageType = SWT.IMAGE_PNG;
-        } else if (filePath.toLowerCase().endsWith(".gif")) {
-            imageType = SWT.IMAGE_GIF;
+        protected Collection<DBPNamedObject> getContent()
+        {
+            return getDiagramPart().getChildren();
         }
 
-        IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
-        Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
-        try {
-            FileOutputStream fos = new FileOutputStream(filePath);
-            try {
-                Rectangle r = figure.getBounds();
-                GC gc = null;
-                Graphics g = null;
-                try {
-                    Image image = new Image(null, contentBounds.x * 2 + contentBounds.width, contentBounds.y * 2 + contentBounds.height);
-                    try {
-                        gc = new GC(image);
-                        gc.setClipping(contentBounds.x, contentBounds.y, contentBounds.width, contentBounds.height);
-                        g = new SWTGraphics(gc);
-                        g.translate(r.x * -1, r.y * -1);
-                        figure.paint(g);
-                        ImageLoader imageLoader = new ImageLoader();
-                        imageLoader.data = new ImageData[1];
-                        if (imageType != SWT.IMAGE_JPEG) {
-                            // Convert to 8bit color
-                            imageLoader.data[0] = ImageUtils.makeWebImageData(image);
-                        } else {
-                            // Use maximum colors for JPEG
-                            imageLoader.data[0] = image.getImageData();
-                        }
-                        imageLoader.save(fos, imageType);
-                    } finally {
-                        UIUtils.dispose(image);
-                    }
-                } finally {
-                    if (g != null) {
-                        g.dispose();
-                    }
-                    UIUtils.dispose(gc);
-                }
-
-                fos.flush();
-            } finally {
-                ContentUtils.close(fos);
-            }
-            Program.launch(filePath);
-            //UIUtils.showMessageBox(shell, "Save ERD", "Diagram has been exported to " + filePath, SWT.ICON_INFORMATION);
-        } catch (Exception e) {
-            UIUtils.showErrorDialog(getSite().getShell(), "Save ERD as image", null, e);
-        }
-
-    }
-
-    public void printDiagram()
-    {
-        GraphicalViewer viewer = getGraphicalViewer();
-
-        PrintDialog dialog = new PrintDialog(viewer.getControl().getShell(), SWT.NULL);
-        PrinterData data = dialog.open();
-
-        if (data != null) {
-            IFigure rootFigure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
-            //EntityDiagramFigure diagramFigure = findFigure(rootFigure, EntityDiagramFigure.class);
-            if (rootFigure != null) {
-                PrintFigureOperation printOp = new PrintFigureOperation(new Printer(data), rootFigure);
-
-                // Set print preferences
-                IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-                printOp.setPrintMode(store.getInt(ERDConstants.PREF_PRINT_PAGE_MODE));
-                printOp.setPrintMargin(new Insets(
-                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_TOP),
-                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_LEFT),
-                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_BOTTOM),
-                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_RIGHT)
-                ));
-                // Run print
-                printOp.run("Print ER diagram");
+        protected void selectObject(DBPNamedObject object)
+        {
+            if (object == null) {
+                getGraphicalViewer().deselectAll();
+            } else {
+                getGraphicalViewer().select((EditPart)object);
             }
         }
-        //new PrintAction(this).run();
+
+        protected void updateObject(DBPNamedObject object)
+        {
+        }
+
+        protected void revealObject(DBPNamedObject object)
+        {
+            getGraphicalViewer().reveal((EditPart)object);
+        }
     }
+
 
 }

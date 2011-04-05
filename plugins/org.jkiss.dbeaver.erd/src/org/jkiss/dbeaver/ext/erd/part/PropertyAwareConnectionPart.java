@@ -10,6 +10,7 @@ package org.jkiss.dbeaver.ext.erd.part;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -19,8 +20,12 @@ import java.beans.PropertyChangeListener;
  * All our ConnectionEditPart are subclasses of this
  * @author Serge Rieder
  */
-public abstract class PropertyAwareConnectionPart extends AbstractConnectionEditPart implements PropertyChangeListener
+public abstract class PropertyAwareConnectionPart extends AbstractConnectionEditPart implements PropertyChangeListener, DBPNamedObject
 {
+    public String getName()
+    {
+        return ((ERDObject)getModel()).getName();
+    }
 
     protected boolean isEditEnabled()
     {

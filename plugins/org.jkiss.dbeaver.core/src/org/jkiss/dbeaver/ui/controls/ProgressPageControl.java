@@ -26,13 +26,12 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.ext.ui.ISearchTextRunner;
+import org.jkiss.dbeaver.ext.ui.ISearchExecutor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.util.ArrayList;
@@ -319,7 +318,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         return false;
     }
 
-    protected ISearchTextRunner getSearchRunner()
+    protected ISearchExecutor getSearchRunner()
     {
         if (childPageControl != null) {
             return childPageControl.getSearchRunner();
@@ -346,9 +345,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (!CommonUtils.isEmpty(getProgressControl().curSearchText)) {
             int options = 0;
             if (searchType == SearchType.PREVIOUS) {
-                options |= ISearchTextRunner.SEARCH_PREVIOUS;
+                options |= ISearchExecutor.SEARCH_PREVIOUS;
             } else {
-                options |= ISearchTextRunner.SEARCH_NEXT;
+                options |= ISearchExecutor.SEARCH_NEXT;
             }
             boolean success = getSearchRunner().performSearch(getProgressControl().curSearchText, options);
             getProgressControl().searchText.setBackground(success ? null : searchNotFoundColor);

@@ -275,4 +275,9 @@ public class ERDTable extends ERDObject<DBSTable>
         }
         return logicalPK;
     }
+
+    public String getName()
+    {
+        return getObject().getName();
+    }
 }

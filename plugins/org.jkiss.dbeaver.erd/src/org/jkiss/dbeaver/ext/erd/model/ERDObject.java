@@ -14,6 +14,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -29,7 +30,7 @@ import java.lang.reflect.InvocationTargetException;
  * Provides base class support for model objects to participate in event handling framework
  * @author Serge Rieder
  */
-public abstract class ERDObject<OBJECT> implements IPropertySource, IAdaptable
+public abstract class ERDObject<OBJECT> implements IPropertySource, IAdaptable, DBPNamedObject
 {
     static final Log log = LogFactory.getLog(ERDObject.class);
 

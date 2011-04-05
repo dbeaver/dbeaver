@@ -279,9 +279,9 @@ public class EntityDiagram extends ERDObject<DBSObject>
         }
     }
 
-    public List<?> getContents()
+    public List<ERDObject> getContents()
     {
-        List<Object> children = new ArrayList<Object>(tables.size() + notes.size());
+        List<ERDObject> children = new ArrayList<ERDObject>(tables.size() + notes.size());
         children.addAll(tables);
         children.addAll(notes);
         return children;

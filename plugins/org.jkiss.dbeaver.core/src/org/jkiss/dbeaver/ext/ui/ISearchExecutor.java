@@ -5,9 +5,9 @@
 package org.jkiss.dbeaver.ext.ui;
 
 /**
- * ISearchTextRunner
+ * ISearchExecutor
  */
-public interface ISearchTextRunner
+public interface ISearchExecutor
 {
     public static final int SEARCH_CASE_SENSITIVE   = 1;
     public static final int SEARCH_NEXT = 2;

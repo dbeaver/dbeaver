@@ -51,4 +51,9 @@ public class ERDTableColumn extends ERDObject<DBSTableColumn>
     public void setInForeignKey(boolean inForeignKey) {
         this.inForeignKey = inForeignKey;
     }
+
+    public String getName()
+    {
+        return getObject().getName();
+    }
 }
