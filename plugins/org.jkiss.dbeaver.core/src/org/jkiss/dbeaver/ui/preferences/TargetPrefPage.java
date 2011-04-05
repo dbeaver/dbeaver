@@ -23,7 +23,9 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -96,6 +98,11 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
                 DBNNode dbNode = dbInput.getTreeNode();
                 if (dbNode instanceof DBNDataSource) {
                     containerNode = (DBNDataSource)dbNode;
+                }
+            } else if (element instanceof IDataSourceProvider) {
+                DBPDataSource dataSource = ((IDataSourceProvider) element).getDataSource();
+                if (dataSource != null) {
+                    containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(dataSource.getContainer());
                 }
             }
         }

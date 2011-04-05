@@ -1265,6 +1265,20 @@
         <!-- Text editors -->
         <key commandId="org.jkiss.dbeaver.ui.editors.text.content.format" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+F"/>
 
+        <key commandId="org.eclipse.ui.file.refresh" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F5"/>
+
+        <key commandId="org.eclipse.ui.newWizard" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+N"/>
+        <key commandId="org.eclipse.ui.file.save" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+S"/>
+        <key commandId="org.eclipse.ui.file.saveAs" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+S"/>
+        <key commandId="org.eclipse.ui.file.close" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+F4"/>
+        <key commandId="org.eclipse.ui.file.print" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+P"/>
+        <key commandId="org.eclipse.ui.edit.rename" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F2"/>
+        <key commandId="org.eclipse.ui.file.properties" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+ENTER"/>
+<!--
+        <command commandId="org.eclipse.ui.file.import"/>
+        <command commandId="org.eclipse.ui.file.export"/>
+-->
+
         <key commandId="org.eclipse.ui.edit.copy" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+C"/>
         <key commandId="org.eclipse.ui.edit.paste" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+V"/>
         <key commandId="org.eclipse.ui.edit.cut" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+X"/>
@@ -1371,7 +1385,7 @@
            <enabledWhen>
                <or>
                   <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                  <instanceof value="org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput"/>
+                  <instanceof value="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
                </or>
            </enabledWhen>
         </page>
@@ -1379,7 +1393,7 @@
            <enabledWhen>
               <or>
                  <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                 <instanceof value="org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput"/>
+                 <instanceof value="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
                  <instanceof value="org.jkiss.dbeaver.registry.DataFormatterRegistry"/>
               </or>
            </enabledWhen>
@@ -1388,7 +1402,7 @@
            <enabledWhen>
                <or>
                 <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                <instanceof value="org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput"/>
+                <instanceof value="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
                </or>
            </enabledWhen>
         </page>
