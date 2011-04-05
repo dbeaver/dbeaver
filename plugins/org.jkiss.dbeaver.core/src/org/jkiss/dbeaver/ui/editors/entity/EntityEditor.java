@@ -108,6 +108,24 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         return commandContext != null && commandContext.isDirty();
     }
 
+    public boolean isSaveAsAllowed()
+    {
+        IEditorPart activeEditor = getActiveEditor();
+        if (activeEditor != null && activeEditor.isSaveAsAllowed()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void doSaveAs()
+    {
+        IEditorPart activeEditor = getActiveEditor();
+        if (activeEditor != null && activeEditor.isSaveAsAllowed()) {
+            activeEditor.doSaveAs();
+        }
+    }
+
     /**
      * Saves data in all nested editors
      * @param monitor progress monitor
@@ -329,6 +347,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 break;
             }
         }
+        // Fire dirty flag refresh to re-enable Save-As command (which is enabled only for certain pages)
+        firePropertyChange(IEditorPart.PROP_DIRTY);
     }
 
     public int promptToSaveOnClose()
