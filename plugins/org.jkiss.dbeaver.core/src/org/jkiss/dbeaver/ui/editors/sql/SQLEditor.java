@@ -105,6 +105,9 @@ public class SQLEditor extends SQLEditorBase
     private SQLQueryJob curJob;
     private boolean curJobRunning;
     private DataContainer dataContainer;
+    private PartListener partListener;
+    // Editor close flag. Set to true if editor closed by some user action (except workbench close)
+    private boolean editorClosed = false;
 
     private static Image imgDataGrid;
     private static Image imgExplainPlan;
@@ -122,6 +125,7 @@ public class SQLEditor extends SQLEditorBase
         super();
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
         dataContainer = new DataContainer();
+        partListener = new PartListener();
     }
 
     public DBPDataSource getDataSource()
@@ -287,6 +291,8 @@ public class SQLEditor extends SQLEditorBase
                 dataSourceRegistry.addDataSourceListener(this);
             }
         }
+
+        site.getPage().addPartListener(partListener);
     }
 
     public void resourceChanged(final IResourceChangeEvent event)
@@ -700,13 +706,16 @@ public class SQLEditor extends SQLEditorBase
 
     public void dispose()
     {
+        getSite().getPage().removePartListener(partListener);
         IFile fileToDelete = null;
 
-        // If it is close then delete it
-        final IDocument document = getDocument();
-        if (document != null) {
-            if (document.get().trim().isEmpty()) {
-                fileToDelete = getEditorInput().getFile();
+        if (editorClosed) {
+            // If it is close then delete it
+            final IDocument document = getDocument();
+            if (document != null) {
+                if (document.get().trim().isEmpty()) {
+                    fileToDelete = getEditorInput().getFile();
+                }
             }
         }
         closeSession();
@@ -929,4 +938,32 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
+    private class PartListener implements IPartListener {
+        public void partActivated(IWorkbenchPart part)
+        {
+
+        }
+
+        public void partBroughtToTop(IWorkbenchPart part)
+        {
+
+        }
+
+        public void partClosed(IWorkbenchPart part)
+        {
+            if (part == SQLEditor.this) {
+                editorClosed = true;
+            }
+        }
+
+        public void partDeactivated(IWorkbenchPart part)
+        {
+
+        }
+
+        public void partOpened(IWorkbenchPart part)
+        {
+
+        }
+    }
 }

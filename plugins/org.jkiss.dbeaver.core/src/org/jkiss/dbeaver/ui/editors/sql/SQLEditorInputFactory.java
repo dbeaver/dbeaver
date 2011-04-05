@@ -6,10 +6,14 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
+
+import java.io.ByteArrayInputStream;
 
 public class SQLEditorInputFactory implements IElementFactory
 {
@@ -37,6 +41,13 @@ public class SQLEditorInputFactory implements IElementFactory
         // to a resource that does not exist in workspace
         IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(fileName));
         if (file != null) {
+            if (!file.exists()) {
+                try {
+                    file.create(new ByteArrayInputStream(new byte[0]), true, new NullProgressMonitor());
+                } catch (CoreException e) {
+                    return null;
+                }
+            }
 /*
             DataSourceDescriptor dataSource = null;
             DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject());
