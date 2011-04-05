@@ -27,7 +27,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Combo commitTypeCombo;
     private Combo errorHandlingCombo;
     private Spinner commitLinesText;
-    private Button fetchResultSets;
+    private Button fetchResultSetsCheck;
+    private Button autoFoldersCheck;
 
     public PrefPageSQLEditor()
     {
@@ -42,7 +43,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(PrefConstants.SCRIPT_COMMIT_TYPE) ||
             store.contains(PrefConstants.SCRIPT_ERROR_HANDLING) ||
             store.contains(PrefConstants.SCRIPT_COMMIT_LINES) ||
-            store.contains(PrefConstants.SCRIPT_FETCH_RESULT_SETS)
+            store.contains(PrefConstants.SCRIPT_FETCH_RESULT_SETS) ||
+            store.contains(PrefConstants.SCRIPT_AUTO_FOLDERS)
         ;
     }
 
@@ -57,10 +59,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         // General settings
         {
-            Group commonGroup = new Group(composite, SWT.NONE);
-            commonGroup.setText("Common");
-            commonGroup.setLayout(new GridLayout(2, false));
-
+            Composite commonGroup = UIUtils.createControlGroup(composite, "Common", 2, SWT.NONE, 0);
             {
                 UIUtils.createControlLabel(commonGroup, "SQL statement timeout");
 
@@ -75,9 +74,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         // Scripts
         {
-            Group scriptsGroup = new Group(composite, SWT.NONE);
-            scriptsGroup.setText("Scripts");
-            scriptsGroup.setLayout(new GridLayout(2, false));
+            Composite scriptsGroup = UIUtils.createControlGroup(composite, "Scripts", 2, SWT.NONE, 0);
 
             {
                 UIUtils.createControlLabel(scriptsGroup, "Commit type");
@@ -108,9 +105,15 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 errorHandlingCombo.add("Ignore", SQLScriptErrorHandling.IGNORE.ordinal());
             }
 
-            fetchResultSets = UIUtils.createLabelCheckbox(scriptsGroup, "Fetch resultsets", false);
+            fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, "Fetch resultsets", false);
         }
 
+        // Scripts
+        {
+            Composite scriptsGroup = UIUtils.createControlGroup(composite, "Resources", 2, SWT.NONE, 0);
+
+            autoFoldersCheck = UIUtils.createLabelCheckbox(scriptsGroup, "Put new scripts in folders", false);
+        }
         return composite;
     }
 
@@ -122,7 +125,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(PrefConstants.SCRIPT_COMMIT_TYPE)).ordinal());
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(PrefConstants.SCRIPT_ERROR_HANDLING)).ordinal());
             commitLinesText.setSelection(store.getInt(PrefConstants.SCRIPT_COMMIT_LINES));
-            fetchResultSets.setSelection(store.getBoolean(PrefConstants.SCRIPT_FETCH_RESULT_SETS));
+            fetchResultSetsCheck.setSelection(store.getBoolean(PrefConstants.SCRIPT_FETCH_RESULT_SETS));
+            autoFoldersCheck.setSelection(store.getBoolean(PrefConstants.SCRIPT_AUTO_FOLDERS));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -136,7 +140,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.fromOrdinal(commitTypeCombo.getSelectionIndex()).name());
             store.setValue(PrefConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
             store.setValue(PrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.fromOrdinal(errorHandlingCombo.getSelectionIndex()).name());
-            store.setValue(PrefConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSets.getSelection());
+            store.setValue(PrefConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
+            store.setValue(PrefConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -151,6 +156,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(PrefConstants.SCRIPT_COMMIT_LINES);
         store.setToDefault(PrefConstants.SCRIPT_ERROR_HANDLING);
         store.setToDefault(PrefConstants.SCRIPT_FETCH_RESULT_SETS);
+        store.setToDefault(PrefConstants.SCRIPT_AUTO_FOLDERS);
     }
 
     public void applyData(Object data)

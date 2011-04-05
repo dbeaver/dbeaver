@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.ByteArrayInputStream;
@@ -46,7 +47,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         IFolder scriptsFolder = folder;
         if (scriptsFolder == null) {
             scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(project);
-            if (dataSourceContainer != null) {
+            if (dataSourceContainer != null && dataSourceContainer.getPreferenceStore().getBoolean(PrefConstants.SCRIPT_AUTO_FOLDERS)) {
                 IFolder dbFolder = scriptsFolder.getFolder(CommonUtils.escapeFileName(dataSourceContainer.getName()));
                 if (dbFolder != null) {
                     if (!dbFolder.exists()) {

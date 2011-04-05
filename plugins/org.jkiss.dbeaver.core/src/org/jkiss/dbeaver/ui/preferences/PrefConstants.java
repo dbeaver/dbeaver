@@ -16,6 +16,7 @@ public final class PrefConstants
     public static final String SCRIPT_COMMIT_LINES = "script.commit.lines";
     public static final String SCRIPT_ERROR_HANDLING = "script.error.handling";
     public static final String SCRIPT_FETCH_RESULT_SETS = "script.fetch.resultset";
+    public static final String SCRIPT_AUTO_FOLDERS = "script.auto.folders";
 
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows";
     public static final String STATEMENT_TIMEOUT = "statement.timeout";
