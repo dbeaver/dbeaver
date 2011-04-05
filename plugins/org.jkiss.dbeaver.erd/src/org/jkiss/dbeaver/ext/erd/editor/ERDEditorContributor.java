@@ -4,15 +4,14 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.eclipse.gef.ui.actions.SaveAction;
 import org.eclipse.jface.action.ICoolBarManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.EditorActionBarContributor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditorContributor;
 
 /**
  * SQL Editor contributor
@@ -54,6 +53,7 @@ public class ERDEditorContributor extends EditorActionBarContributor
 
 
         }
+        EntityEditorContributor.registerSearchActions(activeEditorPart);
     }
 
     public void init(IActionBars bars)

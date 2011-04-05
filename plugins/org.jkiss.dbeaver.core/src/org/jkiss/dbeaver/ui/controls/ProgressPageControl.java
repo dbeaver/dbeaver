@@ -253,6 +253,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             {
                 if (e.character == SWT.ESC) {
                     cancelSearch(true);
+                } else if (e.character == SWT.CR) {
+                    performSearch(SearchType.NEXT);
                 }
             }
         });

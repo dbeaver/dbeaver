@@ -52,6 +52,9 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
 
     public static void registerSearchActions(IEditorPart activeEditor)
     {
+        if (activeEditor == null) {
+            return;
+        }
         IActionBars actionBars = activeEditor.getEditorSite().getActionBars();
 
         if (activeEditor instanceof ISearchContextProvider) {
