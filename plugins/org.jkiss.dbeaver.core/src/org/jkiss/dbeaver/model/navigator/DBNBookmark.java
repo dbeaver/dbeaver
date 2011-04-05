@@ -9,9 +9,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.project.BookmarkStorage;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 import java.io.InputStream;
 
@@ -41,7 +44,15 @@ public class DBNBookmark extends DBNResource
 
     public String getNodeDescription()
     {
-        return storage.getDescription();
+        String dsInfo = "";
+        DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(getResource().getProject());
+        if (dataSourceRegistry != null) {
+            DataSourceDescriptor dataSource = dataSourceRegistry.getDataSource(storage.getDataSourceId());
+            if (dataSource != null) {
+                dsInfo = " ('" + dataSource.getName() + "' - " + dataSource.getDriver().getName() + ")";
+            }
+        }
+        return storage.getDescription() + dsInfo;
     }
 
     public Image getNodeIcon()

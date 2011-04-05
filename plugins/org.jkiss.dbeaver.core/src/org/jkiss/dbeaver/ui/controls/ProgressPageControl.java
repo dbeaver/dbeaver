@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.ui.ISearchTextRunner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -173,7 +174,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         customControls.setLayout(gl);
 
         Label phLabel = new Label(customControls, SWT.NONE);
-        phLabel.setText(" ");
+        phLabel.setText("");
 
         return customControls;
     }
@@ -284,12 +285,12 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             DBeaverCore.getInstance().getWorkbench(),
             IWorkbenchActionDefinitionIds.FIND_NEXT,
             null,
-            PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_FORWARD)));
+            DBIcon.ARROW_DOWN.getImageDescriptor()));
         searchTools.add(ViewUtils.makeCommandContribution(
             DBeaverCore.getInstance().getWorkbench(),
             IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
             null,
-            PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_BACK)));
+            DBIcon.ARROW_UP.getImageDescriptor()));
         //ToolItem closeButton = new ToolItem(searchTools, SWT.PUSH);
         searchTools.add(new Action("Close search panel", PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
             @Override
