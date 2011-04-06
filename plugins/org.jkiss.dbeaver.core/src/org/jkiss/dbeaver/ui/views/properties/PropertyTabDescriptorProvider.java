@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.ISelection;
@@ -33,14 +34,26 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 
     static final Log log = LogFactory.getLog(PropertyTabDescriptorProvider.class);
 
+    private ISelection curSelection;
+    private ITabDescriptor[] curTabs;
+
+    public PropertyTabDescriptorProvider()
+    {
+    }
+
     public ITabDescriptor[] getTabDescriptors(IWorkbenchPart part, ISelection selection)
     {
+        if (curTabs != null && CommonUtils.equalObjects(curSelection, selection)) {
+            return curTabs;
+        }
         List<ITabDescriptor> tabList = new ArrayList<ITabDescriptor>();
         makeStandardPropertiesTabs(part, selection, tabList);
         if (part instanceof IDatabaseNodeEditor) {
             makeDatabaseEditorTabs((IDatabaseNodeEditor)part, selection, tabList);
         }
-        return tabList.toArray(new ITabDescriptor[tabList.size()]);
+        curTabs = tabList.toArray(new ITabDescriptor[tabList.size()]);
+        curSelection = selection;
+        return curTabs;
     }
 
     private void makeStandardPropertiesTabs(IWorkbenchPart part, ISelection selection, List<ITabDescriptor> tabList)

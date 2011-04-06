@@ -63,7 +63,6 @@ public class CImageCombo extends Composite {
     private boolean hasFocus;
     private Listener listener, filter;
     private Font font;
-    private int style;
 
     /**
      * Constructs a new instance of this class given its parent
@@ -96,9 +95,10 @@ public class CImageCombo extends Composite {
     public CImageCombo(Composite parent, int style)
     {
         super(parent, style = checkStyle(style));
-        this.style = style;
         /* This code is intentionally commented */
         //if ((style & SWT.H_SCROLL) != 0) this.style |= SWT.H_SCROLL;
+
+/*
         this.style |= SWT.H_SCROLL;
 
         int textStyle = SWT.SINGLE;
@@ -108,6 +108,7 @@ public class CImageCombo extends Composite {
         if ((style & SWT.FLAT) != 0) {
             textStyle |= SWT.FLAT;
         }
+*/
 
         this.comboComposite = new Composite(this, SWT.NONE);
         GridLayout gridLayout = new GridLayout(2, false);
@@ -489,22 +490,6 @@ public class CImageCombo extends Composite {
     {
         checkWidget();
         return this.table.getItems();
-    }
-
-    /**
-     * Returns the orientation of the receiver.
-     *
-     * @return the orientation style
-     * @throws SWTException <ul>
-     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                      </ul>
-     * @since 2.1.2
-     */
-    public int getOrientation()
-    {
-        checkWidget();
-        return this.style & (SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT);
     }
 
     /**

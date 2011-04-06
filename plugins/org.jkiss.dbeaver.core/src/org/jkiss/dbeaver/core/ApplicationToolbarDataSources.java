@@ -13,7 +13,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -191,13 +190,13 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
     public void fillToolBar(IToolBarManager manager)
     {
         // Connection related actions
-        manager.add(new ControlContribution("DataSources")
+        manager.add(new ControlContribution("Database Context")
         {
             protected Control createControl(Composite parent)
             {
                 Composite comboGroup = new Composite(parent, SWT.NONE);
-                GridLayout gl = new GridLayout(1, true);
-                gl.marginWidth = 5;
+                GridLayout gl = new GridLayout(3, false);
+                gl.marginWidth = 0;
                 gl.marginHeight = 0;
                 comboGroup.setLayout(gl);
 
@@ -222,20 +221,9 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                         widgetSelected(e);
                     }
                 });
-                return comboGroup;
-            }
-        });
-        manager.add(new ControlContribution("DataBases") {
-            protected Control createControl(Composite parent)
-            {
-                Composite comboGroup = new Composite(parent, SWT.NONE);
-                GridLayout gl = new GridLayout(1, true);
-                gl.marginWidth = 5;
-                gl.marginHeight = 0;
-                comboGroup.setLayout(gl);
 
                 databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
-                GridData gd = new GridData();
+                gd = new GridData();
                 gd.widthHint = 120;
                 databaseCombo.setLayoutData(gd);
                 databaseCombo.setVisibleItemCount(15);
@@ -254,24 +242,10 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                     }
                 });
                 updateDatabaseList(true);
-                return comboGroup;
-            }
-        });
 
-        manager.add(new Separator());
-
-        manager.add(new ControlContribution("ResultSet Size") {
-            protected Control createControl(Composite parent)
-            {
-                Composite editGroup = new Composite(parent, SWT.NONE);
-                GridLayout gl = new GridLayout(1, true);
-                gl.marginWidth = 5;
-                gl.marginHeight = 0;
-                editGroup.setLayout(gl);
-
-                resultSetSize = new Text(editGroup, SWT.BORDER);
+                resultSetSize = new Text(comboGroup, SWT.BORDER);
                 resultSetSize.setTextLimit(10);
-                GridData gd = new GridData();
+                gd = new GridData();
                 gd.widthHint = 30;
 
                 resultSetSize.setToolTipText("Maximum result-set size");
@@ -292,7 +266,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                         changeResultSetSize();
                     }
                 });
-                return editGroup;
+                return comboGroup;
             }
         });
 
@@ -453,11 +427,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
             databaseCombo.setRedraw(false);
             try {
                 // Remove all but first item (which is constant)
-                if (databaseCombo.getItemCount() > 1) {
-                    for (int i = databaseCombo.getItemCount() - 1; i > 0; i--) {
-                        databaseCombo.remove(i);
-                    }
-                }
+                databaseCombo.removeAll();
 
                 boolean isEnabled = false;
                 DBSDataSourceContainer dsContainer = getDataSourceContainer();

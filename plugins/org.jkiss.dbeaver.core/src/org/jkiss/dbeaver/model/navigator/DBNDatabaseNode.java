@@ -194,7 +194,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public boolean isLazyNode()
     {
-        return childNodes == null;
+        return childNodes == null && hasChildren();
     }
 
     public boolean isLocked()
