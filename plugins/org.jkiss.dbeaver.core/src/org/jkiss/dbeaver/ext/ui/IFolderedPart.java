@@ -14,4 +14,9 @@ public interface IFolderedPart extends IWorkbenchPart
     Object getActiveFolder();
 
     void switchFolder(String folderId);
+
+    void addFolderListener(IFolderListener  listener);
+
+    void removeFolderListener(IFolderListener  listener);
+
 }

@@ -16,6 +16,7 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.ui.IFolderListener;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
@@ -49,13 +50,37 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
-    private static Map<Class<?>, String> defaultPageMap = new HashMap<Class<?>, String>();
+    private static class EditorDefaults {
+        String pageId;
+        String folderId;
 
-    private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
+        private EditorDefaults(String pageId, String folderId)
+        {
+            this.pageId = pageId;
+            this.folderId = folderId;
+        }
+    }
+
+    private static final Map<Class<?>, EditorDefaults> defaultPageMap = new HashMap<Class<?>, EditorDefaults>();
+
+    private final Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
     private DBECommandAdapter commandListener;
+    private IFolderListener folderListener;
 
     public EntityEditor()
     {
+        folderListener = new IFolderListener() {
+            public void folderSelected(String folderId)
+            {
+                IEditorPart editor = getActiveEditor();
+                if (editor != null) {
+                    String editorPageId = getEditorPageId(editor);
+                    if (editorPageId != null) {
+                        updateEditorDefaults(editorPageId, folderId);
+                    }
+                }
+            }
+        };
     }
 
     public DBSObject getDatabaseObject()
@@ -111,10 +136,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     public boolean isSaveAsAllowed()
     {
         IEditorPart activeEditor = getActiveEditor();
-        if (activeEditor != null && activeEditor.isSaveAsAllowed()) {
-            return true;
-        }
-        return false;
+        return activeEditor != null && activeEditor.isSaveAsAllowed();
     }
 
     @Override
@@ -255,6 +277,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
         super.createPages();
 
+        EditorDefaults editorDefaults = defaultPageMap.get(getEditorInput().getDatabaseObject().getClass());
+
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
 
@@ -296,13 +320,23 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         addContributions(EntityEditorDescriptor.POSITION_END);
 
         String defPageId = getEditorInput().getDefaultPageId();
-        if (defPageId == null) {
-            defPageId = defaultPageMap.get(getEditorInput().getDatabaseObject().getClass()); 
+        if (defPageId == null && editorDefaults != null) {
+            defPageId = editorDefaults.pageId;
         }
         if (defPageId != null) {
             IEditorPart defEditorPage = editorMap.get(defPageId);
-            if (defEditorPage != null && getEditor(0) != defEditorPage) {
+            if (defEditorPage != null) {
                 setActiveEditor(defEditorPage);
+            }
+        }
+        IEditorPart activeEditor = getActiveEditor();
+        if (activeEditor instanceof IFolderedPart) {
+            String defFolderId = getEditorInput().getDefaultFolderId();
+            if (defFolderId == null && editorDefaults != null) {
+                defFolderId = editorDefaults.folderId;
+            }
+            if (defFolderId != null) {
+                ((IFolderedPart)activeEditor).switchFolder(defFolderId);
             }
         }
     }
@@ -339,16 +373,46 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     protected void pageChange(int newPageIndex) {
         super.pageChange(newPageIndex);
 
-        DBSObject object = getEditorInput().getDatabaseObject();
         IEditorPart editor = getEditor(newPageIndex);
-        for (Map.Entry<String,IEditorPart> entry : editorMap.entrySet()) {
-            if (entry.getValue() == editor) {
-                defaultPageMap.put(object.getClass(), entry.getKey());
-                break;
-            }
+        String editorPageId = getEditorPageId(editor);
+        if (editorPageId != null) {
+            updateEditorDefaults(editorPageId, null);
         }
         // Fire dirty flag refresh to re-enable Save-As command (which is enabled only for certain pages)
         firePropertyChange(IEditorPart.PROP_DIRTY);
+    }
+
+    private String getEditorPageId(IEditorPart editorPart)
+    {
+        synchronized (editorMap) {
+            for (Map.Entry<String,IEditorPart> entry : editorMap.entrySet()) {
+                if (entry.getValue() == editorPart) {
+                    return entry.getKey();
+                }
+            }
+        }
+        return null;
+    }
+
+    private void updateEditorDefaults(String pageId, String folderId)
+    {
+        DBSObject object = getEditorInput().getDatabaseObject();
+        if (object != null) {
+            synchronized (defaultPageMap) {
+                EditorDefaults editorDefaults = defaultPageMap.get(object.getClass());
+                if (editorDefaults == null) {
+                    editorDefaults = new EditorDefaults(pageId, folderId);
+                    defaultPageMap.put(object.getClass(), editorDefaults);
+                } else {
+                    if (pageId != null) {
+                        editorDefaults.pageId = pageId;
+                    }
+                    if (folderId != null) {
+                        editorDefaults.folderId = folderId;
+                    }
+                }
+            }
+        }
     }
 
     public int promptToSaveOnClose()
@@ -381,6 +445,14 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         if (getActiveEditor() instanceof IFolderedPart) {
             ((IFolderedPart)getActiveEditor()).switchFolder(folderId);
         }
+    }
+
+    public void addFolderListener(IFolderListener listener)
+    {
+    }
+
+    public void removeFolderListener(IFolderListener listener)
+    {
     }
 
     private static class TabInfo {
@@ -471,6 +543,11 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 setPageToolTip(index, descriptor.getDescription());
             }
             editorMap.put(descriptor.getId(), editor);
+
+            if (editor instanceof IFolderedPart) {
+                ((IFolderedPart) editor).addFolderListener(folderListener);
+            }
+
             return true;
         } catch (Exception ex) {
             log.error("Error adding nested editor", ex);

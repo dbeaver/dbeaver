@@ -24,8 +24,11 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.tabbed.ISection;
+import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
+import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
 import org.eclipse.ui.views.properties.tabbed.TabContents;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
+import org.jkiss.dbeaver.ext.ui.IFolderListener;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
@@ -52,6 +55,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
 
     private PropertyPageTabbed properties;
     private ObjectEditorPageControl pageControl;
+    private final List<IFolderListener> folderListeners = new ArrayList<IFolderListener>();
     //private Text nameText;
     //private Text descriptionText;
 
@@ -163,6 +167,16 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             }
         });
         properties.selectionChanged(this, new StructuredSelection(propertySource));
+        properties.addTabSelectionListener(new ITabSelectionListener() {
+            public void tabSelected(ITabDescriptor tabDescriptor)
+            {
+                synchronized (folderListeners) {
+                    for (IFolderListener listener : folderListeners) {
+                        listener.folderSelected(tabDescriptor.getId());
+                    }
+                }
+            }
+        });
 
         final String folderId = getEditorInput().getDefaultFolderId();
         if (folderId != null) {
@@ -304,6 +318,20 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     public void switchFolder(String folderId)
     {
         properties.setSelectedTab(folderId);
+    }
+
+    public void addFolderListener(IFolderListener listener)
+    {
+        synchronized (folderListeners) {
+            folderListeners.add(listener);
+        }
+    }
+
+    public void removeFolderListener(IFolderListener listener)
+    {
+        synchronized (folderListeners) {
+            folderListeners.remove(listener);
+        }
     }
 
     private ISearchContextProvider getFolderSearch()

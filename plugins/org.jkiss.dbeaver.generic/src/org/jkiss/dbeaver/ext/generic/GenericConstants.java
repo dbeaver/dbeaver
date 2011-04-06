@@ -16,6 +16,7 @@ public class GenericConstants {
     public static final String PARAM_META_CASE = "meta-case";
     // URL parameter for DB shutdown. Added to support Derby DB shutdown process
     public static final String PARAM_SHUTDOWN_URL_PARAM = "shutdown-url-param";
+    public static final String TYPE_MODIFIER_IDENTITY = " IDENTITY";
 
     public static enum MetaCase implements MetaDataNameConverter {
         NONE {

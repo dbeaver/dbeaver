@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -437,6 +438,11 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             if (valueType == java.sql.Types.OTHER && !CommonUtils.isEmpty(typeName)) {
                 // Try to determine value type from type name
                 valueType = JDBCUtils.getDataTypeByName(valueType, typeName);
+            }
+            // Check for identity modifier [MS SQL]
+            if (typeName.toUpperCase().endsWith(GenericConstants.TYPE_MODIFIER_IDENTITY)) {
+                autoIncrement = true;
+                typeName = typeName.substring(0, typeName.length() - GenericConstants.TYPE_MODIFIER_IDENTITY.length());
             }
 
             return new GenericTableColumn(

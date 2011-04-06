@@ -2124,7 +2124,7 @@ public class LightGrid extends Canvas {
         int selection = hScroll.getSelection();
         if (columnScrolling) {
             int pixels = 0;
-            for (int i = 0; i < selection; i++) {
+            for (int i = 0; i < selection && i < columns.size(); i++) {
                 pixels += columns.get(i).getWidth();
             }
             selection = pixels;
