@@ -13,7 +13,10 @@ import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.Tool;
-import org.eclipse.gef.palette.*;
+import org.eclipse.gef.palette.PaletteContainer;
+import org.eclipse.gef.palette.PaletteDrawer;
+import org.eclipse.gef.palette.PaletteRoot;
+import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.tools.SelectionTool;
 import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
@@ -35,7 +38,6 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -278,6 +280,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         PaletteDrawer dsDrawer = new PaletteDrawer(
             container.getName(),
             ImageDescriptor.createFromImage(container.getDriver().getIcon()));
+        dsDrawer.setDescription(container.getDescription());
         dsDrawer.setId(container.getId());
 
         paletteRoot.add(dsDrawer);
@@ -333,6 +336,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         {
             super(table.getName(), table.getDescription(), DBIcon.TREE_TABLE.getImageDescriptor(), null);
             this.setUserModificationPermission(PERMISSION_NO_MODIFICATION);
+            setDescription(table.getTableType() + " " + table.getFullQualifiedName());
             this.table = table;
         }
         public Tool createTool()

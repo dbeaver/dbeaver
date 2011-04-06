@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -82,9 +83,10 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             }
         });
         tabList.add(new PropertyTabDescriptor(
-            PropertiesContributor.CATEGORY_MAIN,
+            PropertiesContributor.CATEGORY_INFO,
             PropertiesContributor.TAB_STANDARD,
             "Information",
+            DBIcon.INFO.getImage(),
             standardSections));
     }
 
@@ -228,9 +230,10 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             }
         });
         tabList.add(new PropertyTabDescriptor(
-            PropertiesContributor.CATEGORY_MAIN,
+            PropertiesContributor.CATEGORY_STRUCT,
             tabInfo.getName(),
             tabInfo.getName(),
+            tabInfo.node.getNodeIconDefault(),
             tabSections));
     }
 

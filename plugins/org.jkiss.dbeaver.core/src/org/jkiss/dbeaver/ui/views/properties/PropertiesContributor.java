@@ -14,7 +14,8 @@ public class PropertiesContributor {
 
     public static final String CONTRIBUTOR_ID = "org.jkiss.dbeaver.core.propertyViewContributor";
 
-    public static final String CATEGORY_MAIN = "dbeaver";
+    public static final String CATEGORY_INFO = "Information";
+    public static final String CATEGORY_STRUCT = "Structure";
 
     public static final String TAB_STANDARD = "standard";
 

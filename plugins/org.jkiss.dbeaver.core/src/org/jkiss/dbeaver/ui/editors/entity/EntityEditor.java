@@ -442,9 +442,19 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
     public void switchFolder(String folderId)
     {
-        if (getActiveEditor() instanceof IFolderedPart) {
-            ((IFolderedPart)getActiveEditor()).switchFolder(folderId);
+        final int pageCount = getPageCount();
+        for (int i = 0; i < pageCount; i++) {
+            final IEditorPart editor = getEditor(i);
+            if (editor instanceof IFolderedPart) {
+                if (getActiveEditor() != editor) {
+                    setActiveEditor(editor);
+                }
+                ((IFolderedPart)editor).switchFolder(folderId);
+            }
         }
+//        if (getActiveEditor() instanceof IFolderedPart) {
+//            ((IFolderedPart)getActiveEditor()).switchFolder(folderId);
+//        }
     }
 
     public void addFolderListener(IFolderListener listener)

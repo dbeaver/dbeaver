@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.tabbed.AbstractTabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ISectionDescriptor;
 
@@ -17,16 +18,19 @@ public class PropertyTabDescriptor extends AbstractTabDescriptor {
     private String category;
     private String id;
     private String label;
+    private Image image;
 
     public PropertyTabDescriptor(
         String category,
         String id,
         String label,
+        Image image,
         List<ISectionDescriptor> sectionDescriptors)
     {
         this.category = category;
         this.id = id;
         this.label = label;
+        this.image = image;
         setSectionDescriptors(sectionDescriptors);
     }
 
@@ -45,4 +49,8 @@ public class PropertyTabDescriptor extends AbstractTabDescriptor {
         return label;
     }
 
+    public Image getImage()
+    {
+        return image;
+    }
 }
