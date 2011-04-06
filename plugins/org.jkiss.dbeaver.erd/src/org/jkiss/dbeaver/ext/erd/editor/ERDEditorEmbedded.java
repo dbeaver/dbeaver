@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
@@ -31,6 +32,8 @@ import java.util.Set;
  */
 public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseNodeEditor, IActiveWorkbenchPart {
 
+    private Composite parent;
+
     /**
      * No-arg constructor
      */
@@ -51,6 +54,10 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseNodeEdi
 
     public void activatePart()
     {
+        if (progressControl == null) {
+            super.createPartControl(parent);
+            parent.layout();
+        }
         if (isLoaded()) {
             return;
         }
@@ -59,6 +66,22 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseNodeEdi
 
     public void deactivatePart()
     {
+    }
+
+    @Override
+    public void createPartControl(Composite parent)
+    {
+        // Do not create controls here - do it on part activation
+        this.parent = parent;
+        //super.createPartControl(parent);
+    }
+
+    @Override
+    public void setFocus()
+    {
+        if (progressControl != null) {
+            super.setFocus();
+        }
     }
 
     protected synchronized void loadDiagram()
