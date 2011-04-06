@@ -7,11 +7,15 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.bindings.Binding;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -253,6 +257,21 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
     protected void createPages()
     {
+/*
+        {
+            IBindingService bindingService = (IBindingService)getSite().getService(IBindingService.class);
+            for (Binding binding : bindingService.getBindings()) {
+                System.out.println("binding:" + binding);
+            }
+        }
+*/
+        {
+            ICommandService commandService = (ICommandService)getSite().getService(ICommandService.class);
+            for (Command command : commandService.getDefinedCommands()) {
+                System.out.println("command:" + command);
+            }
+        }
+
         // Command listener
         commandListener = new DBECommandAdapter() {
             @Override

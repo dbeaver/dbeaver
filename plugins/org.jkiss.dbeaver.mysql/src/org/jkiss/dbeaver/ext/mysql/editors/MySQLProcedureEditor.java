@@ -28,6 +28,12 @@ public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProc
         ddlText.setBackground(getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
     }
 
+    @Override
+    public void setFocus()
+    {
+        ddlText.setFocus();
+    }
+
     public void activatePart()
     {
         try {

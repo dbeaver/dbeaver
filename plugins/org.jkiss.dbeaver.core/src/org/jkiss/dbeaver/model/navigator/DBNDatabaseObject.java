@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -23,7 +22,6 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
 {
     private DBXTreeObject meta;
     private IEditorDescriptor editorDescriptor;
-    private Image image;
 
     DBNDatabaseObject(DBNNode parent, DBXTreeObject meta)
     {
@@ -33,17 +31,10 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
             this.getModel().addNode(this);
         }
         this.editorDescriptor = DBeaverCore.getActiveWorkbenchWindow().getWorkbench().getEditorRegistry().findEditor(meta.getEditorId());
-        if (this.editorDescriptor != null) {
-            this.image = this.editorDescriptor.getImageDescriptor().createImage();
-        }
     }
 
     protected void dispose(boolean reflect)
     {
-        if (image != null) {
-            image.dispose();
-            image = null;
-        }
         if (this.getModel() != null) {
             this.getModel().removeNode(this, reflect);
         }
@@ -73,14 +64,6 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     public Object getValueObject()
     {
         return this;
-    }
-
-    public Image getNodeIcon()
-    {
-        if (image != null) {
-            return image;
-        }
-        return super.getNodeIcon();
     }
 
     public String getNodePathName()

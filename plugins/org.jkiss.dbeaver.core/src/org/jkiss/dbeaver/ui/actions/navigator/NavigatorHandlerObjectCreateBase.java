@@ -119,7 +119,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         }
         finally {
             if (!(oldActivePart instanceof IEditorPart)) {
-                workbenchWindow.getActivePage().activate(oldActivePart);
+                //workbenchWindow.getActivePage().activate(oldActivePart);
             }
         }
 

@@ -233,6 +233,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
 
     public void setFocus()
     {
+        properties.setFocus();
     }
 
     public void doSave(IProgressMonitor monitor)

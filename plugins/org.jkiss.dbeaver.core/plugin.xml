@@ -1278,6 +1278,8 @@
         <key commandId="org.eclipse.ui.edit.findPrevious" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="SHIFT+F3"/>
         <key commandId="org.eclipse.ui.edit.findIncremental" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+F3"/>
 
+        <key commandId="org.eclipse.ui.navigate.nextTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+ARROW_RIGHT"/>
+        <key commandId="org.eclipse.ui.navigate.previousTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+ARROW_LEFT"/>
         <key commandId="org.eclipse.ui.window.nextEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+TAB"/>
         <key commandId="org.eclipse.ui.window.previousEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+TAB"/>
         <key commandId="org.eclipse.ui.window.switchToEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+E"/>
@@ -1372,7 +1374,7 @@
            <enabledWhen>
                <or>
                   <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                  <instanceof value="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
+                  <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                </or>
            </enabledWhen>
         </page>
@@ -1380,8 +1382,8 @@
            <enabledWhen>
               <or>
                  <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                 <instanceof value="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
                  <instanceof value="org.jkiss.dbeaver.registry.DataFormatterRegistry"/>
+                  <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
               </or>
            </enabledWhen>
         </page>
@@ -1389,7 +1391,7 @@
            <enabledWhen>
                <or>
                 <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                <instanceof value="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
+                <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                </or>
            </enabledWhen>
         </page>

@@ -55,10 +55,6 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         return false;
     }
 
-    public void setFocus() {
-
-    }
-
     public void activatePart()
     {
         // do nothing by default

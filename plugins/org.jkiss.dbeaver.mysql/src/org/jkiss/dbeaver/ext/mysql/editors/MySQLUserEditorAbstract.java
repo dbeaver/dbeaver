@@ -41,6 +41,14 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
             .schedule();
     }
 
+    @Override
+    public void setFocus()
+    {
+        if (getPageControl() != null) {
+            getPageControl().setFocus();
+        }
+    }
+
     protected abstract UserPageControl getPageControl();
     protected abstract void processGrants(List<MySQLGrant> grants);
 

@@ -124,8 +124,10 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
             // Reactivate navigator
             // Actually it still focused but we need to use it's selection
             // I think it is an eclipse bug
+
+            // !! Remove this crap. Editor should just implement setFocus() to prevent this problem
             if (!(oldActivePart instanceof IEditorPart)) {
-                workbenchWindow.getActivePage().activate(oldActivePart);
+                //workbenchWindow.getActivePage().activate(oldActivePart);
             }
         }
     }

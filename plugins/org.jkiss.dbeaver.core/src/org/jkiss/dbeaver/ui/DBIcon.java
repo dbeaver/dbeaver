@@ -17,6 +17,7 @@ public enum DBIcon
     GEN_DATABASE_TYPE("gen_database_type", "icons/database_type.png"),
 
     TREE("tree", "icons/tree/tree.png"),
+    TREE_ADMIN("admin", "icons/tree/admin.png"),
     TREE_DATABASE("database", "icons/tree/database.png"),
     TREE_SCHEMA("schema", "icons/tree/schema.png"),
     TREE_TABLES("tables", "icons/tree/tables.png"),
