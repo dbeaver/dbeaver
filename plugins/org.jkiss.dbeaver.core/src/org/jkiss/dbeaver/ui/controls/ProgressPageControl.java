@@ -193,8 +193,12 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 }
             }
 
-            if (showDefaultControls) {
+            // Nullify all controls
+            progressBar = null;
+            searchText = null;
+
                 // Create default controls toolbar
+            if (showDefaultControls) {
                 GridLayout layout = new GridLayout(1, false);
                 layout.marginHeight = 0;
                 layout.marginWidth = 0;
@@ -207,16 +211,12 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                         DBeaverCore.getInstance().getWorkbench(),
                         IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
                         "Search item(s)",
-                        DBIcon.FIND.getImageDescriptor()));
+                        DBIcon.SEARCH.getImageDescriptor()));
                 }
                 ToolBar toolbar = searchTools.createControl(controlComposite);
                 toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
                 controlComposite.layout();
             }
-
-            // Nullify all controls
-            progressBar = null;
-            searchText = null;
         } finally {
             controlComposite.setRedraw(true);
         }
