@@ -742,7 +742,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     public boolean isSearchPossible()
     {
-        return progressControl != null && progressControl.isSearchPossible();
+        return true;
     }
 
     public boolean isSearchEnabled()

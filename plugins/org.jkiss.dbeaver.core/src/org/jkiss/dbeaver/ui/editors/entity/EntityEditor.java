@@ -301,7 +301,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         }
         if (defPageId != null) {
             IEditorPart defEditorPage = editorMap.get(defPageId);
-            if (defEditorPage != null) {
+            if (defEditorPage != null && getEditor(0) != defEditorPage) {
                 setActiveEditor(defEditorPage);
             }
         }

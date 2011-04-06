@@ -21,6 +21,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
@@ -116,8 +117,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             log.warn("Overwrite of child page control '" + this.childPageControl);
         }
         this.childPageControl = progressPageControl;
-        if (this.childPageControl == null && searchText != null) {
-            hideControls();
+        if (getProgressControl().progressBar == null) {
+            hideControls(true);
         }
     }
 
@@ -178,15 +179,47 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         return customControls;
     }
 
-    private void hideControls()
+    private void hideControls(boolean showDefaultControls)
     {
-        if (!controlComposite.isDisposed()) {
-            for (Control child : controlComposite.getChildren()) {
-                child.dispose();
-            }
+        if (controlComposite.isDisposed()) {
+            return;
         }
-        progressBar = null;
-        searchText = null;
+        controlComposite.setRedraw(false);
+        try {
+// Delete all controls created in controlComposite
+            if (!controlComposite.isDisposed()) {
+                for (Control child : controlComposite.getChildren()) {
+                    child.dispose();
+                }
+            }
+
+            if (showDefaultControls) {
+                // Create default controls toolbar
+                GridLayout layout = new GridLayout(1, false);
+                layout.marginHeight = 0;
+                layout.marginWidth = 0;
+                layout.verticalSpacing = 0;
+                controlComposite.setLayout(layout);
+
+                ToolBarManager searchTools = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+                if (isSearchPossible() && isSearchEnabled()) {
+                    searchTools.add(ViewUtils.makeCommandContribution(
+                        DBeaverCore.getInstance().getWorkbench(),
+                        IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
+                        "Search item(s)",
+                        DBIcon.FIND.getImageDescriptor()));
+                }
+                ToolBar toolbar = searchTools.createControl(controlComposite);
+                toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+                controlComposite.layout();
+            }
+
+            // Nullify all controls
+            progressBar = null;
+            searchText = null;
+        } finally {
+            controlComposite.setRedraw(true);
+        }
     }
 
     private void createProgressControls()
@@ -194,7 +227,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (progressBar != null) {
             return;
         }
-        hideControls();
+        hideControls(false);
         GridLayout layout = new GridLayout(2, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -233,7 +266,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (searchText != null) {
             return;
         }
-        hideControls();
+        hideControls(false);
         GridLayout layout = new GridLayout(2, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -369,7 +402,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         getSearchRunner().cancelSearch();
 
         if (hide) {
-            hideControls();
+            hideControls(true);
         } else {
             getProgressControl().searchText.setBackground(null);
         }
@@ -380,7 +413,6 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (curInfo != null) {
             setInfo(curInfo);
         }
-        //getProgressControl().hideControls();
 
         if (this.ownerPageControl != null) {
             if (active) {
@@ -532,7 +564,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             loadCount = 0;
             if (!getProgressControl().progressBar.isDisposed()) {
                 getProgressControl().progressBar.setState(SWT.PAUSED);
-                getProgressControl().hideControls();
+                getProgressControl().hideControls(true);
             }
         }
 

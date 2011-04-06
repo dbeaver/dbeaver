@@ -39,9 +39,10 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
 
     @Override
     public void setActivePage(IEditorPart activeEditor) {
-        curPage = activeEditor;
-
-        registerSearchActions(activeEditor);
+        if (curPage != activeEditor) {
+            curPage = activeEditor;
+            registerSearchActions(activeEditor);
+        }
     }
 
     @Override
@@ -60,6 +61,7 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
         if (activeEditor instanceof ISearchContextProvider) {
             ISearchContextProvider provider = (ISearchContextProvider)activeEditor;
             if (provider.isSearchPossible()) {
+                System.out.println("PROVIDER: " + provider);
                 ContextSearchAction findAction = new ContextSearchAction(provider, ISearchContextProvider.SearchType.NONE);
                 findAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
                 actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, findAction);
@@ -73,6 +75,7 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
                 actionBars.setGlobalActionHandler(IWorkbenchActionDefinitionIds.FIND_PREVIOUS, findPrevAction);
             }
         } else {
+            System.out.println("RESET");
             actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, null);
             actionBars.setGlobalActionHandler(IWorkbenchActionDefinitionIds.FIND_NEXT, null);
             actionBars.setGlobalActionHandler(IWorkbenchActionDefinitionIds.FIND_PREVIOUS, null);
