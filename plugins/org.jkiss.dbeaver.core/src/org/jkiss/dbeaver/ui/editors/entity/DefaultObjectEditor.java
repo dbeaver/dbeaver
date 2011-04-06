@@ -56,6 +56,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     private PropertyPageTabbed properties;
     private ObjectEditorPageControl pageControl;
     private final List<IFolderListener> folderListeners = new ArrayList<IFolderListener>();
+    private String curFolderId;
     //private Text nameText;
     //private Text descriptionText;
 
@@ -167,21 +168,26 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             }
         });
         properties.selectionChanged(this, new StructuredSelection(propertySource));
+
+        final String folderId = getEditorInput().getDefaultFolderId();
+        if (folderId != null) {
+            properties.setSelectedTab(folderId);
+        }
+
         properties.addTabSelectionListener(new ITabSelectionListener() {
             public void tabSelected(ITabDescriptor tabDescriptor)
             {
+                if (CommonUtils.equalObjects(curFolderId, tabDescriptor.getId())) {
+                    return;
+                }
                 synchronized (folderListeners) {
+                    curFolderId = tabDescriptor.getId();
                     for (IFolderListener listener : folderListeners) {
                         listener.folderSelected(tabDescriptor.getId());
                     }
                 }
             }
         });
-
-        final String folderId = getEditorInput().getDefaultFolderId();
-        if (folderId != null) {
-            properties.setSelectedTab(folderId);
-        }
     }
 
 /*
