@@ -1107,7 +1107,7 @@
         </menuContribution>
 
         <!-- SQL editor -->
-        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
+        <!--menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
             <toolbar id="sqlEditorExecute" label="SQL Execute">
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement">
                     <visibleWhen>
@@ -1146,10 +1146,10 @@
                     </visibleWhen>
                 </command>
             </toolbar>
-        </menuContribution>
+        </menuContribution-->
 
         <!-- Entity editor -->
-        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
+        <!--menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
             <toolbar id="entityEditorExecute" label="Entity Editor">
                 <command commandId="org.eclipse.ui.file.save" icon="icons/sql/save_to_database.png" label="Save Changes">
                     <visibleWhen>
@@ -1158,20 +1158,6 @@
                         </with>
                     </visibleWhen>
                 </command>
-                <!--command commandId="org.eclipse.ui.file.revert" icon="icons/sql/revert.png" label="Revert Changes">
-                    <visibleWhen>
-                        <with variable="activeEditor">
-                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
-                        </with>
-                    </visibleWhen>
-                </command-->
-                <!--command commandId="org.eclipse.ui.edit.text.contentAssist.proposals" icon="icons/sql/sql_preview.png" label="Changes Script">
-                    <visibleWhen>
-                        <with variable="activeEditor">
-                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
-                        </with>
-                    </visibleWhen>
-                </command-->
                 <command commandId="org.eclipse.ui.edit.undo">
                     <visibleWhen>
                         <with variable="activeEditor">
@@ -1187,7 +1173,7 @@
                     </visibleWhen>
                 </command>
             </toolbar>
-        </menuContribution>
+        </menuContribution-->
 
         <!-- Database menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">

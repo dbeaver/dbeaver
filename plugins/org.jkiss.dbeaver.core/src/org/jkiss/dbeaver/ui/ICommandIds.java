@@ -22,6 +22,9 @@ public final class ICommandIds
 
     public static final String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement";
     public static final String CMD_EXECUTE_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.run.script";
+    public static final String CMD_EXPLAIN_PLAN = "org.jkiss.dbeaver.ui.editors.sql.run.explain";
+    public static final String CMD_ANALYSE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.analyse";
+    public static final String CMD_VALIDATE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.validate";
     public static final String CMD_OPEN_FILE = "org.jkiss.dbeaver.ui.editors.sql.open.file";
     public static final String CMD_SAVE_FILE = "org.jkiss.dbeaver.ui.editors.sql.save.file";
 

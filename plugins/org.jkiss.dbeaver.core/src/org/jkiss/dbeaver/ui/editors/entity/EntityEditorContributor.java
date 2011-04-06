@@ -4,23 +4,16 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.eclipse.jface.action.*;
-import org.eclipse.jface.bindings.Binding;
-import org.eclipse.jface.bindings.TriggerSequence;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.actions.ActionFactory;
-import org.eclipse.ui.actions.RetargetAction;
-import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
-import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.actions.common.ContextSearchAction;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 /**
  * Entity Editor contributor
@@ -51,6 +44,15 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
         super.contributeToMenu(menuManager);
     }
 
+    @Override
+    public void contributeToToolBar(IToolBarManager manager)
+    {
+        super.contributeToToolBar(manager);
+        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), IWorkbenchCommandConstants.FILE_SAVE));
+        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), IWorkbenchCommandConstants.EDIT_UNDO));
+        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), IWorkbenchCommandConstants.EDIT_REDO));
+    }
+
     public static void registerSearchActions(IEditorPart activeEditor)
     {
         if (activeEditor == null) {
@@ -61,7 +63,6 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
         if (activeEditor instanceof ISearchContextProvider) {
             ISearchContextProvider provider = (ISearchContextProvider)activeEditor;
             if (provider.isSearchPossible()) {
-                System.out.println("PROVIDER: " + provider);
                 ContextSearchAction findAction = new ContextSearchAction(provider, ISearchContextProvider.SearchType.NONE);
                 findAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
                 actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, findAction);
@@ -75,7 +76,6 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
                 actionBars.setGlobalActionHandler(IWorkbenchActionDefinitionIds.FIND_PREVIOUS, findPrevAction);
             }
         } else {
-            System.out.println("RESET");
             actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, null);
             actionBars.setGlobalActionHandler(IWorkbenchActionDefinitionIds.FIND_NEXT, null);
             actionBars.setGlobalActionHandler(IWorkbenchActionDefinitionIds.FIND_PREVIOUS, null);

@@ -9,9 +9,9 @@ import org.eclipse.swt.SWTException;
 import org.eclipse.swt.accessibility.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.forms.widgets.TableWrapData;
-import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
 import java.util.Arrays;
 
@@ -110,20 +110,17 @@ public class CImageCombo extends Composite {
         }
 
         this.comboComposite = new Composite(this, SWT.NONE);
-        TableWrapLayout tableWrapLayout = new TableWrapLayout();
-        tableWrapLayout.numColumns = 2;
-        tableWrapLayout.topMargin = 2;
-        tableWrapLayout.bottomMargin = 0;
-        tableWrapLayout.leftMargin = 2;
-        tableWrapLayout.rightMargin = 0;
-        this.comboComposite.setLayout(tableWrapLayout);
-        this.comboComposite.setLayoutData(new TableWrapData());
+        GridLayout gridLayout = new GridLayout(2, false);
+        gridLayout.marginHeight = 0;
+        gridLayout.marginWidth = 0;
+        gridLayout.horizontalSpacing = 0;
+        this.comboComposite.setLayout(gridLayout);
 
         this.imageLabel = new Label(this.comboComposite, SWT.NONE);
-        this.imageLabel.setLayoutData(new TableWrapData());
+        this.imageLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         this.text = new Text(this.comboComposite, SWT.READ_ONLY);
-        this.text.setLayoutData(new TableWrapData(TableWrapData.FILL_GRAB));
+        this.text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         this.text.setEditable(false);
 
         this.comboComposite.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
@@ -190,7 +187,7 @@ public class CImageCombo extends Composite {
         }
 
         createPopup(-1);
-        initAccessible();
+        //initAccessible();
     }
 
     private void setEnabled(boolean enabled, boolean force)
@@ -1470,4 +1467,5 @@ public class CImageCombo extends Composite {
             }
         }
     }
+
 }

@@ -181,7 +181,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     private void hideControls(boolean showDefaultControls)
     {
-        if (controlComposite.isDisposed()) {
+        if (controlComposite == null || controlComposite.isDisposed()) {
             return;
         }
         controlComposite.setRedraw(false);

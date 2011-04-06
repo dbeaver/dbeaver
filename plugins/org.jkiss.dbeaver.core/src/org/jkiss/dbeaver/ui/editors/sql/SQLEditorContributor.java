@@ -5,9 +5,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.action.ICoolBarManager;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -26,6 +24,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.util.ResourceBundle;
 
@@ -107,6 +106,18 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     public void contributeToCoolBar(ICoolBarManager manager)
     {
         super.contributeToCoolBar(manager);
+    }
+
+    @Override
+    public void contributeToToolBar(IToolBarManager manager)
+    {
+        super.contributeToToolBar(manager);
+        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_STATEMENT));
+        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_SCRIPT));
+        manager.add(new Separator());
+        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_STATEMENT));
+        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_ANALYSE_STATEMENT));
+        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_VALIDATE_STATEMENT));
     }
 
     public void contributeToStatusLine(IStatusLineManager statusLineManager)
