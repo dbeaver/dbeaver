@@ -8,14 +8,13 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
 import java.util.ArrayList;
@@ -89,14 +88,11 @@ public class DBNResource extends DBNNode
             contentDescription.getContentType().
         }
 */
-        String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
         switch (resource.getType()) {
-            case IResource.FOLDER: imageKey = ISharedImages.IMG_OBJ_FOLDER; break;
-            case IResource.FILE: imageKey = ISharedImages.IMG_OBJ_FILE; break;
-            case IResource.PROJECT: imageKey = ISharedImages.IMG_OBJ_PROJECT; break;
+            case IResource.FOLDER: return DBIcon.TREE_FOLDER.getImage();
+            case IResource.PROJECT: return DBIcon.PROJECT.getImage();
+            default: return DBIcon.TREE_PAGE.getImage();
         }
-        return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
-        //return DBIcon.PROJECT.getImage();
     }
 
     @Override

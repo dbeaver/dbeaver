@@ -9,11 +9,10 @@ import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.util.List;
 
@@ -89,13 +88,14 @@ public abstract class DBNNode implements DBPNamedObject, JexlContext
     {
         Image image = getNodeIcon();
         if (image == null) {
-            String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
             if (this.hasChildren()) {
-                imageKey = ISharedImages.IMG_OBJ_FOLDER;
+                return DBIcon.TREE_FOLDER.getImage();
+            } else {
+                return DBIcon.TREE_PAGE.getImage();
             }
-            image = PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
+        } else {
+            return image;
         }
-        return image;
     }
 
     public String getNodePathName()

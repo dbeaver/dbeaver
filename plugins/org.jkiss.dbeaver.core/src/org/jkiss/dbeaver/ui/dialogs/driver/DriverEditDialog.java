@@ -235,7 +235,7 @@ public class DriverEditDialog extends Dialog
                         !lib.getLibraryFile().exists() ?
                             PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE) :
                             lib.getLibraryFile().isDirectory() ?
-                                PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER) :
+                                DBIcon.TREE_FOLDER.getImage() :
                                 DBIcon.JAR.getImage());
                 }
             });

@@ -579,7 +579,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 if (tabInfo.meta.getDefaultIcon() != null) {
                     setPageImage(index, tabInfo.meta.getDefaultIcon());
                 } else {
-                    setPageImage(index, PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER));
+                    setPageImage(index, DBIcon.TREE_FOLDER.getImage());
                 }
                 setPageToolTip(index, tabInfo.meta.getLabel());
             }

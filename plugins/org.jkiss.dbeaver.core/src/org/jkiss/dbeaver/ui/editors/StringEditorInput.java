@@ -51,7 +51,7 @@ public class StringEditorInput implements IEditorInput {
 	}
 
 	public ImageDescriptor getImageDescriptor() {
-		return DBIcon.INFO.getImageDescriptor();
+		return DBIcon.TREE_INFO.getImageDescriptor();
 	}
 
 	/* (non-Javadoc)

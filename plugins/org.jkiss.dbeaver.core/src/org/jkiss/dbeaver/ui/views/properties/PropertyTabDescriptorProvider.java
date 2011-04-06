@@ -86,7 +86,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             PropertiesContributor.CATEGORY_INFO,
             PropertiesContributor.TAB_STANDARD,
             "Information",
-            DBIcon.INFO.getImage(),
+            DBIcon.TREE_INFO.getImage(),
             standardSections));
     }
 

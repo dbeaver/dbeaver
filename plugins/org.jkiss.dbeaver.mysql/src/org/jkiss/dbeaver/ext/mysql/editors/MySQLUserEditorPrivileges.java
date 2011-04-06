@@ -86,12 +86,12 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             {
                 TableItem item = new TableItem(catalogsTable, SWT.NONE);
                 item.setText("% (All)");
-                item.setImage(DBIcon.TREE_CATALOG.getImage());
+                item.setImage(DBIcon.TREE_DATABASE.getImage());
             }
             for (MySQLCatalog catalog : getDatabaseObject().getDataSource().getCatalogs()) {
                 TableItem item = new TableItem(catalogsTable, SWT.NONE);
                 item.setText(catalog.getName());
-                item.setImage(DBIcon.TREE_CATALOG.getImage());
+                item.setImage(DBIcon.TREE_DATABASE.getImage());
                 item.setData(catalog);
             }
             UIUtils.packColumns(catalogsTable);

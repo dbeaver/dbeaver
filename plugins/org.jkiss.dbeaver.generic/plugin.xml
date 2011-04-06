@@ -20,9 +20,9 @@
             label="Generic"
             icon="icons/database.png">
             <tree path="generic" label="Generic data source">
-                <items label="Catalog" path="catalog" property="catalogs" iconId="#catalog" optional="true">
+                <items label="Catalog" path="catalog" property="catalogs" iconId="#database" optional="true">
                     <items label="Schemas" itemLabel="Schema" path="schema" property="schemas" iconId="#schema" optional="true">
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="Tables" iconId="#tables" description="Tables">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="Tables" iconId="#folder_table" description="Tables">
                             <items label="Table" path="table" property="tables">
                                 <icon iconId="#table" default="true"/>
                                 <icon iconId="#view" if="object.view"/>

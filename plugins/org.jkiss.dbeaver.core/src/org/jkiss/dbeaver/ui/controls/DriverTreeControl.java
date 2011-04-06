@@ -13,11 +13,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -173,13 +172,13 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
             if (index != 0) {
                 return null;
             }
-            String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
+            Image defImage = DBIcon.TREE_PAGE.getImage();
 			if (obj instanceof DataSourceProviderDescriptor) {
                 Image icon = ((DataSourceProviderDescriptor) obj).getIcon();
                 if (icon != null) {
                     return icon;
                 }
-			    imageKey = ISharedImages.IMG_OBJ_FOLDER;
+			    defImage = DBIcon.TREE_FOLDER.getImage();
             } else if (obj instanceof DriverDescriptor) {
                 Image icon = ((DriverDescriptor) obj).getIcon();
                 if (icon != null) {
@@ -187,7 +186,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                 }
             }
 
-            return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
+            return defImage;
         }
     }
 

@@ -18,7 +18,6 @@ public enum DBIcon
 
     TREE("tree", "icons/tree/tree.png"),
     TREE_DATABASE("database", "icons/tree/database.png"),
-    TREE_CATALOG("catalog", "icons/tree/catalog.png"),
     TREE_SCHEMA("schema", "icons/tree/schema.png"),
     TREE_TABLES("tables", "icons/tree/tables.png"),
     TREE_TABLE("table", "icons/tree/table.png"),
@@ -35,7 +34,16 @@ public enum DBIcon
     TREE_REFERENCE("reference", "icons/tree/reference.png"),
     TREE_TRIGGER("trigger", "icons/tree/trigger.png"),
     TREE_USER("user", "icons/tree/user.png"),
+    TREE_PAGE("page", "icons/tree/page.png"),
+    TREE_FOLDER("folder", "icons/tree/folder.png"),
+    TREE_FOLDER_DATABASE("folder_database", "icons/tree/folder_database.png"),
+    TREE_FOLDER_TABLE("folder_table", "icons/tree/folder_table.png"),
+    TREE_FOLDER_USER("folder_user", "icons/tree/folder_user.png"),
+    TREE_FOLDER_ADMIN("folder_admin", "icons/tree/folder_admin.png"),
     TREE_PACKAGE("package", "icons/tree/package.png"),
+
+    TREE_INFO("info", "/icons/tree/info.png"),
+    TREE_FOLDER_INFO("folder_info", "/icons/tree/folder_info.png"),
 
     PROJECT("project", "icons/project.png"),
     PROJECTS("projects", "icons/projects.png"),
@@ -97,7 +105,6 @@ public enum DBIcon
     FRAME_QUERY("frame_query", "/icons/misc/frame_query.png"),
     FILTER("filter", "/icons/misc/filter.png"),
 
-    INFO("info", "/icons/file/info.png"),
     SAVE("save", "/icons/file/save.png"),
     SAVE_ALL("save_all", "/icons/file/save_all.png"),
     SAVE_AS("save_as", "/icons/file/save_as.png"),

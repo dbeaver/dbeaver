@@ -228,7 +228,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                 databaseCombo.setLayoutData(gd);
                 databaseCombo.setVisibleItemCount(15);
                 databaseCombo.setToolTipText("Active catalog/schema");
-                databaseCombo.add(DBIcon.TREE_CATALOG.getImage(), EMPTY_SELECTION_TEXT, null);
+                databaseCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
                 databaseCombo.select(0);
                 databaseCombo.addSelectionListener(new SelectionListener() {
                     public void widgetSelected(SelectionEvent e)
@@ -459,7 +459,7 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
                                 for (DBSObject database : databasesInfo.list) {
                                     if (database instanceof DBSEntityContainer) {
                                         DBNDatabaseNode dbNode = navigatorModel.getNodeByObject(monitor, database, true);
-                                        databaseCombo.add(dbNode == null ? DBIcon.TREE_CATALOG.getImage() : dbNode.getNodeIconDefault(), database.getName(), database);
+                                        databaseCombo.add(dbNode == null ? DBIcon.TREE_DATABASE.getImage() : dbNode.getNodeIconDefault(), database.getName(), database);
                                     }
                                 }
                             }

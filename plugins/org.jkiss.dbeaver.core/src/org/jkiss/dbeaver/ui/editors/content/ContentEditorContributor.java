@@ -294,7 +294,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public InfoAction()
         {
-            super("org.jkiss.dbeaver.lob.actions.info", "Info", "Show column information", DBIcon.INFO);
+            super("org.jkiss.dbeaver.lob.actions.info", "Info", "Show column information", DBIcon.TREE_INFO);
         }
 
         @Override

@@ -260,7 +260,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         });
 
 /*
-        IAction viewMessageAction = new Action("View status message", DBIcon.INFO.getImageDescriptor()) {
+        IAction viewMessageAction = new Action("View status message", DBIcon.TREE_INFO.getImageDescriptor()) {
             public void run()
             {
             }
