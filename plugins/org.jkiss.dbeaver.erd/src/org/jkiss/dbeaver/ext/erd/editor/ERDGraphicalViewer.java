@@ -13,12 +13,11 @@ import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.Tool;
-import org.eclipse.gef.palette.PaletteContainer;
-import org.eclipse.gef.palette.PaletteDrawer;
-import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef.palette.*;
 import org.eclipse.gef.tools.SelectionTool;
 import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.events.DisposeEvent;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -177,24 +177,24 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                         return o1.getName().compareTo(o2.getName());
                     }
                 });
-                List<ToolEntryTable> tools = new ArrayList<ToolEntryTable>(tables.size());
+                Map<PaletteDrawer, List<ToolEntryTable>> toolMap = new LinkedHashMap<PaletteDrawer, List<ToolEntryTable>>();
                 for (DBSTable table : tables) {
-                    tools.add(new ToolEntryTable(table));
+                    DBSDataSourceContainer container = table.getDataSource().getContainer();
+                    PaletteDrawer drawer = getContainerPaletteDrawer(container);
+                    if (drawer != null) {
+                        List<ToolEntryTable> tools = toolMap.get(drawer);
+                        if (tools == null) {
+                            tools = new ArrayList<ToolEntryTable>(tables.size());
+                            toolMap.put(drawer, tools);
+                        }
+                        tools.add(new ToolEntryTable(table));
+                    }
                 }
-                editor.getPaletteContents().setChildren(tools);
+                for (Map.Entry<PaletteDrawer, List<ToolEntryTable>> entry : toolMap.entrySet()) {
+                    entry.getKey().setChildren(entry.getValue());
+                }
+                //editor.getPaletteContents().setChildren(tools);
             }
-        }
-        finally {
-            loadContents = false;
-        }
-    }
-
-    @Override
-    public void setContents(Object contents)
-    {
-        loadContents = true;
-        try {
-            super.setContents(contents);
         }
         finally {
             loadContents = false;
@@ -203,23 +203,6 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 
     public void handleTableActivate(DBSTable table)
     {
-        if (!loadContents) {
-            final PaletteContainer drawer = editor.getPaletteContents();
-            // Add entry (with right order)
-            List children = drawer.getChildren();
-            int index = 0;
-            for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
-                Object child = children.get(i);
-                if (child instanceof ToolEntryTable) {
-                    if (((ToolEntryTable) child).table.getName().compareTo(table.getName()) > 0) {
-                        index = i;
-                        break;
-                    }
-                }
-            }
-            drawer.add(index, new ToolEntryTable(table));
-        }
-
         if (table.getDataSource() != null) {
             DBSDataSourceContainer container = table.getDataSource().getContainer();
             if (container != null) {
@@ -234,15 +217,36 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                 }
             }
         }
+
+        if (!loadContents) {
+            final PaletteContainer drawer = getContainerPaletteDrawer(table.getDataSource().getContainer());
+            if (drawer != null) {
+                // Add entry (with right order)
+                List children = drawer.getChildren();
+                int index = 0;
+                for (int i = 0, childrenSize = children.size(); i < childrenSize; i++) {
+                    Object child = children.get(i);
+                    if (child instanceof ToolEntryTable) {
+                        if (((ToolEntryTable) child).table.getName().compareTo(table.getName()) > 0) {
+                            index = i;
+                            break;
+                        }
+                    }
+                }
+                drawer.add(index, new ToolEntryTable(table));
+            }
+        }
     }
 
     public void handleTableDeactivate(DBSTable table)
     {
-        final PaletteContainer drawer = editor.getPaletteContents();
-        for (Object entry : drawer.getChildren()) {
-            if (entry instanceof ToolEntryTable && ((ToolEntryTable)entry).table == table) {
-                drawer.remove((ToolEntryTable)entry);
-                break;
+        final PaletteContainer drawer = getContainerPaletteDrawer(table.getDataSource().getContainer());
+        if (drawer != null) {
+            for (Object entry : drawer.getChildren()) {
+                if (entry instanceof ToolEntryTable && ((ToolEntryTable)entry).table == table) {
+                    drawer.remove((ToolEntryTable)entry);
+                    break;
+                }
             }
         }
         if (table.getDataSource() != null) {
@@ -268,12 +272,36 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     {
         container.acquire(editor);
         container.getRegistry().addDataSourceListener(this);
+
+        PaletteRoot paletteRoot = editor.getPaletteRoot();
+
+        PaletteDrawer dsDrawer = new PaletteDrawer(
+            container.getName(),
+            ImageDescriptor.createFromImage(container.getDriver().getIcon()));
+        dsDrawer.setId(container.getId());
+
+        paletteRoot.add(dsDrawer);
     }
 
     private void releaseContainer(DBSDataSourceContainer container)
     {
+        PaletteDrawer drawer = getContainerPaletteDrawer(container);
+        if (drawer != null) {
+            editor.getPaletteRoot().remove(drawer);
+        }
+
         container.getRegistry().removeDataSourceListener(this);
         container.release(editor);
+    }
+
+    PaletteDrawer getContainerPaletteDrawer(DBSDataSourceContainer container)
+    {
+        for (Object child : editor.getPaletteRoot().getChildren()) {
+            if (child instanceof PaletteDrawer && container.getId().equals(((PaletteDrawer) child).getId())) {
+                return (PaletteDrawer) child;
+            }
+        }
+        return null;
     }
 
     public void handleDataSourceEvent(DBPEvent event)

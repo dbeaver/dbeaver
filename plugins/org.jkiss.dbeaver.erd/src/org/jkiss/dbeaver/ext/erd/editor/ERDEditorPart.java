@@ -137,7 +137,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected LoadingJob<EntityDiagram> diagramLoadingJob;
     private IPropertyChangeListener configPropertyListener;
     private PaletteRoot paletteRoot;
-    private PaletteContainer paletteContents;
 
     /**
      * No-arg constructor
@@ -305,11 +304,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public DiagramPart getDiagramPart()
     {
         return rootPart == null ? null : (DiagramPart) rootPart.getContents();
-    }
-
-    public PaletteContainer getPaletteContents()
-    {
-        return paletteContents;
     }
 
     /**
@@ -591,15 +585,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
         }
 
-        {
-            // Contents
-            paletteContents = new PaletteDrawer("Contents", DBIcon.TREE_DATABASE.getImageDescriptor());
-            //List<PaletteEntry> entries = new ArrayList<PaletteEntry>();
-            //paletteContents.addAll(entries);
-
-            paletteRoot.add(paletteContents);
-        }
-
 /*
             PaletteDrawer drawer = new PaletteDrawer("New Component",
                 Activator.getImageDescriptor("icons/connection.gif"));
@@ -767,7 +752,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     public boolean performSearch(SearchType searchType)
     {
-        return progressControl != null ? progressControl.performSearch(searchType) : false;
+        return progressControl != null && progressControl.performSearch(searchType);
     }
 
     protected abstract void loadDiagram();
