@@ -66,6 +66,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
             }
         }
+        DBeaverCore.getInstance().getDataSourceProviderRegistry().fireRegistryChange(this, true);
         //if (!dsFile.exists()) {
             // Generate empty config file
         //    saveDataSources();
@@ -74,12 +75,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public void dispose()
     {
+        DBeaverCore.getInstance().getDataSourceProviderRegistry().fireRegistryChange(this, false);
         synchronized (dataSourceListeners) {
-/*
             if (!this.dataSourceListeners.isEmpty()) {
                 log.warn("Some data source listeners are still registered: " + dataSourceListeners);
             }
-*/
             this.dataSourceListeners.clear();
         }
 

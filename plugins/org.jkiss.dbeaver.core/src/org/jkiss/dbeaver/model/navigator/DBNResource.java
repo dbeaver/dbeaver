@@ -42,11 +42,15 @@ public class DBNResource extends DBNNode
     protected void dispose(boolean reflect)
     {
         this.resource = null;
+        this.handler = null;
         if (children != null) {
             for (DBNNode child : children) {
                 child.dispose(reflect);
             }
             children = null;
+        }
+        if (reflect && this.getModel() != null) {
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
         }
         super.dispose(reflect);
     }
@@ -327,7 +331,7 @@ public class DBNResource extends DBNNode
                 if (childDelta.getKind() == IResourceDelta.REMOVED) {
                     // Node deleted
                     children.remove(childResource);
-                    getModel().fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.REMOVE, childResource));
+                    childResource.dispose(true);
                 } else {
                     // Node changed - handle it recursive
                     childResource.handleResourceChange(childDelta);

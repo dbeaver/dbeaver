@@ -100,6 +100,11 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         this.driver.addUser(this);
     }
 
+    public boolean isDisposed()
+    {
+        return driver != null;
+    }
+
     public void dispose()
     {
         users.clear();
@@ -491,7 +496,9 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     {
         synchronized (users) {
             if (!users.remove(user)) {
-                log.warn("Datasource user '" + user + "' is not registered in datasource '" + getName() + "'");
+                if (!isDisposed()) {
+                    log.warn("Datasource user '" + user + "' is not registered in datasource '" + getName() + "'");
+                }
             }
         }
     }

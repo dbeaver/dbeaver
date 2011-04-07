@@ -9,7 +9,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.IOUtils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -148,10 +147,10 @@ public class SQLEditor extends SQLEditorBase
         }
         // Acquire ds container
         if (curContainer != null) {
-            if (resultsView.isDirty()) {
-                resultsView.rejectChanges();
-            }
-            resultsView.clearAll();
+//            if (resultsView.isDirty()) {
+//                resultsView.rejectChanges();
+//            }
+//            resultsView.clearAll();
             curContainer.release(this);
         }
 
@@ -319,6 +318,7 @@ public class SQLEditor extends SQLEditorBase
 
     public void resourceChanged(final IResourceChangeEvent event)
     {
+/*
     	IPath path = getEditorInput().getPath();
     	if (path != null) {
 	        final IResourceDelta delta = event.getDelta() == null ? null : event.getDelta().findMember(path);
@@ -326,6 +326,7 @@ public class SQLEditor extends SQLEditorBase
 	            final int kind = delta.getKind();
 	        }
     	}
+*/
     }
 
     public void explainQueryPlan()

@@ -31,15 +31,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -55,7 +54,7 @@ import java.util.List;
 /**
  * DataSource Toolbar
  */
-class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener, ISelectionListener {
+class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener, ISelectionListener {
     static final Log log = LogFactory.getLog(ApplicationToolbarDataSources.class);
 
     public static final String EMPTY_SELECTION_TEXT = "<None>";
@@ -69,6 +68,8 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
 
     private SoftReference<DBSDataSourceContainer> curDataSourceContainer = null;
 
+    private final List<DBPDataSourceRegistry> handledRegistries = new ArrayList<DBPDataSourceRegistry>();
+
     private class CurrentDatabasesInfo {
         Collection<? extends DBSObject> list;
         DBSObject active;
@@ -79,10 +80,24 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         this.workbenchWindow = workbenchWindow;
         this.workbenchWindow.addPageListener(this);
         //workbench.addWindowListener();
+        // Register as datasource listener in all datasources
+        final DBeaverCore core = DBeaverCore.getInstance();
+        core.getDataSourceProviderRegistry().addDataSourceRegistryListener(this);
+        for (IProject project : core.getLiveProjects()) {
+            DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
+            if (registry != null) {
+                handleRegistryLoad(registry);
+            }
+        }
     }
 
     public void dispose()
     {
+        DBeaverCore.getInstance().getDataSourceProviderRegistry().removeDataSourceRegistryListener(this);
+        for (DBPDataSourceRegistry registry : handledRegistries) {
+            registry.removeDataSourceListener(this);
+        }
+
         setActivePart(null);
 
         UIUtils.dispose(resultSetSize);
@@ -90,6 +105,18 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         UIUtils.dispose(databaseCombo);
 
         this.workbenchWindow.removePageListener(this);
+    }
+
+    public void handleRegistryLoad(DBPDataSourceRegistry registry)
+    {
+        registry.addDataSourceListener(this);
+        handledRegistries.add(registry);
+    }
+
+    public void handleRegistryUnload(DBPDataSourceRegistry registry)
+    {
+        handledRegistries.remove(registry);
+        registry.removeDataSourceListener(this);
     }
 
     private IAdaptable getActiveObject()
@@ -172,7 +199,6 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         DBSDataSourceContainer container = getDataSourceContainer();
         if (container != null) {
             container.getPreferenceStore().removePropertyChangeListener(this);
-            container.getRegistry().removeDataSourceListener(this);
         }
         activePart = part;
         container = getDataSourceContainer();
@@ -180,7 +206,6 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
         if (container != null) {
             // Update editor actions
             container.getPreferenceStore().addPropertyChangeListener(this);
-            container.getRegistry().addDataSourceListener(this);
         }
 
         // Update controls and actions

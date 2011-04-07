@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.DBPRegistryListener;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -31,6 +32,7 @@ public class DataSourceProviderRegistry
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
     private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
+    private final List<DBPRegistryListener> registryListeners = new ArrayList<DBPRegistryListener>();
 
     public DataSourceProviderRegistry()
     {
@@ -83,11 +85,18 @@ public class DataSourceProviderRegistry
 
     public void dispose()
     {
+        synchronized (registryListeners) {
+            if (!registryListeners.isEmpty()) {
+                log.warn("Some datasource registry listeners are still registered: " + registryListeners);
+            }
+            registryListeners.clear();
+        }
         for (DataSourceProviderDescriptor providerDescriptor : this.dataSourceProviders) {
             providerDescriptor.dispose();
         }
         this.dataSourceProviders.clear();
 
+        this.dataTypeProviders.clear();
     }
 
     public DataSourceProviderDescriptor getDataSourceProvider(String id)
@@ -210,4 +219,30 @@ public class DataSourceProviderRegistry
         }
     }
 
+    public void addDataSourceRegistryListener(DBPRegistryListener listener)
+    {
+        synchronized (registryListeners) {
+            registryListeners.add(listener);
+        }
+    }
+
+    public void removeDataSourceRegistryListener(DBPRegistryListener listener)
+    {
+        synchronized (registryListeners) {
+            registryListeners.remove(listener);
+        }
+    }
+
+    void fireRegistryChange(DataSourceRegistry registry, boolean load)
+    {
+        synchronized (registryListeners) {
+            for (DBPRegistryListener listener : registryListeners) {
+                if (load) {
+                    listener.handleRegistryLoad(registry);
+                } else {
+                    listener.handleRegistryUnload(registry);
+                }
+            }
+        }
+    }
 }
