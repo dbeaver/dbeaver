@@ -26,15 +26,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -70,6 +68,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
                     deleteObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNDatabaseNode)element);
                 } else if (element instanceof DBNResource) {
                     deleteResource(HandlerUtil.getActiveWorkbenchWindow(event), (DBNResource)element);
+                } else {
+                    log.warn("Don't know how to delete element '" + element + "'");
                 }
                 if (deleteAll != null && !deleteAll) {
                     break;
@@ -136,9 +136,19 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         if (confirmResult == ConfirmResult.NO) {
             return false;
         }
-        DBECommandContext commander = new DBECommandContextImpl(node.getObject().getDataSource().getContainer());
+        DBECommandContext commander = null;
+        if (!(node instanceof DBNDataSource)) {
+            DBPDataSource dataSource = node.getObject().getDataSource();
+            if (dataSource == null) {
+                log.error("Node '" + node.getNodeName() + "' object is notify() attached toString() datasource");
+                return false;
+            }
+            commander = new DBECommandContextImpl(dataSource.getContainer());
+        }
         objectMaker.deleteObject(commander, node.getObject(), deleteOptions);
-
+        if (commander == null) {
+            return true;
+        }
         if (confirmResult == ConfirmResult.DETAILS) {
             if (!showScript(workbenchWindow, commander)) {
                 commander.resetChanges();

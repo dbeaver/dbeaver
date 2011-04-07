@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -43,11 +44,6 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 container = (DBNContainer) parentNode;
             }
         }
-        if (!(container instanceof DBNDatabaseNode)) {
-            log.error("Can't create child object - no container found");
-            return false;
-        }
-        DBNDatabaseNode dbContainer = (DBNDatabaseNode)container;
         Class<?> childType = container.getItemsClass();
         if (childType == null) {
             log.error("Can't determine child element type for container '" + container + "'");
@@ -65,10 +61,18 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             return false;
         }
         DBEObjectMaker objectMaker = (DBEObjectMaker) objectManager;
-        DBECommandContext commander = new DBECommandContextImpl(dbContainer.getObject().getDataSource().getContainer());
+        DBECommandContext commandContext = null;
+        if (container instanceof DBNDatabaseNode) {
+            DBSDataSourceContainer dsContainer = ((DBNDatabaseNode) container).getObject().getDataSource().getContainer();
+            commandContext = new DBECommandContextImpl(dsContainer);
+        }
 
-        DBSObject result = objectMaker.createNewObject(workbenchWindow, commander, container.getValueObject(), sourceObject);
+        DBSObject result = objectMaker.createNewObject(workbenchWindow, commandContext, container.getValueObject(), sourceObject);
         if (result == null) {
+            return true;
+        }
+        if (commandContext == null) {
+            log.error("Non-database container '" + container + "' must save new objects itself - command context is not accessible");
             return false;
         }
 
@@ -77,7 +81,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         try {
             ObjectSaver objectSaver = new ObjectSaver(
                 container,
-                commander,
+                commandContext,
                 result,
                 (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0);
             try {
@@ -128,15 +132,15 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 
     private static class ObjectSaver implements IRunnableWithProgress {
         private final DBNContainer container;
-        private final DBECommandContext commander;
+        private final DBECommandContext commandContext;
         private final DBSObject newObject;
         private final boolean saveObject;
         DBNNode newChild;
 
-        public ObjectSaver(DBNContainer container, DBECommandContext commander, DBSObject newObject, boolean saveObject)
+        public ObjectSaver(DBNContainer container, DBECommandContext commandContext, DBSObject newObject, boolean saveObject)
         {
             this.container = container;
-            this.commander = commander;
+            this.commandContext = commandContext;
             this.newObject = newObject;
             this.saveObject = saveObject;
         }
@@ -146,7 +150,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             try {
                 DefaultProgressMonitor progressMonitor = new DefaultProgressMonitor(monitor);
                 if (saveObject) {
-                    commander.saveChanges(progressMonitor);
+                    commandContext.saveChanges(progressMonitor);
                 }
                 newChild = container.addChildItem(progressMonitor, newObject);
             } catch (DBException e) {
