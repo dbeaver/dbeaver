@@ -171,19 +171,25 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
                 }
                 break;
             case OBJECT_UPDATE:
+            case OBJECT_SELECT:
             {
                 DBNNode dbmNode = getModel().getNodeByObject(event.getObject());
                 if (dbmNode != null) {
                     DBNEvent.NodeChange nodeChange;
-                    Boolean enabled = event.getEnabled();
-                    if (enabled != null) {
-                        if (enabled) {
-                            nodeChange = DBNEvent.NodeChange.LOAD;
-                        } else {
-                            nodeChange = DBNEvent.NodeChange.UNLOAD;
-                        }
-                    } else {
+                    Boolean enabled = null;
+                    if (event.getAction() == DBPEvent.Action.OBJECT_SELECT) {
                         nodeChange = DBNEvent.NodeChange.REFRESH;
+                    } else {
+                        enabled = event.getEnabled();
+                        if (enabled != null) {
+                            if (enabled) {
+                                nodeChange = DBNEvent.NodeChange.LOAD;
+                            } else {
+                                nodeChange = DBNEvent.NodeChange.UNLOAD;
+                            }
+                        } else {
+                            nodeChange = DBNEvent.NodeChange.REFRESH;
+                        }
                     }
                     getModel().fireNodeUpdate(
                         this,

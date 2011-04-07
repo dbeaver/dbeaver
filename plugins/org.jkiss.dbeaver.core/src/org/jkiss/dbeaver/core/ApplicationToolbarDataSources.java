@@ -342,7 +342,10 @@ class ApplicationToolbarDataSources implements DBPEventListener, IPropertyChange
     {
         if (event.getAction() == DBPEvent.Action.OBJECT_ADD ||
             event.getAction() == DBPEvent.Action.OBJECT_REMOVE ||
-            event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null && event.getObject() == getDataSourceContainer()) {
+            (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null && event.getObject() == getDataSourceContainer()) ||
+            (event.getAction() == DBPEvent.Action.OBJECT_SELECT && Boolean.TRUE.equals(event.getEnabled()) && event.getObject().getDataSource().getContainer() == getDataSourceContainer())
+            )
+        {
             Display.getDefault().asyncExec(
                 new Runnable() {
                     public void run()

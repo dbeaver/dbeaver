@@ -304,10 +304,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         this.activeCatalog = (MySQLCatalog) child;
 
         if (oldChild != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, oldChild));
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldChild, false));
         }
         if (this.activeCatalog != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this.activeCatalog));
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, this.activeCatalog, true));
         }
     }
 

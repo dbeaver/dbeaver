@@ -1074,34 +1074,34 @@
             </command>
             <command commandId="org.eclipse.ui.edit.delete">
                 <visibleWhen checkEnabled="true">
-                    <with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>
+                    <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
                 </visibleWhen>
             </command>
 
             <command commandId="org.eclipse.ui.edit.copy">
                 <visibleWhen checkEnabled="true">
-                    <with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>
+                    <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
                 </visibleWhen>
             </command>
             <command commandId="org.eclipse.ui.edit.paste">
                 <visibleWhen checkEnabled="true">
-                    <with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>
+                    <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
                 </visibleWhen>
             </command>
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="Copy full qualified name">
                 <visibleWhen checkEnabled="true">
-                    <with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>
+                    <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
                 </visibleWhen>
             </command>
             <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true">
-                    <with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>
+                    <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
                 </visibleWhen>
             </command>
 
             <command commandId="org.jkiss.dbeaver.core.export.data">
                 <visibleWhen checkEnabled="true">
-                    <with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>
+                    <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
                 </visibleWhen>
             </command>
         </menuContribution>

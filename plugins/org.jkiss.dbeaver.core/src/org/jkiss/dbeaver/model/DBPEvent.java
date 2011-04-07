@@ -16,6 +16,7 @@ public class DBPEvent
         OBJECT_ADD,
         OBJECT_UPDATE,
         OBJECT_REMOVE,
+        OBJECT_SELECT,
     }
 
     private Action action;

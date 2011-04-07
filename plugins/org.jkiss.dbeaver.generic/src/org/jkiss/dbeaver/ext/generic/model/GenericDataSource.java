@@ -515,10 +515,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         this.activeChild = child;
 
         if (oldChild != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, oldChild));
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldChild, false));
         }
         if (this.activeChild != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this.activeChild));
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, this.activeChild, true));
         }
     }
 
