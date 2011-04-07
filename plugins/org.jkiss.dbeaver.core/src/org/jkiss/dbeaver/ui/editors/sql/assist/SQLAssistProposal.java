@@ -59,7 +59,6 @@ public class SQLAssistProposal {
      *
      * @param dbObject
      *            the database model object
-     * @see org.eclipse.datatools.modelbase.sql.schema.Schema
      */
     public SQLAssistProposal( DBSObject dbObject ) {
         this.fDBObject = dbObject;

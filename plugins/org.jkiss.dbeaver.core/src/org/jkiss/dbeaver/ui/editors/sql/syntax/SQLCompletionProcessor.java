@@ -21,9 +21,8 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryInfo;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.assist.SQLAssistProposalsService;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
 import java.lang.reflect.InvocationTargetException;
@@ -177,7 +176,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         //} else if (queryType == QueryType.COLUMN) {
 
         } else {
-            // Get list of subobjects (filetred by wordPart)
+            // Get list of sub-objects (filtered by wordPart)
             makeStructureProposals(monitor, dataSource, proposals);
         }
     }
@@ -221,7 +220,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                             }
                         }
                     } else {
-                        // Path element not found. Dumn - can't do anything.
+                        // Path element not found. Damn - can't do anything.
                         return;
                     }
                 }
@@ -273,11 +272,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
 
         token = token.toUpperCase();
-        SQLQueryInfo queryInfo = new SQLQueryInfo(activeQuery);
-        List<SQLQueryInfo.TableRef> refList = queryInfo.getTableRefs();
+        //SQLQueryInfo queryInfo = new SQLQueryInfo(activeQuery);
+        //List<SQLQueryInfo.TableRef> refList = queryInfo.getTableRefs();
         Matcher matcher;
         Pattern aliasPattern;
-        String quote = "";
+        String quote;
         quote = editor.getDataSource().getInfo().getIdentifierQuoteString();
         if (CommonUtils.isEmpty(quote) || quote.equals(" ")) {
             quote = "\"";
@@ -400,7 +399,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     private ICompletionProposal makeProposalsFromObject(DBRProgressMonitor monitor, DBSObject object)
     {
         String objectName = object.getName();
-        String displayString = objectName;
+        //String displayString = objectName;
         //if (object instanceof DBSEntityQualified) {
         //    displayString = ((DBSEntityQualified)object).getFullQualifiedName();
         //}
@@ -463,51 +462,34 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     public IContextInformation[] computeContextInformation(
         ITextViewer viewer, int documentOffset)
     {
-//    SQLWordPartDetector wordPart = new SQLWordPartDetector(viewer,
-//        documentOffset);
+        SQLStatementInfo statementInfo = editor.extractQueryAtPos(documentOffset);
+        if (statementInfo == null || CommonUtils.isEmpty(statementInfo.getQuery())) {
+            return null;
+        }
 
-        IContextInformation[] result = new IContextInformation[2];
-        result[0] = new ContextInformation("contextDisplayString", "informationDisplayString");
-        result[1] = new ContextInformation("contextDisplayString2", "informationDisplayString2");
-
+        IContextInformation[] result = new IContextInformation[1];
+        result[0] = new ContextInformation(statementInfo.getQuery(), statementInfo.getQuery());
         return result;
     }
 
-    /**
-     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getCompletionProposalAutoActivationCharacters()
-     */
     public char[] getCompletionProposalAutoActivationCharacters()
     {
         return new char[] {'.'};
     }
 
-    /**
-     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationAutoActivationCharacters()
-     */
     public char[] getContextInformationAutoActivationCharacters()
     {
         return null;
     }
 
-    /**
-     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getErrorMessage()
-     */
     public String getErrorMessage()
     {
         return null;
     }
 
-    /**
-     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationValidator()
-     */
     public IContextInformationValidator getContextInformationValidator()
     {
         return validator;
-    }
-
-    public void setProposalsService(SQLAssistProposalsService proposalsService)
-    {
-        
     }
 
     /**
@@ -530,10 +512,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             fInstallOffset = offset;
         }
 
-        /*
-        * @see org.eclipse.jface.text.contentassist.IContextInformationPresenter#updatePresentation(int,
-        *      TextPresentation)
-        */
         public boolean updatePresentation(int documentPosition,
             TextPresentation presentation)
         {
