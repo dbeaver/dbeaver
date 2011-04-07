@@ -9,6 +9,10 @@
 	<property name="productVersion" value="${Bundle-Version}"/>
 	<property name="buildId" value="dbeaver-${productVersion}"/>
 	<property name="buildLabel" value="${buildId}"/>
+	<property name="readmeFile" value="build/readme.txt"/>
+	<tstamp>
+		<format property="current-date" pattern="dd MMM yyyy" locale="en"/>
+	</tstamp>
 
 	<target name="clean">
         <delete dir="${distDirectory}" />
@@ -38,8 +42,17 @@
 			</fileset>
 		</copy>
         <mkdir dir="${distDirectory}" />
+		<antcall target="readme"/>
 	</target>
 
+    <target name="readme">
+		<echo message="Generate ${readmeFile}"/>
+        <filter filtersFile="local.properties"/>
+        <filter token="build.version" value="${productVersion}"/>
+        <filter token="build.date" value="${current-date}"/>
+        <delete file="${readmeFile}" />
+        <copy file="docs/readme.txt" tofile="${readmeFile}" filtering="true"/>
+    </target>
 
 	<!--
 		This target actually executes the PDE Build process by launching the 

@@ -1,0 +1,60 @@
+DBeaver @build.version@
+
+@build.date@
+
+README
+
+Thank you for downloading DBeaver!
+
+DBeaver is a multi-platform universal database manager and SQL Client. 
+It supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, Mimer, HSQLDB, 
+Derby, and any database that has a JDBC driver. 
+
+It is a GUI program that allows to view/edit the structure of a database, 
+execute SQL queries and scripts, browse and export table data, 
+handle BLOB/CLOB values, modify database meta objects, etc. 
+
+Installing DBeaver
+========================
+  Use automatic installer distribution (Windows and Linux versions)
+  or just unpack archive and start "dbeaver" executable.
+  
+  Note: do not extract archive in the same folder where older version
+  of DBeaver is installed.
+  Remove previous version or extract archive in another folder.
+
+Command line parameters
+========================
+
+  - data <path>
+    Store all projects/configuration in folder <path>. By default DBeaver
+	stores all its data in user's home ".dbeaver" folder.
+	<path> could be an absolute or relative directory name.
+	If you want to use DBeaver as redistributable program start it
+	with arguments like "dbeaver -data workspace".
+
+
+Licensing
+==========================
+  DBeaver is freeware. You can use it for any purpose with no limitations.
+  This software is provided "as is" without express or implied warranty.
+
+Home Page:
+==========
+  http://dbeaver.jkiss.org
+
+Support
+=======
+  For technical support and assistance, you may find necessary information at the Support page
+  (http://dbeaver.jkiss.org/forum) or contact us at support@jkiss.org.
+
+
+Bug Reporting:
+==============
+  Send emails to bugs@jkiss.org
+
+
+Contacting us:
+==============
+  support@jkiss.org     - Technical support
+  serge@jkiss.org       - Technical support, feature suggestions and any other questions.

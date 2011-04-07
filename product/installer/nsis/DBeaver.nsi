@@ -25,8 +25,8 @@
   VIAddVersionKey "LegalTrademarks" "DBeaver is a trademark of JKISS"
   VIAddVersionKey "LegalCopyright" "JKISS"
   VIAddVersionKey "FileDescription" "DBeaver"
-  VIAddVersionKey "FileVersion" "1.0.1"
-  VIProductVersion "1.0.1.0"
+  VIAddVersionKey "FileVersion" "@productVersion@"
+  VIProductVersion "@productVersion@.0"
 
 ; Definitions for Java 6.0
   !define JRE_VERSION "6.0"
@@ -127,6 +127,7 @@ Section "-DBeaver Core" SecCore
   
   ; Copy files
   File "raw\win32.x86\dbeaver\.eclipseproduct"
+  File "raw\win32.x86\dbeaver\readme.txt"
   File "raw\win32.x86\dbeaver\dbeaver.exe"
   File /r "raw\win32.x86\dbeaver\configuration"
   File /r  /x org.jkiss.*.jar "raw\win32.x86\dbeaver\plugins"
@@ -221,6 +222,7 @@ Section "Uninstall"
 
   Delete "$INSTDIR\.eclipseproduct"
   Delete "$INSTDIR\dbeaver.exe"
+  Delete "$INSTDIR\readme.txt"
   RMDir /r "$INSTDIR\configuration"
   RMDir /r "$INSTDIR\plugins"
   RMDir /r "$INSTDIR\drivers"
