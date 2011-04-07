@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -15,7 +16,9 @@ import org.jkiss.dbeaver.model.data.DBDRowController;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
 
@@ -47,11 +50,13 @@ public class ColumnInfoPanel extends Composite {
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
         this.setLayoutData(gd);
-        this.setLayout(new FormLayout());
+        this.setLayout(new FillLayout());
         {
-            PropertyPageTabbed properties = new PropertyPageTabbed(false);
+            Composite ph = UIUtils.createPlaceholder(this, 1);
+            ph.setLayout(new FillLayout());
+            PropertyPageStandard properties = new PropertyPageStandard();
             properties.init(new ProxyPageSite(valueController.getValueSite()));
-            properties.createControl(this);
+            properties.createControl(ph);
             properties.selectionChanged(valueController.getValueSite().getPart(), new StructuredSelection(infoItem));
         }
     }

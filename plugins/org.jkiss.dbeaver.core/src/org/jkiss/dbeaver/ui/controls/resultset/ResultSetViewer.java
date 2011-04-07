@@ -823,7 +823,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         showCellEditor(cell, false, null);
                     }
                 });
-                if (!DBUtils.isNullValue(value)) {
+                if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)) {
                     manager.add(new Action("Set to NULL") {
                         @Override
                         public void run()
