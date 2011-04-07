@@ -59,7 +59,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     @Override
     public String getNodeType()
     {
-        return getMeta().getLabel();
+        return getMeta().getItemLabel();
     }
 
     public String getNodeName()
