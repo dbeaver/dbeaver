@@ -251,14 +251,14 @@ public class ViewUtils
                             catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }
-                            if (activeChild != ((DBNDatabaseNode)selectedNode).getObject() && activeChild != null) {
+                            if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
                                 DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
-                                if (databaseNode.getObject() != null && activeChild.getClass() == databaseNode.getObject().getClass()) {
+                                if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
                                     DBXTreeNode nodeMeta = databaseNode.getMeta();
                                     String text = "Set Active";
                                     if (nodeMeta instanceof DBXTreeItem) {
                                         DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
-                                        text += " " + itemMeta.getLabel();
+                                        text += " " + itemMeta.getItemLabel();
                                     }
                                     IAction action = makeAction(new NavigatorActionSetActiveObject(), workbenchPart, selection, text, null, null);
 

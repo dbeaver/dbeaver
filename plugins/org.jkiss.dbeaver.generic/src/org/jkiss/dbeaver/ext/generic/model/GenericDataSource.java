@@ -466,7 +466,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 activeChild = getChild(monitor, activeDbName);
                 if (activeChild == null) {
                     if (!CommonUtils.isEmpty(queryGetActiveDB)) {
-                        log.warn("Could not detect currently active database '" + activeDbName + "'");
+                        log.debug("Could not detect currently active database '" + activeDbName + "'");
                     }
                 }
             } else {
