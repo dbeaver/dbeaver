@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -28,10 +27,7 @@ import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
 import org.eclipse.ui.views.properties.tabbed.TabContents;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
-import org.jkiss.dbeaver.ext.ui.IFolderListener;
-import org.jkiss.dbeaver.ext.ui.IFolderedPart;
-import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
+import org.jkiss.dbeaver.ext.ui.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -39,7 +35,6 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
-import org.jkiss.dbeaver.ui.views.properties.DataSourcePropertyFilter;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
@@ -50,7 +45,7 @@ import java.util.List;
 /**
  * DefaultObjectEditor
  */
-public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, IProgressControlProvider, IFolderedPart, ISearchContextProvider//, ILazyPropertyLoadListener
+public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, IProgressControlProvider, IFolderedPart, ISearchContextProvider, IRefreshableContainer
 {
     //static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
@@ -58,6 +53,8 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     private ObjectEditorPageControl pageControl;
     private final List<IFolderListener> folderListeners = new ArrayList<IFolderListener>();
     private String curFolderId;
+
+    private final List<IRefreshablePart> refreshClients = new ArrayList<IRefreshablePart>();
     //private Text nameText;
     //private Text descriptionText;
 
@@ -158,12 +155,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         properties.init(new ProxyPageSite(getSite()));
         properties.createControl(propsPlaceholder);
 
-        PropertySourceEditable propertySource = new PropertySourceEditable(
-            getEditorInput().getCommandContext(),
-            getEditorInput().getTreeNode(),
-            getEditorInput().getDatabaseObject());
-        propertySource.collectProperties();
-        properties.selectionChanged(this, new StructuredSelection(propertySource));
+        loadObjectProperties();
 
         final String folderId = getEditorInput().getDefaultFolderId();
         if (folderId != null) {
@@ -184,6 +176,16 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
                 }
             }
         });
+    }
+
+    private void loadObjectProperties()
+    {
+        PropertySourceEditable propertySource = new PropertySourceEditable(
+            getEditorInput().getCommandContext(),
+            getEditorInput().getTreeNode(),
+            getEditorInput().getDatabaseObject());
+        propertySource.collectProperties();
+        properties.selectionChanged(this, new StructuredSelection(propertySource));
     }
 
 /*
@@ -256,12 +258,6 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     public boolean isSaveAsAllowed()
     {
         return false;
-    }
-
-    public void refreshPart(Object source) {
-        if (properties != null) {
-            properties.refresh();
-        }
     }
 
     private void createPathRow(Composite infoGroup, Image image, String label, String value, SelectionListener selectionListener)
@@ -361,4 +357,27 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     {
         return getFolderSearch().performSearch(searchType);
     }
+
+    public void addRefreshClient(IRefreshablePart part)
+    {
+        synchronized (refreshClients) {
+            refreshClients.add(part);
+        }
+    }
+
+    public void removeRefreshClient(IRefreshablePart part)
+    {
+        synchronized (refreshClients) {
+            refreshClients.add(part);
+        }
+    }
+
+    public void refreshPart(Object source) {
+        synchronized (refreshClients) {
+            for (IRefreshablePart part : refreshClients) {
+                part.refreshPart(source);
+            }
+        }
+    }
+
 }

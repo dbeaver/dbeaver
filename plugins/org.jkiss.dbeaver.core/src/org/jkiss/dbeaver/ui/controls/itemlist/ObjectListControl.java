@@ -54,15 +54,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private boolean isTree;
     private boolean isFitWidth;
-    //private boolean showName;
-    //private boolean loadProperties;
 
     private ColumnViewer itemsViewer;
     //private ColumnViewerEditor itemsEditor;
     private List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
     private SortListener sortListener;
     private IDoubleClickListener doubleClickHandler;
-    private Map<Item, LazyObject> lazyObjects;
     private IPropertySource listPropertySource;
     private Job lazyLoadingJob = null;
 
@@ -80,6 +77,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private volatile OBJECT_TYPE curListObject;
     private volatile LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
+
+    private Map<OBJECT_TYPE, List<ObjectColumn>> lazyObjects;
+    private final Map<OBJECT_TYPE, Map<String, Object>> lazyCache = new IdentityHashMap<OBJECT_TYPE, Map<String, Object>>();
 
     public ObjectListControl(
         Composite parent,
@@ -308,6 +308,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             listPropertySource = createListPropertySource();
         }
 
+        clearLazyCache();
+
         loadingJob = createLoadService();
         loadingJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
@@ -328,12 +330,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (!itemsViewer.getControl().isDisposed()) {
             itemsViewer.setInput(Collections.<Object>emptyList());
         }
-        //itemMap.clear();
+        clearLazyCache();
     }
 
-    public IDoubleClickListener getDoubleClickHandler()
+    private void clearLazyCache()
     {
-        return doubleClickHandler;
+        synchronized (lazyCache) {
+            lazyCache.clear();
+        }
     }
 
     public void setDoubleClickHandler(IDoubleClickListener doubleClickHandler)
@@ -351,32 +355,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return ((TableViewer)itemsViewer).getTable();
     }
 
-    private synchronized void addLazyObject(Item item, ObjectColumn column)
+    private synchronized void addLazyObject(OBJECT_TYPE object, ObjectColumn column)
     {
         if (lazyObjects == null) {
-            lazyObjects = new TreeMap<Item, LazyObject>(new Comparator<Item>() {
-                public int compare(Item o1, Item o2)
-                {
-                    int index1, index2;
-                    if (isTree) {
-                        index1 = getTree().indexOf((TreeItem) o1);
-                        index2 = getTree().indexOf((TreeItem) o2);
-                    } else {
-                        index1 = getTable().indexOf((TableItem) o1);
-                        index2 = getTable().indexOf((TableItem) o2);
-                    }
-                    return index1 - index2;
-                }
-            });
+            lazyObjects = new IdentityHashMap<OBJECT_TYPE, List<ObjectColumn>>();
         }
-        LazyObject lazyObject = lazyObjects.get(item);
-        if (lazyObject == null) {
-            lazyObject = new LazyObject(item.getData());
-            lazyObjects.put(item, lazyObject);
+        List<ObjectColumn> objectColumns = lazyObjects.get(object);
+        if (objectColumns == null) {
+            objectColumns = new ArrayList<ObjectColumn>();
+            lazyObjects.put(object, objectColumns);
             //System.out.println("LAZY: " + object);
         }
-        if (!lazyObject.columns.contains(column)) {
-            lazyObject.columns.add(column);
+        if (!objectColumns.contains(column)) {
+            objectColumns.add(column);
         }
         if (lazyLoadingJob == null) {
             lazyLoadingJob = new LazyLoaderJob();
@@ -397,18 +388,22 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    private synchronized Map<Item, LazyObject> obtainLazyObjects()
+    private synchronized Map<OBJECT_TYPE, List<ObjectColumn>> obtainLazyObjects()
     {
-        if (lazyObjects == null) {
-            return null;
+        synchronized (lazyCache) {
+            if (lazyObjects == null) {
+                return null;
+            }
+            Map<OBJECT_TYPE, List<ObjectColumn>> tmp = lazyObjects;
+            lazyObjects = null;
+            return tmp;
         }
-        Map<Item, LazyObject> tmp = lazyObjects;
-        lazyObjects = null;
-        return tmp;
     }
 
-    private Object getCellValue(Object object, int columnIndex)
+    private Object getCellValue(Object element, int columnIndex)
     {
+        OBJECT_TYPE object = (OBJECT_TYPE)element;
+
         if (columnIndex >= columns.size()) {
             return null;
         }
@@ -416,7 +411,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (column.item.isDisposed()) {
             return null;
         }
-        Object objectValue = getObjectValue((OBJECT_TYPE) object);
+        Object objectValue = getObjectValue(object);
         if (objectValue == null) {
             return null;
         }
@@ -425,6 +420,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return null;
         }
         if (prop.isLazy(objectValue, true)) {
+            synchronized (lazyCache) {
+                final Map<String, Object> cache = lazyCache.get(object);
+                if (cache != null) {
+                    final Object value = cache.get(column.id);
+                    if (value != null) {
+                        return value;
+                    }
+                }
+            }
             return LOADING_LABEL;
         }
         try {
@@ -596,18 +600,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public ObjectPropertyDescriptor getProperty(Object element)
         {
             return propMap.get(element.getClass());
-        }
-    }
-
-    //////////////////////////////////////////////////////
-    // Lazy object info
-
-    private static class LazyObject {
-        final Object object;
-        final List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
-        private LazyObject(Object object)
-        {
-            this.object = object;
         }
     }
 
@@ -851,19 +843,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
 			switch(event.type) {
 				case SWT.PaintItem: {
-                    Object cellValue = getCellValue(event.item.getData(), event.index);
+                    final OBJECT_TYPE object = (OBJECT_TYPE)event.item.getData();
+                    Object cellValue = getCellValue(object, event.index);
                     if (cellValue == LOADING_LABEL) {
-                        Object itemValue;
-                        if (isTree) {
-                            itemValue = ((TreeItem)event.item).getText(event.index);
-                        } else {
-                            itemValue = ((TableItem)event.item).getText(event.index);
-                        }
-                        if (itemValue == LOADING_LABEL) {
-                            addLazyObject((Item)event.item, columns.get(event.index));
-                        }
-                    }
-                    if (cellValue != null ) {
+                        addLazyObject(object, columns.get(event.index));
+                    } else if (cellValue != null ) {
                         GC gc = event.gc;
                         if (cellValue instanceof Boolean) {
                             if (((Boolean)cellValue)) {
@@ -978,22 +962,28 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Override
         protected IStatus run(final DBRProgressMonitor monitor)
         {
-            final Map<Item, LazyObject> objectMap = obtainLazyObjects();
+            final Map<OBJECT_TYPE, List<ObjectColumn>> objectMap = obtainLazyObjects();
             if (isDisposed()) {
                 return Status.OK_STATUS;
             }
-            for (Map.Entry<Item, LazyObject> entry : objectMap.entrySet()) {
+            for (Map.Entry<OBJECT_TYPE, List<ObjectColumn>> entry : objectMap.entrySet()) {
                 if (monitor.isCanceled()) {
                     break;
                 }
-                final Item item = entry.getKey();
-                final LazyObject lazyObject = entry.getValue();
-                Object object = getObjectValue((OBJECT_TYPE) lazyObject.object);
+                final OBJECT_TYPE element = entry.getKey();
+                Object object = getObjectValue(element);
                 if (object == null) {
                     continue;
                 }
-                final List<String> stringValues = new ArrayList<String>(lazyObject.columns.size());
-                for (ObjectColumn column : lazyObject.columns) {
+                Map<String, Object> objectCache;
+                synchronized (lazyCache) {
+                    objectCache = lazyCache.get(element);
+                    if (objectCache == null) {
+                        objectCache = new HashMap<String, Object>();
+                        lazyCache.put(element, objectCache);
+                    }
+                }
+                for (ObjectColumn column : entry.getValue()) {
                     if (monitor.isCanceled() || isDisposed()) {
                         break;
                     }
@@ -1001,13 +991,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         ObjectPropertyDescriptor prop = column.propMap.get(object.getClass());
                         if (prop != null) {
                             Object lazyValue = prop.readValue(object, monitor);
-                            if (isHyperlink(lazyValue)) {
-                                stringValues.add("");
-                            } else {
-                                stringValues.add(getCellString(lazyValue));
-                            }
-                        } else {
-                            stringValues.add("");
+                            objectCache.put(prop.getId(), lazyValue);
                         }
                     }
                     catch (IllegalAccessException e) {
@@ -1019,28 +1003,21 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         return RuntimeUtils.makeExceptionStatus(e.getTargetException());
                     }
                 }
+            }
 
-                // Save read values in tree/table items
-                if (!isDisposed()) {
-                    getDisplay().syncExec(new Runnable() {
-                        public void run()
-                        {
-                            for (int i = 0, columnsSize = lazyObject.columns.size(); i < columnsSize; i++) {
-                                ObjectColumn column = lazyObject.columns.get(i);
-                                int columnIndex = columns.indexOf(column);
-                                String stringValue = stringValues.get(i);
-                                if (monitor.isCanceled() || isDisposed() || item.isDisposed()) {
-                                    return;
-                                }
-                                if (item instanceof TreeItem) {
-                                    ((TreeItem) item).setText(columnIndex, stringValue);
-                                } else {
-                                    ((TableItem) item).setText(columnIndex, stringValue);
-                                }
-                            }
+            // Update viewer
+            if (!isDisposed()) {
+                getDisplay().syncExec(new Runnable() {
+                    public void run()
+                    {
+                        itemsViewer.getControl().setRedraw(false);
+                        try {
+                            itemsViewer.update(objectMap.keySet().toArray(), null);
+                        } finally {
+                            itemsViewer.getControl().setRedraw(true);
                         }
-                    });
-                }
+                    }
+                });
             }
 
             return Status.OK_STATUS;

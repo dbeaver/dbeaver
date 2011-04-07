@@ -14,8 +14,11 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
+import org.jkiss.dbeaver.ext.ui.IRefreshableContainer;
+import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -25,7 +28,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 /**
  * EntityNodeEditor
  */
-class NodeEditorSection implements ISection, ISearchContextProvider
+class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshablePart
 {
     //static final Log log = LogFactory.getLog(EntityNodeEditor.class);
 
@@ -43,6 +46,17 @@ class NodeEditorSection implements ISection, ISearchContextProvider
         this.editor = editor;
         this.node = node;
         this.metaNode = metaNode;
+
+        if (editor instanceof IRefreshableContainer) {
+            ((IRefreshableContainer) editor).addRefreshClient(this);
+        }
+    }
+
+    public void dispose()
+    {
+        if (editor instanceof IRefreshableContainer) {
+            ((IRefreshableContainer) editor).removeRefreshClient(this);
+        }
     }
 
     public void createControls(Composite parent, TabbedPropertySheetPage tabbedPropertySheetPage)
@@ -115,10 +129,6 @@ class NodeEditorSection implements ISection, ISearchContextProvider
         parent.layout();
     }
 
-    public void dispose() {
-
-    }
-
     public int getMinimumHeight()
     {
         return SWT.DEFAULT;
@@ -131,28 +141,8 @@ class NodeEditorSection implements ISection, ISearchContextProvider
 
     public void refresh()
     {
-        if (activated) {
-            return;
-        }
-        // Check - do we need to load new content in editor
-        // If this is DBM event then check node change type
-        // UNLOAD usually means that connection was closed on connection's node is not removed but
-        // is in "unloaded" state.
-        // Without this check editor will try to reload it's content and thus will reopen just closed connection
-        // (by calling getChildren() on DBNNode)
-        boolean loadNewData = true;
-//        if (source instanceof DBNEvent) {
-//            DBNEvent.NodeChange nodeChange = ((DBNEvent) source).getNodeChange();
-//            if (nodeChange == DBNEvent.NodeChange.UNLOAD) {
-//                loadNewData = false;
-//            }
-//        }
-        if (!itemControl.isDisposed()) {
-            itemControl.clearData();
-            if (loadNewData) {
-                itemControl.loadData();
-            }
-        }
+        // Do nothing
+        // Property tab section is refreshed on every activation so just skip it
     }
 
     public IDatabaseNodeEditorInput getEditorInput()
@@ -178,5 +168,31 @@ class NodeEditorSection implements ISection, ISearchContextProvider
     public boolean performSearch(SearchType searchType)
     {
         return itemControl.performSearch(searchType);
+    }
+
+    public void refreshPart(Object source)
+    {
+        if (!activated || itemControl == null || itemControl.isDisposed()) {
+            return;
+        }
+        // Check - do we need to load new content in editor
+        // If this is DBM event then check node change type
+        // UNLOAD usually means that connection was closed on connection's node is not removed but
+        // is in "unloaded" state.
+        // Without this check editor will try to reload it's content and thus will reopen just closed connection
+        // (by calling getChildren() on DBNNode)
+        boolean loadNewData = true;
+        if (source instanceof DBNEvent) {
+            DBNEvent.NodeChange nodeChange = ((DBNEvent) source).getNodeChange();
+            if (nodeChange == DBNEvent.NodeChange.UNLOAD) {
+                loadNewData = false;
+            }
+        }
+        if (!itemControl.isDisposed()) {
+            itemControl.clearData();
+            if (loadNewData) {
+                itemControl.loadData();
+            }
+        }
     }
 }

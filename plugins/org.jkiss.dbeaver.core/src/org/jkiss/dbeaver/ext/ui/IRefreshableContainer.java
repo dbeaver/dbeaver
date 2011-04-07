@@ -7,7 +7,10 @@ package org.jkiss.dbeaver.ext.ui;
 /**
  * IRefreshablePart
  */
-public interface IRefreshablePart
+public interface IRefreshableContainer
 {
-    void refreshPart(Object source);
+    void addRefreshClient(IRefreshablePart part);
+
+    void removeRefreshClient(IRefreshablePart part);
+
 }

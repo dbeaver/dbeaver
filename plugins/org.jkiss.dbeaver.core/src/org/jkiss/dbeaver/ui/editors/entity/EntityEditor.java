@@ -61,7 +61,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         }
     }
 
-    private static final Map<Class<?>, EditorDefaults> defaultPageMap = new HashMap<Class<?>, EditorDefaults>();
+    private static final Map<String, EditorDefaults> defaultPageMap = new HashMap<String, EditorDefaults>();
 
     private final Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
     private DBECommandAdapter commandListener;
@@ -292,7 +292,10 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
         super.createPages();
 
-        EditorDefaults editorDefaults = defaultPageMap.get(getEditorInput().getDatabaseObject().getClass());
+        EditorDefaults editorDefaults;
+        synchronized (defaultPageMap) {
+            editorDefaults = defaultPageMap.get(getEditorInput().getDatabaseObject().getClass().getName());
+        }
 
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
@@ -414,10 +417,10 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         DBSObject object = getEditorInput().getDatabaseObject();
         if (object != null) {
             synchronized (defaultPageMap) {
-                EditorDefaults editorDefaults = defaultPageMap.get(object.getClass());
+                EditorDefaults editorDefaults = defaultPageMap.get(object.getClass().getName());
                 if (editorDefaults == null) {
                     editorDefaults = new EditorDefaults(pageId, folderId);
-                    defaultPageMap.put(object.getClass(), editorDefaults);
+                    defaultPageMap.put(object.getClass().getName(), editorDefaults);
                 } else {
                     if (pageId != null) {
                         editorDefaults.pageId = pageId;
