@@ -70,7 +70,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
                 handler.openResource(resource, window);
             }
         } catch (Exception e) {
-            UIUtils.showErrorDialog(window.getShell(), "Open resource", "Can't open resource", e);
+            UIUtils.showErrorDialog(window.getShell(), "Open resource", "Can't open resource '" + resource.getName() + "'", e);
         }
     }
 
@@ -118,7 +118,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
                     EntityEditor.class.getName());
             }
         } catch (Exception ex) {
-            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Open entity", "Can't open entity", ex);
+            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Open entity", "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
         }
         finally {
             // Reactivate navigator

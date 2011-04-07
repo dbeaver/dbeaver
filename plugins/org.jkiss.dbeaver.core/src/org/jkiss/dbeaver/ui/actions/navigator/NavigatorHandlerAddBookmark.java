@@ -32,7 +32,7 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
                         BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, title, null);
                     }
                 } catch (DBException e) {
-                    UIUtils.showErrorDialog(activeShell, "New Bookmark", null, e);
+                    UIUtils.showErrorDialog(activeShell, "New Bookmark", "Can't create new bookmark", e);
                 }
             }
         }

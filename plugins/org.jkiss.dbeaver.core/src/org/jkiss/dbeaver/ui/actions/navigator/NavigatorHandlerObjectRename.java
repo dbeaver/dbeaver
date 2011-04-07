@@ -33,7 +33,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                     try {
                         node.rename(VoidProgressMonitor.INSTANCE, newName);
                     } catch (DBException e) {
-                        UIUtils.showErrorDialog(activeShell, "Rename", null, e);
+                        UIUtils.showErrorDialog(activeShell, "Rename", "Can't rename object '" + node.getNodeName() + "'", e);
                     }
                 }
             }

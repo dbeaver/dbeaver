@@ -111,7 +111,7 @@ public class ObjectEditorHandler {
                             }
                         });
                     } catch (InvocationTargetException e1) {
-                        UIUtils.showErrorDialog(null, "Save DB object", null, e1.getTargetException());
+                        UIUtils.showErrorDialog(null, "Save DB object", "Can't save database object", e1.getTargetException());
                     } catch (InterruptedException e1) {
                         // do nothing
                     }

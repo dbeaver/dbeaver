@@ -161,7 +161,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         try {
             workbenchWindow.run(true, true, deleter);
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't delete object", null, e.getTargetException());
+            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Delete object", "Can't delete object '" + node.getNodeName() + "'", e.getTargetException());
             return false;
         } catch (InterruptedException e) {
             // do nothing

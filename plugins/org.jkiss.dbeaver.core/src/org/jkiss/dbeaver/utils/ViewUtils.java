@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
@@ -431,7 +432,7 @@ public class ViewUtils
                             try {
                                 ((DBNNode)curObject).dropNode(node);
                             } catch (DBException e) {
-                                log.error("Can't drop node", e);
+                                UIUtils.showErrorDialog(viewer.getControl().getShell(), "Drop error", "Can't drop node", e);
                             }
                         }
                     }

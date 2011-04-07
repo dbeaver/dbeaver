@@ -33,7 +33,7 @@ public class NavigatorHandlerCreateFolder extends NavigatorHandlerObjectBase {
                 try {
                     ((DBNResource)element).createNewFolder(folderName);
                 } catch (DBException e) {
-                    UIUtils.showErrorDialog(activeShell, "Create folder", null, e);
+                    UIUtils.showErrorDialog(activeShell, "Create folder", "Can't create new folder '" + folderName + "'", e);
                 }
             }
         }

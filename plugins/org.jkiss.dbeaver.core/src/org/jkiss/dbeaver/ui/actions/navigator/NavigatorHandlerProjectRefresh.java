@@ -35,7 +35,7 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Refresh workspace", null, e.getTargetException());
+            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Refresh workspace", "Can't refresh workspace", e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }

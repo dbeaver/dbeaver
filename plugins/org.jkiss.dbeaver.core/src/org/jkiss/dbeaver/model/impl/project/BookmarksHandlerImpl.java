@@ -175,7 +175,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(window.getShell(), "Open bookmark", null, e.getTargetException());
+            UIUtils.showErrorDialog(window.getShell(), "Open bookmark", "Can't open bookmark", e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }

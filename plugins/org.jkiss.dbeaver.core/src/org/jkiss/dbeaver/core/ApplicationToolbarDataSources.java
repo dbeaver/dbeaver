@@ -584,7 +584,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                     }
                 });
             } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Change active database", null, e.getTargetException());
+                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Change active database", "Can't change active database", e.getTargetException());
             } catch (InterruptedException e) {
                 // skip
             }

@@ -87,7 +87,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             try {
                 workbenchWindow.run(true, true, objectSaver);
             } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't create new object", null, e.getTargetException());
+                UIUtils.showErrorDialog(workbenchWindow.getShell(), "New object", "Can't create new object", e.getTargetException());
                 return false;
             } catch (InterruptedException e) {
                 // do nothing
@@ -112,7 +112,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                                 editorInput,
                                 EntityEditor.class.getName());
                         } catch (PartInitException e) {
-                            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't open editor for new object", null, e);
+                            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Open editor", "Can't open editor for new object", e);
                             return false;
                         }
                     }

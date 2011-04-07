@@ -62,6 +62,10 @@ public class RuntimeUtils
                 getExceptionMessage(ex),
                 null);
         } else {
+            if (ex instanceof DBException && CommonUtils.equalObjects(ex.getMessage(), cause.getMessage())) {
+                // Skip empty duplicate DBException
+                return makeExceptionStatus(cause);
+            }
             return new MultiStatus(
                 DBeaverCore.getInstance().getPluginID(),
                 0,

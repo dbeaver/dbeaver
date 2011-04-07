@@ -710,7 +710,7 @@ public class UIUtils {
         // Display the dialog
         StandardErrorDialog dialog = new StandardErrorDialog(shell,
             title,
-            null,
+            message,
             RuntimeUtils.makeExceptionStatus(error),
             IStatus.ERROR);
         dialog.open();
