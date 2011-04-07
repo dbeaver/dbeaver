@@ -35,7 +35,7 @@ import java.util.Collection;
 /**
  * Plan nodes tree
  */
-public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
+public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDataSourceProvider {
 
     private static ITreeContentProvider CONTENT_PROVIDER = new ITreeContentProvider() {
         public Object[] getElements(Object inputElement)
@@ -94,7 +94,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
         createContextMenu();
     }
 
-    protected DBPDataSource getDataSource()
+    public DBPDataSource getDataSource()
     {
         return dataSourceProvider.getDataSource();
     }

@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.views.properties.DataSourcePropertyFilter;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
@@ -161,12 +162,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             getEditorInput().getCommandContext(),
             getEditorInput().getTreeNode(),
             getEditorInput().getDatabaseObject());
-        propertySource.collectProperties(new IFilter() {
-            public boolean select(Object toTest)
-            {
-                return true;
-            }
-        });
+        propertySource.collectProperties();
         properties.selectionChanged(this, new StructuredSelection(propertySource));
 
         final String folderId = getEditorInput().getDefaultFolderId();

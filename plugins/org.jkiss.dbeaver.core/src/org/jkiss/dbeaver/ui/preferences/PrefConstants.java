@@ -21,6 +21,7 @@ public final class PrefConstants
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows";
     public static final String STATEMENT_TIMEOUT = "statement.timeout";
     public static final String MEMORY_CONTENT_MAX_SIZE = "content.memory.maxsize";
+    public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive";
 
     public static final String RS_EDIT_MAX_TEXT_SIZE = "resultset.edit.maxtextsize";
     public static final String RS_EDIT_LONG_AS_LOB = "resultset.edit.longaslob";

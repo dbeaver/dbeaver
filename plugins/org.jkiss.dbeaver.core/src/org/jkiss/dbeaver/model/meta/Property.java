@@ -32,6 +32,8 @@ public @interface Property
 
     boolean viewable() default false;
 
+    boolean expensive() default false;
+
     int order() default Integer.MAX_VALUE;
 
     String helpContextId() default "";

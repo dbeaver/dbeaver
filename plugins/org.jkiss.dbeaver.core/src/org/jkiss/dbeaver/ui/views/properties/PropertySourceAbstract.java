@@ -15,6 +15,8 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -184,16 +186,25 @@ public abstract class PropertySourceAbstract implements IPropertySource
 */
     }
 
-    public void collectProperties(IFilter filter)
+    public void collectProperties()
     {
-        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, getEditableValue().getClass(), filter);
+        final Object editableValue = getEditableValue();
+        IFilter filter;
+        if (editableValue instanceof DBSObject) {
+            filter = new DataSourcePropertyFilter(((DBSObject) editableValue).getDataSource());
+        } else if (editableValue instanceof IDataSourceProvider) {
+            filter = new DataSourcePropertyFilter(((IDataSourceProvider) editableValue).getDataSource());
+        } else {
+            filter = new DataSourcePropertyFilter(null);
+        }
+        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter);
         for (final ObjectPropertyDescriptor desc : annoProps) {
             if (desc.isCollectionAnno()) {
                 DBRRunnableWithProgress loader = new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
                         try {
-                            Object value = desc.readValue(getEditableValue(), monitor);
+                            Object value = desc.readValue(editableValue, monitor);
                             addProperty(desc.getId(), desc.getDisplayName(), value);
                         } catch (IllegalAccessException e) {
                             throw new InvocationTargetException(e);
@@ -202,7 +213,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
                 };
                 // Add as collection
                 try {
-                    if (desc.isLazy(getEditableValue(), true)) {
+                    if (desc.isLazy(editableValue, true)) {
                         DBeaverCore.getInstance().runInProgressService(loader);
                     } else {
                         loader.run(null);

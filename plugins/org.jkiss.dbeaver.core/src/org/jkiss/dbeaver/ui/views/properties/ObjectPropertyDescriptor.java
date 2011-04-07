@@ -73,14 +73,14 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         //valueEditor.initEditor();
     }
 
-    public Property getPropInfo()
-    {
-        return propInfo;
-    }
-
     public boolean isViewable()
     {
         return propInfo == null || propInfo.viewable();
+    }
+
+    public boolean isExpensive()
+    {
+        return propInfo != null && propInfo.expensive();
     }
 
     public CellEditor createPropertyEditor(Composite parent)

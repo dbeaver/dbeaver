@@ -17,8 +17,10 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -43,7 +45,7 @@ import java.util.Set;
 /**
  * NodeListControl
  */
-public abstract class NodeListControl extends ObjectListControl<DBNNode> implements INavigatorModelView,IDBNListener
+public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceProvider, INavigatorModelView, IDBNListener
 {
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
@@ -83,6 +85,14 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     public IWorkbenchPart getWorkbenchPart()
     {
         return workbenchPart;
+    }
+
+    public DBPDataSource getDataSource()
+    {
+        if (node instanceof DBNDatabaseNode) {
+            return ((DBNDatabaseNode) node).getObject().getDataSource();
+        }
+        return null;
     }
 
     @Override

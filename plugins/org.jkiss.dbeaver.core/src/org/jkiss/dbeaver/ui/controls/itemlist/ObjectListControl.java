@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.views.properties.DataSourcePropertyFilter;
 import org.jkiss.dbeaver.ui.views.properties.ObjectAttributeDescriptor;
 import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
@@ -764,9 +766,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
 
+            IFilter propertyFilter = new DataSourcePropertyFilter(
+                ObjectListControl.this instanceof IDataSourceProvider ?
+                    ((IDataSourceProvider)ObjectListControl.this).getDataSource() :
+                    null);
+
             // Create columns from classes' annotations
             for (Class<?> objectClass : classList) {
-                List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass, null);
+                List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass, propertyFilter);
                 for (ObjectPropertyDescriptor prop : props) {
                     if (!prop.isViewable()) {
                         continue;

@@ -64,7 +64,7 @@ public abstract class ERDObject<OBJECT> implements IPropertySource, IAdaptable, 
         if (propertyCollector == null) {
             propertyCollector = new PropertyCollector(object, false);
             if (object != null) {
-                propertyCollector.collectProperties(null);
+                propertyCollector.collectProperties();
             }
         }
         return propertyCollector;

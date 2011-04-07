@@ -406,7 +406,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         StringBuilder info = new StringBuilder();
         PropertyCollector collector = new PropertyCollector(object, false);
-        collector.collectProperties(null);
+        collector.collectProperties();
         for (IPropertyDescriptor descriptor : collector.getPropertyDescriptors()) {
             Object propValue = collector.getPropertyValue(descriptor.getId());
             if (propValue == null) {

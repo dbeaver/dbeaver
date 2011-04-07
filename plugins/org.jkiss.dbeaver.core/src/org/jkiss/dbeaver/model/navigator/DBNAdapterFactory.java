@@ -84,7 +84,7 @@ public class DBNAdapterFactory implements IAdapterFactory
             }
             if (dbObject != null) {
                 PropertyCollector props = new PropertyCollector(adaptableObject, dbObject , true);
-                props.collectProperties(null);
+                props.collectProperties();
                 if (props.isEmpty() && adaptableObject instanceof DBSObject) {
                     // Add default properties
                     DBSObject meta = (DBSObject)adaptableObject;

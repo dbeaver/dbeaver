@@ -25,6 +25,7 @@ public class PrefPageCommon extends TargetPrefPage
     private Button rollbackOnErrorCheck;
     private Spinner resultSetSize;
     private Spinner memoryContentSize;
+    private Button readExpensiveCheck;
 
     public PrefPageCommon()
     {
@@ -39,7 +40,8 @@ public class PrefPageCommon extends TargetPrefPage
             store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
             store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(PrefConstants.DEFAULT_AUTO_COMMIT) ||
-            store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE)
+            store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE) ||
+            store.contains(PrefConstants.READ_EXPENSIVE_PROPERTIES)
             ;
     }
 
@@ -76,6 +78,9 @@ public class PrefPageCommon extends TargetPrefPage
 
         {
             Group performanceGroup = UIUtils.createControlGroup(composite, "Performance", 2, SWT.NONE, 0);
+
+            readExpensiveCheck = UIUtils.createLabelCheckbox(performanceGroup, "Read expensive properties (row count)", false);
+
             UIUtils.createControlLabel(performanceGroup, "Maximum LOB length to keep in memory");
 
             memoryContentSize = new Spinner(performanceGroup, SWT.BORDER);
@@ -95,6 +100,7 @@ public class PrefPageCommon extends TargetPrefPage
             rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
             resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
             memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
+            readExpensiveCheck.setSelection(store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -107,6 +113,7 @@ public class PrefPageCommon extends TargetPrefPage
             store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
             store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
+            store.setValue(PrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -119,6 +126,7 @@ public class PrefPageCommon extends TargetPrefPage
         store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
         store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);
+        store.setToDefault(PrefConstants.READ_EXPENSIVE_PROPERTIES);
     }
 
     public void applyData(Object data)

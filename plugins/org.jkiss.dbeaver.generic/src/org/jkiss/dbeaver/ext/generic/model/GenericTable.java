@@ -9,9 +9,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -261,9 +263,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
 
 */
 
-/*
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
-    @Property(name = "Row Count", viewable = true, order = 5)
+    @Property(name = "Row Count", viewable = true, expensive = true, order = 5)
     public long getRowCount(DBRProgressMonitor monitor)
         throws DBCException
     {
@@ -271,11 +272,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             return rowCount;
         }
 
-        JDBCExecutionContext context = getDataSourceContainer().openContext(monitor, "Read row count");
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT COUNT(*) FROM " + getFullQualifiedName());
-            dbStat.setDescription("Select table '" + getName() + "' row count");
             try {
                 JDBCResultSet resultSet = dbStat.executeQuery();
                 try {
@@ -299,7 +299,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
 
         return rowCount;
     }
-*/
 
     private static class ForeignKeyInfo {
         String pkColumnName;
