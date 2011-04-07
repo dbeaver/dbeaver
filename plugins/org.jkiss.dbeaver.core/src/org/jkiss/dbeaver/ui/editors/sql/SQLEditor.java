@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
@@ -82,7 +83,7 @@ import java.util.ResourceBundle;
  * SQL Executor
  */
 public class SQLEditor extends SQLEditorBase
-    implements IResourceChangeListener, IDataSourceContainerProviderEx, DBPEventListener, ISaveablePart2, ResultSetProvider
+    implements IResourceChangeListener, IDataSourceContainerProviderEx, DBPEventListener, ISaveablePart2, ResultSetProvider, DBPDataSourceUser
 {
 
     static final int PAGE_INDEX_RESULTSET = 0;
@@ -139,16 +140,31 @@ public class SQLEditor extends SQLEditorBase
         return getEditorInput().getDataSourceContainer();
     }
 
-    public void setDataSourceContainer(DBSDataSourceContainer container)
+    public boolean setDataSourceContainer(DBSDataSourceContainer container)
     {
-        if (container == getDataSourceContainer()) {
-            return;
+        final DBSDataSourceContainer curContainer = getDataSourceContainer();
+        if (container == curContainer) {
+            return true;
         }
+        // Acquire ds container
+        if (curContainer != null) {
+            if (resultsView.isDirty()) {
+                resultsView.rejectChanges();
+            }
+            resultsView.clearAll();
+            curContainer.release(this);
+        }
+
         closeSession();
         getEditorInput().setDataSourceContainer(container);
         checkConnected();
 
         onDataSourceChange();
+
+        if (container != null) {
+            container.acquire(this);
+        }
+        return true;
     }
 
     protected IContentAssistProcessor getCompletionProcessor()
@@ -293,6 +309,12 @@ public class SQLEditor extends SQLEditorBase
         }
 
         site.getPage().addPartListener(partListener);
+
+        // Acquire ds container
+        final DBSDataSourceContainer dsContainer = getDataSourceContainer();
+        if (dsContainer != null) {
+            dsContainer.acquire(this);
+        }
     }
 
     public void resourceChanged(final IResourceChangeEvent event)
@@ -706,6 +728,12 @@ public class SQLEditor extends SQLEditorBase
 
     public void dispose()
     {
+        // Acquire ds container
+        final DBSDataSourceContainer dsContainer = getDataSourceContainer();
+        if (dsContainer != null) {
+            dsContainer.release(this);
+        }
+
         getSite().getPage().removePartListener(partListener);
         IFile fileToDelete = null;
 

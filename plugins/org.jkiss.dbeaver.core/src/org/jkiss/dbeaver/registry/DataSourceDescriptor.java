@@ -479,14 +479,20 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     public void acquire(DBPDataSourceUser user)
     {
         synchronized (users) {
-            users.add(user);
+            if (users.contains(user)) {
+                log.warn("Datasource user '" + user + "' already registered in datasource '" + getName() + "'");
+            } else {
+                users.add(user);
+            }
         }
     }
 
     public void release(DBPDataSourceUser user)
     {
         synchronized (users) {
-            users.remove(user);
+            if (!users.remove(user)) {
+                log.warn("Datasource user '" + user + "' is not registered in datasource '" + getName() + "'");
+            }
         }
     }
 

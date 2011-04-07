@@ -8,6 +8,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
 
@@ -57,7 +58,7 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
             resultSet.addNewRow(false);
         } else if (actionId.equals(CMD_ROW_COPY)) {
             resultSet.addNewRow(true);
-        } else if (actionId.equals(CMD_ROW_DELETE)) {
+        } else if (actionId.equals(CMD_ROW_DELETE) || actionId.equals(IWorkbenchCommandConstants.EDIT_DELETE)) {
             resultSet.deleteCurrentRow();
         } else if (actionId.equals(CMD_APPLY_CHANGES)) {
             resultSet.applyChanges();

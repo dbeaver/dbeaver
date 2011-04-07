@@ -422,6 +422,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         UIUtils.dispose(this.boldFont);
     }
 
+    public void clearAll()
+    {
+        closeEditors();
+        clearData();
+        clearMetaData();
+
+        initResultSet();
+    }
+
     private void applyThemeSettings()
     {
         ITheme currentTheme = themeManager.getCurrentTheme();
@@ -804,23 +813,25 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 null);
             final Object value = valueController.getValue();
 
-            // Standard items
-            manager.add(new Separator());
-            manager.add(new Action("Edit ...") {
-                @Override
-                public void run()
-                {
-                    showCellEditor(cell, false, null);
-                }
-            });
-            if (!DBUtils.isNullValue(value)) {
-                manager.add(new Action("Set to NULL") {
+            if (isCellEditable(cell)) {
+                // Standard items
+                manager.add(new Separator());
+                manager.add(new Action("Edit ...") {
                     @Override
                     public void run()
                     {
-                        valueController.updateValue(DBUtils.makeNullValue(value));
+                        showCellEditor(cell, false, null);
                     }
                 });
+                if (!DBUtils.isNullValue(value)) {
+                    manager.add(new Action("Set to NULL") {
+                        @Override
+                        public void run()
+                        {
+                            valueController.updateValue(DBUtils.makeNullValue(value));
+                        }
+                    });
+                }
             }
 
             // Menus from value handler
@@ -1135,7 +1146,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return !editedValues.isEmpty() || !addedRows.isEmpty() || !removedRows.isEmpty();
     }
 
-    void applyChanges()
+    public void applyChanges()
     {
         try {
             new DataUpdater().applyChanges(null);
@@ -1144,7 +1155,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    void rejectChanges()
+    public void rejectChanges()
     {
         new DataUpdater().rejectChanges();
     }

@@ -16,6 +16,6 @@ public interface IDataSourceContainerProviderEx extends IDataSourceContainerProv
      * Change underlying datasource container
      * @return data source object.
      */
-    void setDataSourceContainer(DBSDataSourceContainer dataSourceContainer);
+    boolean setDataSourceContainer(DBSDataSourceContainer dataSourceContainer);
 
 }
