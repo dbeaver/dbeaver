@@ -266,7 +266,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Property(name = "Row Count", viewable = true, expensive = true, order = 5)
     public long getRowCount(DBRProgressMonitor monitor)
-        throws DBCException
     {
         if (rowCount != null) {
             return rowCount;
@@ -291,7 +290,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            //throw new DBCException(e);
+            // do not throw this error - row count is optional info and some providers may fail
+            log.debug(e);
         }
         finally {
             context.close();

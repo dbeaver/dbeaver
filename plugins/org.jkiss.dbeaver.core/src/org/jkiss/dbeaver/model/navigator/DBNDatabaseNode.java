@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
@@ -83,6 +84,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
     }
 
+    public String getNodePathName()
+    {
+        if (getObject() instanceof DBSEntityQualified) {
+            return ((DBSEntityQualified)getObject()).getFullQualifiedName();
+        } else {
+            return super.getNodePathName();
+        }
+    }
     public String getNodeDescription()
     {
         return getObject() == null ? null : getObject().getDescription();
