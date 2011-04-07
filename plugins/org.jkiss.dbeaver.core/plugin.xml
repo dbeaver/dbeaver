@@ -1072,11 +1072,6 @@
             <command commandId="org.jkiss.dbeaver.core.object.create">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.eclipse.ui.edit.delete">
-                <visibleWhen checkEnabled="true">
-                    <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
-                </visibleWhen>
-            </command>
 
             <command commandId="org.eclipse.ui.edit.copy">
                 <visibleWhen checkEnabled="true">
@@ -1089,6 +1084,11 @@
                 </visibleWhen>
             </command>
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="Copy Advanced Info">
+                <visibleWhen checkEnabled="true">
+                    <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
+                </visibleWhen>
+            </command>
+            <command commandId="org.eclipse.ui.edit.delete">
                 <visibleWhen checkEnabled="true">
                     <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
                 </visibleWhen>

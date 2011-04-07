@@ -212,13 +212,9 @@
             </command>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart.EditorContext?after=org.eclipse.gef.group.edit">
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart.EditorContext?after=additions">
             <command commandId="org.eclipse.ui.edit.undo"/>
             <command commandId="org.eclipse.ui.edit.redo"/>
-            <separator name="edit" visible="true"/>
-            <command commandId="org.eclipse.ui.edit.copy"/>
-            <command commandId="org.eclipse.ui.edit.paste"/>
-            <command commandId="org.eclipse.ui.edit.delete"/>
             <separator name="selection" visible="true"/>
             <command commandId="org.eclipse.ui.edit.selectAll"/>
         </menuContribution>

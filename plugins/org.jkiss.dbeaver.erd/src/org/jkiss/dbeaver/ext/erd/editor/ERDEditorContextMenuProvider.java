@@ -42,9 +42,11 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
 	{
 		GEFActionConstants.addStandardActionGroups(menu);
 
-		IAction action = new DiagramLayoutAction(editor);
-        menu.appendToGroup(GEFActionConstants.GROUP_VIEW, action);
-
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+
+        IAction action = new DiagramLayoutAction(editor);
+        menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new Separator());
+        menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, action);
+
 	}
 }
