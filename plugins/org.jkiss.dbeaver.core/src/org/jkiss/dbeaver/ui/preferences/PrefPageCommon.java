@@ -79,7 +79,7 @@ public class PrefPageCommon extends TargetPrefPage
         {
             Group performanceGroup = UIUtils.createControlGroup(composite, "Performance", 2, SWT.NONE, 0);
 
-            readExpensiveCheck = UIUtils.createLabelCheckbox(performanceGroup, "Read expensive properties (row count)", false);
+            readExpensiveCheck = UIUtils.createLabelCheckbox(performanceGroup, "Show row count for tables", false);
 
             UIUtils.createControlLabel(performanceGroup, "Maximum LOB length to keep in memory");
 

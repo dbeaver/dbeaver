@@ -154,9 +154,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         windowMenu.add(new Separator());
         windowMenu.add(new ToggleViewAction("properties", IPageLayout.ID_PROP_SHEET)); //$NON-NLS-1$
         windowMenu.add(new ToggleViewAction("qm", QueryManagerView.VIEW_ID)); //$NON-NLS-1$
-        windowMenu.add(new ToggleViewAction("error log", "org.eclipse.pde.runtime.LogView")); //$NON-NLS-1$
-        //windowMenu.add(new ToggleViewAction("progress", IPageLayout.ID_PROGRESS_VIEW)); //$NON-NLS-1$
         windowMenu.add(new ToggleViewAction("outline", IPageLayout.ID_OUTLINE)); //$NON-NLS-1$
+        windowMenu.add(new ToggleViewAction("progress", IPageLayout.ID_PROGRESS_VIEW)); //$NON-NLS-1$
+        windowMenu.add(new ToggleViewAction("error log", "org.eclipse.pde.runtime.LogView")); //$NON-NLS-1$
         windowMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         windowMenu.add(new Separator());
 /*

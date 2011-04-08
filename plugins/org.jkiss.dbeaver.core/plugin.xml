@@ -131,6 +131,13 @@
                 name="Search">
         </view>
         <!--stickyView id="org.jkiss.dbeaver.core.findObjects" closeable="true" moveable="true" location="TOP"/-->
+        <view
+                name="Background Tasks"
+                icon="icons/progress_view.png"
+                category="org.eclipse.ui"
+                class="org.eclipse.ui.ExtensionFactory:progressView"
+                id="org.eclipse.ui.views.ProgressView">
+          </view>
 
     </extension>
 
