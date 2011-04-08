@@ -118,7 +118,7 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         return table.getDataSource();
     }
 
-    @Property(name = "Table", viewable = true, order = 9)
+    //@Property(name = "Table", viewable = true, order = 90)
     public MySQLTable getTable()
     {
         return table;
@@ -134,13 +134,13 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         return charLength;
     }
 
-    @Property(name = "Auto Increment", viewable = true, order = 10)
+    @Property(name = "Auto Increment", viewable = true, order = 51)
     public boolean isAutoIncrement()
     {
         return autoIncrement;
     }
 
-    @Property(name = "Key", viewable = true, order = 11)
+    @Property(name = "Key", viewable = true, order = 80)
     public KeyType getKeyType()
     {
         return keyType;

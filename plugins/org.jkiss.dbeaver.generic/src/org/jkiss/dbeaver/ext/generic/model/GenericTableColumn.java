@@ -84,7 +84,7 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
         return charLength;
     }
 
-    @Property(name = "Auto Increment", viewable = true, order = 10)
+    @Property(name = "Auto Increment", viewable = true, order = 51)
     public boolean isAutoIncrement()
     {
         return autoIncrement;

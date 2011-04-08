@@ -51,7 +51,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.ordinalPosition = ordinalPosition;
     }
 
-    @Property(name = "Column Name", viewable = true, order = 1)
+    @Property(name = "Column Name", viewable = true, order = 10)
     public String getName()
     {
         return name;
@@ -62,7 +62,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.name = columnName;
     }
 
-    @Property(name = "Data Type", viewable = true, order = 2)
+    @Property(name = "Data Type", viewable = true, order = 20)
     public String getTypeName()
     {
         return typeName;
@@ -73,7 +73,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.typeName = typeName;
     }
 
-    @Property(name = "Ordinal Position", viewable = true, order = 5)
+    @Property(name = "Ordinal Position", viewable = true, order = 30)
     public int getOrdinalPosition()
     {
         return ordinalPosition;
@@ -94,7 +94,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.valueType = valueType;
     }
 
-    @Property(name = "Length", viewable = true, order = 3)
+    @Property(name = "Length", viewable = true, order = 40)
     public long getMaxLength()
     {
         return maxLength;
@@ -105,7 +105,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.maxLength = maxLength;
     }
 
-    @Property(name = "Nullable", viewable = true, order = 4)
+    @Property(name = "Nullable", viewable = true, order = 50)
     public boolean isNullable()
     {
         return nullable;
@@ -116,7 +116,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.nullable = nullable;
     }
 
-    @Property(name = "Scale", viewable = true, order = 6)
+    @Property(name = "Scale", viewable = false, order = 60)
     public int getScale()
     {
         return scale;
@@ -127,7 +127,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.scale = scale;
     }
 
-    @Property(name = "Precision", viewable = true, order = 7)
+    @Property(name = "Precision", viewable = false, order = 70)
     public int getPrecision()
     {
         return precision;
