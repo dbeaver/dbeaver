@@ -291,7 +291,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         catch (SQLException e) {
             //throw new DBCException(e);
             // do not throw this error - row count is optional info and some providers may fail
-            log.debug(e);
+            log.debug("Can't fetch row count: " + e.getMessage());
             rowCount = -1l;
         }
         finally {

@@ -30,7 +30,7 @@ public class JDBCUtils {
         try {
             return dbResult.getString(columnName);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            debugColumnRead(columnName, e);
             return null;
         }
     }
@@ -40,7 +40,7 @@ public class JDBCUtils {
         try {
             return dbResult.getString(columnIndex);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            debugColumnRead(columnIndex, e);
             return null;
         }
     }
@@ -50,7 +50,7 @@ public class JDBCUtils {
         try {
             return dbResult.getInt(columnName);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            debugColumnRead(columnName, e);
             return 0;
         }
     }
@@ -60,7 +60,7 @@ public class JDBCUtils {
         try {
             return dbResult.getLong(columnName);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            debugColumnRead(columnName, e);
             return 0;
         }
     }
@@ -70,7 +70,7 @@ public class JDBCUtils {
         try {
             return dbResult.getDouble(columnName);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            debugColumnRead(columnName, e);
             return 0.0;
         }
     }
@@ -80,7 +80,7 @@ public class JDBCUtils {
         try {
             return dbResult.getBoolean(columnName);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            debugColumnRead(columnName, e);
             return false;
         }
     }
@@ -90,7 +90,7 @@ public class JDBCUtils {
         try {
             return dbResult.getBytes(columnName);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            debugColumnRead(columnName, e);
             return null;
         }
     }
@@ -100,7 +100,7 @@ public class JDBCUtils {
         try {
             return dbResult.getTimestamp(columnName);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            debugColumnRead(columnName, e);
             return null;
         }
     }
@@ -110,7 +110,7 @@ public class JDBCUtils {
         try {
             return dbResult.getTimestamp(columnIndex);
         } catch (SQLException e) {
-            log.debug(e.getMessage());
+            debugColumnRead(columnIndex, e);
             return null;
         }
     }
@@ -418,4 +418,15 @@ public class JDBCUtils {
             default: return DBSConstraintCascade.UNKNOWN;
         }
     }
+
+    private static void debugColumnRead(String columnName, SQLException error)
+    {
+        log.debug("Can't get column '" + columnName + "': " + error.getMessage());
+    }
+
+    private static void debugColumnRead(int columnIndex, SQLException error)
+    {
+        log.debug("Can't get column #" + columnIndex + ": " + error.getMessage());
+    }
+
 }

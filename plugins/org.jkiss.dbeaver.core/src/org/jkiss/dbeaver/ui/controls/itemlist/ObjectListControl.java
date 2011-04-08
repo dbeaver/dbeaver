@@ -956,7 +956,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private class LazyLoaderJob extends AbstractJob {
         public LazyLoaderJob()
         {
-            super("Lazy objects loader");
+            super("Lazy properties read");
         }
 
         @Override
@@ -966,6 +966,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (isDisposed()) {
                 return Status.OK_STATUS;
             }
+            monitor.beginTask("Load lazy properties", objectMap.size());
             for (Map.Entry<OBJECT_TYPE, List<ObjectColumn>> entry : objectMap.entrySet()) {
                 if (monitor.isCanceled() || isDisposed()) {
                     break;
@@ -983,6 +984,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         lazyCache.put(element, objectCache);
                     }
                 }
+                String objectName = UIUtils.makeStringForUI(getObjectValue(element)).toString();
+                monitor.subTask("Load '" + objectName + "' properties");
                 for (ObjectColumn column : entry.getValue()) {
                     if (monitor.isCanceled() || isDisposed()) {
                         break;
@@ -1003,6 +1006,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         return RuntimeUtils.makeExceptionStatus(e.getTargetException());
                     }
                 }
+                monitor.worked(1);
                 if (!isDisposed()) {
                     getDisplay().asyncExec(new Runnable() {
                         public void run()
@@ -1014,6 +1018,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     });
                 }
             }
+            monitor.done();
 
 /*
             // Update viewer
