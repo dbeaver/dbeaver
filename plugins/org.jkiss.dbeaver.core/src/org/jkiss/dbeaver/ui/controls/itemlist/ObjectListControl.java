@@ -358,7 +358,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private synchronized void addLazyObject(OBJECT_TYPE object, ObjectColumn column)
     {
         if (lazyObjects == null) {
-            lazyObjects = new IdentityHashMap<OBJECT_TYPE, List<ObjectColumn>>();
+            lazyObjects = new LinkedHashMap<OBJECT_TYPE, List<ObjectColumn>>();
         }
         List<ObjectColumn> objectColumns = lazyObjects.get(object);
         if (objectColumns == null) {
@@ -1003,11 +1003,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         return RuntimeUtils.makeExceptionStatus(e.getTargetException());
                     }
                 }
+
+                getDisplay().asyncExec(new Runnable() {
+                    public void run()
+                    {
+                        itemsViewer.update(element, null);
+                    }
+                });
             }
 
+/*
             // Update viewer
             if (!isDisposed()) {
-                getDisplay().syncExec(new Runnable() {
+                getDisplay().asyncExec(new Runnable() {
                     public void run()
                     {
                         itemsViewer.getControl().setRedraw(false);
@@ -1019,6 +1027,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     }
                 });
             }
+*/
 
             return Status.OK_STATUS;
         }
