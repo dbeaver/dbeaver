@@ -8,19 +8,19 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DatabaseEditorInput
  */
-public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IDatabaseNodeEditorInput
+public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IDatabaseNodeEditorInput, IDataSourceContainerProvider
 {
     private final NODE node;
     private final DBECommandContext commandContext;
@@ -75,6 +75,12 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         }
 
         return null;
+    }
+
+    public DBSDataSourceContainer getDataSourceContainer()
+    {
+        final DBPDataSource dbpDataSource = getDataSource();
+        return dbpDataSource == null ? null : dbpDataSource.getContainer();
     }
 
     public DBPDataSource getDataSource() {

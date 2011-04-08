@@ -80,6 +80,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private Map<OBJECT_TYPE, List<ObjectColumn>> lazyObjects;
     private final Map<OBJECT_TYPE, Map<String, Object>> lazyCache = new IdentityHashMap<OBJECT_TYPE, Map<String, Object>>();
+    private volatile boolean lazyLoadCanceled;
 
     public ObjectListControl(
         Composite parent,
@@ -846,7 +847,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     final OBJECT_TYPE object = (OBJECT_TYPE)event.item.getData();
                     Object cellValue = getCellValue(object, event.index);
                     if (cellValue == LOADING_LABEL) {
-                        addLazyObject(object, columns.get(event.index));
+                        if (!lazyLoadCanceled) {
+                            addLazyObject(object, columns.get(event.index));
+                        }
                     } else if (cellValue != null ) {
                         GC gc = event.gc;
                         if (cellValue instanceof Boolean) {
@@ -1036,7 +1039,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 });
             }
 */
-
+            if (monitor.isCanceled()) {
+                lazyLoadCanceled = true;
+                obtainLazyObjects();
+            }
             return Status.OK_STATUS;
         }
     }

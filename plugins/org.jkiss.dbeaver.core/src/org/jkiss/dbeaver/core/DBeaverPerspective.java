@@ -53,6 +53,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
         bottomRight.addPlaceholder("org.eclipse.pde.runtime.LogView");
         bottomRight.addPlaceholder(QueryManagerView.VIEW_ID);
         bottomRight.addPlaceholder(IPageLayout.ID_PROP_SHEET);
+        bottomRight.addPlaceholder(IPageLayout.ID_PROGRESS_VIEW);
 
         //layout.getViewLayout(DatabaseNavigatorView.VIEW_ID).setCloseable(false);
     }
