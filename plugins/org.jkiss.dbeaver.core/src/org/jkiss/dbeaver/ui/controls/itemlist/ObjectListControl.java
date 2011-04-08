@@ -967,7 +967,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 return Status.OK_STATUS;
             }
             for (Map.Entry<OBJECT_TYPE, List<ObjectColumn>> entry : objectMap.entrySet()) {
-                if (monitor.isCanceled()) {
+                if (monitor.isCanceled() || isDisposed()) {
                     break;
                 }
                 final OBJECT_TYPE element = entry.getKey();
@@ -1003,13 +1003,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         return RuntimeUtils.makeExceptionStatus(e.getTargetException());
                     }
                 }
-
-                getDisplay().asyncExec(new Runnable() {
-                    public void run()
-                    {
-                        itemsViewer.update(element, null);
-                    }
-                });
+                if (!isDisposed()) {
+                    getDisplay().asyncExec(new Runnable() {
+                        public void run()
+                        {
+                            if (!isDisposed()) {
+                                itemsViewer.update(element, null);
+                            }
+                        }
+                    });
+                }
             }
 
 /*

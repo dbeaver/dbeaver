@@ -292,6 +292,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             //throw new DBCException(e);
             // do not throw this error - row count is optional info and some providers may fail
             log.debug(e);
+            rowCount = -1l;
         }
         finally {
             context.close();

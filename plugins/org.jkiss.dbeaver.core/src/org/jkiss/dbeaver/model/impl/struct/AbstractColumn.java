@@ -127,7 +127,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.scale = scale;
     }
 
-    @Property(name = "Precision", viewable = false, order = 70)
+    @Property(name = "Precision", viewable = false, order = 61)
     public int getPrecision()
     {
         return precision;
@@ -138,7 +138,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.precision = precision;
     }
 
-    //@Property(name = "Radix", viewable = true, order = 8)
+    @Property(name = "Radix", viewable = false, order = 62)
     public int getRadix()
     {
         return radix;
