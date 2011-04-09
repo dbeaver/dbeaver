@@ -11,11 +11,9 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
@@ -33,9 +31,10 @@ import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
-import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -159,7 +158,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         // Delete object
         ObjectDeleter deleter = new ObjectDeleter(commander);
         try {
-            workbenchWindow.run(true, true, deleter);
+            DBeaverCore.getInstance().runInProgressService(deleter);
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(workbenchWindow.getShell(), "Delete object", "Can't delete object '" + node.getNodeName() + "'", e.getTargetException());
             return false;
@@ -272,7 +271,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         }
     }
 
-    private static class ObjectDeleter implements IRunnableWithProgress {
+    private static class ObjectDeleter implements DBRRunnableWithProgress {
         private final DBECommandContext commander;
 
         public ObjectDeleter(DBECommandContext commandContext)
@@ -280,10 +279,10 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             this.commander = commandContext;
         }
 
-        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
-                commander.saveChanges(new DefaultProgressMonitor(monitor));
+                commander.saveChanges(monitor);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
