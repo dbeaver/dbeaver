@@ -286,4 +286,9 @@ public class EntityPart extends NodePart
         super.deactivate();
     }
 
+    @Override
+    protected void finalize() throws Throwable
+    {
+        super.finalize();
+    }
 }

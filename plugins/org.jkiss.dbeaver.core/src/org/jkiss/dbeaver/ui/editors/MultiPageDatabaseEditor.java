@@ -54,10 +54,7 @@ public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implem
 
     public void dispose()
     {
-        if (editorImage != null) {
-            editorImage.dispose();
-            editorImage = null;
-        }
+        UIUtils.dispose(editorImage);
         listener.dispose();
         super.dispose();
     }

@@ -14,7 +14,6 @@ import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.commands.CommandStack;
-import org.eclipse.gef.commands.CommandStackListener;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.*;
@@ -91,7 +90,7 @@ import java.util.*;
  * an editor </i> in chapter <i>Introduction to GEF </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
-    implements CommandStackListener, DBPDataSourceUser, ISearchContextProvider
+    implements DBPDataSourceUser, ISearchContextProvider
 {
     static final Log log = LogFactory.getLog(ERDEditorPart.class);
 
@@ -111,11 +110,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * the list of action ids that are to EditPart actions
      */
     private List<String> editPartActionIDs = new ArrayList<String>();
-
-    /**
-     * the list of action ids that are to CommandStack actions
-     */
-    private List<String> stackActionIDs = new ArrayList<String>();
 
     /**
      * the overview outline page
@@ -153,12 +147,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         editDomain = new DefaultEditDomain(this);
         setEditDomain(editDomain);
 
-        // store site and input
-        setSite(site);
-        setInput(input);
-
-        // add CommandStackListener
-        getCommandStack().addCommandStackListener(this);
+        super.init(site, input);
 
         // add selection change listener
         //getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
@@ -189,8 +178,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         service.requestEvaluation(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_REDO);
 
         // Update actions
-        updateActions(stackActionIDs);
         setDirty(getCommandStack().isDirty());
+
+        super.commandStackChanged(event);
     }
 
     public void dispose()
@@ -204,8 +194,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (progressControl != null && !progressControl.isDisposed()) {
             progressControl.dispose();
         }
-        // remove CommandStackListener
-        getCommandStack().removeCommandStackListener(this);
         // remove selection listener
         //getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(this);
         // dispose the ActionRegistry (will dispose all actions)
