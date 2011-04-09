@@ -61,7 +61,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private SortListener sortListener;
     private IDoubleClickListener doubleClickHandler;
     private IPropertySource listPropertySource;
-    private Job lazyLoadingJob = null;
 
     private final TextLayout linkLayout;
     private final Color linkColor;
@@ -78,6 +77,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private volatile OBJECT_TYPE curListObject;
     private volatile LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
 
+    private Job lazyLoadingJob = null;
     private Map<OBJECT_TYPE, List<ObjectColumn>> lazyObjects;
     private final Map<OBJECT_TYPE, Map<String, Object>> lazyCache = new IdentityHashMap<OBJECT_TYPE, Map<String, Object>>();
     private volatile boolean lazyLoadCanceled;
@@ -302,24 +302,25 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public void loadData()
     {
-        if (loadingJob != null) {
+        if (this.loadingJob != null) {
             return;
         }
-        if (listPropertySource == null) {
-            listPropertySource = createListPropertySource();
+        if (this.listPropertySource == null) {
+            this.listPropertySource = createListPropertySource();
         }
 
         clearLazyCache();
+        this.lazyLoadCanceled = false;
 
-        loadingJob = createLoadService();
-        loadingJob.addJobChangeListener(new JobChangeAdapter() {
+        this.loadingJob = createLoadService();
+        this.loadingJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event)
             {
                 loadingJob = null;
             }
         });
-        loadingJob.schedule(LAZY_LOAD_DELAY);
+        this.loadingJob.schedule(LAZY_LOAD_DELAY);
     }
 
     public void clearData()
