@@ -76,6 +76,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
+    private ToolBarManager toolBarManager;
 
     public enum ResultSetMode {
         GRID,
@@ -268,7 +269,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 */
 
 
-        ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+        toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
         //toolBarManager.add(viewMessageAction);
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES));
@@ -420,6 +421,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         themeManager.removePropertyChangeListener(ResultSetViewer.this);
 
         UIUtils.dispose(this.boldFont);
+        if (toolBarManager != null) {
+            toolBarManager.dispose();
+        }
     }
 
     public void clearAll()
