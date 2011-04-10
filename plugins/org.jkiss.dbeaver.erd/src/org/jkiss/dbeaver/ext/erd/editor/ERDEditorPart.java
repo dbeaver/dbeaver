@@ -776,6 +776,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void dispose()
         {
+            toolBarManager.dispose();
             super.dispose();
         }
 

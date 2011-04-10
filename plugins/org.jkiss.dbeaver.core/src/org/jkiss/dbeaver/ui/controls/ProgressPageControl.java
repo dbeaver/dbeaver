@@ -62,6 +62,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     private volatile Job curSearchJob;
 
     private Color searchNotFoundColor;
+    private ToolBarManager defaultToolbarManager;
+    private ToolBarManager searchToolbarManager;
 
     public ProgressPageControl(
         Composite parent,
@@ -205,15 +207,17 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 layout.verticalSpacing = 0;
                 controlComposite.setLayout(layout);
 
-                ToolBarManager searchTools = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-                if (isSearchPossible() && isSearchEnabled()) {
-                    searchTools.add(ViewUtils.makeCommandContribution(
-                        DBeaverCore.getInstance().getWorkbench(),
-                        IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
-                        "Search item(s)",
-                        DBIcon.SEARCH.getImageDescriptor()));
+                if (defaultToolbarManager == null) {
+                    defaultToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+                    if (isSearchPossible() && isSearchEnabled()) {
+                        defaultToolbarManager.add(ViewUtils.makeCommandContribution(
+                            DBeaverCore.getInstance().getWorkbench(),
+                            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
+                            "Search item(s)",
+                            DBIcon.SEARCH.getImageDescriptor()));
+                    }
                 }
-                ToolBar toolbar = searchTools.createControl(controlComposite);
+                ToolBar toolbar = defaultToolbarManager.createControl(controlComposite);
                 toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
                 controlComposite.layout();
             }
@@ -314,26 +318,28 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         });
 
         //ToolBar searchTools = new ToolBar(controlComposite, SWT.HORIZONTAL);
-        ToolBarManager searchTools = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-        searchTools.add(ViewUtils.makeCommandContribution(
-            DBeaverCore.getInstance().getWorkbench(),
-            IWorkbenchActionDefinitionIds.FIND_NEXT,
-            null,
-            DBIcon.ARROW_DOWN.getImageDescriptor()));
-        searchTools.add(ViewUtils.makeCommandContribution(
-            DBeaverCore.getInstance().getWorkbench(),
-            IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
-            null,
-            DBIcon.ARROW_UP.getImageDescriptor()));
-        //ToolItem closeButton = new ToolItem(searchTools, SWT.PUSH);
-        searchTools.add(new Action("Close search panel", PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
-            @Override
-            public void run()
-            {
-                cancelSearch(true);
-            }
-        });
-        searchTools.createControl(controlComposite);
+        if (searchToolbarManager == null) {
+            searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+            searchToolbarManager.add(ViewUtils.makeCommandContribution(
+                DBeaverCore.getInstance().getWorkbench(),
+                IWorkbenchActionDefinitionIds.FIND_NEXT,
+                null,
+                DBIcon.ARROW_DOWN.getImageDescriptor()));
+            searchToolbarManager.add(ViewUtils.makeCommandContribution(
+                DBeaverCore.getInstance().getWorkbench(),
+                IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
+                null,
+                DBIcon.ARROW_UP.getImageDescriptor()));
+            //ToolItem closeButton = new ToolItem(searchTools, SWT.PUSH);
+            searchToolbarManager.add(new Action("Close search panel", PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
+                @Override
+                public void run()
+                {
+                    cancelSearch(true);
+                }
+            });
+        }
+        searchToolbarManager.createControl(controlComposite);
 
 
         controlComposite.layout();
@@ -343,6 +349,14 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     @Override
     public void dispose()
     {
+        if (searchToolbarManager != null) {
+            searchToolbarManager.dispose();
+            searchToolbarManager = null;
+        }
+        if (defaultToolbarManager != null) {
+            defaultToolbarManager.dispose();
+            defaultToolbarManager = null;
+        }
         UIUtils.dispose(searchNotFoundColor);
 
         super.dispose();
