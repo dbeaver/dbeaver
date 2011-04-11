@@ -1,12 +1,12 @@
 1.1.0
 
 - Major redesign of object editor/viewer
-- Context search in editors (in object list and in ERD)
+- Context search in editors (in object lists and in ERD)
 - Show row count for tables (configurable, may be disabled to prevent database load)
-- Show of child objects in item lists (for complex entities e.g. index/constraint columns)
+- Display child objects in item lists (for complex entities e.g. index/constraint columns)
 - ERD palette redesign (show structure of diagram content)
 - Filtering of database tree depending on element properties (e.g. show only columns for views)
-- Running background tasks view/cancel support
+- Support of running background tasks view/cancel
 - Real progress monitor for editor tasks
 - Accelerators (shortcuts) and main/context menu major update
 - Configure of new SQL scripts creation (in the root or in the connection's folder) + deletion of empty scripts on close
