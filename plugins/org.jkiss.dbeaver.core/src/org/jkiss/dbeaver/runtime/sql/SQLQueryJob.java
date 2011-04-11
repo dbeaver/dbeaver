@@ -123,7 +123,7 @@ public class SQLQueryJob extends DataSourceJob
                     txnManager.setAutoCommit(newAutoCommit);
                 }
 
-                monitor.beginTask(this.getName(), queries.size() * SUBTASK_COUNT);
+                monitor.beginTask(this.getName(), queries.size());
 
                 // Notify job start
                 for (ISQLQueryListener listener : queryListeners) {
@@ -177,7 +177,7 @@ public class SQLQueryJob extends DataSourceJob
                     if (monitor.isCanceled()) {
                         break;
                     }
-
+                    monitor.worked(1);
                     queryNum++;
                 }
                 monitor.done();

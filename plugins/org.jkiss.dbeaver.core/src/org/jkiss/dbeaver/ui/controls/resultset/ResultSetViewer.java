@@ -537,6 +537,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void setStatus(String status, boolean error)
     {
+        if (statusLabel.isDisposed()) {
+            return;
+        }
         if (error) {
             statusLabel.setForeground(colorRed);
         } else {
@@ -550,6 +553,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void setExecutionTime(long executionTime)
     {
+        if (statusLabel.isDisposed()) {
+            return;
+        }
         statusLabel.setText(statusLabel.getText() + " - " + executionTime + "ms");
     }
 

@@ -94,6 +94,8 @@ public class SQLEditor extends SQLEditorBase
     static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal";
     //private static final String ACTION_DEFINE_FOLDING_REGION = "DefineFoldingRegion";
 
+    private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
+
     private SashForm sashForm;
     private Control editorControl;
     private CTabFolder resultTabs;
@@ -602,6 +604,9 @@ public class SQLEditor extends SQLEditorBase
                 queries,
                 resultsView.getDataReceiver());
             job.addQueryListener(new ISQLQueryListener() {
+
+                private long lastUIUpdateTime = -1l;
+
                 public void onStartJob()
                 {
                     curJobRunning = true;
@@ -616,13 +621,17 @@ public class SQLEditor extends SQLEditorBase
                 }
                 public void onStartQuery(final SQLStatementInfo query)
                 {
-                    asyncExec(new Runnable() {
-                        public void run()
-                        {
-                            selectAndReveal(query.getOffset(), query.getLength());
-                            setStatus(query.getQuery(), false);
-                        }
-                    });
+                    final long curTime = System.currentTimeMillis();
+                    if (lastUIUpdateTime <= 0 || (curTime - lastUIUpdateTime >= SCRIPT_UI_UPDATE_PERIOD)) {
+                        syncExec(new Runnable() {
+                            public void run()
+                            {
+                                selectAndReveal(query.getOffset(), query.getLength());
+                                setStatus(query.getQuery(), false);
+                            }
+                        });
+                        lastUIUpdateTime = System.currentTimeMillis();
+                    }
                 }
 
                 public void onEndQuery(final SQLQueryResult result)
@@ -630,36 +639,38 @@ public class SQLEditor extends SQLEditorBase
                     if (isDisposed()) {
                         return;
                     }
-                    asyncExec(new Runnable() {
-                        public void run()
-                        {
-                            if (result.getError() == null) {
-                                if (result.getRowCount() != null) {
-                                    // No status message for selected rows - this info is set by RS viewer itself
-/*
-                                    status = result.getRowCount() + " row(s) fetched";
-                                    if (result.getRowOffset() != null) {
-                                        status += " (" + result.getRowOffset() + " - " + (result.getRowOffset() + result.getRowCount()) + ")";
-                                    }
-*/
-                                } else if (result.getUpdateCount() != null) {
-                                    if (result.getUpdateCount() == 0) {
-                                        setStatus("Statement executed - no rows updated", false);
+                    if (isSingleQuery) {
+                        syncExec(new Runnable() {
+                            public void run()
+                            {
+                                if (result.getError() == null) {
+                                    if (result.getRowCount() != null) {
+                                        // No status message for selected rows - this info is set by RS viewer itself
+    /*
+                                        status = result.getRowCount() + " row(s) fetched";
+                                        if (result.getRowOffset() != null) {
+                                            status += " (" + result.getRowOffset() + " - " + (result.getRowOffset() + result.getRowCount()) + ")";
+                                        }
+    */
+                                    } else if (result.getUpdateCount() != null) {
+                                        if (result.getUpdateCount() == 0) {
+                                            setStatus("Statement executed - no rows updated", false);
+                                        } else {
+                                            setStatus(String.valueOf(result.getUpdateCount()) + " row(s) updated", false);
+                                        }
                                     } else {
-                                        setStatus(String.valueOf(result.getUpdateCount()) + " row(s) updated", false);
+                                        setStatus("Statement executed", false);
                                     }
+                                    resultsView.setExecutionTime(result.getQueryTime());
                                 } else {
-                                    setStatus("Statement executed", false);
+                                    setStatus(result.getError().getMessage(), true);
                                 }
-                                resultsView.setExecutionTime(result.getQueryTime());
-                            } else {
-                                setStatus(result.getError().getMessage(), true);
+                                if (queries.size() < 2) {
+                                    getSelectionProvider().setSelection(originalSelection);
+                                }
                             }
-                            if (queries.size() < 2) {
-                                getSelectionProvider().setSelection(originalSelection);
-                            }
-                        }
-                    });
+                        });
+                    }
                 }
                 public void onEndJob(final boolean hasErrors)
                 {

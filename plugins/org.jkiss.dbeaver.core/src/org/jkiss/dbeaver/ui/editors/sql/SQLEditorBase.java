@@ -19,6 +19,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -198,8 +199,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             //projectionViewer.getTextWidget().redraw();
             try {
                 projectionViewer.reinitializeProjection();
-            } catch (BadLocationException ex) {
-                log.warn("Error refreshing projection", ex);
+            } catch (Throwable ex) {
+                // We can catch OutOfMemory here for too big/complex documents
+                log.warn("Can't initialize SQL syntax projection", ex);
             }
         }
 
@@ -244,9 +246,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         curAnnotations.putAll(newAnnotations);
     }
 
+    protected void syncExec(Runnable runnable)
+    {
+        Display.getDefault().syncExec(runnable);
+    }
+
     protected void asyncExec(Runnable runnable)
     {
-        getSite().getShell().getDisplay().asyncExec(runnable);
+        Display.getDefault().asyncExec(runnable);
     }
 
     public boolean isDisposed()
