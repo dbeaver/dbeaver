@@ -36,6 +36,21 @@ public class JDBCUtils {
         }
     }
 
+    public static String safeGetStringTrimmed(ResultSet dbResult, String columnName)
+    {
+        try {
+            final String value = dbResult.getString(columnName);
+            if (value != null && !value.isEmpty()) {
+                return value.trim();
+            } else {
+                return value;
+            }
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return null;
+        }
+    }
+
     public static String safeGetString(ResultSet dbResult, int columnIndex)
     {
         try {

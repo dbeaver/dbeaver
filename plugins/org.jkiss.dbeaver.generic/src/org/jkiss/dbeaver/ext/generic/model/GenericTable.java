@@ -338,16 +338,16 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             try {
                 while (dbResult.next()) {
                     ForeignKeyInfo fkInfo = new ForeignKeyInfo();
-                    fkInfo.pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
-                    fkInfo.fkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_CAT);
-                    fkInfo.fkTableSchema = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_SCHEM);
-                    fkInfo.fkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_NAME);
-                    fkInfo.fkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKCOLUMN_NAME);
+                    fkInfo.pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);
+                    fkInfo.fkTableCatalog = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKTABLE_CAT);
+                    fkInfo.fkTableSchema = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKTABLE_SCHEM);
+                    fkInfo.fkTableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKTABLE_NAME);
+                    fkInfo.fkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKCOLUMN_NAME);
                     fkInfo.keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
                     fkInfo.updateRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
                     fkInfo.deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
-                    fkInfo.fkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FK_NAME);
-                    fkInfo.pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
+                    fkInfo.fkName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FK_NAME);
+                    fkInfo.pkName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PK_NAME);
                     fkInfo.defferabilityNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DEFERRABILITY);
                     fkInfos.add(fkInfo);
                 }

@@ -266,9 +266,9 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 null);
             try {
                 while (dbResult.next()) {
-                    String procedureCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_CAT);
-                    String procedureName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_NAME);
-                    String specificName = JDBCUtils.safeGetString(dbResult, JDBCConstants.SPECIFIC_NAME);
+                    String procedureCatalog = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_CAT);
+                    String procedureName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_NAME);
+                    String specificName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.SPECIFIC_NAME);
                     int procTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PROCEDURE_TYPE);
                     String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
                     DBSProcedureType procedureType;
@@ -356,8 +356,8 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         protected GenericTable fetchObject(JDBCExecutionContext context, ResultSet dbResult)
             throws SQLException, DBException
         {
-            String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
-            String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
+            String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_NAME);
+            String tableType = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_TYPE);
             String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
 
             if (tableType != null && INVALID_TABLE_TYPES.contains(tableType)) {
@@ -421,10 +421,10 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         protected GenericTableColumn fetchChild(JDBCExecutionContext context, GenericTable table, ResultSet dbResult)
             throws SQLException, DBException
         {
-            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
+            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
             int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
             int sourceType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SOURCE_DATA_TYPE);
-            String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
+            String typeName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TYPE_NAME);
             long columnSize = JDBCUtils.safeGetLong(dbResult, JDBCConstants.COLUMN_SIZE);
             boolean isNullable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) != DatabaseMetaData.columnNoNulls;
             int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS);
@@ -434,7 +434,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
             long charLength = JDBCUtils.safeGetLong(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
             int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-            boolean autoIncrement = "YES".equals(JDBCUtils.safeGetString(dbResult, JDBCConstants.IS_AUTOINCREMENT));
+            boolean autoIncrement = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.IS_AUTOINCREMENT));
             if (valueType == java.sql.Types.OTHER && !CommonUtils.isEmpty(typeName)) {
                 // Try to determine value type from type name
                 valueType = JDBCUtils.getDataTypeByName(valueType, typeName);
@@ -493,7 +493,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             throws SQLException, DBException
         {
             boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
-            String indexQualifier = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_QUALIFIER);
+            String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
             int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
 
             DBSIndexType indexType;
@@ -521,8 +521,8 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             throws SQLException, DBException
         {
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-            String ascOrDesc = JDBCUtils.safeGetString(dbResult, JDBCConstants.ASC_OR_DESC);
+            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
+            String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.ASC_OR_DESC);
 
             GenericTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
             if (tableColumn == null) {
@@ -599,7 +599,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             GenericPrimaryKey object)
             throws SQLException, DBException
         {
-            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
+            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
             int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
 
             GenericTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
@@ -656,14 +656,14 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         protected GenericForeignKey fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String fkName)
             throws SQLException, DBException
         {
-            String pkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_CAT);
-            String pkTableSchema = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_SCHEM);
-            String pkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_NAME);
+            String pkTableCatalog = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKTABLE_CAT);
+            String pkTableSchema = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKTABLE_SCHEM);
+            String pkTableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKTABLE_NAME);
 
             int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
             int updateRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
             int deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
-            String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
+            String pkName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PK_NAME);
             int defferabilityNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DEFERRABILITY);
 
             DBSConstraintCascade deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
@@ -696,7 +696,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 }
             }
             if (pk == null) {
-                String pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
+                String pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);
                 GenericTableColumn pkColumn = pkTable.getColumn(context.getProgressMonitor(), pkColumnName);
                 if (pkColumn == null) {
                     log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
@@ -737,7 +737,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             GenericForeignKey foreignKey)
             throws SQLException, DBException
         {
-            String pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
+            String pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);
             GenericConstraintColumn pkColumn = (GenericConstraintColumn)foreignKey.getReferencedKey().getColumn(context.getProgressMonitor(), pkColumnName);
             if (pkColumn == null) {
                 log.warn("Can't find PK table " + foreignKey.getReferencedKey().getTable().getFullQualifiedName() + " column " + pkColumnName);
@@ -745,7 +745,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             }
             int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
 
-            String fkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKCOLUMN_NAME);
+            String fkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKCOLUMN_NAME);
             GenericTableColumn fkColumn = foreignKey.getTable().getColumn(context.getProgressMonitor(), fkColumnName);
             if (fkColumn == null) {
                 log.warn("Can't find FK table " + foreignKey.getTable().getFullQualifiedName() + " column " + fkColumnName);

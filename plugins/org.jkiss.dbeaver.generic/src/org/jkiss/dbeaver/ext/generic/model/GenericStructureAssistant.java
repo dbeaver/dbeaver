@@ -75,9 +75,9 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 if (monitor.isCanceled()) {
                     break;
                 }
-                String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
-                String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
-                String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
+                String catalogName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_CAT);
+                String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_SCHEM);
+                String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_NAME);
                 if (CommonUtils.isEmpty(tableName)) {
                     continue;
                 }
@@ -126,9 +126,9 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 if (monitor.isCanceled()) {
                     break;
                 }
-                String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_CAT);
-                String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_SCHEM);
-                String procName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_NAME);
+                String catalogName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_CAT);
+                String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_SCHEM);
+                String procName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_NAME);
                 if (CommonUtils.isEmpty(procName)) {
                     continue;
                 }

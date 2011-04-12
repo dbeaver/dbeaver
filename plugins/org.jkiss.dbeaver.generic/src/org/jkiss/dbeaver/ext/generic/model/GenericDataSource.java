@@ -347,7 +347,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 container = this.getSchema(schemaName);
             }
             if (container == null) {
-                log.error("Schema " + schemaName + " not found");
+                log.error("Schema '" + schemaName + "' not found");
                 return null;
             }
         }
