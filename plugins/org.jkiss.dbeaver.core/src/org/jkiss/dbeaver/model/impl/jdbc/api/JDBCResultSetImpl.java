@@ -47,7 +47,9 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     {
         this.context = context;
         this.original = original;
-
+        if (this.original == null) {
+            log.warn("Empty resultset passed. Possibly broken database metadata");
+        }
         // Make fake statement
         this.statement = new JDBCFakeStatementImpl(context, this, description);
         this.fake = true;
@@ -105,6 +107,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public Object getColumnValue(int index)
         throws DBCException
     {
+        checkNotEmpty();
         try {
             return original.getObject(index);
         }
@@ -113,9 +116,19 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         }
     }
 
+    private void checkNotEmpty()
+    {
+        if (original == null) {
+            throw new IllegalStateException();
+        }
+    }
+
     public boolean nextRow()
         throws DBCException
     {
+        if (this.original == null) {
+            return false;
+        }
         try {
             return this.next();
         }
@@ -137,6 +150,9 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public boolean next()
         throws SQLException
     {
+        if (this.original == null) {
+            return false;
+        }
         // Check max rows
         if (maxRows >= 0 && rowsFetched >= maxRows) {
             return false;
@@ -158,23 +174,25 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     public void close()
     {
-        // Check for warnings
-        try {
-            JDBCUtils.reportWarnings(context, getOriginal().getWarnings());
-            getOriginal().clearWarnings();
-        } catch (Throwable e) {
-            log.debug("Could not check for resultset warnings", e);
-        }
+        if (original != null) {
+            // Check for warnings
+            try {
+                JDBCUtils.reportWarnings(context, getOriginal().getWarnings());
+                getOriginal().clearWarnings();
+            } catch (Throwable e) {
+                log.debug("Could not check for resultset warnings", e);
+            }
 
-        // Handle close
-        QMUtils.getDefaultHandler().handleResultSetClose(this, rowsFetched);
+            // Handle close
+            QMUtils.getDefaultHandler().handleResultSetClose(this, rowsFetched);
 
-        // Close result set
-        try {
-            original.close();
-        }
-        catch (SQLException e) {
-            log.error("Could not close result set", e);
+            // Close result set
+            try {
+                original.close();
+            }
+            catch (SQLException e) {
+                log.error("Could not close result set", e);
+            }
         }
 
         if (this.fake) {
@@ -186,54 +204,63 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public boolean wasNull()
         throws SQLException
     {
+        checkNotEmpty();
         return original.wasNull();
     }
 
     public String getString(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getString(columnIndex);
     }
 
     public boolean getBoolean(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getBoolean(columnIndex);
     }
 
     public byte getByte(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getByte(columnIndex);
     }
 
     public short getShort(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getShort(columnIndex);
     }
 
     public int getInt(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getInt(columnIndex);
     }
 
     public long getLong(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getLong(columnIndex);
     }
 
     public float getFloat(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getFloat(columnIndex);
     }
 
     public double getDouble(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getDouble(columnIndex);
     }
 
@@ -241,36 +268,42 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public BigDecimal getBigDecimal(int columnIndex, int scale)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getBigDecimal(columnIndex, scale);
     }
 
     public byte[] getBytes(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getBytes(columnIndex);
     }
 
     public Date getDate(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getDate(columnIndex);
     }
 
     public Time getTime(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getTime(columnIndex);
     }
 
     public Timestamp getTimestamp(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getTimestamp(columnIndex);
     }
 
     public InputStream getAsciiStream(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getAsciiStream(columnIndex);
     }
 
@@ -278,60 +311,70 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public InputStream getUnicodeStream(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getUnicodeStream(columnIndex);
     }
 
     public InputStream getBinaryStream(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getBinaryStream(columnIndex);
     }
 
     public String getString(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getString(columnLabel);
     }
 
     public boolean getBoolean(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getBoolean(columnLabel);
     }
 
     public byte getByte(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getByte(columnLabel);
     }
 
     public short getShort(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getShort(columnLabel);
     }
 
     public int getInt(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getInt(columnLabel);
     }
 
     public long getLong(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getLong(columnLabel);
     }
 
     public float getFloat(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getFloat(columnLabel);
     }
 
     public double getDouble(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getDouble(columnLabel);
     }
 
@@ -339,36 +382,42 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public BigDecimal getBigDecimal(String columnLabel, int scale)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getBigDecimal(columnLabel, scale);
     }
 
     public byte[] getBytes(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getBytes(columnLabel);
     }
 
     public Date getDate(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getDate(columnLabel);
     }
 
     public Time getTime(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getTime(columnLabel);
     }
 
     public Timestamp getTimestamp(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getTimestamp(columnLabel);
     }
 
     public InputStream getAsciiStream(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getAsciiStream(columnLabel);
     }
 
@@ -376,48 +425,59 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public InputStream getUnicodeStream(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getUnicodeStream(columnLabel);
     }
 
     public InputStream getBinaryStream(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getBinaryStream(columnLabel);
     }
 
     public SQLWarning getWarnings()
         throws SQLException
     {
+        checkNotEmpty();
         return original.getWarnings();
     }
 
     public void clearWarnings()
         throws SQLException
     {
+        if (original == null) {
+            return;
+        }
         original.clearWarnings();
     }
 
     public String getCursorName()
         throws SQLException
     {
+        if (original == null) {
+            return null;
+        }
         return original.getCursorName();
     }
 
     public ResultSetMetaData getMetaData()
         throws SQLException
     {
-        return new JDBCResultSetMetaData(this, original.getMetaData());
+        return new JDBCResultSetMetaData(this, original == null ? null : original.getMetaData());
     }
 
     public Object getObject(int columnIndex)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getObject(columnIndex);
     }
 
     public Object getObject(String columnLabel)
         throws SQLException
     {
+        checkNotEmpty();
         return original.getObject(columnLabel);
     }
 
