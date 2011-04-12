@@ -94,15 +94,6 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         return alias;
     }
 
-    public String getFullQualifiedName()
-    {
-        return DBUtils.getFullQualifiedName(
-            resultSetMetaData.getResultSet().getContext().getDataSource(),
-            catalogName,
-            schemaName,
-            tableName);
-    }
-
     public boolean isIdentitied(DBRProgressMonitor monitor)
         throws DBException
     {

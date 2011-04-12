@@ -14,6 +14,14 @@ import java.util.List;
  */
 public interface DBPDataSourceInfo
 {
+    public static final int USAGE_NONE = 0;
+    public static final int USAGE_DML = 1;
+    public static final int USAGE_DDL = 2;
+    public static final int USAGE_PROC = 4;
+    public static final int USAGE_INDEX = 8;
+    public static final int USAGE_PRIV = 8;
+    public static final int USAGE_ALL = 256;
+
     /**
      * Retrieves whether this database is in read-only mode.
      *
@@ -149,12 +157,32 @@ public interface DBPDataSourceInfo
     String getCatalogTerm();
 
     /**
+     * Catalog name usage in queries
+     * @return catalog usage
+     */
+    int getCatalogUsage();
+
+    /**
+     * Schema name usage in queries
+     * @return schema usage
+     */
+    int getSchemaUsage();
+
+    /**
      * Retrieves the <code>String</code> that this database uses as the
      * separator between a catalog and table name.
      *
      * @return the separator string
      */
     String getCatalogSeparator();
+
+    /**
+     * Retrieves the <code>String</code> that this database uses as the
+     * separator between a structured objects (e.g. schema and table).
+     *
+     * @return the separator string
+     */
+    String getStructSeparator();
 
     /**
      * Retrieves whether a catalog appears at the start of a fully qualified

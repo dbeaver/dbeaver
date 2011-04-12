@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -82,7 +81,7 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     // DBC Statement overrides
     ////////////////////////////////////////////////////////////////////
 
-    public DBCExecutionContext getContext()
+    public JDBCExecutionContext getContext()
     {
         return connection;
     }

@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCStateType;
@@ -22,6 +24,9 @@ import java.util.*;
  */
 public class JDBCDataSourceInfo implements DBPDataSourceInfo
 {
+    static final Log log = LogFactory.getLog(JDBCDataSourceInfo.class);
+
+    public static final String STRUCT_SEPARATOR = ".";
     private boolean readOnly;
     private String databaseProductName;
     private String databaseProductVersion;
@@ -37,6 +42,8 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private String schemaTerm;
     private String procedureTerm;
     private String catalogTerm;
+    private int catalogUsage;
+    private int schemaUsage;
     private String catalogSeparator;
     private boolean isCatalogAtStart;
     private DBCStateType sqlStateType;
@@ -51,89 +58,128 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         try {
             this.readOnly = metaData.isReadOnly();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.readOnly = false;
         }
         try {
             this.databaseProductName = metaData.getDatabaseProductName();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.databaseProductName = "?";
         }
         try {
             this.databaseProductVersion = metaData.getDatabaseProductVersion();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.databaseProductVersion = "?";
         }
         try {
             this.driverName = metaData.getDriverName();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.driverName = "?";
         }
         try {
             this.driverVersion = metaData.getDriverVersion();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.driverVersion = "?";
         }
         try {
             this.identifierQuoteString = metaData.getIdentifierQuoteString();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.identifierQuoteString = "\"";
         }
         try {
             this.sqlKeywords = makeStringList(metaData.getSQLKeywords());
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.sqlKeywords = Collections.emptyList();
         }
         try {
             this.numericFunctions = makeStringList(metaData.getNumericFunctions());
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.numericFunctions = Collections.emptyList();
         }
         try {
             this.stringFunctions = makeStringList(metaData.getStringFunctions());
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.stringFunctions = Collections.emptyList();
         }
         try {
             this.systemFunctions = makeStringList(metaData.getSystemFunctions());
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.systemFunctions = Collections.emptyList();
         }
         try {
             this.timeDateFunctions = makeStringList(metaData.getTimeDateFunctions());
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.timeDateFunctions = Collections.emptyList();
         }
         try {
             this.searchStringEscape = metaData.getSearchStringEscape();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.searchStringEscape = "\\";
         }
         try {
             this.schemaTerm = metaData.getSchemaTerm();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.schemaTerm = "Schema";
         }
         try {
             this.procedureTerm = metaData.getProcedureTerm();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.procedureTerm = "Procedure";
         }
         try {
             this.catalogTerm = metaData.getCatalogTerm();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.catalogTerm = "Database";
         }
         try {
             this.catalogSeparator = metaData.getCatalogSeparator();
             if (CommonUtils.isEmpty(this.catalogSeparator)) {
-                this.catalogSeparator = ".";
+                this.catalogSeparator = STRUCT_SEPARATOR;
             }
         } catch (Throwable e) {
-            this.catalogSeparator = ".";
+            log.debug(e.getMessage());
+            this.catalogSeparator = STRUCT_SEPARATOR;
+        }
+        try {
+            catalogUsage = 
+                (metaData.supportsCatalogsInDataManipulation() ? USAGE_DML : 0) |
+                (metaData.supportsCatalogsInTableDefinitions() ? USAGE_DDL : 0) |
+                (metaData.supportsCatalogsInProcedureCalls() ? USAGE_PROC : 0) |
+                (metaData.supportsCatalogsInIndexDefinitions() ? USAGE_INDEX : 0) |
+                (metaData.supportsCatalogsInPrivilegeDefinitions() ? USAGE_PRIV : 0);
+        } catch (SQLException e) {
+            log.debug(e.getMessage());
+            catalogUsage = USAGE_NONE;
+        }
+        try {
+            schemaUsage = 
+                (metaData.supportsSchemasInDataManipulation() ? USAGE_DML : 0) |
+                (metaData.supportsSchemasInTableDefinitions() ? USAGE_DDL : 0) |
+                (metaData.supportsSchemasInProcedureCalls() ? USAGE_PROC : 0) |
+                (metaData.supportsSchemasInIndexDefinitions() ? USAGE_INDEX : 0) |
+                (metaData.supportsSchemasInPrivilegeDefinitions() ? USAGE_PRIV : 0);
+        } catch (SQLException e) {
+            log.debug(e.getMessage());
+            schemaUsage = USAGE_NONE;
         }
         try {
             this.isCatalogAtStart = metaData.isCatalogAtStart();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.isCatalogAtStart = true;
         }
         try {
@@ -149,12 +195,14 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
                     break;
             }
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             this.sqlStateType = DBCStateType.UNKNOWN;
         }
 
         try {
             supportsTransactions = metaData.supportsTransactions();
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             supportsTransactions = true;
         }
 
@@ -166,6 +214,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
                 }
             }
         } catch (Throwable e) {
+            log.debug(e.getMessage());
             supportsTransactions = true;
         }
         if (!supportedIsolations.contains(JDBCTransactionIsolation.NONE)) {
@@ -205,6 +254,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         }
         catch (SQLException ex) {
             // Error getting datatypes list
+            log.debug(ex.getMessage());
         }
     }
 
@@ -293,9 +343,24 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         return catalogTerm;
     }
 
+    public int getCatalogUsage()
+    {
+        return catalogUsage;
+    }
+
+    public int getSchemaUsage()
+    {
+        return schemaUsage;
+    }
+
     public String getCatalogSeparator()
     {
         return catalogSeparator;
+    }
+
+    public String getStructSeparator()
+    {
+        return STRUCT_SEPARATOR;
     }
 
     public boolean isCatalogAtStart()

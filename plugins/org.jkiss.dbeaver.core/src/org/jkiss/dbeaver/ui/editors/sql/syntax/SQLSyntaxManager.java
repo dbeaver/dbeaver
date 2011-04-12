@@ -59,7 +59,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
     private TreeSet<String> tableQueryWords = new TreeSet<String>();
     private TreeSet<String> columnQueryWords = new TreeSet<String>();
 
-    private String catalogSeparator;
+    private String structSeparator;
     private String statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
     private String[] singleLineComments = {"--"};
 
@@ -102,9 +102,9 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         return posList;
     }
 
-    public String getCatalogSeparator()
+    public String getStructSeparator()
     {
-        return catalogSeparator;
+        return structSeparator;
     }
 
     public boolean isLoaded()
@@ -118,10 +118,10 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         if (dataSource != null) {
             dataSourceInfo = dataSource.getInfo();
         }
-        catalogSeparator = ".";
-        String additional = dataSourceInfo == null ? "" : dataSourceInfo.getCatalogSeparator();
-        if (!CommonUtils.isEmpty(additional) && !additional.equals(catalogSeparator)) {
-            catalogSeparator += additional;
+        structSeparator = ".";
+        String additional = dataSourceInfo == null ? "" : dataSourceInfo.getStructSeparator();
+        if (!CommonUtils.isEmpty(additional) && !additional.equals(structSeparator)) {
+            structSeparator = additional;
         }
         statementDelimiter = null;
         if (dataSourceInfo != null) {

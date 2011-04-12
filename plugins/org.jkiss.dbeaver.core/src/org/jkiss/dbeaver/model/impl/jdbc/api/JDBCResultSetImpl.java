@@ -31,25 +31,25 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     static final Log log = LogFactory.getLog(JDBCResultSetImpl.class);
 
-    private DBCExecutionContext context;
+    private JDBCExecutionContext context;
     private JDBCPreparedStatementImpl statement;
     private ResultSet original;
     private long rowsFetched;
     private long maxRows = -1;
     private boolean fake;
 
-    public static JDBCResultSetImpl makeResultSet(DBCExecutionContext context, ResultSet original, String description)
+    public static JDBCResultSetImpl makeResultSet(JDBCExecutionContext context, ResultSet original, String description)
     {
         return new JDBCResultSetImpl(context, original, description);
     }
 
-    private JDBCResultSetImpl(DBCExecutionContext context, ResultSet original, String description)
+    private JDBCResultSetImpl(JDBCExecutionContext context, ResultSet original, String description)
     {
         this.context = context;
         this.original = original;
 
         // Make fake statement
-        this.statement = new JDBCFakeStatementImpl((JDBCExecutionContext) context, this, description);
+        this.statement = new JDBCFakeStatementImpl(context, this, description);
         this.fake = true;
 
         // Simulate statement execution
@@ -160,7 +160,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     {
         // Check for warnings
         try {
-            JDBCUtils.reportWarnings(getOriginal().getWarnings());
+            JDBCUtils.reportWarnings(context, getOriginal().getWarnings());
             getOriginal().clearWarnings();
         } catch (Throwable e) {
             log.debug("Could not check for resultset warnings", e);

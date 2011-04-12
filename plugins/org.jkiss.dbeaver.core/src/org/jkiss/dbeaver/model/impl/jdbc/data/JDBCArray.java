@@ -11,8 +11,8 @@ import org.jkiss.dbeaver.model.data.DBDArray;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -34,7 +34,7 @@ public class JDBCArray implements DBDArray, DBDValueClonable {
     private Object[] contents;
     private JDBCArrayType type;
 
-    public static Object makeArray(DBCExecutionContext context, Array array)
+    public static Object makeArray(JDBCExecutionContext context, Array array)
     {
         if (array == null) {
             return null;
@@ -64,7 +64,7 @@ public class JDBCArray implements DBDArray, DBDValueClonable {
         return new JDBCArray(contents, type);
     }
 
-    private static Object[] extractDataFromResultSet(DBCExecutionContext context, Array array, JDBCArrayType type) throws SQLException, DBCException
+    private static Object[] extractDataFromResultSet(JDBCExecutionContext context, Array array, JDBCArrayType type) throws SQLException, DBCException
     {
         ResultSet dbResult = array.getResultSet();
         if (dbResult == null) {

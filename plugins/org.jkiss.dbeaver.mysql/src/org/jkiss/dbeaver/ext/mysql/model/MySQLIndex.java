@@ -126,8 +126,8 @@ public class MySQLIndex extends AbstractIndex
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getTable().getContainer().getName(),
-            getTable().getName(),
-            getName());
+            getTable().getContainer(),
+            getTable(),
+            this);
     }
 }

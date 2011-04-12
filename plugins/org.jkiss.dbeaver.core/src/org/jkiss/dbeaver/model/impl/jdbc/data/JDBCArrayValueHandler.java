@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
@@ -43,9 +44,9 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         Object value = resultSet.getObject(columnIndex);
 
         if (value == null) {
-            return JDBCArray.makeArray(context, null);
+            return JDBCArray.makeArray((JDBCExecutionContext) context, null);
         } else if (value instanceof Array) {
-            return JDBCArray.makeArray(context, (Array)value);
+            return JDBCArray.makeArray((JDBCExecutionContext) context, (Array)value);
         } else {
             throw new DBCException("Unsupported array type: " + value.getClass().getName());
         }

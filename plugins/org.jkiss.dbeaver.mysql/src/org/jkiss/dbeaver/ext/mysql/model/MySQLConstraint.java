@@ -39,8 +39,8 @@ public class MySQLConstraint extends JDBCConstraint<MySQLDataSource,MySQLTable> 
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getTable().getContainer().getName(),
-            getTable().getName(),
-            getName());
+            getTable().getContainer(),
+            getTable(),
+            this);
     }
 }

@@ -183,8 +183,8 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getCatalog() == null ? null : getCatalog().getName(),
-            getSchema() == null ? null : getSchema().getName(),
-            getName());
+            getCatalog(),
+            getSchema(),
+            this);
     }
 }

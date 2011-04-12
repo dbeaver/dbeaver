@@ -33,6 +33,9 @@ Command line parameters
 	If you want to use DBeaver as redistributable program start it
 	with arguments like "dbeaver -data workspace".
 
+  - vm <java vm path>
+    Use Java VM installed in <java vm path> folder instead of default
+    location.
 
 Licensing
 ==========================

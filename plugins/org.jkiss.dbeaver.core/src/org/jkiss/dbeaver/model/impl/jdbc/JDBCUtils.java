@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
@@ -385,11 +386,11 @@ public class JDBCUtils {
         }
     }
 
-    public static void reportWarnings(SQLWarning rootWarning)
+    public static void reportWarnings(JDBCExecutionContext context, SQLWarning rootWarning)
     {
         for (SQLWarning warning = rootWarning; warning != null; warning = warning.getNextWarning()) {
             log.warn(
-                "SQL Warning: " + warning.getLocalizedMessage() + ContentUtils.getDefaultLineSeparator() +
+                "SQL Warning (" + context.getDataSource().getContainer().getName() + "): " + warning.getLocalizedMessage() + ContentUtils.getDefaultLineSeparator() +
                     "SQL Code: " + warning.getErrorCode() + ContentUtils.getDefaultLineSeparator() +
                     "SQL State: " + warning.getSQLState());
         }

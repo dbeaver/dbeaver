@@ -97,8 +97,8 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getContainer().getName(),
-            getName());
+            getContainer(),
+            this);
     }
 
     @PropertyGroup()
@@ -438,26 +438,24 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         default: defferability = DBSConstraintDefferability.UNKNOWN; break;
                     }
 
-                    String pkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), pkTableCatalog, null, pkTableName);
                     MySQLTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
                     if (pkTable == null) {
-                        log.warn("Can't find PK table " + pkTableFullName);
+                        log.warn("Can't find PK table " + pkTableName);
                         continue;
                     }
-                    String fkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), fkTableCatalog, null, fkTableName);
                     MySQLTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableName);
                     if (fkTable == null) {
-                        log.warn("Can't find FK table " + fkTableFullName);
+                        log.warn("Can't find FK table " + fkTableName);
                         continue;
                     }
                     MySQLTableColumn pkColumn = pkTable.getColumn(monitor, pkColumnName);
                     if (pkColumn == null) {
-                        log.warn("Can't find PK table " + DBUtils.getFullQualifiedName(getDataSource(), pkTableCatalog, null, pkTableName) + " column " + pkColumnName);
+                        log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
                         continue;
                     }
                     MySQLTableColumn fkColumn = fkTable.getColumn(monitor, fkColumnName);
                     if (fkColumn == null) {
-                        log.warn("Can't find FK table " + DBUtils.getFullQualifiedName(getDataSource(), fkTableCatalog, null, fkTableName) + " column " + fkColumnName);
+                        log.warn("Can't find FK table " + fkTable.getFullQualifiedName() + " column " + fkColumnName);
                         continue;
                     }
 
@@ -483,7 +481,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                     if (pk == null) {
                         log.warn("Could not find primary key for table " + pkTable.getFullQualifiedName());
                         // Too bad. But we have to create new fake PK for this FK
-                        String pkFullName = pkTableFullName + "." + pkName;
+                        String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
                             pk = new MySQLConstraint(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);

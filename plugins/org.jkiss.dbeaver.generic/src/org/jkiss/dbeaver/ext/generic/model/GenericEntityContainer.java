@@ -439,7 +439,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 // Try to determine value type from type name
                 valueType = JDBCUtils.getDataTypeByName(valueType, typeName);
             }
-            // Check for identity modifier [MS SQL]
+            // Check for identity modifier [DBSPEC: MS SQL]
             if (typeName.toUpperCase().endsWith(GenericConstants.TYPE_MODIFIER_IDENTITY)) {
                 autoIncrement = true;
                 typeName = typeName.substring(0, typeName.length() - GenericConstants.TYPE_MODIFIER_IDENTITY.length());
@@ -680,10 +680,10 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 log.debug("Null PK table name");
                 return null;
             }
-            String pkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
+            //String pkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
             GenericTable pkTable = getDataSource().findTable(context.getProgressMonitor(), pkTableCatalog, pkTableSchema, pkTableName);
             if (pkTable == null) {
-                log.warn("Can't find PK table " + pkTableFullName);
+                log.warn("Can't find PK table " + pkTableName);
                 return null;
             }
 
@@ -715,7 +715,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 if (pk == null) {
                     log.warn("Could not find unique key for table " + pkTable.getFullQualifiedName() + " column " + pkColumn.getName());
                     // Too bad. But we have to create new fake PK for this FK
-                    String pkFullName = pkTableFullName + "." + pkName;
+                    String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
                     pk = pkMap.get(pkFullName);
                     if (pk == null) {
                         pk = new GenericPrimaryKey(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);

@@ -228,7 +228,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
     {
         // Check for warnings
         try {
-            JDBCUtils.reportWarnings(getConnection().getWarnings());
+            JDBCUtils.reportWarnings(this, getConnection().getWarnings());
             getConnection().clearWarnings();
         } catch (Throwable e) {
             log.debug("Could not check for connection warnings", e);

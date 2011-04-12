@@ -55,7 +55,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private void setPosition(SQLWordPartDetector wordDetector)
     {
         String wordPart = wordDetector.getWordPart();
-        int divPos = wordPart.lastIndexOf(syntaxManager.getCatalogSeparator());
+        int divPos = wordPart.lastIndexOf(syntaxManager.getStructSeparator());
         if (divPos == -1) {
             replacementOffset = wordDetector.getOffset();
             replacementLength = wordPart.length();
@@ -122,7 +122,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     {
         final SQLWordPartDetector wordDetector = new SQLWordPartDetector(document, syntaxManager, offset);
         String wordPart = wordDetector.getWordPart();
-        int divPos = wordPart.lastIndexOf(syntaxManager.getCatalogSeparator());
+        int divPos = wordPart.lastIndexOf(syntaxManager.getStructSeparator());
         if (divPos != -1) {
             wordPart = wordPart.substring(divPos + 1);
         }

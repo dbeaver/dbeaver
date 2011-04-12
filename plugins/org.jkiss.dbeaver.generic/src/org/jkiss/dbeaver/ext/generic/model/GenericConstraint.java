@@ -30,10 +30,10 @@ public abstract class GenericConstraint extends JDBCConstraint<GenericDataSource
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getTable().getCatalog() == null ? null : getTable().getCatalog().getName(),
-            getTable().getSchema() == null ? null : getTable().getSchema().getName(),
-            getTable().getName(),
-            getName());
+            getTable().getCatalog(),
+            getTable().getSchema(),
+            getTable(),
+            this);
     }
 
 }

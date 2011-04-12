@@ -21,7 +21,7 @@ public class SQLParser {
 
     public SQLParser(SQLFormatterConfiguration configuration) {
         this.configuration = configuration;
-        this.catalogSeparator = configuration.getSyntaxManager().getCatalogSeparator();
+        this.catalogSeparator = configuration.getSyntaxManager().getStructSeparator();
     }
 
     public static boolean isSpace(final char argChar) {

@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -23,7 +21,7 @@ import java.util.List;
  */
 public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog>
 {
-    static final Log log = LogFactory.getLog(MySQLProcedure.class);
+    //static final Log log = LogFactory.getLog(MySQLProcedure.class);
 
     private DBSProcedureType procedureType;
     private String resultType;
@@ -103,7 +101,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getContainer().getName(),
-            getName());
+            getContainer(),
+            this);
     }
 }

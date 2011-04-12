@@ -57,8 +57,8 @@ public class MySQLForeignKey extends AbstractForeignKey<MySQLDataSource, MySQLTa
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getTable().getContainer().getName(),
-            getTable().getName(),
-            getName());
+            getTable().getContainer(),
+            getTable(),
+            this);
     }
 }

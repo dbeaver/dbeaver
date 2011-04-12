@@ -96,6 +96,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
 
     public String getFullQualifiedName()
     {
+/*
         String ownerName = null, catalogName = null;
         if (getSchema() != null) {
             ownerName = getSchema().getName();
@@ -106,7 +107,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             // Use catalog name only if there are multiple catalogs
             catalogName = getCatalog().getName();
         }
-        return DBUtils.getFullQualifiedName(getDataSource(), catalogName, ownerName, getName());
+*/
+        return DBUtils.getFullQualifiedName(getDataSource(), getCatalog(), getSchema(), this);
     }
 
     public boolean isView()
@@ -371,10 +373,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                     log.debug("Null FK table name");
                     continue;
                 }
-                String fkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
+                //String fkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
                 GenericTable fkTable = getDataSource().findTable(monitor, info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
                 if (fkTable == null) {
-                    log.warn("Can't find FK table " + fkTableFullName);
+                    log.warn("Can't find FK table " + info.fkTableName);
                     continue;
                 }
                 GenericTableColumn pkColumn = this.getColumn(monitor, info.pkColumnName);
@@ -384,7 +386,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                 }
                 GenericTableColumn fkColumn = fkTable.getColumn(monitor, info.fkColumnName);
                 if (fkColumn == null) {
-                    log.warn("Can't find FK table " + DBUtils.getFullQualifiedName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName) + " column " + info.fkColumnName);
+                    log.warn("Can't find FK table " + fkTable.getFullQualifiedName() + " column " + info.fkColumnName);
                     continue;
                 }
 

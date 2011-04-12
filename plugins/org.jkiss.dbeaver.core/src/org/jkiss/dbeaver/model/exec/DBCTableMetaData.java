@@ -33,8 +33,6 @@ public interface DBCTableMetaData {
      */
     String getTableAlias();
 
-    String getFullQualifiedName();
-
     /**
      * Checks table is identitied.
      * Table is identitied if resultset contains at least one set of this table columns which will unique

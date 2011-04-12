@@ -87,9 +87,9 @@ public class GenericPackage extends GenericEntityContainer implements DBSEntityQ
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getCatalog() == null ? null : getCatalog().getName(),
-            getSchema() == null ? null : getSchema().getName(),
-            getName());
+            getCatalog(),
+            getSchema(),
+            this);
     }
 
     public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException

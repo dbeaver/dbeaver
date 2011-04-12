@@ -65,16 +65,17 @@ public final class DBUtils {
 
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
-        String quoteString;
-        quoteString = dataSource.getInfo().getIdentifierQuoteString();
-        String delimString;
-        delimString = dataSource.getInfo().getCatalogSeparator();
+        String quoteString = dataSource.getInfo().getIdentifierQuoteString();
+        String catalogSeparator = dataSource.getInfo().getCatalogSeparator();
+        String structSeparator = dataSource.getInfo().getStructSeparator();
 
-        boolean hasBadChars = false;
-        for (int i = 0; i < str.length(); i++) {
-            if (!Character.isUnicodeIdentifierPart(str.charAt(i)) && delimString.indexOf(str.charAt(i)) == -1) {
-                hasBadChars = true;
-                break;
+        boolean hasBadChars = str.indexOf(catalogSeparator) != -1 || str.indexOf(structSeparator) != -1;
+        if (!hasBadChars) {
+            for (int i = 0; i < str.length(); i++) {
+                if (!Character.isUnicodeIdentifierPart(str.charAt(i))) {
+                    hasBadChars = true;
+                    break;
+                }
             }
         }
 
@@ -87,22 +88,39 @@ public final class DBUtils {
         return str;
     }
 
-    public static String getFullQualifiedName(DBPDataSource dataSource, String ... names)
+    public static String getFullQualifiedName(DBPDataSource dataSource, DBSObject ... path)
     {
-        String catalogSeparator = dataSource.getInfo().getCatalogSeparator();
+        final DBPDataSourceInfo info = dataSource.getInfo();
         StringBuilder name = new StringBuilder();
-        for (String namePart : names) {
+        DBSObject parent = null;
+        for (DBSObject namePart : path) {
             if (namePart == null) {
                 continue;
             }
-            // Check for valid object name
-            if (!isValidObjectName(namePart)) {
+            if (namePart instanceof DBSCatalog && ((info.getCatalogUsage() & DBPDataSourceInfo.USAGE_DML) == 0)) {
+                // Do not use catalog name in FQ name
                 continue;
             }
-            if (name.length() > 0) {
-                name.append(catalogSeparator);
+            if (namePart instanceof DBSSchema && ((info.getSchemaUsage() & DBPDataSourceInfo.USAGE_DML) == 0)) {
+                // Do not use schema name in FQ name
+                continue;
             }
-            name.append(DBUtils.getQuotedIdentifier(dataSource, namePart));
+            // Check for valid object name
+            if (!isValidObjectName(namePart.getName())) {
+               continue;
+            }
+            if (name.length() > 0) {
+                if (parent instanceof DBSCatalog) {
+                    if (!info.isCatalogAtStart()) {
+                        log.warn("Catalog name should be at the start of full-qualified name!");
+                    }
+                    name.append(info.getCatalogSeparator());
+                } else {
+                    name.append(info.getStructSeparator());
+                }
+            }
+            name.append(DBUtils.getQuotedIdentifier(dataSource, namePart.getName()));
+            parent = namePart;
         }
         return name.toString();
     }

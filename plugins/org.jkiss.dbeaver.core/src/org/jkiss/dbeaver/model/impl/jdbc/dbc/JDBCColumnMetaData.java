@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -66,6 +67,32 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         this.label = metaData.getColumnLabel(index);
         this.name = metaData.getColumnName(index);
         boolean hasData = false;
+
+        String fetchedTableName = metaData.getTableName(index);
+        String fetchedCatalogName = metaData.getCatalogName(index);
+        String fetchedSchemaName = metaData.getSchemaName(index);
+        // Check for tables name
+        // Sometimes [DBSPEC: Informix] it contains schema/catalog name inside
+        if (!CommonUtils.isEmpty(fetchedTableName) && CommonUtils.isEmpty(fetchedCatalogName) && CommonUtils.isEmpty(fetchedSchemaName)) {
+            final DBPDataSourceInfo dsInfo = resultSetMeta.getResultSet().getContext().getDataSource().getInfo();
+            if (!fetchedTableName.startsWith(dsInfo.getIdentifierQuoteString())) {
+                final String catalogSeparator = dsInfo.getCatalogSeparator();
+                final int catDivPos = fetchedTableName.indexOf(catalogSeparator);
+                if (catDivPos != -1 && (dsInfo.getCatalogUsage() & DBPDataSourceInfo.USAGE_DML) != 0) {
+                    // Catalog in table name - extract it
+                    fetchedCatalogName = fetchedTableName.substring(0, catDivPos);
+                    fetchedTableName = fetchedTableName.substring(catDivPos + catalogSeparator.length());
+                }
+                final String structSeparator = dsInfo.getStructSeparator();
+                final int schemaDivPos = fetchedTableName.indexOf(structSeparator);
+                if (schemaDivPos != -1 && (dsInfo.getSchemaUsage() & DBPDataSourceInfo.USAGE_DML) != 0) {
+                    // Schema in table name - extract it
+                    fetchedSchemaName = fetchedTableName.substring(0, schemaDivPos);
+                    fetchedTableName = fetchedTableName.substring(schemaDivPos + structSeparator.length());
+                }
+            }
+        }
+
         if (ownerTable != null) {
             // Get column using void monitor because all columns MUST be already read
             try {
@@ -81,7 +108,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
                 DBSObject tableGrandParent = tableParent == null ? null : tableParent.getParentObject();
                 this.catalogName = tableParent instanceof DBSCatalog ? tableParent.getName() : tableGrandParent instanceof DBSCatalog ? tableGrandParent.getName() : null;
                 this.schemaName = tableParent instanceof DBSSchema ? tableParent.getName() : null;
-                this.tableName = metaData.getTableName(index);
+                this.tableName = fetchedTableName;
                 this.type = this.tableColumn.getValueType();
                 this.typeName = this.tableColumn.getTypeName();
                 this.readOnly = false;
@@ -110,9 +137,9 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
             } catch (SQLException e) {
                 this.displaySize = 0;
             }
-            this.catalogName = metaData.getCatalogName(index);
-            this.schemaName = metaData.getSchemaName(index);
-            this.tableName = metaData.getTableName(index);
+            this.catalogName = fetchedCatalogName;
+            this.schemaName = fetchedSchemaName;
+            this.tableName = fetchedTableName;
             this.type = metaData.getColumnType(index);
             this.typeName = metaData.getColumnTypeName(index);
             this.readOnly = metaData.isReadOnly(index);
