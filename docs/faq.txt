@@ -1,0 +1,9 @@
+DBeaver FAQ
+
+Q1: DBeaver doesn't start
+A1: You have old Java or not Java VM installed. DBeaver require Java 1.6.
+A2: You use wrong DBeaver version (e.g. 64bit on 32bit OS)
+
+Q2: Database driver not found
+
+Q3: 
