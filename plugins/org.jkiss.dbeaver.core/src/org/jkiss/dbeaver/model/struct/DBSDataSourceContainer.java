@@ -97,4 +97,6 @@ public interface DBSDataSourceContainer extends DBSEntity
     IPreferenceStore getPreferenceStore();
 
     DBPDataSourceRegistry getRegistry();
+
+    DBPKeywordManager getKeywordManager();
 }

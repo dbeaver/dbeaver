@@ -75,19 +75,26 @@ public final class DBUtils {
         if (quoteString == null) {
             return str;
         }
-        if (isQuotedIdentifier(dataSource, str)) {
+        if (str.startsWith(quoteString) && str.endsWith(quoteString)) {
+            // Already quoted
             return str;
         }
 
-        boolean hasBadChars = false;
-        for (int i = 0; i < str.length(); i++) {
-            if (!dataSource.getInfo().validUnquotedCharacter(str.charAt(i))) {
-                hasBadChars = true;
-                break;
+        boolean hasBadChars = dataSource.getContainer().getKeywordManager().getKeywordType(str.toUpperCase()) != null;
+        if (!hasBadChars) {
+            for (int i = 0; i < str.length(); i++) {
+                if (!dataSource.getInfo().validUnquotedCharacter(str.charAt(i))) {
+                    hasBadChars = true;
+                    break;
+                }
             }
         }
         if (!hasBadChars) {
             return str;
+        }
+        if (str.indexOf(quoteString) != -1) {
+            // Escape quote chars
+            str = str.replace(quoteString, quoteString + quoteString);
         }
         return quoteString + str + quoteString;
     }

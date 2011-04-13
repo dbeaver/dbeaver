@@ -114,7 +114,7 @@ public class SQLParser {
                 fChar = fBefore.charAt(fPos);
             }
             String word = s.toString();
-            if (configuration.getSyntaxManager().getKeywordType(word.toUpperCase()) != null) {
+            if (configuration.getSyntaxManager().getKeywordManager().getKeywordType(word.toUpperCase()) != null) {
                 return new SQLFormatterToken(SQLFormatterConstants.KEYWORD, word, start_pos);
             }
             return new SQLFormatterToken(SQLFormatterConstants.NAME, word, start_pos);

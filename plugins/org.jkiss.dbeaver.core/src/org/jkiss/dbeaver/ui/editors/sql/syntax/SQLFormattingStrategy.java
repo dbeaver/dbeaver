@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterException;
@@ -80,8 +81,8 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
         StringBuilder newContent = new StringBuilder();
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
-            SQLSyntaxManager.KeywordType type = sqlSyntax.getKeywordType(token.toUpperCase());
-            if (type == SQLSyntaxManager.KeywordType.KEYWORD) {
+            DBPKeywordType type = sqlSyntax.getKeywordManager().getKeywordType(token.toUpperCase());
+            if (type == DBPKeywordType.KEYWORD) {
                 token = token.toUpperCase();
             }
             newContent.append(token);

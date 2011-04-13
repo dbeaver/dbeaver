@@ -141,7 +141,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
     private void setCommentsScanner(SQLSyntaxManager sqlSyntax)
     {
-        String[] singleLineComments = sqlSyntax.getSingleLineComments();
+        String[] singleLineComments = sqlSyntax.getKeywordManager().getSingleLineComments();
 
         for (String singleLineComment : singleLineComments) {
             // Add rule for single line comments.

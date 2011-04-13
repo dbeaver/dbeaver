@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.format;
 
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 
 /**
@@ -49,7 +50,7 @@ public class SQLFormatterConfiguration {
     }
 
     boolean isFunction(String name) {
-        return syntaxManager.getKeywordType(name) == SQLSyntaxManager.KeywordType.FUNCTION;
+        return syntaxManager.getKeywordManager().getKeywordType(name) == DBPKeywordType.FUNCTION;
     }
 
 }

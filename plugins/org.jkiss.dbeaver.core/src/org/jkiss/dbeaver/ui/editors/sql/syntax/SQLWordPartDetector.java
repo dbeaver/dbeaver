@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +77,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 }
 
                 String prevWord = document.get(prevOffset, prevStartOffset - prevOffset);
-                if (syntaxManager.getKeywordType(prevWord.toUpperCase()) == SQLSyntaxManager.KeywordType.KEYWORD) {
+                if (syntaxManager.getKeywordManager().getKeywordType(prevWord.toUpperCase()) == DBPKeywordType.KEYWORD) {
                     this.prevKeyWord = prevWord.toUpperCase();
                     break;
                 }

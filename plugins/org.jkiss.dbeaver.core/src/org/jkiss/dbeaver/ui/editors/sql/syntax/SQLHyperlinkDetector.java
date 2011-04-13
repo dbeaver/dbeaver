@@ -14,6 +14,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -109,7 +110,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        if (syntaxManager.getKeywordType(identifier.toUpperCase()) == SQLSyntaxManager.KeywordType.KEYWORD) {
+        if (syntaxManager.getKeywordManager().getKeywordType(identifier.toUpperCase()) == DBPKeywordType.KEYWORD) {
             // Skip keywords
             return null;
         }

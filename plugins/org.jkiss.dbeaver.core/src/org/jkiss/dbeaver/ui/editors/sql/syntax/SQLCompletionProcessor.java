@@ -15,6 +15,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -89,10 +90,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             (CommonUtils.isEmpty(wordDetector.getPrevWords()) || (wordDetector.getPrevDelimiter() != null && wordDetector.getPrevDelimiter().indexOf(',') != -1));
         QueryType queryType = null;
         if (isStructureQuery) {
-            if (editor.getSyntaxManager().isTableQueryWord(wordDetector.getPrevKeyWord())) {
+            if (editor.getSyntaxManager().getKeywordManager().isTableQueryWord(wordDetector.getPrevKeyWord())) {
                 queryType = QueryType.TABLE;
 
-            } else if (editor.getSyntaxManager().isColumnQueryWord(wordDetector.getPrevKeyWord()) && CommonUtils.isEmptyTrimmed(wordDetector.getPrevDelimiter())) {
+            } else if (editor.getSyntaxManager().getKeywordManager().isColumnQueryWord(wordDetector.getPrevKeyWord()) && CommonUtils.isEmptyTrimmed(wordDetector.getPrevDelimiter())) {
                 queryType = QueryType.COLUMN;
             }
         }
@@ -119,9 +120,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             // No assist
         } else {
             // Keyword assist
-            List<String> matchedKeywords = editor.getSyntaxManager().getMatchedKeywords(wordPart);
+            List<String> matchedKeywords = editor.getSyntaxManager().getKeywordManager().getMatchedKeywords(wordPart);
             for (String keyWord : matchedKeywords) {
-                SQLSyntaxManager.KeywordType keywordType = editor.getSyntaxManager().getKeywordType(keyWord);
+                DBPKeywordType keywordType = editor.getSyntaxManager().getKeywordManager().getKeywordType(keyWord);
                 proposals.add(
                     createCompletionProposal(
                         keyWord,

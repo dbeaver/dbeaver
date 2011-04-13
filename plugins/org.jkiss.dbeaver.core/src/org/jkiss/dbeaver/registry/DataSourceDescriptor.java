@@ -18,16 +18,14 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceUser;
-import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -79,6 +77,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private Image iconNormal;
     private Image iconConnected;
     private Image iconError;
+
+    private DataSourceKeywordManager keywordManager;
 
     private volatile boolean connectFailed = false;
     private volatile Date connectTime = null;
@@ -266,6 +266,17 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         return registry;
     }
 
+    public DBPKeywordManager getKeywordManager()
+    {
+        if (!isConnected()) {
+            return EmptyKeywordManager.INSTANCE;
+        }
+        if (keywordManager == null) {
+            keywordManager = new DataSourceKeywordManager(dataSource.getInfo());
+        }
+        return keywordManager;
+    }
+
     public boolean isConnected()
     {
         return connectTime != null;
@@ -435,6 +446,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
         dataSource = null;
         connectTime = null;
+        keywordManager = null;
 
         if (reflect) {
             getRegistry().fireDataSourceEvent(
