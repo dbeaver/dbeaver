@@ -185,15 +185,16 @@ public class DriverEditDialog extends Dialog
                 });
 
             }
-
-            anonymousCheck = UIUtils.createLabelCheckbox(propsGroup, "Anonymous", driver.isAnonymousAccess(), SWT.NONE);
-            anonymousCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    onChangeProperty();
-                }
-            });
+            if (!isReadOnly) {
+                anonymousCheck = UIUtils.createLabelCheckbox(propsGroup, "Anonymous", driver.isAnonymousAccess(), SWT.NONE);
+                anonymousCheck.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        onChangeProperty();
+                    }
+                });
+            }
         }
         if (!isReadOnly) {
             TabFolder tabFolder = new TabFolder(group, SWT.TOP);
