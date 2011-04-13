@@ -6,6 +6,8 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -52,7 +54,14 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : null;
         GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
             schema == null ? null : schema.getCatalog();
-        objectNameMask = getDataSource().getNameConverter().convert(objectNameMask);
+        final GenericDataSource dataSource = getDataSource();
+        boolean isQuoted = DBUtils.isQuotedIdentifier(dataSource, objectNameMask);
+        DBPIdentifierCase convertCase = isQuoted ? dataSource.getInfo().storesQuotedCase() : dataSource.getInfo().storesUnquotedCase();
+        if (convertCase == DBPIdentifierCase.UPPER) {
+            objectNameMask = objectNameMask.toUpperCase();
+        } else if (convertCase == DBPIdentifierCase.LOWER) {
+            objectNameMask = objectNameMask.toLowerCase();
+        }
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
             findTablesByMask(context, catalog, schema, objectNameMask, maxResults, objects);

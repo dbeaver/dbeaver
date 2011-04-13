@@ -42,7 +42,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
 
     private String queryGetActiveDB;
     private String querySetActiveDB;
-    private GenericConstants.MetaCase metaCase;
 
     public GenericDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -50,17 +49,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         super(container);
         this.queryGetActiveDB = container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB);
         this.querySetActiveDB = container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB);
-        String metaCaseName = container.getDriver().getDriverParameter(GenericConstants.PARAM_META_CASE);
-        if (!CommonUtils.isEmpty(metaCaseName)) {
-            try {
-                this.metaCase = GenericConstants.MetaCase.valueOf(metaCaseName.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                log.warn(e);
-                this.metaCase = GenericConstants.MetaCase.NONE;
-            }
-        } else {
-            this.metaCase = GenericConstants.MetaCase.NONE;
-        }
     }
 
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
@@ -83,11 +71,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 log.debug(e);
             }
         }
-    }
-
-    public MetaDataNameConverter getNameConverter()
-    {
-        return metaCase;
     }
 
     public String[] getTableTypes()

@@ -238,9 +238,23 @@ public interface DBPDataSourceInfo
 
     /**
      * Script delimiter character
-     * @return
+     * @return script delimiter mark
      */
     String getScriptDelimiter();
 
+    /**
+     * Checks that specified character is a valid identifier part. Non-valid characters should be quoted in queries.
+     * @param c character
+     * @return true or false
+     */
     boolean validUnquotedCharacter(char c);
+
+    boolean supportsUnquotedMixedCase();
+
+    boolean supportsQuotedMixedCase();
+
+    DBPIdentifierCase storesUnquotedCase();
+
+    DBPIdentifierCase storesQuotedCase();
+
 }

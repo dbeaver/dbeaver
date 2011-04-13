@@ -71,7 +71,8 @@ public final class DBUtils {
 
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
-        String quoteString = dataSource.getInfo().getIdentifierQuoteString();
+        final DBPDataSourceInfo info = dataSource.getInfo();
+        String quoteString = info.getIdentifierQuoteString();
         if (quoteString == null) {
             return str;
         }
@@ -80,10 +81,26 @@ public final class DBUtils {
             return str;
         }
 
-        boolean hasBadChars = dataSource.getContainer().getKeywordManager().getKeywordType(str.toUpperCase()) != null;
+        final String strUpper = str.toUpperCase();
+
+        // Check for keyword conflict
+        boolean hasBadChars = dataSource.getContainer().getKeywordManager().getKeywordType(strUpper) == DBPKeywordType.KEYWORD;
+
+        // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
+        if (!hasBadChars && info.supportsQuotedMixedCase()) {
+            // See how unquoted idents are stored
+            // If passed identifier case differs from unquoted then we need to escape it
+            if (info.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
+                hasBadChars = !str.equals(strUpper);
+            } else if (info.storesUnquotedCase() == DBPIdentifierCase.LOWER) {
+                hasBadChars = !str.equals(str.toLowerCase());
+            }
+        }
+
+        // Check for bad characters
         if (!hasBadChars) {
             for (int i = 0; i < str.length(); i++) {
-                if (!dataSource.getInfo().validUnquotedCharacter(str.charAt(i))) {
+                if (!info.validUnquotedCharacter(str.charAt(i))) {
                     hasBadChars = true;
                     break;
                 }
@@ -92,8 +109,8 @@ public final class DBUtils {
         if (!hasBadChars) {
             return str;
         }
+        // Escape quote chars
         if (str.indexOf(quoteString) != -1) {
-            // Escape quote chars
             str = str.replace(quoteString, quoteString + quoteString);
         }
         return quoteString + str + quoteString;

@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCStateType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -54,6 +55,10 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
 
     private List<DBSDataType> dataTypeList;
     private Map<String, DBSDataType> dataTypeMap;
+    private boolean supportsUnquotedMixedCase;
+    private boolean supportsQuotedMixedCase;
+    private DBPIdentifierCase unquotedIdentCase;
+    private DBPIdentifierCase quotedIdentCase;
 
     public JDBCDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
@@ -98,6 +103,43 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         }
         if (identifierQuoteString != null && identifierQuoteString.isEmpty()) {
             identifierQuoteString = null;
+        }
+
+        try {
+            this.supportsUnquotedMixedCase = metaData.supportsMixedCaseIdentifiers();
+        } catch (SQLException e) {
+            log.debug(e.getMessage());
+            this.supportsUnquotedMixedCase = false;
+        }
+        try {
+            this.supportsQuotedMixedCase = metaData.supportsMixedCaseQuotedIdentifiers();
+        } catch (SQLException e) {
+            log.debug(e.getMessage());
+            this.supportsQuotedMixedCase = false;
+        }
+        try {
+            if (metaData.storesUpperCaseIdentifiers()) {
+                this.unquotedIdentCase = DBPIdentifierCase.UPPER;
+            } else if (metaData.storesLowerCaseIdentifiers()) {
+                this.unquotedIdentCase = DBPIdentifierCase.LOWER;
+            } else {
+                this.unquotedIdentCase = DBPIdentifierCase.MIXED;
+            }
+        } catch (SQLException e) {
+            log.debug(e.getMessage());
+            this.unquotedIdentCase = DBPIdentifierCase.MIXED;
+        }
+        try {
+            if (metaData.storesUpperCaseQuotedIdentifiers()) {
+                this.quotedIdentCase = DBPIdentifierCase.UPPER;
+            } else if (metaData.storesLowerCaseQuotedIdentifiers()) {
+                this.quotedIdentCase = DBPIdentifierCase.LOWER;
+            } else {
+                this.quotedIdentCase = DBPIdentifierCase.MIXED;
+            }
+        } catch (SQLException e) {
+            log.debug(e.getMessage());
+            this.quotedIdentCase = DBPIdentifierCase.MIXED;
         }
         try {
             this.sqlKeywords = makeStringList(metaData.getSQLKeywords());
@@ -421,6 +463,26 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public boolean validUnquotedCharacter(char c)
     {
         return Character.isLetter(c) || Character.isDigit(c) || c == '_' || validCharacters.indexOf(c) != -1;
+    }
+
+    public boolean supportsUnquotedMixedCase()
+    {
+        return supportsUnquotedMixedCase;
+    }
+
+    public boolean supportsQuotedMixedCase()
+    {
+        return supportsQuotedMixedCase;
+    }
+
+    public DBPIdentifierCase storesUnquotedCase()
+    {
+        return unquotedIdentCase;
+    }
+
+    public DBPIdentifierCase storesQuotedCase()
+    {
+        return quotedIdentCase;
     }
 
     private void addDataType(JDBCDataType dataType)
