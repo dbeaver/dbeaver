@@ -600,6 +600,9 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
+            if (CommonUtils.isEmpty(columnName)) {
+                return null;
+            }
             int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
 
             GenericTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
