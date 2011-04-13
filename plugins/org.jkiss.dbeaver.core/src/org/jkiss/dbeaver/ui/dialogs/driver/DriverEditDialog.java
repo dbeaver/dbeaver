@@ -12,7 +12,10 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -73,6 +76,7 @@ public class DriverEditDialog extends Dialog
     private EditablePropertiesControl parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
     private List<DriverLibraryDescriptor> libList;
+    private Button anonymousCheck;
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
     {
@@ -181,6 +185,15 @@ public class DriverEditDialog extends Dialog
                 });
 
             }
+
+            anonymousCheck = UIUtils.createLabelCheckbox(propsGroup, "Anonymous", driver.isAnonymousAccess(), SWT.NONE);
+            anonymousCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    onChangeProperty();
+                }
+            });
         }
         if (!isReadOnly) {
             TabFolder tabFolder = new TabFolder(group, SWT.TOP);
@@ -502,6 +515,7 @@ public class DriverEditDialog extends Dialog
         driverClassText.setText(CommonUtils.getString(driver.getOrigClassName()));
         driverURLText.setText(CommonUtils.getString(driver.getOrigSampleURL()));
         driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort().toString());
+        anonymousCheck.setSelection(driver.isAnonymousAccess());
         libList.clear();
         for (DriverLibraryDescriptor lib : driver.getOrigLibraries()) {
             if (lib.isDisabled()) {
@@ -549,6 +563,7 @@ public class DriverEditDialog extends Dialog
         driver.setDriverClassName(driverClassText.getText());
         driver.setSampleURL(driverURLText.getText());
         driver.setDriverDefaultPort(portNumber);
+        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);
 
         // Set libraries

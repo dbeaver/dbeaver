@@ -385,6 +385,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             if (connectionInfo.getHostPort() > 0) {
                 xml.addAttribute("port", connectionInfo.getHostPort());
             }
+            xml.addAttribute("server", CommonUtils.getString(connectionInfo.getServerName()));
             xml.addAttribute("database", CommonUtils.getString(connectionInfo.getDatabaseName()));
             xml.addAttribute("url", CommonUtils.getString(connectionInfo.getUrl()));
             xml.addAttribute("user", CommonUtils.getString(connectionInfo.getUserName()));
@@ -500,6 +501,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 if (curDataSource != null) {
                     curDataSource.getConnectionInfo().setHostName(atts.getValue("host"));
                     curDataSource.getConnectionInfo().setHostPort(CommonUtils.toInt(atts.getValue("port")));
+                    curDataSource.getConnectionInfo().setServerName(atts.getValue("server"));
                     curDataSource.getConnectionInfo().setDatabaseName(atts.getValue("database"));
                     curDataSource.getConnectionInfo().setUrl(atts.getValue("url"));
                     curDataSource.getConnectionInfo().setUserName(atts.getValue("user"));

@@ -441,7 +441,7 @@ public class UIUtils {
     public static Button createLabelCheckbox(Composite parent, String label, boolean checked, int style)
     {
         Label labelControl = createControlLabel(parent, label);
-        labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        //labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         final Button button = new Button(parent, SWT.CHECK | style);
         if (checked) {

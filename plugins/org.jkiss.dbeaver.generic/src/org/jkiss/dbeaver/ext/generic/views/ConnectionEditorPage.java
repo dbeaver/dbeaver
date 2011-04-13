@@ -7,10 +7,7 @@ package org.jkiss.dbeaver.ext.generic.views;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -23,6 +20,10 @@ import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
 
+import java.io.File;
+import java.util.*;
+import java.util.List;
+
 /**
  * ConnectionEditorPage
  */
@@ -31,25 +32,41 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
     private static final String PROP_HOST = "host";
     private static final String PROP_PORT = "port";
     private static final String PROP_DATABASE = "database";
-
-    private static final String PATTERN_HOST = "{" + PROP_HOST + "}";
-    private static final String PATTERN_PORT = "{" + PROP_PORT + "}";
-    private static final String PATTERN_DATABASE = "{" + PROP_DATABASE + "}";
+    private static final String PROP_SERVER = "server";
+    private static final String PROP_FOLDER = "folder";
+    private static final String PROP_FILE = "file";
 
     private IDataSourceConnectionEditorSite site;
+    // Host/port
     private Text hostText;
     private Text portText;
+    // server/DB/path
+    private Text serverText;
     private Text dbText;
-    private Text usernameText;
+    private Text pathText;
+    // Login
+    private Text userNameText;
     private Text passwordText;
+    // URL
     private Text urlText;
+
     private Button testButton;
 
     private boolean isCustom;
     private DriverDescriptor.MetaURL metaURL;
 
     private boolean driverPropsLoaded;
+    private Composite settingsGroup;
     private ConnectionPropertiesControl propsControl;
+
+    private Map<String, List<Control>> propGroupMap = new HashMap<String, List<Control>>();
+
+    private static final String GROUP_URL = "url";
+    private static final String GROUP_HOST = "host";
+    private static final String GROUP_SERVER = "server";
+    private static final String GROUP_DB = "db";
+    private static final String GROUP_PATH = "path";
+    private static final String GROUP_LOGIN = "login";
 
     public void createControl(Composite composite)
     {
@@ -98,21 +115,21 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
             }
         };
 
-        Composite addrGroup = new Composite(parent, SWT.NONE);
+        settingsGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 10;
         gl.marginWidth = 10;
-        addrGroup.setLayout(gl);
+        settingsGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        addrGroup.setLayoutData(gd);
+        settingsGroup.setLayoutData(gd);
 
         {
-            Label urlLabel = new Label(addrGroup, SWT.NONE);
+            Label urlLabel = new Label(settingsGroup, SWT.NONE);
             urlLabel.setText("JDBC URL:");
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             urlLabel.setLayoutData(gd);
 
-            urlText = new Text(addrGroup, SWT.BORDER);
+            urlText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
@@ -125,107 +142,222 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
                     testButton.setEnabled(isComplete());
                 }
             });
+
+            addControlToGroup(GROUP_URL, urlLabel);
+            addControlToGroup(GROUP_URL, urlText);
+        }
+        {
+            Label hostLabel = new Label(settingsGroup, SWT.NONE);
+            hostLabel.setText("Host:");
+            hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+            hostText = new Text(settingsGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            hostText.setLayoutData(gd);
+            hostText.addModifyListener(textListener);
+
+            Label portLabel = new Label(settingsGroup, SWT.NONE);
+            portLabel.setText("Port:");
+            portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+            portText = new Text(settingsGroup, SWT.BORDER);
+            gd = new GridData(GridData.CENTER);
+            gd.widthHint = 60;
+            portText.setLayoutData(gd);
+            portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+            portText.addModifyListener(textListener);
+
+            addControlToGroup(GROUP_HOST, hostLabel);
+            addControlToGroup(GROUP_HOST, hostText);
+            addControlToGroup(GROUP_HOST, portLabel);
+            addControlToGroup(GROUP_HOST, portText);
         }
 
-        Label hostLabel = new Label(addrGroup, SWT.NONE);
-        hostLabel.setText("Server Host:");
-        hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        hostText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        hostText.setLayoutData(gd);
-        hostText.addModifyListener(textListener);
-
-        Label portLabel = new Label(addrGroup, SWT.NONE);
-        portLabel.setText("Port:");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        portLabel.setLayoutData(gd);
-
-        portText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.CENTER);
-        gd.widthHint = 40;
-        portText.setLayoutData(gd);
-        portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
-        portText.addModifyListener(textListener);
-
-        Label dbLabel = new Label(addrGroup, SWT.NONE);
-        dbLabel.setText("Database/Schema:");
-        dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        dbText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        gd.widthHint = 270;
-        //gd.horizontalSpan = 3;
-        dbText.setLayoutData(gd);
-        dbText.addModifyListener(textListener);
-
-        Label emptyLabel = new Label(addrGroup, SWT.NONE);
-        emptyLabel.setText("");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 2;
-        gd.verticalSpan = 3;
-        emptyLabel.setLayoutData(gd);
-
-        Label usernameLabel = new Label(addrGroup, SWT.NONE);
-        usernameLabel.setText("Username:");
-        usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        usernameText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        //gd.horizontalSpan = 3;
-        usernameText.setLayoutData(gd);
-        usernameText.addModifyListener(textListener);
-
-        Label passwordLabel = new Label(addrGroup, SWT.NONE);
-        passwordLabel.setText("Password:");
-        passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        passwordText.setLayoutData(gd);
-        passwordText.addModifyListener(textListener);
-
-        Button driverButton = new Button(addrGroup, SWT.PUSH);
-        driverButton.setText("Edit Driver Settings");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        driverButton.setLayoutData(gd);
-        driverButton.addSelectionListener(new SelectionListener()
         {
-            public void widgetSelected(SelectionEvent e)
-            {
-                if (site.openDriverEditor()) {
-                    parseSampleURL(site.getDriver());
-                    evaluateURL();
+            Label serverLabel = new Label(settingsGroup, SWT.NONE);
+            serverLabel.setText("Server:");
+            serverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+            serverText = new Text(settingsGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            gd.widthHint = 270;
+            serverText.setLayoutData(gd);
+            serverText.addModifyListener(textListener);
+
+            Control emptyLabel = createEmptyLabel(settingsGroup, 1);
+
+            addControlToGroup(GROUP_SERVER, serverLabel);
+            addControlToGroup(GROUP_SERVER, serverText);
+            addControlToGroup(GROUP_SERVER, emptyLabel);
+        }
+
+        {
+            Label dbLabel = new Label(settingsGroup, SWT.NONE);
+            dbLabel.setText("Database/Schema:");
+            dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+            dbText = new Text(settingsGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            gd.widthHint = 270;
+            //gd.horizontalSpan = 3;
+            dbText.setLayoutData(gd);
+            dbText.addModifyListener(textListener);
+
+            Control emptyLabel = createEmptyLabel(settingsGroup, 1);
+
+            addControlToGroup(GROUP_DB, dbLabel);
+            addControlToGroup(GROUP_DB, dbText);
+            addControlToGroup(GROUP_DB, emptyLabel);
+        }
+
+        {
+            Label pathLabel = new Label(settingsGroup, SWT.NONE);
+            pathLabel.setText("Path:");
+            pathLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+            pathText = new Text(settingsGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            //gd.grabExcessHorizontalSpace = true;
+            gd.widthHint = 200;
+            //gd.horizontalSpan = 3;
+            pathText.setLayoutData(gd);
+            pathText.addModifyListener(textListener);
+
+            Button browseButton = new Button(settingsGroup, SWT.PUSH);
+            browseButton.setText("Browse ... ");
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            browseButton.setLayoutData(gd);
+            browseButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    if (metaURL.getAvailableProperties().contains(PROP_FILE)) {
+                        FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
+                        dialog.setFileName(pathText.getText());
+                        dialog.setText("Choose database file");
+                        String file = dialog.open();
+                        if (file != null) {
+                            pathText.setText(file);
+                        }
+                    } else {
+                        DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
+                        final String curPath = pathText.getText();
+                        File curFolder = new File(curPath);
+                        if (curFolder.exists()) {
+                            if (curFolder.isDirectory()) {
+                                dialog.setFilterPath(curFolder.getAbsolutePath());
+                            } else {
+                                dialog.setFilterPath(curFolder.getParentFile().getAbsolutePath());
+                            }
+                        }
+                        dialog.setText("Choose database folder");
+                        dialog.setMessage("Choose folder with database files");
+                        String folder = dialog.open();
+                        if (folder != null) {
+                            pathText.setText(folder);
+                        }
+                    }
                 }
-            }
+            });
 
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        });
+            addControlToGroup(GROUP_PATH, pathLabel);
+            addControlToGroup(GROUP_PATH, pathText);
+            addControlToGroup(GROUP_PATH, browseButton);
+        }
 
-        testButton = new Button(addrGroup, SWT.PUSH);
-        testButton.setText("Test Connection ... ");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 3;
-        testButton.setLayoutData(gd);
-        testButton.addSelectionListener(new SelectionListener()
         {
-            public void widgetSelected(SelectionEvent e)
-            {
-                site.testConnection();
-            }
+            Label userNameLabel = new Label(settingsGroup, SWT.NONE);
+            userNameLabel.setText("User name:");
+            userNameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            public void widgetDefaultSelected(SelectionEvent e)
+            userNameText = new Text(settingsGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            //gd.horizontalSpan = 3;
+            userNameText.setLayoutData(gd);
+            userNameText.addModifyListener(textListener);
+
+            Control emptyLabel = createEmptyLabel(settingsGroup, 2);
+
+            Label passwordLabel = new Label(settingsGroup, SWT.NONE);
+            passwordLabel.setText("Password:");
+            passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+            passwordText = new Text(settingsGroup, SWT.BORDER | SWT.PASSWORD);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            passwordText.setLayoutData(gd);
+            passwordText.addModifyListener(textListener);
+
+            addControlToGroup(GROUP_LOGIN, userNameLabel);
+            addControlToGroup(GROUP_LOGIN, userNameText);
+            addControlToGroup(GROUP_LOGIN, emptyLabel);
+            addControlToGroup(GROUP_LOGIN, passwordLabel);
+            addControlToGroup(GROUP_LOGIN, passwordText);
+        }
+
+        {
+            Composite buttonsPanel = UIUtils.createPlaceholder(settingsGroup, 2);
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.horizontalSpan = 4;
+            buttonsPanel.setLayoutData(gd);
+
+            Button driverButton = new Button(buttonsPanel, SWT.PUSH);
+            driverButton.setText("Edit Driver Settings");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
+            gd.grabExcessHorizontalSpace = true;
+            gd.grabExcessVerticalSpace = true;
+            driverButton.setLayoutData(gd);
+            driverButton.addSelectionListener(new SelectionListener()
             {
-            }
-        });
-        testButton.setEnabled(false);
-        return addrGroup;
+                public void widgetSelected(SelectionEvent e)
+                {
+                    if (site.openDriverEditor()) {
+                        parseSampleURL(site.getDriver());
+                        evaluateURL();
+                    }
+                }
+
+                public void widgetDefaultSelected(SelectionEvent e)
+                {
+                }
+            });
+
+            testButton = new Button(buttonsPanel, SWT.PUSH);
+            testButton.setText("Test Connection ... ");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_END);
+            gd.grabExcessHorizontalSpace = true;
+            gd.grabExcessVerticalSpace = true;
+            testButton.setLayoutData(gd);
+            testButton.addSelectionListener(new SelectionListener()
+            {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    site.testConnection();
+                }
+
+                public void widgetDefaultSelected(SelectionEvent e)
+                {
+                }
+            });
+            testButton.setEnabled(false);
+        }
+        return settingsGroup;
+    }
+
+    private Control createEmptyLabel(Composite parent, int verticalSpan)
+    {
+        Label emptyLabel = new Label(parent, SWT.NONE);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        gd.horizontalSpan = 2;
+        gd.verticalSpan = verticalSpan;
+        gd.widthHint = 0;
+        emptyLabel.setLayoutData(gd);
+        return emptyLabel;
     }
 
     private ConnectionPropertiesControl createPropertiesTab(Composite parent)
@@ -283,16 +415,24 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
                         portText.setText("");
                     }
                 }
+                if (serverText != null) {
+                    serverText.setText(CommonUtils.getString(connectionInfo.getServerName()));
+                }
                 if (dbText != null) {
                     dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                }
+                if (pathText != null) {
+                    pathText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
                 }
             } else {
                 hostText.setText("");
                 portText.setText("");
+                serverText.setText("");
                 dbText.setText("");
+                pathText.setText("");
             }
-            if (usernameText != null) {
-                usernameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+            if (userNameText != null) {
+                userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
             }
             if (passwordText != null) {
                 passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
@@ -342,11 +482,17 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
             if (portText != null) {
                 connectionInfo.setHostPort(CommonUtils.toInt(portText.getText()));
             }
+            if (serverText != null) {
+                connectionInfo.setServerName(serverText.getText());
+            }
             if (dbText != null) {
                 connectionInfo.setDatabaseName(dbText.getText());
             }
-            if (usernameText != null) {
-                connectionInfo.setUserName(usernameText.getText());
+            if (pathText != null) {
+                connectionInfo.setDatabaseName(pathText.getText());
+            }
+            if (userNameText != null) {
+                connectionInfo.setUserName(userNameText.getText());
             }
             if (passwordText != null) {
                 connectionInfo.setUserPassword(passwordText.getText());
@@ -386,17 +532,30 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
                 }
             }
 */
-            hostText.setEditable(metaURL.getAvailableProperties().contains(PROP_HOST));
-            portText.setEditable(metaURL.getAvailableProperties().contains(PROP_PORT));
-            dbText.setEditable(metaURL.getAvailableProperties().contains(PROP_DATABASE));
+            final Set<String> properties = metaURL.getAvailableProperties();
+            hostText.setEditable(properties.contains(PROP_HOST));
+            portText.setEditable(properties.contains(PROP_PORT));
+            dbText.setEditable(properties.contains(PROP_DATABASE));
             urlText.setEditable(false);
+
+            showControlGroup(GROUP_HOST, properties.contains(PROP_HOST));
+            showControlGroup(GROUP_SERVER, properties.contains(PROP_SERVER));
+            showControlGroup(GROUP_DB, properties.contains(PROP_DATABASE));
+            showControlGroup(GROUP_PATH, properties.contains(PROP_FOLDER) || properties.contains(PROP_FILE));
         } else {
             isCustom = true;
             hostText.setEditable(false);
             portText.setEditable(false);
             dbText.setEditable(false);
+            showControlGroup(GROUP_HOST, false);
+            showControlGroup(GROUP_SERVER, false);
+            showControlGroup(GROUP_DB, false);
+            showControlGroup(GROUP_PATH, false);
             urlText.setEditable(true);
         }
+        showControlGroup(GROUP_LOGIN, !driver.isAnonymousAccess());
+
+        settingsGroup.layout();
     }
 
     private void evaluateURL()
@@ -406,13 +565,20 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
             for (String component : metaURL.getUrlComponents()) {
                 String newComponent = component;
                 if (!CommonUtils.isEmpty(hostText.getText())) {
-                    newComponent = newComponent.replace(PATTERN_HOST, hostText.getText());
+                    newComponent = newComponent.replace(makePropPattern(PROP_HOST), hostText.getText());
                 }
                 if (!CommonUtils.isEmpty(portText.getText())) {
-                    newComponent = newComponent.replace(PATTERN_PORT, portText.getText());
+                    newComponent = newComponent.replace(makePropPattern(PROP_PORT), portText.getText());
+                }
+                if (!CommonUtils.isEmpty(serverText.getText())) {
+                    newComponent = newComponent.replace(makePropPattern(PROP_SERVER), serverText.getText());
                 }
                 if (!CommonUtils.isEmpty(dbText.getText())) {
-                    newComponent = newComponent.replace(PATTERN_DATABASE, dbText.getText());
+                    newComponent = newComponent.replace(makePropPattern(PROP_DATABASE), dbText.getText());
+                }
+                if (!CommonUtils.isEmpty(pathText.getText())) {
+                    newComponent = newComponent.replace(makePropPattern(PROP_FOLDER), pathText.getText());
+                    newComponent = newComponent.replace(makePropPattern(PROP_FILE), pathText.getText());
                 }
                 if (newComponent.startsWith("[")) {
                     if (!newComponent.equals(component)) {
@@ -426,6 +592,37 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
         }
         site.updateButtons();
         testButton.setEnabled(this.isComplete());
+    }
+
+    private void showControlGroup(String group, boolean show)
+    {
+        List<Control> controlList = propGroupMap.get(group);
+        if (controlList != null) {
+            for (Control control : controlList) {
+                GridData gd = (GridData)control.getLayoutData();
+                if (gd == null) {
+                    gd = new GridData(GridData.BEGINNING);
+                    control.setLayoutData(gd);
+                }
+                gd.exclude = !show;
+                control.setVisible(show);
+            }
+        }
+    }
+
+    private void addControlToGroup(String group, Control control)
+    {
+        List<Control> controlList = propGroupMap.get(group);
+        if (controlList == null) {
+            controlList = new ArrayList<Control>();
+            propGroupMap.put(group, controlList);
+        }
+        controlList.add(control);
+    }
+
+    private static String makePropPattern(String prop)
+    {
+        return "{" + prop + "}";
     }
 
 }

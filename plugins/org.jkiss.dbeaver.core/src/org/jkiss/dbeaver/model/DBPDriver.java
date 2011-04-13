@@ -36,6 +36,8 @@ public interface DBPDriver extends DBPObject
 
     boolean supportsDriverProperties();
 
+    boolean isAnonymousAccess();
+
     List<? extends DBPPropertyGroup> getConnectionPropertyGroups();
 
     Map<String, String> getDefaultConnectionProperties();

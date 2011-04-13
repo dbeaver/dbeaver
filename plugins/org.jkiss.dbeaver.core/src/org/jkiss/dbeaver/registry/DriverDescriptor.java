@@ -51,6 +51,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private Image iconNormal;
     private Image iconError;
     private boolean supportsDriverProperties;
+    private boolean anonymousAccess;
     private boolean custom;
     private boolean modified;
     private boolean disabled;
@@ -101,6 +102,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.origSampleURL = this.sampleURL = config.getAttribute("sampleURL");
         this.webURL = config.getAttribute("webURL");
         this.supportsDriverProperties = !"false".equals(config.getAttribute("supportsDriverProperties"));
+        this.anonymousAccess = "true".equals(config.getAttribute("anonymous"));
         this.custom = false;
         this.isLoaded = false;
 
@@ -386,6 +388,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public boolean supportsDriverProperties()
     {
         return this.supportsDriverProperties;
+    }
+
+    public boolean isAnonymousAccess()
+    {
+        return anonymousAccess;
+    }
+
+    public void setAnonymousAccess(boolean anonymousAccess)
+    {
+        this.anonymousAccess = anonymousAccess;
     }
 
     public boolean isManagable()
