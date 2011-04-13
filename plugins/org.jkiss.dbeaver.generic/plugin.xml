@@ -169,8 +169,9 @@
                     id="derby"
                     label="Derby Embedded"
                     class="org.apache.derby.jdbc.EmbeddedDriver"
-                    sampleURL="jdbc:derby:{database}"
+                    sampleURL="jdbc:derby:{folder}"
                     webURL="http://db.apache.org/"
+                    anonymous="true"
                     description="Derby (Java DB) embedded driver">
                     <parameter name="meta-case" value="upper"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
@@ -211,8 +212,9 @@
                     id="hsqldb_embedded"
                     label="HSQLDB Embedded"
                     class="org.hsqldb.jdbc.JDBCDriver"
-                    sampleURL="jdbc:hsqldb:file:{database}"
+                    sampleURL="jdbc:hsqldb:file:{folder}"
                     webURL="http://hsqldb.org/"
+                    anonymous="true"
                     description="HyperSQL DataBase - Embedded Mode">
                     <library path="drivers/hsqldb.jar"/>
                 </driver>
