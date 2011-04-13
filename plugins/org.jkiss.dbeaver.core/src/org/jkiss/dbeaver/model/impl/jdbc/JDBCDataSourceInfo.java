@@ -46,6 +46,8 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private int schemaUsage;
     private String catalogSeparator;
     private boolean isCatalogAtStart;
+    private String validCharacters;
+
     private DBCStateType sqlStateType;
     private boolean supportsTransactions;
     private List<DBPTransactionIsolation> supportedIsolations;
@@ -89,7 +91,13 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             this.identifierQuoteString = metaData.getIdentifierQuoteString();
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.identifierQuoteString = "\"";
+            this.identifierQuoteString = null;
+        }
+        if (identifierQuoteString != null) {
+            identifierQuoteString = identifierQuoteString.trim();
+        }
+        if (identifierQuoteString != null && identifierQuoteString.isEmpty()) {
+            identifierQuoteString = null;
         }
         try {
             this.sqlKeywords = makeStringList(metaData.getSQLKeywords());
@@ -176,6 +184,13 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             log.debug(e.getMessage());
             schemaUsage = USAGE_NONE;
         }
+        try {
+            validCharacters = metaData.getExtraNameCharacters();
+        } catch (SQLException e) {
+            log.debug(e.getMessage());
+            validCharacters = "";
+        }
+
         try {
             this.isCatalogAtStart = metaData.isCatalogAtStart();
         } catch (Throwable e) {
@@ -401,6 +416,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public String getScriptDelimiter()
     {
         return ";";
+    }
+
+    public boolean validUnquotedCharacter(char c)
+    {
+        return Character.isLetter(c) || Character.isDigit(c) || c == '_' || validCharacters.indexOf(c) != -1;
     }
 
     private void addDataType(JDBCDataType dataType)

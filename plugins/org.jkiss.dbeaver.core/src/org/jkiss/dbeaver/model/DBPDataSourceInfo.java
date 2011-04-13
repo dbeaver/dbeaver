@@ -241,4 +241,6 @@ public interface DBPDataSourceInfo
      * @return
      */
     String getScriptDelimiter();
+
+    boolean validUnquotedCharacter(char c);
 }

@@ -278,7 +278,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         Pattern aliasPattern;
         String quote;
         quote = editor.getDataSource().getInfo().getIdentifierQuoteString();
-        if (CommonUtils.isEmpty(quote) || quote.equals(" ")) {
+        if (quote == null) {
             quote = "\"";
         }
         quote = "\\" + quote;

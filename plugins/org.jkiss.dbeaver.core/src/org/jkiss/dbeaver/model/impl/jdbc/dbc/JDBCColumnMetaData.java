@@ -10,8 +10,10 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -74,8 +76,9 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         // Check for tables name
         // Sometimes [DBSPEC: Informix] it contains schema/catalog name inside
         if (!CommonUtils.isEmpty(fetchedTableName) && CommonUtils.isEmpty(fetchedCatalogName) && CommonUtils.isEmpty(fetchedSchemaName)) {
-            final DBPDataSourceInfo dsInfo = resultSetMeta.getResultSet().getContext().getDataSource().getInfo();
-            if (!fetchedTableName.startsWith(dsInfo.getIdentifierQuoteString())) {
+            final DBPDataSource dataSource = resultSetMeta.getResultSet().getContext().getDataSource();
+            final DBPDataSourceInfo dsInfo = dataSource.getInfo();
+            if (!DBUtils.isQuotedIdentifier(dataSource, fetchedTableName)) {
                 final String catalogSeparator = dsInfo.getCatalogSeparator();
                 final int catDivPos = fetchedTableName.indexOf(catalogSeparator);
                 if (catDivPos != -1 && (dsInfo.getCatalogUsage() & DBPDataSourceInfo.USAGE_DML) != 0) {

@@ -105,10 +105,13 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
         };
 
         try {
+            long startTime = System.currentTimeMillis();
             RuntimeUtils.run(getContainer(), true, true, op);
-
+            long connectTime = (System.currentTimeMillis() - startTime);
             MessageDialog.openInformation(
-                getShell(), "Success", "Successfully connected!");
+                getShell(),
+                "Success",
+                "Connected (" + connectTime + "ms)");
         }
         catch (InterruptedException ex) {
             UIUtils.showErrorDialog(

@@ -510,11 +510,14 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
     private static final String[] DEFAULT_TYPES = {
         "CHAR",
         "VARCHAR",
+        "VARBINARY",
         "INTEGER",
         "FLOAT",
         "DATE",
         "TIME",
         "TIMESTAMP",
+        "CLOB",
+        "BLOB",
     };
 
 }

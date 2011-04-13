@@ -42,11 +42,6 @@ public final class DBUtils {
         };
     }
 
-    public static String getQuotedIdentifier(DBSObject object)
-    {
-        return getQuotedIdentifier(object.getDataSource(), object.getName());
-    }
-
     public static String getUniqueObjectId(DBSObject object)
     {
         StringBuilder buffer = new StringBuilder();
@@ -63,29 +58,38 @@ public final class DBUtils {
         return buffer.toString();
     }
 
+    public static String getQuotedIdentifier(DBSObject object)
+    {
+        return getQuotedIdentifier(object.getDataSource(), object.getName());
+    }
+
+    public static boolean isQuotedIdentifier(DBPDataSource dataSource, String str)
+    {
+        final String quote = dataSource.getInfo().getIdentifierQuoteString();
+        return quote != null && str.startsWith(quote) && str.endsWith(quote);
+    }
+
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
         String quoteString = dataSource.getInfo().getIdentifierQuoteString();
-        String catalogSeparator = dataSource.getInfo().getCatalogSeparator();
-        String structSeparator = dataSource.getInfo().getStructSeparator();
-
-        boolean hasBadChars = str.indexOf(catalogSeparator) != -1 || str.indexOf(structSeparator) != -1;
-        if (!hasBadChars) {
-            for (int i = 0; i < str.length(); i++) {
-                if (!Character.isUnicodeIdentifierPart(str.charAt(i))) {
-                    hasBadChars = true;
-                    break;
-                }
-            }
+        if (quoteString == null) {
+            return str;
+        }
+        if (isQuotedIdentifier(dataSource, str)) {
+            return str;
         }
 
+        boolean hasBadChars = false;
+        for (int i = 0; i < str.length(); i++) {
+            if (!dataSource.getInfo().validUnquotedCharacter(str.charAt(i))) {
+                hasBadChars = true;
+                break;
+            }
+        }
         if (!hasBadChars) {
             return str;
         }
-        if (quoteString != null && quoteString.length() != 0 && !quoteString.equals(" ")) {
-            str = quoteString + str + quoteString;
-        }
-        return str;
+        return quoteString + str + quoteString;
     }
 
     public static String getFullQualifiedName(DBPDataSource dataSource, DBSObject ... path)
