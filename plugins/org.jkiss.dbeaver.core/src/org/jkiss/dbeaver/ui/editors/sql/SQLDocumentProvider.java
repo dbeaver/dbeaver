@@ -27,9 +27,6 @@ class SQLDocumentProvider extends FileRefDocumentProvider {
     {
         Document document = super.createDocument(element);
 
-        IDocumentPartitioner partitioner = new FastPartitioner( new SQLPartitionScanner(), SQLPartitionScanner.SQL_PARTITION_TYPES );
-        partitioner.connect( document );
-        document.setDocumentPartitioner( SQLPartitionScanner.SQL_PARTITIONING, partitioner );
 
         return document;
     }

@@ -8,11 +8,9 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextViewerExtension;
-import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.*;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
@@ -25,6 +23,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -188,20 +187,29 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     public void reloadSyntaxRules()
     {
         // Refresh syntax
-        if (getSyntaxManager() != null) {
-            getSyntaxManager().changeDataSource(getDataSource());
+        final SQLSyntaxManager syntaxManager = getSyntaxManager();
+        if (syntaxManager != null) {
+            syntaxManager.changeDataSource(getDataSource());
         }
 
-        ProjectionViewer projectionViewer = (ProjectionViewer)getSourceViewer();
-        IDocument document = getDocument();
-        if (projectionViewer != null && document != null && document.getLength() > 0) {
-            // Refresh viewer
-            //projectionViewer.getTextWidget().redraw();
-            try {
-                projectionViewer.reinitializeProjection();
-            } catch (Throwable ex) {
-                // We can catch OutOfMemory here for too big/complex documents
-                log.warn("Can't initialize SQL syntax projection", ex);
+        Document document = (Document) getDocument();
+        if (document != null) {
+            IDocumentPartitioner partitioner = new FastPartitioner(
+                new SQLPartitionScanner(syntaxManager),
+                SQLPartitionScanner.SQL_PARTITION_TYPES );
+            partitioner.connect( document );
+            document.setDocumentPartitioner( SQLPartitionScanner.SQL_PARTITIONING, partitioner );
+
+            ProjectionViewer projectionViewer = (ProjectionViewer)getSourceViewer();
+            if (projectionViewer != null && document.getLength() > 0) {
+                // Refresh viewer
+                //projectionViewer.getTextWidget().redraw();
+                try {
+                    projectionViewer.reinitializeProjection();
+                } catch (Throwable ex) {
+                    // We can catch OutOfMemory here for too big/complex documents
+                    log.warn("Can't initialize SQL syntax projection", ex);
+                }
             }
         }
 

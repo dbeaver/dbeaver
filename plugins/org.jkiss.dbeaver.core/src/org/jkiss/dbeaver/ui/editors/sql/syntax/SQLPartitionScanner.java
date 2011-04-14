@@ -9,6 +9,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.rules.*;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     public final static String SQL_PARTITIONING = "___sql_partitioning";
     public final static String SQL_COMMENT = "sql_comment";
     public final static String SQL_MULTILINE_COMMENT = "sql_multiline_comment";
-    public final static String SQL_DOUBLE_QUOTES_IDENTIFIER = "sql_double_quotes_identifier";
+    //public final static String SQL_DOUBLE_QUOTES_IDENTIFIER = "sql_double_quotes_identifier";
     public final static String SQL_STRING = "sql_character";
 
     public final static String[] SQL_PARTITION_TYPES = new String[]{
@@ -32,14 +33,14 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         SQL_COMMENT,
         SQL_MULTILINE_COMMENT,
         SQL_STRING,
-        SQL_DOUBLE_QUOTES_IDENTIFIER,
+        //SQL_DOUBLE_QUOTES_IDENTIFIER,
     };
 
     // Syntax higlight
     List<IPredicateRule> rules = new ArrayList<IPredicateRule>();
     IToken commentToken = new Token(SQL_COMMENT);
     IToken multilineCommentToken = new Token(SQL_MULTILINE_COMMENT);
-    IToken sqlDoubleQuotesIdentifierToken = new Token(SQL_DOUBLE_QUOTES_IDENTIFIER);
+    //IToken sqlDoubleQuotesIdentifierToken = new Token(SQL_DOUBLE_QUOTES_IDENTIFIER);
     IToken sqlStringToken = new Token(SQL_STRING);
 
 
@@ -100,7 +101,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     {
         super();
 
-        initRules();
+        initRules(null);
         setupRules();
     }
 
@@ -111,8 +112,9 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         setPredicateRules(result);
     }
 
-    private void initRules()
+    private void initRules(SQLSyntaxManager sqlSyntax)
     {
+        /*
         //Add rule for identifier which is enclosed in double quotes.
         rules.add(new MultiLineRule("\"", "\"", sqlDoubleQuotesIdentifierToken, '\\'));
 
@@ -125,14 +127,32 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         // Add special case word rule.
         EmptyCommentRule wordRule = new EmptyCommentRule(multilineCommentToken);
         rules.add(wordRule);
+         */
+        final String quoteSymbol = sqlSyntax.getQuoteSymbol();
+
+        rules.add(new MultiLineRule(quoteSymbol, quoteSymbol, sqlStringToken, '\\'));
+        if (!quoteSymbol.equals(SQLConstants.STR_QUOTE_SINGLE)) {
+            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, '\\'));
+        }
+        if (!quoteSymbol.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
+            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlStringToken, '\\'));
+        }
+
+        for (String lineComment : sqlSyntax.getKeywordManager().getSingleLineComments()) {
+            rules.add(new EndOfLineRule(lineComment, commentToken));
+        }
+
+        // Add special case word rule.
+        EmptyCommentRule wordRule = new EmptyCommentRule(multilineCommentToken);
+        rules.add(wordRule);
 
         // Add rules for multi-line comments
-        rules.add(new NestedMultiLineRule("/*", "*/", multilineCommentToken, (char) 0, true));
+        rules.add(new NestedMultiLineRule(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END, multilineCommentToken, (char) 0, true));
     }
 
     public SQLPartitionScanner(SQLSyntaxManager sqlSyntax)
     {
-        initRules();
+        initRules(sqlSyntax);
         //database specific rules
         setCommentsScanner(sqlSyntax);
         setupRules();

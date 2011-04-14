@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPKeywordManager;
 import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 
 import java.util.*;
 
@@ -75,6 +76,11 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         return statementDelimiter;
     }
 
+    public String getQuoteSymbol()
+    {
+        return quoteSymbol;
+    }
+
     public Collection<? extends Position> getPositions(int offset, int length)
     {
         return positions.subMap(offset, offset + length).values();
@@ -102,7 +108,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     {
         if (dataSource == null) {
             keywordManager = EmptyKeywordManager.INSTANCE;
-            quoteSymbol = "\"";
+            quoteSymbol = SQLConstants.STR_QUOTE_DOUBLE;
             structSeparator = ".";
             statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
         } else {
@@ -147,16 +153,16 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         }
 
         // Add rules for delimited identifiers and string literals.
-        rules.add(new NestedMultiLineRule(quoteSymbol, quoteSymbol, stringToken, quoteSymbol.charAt(0))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        if (!quoteSymbol.equals("'")) {
-            rules.add(new NestedMultiLineRule("'", "'", stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        rules.add(new NestedMultiLineRule(quoteSymbol, quoteSymbol, stringToken, '\\'));
+        if (!quoteSymbol.equals(SQLConstants.STR_QUOTE_SINGLE)) {
+            rules.add(new NestedMultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
-        if (!quoteSymbol.equals("\"")) {
-            rules.add(new NestedMultiLineRule("\"", "\"", stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (!quoteSymbol.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
+            rules.add(new NestedMultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
 
         // Add rules for multi-line comments
-        rules.add(new NestedMultiLineRule("/*", "*/", commentToken, (char) 0, true));
+        rules.add(new NestedMultiLineRule(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END, commentToken, (char) 0, true));
 
         // Add generic whitespace rule.
         rules.add(new WhitespaceRule(new SQLWhiteSpaceDetector()));

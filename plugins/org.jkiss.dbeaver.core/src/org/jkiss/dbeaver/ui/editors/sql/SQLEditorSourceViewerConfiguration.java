@@ -105,7 +105,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
             return new IAutoEditStrategy[] { new SQLAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING) } ;
         } else if (SQLPartitionScanner.SQL_COMMENT.equals(contentType) || SQLPartitionScanner.SQL_MULTILINE_COMMENT.equals(contentType)) {
             return new IAutoEditStrategy[] { new SQLCommentAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING) } ;
-        } else if (SQLPartitionScanner.SQL_STRING.equals(contentType) || SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER.equals(contentType)) {
+        } else if (SQLPartitionScanner.SQL_STRING.equals(contentType)) {
             return new IAutoEditStrategy[] { new SQLStringAutoIndentStrategy(SQLPartitionScanner.SQL_STRING) };
         }
         return null;
@@ -249,12 +249,12 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_STRING);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_STRING);
 
-        // Add a "damager-repairer" for changes within delimited identifiers.
-        dr = new DefaultDamagerRepairer(
-            new SingleTokenScanner(
-                new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER))));
-        reconciler.setDamager(dr, SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER);
-        reconciler.setRepairer(dr, SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER);
+//        // Add a "damager-repairer" for changes within delimited identifiers.
+//        dr = new DefaultDamagerRepairer(
+//            new SingleTokenScanner(
+//                new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER))));
+//        reconciler.setDamager(dr, SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER);
+//        reconciler.setRepairer(dr, SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER);
 
         return reconciler;
     }

@@ -47,7 +47,7 @@ public class MySQLPlanAnalyser implements DBCPlan {
     public void explain(DBCExecutionContext context)
         throws DBCException
     {
-        String plainQuery = SQLUtils.stripComments(query).toUpperCase();
+        String plainQuery = SQLUtils.stripComments(context.getDataSource(), query).toUpperCase();
         if (!plainQuery.startsWith("SELECT")) {
             throw new DBCException("Only SELECT statements could produce execution plan");
         }

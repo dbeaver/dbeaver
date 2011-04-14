@@ -26,4 +26,8 @@ public class SQLConstants {
      */
     public static final String SYNTAX_MARKER_TYPE      = DBeaverConstants.PLUGIN_ID + ".syntaxproblem";             //$NON-NLS-1$
 
+    public static final String STR_QUOTE_SINGLE = "'";
+    public static final String STR_QUOTE_DOUBLE = "\"";
+    public static final String ML_COMMENT_START = "/*";
+    public static final String ML_COMMENT_END = "*/";
 }

@@ -34,12 +34,12 @@ public final class SQLUtils {
         return PATTERN_XFORM.matcher(query).replaceAll("");
     }
 
-    public static String stripComments(String query)
+    public static String stripComments(DBPDataSource dataSource, String query)
     {
-        return stripComments(query, "/*", "*/", "--");
+        return stripComments(query, "/*", "*/", dataSource.getContainer().getKeywordManager().getSingleLineComments());
     }
 
-    public static String stripComments(String query, String mlCommentStart, String mlCommentEnd, String slComment)
+    public static String stripComments(String query, String mlCommentStart, String mlCommentEnd, String[] slComments)
     {
         query = query.trim();
         Pattern stripPattern = Pattern.compile(
@@ -51,12 +51,14 @@ public final class SQLUtils {
         if (matcher.matches()) {
             query = query.substring(matcher.end(1));
         }
-        while (query.startsWith(slComment)) {
-            int crPos = query.indexOf('\n');
-            if (crPos == -1) {
-                break;
-            } else {
-                query = query.substring(crPos).trim();
+        for (String slComment : slComments) {
+            while (query.startsWith(slComment)) {
+                int crPos = query.indexOf('\n');
+                if (crPos == -1) {
+                    break;
+                } else {
+                    query = query.substring(crPos).trim();
+                }
             }
         }
         return query;
