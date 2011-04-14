@@ -11,25 +11,36 @@ import net.sf.jkiss.utils.xml.XMLBuilder;
 import net.sf.jkiss.utils.xml.XMLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.xml.sax.Attributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -579,6 +590,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         this.classLoader = null;
 
+        validateLibrariesPresence();
+
         List<URL> libraryURLs = new ArrayList<URL>();
         // Load libraries
         for (DriverLibraryDescriptor library : libraries) {
@@ -598,6 +611,101 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.classLoader = new DriverClassLoader(
             libraryURLs.toArray(new URL[libraryURLs.size()]),
             ClassLoader.getSystemClassLoader());
+    }
+
+    private void validateLibrariesPresence()
+    {
+        final List<DriverLibraryDescriptor> downloadCandidates = new ArrayList<DriverLibraryDescriptor>();
+        for (DriverLibraryDescriptor library : libraries) {
+            if (library.isDisabled() || library.getExternalURL() == null) {
+                // Nothing we can do about it
+                continue;
+            }
+            final File libraryFile = library.getLibraryFile();
+            if (!libraryFile.exists()) {
+                downloadCandidates.add(library);
+            }
+        }
+
+        if (!downloadCandidates.isEmpty()) {
+            final StringBuilder libNames = new StringBuilder();
+            for (DriverLibraryDescriptor lib : downloadCandidates) {
+                if (libNames.length() > 0) libNames.append(", ");
+                libNames.append(lib.getPath());
+            }
+            Display.getDefault().syncExec(new Runnable() {
+                public void run()
+                {
+                    if (ConfirmationDialog.showConfirmDialog(null, PrefConstants.CONFIRM_DRIVER_DOWNLOAD, ConfirmationDialog.QUESTION, getName(), libNames) == IDialogConstants.YES_ID) {
+                        // Download drivers
+                        downloadLibraryFiles(downloadCandidates);
+                    }
+                }
+            });
+        }
+    }
+
+    private void downloadLibraryFiles(final List<DriverLibraryDescriptor> libraries)
+    {
+        DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                monitor.beginTask("Download driver files", libraries.size());
+                for (DriverLibraryDescriptor lib : libraries) {
+                    try {
+                        final boolean success = downloadLibraryFiles(monitor, lib);
+                        if (!success) {
+                            break;
+                        }
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+                monitor.done();
+            }
+        });
+    }
+
+    private boolean downloadLibraryFiles(DBRProgressMonitor monitor, DriverLibraryDescriptor libraryDescriptor) throws IOException
+    {
+        URL url = new URL(libraryDescriptor.getExternalURL());
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setReadTimeout(10000);
+        connection.setConnectTimeout(10000);
+        connection.setRequestMethod("GET");
+        connection.setInstanceFollowRedirects(true);
+        final int contentLength = connection.getContentLength();
+        final String contentType = connection.getContentType();
+        monitor.beginTask("Download " + libraryDescriptor.getExternalURL(), contentLength);
+        boolean success = false;
+        final InputStream inputStream = connection.getInputStream();
+        try {
+            final NumberFormat numberFormat = NumberFormat.getNumberInstance();
+            byte[] buffer = new byte[10000];
+            int totalRead = 0;
+            for (;;) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
+                final int count = inputStream.read(buffer);
+                if (count <= 0) {
+                    success = true;
+                    break;
+                }
+                monitor.worked(count);
+                totalRead += count;
+            }
+        }
+        finally {
+            ContentUtils.close(inputStream);
+
+            if (!success) {
+
+            }
+        }
+        monitor.done();
+        return success;
     }
 
     public String getOrigName()
@@ -633,40 +741,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public static File getDriversContribFolder() throws IOException
     {
         return new File(Platform.getInstallLocation().getDataArea("drivers").toExternalForm());
-    }
-
-    File getLibraryFile(String path)
-    {
-        // Try to use direct path
-        File libraryFile = new File(path);
-        if (libraryFile.exists()) {
-            return libraryFile;
-        }
-        // Try to use relative path
-        File installLocation = new File(Platform.getInstallLocation().getURL().getFile());
-        File platformFile = new File(installLocation, path);
-        if (platformFile.exists()) {
-            // Relative file do not exists - use plain one
-            return platformFile;
-        }
-        // Try to get from plugin's bundle
-        {
-            URL url = getProviderDescriptor().getContributorBundle().getEntry(path);
-            if (url != null) {
-                try {
-                    url = FileLocator.toFileURL(url);
-                }
-                catch (IOException ex) {
-                    log.warn(ex);
-                }
-            }
-            if (url != null) {
-                return new File(url.getFile());
-            }
-        }
-
-        // Nothing fits - just return plain url
-        return libraryFile;
     }
 
     public void serialize(XMLBuilder xml, boolean export)

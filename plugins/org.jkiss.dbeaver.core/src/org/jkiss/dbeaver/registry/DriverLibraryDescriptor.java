@@ -6,9 +6,15 @@ package org.jkiss.dbeaver.registry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * DriverLibraryDescriptor
@@ -20,6 +26,7 @@ public class DriverLibraryDescriptor
     private DriverDescriptor driver;
     private String path;
     private String description;
+    private String externalURL;
     private boolean loaded = false;
     private boolean custom;
     private boolean disabled;
@@ -36,6 +43,7 @@ public class DriverLibraryDescriptor
         this.driver = driver;
         this.path = config.getAttribute("path");
         this.description = config.getAttribute("description");
+        this.externalURL = config.getAttribute("url");
         this.custom = false;
     }
 
@@ -69,6 +77,11 @@ public class DriverLibraryDescriptor
         this.custom = custom;
     }
 
+    public String getExternalURL()
+    {
+        return externalURL;
+    }
+
     public boolean isDisabled()
     {
         return disabled;
@@ -81,8 +94,36 @@ public class DriverLibraryDescriptor
 
     public File getLibraryFile()
     {
-        return driver.getLibraryFile(path);
-    }
+        // Try to use direct path
+        File libraryFile = new File(path);
+        if (libraryFile.exists()) {
+            return libraryFile;
+        }
+        // Try to use relative path
+        File installLocation = new File(Platform.getInstallLocation().getURL().getFile());
+        File platformFile = new File(installLocation, path);
+        if (platformFile.exists()) {
+            // Relative file do not exists - use plain one
+            return platformFile;
+        }
+        // Try to get from plugin's bundle
+        {
+            URL url = driver.getProviderDescriptor().getContributorBundle().getEntry(path);
+            if (url != null) {
+                try {
+                    url = FileLocator.toFileURL(url);
+                }
+                catch (IOException ex) {
+                    log.warn(ex);
+                }
+            }
+            if (url != null) {
+                return new File(url.getFile());
+            }
+        }
 
+        // Nothing fits - just return plain url
+        return libraryFile;
+    }
 
 }

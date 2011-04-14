@@ -123,8 +123,8 @@
                     defaultPort="50000"
                     webURL="http://www.ibm.com/software/data/db2/express/download.html"
                     description="DB2 JCC driver">
-					<library path="drivers/db2jcc.jar"/>
-					<library path="drivers/db2jcc_license_cu.jar"/>
+					<library path="drivers/db2jcc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc.jar"/>
+					<library path="drivers/db2jcc_license_cu.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc_license_cu.jar"/>
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
