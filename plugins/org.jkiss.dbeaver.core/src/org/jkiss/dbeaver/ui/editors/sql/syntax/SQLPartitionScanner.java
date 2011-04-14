@@ -40,7 +40,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     List<IPredicateRule> rules = new ArrayList<IPredicateRule>();
     IToken commentToken = new Token(SQL_COMMENT);
     IToken multilineCommentToken = new Token(SQL_MULTILINE_COMMENT);
-    //IToken sqlDoubleQuotesIdentifierToken = new Token(SQL_DOUBLE_QUOTES_IDENTIFIER);
+    //IToken sqlIdentifierToken = new Token(SQL_DOUBLE_QUOTES_IDENTIFIER);
     IToken sqlStringToken = new Token(SQL_STRING);
 
 
@@ -128,15 +128,8 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         EmptyCommentRule wordRule = new EmptyCommentRule(multilineCommentToken);
         rules.add(wordRule);
          */
-        final String quoteSymbol = sqlSyntax.getQuoteSymbol();
 
-        rules.add(new MultiLineRule(quoteSymbol, quoteSymbol, sqlStringToken, '\\'));
-        if (!quoteSymbol.equals(SQLConstants.STR_QUOTE_SINGLE)) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, '\\'));
-        }
-        if (!quoteSymbol.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlStringToken, '\\'));
-        }
+        rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, '\\'));
 
         for (String lineComment : sqlSyntax.getKeywordManager().getSingleLineComments()) {
             rules.add(new EndOfLineRule(lineComment, commentToken));

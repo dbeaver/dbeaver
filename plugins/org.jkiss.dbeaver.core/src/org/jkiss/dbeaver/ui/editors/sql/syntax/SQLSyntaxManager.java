@@ -133,6 +133,8 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_DATATYPE), backgroundColor, SWT.BOLD));
         final IToken stringToken = new Token(
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_STRING)));
+        final IToken quotedToken = new Token(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_DATATYPE)));
         final IToken numberToken = new Token(
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_NUMBER)));
         final IToken commentToken = new SQLCommentToken(
@@ -153,12 +155,12 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         }
 
         // Add rules for delimited identifiers and string literals.
-        rules.add(new NestedMultiLineRule(quoteSymbol, quoteSymbol, stringToken, '\\'));
+        rules.add(new SingleLineRule(quoteSymbol, quoteSymbol, quotedToken, '\\'));
         if (!quoteSymbol.equals(SQLConstants.STR_QUOTE_SINGLE)) {
-            rules.add(new NestedMultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            rules.add(new NestedMultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, '\\'));
         }
         if (!quoteSymbol.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
-            rules.add(new NestedMultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            rules.add(new SingleLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, '\\'));
         }
 
         // Add rules for multi-line comments
