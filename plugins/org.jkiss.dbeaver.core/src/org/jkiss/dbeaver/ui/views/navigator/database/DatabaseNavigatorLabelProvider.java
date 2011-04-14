@@ -12,7 +12,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -20,7 +19,6 @@ import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -122,14 +120,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
             DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
                 DBSEntitySelector.class, object);
             if (activeContainer != null) {
-                try {
-                    // Check child with null monitor
-                    // Actually this child is already read (it is the object we checking) so there is a
-                    // big chance that no additional database roundtrips are needed
-                    return activeContainer.getActiveChild(VoidProgressMonitor.INSTANCE) == object;
-                } catch (DBException e) {
-                    log.error("Can't check active object", e);
-                }
+                return activeContainer.getSelectedEntity() == object;
             }
         } else if (element instanceof DBNProject) {
             if (((DBNProject)element).getProject() == DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) {

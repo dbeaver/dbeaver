@@ -70,9 +70,8 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl implements JDBC
         this.beforeExecute();
         try {
             return new JDBCResultSetImpl(this, getOriginal().executeQuery());
-        } catch (SQLException e) {
-            super.handleExecuteError(e);
-            throw e;
+        } catch (Throwable e) {
+            throw super.handleExecuteError(e);
         } finally {
             super.afterExecute();
         }
@@ -84,9 +83,8 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl implements JDBC
         this.beforeExecute();
         try {
             return handleExecuteResult(getOriginal().executeUpdate());
-        } catch (SQLException e) {
-            super.handleExecuteError(e);
-            throw e;
+        } catch (Throwable e) {
+            throw super.handleExecuteError(e);
         } finally {
             super.afterExecute();
         }
@@ -98,9 +96,8 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl implements JDBC
         this.beforeExecute();
         try {
             return handleExecuteResult(getOriginal().execute());
-        } catch (SQLException e) {
-            super.handleExecuteError(e);
-            throw e;
+        } catch (Throwable e) {
+            throw super.handleExecuteError(e);
         } finally {
             super.afterExecute();
         }

@@ -35,8 +35,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     private List<String> tableTypes;
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
-    private DBSObject activeChild;
-    private boolean activeChildRead;
+    private String selectedEntityName;
 
     private GenericEntityContainer structureContainer;
 
@@ -209,6 +208,37 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                     this.structureContainer = new DataSourceEntityContainer();
                 }
             }
+
+            // Get selected entity (catalog or schema)
+            if (CommonUtils.isEmpty(queryGetActiveDB)) {
+                try {
+                    selectedEntityName = context.getCatalog();
+                }
+                catch (SQLException e) {
+                    // Seems to be not supported
+                    log.debug(e);
+                    selectedEntityName = null;
+                }
+            } else {
+                try {
+                    JDBCPreparedStatement dbStat = context.prepareStatement(queryGetActiveDB);
+                    try {
+                        JDBCResultSet resultSet = dbStat.executeQuery();
+                        try {
+                            resultSet.next();
+                            selectedEntityName = resultSet.getString(1);
+                        } finally {
+                            resultSet.close();
+                        }
+                    } finally {
+                        dbStat.close();
+                    }
+                } catch (SQLException e) {
+                    log.debug(e);
+                    selectedEntityName = null;
+                }
+            }
+
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
         }
@@ -297,8 +327,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     {
         super.refreshEntity(monitor);
 
-        this.activeChild = null;
-        this.activeChildRead = false;
+        this.selectedEntityName = null;
         this.tableTypes = null;
         this.catalogs = null;
         this.schemas = null;
@@ -401,84 +430,38 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         return false;
     }
 
-    public DBSObject getActiveChild(DBRProgressMonitor monitor)
-        throws DBException
+    public DBSEntity getSelectedEntity()
     {
-        if (activeChildRead) {
-            return activeChild;
+        if (!CommonUtils.isEmpty(selectedEntityName)) {
+            if (!CommonUtils.isEmpty(getCatalogs())) {
+                return getCatalog(selectedEntityName);
+            } else if (!CommonUtils.isEmpty(getSchemas())) {
+                return getSchema(selectedEntityName);
+            }
         }
-        synchronized (this) {
-            activeChildRead = true;
-            if (CommonUtils.isEmpty(catalogs) && CommonUtils.isEmpty(schemas)) {
-                // Nor catalogs or schemas (looks like this DS have only tables) - no active child
-                return null;
-            }
-            String activeDbName;
-            JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Check active catalog");
-            try {
-                if (CommonUtils.isEmpty(queryGetActiveDB)) {
-                    try {
-                        activeDbName = context.getCatalog();
-                    }
-                    catch (SQLException e) {
-                        // Seems to be not supported
-                        return null;
-                    }
-                } else {
-                    JDBCPreparedStatement dbStat = context.prepareStatement(queryGetActiveDB);
-                    try {
-                        JDBCResultSet resultSet = dbStat.executeQuery();
-                        try {
-                            resultSet.next();
-                            activeDbName = resultSet.getString(1);
-                        } finally {
-                            resultSet.close();
-                        }
-                    } finally {
-                        dbStat.close();
-                    }
-                }
-            } catch (SQLException e) {
-                log.error(e);
-                return null;
-            }
-            finally {
-                context.close();
-            }
-            if (activeDbName != null) {
-                activeChild = getChild(monitor, activeDbName);
-                if (activeChild == null) {
-                    if (!CommonUtils.isEmpty(queryGetActiveDB)) {
-                        log.debug("Could not detect currently active database '" + activeDbName + "'");
-                    }
-                }
-            } else {
-                activeChild = null;
-            }
-
-            return activeChild;
-        }
+        return null;
     }
 
-    public boolean supportsActiveChildChange()
+    public boolean supportsEntitySelect()
     {
         return !CommonUtils.isEmpty(querySetActiveDB);
     }
 
-    public void setActiveChild(DBRProgressMonitor monitor, DBSObject child)
+    public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity)
         throws DBException
     {
-        if (child == activeChild) {
+        final DBSEntity oldSelectedEntity = getSelectedEntity();
+        if (entity == oldSelectedEntity) {
             return;
         }
-        if (CommonUtils.isEmpty(querySetActiveDB) || !(child instanceof GenericEntityContainer)) {
+        if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericEntityContainer)) {
             throw new DBException("Active database can't be changed for this kind of datasource!");
         }
-        if (!isChild(child)) {
-            throw new DBException("Bad child object specified as active: " + child);
+        if (!isChild(entity)) {
+            throw new DBException("Bad child object specified as active: " + entity);
         }
 
-        String changeQuery = querySetActiveDB.replaceFirst("\\?", child.getName());
+        String changeQuery = querySetActiveDB.replaceFirst("\\?", entity.getName());
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active catalog");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(changeQuery);
@@ -493,16 +476,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         finally {
             context.close();
         }
+        selectedEntityName = entity.getName();
 
-        DBSObject oldChild = this.activeChild;
-        this.activeChild = child;
-
-        if (oldChild != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldChild, false));
+        if (oldSelectedEntity != null) {
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldSelectedEntity, false));
         }
-        if (this.activeChild != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, this.activeChild, true));
-        }
+        getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, entity, true));
     }
 
     public Object getAdapter(Class adapter)

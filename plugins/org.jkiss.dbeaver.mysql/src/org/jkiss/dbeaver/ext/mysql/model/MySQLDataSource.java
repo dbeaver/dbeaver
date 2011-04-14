@@ -45,7 +45,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
     private List<MySQLCatalog> catalogs;
     private List<MySQLPrivilege> privileges;
     private List<MySQLUser> users;
-    private MySQLCatalog activeCatalog;
+    private String activeCatalogName;
     //private List<MySQLInformationFolder> informationFolders;
 
     public MySQLDataSource(DBSDataSourceContainer container)
@@ -137,6 +137,25 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
                 dbStat.close();
             }
             this.catalogs = tmpCatalogs;
+
+            // Get active schema
+            try {
+                dbStat = context.prepareStatement("select database()");
+                try {
+                    JDBCResultSet resultSet = dbStat.executeQuery();
+                    try {
+                        resultSet.next();
+                        activeCatalogName = resultSet.getString(1);
+                    } finally {
+                        resultSet.close();
+                    }
+                } finally {
+                    dbStat.close();
+                }
+            } catch (SQLException e) {
+                log.error(e);
+            }
+
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
         }
@@ -194,7 +213,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         this.engines = null;
         this.catalogs = null;
         this.users = null;
-        this.activeCatalog = null;
+        this.activeCatalogName = null;
 
         this.initialize(monitor);
 
@@ -239,54 +258,29 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         
     }
 
-    public boolean supportsActiveChildChange()
+    public boolean supportsEntitySelect()
     {
         return true;
     }
 
-    public DBSObject getActiveChild(DBRProgressMonitor monitor)
-        throws DBException
+    public DBSEntity getSelectedEntity()
     {
-        if (this.activeCatalog == null) {
-            String activeDbName;
-            JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Check active catalog");
-            try {
-                JDBCPreparedStatement dbStat = context.prepareStatement("select database()");
-                try {
-                    JDBCResultSet resultSet = dbStat.executeQuery();
-                    try {
-                        resultSet.next();
-                        activeDbName = resultSet.getString(1);
-                    } finally {
-                        resultSet.close();
-                    }
-                } finally {
-                    dbStat.close();
-                }
-            } catch (SQLException e) {
-                log.error(e);
-                return null;
-            }
-            finally {
-                context.close();
-            }
-            this.activeCatalog = getCatalog(activeDbName);
-        }
-        return this.activeCatalog;
+        return getCatalog(activeCatalogName);
     }
 
-    public void setActiveChild(DBRProgressMonitor monitor, DBSObject child)
+    public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity)
         throws DBException
     {
-        if (child == activeCatalog) {
+        final DBSEntity oldSelectedEntity = getSelectedEntity();
+        if (entity == oldSelectedEntity) {
             return;
         }
-        if (!(child instanceof MySQLCatalog)) {
-            throw new IllegalArgumentException("Invalid active object type");
+        if (!(entity instanceof MySQLCatalog)) {
+            throw new IllegalArgumentException("Invalid object type: " + entity);
         }
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active catalog");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("use " + child.getName());
+            JDBCPreparedStatement dbStat = context.prepareStatement("use " + entity.getName());
             try {
                 dbStat.execute();
             } finally {
@@ -298,16 +292,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         finally {
             context.close();
         }
-        
-        // Send notifications
-        DBSObject oldChild = this.activeCatalog;
-        this.activeCatalog = (MySQLCatalog) child;
+        activeCatalogName = entity.getName();
 
-        if (oldChild != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldChild, false));
+        // Send notifications
+        if (oldSelectedEntity != null) {
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldSelectedEntity, false));
         }
-        if (this.activeCatalog != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, this.activeCatalog, true));
+        if (this.activeCatalogName != null) {
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, entity, true));
         }
     }
 

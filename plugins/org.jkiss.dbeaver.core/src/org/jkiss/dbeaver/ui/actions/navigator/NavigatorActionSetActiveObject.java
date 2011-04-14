@@ -15,7 +15,9 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -30,19 +32,27 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
             DBNNode selectedNode = ViewUtils.getSelectedNode((IStructuredSelection) selection);
             if (selectedNode instanceof DBNDatabaseNode) {
                 final DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
-                final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
-                    DBSEntitySelector.class, databaseNode.getObject());
-                DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            activeContainer.setActiveChild(monitor, databaseNode.getObject());
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
+                if (databaseNode.getObject() instanceof DBSEntity) {
+                    final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
+                        DBSEntitySelector.class, databaseNode.getObject());
+                    try {
+                        DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                            public void run(DBRProgressMonitor monitor)
+                                throws InvocationTargetException, InterruptedException
+                            {
+                                try {
+                                    activeContainer.selectEntity(monitor, (DBSEntity) databaseNode.getObject());
+                                } catch (DBException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                            }
+                        });
+                    } catch (InvocationTargetException e) {
+                        UIUtils.showErrorDialog(null, "Select entity", "Can't change selected entity", e.getTargetException());
+                    } catch (InterruptedException e) {
+                        // do nothing
                     }
-                });
+                }
             }
         }
     }

@@ -464,7 +464,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
 
                     if (dataSource instanceof DBSEntityContainer &&
                         dataSource instanceof DBSEntitySelector &&
-                        ((DBSEntitySelector)dataSource).supportsActiveChildChange())
+                        ((DBSEntitySelector)dataSource).supportsEntitySelect())
                     {
                         DBSEntityContainer entityContainer = (DBSEntityContainer) dataSource;
                         final CurrentDatabasesInfo databasesInfo = new CurrentDatabasesInfo();
@@ -475,7 +475,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                             } else {
                                 isEnabled = true;
                                 databasesInfo.list = entityContainer.getChildren(monitor);
-                                databasesInfo.active = ((DBSEntitySelector)dataSource).getActiveChild(monitor);
+                                databasesInfo.active = ((DBSEntitySelector)dataSource).getSelectedEntity();
                             }
                         }
                         catch (DBException e) {
@@ -568,10 +568,10 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                         try {
                             if (dataSource instanceof DBSEntityContainer &&
                                 dataSource instanceof DBSEntitySelector &&
-                                ((DBSEntitySelector) dataSource).supportsActiveChildChange()) {
-                                DBSObject newChild = ((DBSEntityContainer) dataSource).getChild(monitor, newName);
+                                ((DBSEntitySelector) dataSource).supportsEntitySelect()) {
+                                DBSEntity newChild = ((DBSEntityContainer) dataSource).getChild(monitor, newName);
                                 if (newChild != null) {
-                                    ((DBSEntitySelector) dataSource).setActiveChild(monitor, newChild);
+                                    ((DBSEntitySelector) dataSource).selectEntity(monitor, newChild);
                                 } else {
                                     throw new DBException("Could not find database '" + newName + "'");
                                 }

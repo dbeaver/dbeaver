@@ -13,10 +13,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface DBSEntitySelector
 {
 
-    boolean supportsActiveChildChange();
+    boolean supportsEntitySelect();
 
-    DBSObject getActiveChild(DBRProgressMonitor monitor) throws DBException;
+    DBSEntity getSelectedEntity();
 
-    void setActiveChild(DBRProgressMonitor monitor, DBSObject child) throws DBException;
+    void selectEntity(DBRProgressMonitor monitor, DBSEntity entity) throws DBException;
 
 }

@@ -211,7 +211,7 @@ public final class DBUtils {
             // Child is not a table. May be catalog/schema names was omitted.
             // Try to use active child
             if (rootSC instanceof DBSEntitySelector) {
-                DBSObject activeChild = ((DBSEntitySelector) rootSC).getActiveChild(monitor);
+                DBSObject activeChild = ((DBSEntitySelector) rootSC).getSelectedEntity();
                 if (activeChild instanceof DBSEntityContainer && DBSTable.class.isAssignableFrom(((DBSEntityContainer)activeChild).getChildType(monitor))) {
                     return ((DBSEntityContainer)activeChild).getChild(monitor, tableName);
                 }
@@ -234,7 +234,7 @@ public final class DBUtils {
             DBSObject child = parent.getChild(monitor, childName);
             if (child == null) {
                 if (parent instanceof DBSEntitySelector) {
-                    DBSObject activeChild = ((DBSEntitySelector) parent).getActiveChild(monitor);
+                    DBSObject activeChild = ((DBSEntitySelector) parent).getSelectedEntity();
                     if (activeChild instanceof DBSEntityContainer) {
                         parent = (DBSEntityContainer)activeChild;
                         child = parent.getChild(monitor, childName);
