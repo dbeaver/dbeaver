@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -215,10 +216,21 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                 ResultSet dbResult = dbStat.executeQuery();
                 try {
                     if (dbResult.next()) {
+                        byte[] ddl;
                         if (isView()) {
-                            return dbResult.getString("Create View");
+                            ddl = dbResult.getBytes("Create View");
                         } else {
-                            return dbResult.getString("Create Table");
+                            ddl = dbResult.getBytes("Create Table");
+                        }
+                        if (ddl == null) {
+                            return null;
+                        } else {
+                            try {
+                                return new String(ddl, getContainer().getDefaultCharset());
+                            } catch (UnsupportedEncodingException e) {
+                                log.debug(e);
+                                return new String(ddl);
+                            }
                         }
                     } else {
                         return "DDL is not available";

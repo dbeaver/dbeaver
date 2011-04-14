@@ -46,7 +46,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
     private List<MySQLPrivilege> privileges;
     private List<MySQLUser> users;
     private MySQLCatalog activeCatalog;
-    private List<MySQLInformationFolder> informationFolders;
+    //private List<MySQLInformationFolder> informationFolders;
 
     public MySQLDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -338,6 +338,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
                     ((Connection)mysqlConnection).setClientInfo("ApplicationName", appName);
                 } catch (Throwable e) {
                     // just ignore
+                    log.debug(e);
                 }
             }
         }
