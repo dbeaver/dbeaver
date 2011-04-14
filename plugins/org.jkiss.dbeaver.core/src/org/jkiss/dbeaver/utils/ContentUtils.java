@@ -90,7 +90,7 @@ public class ContentUtils {
     {
         return DBeaverCore.getInstance().makeTempFile(
             monitor,
-            DBeaverCore.getInstance().getLobFolder(monitor),
+            DBeaverCore.getInstance().getLobFolder(monitor.getNestedMonitor()),
             fileName,
             "data");
     }

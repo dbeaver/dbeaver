@@ -7,13 +7,13 @@ package org.jkiss.dbeaver.model.navigator;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
@@ -241,7 +241,7 @@ public class DBNResource extends DBNNode
             otherResource.move(
                 resource.getFullPath().append(otherResource.getName()),
                 true,
-                VoidProgressMonitor.INSTANCE.getNestedMonitor());
+                new NullProgressMonitor());
         } catch (CoreException e) {
             throw new DBException(e);
         }
@@ -296,7 +296,7 @@ public class DBNResource extends DBNNode
                 throw new DBException("Folder '" + folderName + "' already exists in '" + resource.getFullPath().toString() + "'");
             }
             try {
-                newFolder.create(true, true, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+                newFolder.create(true, true, new NullProgressMonitor());
             } catch (CoreException e) {
                 throw new DBException(e);
             }

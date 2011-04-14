@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
@@ -411,20 +410,20 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     }
 */
 
-    public IFolder getLobFolder(DBRProgressMonitor monitor)
+    public IFolder getLobFolder(IProgressMonitor monitor)
         throws IOException
     {
         return getTempFolder(monitor, LOB_DIR);
     }
 
-    private IFolder getTempFolder(DBRProgressMonitor monitor, String name)
+    private IFolder getTempFolder(IProgressMonitor monitor, String name)
         throws IOException
     {
         IPath tempPath = tempProject.getProjectRelativePath().append(name);
         IFolder tempFolder = tempProject.getFolder(tempPath);
         if (!tempFolder.exists()) {
             try {
-                tempFolder.create(true, true, monitor.getNestedMonitor());
+                tempFolder.create(true, true, monitor);
                 tempFolder.setHidden(true);
             }
             catch (CoreException ex) {

@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
@@ -25,7 +26,6 @@ import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.xml.sax.Attributes;
@@ -344,7 +344,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 log.error("Can't open config file " + projectConfig.getPath(), ex);
             }
             try {
-                configFile.refreshLocal(IFile.DEPTH_ZERO, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+                configFile.refreshLocal(IFile.DEPTH_ZERO, new NullProgressMonitor());
             } catch (CoreException e) {
                 log.error("Can't refresh datasources configuration");
             }

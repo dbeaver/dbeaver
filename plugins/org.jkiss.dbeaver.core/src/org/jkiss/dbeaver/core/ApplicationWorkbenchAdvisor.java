@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -63,7 +62,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     public void preStartup()
     {
         super.preStartup();
-        cleanupLobFiles(VoidProgressMonitor.INSTANCE);
+        cleanupLobFiles(new NullProgressMonitor());
     }
 
     public boolean preShutdown()
@@ -180,7 +179,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         return true;
     }
 
-    private void cleanupLobFiles(DBRProgressMonitor monitor)
+    private void cleanupLobFiles(IProgressMonitor monitor)
     {
         IFolder tempFolder;
         try {
@@ -195,7 +194,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
             for (IResource tempResource : tempResources) {
                 if (tempResource instanceof IFile) {
                     IFile tempFile = (IFile)tempResource;
-                    tempFile.delete(true, false, monitor.getNestedMonitor());
+                    tempFile.delete(true, false, monitor);
                 }
             }
         } catch (CoreException ex) {

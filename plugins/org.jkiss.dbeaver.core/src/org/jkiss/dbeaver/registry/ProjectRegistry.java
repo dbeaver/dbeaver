@@ -9,15 +9,11 @@ import net.sf.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 
 import java.util.ArrayList;
@@ -306,7 +302,7 @@ public class ProjectRegistry implements IResourceChangeListener {
     public void addProject(IProject project)
     {
         try {
-            initializeProject(project, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+            initializeProject(project, new NullProgressMonitor());
         } catch (CoreException e) {
             log.error("Can't add project to registry", e);
         }
