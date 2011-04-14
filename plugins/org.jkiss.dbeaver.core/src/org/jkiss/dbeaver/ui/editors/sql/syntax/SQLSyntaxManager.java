@@ -42,6 +42,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     private IThemeManager themeManager;
 
     private DBPKeywordManager keywordManager;
+    private String quoteSymbol;
     private String structSeparator;
     private String statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
 
@@ -101,10 +102,12 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     {
         if (dataSource == null) {
             keywordManager = EmptyKeywordManager.INSTANCE;
+            quoteSymbol = "\"";
             structSeparator = ".";
             statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
         } else {
             keywordManager = dataSource.getContainer().getKeywordManager();
+            quoteSymbol = dataSource.getInfo().getIdentifierQuoteString();
             structSeparator = dataSource.getInfo().getStructSeparator();
             statementDelimiter = dataSource.getInfo().getScriptDelimiter();
             if (statementDelimiter == null) {
@@ -126,7 +129,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_STRING)));
         final IToken numberToken = new Token(
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_NUMBER)));
-        final IToken commentToken = new Token(
+        final IToken commentToken = new SQLCommentToken(
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT)));
         final SQLDelimiterToken delimiterToken = new SQLDelimiterToken(
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED)));
@@ -139,11 +142,18 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         List<IRule> rules = new ArrayList<IRule>();
 
         // Add rule for single-line comments.
-        rules.add(new EndOfLineRule("--", commentToken)); //$NON-NLS-1$
+        for (String lineComment : getKeywordManager().getSingleLineComments()) {
+            rules.add(new EndOfLineRule(lineComment, commentToken)); //$NON-NLS-1$
+        }
 
         // Add rules for delimited identifiers and string literals.
-        rules.add(new NestedMultiLineRule("'", "'", stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        rules.add(new NestedMultiLineRule("\"", "\"", stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        rules.add(new NestedMultiLineRule(quoteSymbol, quoteSymbol, stringToken, quoteSymbol.charAt(0))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (!quoteSymbol.equals("'")) {
+            rules.add(new NestedMultiLineRule("'", "'", stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        }
+        if (!quoteSymbol.equals("\"")) {
+            rules.add(new NestedMultiLineRule("\"", "\"", stringToken, '\\')); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        }
 
         // Add rules for multi-line comments
         rules.add(new NestedMultiLineRule("/*", "*/", commentToken, (char) 0, true));

@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCommentToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
@@ -533,6 +534,7 @@ public class SQLEditor extends SQLEditorBase
         List<SQLStatementInfo> queryList = new ArrayList<SQLStatementInfo>();
         syntaxManager.setRange(document, startOffset, length);
         int statementStart = startOffset;
+        boolean hasValuableTokens = false;
         for (;;) {
             IToken token = syntaxManager.nextToken();
             if (token.isEOF() || token instanceof SQLDelimiterToken) {
@@ -544,15 +546,18 @@ public class SQLEditor extends SQLEditorBase
                     while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
                         statementStart++;
                     }
-                    int queryLength = tokenOffset - statementStart;
-                    String query = document.get(statementStart, queryLength);
-                    query = query.trim();
-                    if (query.length() > 0) {
-                        SQLStatementInfo statementInfo = new SQLStatementInfo(query);
-                        statementInfo.setOffset(statementStart);
-                        statementInfo.setLength(queryLength);
-                        queryList.add(statementInfo);
+                    if (hasValuableTokens) {
+                        int queryLength = tokenOffset - statementStart;
+                        String query = document.get(statementStart, queryLength);
+                        query = query.trim();
+                        if (query.length() > 0) {
+                            SQLStatementInfo statementInfo = new SQLStatementInfo(query);
+                            statementInfo.setOffset(statementStart);
+                            statementInfo.setLength(queryLength);
+                            queryList.add(statementInfo);
+                        }
                     }
+                    hasValuableTokens = false;
                 } catch (BadLocationException ex) {
                     log.error("Error extracting script query", ex);
                 }
@@ -560,6 +565,9 @@ public class SQLEditor extends SQLEditorBase
             }
             if (token.isEOF()) {
                 break;
+            }
+            if (!token.isWhitespace() && !(token instanceof SQLCommentToken)) {
+                hasValuableTokens = true;
             }
         }
         return queryList;
