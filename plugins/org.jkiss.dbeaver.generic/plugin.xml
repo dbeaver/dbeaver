@@ -174,6 +174,8 @@
                     description="Derby (Java DB) embedded driver">
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <library path="drivers/derby/derby.jar"/>
+                    <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
+                    <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                 </driver>
                 <driver
                     id="derby_server"
@@ -184,6 +186,8 @@
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
                     <library path="drivers/derby/derbyclient.jar"/>
+                    <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
+                    <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                 </driver>
                 <driver
                     id="mimer"
