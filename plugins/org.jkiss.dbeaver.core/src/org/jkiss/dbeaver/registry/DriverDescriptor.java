@@ -32,14 +32,11 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.xml.sax.Attributes;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -617,11 +614,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         final List<DriverLibraryDescriptor> downloadCandidates = new ArrayList<DriverLibraryDescriptor>();
         for (DriverLibraryDescriptor library : libraries) {
-            if (library.isDisabled() || library.getExternalURL() == null) {
+            if (library.isDisabled() || library.getExternalURL() == null || !library.isLocal()) {
                 // Nothing we can do about it
                 continue;
             }
-            final File libraryFile = library.getLibraryFile();
+            final File libraryFile = library.getLocalFile();
             if (!libraryFile.exists()) {
                 downloadCandidates.add(library);
             }
@@ -666,9 +663,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         });
     }
 
-    private boolean downloadLibraryFiles(DBRProgressMonitor monitor, DriverLibraryDescriptor libraryDescriptor) throws IOException
+    private boolean downloadLibraryFiles(DBRProgressMonitor monitor, DriverLibraryDescriptor library) throws IOException
     {
-        URL url = new URL(libraryDescriptor.getExternalURL());
+        URL url = new URL(library.getExternalURL());
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(10000);
         connection.setConnectTimeout(10000);
@@ -676,32 +673,46 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         connection.setInstanceFollowRedirects(true);
         final int contentLength = connection.getContentLength();
         final String contentType = connection.getContentType();
-        monitor.beginTask("Download " + libraryDescriptor.getExternalURL(), contentLength);
+        monitor.beginTask("Download " + library.getExternalURL(), contentLength);
         boolean success = false;
-        final InputStream inputStream = connection.getInputStream();
-        try {
-            final NumberFormat numberFormat = NumberFormat.getNumberInstance();
-            byte[] buffer = new byte[10000];
-            int totalRead = 0;
-            for (;;) {
-                if (monitor.isCanceled()) {
-                    break;
-                }
-                monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
-                final int count = inputStream.read(buffer);
-                if (count <= 0) {
-                    success = true;
-                    break;
-                }
-                monitor.worked(count);
-                totalRead += count;
+        final File localFile = library.getLocalFile();
+        final File localDir = localFile.getParentFile();
+        if (!localDir.exists()) {
+            if (!localDir.mkdirs()) {
+                log.warn("Can't create directory for local driver file '" + localDir.getAbsolutePath() + "'");
             }
         }
-        finally {
-            ContentUtils.close(inputStream);
-
+        final OutputStream outputStream = new FileOutputStream(localFile);
+        try {
+            final InputStream inputStream = connection.getInputStream();
+            try {
+                final NumberFormat numberFormat = NumberFormat.getNumberInstance();
+                byte[] buffer = new byte[10000];
+                int totalRead = 0;
+                for (;;) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
+                    monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
+                    final int count = inputStream.read(buffer);
+                    if (count <= 0) {
+                        success = true;
+                        break;
+                    }
+                    outputStream.write(buffer, 0, count);
+                    monitor.worked(count);
+                    totalRead += count;
+                }
+            }
+            finally {
+                ContentUtils.close(inputStream);
+            }
+        } finally {
+            ContentUtils.close(outputStream);
             if (!success) {
-
+                if (!localFile.delete()) {
+                    log.warn("Can't delete local driver file '" + localFile.getAbsolutePath() + "'");
+                }
             }
         }
         monitor.done();

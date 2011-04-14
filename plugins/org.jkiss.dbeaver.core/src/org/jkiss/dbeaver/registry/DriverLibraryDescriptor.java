@@ -9,8 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +25,6 @@ public class DriverLibraryDescriptor
     private String path;
     private String description;
     private String externalURL;
-    private boolean loaded = false;
     private boolean custom;
     private boolean disabled;
 
@@ -62,11 +59,6 @@ public class DriverLibraryDescriptor
         return description;
     }
 
-    public boolean isLoaded()
-    {
-        return loaded;
-    }
-
     public boolean isCustom()
     {
         return custom;
@@ -90,6 +82,11 @@ public class DriverLibraryDescriptor
     public void setDisabled(boolean disabled)
     {
         this.disabled = disabled;
+    }
+
+    File getLocalFile()
+    {
+        return new File(new File(Platform.getInstallLocation().getURL().getFile()), path);
     }
 
     public File getLibraryFile()
@@ -126,4 +123,8 @@ public class DriverLibraryDescriptor
         return libraryFile;
     }
 
+    public boolean isLocal()
+    {
+        return path.startsWith("drivers");
+    }
 }
