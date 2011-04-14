@@ -99,6 +99,8 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
                     <library path="drivers/postgresql-8.4-701.jdbc4.jar"/>
+                    <!--parameter name="query-get-active-db" value="SHOW search_path"/-->
+                    <!--parameter name="query-set-active-db" value="SET search_path = ?"/-->
                 </driver>
                 <driver
                     id="oracle"
