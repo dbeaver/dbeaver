@@ -885,6 +885,7 @@ public class SQLEditor extends SQLEditorBase
     {
         FileDialog fileDialog = new FileDialog(getSite().getShell(), SWT.SAVE);
         fileDialog.setFilterExtensions(new String[] { "*.sql", "*.txt", "*.*"});
+        fileDialog.setFileName(getEditorInput().getFile().getName());
         fileDialog.setOverwrite(true);
         String fileName = fileDialog.open();
         if (CommonUtils.isEmpty(fileName)) {

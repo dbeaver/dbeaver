@@ -476,25 +476,25 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
     private void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo != null) {
-            if (hostText != null) {
+            if (hostText != null && hostText.isVisible()) {
                 connectionInfo.setHostName(hostText.getText());
             }
-            if (portText != null) {
+            if (portText != null && portText.isVisible()) {
                 connectionInfo.setHostPort(CommonUtils.toInt(portText.getText()));
             }
-            if (serverText != null) {
+            if (serverText != null && serverText.isVisible()) {
                 connectionInfo.setServerName(serverText.getText());
             }
-            if (dbText != null) {
+            if (dbText != null && dbText.isVisible()) {
                 connectionInfo.setDatabaseName(dbText.getText());
             }
-            if (pathText != null) {
+            if (pathText != null && pathText.isVisible()) {
                 connectionInfo.setDatabaseName(pathText.getText());
             }
-            if (userNameText != null) {
+            if (userNameText != null && userNameText.isVisible()) {
                 connectionInfo.setUserName(userNameText.getText());
             }
-            if (passwordText != null) {
+            if (passwordText != null && passwordText.isVisible()) {
                 connectionInfo.setUserPassword(passwordText.getText());
             }
             if (urlText != null) {

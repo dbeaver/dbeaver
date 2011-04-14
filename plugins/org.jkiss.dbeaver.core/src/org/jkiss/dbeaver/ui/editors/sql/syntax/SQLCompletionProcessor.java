@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
@@ -280,7 +281,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         String quote;
         quote = editor.getDataSource().getInfo().getIdentifierQuoteString();
         if (quote == null) {
-            quote = "\"";
+            quote = SQLConstants.STR_QUOTE_DOUBLE;
         }
         quote = "\\" + quote;
         String tableNamePattern = "((" + quote + "([.[^" + quote + "]]+)" + quote + ")|([\\w]+))";

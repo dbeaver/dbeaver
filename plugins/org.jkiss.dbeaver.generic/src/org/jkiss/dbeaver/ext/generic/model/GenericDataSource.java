@@ -35,12 +35,13 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     private List<String> tableTypes;
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
-    private String selectedEntityName;
 
     private GenericEntityContainer structureContainer;
 
     private String queryGetActiveDB;
     private String querySetActiveDB;
+    private String selectedEntityType;
+    private String selectedEntityName;
 
     public GenericDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -48,6 +49,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         super(container);
         this.queryGetActiveDB = container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB);
         this.querySetActiveDB = container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB);
+        this.selectedEntityType = container.getDriver().getDriverParameter(GenericConstants.PARAM_ACTIVE_ENTITY_TYPE);
     }
 
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
@@ -226,7 +228,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                         JDBCResultSet resultSet = dbStat.executeQuery();
                         try {
                             resultSet.next();
-                            selectedEntityName = resultSet.getString(1);
+                            selectedEntityName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
                         } finally {
                             resultSet.close();
                         }
@@ -434,9 +436,16 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
             if (!CommonUtils.isEmpty(getCatalogs())) {
-                return getCatalog(selectedEntityName);
+                if (selectedEntityType == null || selectedEntityType.equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
+                    return getCatalog(selectedEntityName);
+                } else if (getCatalogs().size() == 1) {
+                    // Return the only catalog as selected [DBSPEC: PostgreSQL]
+                    return getCatalogs().get(0);
+                }
             } else if (!CommonUtils.isEmpty(getSchemas())) {
-                return getSchema(selectedEntityName);
+                if (selectedEntityType == null || selectedEntityType.equals(GenericConstants.ENTITY_TYPE_SCHEMA)) {
+                    return getSchema(selectedEntityName);
+                }
             }
         }
         return null;

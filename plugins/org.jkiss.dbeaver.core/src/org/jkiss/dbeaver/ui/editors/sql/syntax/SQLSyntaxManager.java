@@ -108,7 +108,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     {
         if (dataSource == null) {
             keywordManager = EmptyKeywordManager.INSTANCE;
-            quoteSymbol = SQLConstants.STR_QUOTE_DOUBLE;
+            quoteSymbol = null;
             structSeparator = ".";
             statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
         } else {
@@ -155,11 +155,13 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         }
 
         // Add rules for delimited identifiers and string literals.
-        rules.add(new SingleLineRule(quoteSymbol, quoteSymbol, quotedToken, '\\'));
-        if (!quoteSymbol.equals(SQLConstants.STR_QUOTE_SINGLE)) {
+        if (quoteSymbol != null) {
+            rules.add(new SingleLineRule(quoteSymbol, quoteSymbol, quotedToken, '\\'));
+        }
+        if (quoteSymbol == null || !quoteSymbol.equals(SQLConstants.STR_QUOTE_SINGLE)) {
             rules.add(new NestedMultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, '\\'));
         }
-        if (!quoteSymbol.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
+        if (quoteSymbol == null || !quoteSymbol.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
             rules.add(new SingleLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, '\\'));
         }
 

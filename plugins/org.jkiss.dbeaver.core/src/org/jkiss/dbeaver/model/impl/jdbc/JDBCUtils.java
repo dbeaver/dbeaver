@@ -61,6 +61,21 @@ public class JDBCUtils {
         }
     }
 
+    public static String safeGetStringTrimmed(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            final String value = dbResult.getString(columnIndex);
+            if (value != null && !value.isEmpty()) {
+                return value.trim();
+            } else {
+                return value;
+            }
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
+            return null;
+        }
+    }
+
     public static int safeGetInt(ResultSet dbResult, String columnName)
     {
         try {
@@ -405,9 +420,10 @@ public class JDBCUtils {
     {
         for (SQLWarning warning = rootWarning; warning != null; warning = warning.getNextWarning()) {
             log.warn(
-                "SQL Warning (" + context.getDataSource().getContainer().getName() + "): " + warning.getLocalizedMessage() + ContentUtils.getDefaultLineSeparator() +
-                    "SQL Code: " + warning.getErrorCode() + ContentUtils.getDefaultLineSeparator() +
-                    "SQL State: " + warning.getSQLState());
+                "SQL Warning (DataSource: " + context.getDataSource().getContainer().getName() +
+                    "; Code: " + warning.getErrorCode() +
+                    "; State: " + warning.getSQLState() + "): " +
+                    warning.getLocalizedMessage());
         }
     }
 
