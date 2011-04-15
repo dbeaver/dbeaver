@@ -43,6 +43,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
     public static int open(
         int kind,
+        int imageKind,
         Shell parent,
         String title,
         String message,
@@ -69,7 +70,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             title,
             null, // accept the default window icon
             message,
-            kind,
+            imageKind,
             getButtonLabels(kind),
             0,
             toggleMessage,
@@ -110,6 +111,11 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
     public static int showConfirmDialog(Shell shell, String id, int type, Object ... args)
     {
+        return showConfirmDialog(shell, id, type, type, args);
+    }
+
+    public static int showConfirmDialog(Shell shell, String id, int type, int imageType, Object ... args)
+    {
         ResourceBundle bundle = DBeaverActivator.getInstance().getResourceBundle();
         String titleKey = getResourceKey(id, RES_KEY_TITLE);
         String messageKey = getResourceKey(id, RES_KEY_MESSAGE);
@@ -118,6 +124,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
         return open(
             type,
+            imageType,
             shell,
             UIUtils.formatMessage(bundle.getString(titleKey), args),
             UIUtils.formatMessage(bundle.getString(messageKey), args),

@@ -588,7 +588,7 @@ public class DriverEditDialog extends Dialog
 
         try {
             driver.loadDriver(true);
-        } catch (DBException ex) {
+        } catch (Throwable ex) {
             UIUtils.showErrorDialog(getShell(), "Driver Error", "Can't load driver", ex);
         }
 

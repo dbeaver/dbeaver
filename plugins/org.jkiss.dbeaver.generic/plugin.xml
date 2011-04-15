@@ -98,7 +98,7 @@
                     defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
-                    <library path="drivers/postgresql-8.4-701.jdbc4.jar"/>
+                    <library path="drivers/postgresql/postgresql-8.4-701.jdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/postgresql-8.4-701.jdbc4.jar"/>
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?"/>
                     <parameter name="active-entity-type" value="schema"/>
@@ -111,7 +111,7 @@
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle thin driver">
-                    <library path="drivers/ojdbc6.jar"/>
+                    <library path="drivers/oracle/ojdbc6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/ojdbc6.jar"/>
                     <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
                     <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
                 </driver>
@@ -123,8 +123,8 @@
                     defaultPort="50000"
                     webURL="http://www.ibm.com/software/data/db2/express/download.html"
                     description="DB2 JCC driver">
-					<library path="drivers/db2jcc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc.jar"/>
-					<library path="drivers/db2jcc_license_cu.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc_license_cu.jar"/>
+					<library path="drivers/db2/db2jcc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc.jar"/>
+					<library path="drivers/db2/db2jcc_license_cu.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc_license_cu.jar"/>
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -141,8 +141,7 @@
                     description="MS SQL Server JTDS driver">
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use ?"/>
-                    <!--library path="drivers/sqljdbc4.jar"/-->
-                    <library path="drivers/jtds-1.2.5.jar"/>
+                    <library path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
                 </driver>
                 <driver
                     id="sybase"
@@ -154,7 +153,7 @@
                     description="Sybase JTDS driver">
                     <!--parameter name="query-get-active-db">select db_name()</query>
                     <parameter name="query-set-active-db">use ?</query-->
-                    <library path="drivers/jtds-1.2.5.jar"/>
+                    <library path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
                 </driver>
                 <driver
                     id="odbc"
@@ -173,7 +172,7 @@
                     anonymous="true"
                     description="Derby (Java DB) embedded driver">
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
-                    <library path="drivers/derby/derby.jar"/>
+                    <library path="drivers/derby/derby.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/derby.jar"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                 </driver>
@@ -185,7 +184,7 @@
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
-                    <library path="drivers/derby/derbyclient.jar"/>
+                    <library path="drivers/derby/derbyclient.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/derbyclient.jar"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                 </driver>
@@ -197,7 +196,7 @@
                     defaultPort="1360"
                     webURL="http://developer.mimer.com/"
                     description="Mimer SQL TCP/IP driver">
-                    <library path="drivers/mimjdbc3.jar"/>
+                    <library path="drivers/mimer/mimjdbc3.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mimjdbc3.jar"/>
                 </driver>
                 <driver
                     id="hsqldb_server"
@@ -207,7 +206,7 @@
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
                     description="HyperSQL DataBase - Server Mode">
-                    <library path="drivers/hsqldb.jar"/>
+                    <library path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
                 </driver>
                 <driver
                     id="hsqldb_embedded"
@@ -217,7 +216,7 @@
                     webURL="http://hsqldb.org/"
                     anonymous="true"
                     description="HyperSQL DataBase - Embedded Mode">
-                    <library path="drivers/hsqldb.jar"/>
+                    <library path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
                 </driver>
                 <driver
                     id="informix"
@@ -227,7 +226,8 @@
                     defaultPort="1533"
                     webURL="http://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server">
-                    <library path="drivers/ifxjdbc.jar"/>
+                    <library path="drivers/informix/ifxjdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/ifxjdbc.jar"/>
+                    <library path="drivers/informix/ifxlang.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/ifxlang.jar"/>
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value=""/>
                 </driver>
@@ -239,7 +239,7 @@
                     defaultPort=""
                     webURL=""
                     description="Firebird JayBird driver">
-                    <library path="drivers/jaybird-full-2.1.6.jar"/>
+                    <library path="drivers/firebird/jaybird-full-2.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/jaybird-full-2.1.6.jar"/>
                 </driver>
             </drivers>
             <views>

@@ -633,7 +633,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             Display.getDefault().syncExec(new Runnable() {
                 public void run()
                 {
-                    if (ConfirmationDialog.showConfirmDialog(null, PrefConstants.CONFIRM_DRIVER_DOWNLOAD, ConfirmationDialog.QUESTION, getName(), libNames) == IDialogConstants.YES_ID) {
+                    if (ConfirmationDialog.showConfirmDialog(
+                        null,
+                        PrefConstants.CONFIRM_DRIVER_DOWNLOAD,
+                        ConfirmationDialog.QUESTION,
+                        ConfirmationDialog.WARNING,
+                        getName(),
+                        libNames) == IDialogConstants.YES_ID)
+                    {
                         // Download drivers
                         downloadLibraryFiles(downloadCandidates);
                     }
