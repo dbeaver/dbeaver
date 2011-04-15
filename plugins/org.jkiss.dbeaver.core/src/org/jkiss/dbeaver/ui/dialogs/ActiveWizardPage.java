@@ -39,12 +39,12 @@ public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPag
     @Override
     public void setVisible(boolean visible)
     {
+        super.setVisible(visible);
         if (visible) {
             activatePage();
         } else {
             deactivatePage();
         }
-        super.setVisible(visible);
     }
 
     public void activatePage() {

@@ -186,7 +186,7 @@ public class EditablePropertiesControl extends Composite {
         treeControl.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
-                UIUtils.packColumns(treeControl);
+                UIUtils.packColumns(treeControl, true);
             }
         });
 
