@@ -840,7 +840,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         // Libraries
         for (DriverFileDescriptor lib : this.getFiles()) {
             if ((export && !lib.isDisabled()) || lib.isCustom() || lib.isDisabled()) {
-                xml.startElement(DataSourceConstants.TAG_FILE);
+                xml.startElement(DataSourceConstants.TAG_LIBRARY);
                 xml.addAttribute(DataSourceConstants.ATTR_PATH, lib.getPath());
                 if (lib.isDisabled()) {
                     xml.addAttribute(DataSourceConstants.ATTR_DISABLED, true);
