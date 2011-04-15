@@ -533,6 +533,47 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         customParameters.putAll(parameters);
     }
 
+    public String getLicense()
+    {
+        for (DriverFileDescriptor file : files) {
+            if (file.getType() == DriverFileType.license) {
+                final File licenseFile = file.getFile();
+                if (licenseFile.exists()) {
+                    return extractLicenseText(licenseFile);
+                } else {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    private String extractLicenseText(File licenseFile)
+    {
+        final int length = (int) licenseFile.length();
+        try {
+            StringBuilder licenseText = new StringBuilder(length);
+            Reader fileReader = new FileReader(licenseFile);
+            try {
+                char[] buffer = new char[10000];
+                for (;;) {
+                    final int count = fileReader.read(buffer);
+                    if (count <= 0) {
+                        break;
+                    }
+                    licenseText.append(buffer, 0, count);
+                }
+            }
+            finally {
+                ContentUtils.close(fileReader);
+            }
+            return licenseText.toString();
+        } catch (IOException e) {
+            log.warn(e);
+            return e.getMessage();
+        }
+    }
+
     public void loadDriver()
         throws DBException
     {

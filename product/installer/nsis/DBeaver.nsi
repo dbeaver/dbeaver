@@ -62,7 +62,7 @@
 ;Pages
 
   !insertmacro MUI_PAGE_WELCOME
-  !insertmacro MUI_PAGE_LICENSE "..\..\docs\license.txt"
+  !insertmacro MUI_PAGE_LICENSE "..\..\..\docs\license.txt"
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   
@@ -128,6 +128,7 @@ Section "-DBeaver Core" SecCore
   ; Copy files
   File "raw\win32.x86\dbeaver\.eclipseproduct"
   File "raw\win32.x86\dbeaver\readme.txt"
+  File "raw\win32.x86\dbeaver\license.txt"
   File "raw\win32.x86\dbeaver\dbeaver.exe"
   File /r "raw\win32.x86\dbeaver\configuration"
   File /r  /x org.jkiss.*.jar "raw\win32.x86\dbeaver\plugins"
@@ -221,6 +222,7 @@ Section "Uninstall"
   Delete "$INSTDIR\.eclipseproduct"
   Delete "$INSTDIR\dbeaver.exe"
   Delete "$INSTDIR\readme.txt"
+  Delete "$INSTDIR\license.txt"
   Delete "$INSTDIR\*.log"
   RMDir /r "$INSTDIR\configuration"
   RMDir /r "$INSTDIR\plugins"

@@ -31,6 +31,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
+import org.jkiss.dbeaver.registry.DriverFileType;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -195,14 +196,20 @@ public class DriverEditDialog extends Dialog
 //                });
 //            }
         }
-        if (!isReadOnly) {
-            TabFolder tabFolder = new TabFolder(group, SWT.TOP);
+        final String license = driver.getLicense();
+        if (!isReadOnly || license != null) {
+            TabFolder tabFolder = new TabFolder(group, SWT.NONE);
             tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-            tabFolder.setLayout(new FillLayout());
+            //tabFolder.setLayout(new FillLayout());
 
-            createLibrariesTab(tabFolder);
-            createConnectionPropertiesTab(tabFolder);
-            createParametersTab(tabFolder);
+            if (!isReadOnly) {
+                createLibrariesTab(tabFolder);
+                createConnectionPropertiesTab(tabFolder);
+                createParametersTab(tabFolder);
+            }
+            if (license != null) {
+                createLicenseTab(tabFolder, license);
+            }
 
             tabFolder.setSelection(0);
         }
@@ -263,7 +270,7 @@ public class DriverEditDialog extends Dialog
 
             libList = new ArrayList<DriverFileDescriptor>();
             for (DriverFileDescriptor lib : driver.getFiles()) {
-                if (lib.isDisabled()) {
+                if (lib.isDisabled() || lib.getType() != DriverFileType.library) {
                     continue;
                 }
                 libList.add(lib);
@@ -459,9 +466,30 @@ public class DriverEditDialog extends Dialog
         connectionPropertiesEditor.setMarginVisible(false);
         connectionPropertiesEditor.loadProperties(driver, driver.getConnectionProperties());
 
+
         TabItem paramsTab = new TabItem(group, SWT.NONE);
         paramsTab.setText("Connection properties");
         paramsTab.setToolTipText("Default connection properties");
+        paramsTab.setControl(paramsGroup);
+    }
+
+    private void createLicenseTab(TabFolder group, String license)
+    {
+        Composite paramsGroup = new Composite(group, SWT.NONE);
+        paramsGroup.setLayout(new GridLayout(1, false));
+
+        Text licenseText = new Text(paramsGroup, SWT.BORDER | SWT.WRAP | SWT.MULTI | SWT.V_SCROLL);
+        licenseText.setText(license);
+        licenseText.setEditable(false);
+        licenseText.setMessage("Driver license");
+        final GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 200;
+        //gd.grabExcessVerticalSpace = true;
+        licenseText.setLayoutData(gd);
+
+        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        paramsTab.setText("License");
+        paramsTab.setToolTipText("Driver license");
         paramsTab.setControl(paramsGroup);
     }
 
@@ -504,7 +532,7 @@ public class DriverEditDialog extends Dialog
         if (provider.isDriversManagable()) {
             getButton(IDialogConstants.OK_ID).setEnabled(
                 !CommonUtils.isEmpty(driverNameText.getText()) &&
-                !CommonUtils.isEmpty(driverClassText.getText()));
+                    !CommonUtils.isEmpty(driverClassText.getText()));
         }
     }
 
