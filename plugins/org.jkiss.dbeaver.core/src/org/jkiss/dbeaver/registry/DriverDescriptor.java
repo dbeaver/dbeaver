@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -290,7 +291,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean hasValidLibraries()
     {
         for (DriverLibraryDescriptor lib : libraries) {
-            if (lib.getLibraryFile().exists()) {
+            if (lib.getLibraryFile().exists() || (!lib.isDisabled() && !CommonUtils.isEmpty(lib.getExternalURL()))) {
                 return true;
             }
         }
@@ -610,7 +611,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             ClassLoader.getSystemClassLoader());
     }
 
-    private void validateLibrariesPresence()
+    public void validateLibrariesPresence()
     {
         final List<DriverLibraryDescriptor> downloadCandidates = new ArrayList<DriverLibraryDescriptor>();
         for (DriverLibraryDescriptor library : libraries) {
@@ -651,23 +652,34 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     private void downloadLibraryFiles(final List<DriverLibraryDescriptor> libraries)
     {
-        DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
-                monitor.beginTask("Download driver files", libraries.size());
-                for (DriverLibraryDescriptor lib : libraries) {
-                    try {
-                        final boolean success = downloadLibraryFiles(monitor, lib);
-                        if (!success) {
+//        try {
+            DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    for (DriverLibraryDescriptor lib : libraries) {
+                        try {
+                            final boolean success = downloadLibraryFiles(monitor, lib);
+                            if (!success) {
+                                break;
+                            }
+                        } catch (final Exception e) {
+                            Display.getDefault().syncExec(new Runnable() {
+                                public void run()
+                                {
+                                    UIUtils.showErrorDialog(null, "Download driver", "Can't download '" + getName() + "' libraries", e);
+                                }
+                            });
                             break;
+                            //throw new InvocationTargetException(e);
                         }
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
                     }
                 }
-                monitor.done();
-            }
-        });
+            });
+//        } catch (InvocationTargetException e) {
+//            UIUtils.showErrorDialog(null, "Download driver", "Can't download '" + getName() + "' libraries", e.getTargetException());
+//        } catch (InterruptedException e) {
+//            // do nothing
+//        }
     }
 
     private boolean downloadLibraryFiles(DBRProgressMonitor monitor, DriverLibraryDescriptor library) throws IOException
@@ -678,6 +690,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         connection.setConnectTimeout(10000);
         connection.setRequestMethod("GET");
         connection.setInstanceFollowRedirects(true);
+        connection.connect();
+        if (connection.getResponseCode() != 200) {
+            throw new IOException("Can't find driver file: " + connection.getResponseMessage());
+        }
         final int contentLength = connection.getContentLength();
         final String contentType = connection.getContentType();
         monitor.beginTask("Download " + library.getExternalURL(), contentLength);

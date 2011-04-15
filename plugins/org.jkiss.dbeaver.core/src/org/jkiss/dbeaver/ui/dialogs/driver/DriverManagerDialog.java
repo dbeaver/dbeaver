@@ -235,6 +235,8 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
     private void editDriver()
     {
         if (selectedDriver != null) {
+            selectedDriver.validateLibrariesPresence();
+
             DriverEditDialog dialog = new DriverEditDialog(getShell(), selectedDriver);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 // Do nothing
@@ -268,10 +270,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
     @Override
     public boolean close()
     {
-        if (dialogImage != null) {
-            dialogImage.dispose();
-            dialogImage = null;
-        }
+        UIUtils.dispose(dialogImage);
         return super.close();
     }
 }

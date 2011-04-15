@@ -28,7 +28,6 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
