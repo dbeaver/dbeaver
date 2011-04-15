@@ -30,7 +30,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
+import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -74,8 +74,8 @@ public class DriverEditDialog extends Dialog
     private Text driverPortText;
     private EditablePropertiesControl parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
-    private List<DriverLibraryDescriptor> libList;
-    private Button anonymousCheck;
+    private List<DriverFileDescriptor> libList;
+    //private Button anonymousCheck;
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
     {
@@ -184,16 +184,16 @@ public class DriverEditDialog extends Dialog
                 });
 
             }
-            if (!isReadOnly) {
-                anonymousCheck = UIUtils.createLabelCheckbox(propsGroup, "Anonymous", driver.isAnonymousAccess(), SWT.NONE);
-                anonymousCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        onChangeProperty();
-                    }
-                });
-            }
+//            if (!isReadOnly) {
+//                anonymousCheck = UIUtils.createLabelCheckbox(propsGroup, "Anonymous", driver.isAnonymousAccess(), SWT.NONE);
+//                anonymousCheck.addSelectionListener(new SelectionAdapter() {
+//                    @Override
+//                    public void widgetSelected(SelectionEvent e)
+//                    {
+//                        onChangeProperty();
+//                    }
+//                });
+//            }
         }
         if (!isReadOnly) {
             TabFolder tabFolder = new TabFolder(group, SWT.TOP);
@@ -237,17 +237,17 @@ public class DriverEditDialog extends Dialog
                 @Override
                 public void update(ViewerCell cell)
                 {
-                    DriverLibraryDescriptor lib = (DriverLibraryDescriptor) cell.getElement();
+                    DriverFileDescriptor lib = (DriverFileDescriptor) cell.getElement();
                     cell.setText(lib.getPath());
-                    if (lib.getLibraryFile().exists()) {
+                    if (lib.getFile().exists()) {
                         cell.setForeground(null);
                     } else {
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
                     }
                     cell.setImage(
-                        !lib.getLibraryFile().exists() ?
+                        !lib.getFile().exists() ?
                             PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE) :
-                            lib.getLibraryFile().isDirectory() ?
+                            lib.getFile().isDirectory() ?
                                 DBIcon.TREE_FOLDER.getImage() :
                                 DBIcon.JAR.getImage());
                 }
@@ -261,8 +261,8 @@ public class DriverEditDialog extends Dialog
                 }
             });
 
-            libList = new ArrayList<DriverLibraryDescriptor>();
-            for (DriverLibraryDescriptor lib : driver.getLibraries()) {
+            libList = new ArrayList<DriverFileDescriptor>();
+            for (DriverFileDescriptor lib : driver.getFiles()) {
                 if (lib.isDisabled()) {
                     continue;
                 }
@@ -340,7 +340,7 @@ public class DriverEditDialog extends Dialog
                         File folderFile = new File(curFolder);
                         for (String fileName : fileNames) {
                             libList.add(
-                                new DriverLibraryDescriptor(
+                                new DriverFileDescriptor(
                                     driver,
                                     new File(folderFile, fileName).getAbsolutePath()));
                         }
@@ -363,7 +363,7 @@ public class DriverEditDialog extends Dialog
                 String selected = fd.open();
                 if (selected != null) {
                     curFolder = fd.getFilterPath();
-                    libList.add(new DriverLibraryDescriptor(driver, selected));
+                    libList.add(new DriverFileDescriptor(driver, selected));
                     changeLibContent();
                 }
             }
@@ -390,7 +390,7 @@ public class DriverEditDialog extends Dialog
         {
             public void handleEvent(Event event)
             {
-                DriverLibraryDescriptor selectedLib = getSelectedLibrary();
+                DriverFileDescriptor selectedLib = getSelectedLibrary();
                 int selIndex = libList.indexOf(selectedLib);
                 Collections.swap(libList, selIndex, selIndex - 1);
                 changeLibContent();
@@ -406,7 +406,7 @@ public class DriverEditDialog extends Dialog
         {
             public void handleEvent(Event event)
             {
-                DriverLibraryDescriptor selectedLib = getSelectedLibrary();
+                DriverFileDescriptor selectedLib = getSelectedLibrary();
                 int selIndex = libList.indexOf(selectedLib);
                 Collections.swap(libList, selIndex, selIndex + 1);
                 changeLibContent();
@@ -479,10 +479,10 @@ public class DriverEditDialog extends Dialog
         }
     }
 
-    private DriverLibraryDescriptor getSelectedLibrary()
+    private DriverFileDescriptor getSelectedLibrary()
     {
         IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
-        return selection == null || selection.isEmpty() ? null : (DriverLibraryDescriptor) selection.getFirstElement();
+        return selection == null || selection.isEmpty() ? null : (DriverFileDescriptor) selection.getFirstElement();
     }
 
     private void changeLibContent()
@@ -493,7 +493,7 @@ public class DriverEditDialog extends Dialog
 
     private void changeLibSelection()
     {
-        DriverLibraryDescriptor selectedLib = getSelectedLibrary();
+        DriverFileDescriptor selectedLib = getSelectedLibrary();
         deleteButton.setEnabled(selectedLib != null);
         upButton.setEnabled(libList.indexOf(selectedLib) > 0);
         downButton.setEnabled(libList.indexOf(selectedLib) < libList.size() - 1);
@@ -515,9 +515,9 @@ public class DriverEditDialog extends Dialog
         driverClassText.setText(CommonUtils.getString(driver.getOrigClassName()));
         driverURLText.setText(CommonUtils.getString(driver.getOrigSampleURL()));
         driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort().toString());
-        anonymousCheck.setSelection(driver.isAnonymousAccess());
+//        anonymousCheck.setSelection(driver.isAnonymousAccess());
         libList.clear();
-        for (DriverLibraryDescriptor lib : driver.getOrigLibraries()) {
+        for (DriverFileDescriptor lib : driver.getOrigFiles()) {
             if (lib.isDisabled()) {
                 continue;
             }
@@ -563,14 +563,14 @@ public class DriverEditDialog extends Dialog
         driver.setDriverClassName(driverClassText.getText());
         driver.setSampleURL(driverURLText.getText());
         driver.setDriverDefaultPort(portNumber);
-        driver.setAnonymousAccess(anonymousCheck.getSelection());
+//        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);
 
         // Set libraries
-        for (DriverLibraryDescriptor lib : libList) {
+        for (DriverFileDescriptor lib : libList) {
             driver.addLibrary(lib);
         }
-        for (DriverLibraryDescriptor lib : CommonUtils.copyList(driver.getLibraries())) {
+        for (DriverFileDescriptor lib : CommonUtils.copyList(driver.getFiles())) {
             if (!libList.contains(lib)) {
                 driver.removeLibrary(lib);
             }
@@ -615,8 +615,8 @@ public class DriverEditDialog extends Dialog
         {
             java.util.List<File> libFiles = new ArrayList<File>();
             java.util.List<URL> libURLs = new ArrayList<URL>();
-            for (DriverLibraryDescriptor lib : libList) {
-                File libFile = lib.getLibraryFile();
+            for (DriverFileDescriptor lib : libList) {
+                File libFile = lib.getFile();
                 if (libFile.exists() && !libFile.isDirectory()) {
                     libFiles.add(libFile);
                     try {

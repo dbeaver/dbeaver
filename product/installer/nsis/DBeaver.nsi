@@ -185,10 +185,8 @@ SectionGroup /e "Plugins"
 
 SectionGroupEnd
 
-Section "Drivers" SecDrivers
-
+Section "-Drivers" SecDrivers
   SetOutPath "$INSTDIR"
-  
   File /r "raw\win32.x86\dbeaver\drivers"
 
 SectionEnd
@@ -223,6 +221,7 @@ Section "Uninstall"
   Delete "$INSTDIR\.eclipseproduct"
   Delete "$INSTDIR\dbeaver.exe"
   Delete "$INSTDIR\readme.txt"
+  Delete "$INSTDIR\*.log"
   RMDir /r "$INSTDIR\configuration"
   RMDir /r "$INSTDIR\plugins"
   RMDir /r "$INSTDIR\drivers"

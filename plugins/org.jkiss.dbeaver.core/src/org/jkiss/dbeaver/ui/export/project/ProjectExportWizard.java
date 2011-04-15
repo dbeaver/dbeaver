@@ -164,11 +164,11 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 Set<File> libFiles = new HashSet<File>();
                 Map<String, File> libPathMap = new HashMap<String, File>();
                 for (DriverDescriptor driver : exportData.usedDrivers) {
-                    for (DriverLibraryDescriptor libraryDescriptor : driver.getLibraries()) {
-                        final File libraryFile = libraryDescriptor.getLibraryFile();
-                        if (!libraryDescriptor.isDisabled() && libraryFile.exists()) {
+                    for (DriverFileDescriptor fileDescriptor : driver.getFiles()) {
+                        final File libraryFile = fileDescriptor.getFile();
+                        if (!fileDescriptor.isDisabled() && libraryFile.exists()) {
                             libFiles.add(libraryFile);
-                            libPathMap.put(libraryDescriptor.getPath(), libraryFile);
+                            libPathMap.put(fileDescriptor.getPath(), libraryFile);
                         }
                     }
                 }
@@ -195,7 +195,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
                         monitor.subTask(libFileName);
 
-                        exportData.meta.startElement(DataSourceConstants.TAG_LIBRARY);
+                        exportData.meta.startElement(DataSourceConstants.TAG_FILE);
                         exportData.meta.addAttribute(ExportConstants.ATTR_PATH, libPath);
                         exportData.meta.addAttribute(ExportConstants.ATTR_FILE, "drivers/" + libFileName);
                         exportData.meta.endElement();

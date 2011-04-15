@@ -15,29 +15,32 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * DriverLibraryDescriptor
+ * DriverFileDescriptor
  */
-public class DriverLibraryDescriptor
+public class DriverFileDescriptor
 {
-    static final Log log = LogFactory.getLog(DriverLibraryDescriptor.class);
+    static final Log log = LogFactory.getLog(DriverFileDescriptor.class);
 
-    private DriverDescriptor driver;
+    private final DriverDescriptor driver;
+    private final DriverFileType type;
     private String path;
     private String description;
     private String externalURL;
     private boolean custom;
     private boolean disabled;
 
-    public DriverLibraryDescriptor(DriverDescriptor driver, String path)
+    public DriverFileDescriptor(DriverDescriptor driver, String path)
     {
         this.driver = driver;
+        this.type = DriverFileType.library;
         this.path = path;
         this.custom = true;
     }
 
-    DriverLibraryDescriptor(DriverDescriptor driver, IConfigurationElement config)
+    DriverFileDescriptor(DriverDescriptor driver, IConfigurationElement config)
     {
         this.driver = driver;
+        this.type = DriverFileType.valueOf(config.getAttribute("type"));
         this.path = config.getAttribute("path");
         this.description = config.getAttribute("description");
         this.externalURL = config.getAttribute("url");
@@ -47,6 +50,11 @@ public class DriverLibraryDescriptor
     public DriverDescriptor getDriver()
     {
         return driver;
+    }
+
+    public DriverFileType getType()
+    {
+        return type;
     }
 
     public String getPath()
@@ -84,12 +92,17 @@ public class DriverLibraryDescriptor
         this.disabled = disabled;
     }
 
+    public boolean isLocal()
+    {
+        return path.startsWith("drivers");
+    }
+
     File getLocalFile()
     {
         return new File(new File(Platform.getInstallLocation().getURL().getFile()), path);
     }
 
-    public File getLibraryFile()
+    public File getFile()
     {
         // Try to use direct path
         File libraryFile = new File(path);
@@ -97,8 +110,7 @@ public class DriverLibraryDescriptor
             return libraryFile;
         }
         // Try to use relative path
-        File installLocation = new File(Platform.getInstallLocation().getURL().getFile());
-        File platformFile = new File(installLocation, path);
+        File platformFile = getLocalFile();
         if (platformFile.exists()) {
             // Relative file do not exists - use plain one
             return platformFile;
@@ -123,8 +135,4 @@ public class DriverLibraryDescriptor
         return libraryFile;
     }
 
-    public boolean isLocal()
-    {
-        return path.startsWith("drivers");
-    }
 }

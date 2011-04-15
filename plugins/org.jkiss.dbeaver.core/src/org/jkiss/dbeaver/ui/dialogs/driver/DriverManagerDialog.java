@@ -235,7 +235,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
     private void editDriver()
     {
         if (selectedDriver != null) {
-            selectedDriver.validateLibrariesPresence();
+            selectedDriver.validateFilesPresence();
 
             DriverEditDialog dialog = new DriverEditDialog(getShell(), selectedDriver);
             if (dialog.open() == IDialogConstants.OK_ID) {

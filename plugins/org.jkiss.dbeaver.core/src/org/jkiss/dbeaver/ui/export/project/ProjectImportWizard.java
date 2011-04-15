@@ -111,7 +111,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     // Read libraries map
                     final Element libsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_LIBRARIES);
                     if (libsElement != null) {
-                        final Element[] libList = XMLUtils.getChildElementList(libsElement, DataSourceConstants.TAG_LIBRARY);
+                        final Element[] libList = XMLUtils.getChildElementList(libsElement, DataSourceConstants.TAG_FILE);
                         monitor.beginTask("Load driver libraries", libList.length);
                         for (Element libElement : libList) {
                             libMap.put(
@@ -256,9 +256,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
 
         // Add libraries (only for managable drivers with empty library list)
-        if (driver.isManagable() && CommonUtils.isEmpty(driver.getLibraries())) {
+        if (driver.isManagable() && CommonUtils.isEmpty(driver.getFiles())) {
             List<String> libraryList = new ArrayList<String>();
-            final Element[] libList = XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_LIBRARY);
+            final Element[] libList = XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_FILE);
             for (Element libElement : libList) {
                 libraryList.add(libElement.getAttribute(DataSourceConstants.ATTR_PATH));
             }

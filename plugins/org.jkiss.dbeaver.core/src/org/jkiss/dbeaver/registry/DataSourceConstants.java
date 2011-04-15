@@ -16,7 +16,8 @@ public class DataSourceConstants {
     public static final String TAG_PROVIDER = "provider";
     public static final String TAG_PARAMETER = "parameter";
     public static final String TAG_PROPERTY = "property";
-    public static final String TAG_LIBRARY = "library";
+    public static final String TAG_FILE = "file";
+    public static final String TAG_LIBRARY = "library"; // [LEGACY: from DBeaver 1.1.0]
 
     public static final String ATTR_ID = "id";
     public static final String ATTR_DISABLED = "disabled";

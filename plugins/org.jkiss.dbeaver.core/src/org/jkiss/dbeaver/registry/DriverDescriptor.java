@@ -64,7 +64,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean custom;
     private boolean modified;
     private boolean disabled;
-    private List<DriverLibraryDescriptor> libraries = new ArrayList<DriverLibraryDescriptor>(), origLibraries;
+    private List<DriverFileDescriptor> files = new ArrayList<DriverFileDescriptor>(), origFiles;
     private List<PropertyGroupDescriptor> connectionPropertyGroups = new ArrayList<PropertyGroupDescriptor>();
 
     private Map<String, String> defaultParameters = new HashMap<String, String>();
@@ -115,11 +115,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.custom = false;
         this.isLoaded = false;
 
-        IConfigurationElement[] libElements = config.getChildren(DataSourceConstants.TAG_LIBRARY);
-        for (IConfigurationElement lib : libElements) {
-            this.libraries.add(new DriverLibraryDescriptor(this, lib));
+        for (IConfigurationElement lib : config.getChildren(DataSourceConstants.TAG_FILE)) {
+            this.files.add(new DriverFileDescriptor(this, lib));
         }
-        this.origLibraries = new ArrayList<DriverLibraryDescriptor>(this.libraries);
+        this.origFiles = new ArrayList<DriverFileDescriptor>(this.files);
 
         String iconName = config.getAttribute("icon");
         if (!CommonUtils.isEmpty(iconName)) {
@@ -290,8 +289,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     private boolean hasValidLibraries()
     {
-        for (DriverLibraryDescriptor lib : libraries) {
-            if (lib.getLibraryFile().exists() || (!lib.isDisabled() && !CommonUtils.isEmpty(lib.getExternalURL()))) {
+        for (DriverFileDescriptor lib : files) {
+            if (lib.getFile().exists() || (!lib.isDisabled() && !CommonUtils.isEmpty(lib.getExternalURL()))) {
                 return true;
             }
         }
@@ -436,14 +435,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 */
 
-    public List<DriverLibraryDescriptor> getLibraries()
+    public List<DriverFileDescriptor> getFiles()
     {
-        return libraries;
+        return files;
     }
 
-    public DriverLibraryDescriptor getLibrary(String path)
+    public DriverFileDescriptor getLibrary(String path)
     {
-        for (DriverLibraryDescriptor lib : libraries) {
+        for (DriverFileDescriptor lib : files) {
             if (lib.getPath().equals(path)) {
                 return lib;
             }
@@ -451,34 +450,34 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return null;
     }
 
-    public DriverLibraryDescriptor addLibrary(String path)
+    public DriverFileDescriptor addLibrary(String path)
     {
-        for (DriverLibraryDescriptor lib : libraries) {
+        for (DriverFileDescriptor lib : files) {
             if (lib.getPath().equals(path)) {
                 return lib;
             }
         }
-        DriverLibraryDescriptor lib = new DriverLibraryDescriptor(this, path);
-        this.libraries.add(lib);
+        DriverFileDescriptor lib = new DriverFileDescriptor(this, path);
+        this.files.add(lib);
         return lib;
     }
 
-    public boolean addLibrary(DriverLibraryDescriptor descriptor)
+    public boolean addLibrary(DriverFileDescriptor descriptor)
     {
-        if (!libraries.contains(descriptor)) {
-            this.libraries.add(descriptor);
+        if (!files.contains(descriptor)) {
+            this.files.add(descriptor);
             return true;
         }
         return false;
     }
 
-    public boolean removeLibrary(DriverLibraryDescriptor lib)
+    public boolean removeLibrary(DriverFileDescriptor lib)
     {
         if (!lib.isCustom()) {
             lib.setDisabled(true);
             return true;
         } else {
-            return this.libraries.remove(lib);
+            return this.files.remove(lib);
         }
     }
 
@@ -588,17 +587,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         this.classLoader = null;
 
-        validateLibrariesPresence();
+        validateFilesPresence();
 
         List<URL> libraryURLs = new ArrayList<URL>();
         // Load libraries
-        for (DriverLibraryDescriptor library : libraries) {
-            if (library.isDisabled()) {
+        for (DriverFileDescriptor file : files) {
+            if (file.isDisabled() || file.getType() != DriverFileType.library) {
                 continue;
             }
             URL url;
             try {
-                url = library.getLibraryFile().toURI().toURL();
+                url = file.getFile().toURI().toURL();
             } catch (MalformedURLException e) {
                 log.error(e);
                 continue;
@@ -611,23 +610,23 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             ClassLoader.getSystemClassLoader());
     }
 
-    public void validateLibrariesPresence()
+    public void validateFilesPresence()
     {
-        final List<DriverLibraryDescriptor> downloadCandidates = new ArrayList<DriverLibraryDescriptor>();
-        for (DriverLibraryDescriptor library : libraries) {
-            if (library.isDisabled() || library.getExternalURL() == null || !library.isLocal()) {
+        final List<DriverFileDescriptor> downloadCandidates = new ArrayList<DriverFileDescriptor>();
+        for (DriverFileDescriptor file : files) {
+            if (file.isDisabled() || file.getExternalURL() == null || !file.isLocal()) {
                 // Nothing we can do about it
                 continue;
             }
-            final File libraryFile = library.getLocalFile();
+            final File libraryFile = file.getLocalFile();
             if (!libraryFile.exists()) {
-                downloadCandidates.add(library);
+                downloadCandidates.add(file);
             }
         }
 
         if (!downloadCandidates.isEmpty()) {
             final StringBuilder libNames = new StringBuilder();
-            for (DriverLibraryDescriptor lib : downloadCandidates) {
+            for (DriverFileDescriptor lib : downloadCandidates) {
                 if (libNames.length() > 0) libNames.append(", ");
                 libNames.append(lib.getPath());
             }
@@ -650,13 +649,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private void downloadLibraryFiles(final List<DriverLibraryDescriptor> libraries)
+    private void downloadLibraryFiles(final List<DriverFileDescriptor> files)
     {
 //        try {
             DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
-                    for (DriverLibraryDescriptor lib : libraries) {
+                    for (DriverFileDescriptor lib : files) {
                         try {
                             final boolean success = downloadLibraryFiles(monitor, lib);
                             if (!success) {
@@ -682,9 +681,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 //        }
     }
 
-    private boolean downloadLibraryFiles(DBRProgressMonitor monitor, DriverLibraryDescriptor library) throws IOException
+    private boolean downloadLibraryFiles(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException
     {
-        URL url = new URL(library.getExternalURL());
+        URL url = new URL(file.getExternalURL());
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(10000);
         connection.setConnectTimeout(10000);
@@ -696,9 +695,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         final int contentLength = connection.getContentLength();
         final String contentType = connection.getContentType();
-        monitor.beginTask("Download " + library.getExternalURL(), contentLength);
+        monitor.beginTask("Download " + file.getExternalURL(), contentLength);
         boolean success = false;
-        final File localFile = library.getLocalFile();
+        final File localFile = file.getLocalFile();
         final File localDir = localFile.getParentFile();
         if (!localDir.exists()) {
             if (!localDir.mkdirs()) {
@@ -767,9 +766,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return origSampleURL;
     }
 
-    public List<DriverLibraryDescriptor> getOrigLibraries()
+    public List<DriverFileDescriptor> getOrigFiles()
     {
-        return origLibraries;
+        return origFiles;
     }
 
     public static File getDriversContribFolder() throws IOException
@@ -798,9 +797,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         xml.addAttribute(DataSourceConstants.ATTR_DESCRIPTION, CommonUtils.getString(this.getDescription()));
 
         // Libraries
-        for (DriverLibraryDescriptor lib : this.getLibraries()) {
+        for (DriverFileDescriptor lib : this.getFiles()) {
             if ((export && !lib.isDisabled()) || lib.isCustom() || lib.isDisabled()) {
-                xml.startElement(DataSourceConstants.TAG_LIBRARY);
+                xml.startElement(DataSourceConstants.TAG_FILE);
                 xml.addAttribute(DataSourceConstants.ATTR_PATH, lib.getPath());
                 if (lib.isDisabled()) {
                     xml.addAttribute(DataSourceConstants.ATTR_DISABLED, true);
@@ -891,13 +890,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 if ("true".equals(disabledAttr)) {
                     curDriver.setDisabled(true);
                 }
-            } else if (localName.equals(DataSourceConstants.TAG_LIBRARY)) {
+            } else if (localName.equals(DataSourceConstants.TAG_FILE) || localName.equals(DataSourceConstants.TAG_LIBRARY)) {
                 if (curDriver == null) {
-                    log.warn("Library outside of driver");
+                    log.warn("File outside of driver");
                     return;
                 }
                 String path = atts.getValue(DataSourceConstants.ATTR_PATH);
-                DriverLibraryDescriptor lib = curDriver.getLibrary(path);
+                DriverFileDescriptor lib = curDriver.getLibrary(path);
                 String disabledAttr = atts.getValue(DataSourceConstants.ATTR_DISABLED);
                 if (lib != null && "true".equals(disabledAttr)) {
                     lib.setDisabled(true);

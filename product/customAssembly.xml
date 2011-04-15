@@ -1,3 +1,7 @@
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <project name="Build specific targets and properties" default="noDefault">
 
     <!-- =====================================================================
@@ -55,10 +59,14 @@
     <!-- ===================================================================== -->
     <target name="pre.archive">
         <echo message="Adding contributions to ${rootFolder}"/>
-        <copy todir="${rootFolder}">
-            <fileset dir="${buildDirectory}/../../contrib">
-                <include name="**"/>
-            </fileset>
+        <copy todir="${rootFolder}/drivers/postgresql">
+            <fileset dir="${buildDirectory}/../../contrib/drivers/postgresql"/>
+        </copy>
+        <copy todir="${rootFolder}/drivers/oracle">
+            <fileset dir="${buildDirectory}/../../contrib/drivers/oracle"/>
+        </copy>
+        <copy todir="${rootFolder}/drivers/jtds">
+            <fileset dir="${buildDirectory}/../../contrib/drivers/jtds"/>
         </copy>
 		<copy file="${buildDirectory}/readme.txt" todir="${rootFolder}"/>
     </target>

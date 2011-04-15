@@ -10,6 +10,7 @@
 	<property name="buildId" value="dbeaver-${productVersion}"/>
 	<property name="buildLabel" value="${buildId}"/>
 	<property name="readmeFile" value="build/readme.txt"/>
+    <property name="distDirectory" value="dist"/>
 	<tstamp>
 		<format property="current-date" pattern="dd MMM yyyy" locale="en"/>
 	</tstamp>
@@ -80,13 +81,14 @@
 		</java>
 	</target>
 
-	<!--This target is responsible for cleaning up the build-directory
-	<target name="clean">
-		<delete dir="${buildDirectory}" />
-	</target>-->
+	<target name="driver-pack">
+		<zip destfile="${distDirectory}/driver-pack-${productVersion}.zip" basedir="../contrib/drivers" excludes="*.svn">
+
+		</zip>
+	</target>
 
 	<!--This target defines the run-order of the targets-->
-	<target name="build" depends="pde-build" />
+	<target name="build" depends="pde-build,driver-pack" />
 
 	<target name="dist-win">
 		<mkdir dir="${buildDirectory}/installer" />
@@ -222,7 +224,7 @@
 
     </target>
 
-    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos">
+    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,driver-pack">
 
     </target>
 

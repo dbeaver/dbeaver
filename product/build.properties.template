@@ -10,7 +10,6 @@ releaseFilesDirectory=@releaseFilesDirectory@
 
 topLevelElementType = plugin
 topLevelElementId = org.jkiss.dbeaver.core
-distDirectory=dist
 
 buildType=B
 buildId=@buildId@
