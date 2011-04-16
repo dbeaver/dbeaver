@@ -37,8 +37,6 @@ import java.util.List;
  */
 public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, DBSWrapper {
 
-    public static final String JEXL_VAR_OBJECT = "object";
-
     private boolean locked;
     protected List<DBNDatabaseNode> childNodes;
     private String nodeName;
@@ -525,30 +523,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
         Type propType = getter.getGenericReturnType();
         return BeanUtils.getCollectionType(propType);
-    }
-
-    ////////////////////////////////////////////////////////////////
-    // Jexl context implementation
-
-    @Override
-    public boolean has(String s)
-    {
-        return JEXL_VAR_OBJECT.equals(s) || super.has(s);
-    }
-
-    @Override
-    public Object get(String s)
-    {
-        if (JEXL_VAR_OBJECT.equals(s)) {
-            return getValueObject();
-        }
-        return super.get(s);
-    }
-
-    @Override
-    public String toString()
-    {
-        return getNodeType() + " " + getNodeName();
     }
 
 }

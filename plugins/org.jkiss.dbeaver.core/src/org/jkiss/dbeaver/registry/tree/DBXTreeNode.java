@@ -12,6 +12,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
@@ -80,7 +82,7 @@ public abstract class DBXTreeNode
         return parent;
     }
 
-    public boolean hasChildren(JexlContext context)
+    public boolean hasChildren(DBNNode context)
     {
         if (CommonUtils.isEmpty(children)) {
             return false;
@@ -96,7 +98,7 @@ public abstract class DBXTreeNode
         return false;
     }
 
-    public List<DBXTreeNode> getChildren(JexlContext context)
+    public List<DBXTreeNode> getChildren(DBNNode context)
     {
         if (context != null && !CommonUtils.isEmpty(children)) {
             boolean hasExpr = false;
@@ -119,9 +121,9 @@ public abstract class DBXTreeNode
         return children;
     }
 
-    private boolean isVisible(JexlContext context)
+    private boolean isVisible(DBNNode context)
     {
-        return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(context));
+        return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(makeContext(context)));
     }
 
     private void addChild(DBXTreeNode child)
@@ -160,7 +162,7 @@ public abstract class DBXTreeNode
         this.icons.add(icon);
     }
 
-    public Image getIcon(JexlContext context)
+    public Image getIcon(DBNNode context)
     {
         List<DBXTreeIcon> extIcons = getIcons();
         if (!CommonUtils.isEmpty(extIcons)) {
@@ -170,7 +172,7 @@ public abstract class DBXTreeNode
                     continue;
                 }
                 try {
-                    Object result = icon.getExpression().evaluate(context);
+                    Object result = icon.getExpression().evaluate(makeContext(context));
                     if (Boolean.TRUE.equals(result)) {
                         return icon.getIcon();
                     }
@@ -187,4 +189,26 @@ public abstract class DBXTreeNode
     {
         return visibleIf;
     }
+
+    private static JexlContext makeContext(final DBNNode node)
+    {
+        return new JexlContext() {
+
+            public Object get(String name)
+            {
+                return node instanceof DBNDatabaseNode && name.equals("object") ? ((DBNDatabaseNode) node).getObject() : null;
+            }
+
+            public void set(String name, Object value)
+            {
+                log.warn("Set is not implemented in DBX model");
+            }
+
+            public boolean has(String name)
+            {
+                return node instanceof DBNDatabaseNode && name.equals("object") && ((DBNDatabaseNode) node).getObject() != null;
+            }
+        };
+    }
+
 }
