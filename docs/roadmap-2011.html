@@ -9,11 +9,17 @@
 <body>
 
 <style type="text/css">
+    body {
+        font-family: Arial,Helvetica,sans-serif;
+        font-size: 14px;
+    }
+
 	h1 {
 		counter-reset: head2;
 	}
 
 	h2:before {
+        font-size: 20px;
 		content: counter(head2) ". ";
 		counter-increment: head2;
 	}
@@ -22,6 +28,7 @@
 	}
 
 	h3:before {
+        font-size: 14px;
 		content: counter(head2) "." counter(head3) ". ";
 		counter-increment: head3;
 	}
@@ -31,6 +38,8 @@
 </style>
 
 <h1>DBeaver Roadmap 2011</h1>
+
+<p>This is very brief version of readmap 2011. Just primary goals in order of priority.</p>
 
 <h2>Metadata Editor</h2>
 <ol>
