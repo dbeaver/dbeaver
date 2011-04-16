@@ -51,6 +51,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final static String LOADING_LABEL = "...";
     private final static String DATA_OBJECT_COLUMN = "objectColumn";
     private final static int LAZY_LOAD_DELAY = 100;
+    private final static Object NULL_VALUE = new Object();
 
     private boolean isTree;
     private boolean isFitWidth;
@@ -427,7 +428,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 if (cache != null) {
                     final Object value = cache.get(column.id);
                     if (value != null) {
-                        return value;
+                        if (value == NULL_VALUE) {
+                            return null;
+                        } else {
+                            return value;
+                        }
                     }
                 }
             }
@@ -998,6 +1003,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         ObjectPropertyDescriptor prop = column.propMap.get(object.getClass());
                         if (prop != null) {
                             Object lazyValue = prop.readValue(object, monitor);
+                            if (lazyValue == null) {
+                                lazyValue = NULL_VALUE;
+                            }
                             objectCache.put(prop.getId(), lazyValue);
                         }
                     }

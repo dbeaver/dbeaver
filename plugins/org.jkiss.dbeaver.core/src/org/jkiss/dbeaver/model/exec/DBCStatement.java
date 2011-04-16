@@ -8,6 +8,8 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.sql.SQLException;
+
 /**
  * DBCStatement
  */
@@ -98,4 +100,9 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * Sets user data
      */
     void setUserData(Object userData);
+
+    //long getExecutionTimeout() throws DBCException;
+
+    //void setExecutionTimeout(long  seconds) throws DBCException;
+
 }

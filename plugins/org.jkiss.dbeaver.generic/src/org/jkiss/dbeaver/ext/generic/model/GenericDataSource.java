@@ -170,7 +170,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                             String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
                             if (CommonUtils.isEmpty(catalogName)) {
                                 // Some drivers uses TABLE_QUALIFIER instead of catalog
-                                catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_QUALIFIER);
+                                catalogName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_QUALIFIER);
+                                if (CommonUtils.isEmpty(catalogName)) {
+                                    continue;
+                                }
                             }
                             if (catalogFilters.isEmpty() || SQLUtils.matchesAnyLike(catalogName, catalogFilters)) {
                                 catalogNames.add(catalogName);

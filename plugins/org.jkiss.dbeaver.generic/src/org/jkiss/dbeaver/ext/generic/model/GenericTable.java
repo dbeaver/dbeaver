@@ -266,17 +266,21 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
 
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Property(name = "Row Count", viewable = true, expensive = true, order = 5)
-    public long getRowCount(DBRProgressMonitor monitor)
+    public Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
             return rowCount;
         }
-
+        if (isView()) {
+            // Do not count rows for views
+            return null;
+        }
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT COUNT(*) FROM " + getFullQualifiedName());
             try {
+//                dbStat.setQueryTimeout(3);
                 JDBCResultSet resultSet = dbStat.executeQuery();
                 try {
                     resultSet.next();

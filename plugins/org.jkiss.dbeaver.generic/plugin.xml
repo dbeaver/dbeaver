@@ -243,7 +243,7 @@
                 </driver>
                 <driver
                     id="firebird_jaybird"
-                    label="Firebird JayBird"
+                    label="Firebird (JayBird)"
                     class="org.firebirdsql.jdbc.FBDriver"
                     sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                     defaultPort=""
@@ -251,6 +251,19 @@
                     description="Firebird JayBird driver">
                     <file type="library" path="drivers/firebird/jaybird-full-2.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/jaybird-full-2.1.6.jar"/>
                     <file type="license" path="drivers/firebird/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="sap_maxdb"
+                    label="SAP MaxDB"
+                    class="com.sap.dbtech.jdbc.DriverSapDB"
+                    sampleURL="jdbc:sapdb://{host}[:{port}]/{database}"
+                    defaultPort="7200"
+                    webURL="http://www.sdn.sap.com/irj/sdn/maxdb"
+                    description="SAP MaxDB - The SAP Database System">
+                    <file type="library" path="drivers/maxdb/sapdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/maxdb/sapdbc.jar"/>
+                    <file type="license" path="drivers/maxdb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/maxdb/LICENSE.txt"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
+                    <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
                 </driver>
             </drivers>
 
