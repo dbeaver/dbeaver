@@ -276,6 +276,17 @@
                     <file type="license" path="drivers/hsqldb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/LICENSE.txt"/>
                 </driver>
                 <driver
+                    id="cache"
+                    label="Cache"
+                    class="com.intersys.jdbc.CacheDriver"
+                    sampleURL="jdbc:Cache://{host}:{port}/{database}"
+                    defaultPort="1972"
+                    webURL="http://www.intersystems.com/cache/"
+                    description="Intersystems Cache">
+                    <file type="library" path="drivers/cache/CacheDB.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cache/CacheDB.jar"/>
+                    <file type="license" path="drivers/cache/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cache/LICENSE.txt"/>
+                </driver>
+                <driver
                     id="firebird_jaybird"
                     label="Firebird (JayBird)"
                     class="org.firebirdsql.jdbc.FBDriver"
