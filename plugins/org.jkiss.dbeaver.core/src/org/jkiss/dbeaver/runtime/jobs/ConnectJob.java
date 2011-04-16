@@ -8,11 +8,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * ConnectJob
@@ -29,6 +32,7 @@ public class ConnectJob extends AbstractJob
     {
         super("Connect to " + container.getName());
         setUser(true);
+        setProperty(IProgressConstants.ICON_PROPERTY, ImageDescriptor.createFromImage(container.getDriver().getIcon()));
         this.container = container;
     }
 

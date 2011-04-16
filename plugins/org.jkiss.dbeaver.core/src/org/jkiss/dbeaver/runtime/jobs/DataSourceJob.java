@@ -33,9 +33,11 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
         setUser(true);
         //setProperty(IProgressConstants.KEEP_PROPERTY, Boolean.TRUE);
         //setProperty(IProgressConstants.KEEPONE_PROPERTY, Boolean.TRUE);
-        if (image != null) {
-            setProperty(IProgressConstants.ICON_PROPERTY, image);
+        if (image == null) {
+            image = ImageDescriptor.createFromImage(dataSourceContainer.getDriver().getIcon());
         }
+        setProperty(IProgressConstants.ICON_PROPERTY, image);
+
         addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void aboutToRun(IJobChangeEvent event)
