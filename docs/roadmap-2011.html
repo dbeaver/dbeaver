@@ -1,0 +1,81 @@
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
+<html>
+<head>
+	<title>DBeaver Roadmap 2011</title>
+</head>
+<body>
+
+<style type="text/css">
+	h1 {
+		counter-reset: head2;
+	}
+
+	h2:before {
+		content: counter(head2) ". ";
+		counter-increment: head2;
+	}
+	h2 {
+		counter-reset: head3;
+	}
+
+	h3:before {
+		content: counter(head2) "." counter(head3) ". ";
+		counter-increment: head3;
+	}
+	h3 {
+		counter-reset: head4;
+	}
+</style>
+
+<h1>DBeaver Roadmap 2011</h1>
+
+<h2>Metadata Editor</h2>
+<ol>
+	<li>Common table editor. Visual editor of relational tables. Columns, indexes, constraints, options.</li>
+	<li>Implementation of metadata editor in Generic, MySQL, Oracle, PostgreSQL plugins.</li>
+</ol>
+
+<h2>Database plugins</h2>
+<h3>Oracle</h3>
+<ol>
+	<li>Support of standard meta objects (tablespaces, triggers, packages, etc).</li>
+	<li>Support of oracle specific datatypes (XML, etc).</li>
+</ol>
+<h3>PostgreSQL</h3>
+<ol>
+	<li>Support of standard meta objects (tablespaces, sequences, etc).</li>
+	<li>Support of PostgreSQL specific datatypes (arrays, etc).</li>
+</ol>
+<h3>Non-relational</h3>
+<ol>
+	<li>WMI (WBEM?) as first non JDBC datasource.</li>
+	<li>Try to adapt hierarchical/multivalue databases like jBase and ADABAS. Need access to working instances.</li>
+</ol>
+
+<h2>Help</h2>
+<ol>
+	<li>Integrated help system</li>
+    <li>Context help for dialogs/editors</li>
+</ol>
+
+<h2>I18N</h2>
+<ol>
+	<li>Add i18n support in all dialogs/editors/exceptions</li>
+    <li>Localize help</li>
+</ol>
+
+<h2>Views</h2>
+<ol>
+	<li>Edit/compile views.</li>
+</ol>
+
+<h2>Stored Procedures</h2>
+<ol>
+	<li>Supports of edit, compile and debug of any stored code (procedures, triggers).</li>
+</ol>
+
+</body>
+</html>
