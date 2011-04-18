@@ -115,7 +115,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_STATEMENT));
         manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_SCRIPT));
         manager.add(new Separator());
-        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_STATEMENT));
+        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXPLAIN_PLAN));
         manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_ANALYSE_STATEMENT));
         manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_VALIDATE_STATEMENT));
     }
