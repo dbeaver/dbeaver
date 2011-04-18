@@ -428,9 +428,24 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         throws DBException
     {
         if (object instanceof GenericCatalog) {
-            return getCatalogs().contains(GenericCatalog.class.cast(object));
+            return !CommonUtils.isEmpty(catalogs) && catalogs.contains(GenericCatalog.class.cast(object));
         } else if (object instanceof GenericSchema) {
-            return getSchemas().contains(GenericSchema.class.cast(object));
+            return !CommonUtils.isEmpty(schemas) && schemas.contains(GenericSchema.class.cast(object));
+        }
+        return false;
+    }
+
+    public boolean supportsEntitySelect()
+    {
+        if (!CommonUtils.isEmpty(querySetActiveDB)) {
+            if (CommonUtils.isEmpty(selectedEntityType)) {
+                return !CommonUtils.isEmpty(getCatalogs()) || !CommonUtils.isEmpty(getSchemas());
+            }
+            if (!CommonUtils.isEmpty(getCatalogs())) {
+                return GenericConstants.ENTITY_TYPE_CATALOG.equals(selectedEntityType);
+            } else if (!CommonUtils.isEmpty(getSchemas())) {
+                return GenericConstants.ENTITY_TYPE_SCHEMA.equals(selectedEntityType);
+            }
         }
         return false;
     }
@@ -454,11 +469,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         return null;
     }
 
-    public boolean supportsEntitySelect()
-    {
-        return !CommonUtils.isEmpty(querySetActiveDB);
-    }
-
     public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity)
         throws DBException
     {
@@ -466,13 +476,33 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         if (entity == oldSelectedEntity) {
             return;
         }
-        if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericEntityContainer)) {
-            throw new DBException("Active database can't be changed for this kind of datasource!");
-        }
         if (!isChild(entity)) {
             throw new DBException("Bad child object specified as active: " + entity);
         }
 
+        setActiveEntityName(monitor, entity);
+
+        if (oldSelectedEntity != null) {
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldSelectedEntity, false));
+        }
+        getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, entity, true));
+    }
+
+    String getSelectedEntityType()
+    {
+        return selectedEntityType;
+    }
+
+    String getSelectedEntityName()
+    {
+        return selectedEntityName;
+    }
+
+    void setActiveEntityName(DBRProgressMonitor monitor, DBSEntity entity) throws DBException
+    {
+        if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericEntityContainer)) {
+            throw new DBException("Active database can't be changed for this kind of datasource!");
+        }
         String changeQuery = querySetActiveDB.replaceFirst("\\?", entity.getName());
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active catalog");
         try {
@@ -489,11 +519,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             context.close();
         }
         selectedEntityName = entity.getName();
-
-        if (oldSelectedEntity != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldSelectedEntity, false));
-        }
-        getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, entity, true));
     }
 
     public Object getAdapter(Class adapter)

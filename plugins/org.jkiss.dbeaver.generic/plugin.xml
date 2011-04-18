@@ -263,6 +263,9 @@
                     description="HyperSQL DataBase - Server Mode">
                     <file type="library" path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
                     <file type="license" path="drivers/hsqldb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/LICENSE.txt"/>
+                    <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
                 </driver>
                 <driver
                     id="hsqldb_embedded"
@@ -274,6 +277,10 @@
                     description="HyperSQL DataBase - Embedded Mode">
                     <file type="library" path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
                     <file type="license" path="drivers/hsqldb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/LICENSE.txt"/>
+                    <parameter name="shutdown-url-param" value=";shutdown=true"/>
+                    <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
                 </driver>
                 <driver
                     id="cache"

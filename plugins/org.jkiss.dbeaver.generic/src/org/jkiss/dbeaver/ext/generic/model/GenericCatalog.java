@@ -6,6 +6,8 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -13,6 +15,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
@@ -21,7 +24,7 @@ import java.util.List;
 /**
  * GenericCatalog
  */
-public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
+public class GenericCatalog extends GenericEntityContainer implements DBSCatalog, DBSEntitySelector
 {
     private String catalogName;
     private List<GenericSchema> schemas;
@@ -131,5 +134,37 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         this.schemas = null;
         this.isInitialized = false;
         return true;
+    }
+
+    public boolean supportsEntitySelect()
+    {
+        return GenericConstants.ENTITY_TYPE_SCHEMA.equals(getDataSource().getSelectedEntityType()) &&
+            !CommonUtils.isEmpty(schemas);
+    }
+
+    public GenericSchema getSelectedEntity()
+    {
+        return DBUtils.findObject(schemas, getDataSource().getSelectedEntityName());
+    }
+
+    public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity) throws DBException
+    {
+        final GenericSchema oldSelectedEntity = getSelectedEntity();
+        if (entity == oldSelectedEntity) {
+            return;
+        }
+        if (!(entity instanceof GenericSchema)) {
+            throw new DBException("Bad child type: " + entity);
+        }
+        if (!schemas.contains(GenericSchema.class.cast(entity))) {
+            throw new DBException("Wrong child object specified as active: " + entity);
+        }
+
+        getDataSource().setActiveEntityName(monitor, entity);
+
+        if (oldSelectedEntity != null) {
+            getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldSelectedEntity, false));
+        }
+        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, entity, true));
     }
 }
