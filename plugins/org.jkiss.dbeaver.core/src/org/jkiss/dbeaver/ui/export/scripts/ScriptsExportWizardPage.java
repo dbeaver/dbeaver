@@ -48,6 +48,9 @@ class ScriptsExportWizardPage extends WizardPage {
 
     static final Log log = LogFactory.getLog(ScriptsExportWizardPage.class);
 
+    private static final String PREF_SCRIPTS_EXPORT_OUT_DIR = "export.scripts.out.dir";
+
+    private Button overwriteCheck;
     private Text directoryText;
     private DatabaseNavigatorTree scriptsNavigator;
     private final List<DBNResource> selectedResources = new ArrayList<DBNResource>();
@@ -86,6 +89,11 @@ class ScriptsExportWizardPage extends WizardPage {
 
     public void createControl(Composite parent)
     {
+        String outDir = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PREF_SCRIPTS_EXPORT_OUT_DIR);
+        if (CommonUtils.isEmpty(outDir)) {
+            outDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
+        }
+
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
         placeholder.setLayout(new GridLayout(1, false));
 
@@ -124,9 +132,13 @@ class ScriptsExportWizardPage extends WizardPage {
         Composite generalSettings = UIUtils.createPlaceholder(placeholder, 3);
         generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
+            overwriteCheck = UIUtils.createCheckbox(generalSettings, "Overwrite existing files", false);
+            gd = new GridData(GridData.BEGINNING);
+            gd.horizontalSpan = 3;
+            overwriteCheck.setLayoutData(gd);
             UIUtils.createControlLabel(generalSettings, "Directory");
             directoryText = new Text(generalSettings, SWT.BORDER);
-            directoryText.setText(RuntimeUtils.getUserHomeDir().getAbsolutePath());
+            directoryText.setText(outDir);
             directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             directoryText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e)
@@ -166,7 +178,6 @@ class ScriptsExportWizardPage extends WizardPage {
         getContainer().updateButtons();
     }
 
-
     public ScriptsExportData getExportData()
     {
         Set<IResource> result = new LinkedHashSet<IResource>();
@@ -182,7 +193,10 @@ class ScriptsExportWizardPage extends WizardPage {
             final IResource resource = resourceNode.getResource();
             addResourceToSet(result, resource);
         }
-        return new ScriptsExportData(result, new File(directoryText.getText()));
+
+        final String outputDir = directoryText.getText();
+        DBeaverCore.getInstance().getGlobalPreferenceStore().setValue(PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);
+        return new ScriptsExportData(result, overwriteCheck.getSelection(), new File(outputDir));
     }
 
     private void addResourceToSet(Set<IResource> result, IResource resource)
@@ -198,4 +212,5 @@ class ScriptsExportWizardPage extends WizardPage {
             result.add(resource);
         }
     }
+
 }

@@ -6,6 +6,9 @@ package org.jkiss.dbeaver.ui.export.scripts;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -16,9 +19,15 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ScriptsExportWizard extends Wizard implements IExportWizard {
 
@@ -49,7 +58,7 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        exportProjects(monitor, exportData);
+                        exportScripts(monitor, exportData);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
@@ -70,10 +79,79 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
         return true;
 	}
 
-    public void exportProjects(DBRProgressMonitor monitor, final ScriptsExportData exportData)
+    public void exportScripts(DBRProgressMonitor monitor, final ScriptsExportData exportData)
         throws IOException, CoreException, InterruptedException
     {
+        for (IResource res : exportData.getScripts()) {
+            if (res instanceof IFolder) {
+                exportFolder(monitor, (IFolder)res, exportData);
+            } else {
+                exportScript(monitor, (IFile) res, exportData);
+            }
+        }
+    }
 
+    private void exportFolder(DBRProgressMonitor monitor, IFolder folder, final ScriptsExportData exportData) throws CoreException, IOException
+    {
+        File fsDir = makeExternalFile(folder, exportData.getOutputFolder());
+        if (!fsDir.exists()) {
+            if (!fsDir.mkdirs()) {
+                throw new IOException("Can't create directory '" + fsDir.getAbsolutePath() + "'");
+            }
+        }
+        for (IResource res : folder.members()) {
+            if (res instanceof IFile) {
+                exportScript(monitor, (IFile)res, exportData);
+            } else if (res instanceof IFolder) {
+                exportFolder(monitor, (IFolder)res, exportData);
+            }
+        }
+    }
+
+    private File makeExternalFile(IResource folder, File outputFolder)
+    {
+        List<IResource> path = new ArrayList<IResource>();
+        for (IResource f = folder; f.getParent() instanceof IFolder; f = f.getParent()) {
+            path.add(0, f);
+        }
+        File fsDir = outputFolder;
+        for (IResource pathItem : path) {
+            fsDir = new File(fsDir, pathItem.getName());
+        }
+        return fsDir;
+    }
+
+    private void exportScript(DBRProgressMonitor monitor, IFile file, final ScriptsExportData exportData)
+        throws IOException, CoreException
+    {
+        File fsFile = makeExternalFile(file, exportData.getOutputFolder());
+        if (fsFile.exists()) {
+            if (fsFile.isDirectory()) {
+                throw new IOException("Target file '" + fsFile.getAbsolutePath() + "' is a directory");
+            } else if (!exportData.isOverwriteFiles()) {
+                log.warn("File '" + fsFile.getAbsolutePath() + "' already exists - skipped");
+                return;
+            } else {
+                log.warn("Overwriting file '" + fsFile.getAbsolutePath() + "'");
+            }
+        }
+        final File fileDir = fsFile.getParentFile();
+        if (!fileDir.exists()) {
+            if (!fileDir.mkdirs()) {
+                throw new IOException("Can't create directory '" + fileDir.getAbsolutePath() + "'");
+            }
+        }
+        final InputStream scriptContents = file.getContents(true);
+        try {
+            FileOutputStream out = new FileOutputStream(fsFile);
+            try {
+                ContentUtils.copyStreams(scriptContents, 0, out, monitor);
+            } finally {
+                ContentUtils.close(out);
+            }
+        } finally {
+            ContentUtils.close(scriptContents);
+        }
     }
 
 }

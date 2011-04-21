@@ -13,17 +13,24 @@ import java.util.Collection;
 class ScriptsExportData {
 
     private final Collection<IResource> scripts;
+    private final boolean overwriteFiles;
     private final File outputFolder;
 
-    public ScriptsExportData(Collection<IResource> scripts, File outputFolder)
+    ScriptsExportData(Collection<IResource> scripts, boolean overwriteFiles, File outputFolder)
     {
         this.scripts = scripts;
+        this.overwriteFiles = overwriteFiles;
         this.outputFolder = outputFolder;
     }
 
     public Collection<IResource> getScripts()
     {
         return scripts;
+    }
+
+    public boolean isOverwriteFiles()
+    {
+        return overwriteFiles;
     }
 
     public File getOutputFolder()
