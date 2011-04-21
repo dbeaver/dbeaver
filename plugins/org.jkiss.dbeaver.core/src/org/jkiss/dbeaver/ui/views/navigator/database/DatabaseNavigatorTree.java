@@ -43,6 +43,11 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
     {
+        this(parent, rootNode, style, false);
+    }
+
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot)
+    {
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
         this.model = rootNode.getModel();
@@ -76,8 +81,8 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
             this.viewer.setAutoExpandLevel(2);
         }
         this.viewer.setLabelProvider(new DatabaseNavigatorLabelProvider(this.viewer));
-        this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this.viewer));
-        this.viewer.setInput(rootNode);
+        this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this.viewer, showRoot));
+        this.viewer.setInput(new DatabaseNavigatorContent(rootNode));
 
         initEditor();
     }
@@ -170,7 +175,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
 
     public void reloadTree(DBNNode rootNode)
     {
-        this.viewer.setInput(rootNode);
+        this.viewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 
     private class TreeSelectionAdapter implements MouseListener {

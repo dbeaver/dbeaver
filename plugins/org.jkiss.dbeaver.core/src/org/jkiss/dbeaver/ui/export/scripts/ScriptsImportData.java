@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.export.scripts;
 
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 import java.io.File;
 
@@ -14,14 +15,16 @@ import java.io.File;
 class ScriptsImportData {
 
     private final File inputDir;
-    private final String fileExtensions;
+    private final String fileMasks;
     private final DBNResource importDir;
+    private final DBSDataSourceContainer dataSourceContainer;
 
-    ScriptsImportData(File inputDir, String fileExtensions, DBNResource importDir)
+    ScriptsImportData(File inputDir, String fileMasks, DBNResource importDir, DBSDataSourceContainer dataSourceContainer)
     {
         this.inputDir = inputDir;
-        this.fileExtensions = fileExtensions;
+        this.fileMasks = fileMasks;
         this.importDir = importDir;
+        this.dataSourceContainer = dataSourceContainer;
     }
 
     public File getInputDir()
@@ -29,13 +32,18 @@ class ScriptsImportData {
         return inputDir;
     }
 
-    public String getFileExtensions()
+    public String getFileMasks()
     {
-        return fileExtensions;
+        return fileMasks;
     }
 
     public DBNResource getImportDir()
     {
         return importDir;
+    }
+
+    public DBSDataSourceContainer getDataSourceContainer()
+    {
+        return dataSourceContainer;
     }
 }

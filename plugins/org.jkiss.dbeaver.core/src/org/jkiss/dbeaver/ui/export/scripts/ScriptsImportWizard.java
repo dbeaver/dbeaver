@@ -4,21 +4,36 @@
 
 package org.jkiss.dbeaver.ui.export.scripts;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 public class ScriptsImportWizard extends Wizard implements IImportWizard {
 
@@ -43,17 +58,9 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
 	@Override
 	public boolean performFinish() {
         final ScriptsImportData importData = pageMain.getImportData();
+        final ScriptsImporter importer = new ScriptsImporter(importData);
         try {
-            RuntimeUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        importProjects(monitor, importData);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
+            RuntimeUtils.run(getContainer(), true, true, importer);
         }
         catch (InterruptedException ex) {
             return false;
@@ -66,13 +73,117 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
                 ex.getTargetException());
             return false;
         }
-        UIUtils.showMessageBox(getShell(), "Scripts import", "Script(s) successfully imported", SWT.ICON_INFORMATION);
-        return true;
+        if (importer.getImportedCount() <= 0) {
+            UIUtils.showMessageBox(getShell(), "Scripts import", "No scripts were found", SWT.ICON_WARNING);
+            return false;
+        } else {
+            UIUtils.showMessageBox(getShell(), "Scripts import", importer.getImportedCount() + " script(s) successfully imported", SWT.ICON_INFORMATION);
+            return true;
+        }
 	}
 
-    private void importProjects(DBRProgressMonitor monitor, ScriptsImportData importData) throws IOException, DBException
+    private int importScripts(DBRProgressMonitor monitor, ScriptsImportData importData) throws IOException, DBException, CoreException
     {
+        List<Pattern> masks = new ArrayList<Pattern>();
+        StringTokenizer st = new StringTokenizer(importData.getFileMasks(), ",; ");
+        while (st.hasMoreTokens()) {
+            String mask = st.nextToken().trim();
+            if (!CommonUtils.isEmpty(mask)) {
+                mask = mask.replace("*", ".*");
+                masks.add(Pattern.compile(mask));
+            }
+        }
+        List<File> filesToImport = new ArrayList<File>();
+        collectFiles(importData.getInputDir(), masks, filesToImport);
+        if (filesToImport.isEmpty()) {
+            return 0;
+        }
+        // Use null monitor for resource actions to not break our main monitor
+        final IProgressMonitor nullMonitor = new NullProgressMonitor();
+        // Import scripts
+        monitor.beginTask("Import scripts", filesToImport.size());
+        for (File file : filesToImport) {
+            // Create dirs
+            monitor.subTask(file.getName());
+            List<File> path = new ArrayList<File>();
+            for (File parent = file.getParentFile(); !parent.equals(importData.getInputDir()); parent = parent.getParentFile()) {
+                path.add(0, parent);
+            }
+            // Get target dir
+            IFolder targetDir = (IFolder)importData.getImportDir().getResource();
+            for (File folder : path) {
+                targetDir = targetDir.getFolder(folder.getName());
+                if (!targetDir.exists()) {
+                    targetDir.create(true, true, nullMonitor);
+                }
+            }
+            String targetName = file.getName();
+            if (!targetName.toLowerCase().endsWith("." + ScriptsHandlerImpl.SCRIPT_FILE_EXTENSION)) {
+                targetName += "." + ScriptsHandlerImpl.SCRIPT_FILE_EXTENSION;
+            }
+
+            final IFile targetFile = targetDir.getFile(targetName);
+            // Copy file
+            FileInputStream in = new FileInputStream(file);
+            try {
+                targetFile.create(in, true, nullMonitor);
+            } finally {
+                ContentUtils.close(in);
+            }
+            // Set datasource
+            if (importData.getDataSourceContainer() != null) {
+                SQLEditorInput.setScriptDataSource(targetFile, importData.getDataSourceContainer());
+            }
+            // Done
+            monitor.worked(1);
+        }
+        monitor.done();
+
+        return filesToImport.size();
+    }
+
+    private void collectFiles(File inputDir, List<Pattern> masks, List<File> filesToImport)
+    {
+        for (File file : inputDir.listFiles()) {
+            if (file.isDirectory()) {
+                collectFiles(file, masks, filesToImport);
+            } else {
+                boolean matched = false;
+                for (Pattern mask : masks) {
+                    if (mask.matcher(file.getName()).matches()) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (matched) {
+                    filesToImport.add(file);
+                }
+            }
+        }
     }
 
 
+    private class ScriptsImporter implements DBRRunnableWithProgress {
+        private final ScriptsImportData importData;
+        private int importedCount;
+
+        public ScriptsImporter(ScriptsImportData importData)
+        {
+            this.importData = importData;
+        }
+
+        public int getImportedCount()
+        {
+            return importedCount;
+        }
+
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        {
+            try {
+                importedCount = importScripts(monitor, importData);
+            } catch (Exception e) {
+                throw new InvocationTargetException(e);
+            }
+        }
+    }
 }

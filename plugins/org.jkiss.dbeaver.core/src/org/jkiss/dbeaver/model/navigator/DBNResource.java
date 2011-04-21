@@ -69,6 +69,9 @@ public class DBNResource extends DBNNode
     @Property(name = "Name", viewable = true, order = 1)
     public String getNodeName()
     {
+        if (resource == null) {
+            return null;
+        }
         if (resource instanceof IFile) {
             return resource.getFullPath().removeFileExtension().lastSegment();
         }
@@ -92,6 +95,9 @@ public class DBNResource extends DBNNode
             contentDescription.getContentType().
         }
 */
+        if (resource == null) {
+            return null;
+        }
         switch (resource.getType()) {
             case IResource.FOLDER: return DBIcon.TREE_FOLDER.getImage();
             case IResource.PROJECT: return DBIcon.PROJECT.getImage();

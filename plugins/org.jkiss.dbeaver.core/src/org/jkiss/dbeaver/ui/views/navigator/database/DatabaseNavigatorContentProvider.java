@@ -33,10 +33,12 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     private static final Object[] EMPTY_CHILDREN = new Object[0];
 
     private TreeViewer viewer;
+    private boolean showRoot;
 
-    DatabaseNavigatorContentProvider(TreeViewer viewer)
+    DatabaseNavigatorContentProvider(TreeViewer viewer, boolean showRoot)
     {
         this.viewer = viewer;
+        this.showRoot = showRoot;
     }
 
     public void inputChanged(Viewer v, Object oldInput, Object newInput)
@@ -49,7 +51,15 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
 
     public Object[] getElements(Object parent)
     {
-        return getChildren(parent);
+        if (parent instanceof DatabaseNavigatorContent) {
+            if (showRoot) {
+                return new Object[] { ((DatabaseNavigatorContent) parent).getRootNode() };
+            } else {
+                return getChildren(((DatabaseNavigatorContent) parent).getRootNode());
+            }
+        } else {
+            return getChildren(parent);
+        }
     }
 
     public Object getParent(Object child)
@@ -59,6 +69,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         } else if (child instanceof TreeLoadNode) {
             return ((TreeLoadNode)child).getParent();
         } else {
+            log.warn("Unknown node type: " + child);
             return null;
         }
     }

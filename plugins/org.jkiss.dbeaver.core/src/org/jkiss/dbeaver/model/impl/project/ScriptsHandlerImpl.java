@@ -33,6 +33,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     private static final String SCRIPTS_DIR = "Scripts";
 
     public static final String RES_TYPE_SCRIPTS = "scripts"; //$NON-NLS-1$
+    public static final String SCRIPT_FILE_EXTENSION = "sql";
 
     public static IFolder getScriptsFolder(IProject project)
     {
@@ -59,7 +60,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         }
 
         // Make new script file
-        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", "sql");
+        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
         tempFile.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_SCRIPTS);
 
