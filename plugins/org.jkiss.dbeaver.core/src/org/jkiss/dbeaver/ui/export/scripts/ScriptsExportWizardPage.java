@@ -48,7 +48,7 @@ class ScriptsExportWizardPage extends WizardPage {
 
     static final Log log = LogFactory.getLog(ScriptsExportWizardPage.class);
 
-    private static final String PREF_SCRIPTS_EXPORT_OUT_DIR = "export.scripts.out.dir";
+    static final String PREF_SCRIPTS_EXPORT_OUT_DIR = "export.scripts.out.dir";
 
     private Button overwriteCheck;
     private Text directoryText;
@@ -98,26 +98,7 @@ class ScriptsExportWizardPage extends WizardPage {
         placeholder.setLayout(new GridLayout(1, false));
 
         // Project list
-        final IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        final IFolder scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(activeProject);
-        final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(activeProject);
-        DBNNode scriptsNode = null;
-        try {
-            for (DBNNode projectFolder : projectNode.getChildren(VoidProgressMonitor.INSTANCE)) {
-                if (projectFolder instanceof DBNResource && ((DBNResource) projectFolder).getResource().equals(scriptsFolder)) {
-                    scriptsNode = projectFolder;
-                    break;
-                }
-            }
-        } catch (DBException e) {
-            log.error(e);
-        }
-        if (scriptsNode == null) {
-            log.warn("Can't find scripts navigator node");
-            scriptsNode = DBeaverCore.getInstance().getNavigatorModel().getRoot();
-        }
-
-        scriptsNavigator = new DatabaseNavigatorTree(placeholder, scriptsNode, SWT.BORDER | SWT.CHECK);
+        scriptsNavigator = new DatabaseNavigatorTree(placeholder, ScriptsExportUtils.getScriptsNode(), SWT.BORDER | SWT.CHECK);
         GridData gd = new GridData(GridData.FILL_BOTH);
         scriptsNavigator.setLayoutData(gd);
         CheckboxTreeViewer viewer = (CheckboxTreeViewer) scriptsNavigator.getViewer();

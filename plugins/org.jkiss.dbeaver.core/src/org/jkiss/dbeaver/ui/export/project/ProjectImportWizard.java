@@ -83,7 +83,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             UIUtils.showErrorDialog(
                 getShell(),
                 "Import error",
-                "Cannot export projects",
+                "Cannot import projects",
                 ex.getTargetException());
             return false;
         }
