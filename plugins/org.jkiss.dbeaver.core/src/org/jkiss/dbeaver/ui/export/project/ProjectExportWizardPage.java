@@ -32,6 +32,8 @@ import java.util.List;
 
 class ProjectExportWizardPage extends WizardPage {
 
+    private static final String PREF_PROJECTS_EXPORT_OUT_DIR = "export.projects.out.dir";
+
     private Text directoryText;
     private Table projectsTable;
     private Button exportDriverCheck;
@@ -66,6 +68,11 @@ class ProjectExportWizardPage extends WizardPage {
 
     public void createControl(Composite parent)
     {
+        String outDir = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PREF_PROJECTS_EXPORT_OUT_DIR);
+        if (CommonUtils.isEmpty(outDir)) {
+            outDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
+        }
+
         Set<IProject> projectList = new LinkedHashSet<IProject>();
         final ISelection selection = DBeaverCore.getInstance().getWorkbench().getActiveWorkbenchWindow().getActivePage().getSelection();
         if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
@@ -125,7 +132,7 @@ class ProjectExportWizardPage extends WizardPage {
         {
             UIUtils.createControlLabel(generalSettings, "Directory");
             directoryText = new Text(generalSettings, SWT.BORDER);
-            directoryText.setText(RuntimeUtils.getUserHomeDir().getAbsolutePath());
+            directoryText.setText(outDir);
             directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             directoryText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e)
@@ -175,9 +182,11 @@ class ProjectExportWizardPage extends WizardPage {
 
     ProjectExportData getExportData()
     {
+        final String outputDir = directoryText.getText();
+        DBeaverCore.getInstance().getGlobalPreferenceStore().setValue(PREF_PROJECTS_EXPORT_OUT_DIR, outputDir);
         return new ProjectExportData(
             getProjectsToExport(),
-            new File(directoryText.getText()),
+            new File(outputDir),
             exportDriverCheck.getSelection(),
             fileNameText.getText());
     }
