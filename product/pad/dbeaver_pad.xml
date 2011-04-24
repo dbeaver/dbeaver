@@ -121,7 +121,7 @@ This software is provided "as is" without express or implied warranty.</EULA>
   </Permissions>
   <Program_Descriptions>
     <English>
-      <Keywords>sql,database manager,database client,mysql,postgresql,mssql,db2,oracle,sybase,jbase,derby,odbc,jdbc</Keywords>
+      <Keywords>sql,database manager,database client,mysql,postgresql,mssql,db2,oracle,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc</Keywords>
       <Char_Desc_45>Universal Database Manager and SQL Client</Char_Desc_45>
       <Char_Desc_80>Free Universal Database Manager and SQL Client</Char_Desc_80>
       <Char_Desc_250>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase and any database which has JDBC driver.</Char_Desc_250>
