@@ -51,9 +51,9 @@
   </NewsFeed>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.1.0</Program_Version>
+    <Program_Version>1.1.3</Program_Version>
     <Program_Release_Month>04</Program_Release_Month>
-    <Program_Release_Day>11</Program_Release_Day>
+    <Program_Release_Day>25</Program_Release_Day>
     <Program_Release_Year>2011</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -62,21 +62,19 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-- Major redesign of object editor/viewer
-- Context search in editors (in object lists and in ERD)
-- Show row count for tables (configurable, may be disabled to prevent database load)
-- Display child objects in item lists (for complex entities e.g. index/constraint columns)
-- ERD palette redesign (show structure of diagram content)
-- Filtering of database tree depending on element properties (e.g. show only columns for views)
-- Support of running background tasks view/cancel
-- Many minor fixes
+- Support of IBM Informix
+- Support of SAP/MAX DB
+- Support of Cache database
+- Driver management was refactored
+- SQL scripts import/export
+- SQL syntax highlighting/scripts parse fixes
 	</Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
     <File_Info>
-      <File_Size_Bytes>24206914</File_Size_Bytes>
-      <File_Size_K>23639</File_Size_K>
-      <File_Size_MB>23.08</File_Size_MB>
+      <File_Size_Bytes>21354771</File_Size_Bytes>
+      <File_Size_K>20854</File_Size_K>
+      <File_Size_MB>20</File_Size_MB>
       <Filename_Versioned></Filename_Versioned>
       <Filename_Previous></Filename_Previous>
       <Filename_Generic></Filename_Generic>
@@ -110,7 +108,7 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.0.5-setup.exe</Primary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.1.3-setup.exe</Primary_Download_URL>
       <Secondary_Download_URL></Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
