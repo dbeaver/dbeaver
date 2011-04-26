@@ -26,7 +26,7 @@
                             <items label="Table" path="table" property="tables">
                                 <icon iconId="#table" default="true"/>
                                 <icon iconId="#view" if="object.view"/>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSTableColumn" label="Columns" iconId="#columns" description="Table columns">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="Columns" iconId="#columns" description="Table columns">
                                     <items label="Column" path="column" property="columns" iconId="#column">
                                     </items>
                                 </folder>
@@ -331,6 +331,12 @@
             class="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"
             objectType="org.jkiss.dbeaver.ext.generic.model.GenericTable"
             label="Table manager">
+        </manager>
+        <manager
+            id="org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager"
+            class="org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager"
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"
+            label="Table column manager">
         </manager>
     </extension>
 

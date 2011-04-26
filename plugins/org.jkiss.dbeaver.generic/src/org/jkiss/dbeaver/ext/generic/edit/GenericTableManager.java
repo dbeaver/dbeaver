@@ -6,8 +6,8 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
     protected Collection<IDatabasePersistAction> makePersistActions(PropertiesChangeCommand command)
     {
         GenericTable table = command.getObject();
-        final Object tableName = command.getProperty("name");
+        final Object tableName = command.getProperty(DBConstants.PROP_ID_NAME);
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
         boolean newObject = !table.isPersisted();
         if (newObject) {

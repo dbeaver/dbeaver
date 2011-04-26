@@ -22,7 +22,6 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     extends JDBCStructEditor<OBJECT_TYPE>
     implements DBEObjectMaker<OBJECT_TYPE>
 {
-    //private final Map<IPropertyDescriptor, TablePropertyHandler> handlerMap = new IdentityHashMap<IPropertyDescriptor, TablePropertyHandler>();
 
     public long getMakerOptions()
     {

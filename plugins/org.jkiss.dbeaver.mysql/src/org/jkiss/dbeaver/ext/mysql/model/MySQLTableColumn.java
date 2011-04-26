@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 /**
  * MySQLTableColumn
  */
-public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
+public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBSTableColumn
 {
     static final Log log = LogFactory.getLog(MySQLTableColumn.class);
 
@@ -45,7 +45,6 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         MUL
     }
 
-    private MySQLTable table;
     private String defaultValue;
     private long charLength;
     private boolean autoIncrement;
@@ -53,12 +52,17 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
 
     private List<String> enumValues;
 
+    public MySQLTableColumn(MySQLTable table)
+    {
+        super(table, false);
+    }
+
     public MySQLTableColumn(
         MySQLTable table,
         ResultSet dbResult)
         throws DBException
     {
-        this.table = table;
+        super(table, true);
         loadInfo(dbResult);
     }
 
@@ -115,13 +119,7 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
 
     public MySQLDataSource getDataSource()
     {
-        return table.getDataSource();
-    }
-
-    //@Property(name = "Table", viewable = true, order = 90)
-    public MySQLTable getTable()
-    {
-        return table;
+        return getTable().getDataSource();
     }
 
     public String getDefaultValue()

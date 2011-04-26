@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
@@ -12,13 +12,17 @@ import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 /**
  * GenericTable
  */
-public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
+public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements DBSTableColumn
 {
-    private GenericTable table;
     private String defaultValue;
     private int sourceType;
     private long charLength;
     private boolean autoIncrement;
+
+    public GenericTableColumn(GenericTable table)
+    {
+        super(table, false);
+    }
 
     public GenericTableColumn(
         GenericTable table,
@@ -37,7 +41,9 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
         String defaultValue,
         boolean autoIncrement)
     {
-        super(columnName,
+        super(table,
+            true,
+            columnName,
             typeName,
             valueType,
             ordinalPosition,
@@ -47,7 +53,6 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
             precision,
             nullable,
             remarks);
-        this.table = table;
         this.sourceType = sourceType;
         this.defaultValue = defaultValue;
         this.charLength = charLength;
@@ -61,12 +66,7 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
 
     public GenericDataSource getDataSource()
     {
-        return table.getDataSource();
-    }
-
-    public GenericTable getTable()
-    {
-        return table;
+        return getTable().getDataSource();
     }
 
     public String getDefaultValue()
@@ -93,6 +93,6 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
     @Override
     public String toString()
     {
-        return table.getFullQualifiedName() + "." + getName();
+        return getTable().getFullQualifiedName() + "." + getName();
     }
 }

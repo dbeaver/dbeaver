@@ -42,7 +42,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         this.persisted = persisted;
     }
 
-    protected JDBCTable(CONTAINER container, String tableName, String tableType, boolean persisted)
+    protected JDBCTable(CONTAINER container, boolean persisted, String tableName, String tableType)
     {
         super(container, tableName, tableType);
         this.persisted = persisted;
