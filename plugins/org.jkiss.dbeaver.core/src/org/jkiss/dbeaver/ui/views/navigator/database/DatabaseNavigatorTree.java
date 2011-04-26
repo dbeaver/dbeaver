@@ -121,7 +121,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                         {
                             if (!viewer.getControl().isDisposed()) {
                                 if (!parentNode.isDisposed()) {
-                                    viewer.refresh(parentNode);
+                                    viewer.refresh(getViewerObject(parentNode));
                                 }
                             }
                         }
@@ -137,18 +137,18 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                                 switch (event.getNodeChange()) {
                                     case LOAD:
                                         viewer.expandToLevel(event.getNode(), 1);
-                                        viewer.refresh(event.getNode());
+                                        viewer.refresh(getViewerObject(event.getNode()));
                                         break;
                                     case UNLOAD:
                                         viewer.collapseToLevel(event.getNode(), -1);
-                                        viewer.refresh(event.getNode());
+                                        viewer.refresh(getViewerObject(event.getNode()));
                                         break;
                                     case REFRESH:
-                                        viewer.update(event.getNode(), null);
+                                        viewer.update(getViewerObject(event.getNode()), null);
                                         break;
                                     case LOCK:
                                     case UNLOCK:
-                                        viewer.refresh(event.getNode());
+                                        viewer.refresh(getViewerObject(event.getNode()));
                                         break;
                                 }
                             } else {
@@ -160,6 +160,15 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 break;
             default:
                 break;
+        }
+    }
+
+    Object getViewerObject(DBNNode node)
+    {
+        if (((DatabaseNavigatorContent) viewer.getInput()).getRootNode() == node) {
+            return viewer.getInput();
+        } else {
+            return node;
         }
     }
 
