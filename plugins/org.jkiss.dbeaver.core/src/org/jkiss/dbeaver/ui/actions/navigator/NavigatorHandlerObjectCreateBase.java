@@ -111,7 +111,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                             workbenchWindow.getActivePage().openEditor(
                                 editorInput,
                                 EntityEditor.class.getName());
-                        } catch (PartInitException e) {
+                        } catch (Exception e) {
                             UIUtils.showErrorDialog(workbenchWindow.getShell(), "Open editor", "Can't open editor for new object", e);
                             return false;
                         }

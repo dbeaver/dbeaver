@@ -161,6 +161,9 @@ public final class DBUtils {
      */
     public static boolean isValidObjectName(String name)
     {
+        if (name == null) {
+            return false;
+        }
         boolean validName = false;
         for (int i = 0; i < name.length(); i++) {
             if (Character.isLetter(name.charAt(i))) {

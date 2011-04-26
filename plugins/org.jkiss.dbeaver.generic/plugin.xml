@@ -325,13 +325,13 @@
         </datasource>
     </extension>
 
-    <!--extension point="org.jkiss.dbeaver.databaseEditor">
+    <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
             id="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"
             class="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"
             objectType="org.jkiss.dbeaver.ext.generic.model.GenericTable"
             label="Table manager">
         </manager>
-    </extension-->
+    </extension>
 
 </plugin>

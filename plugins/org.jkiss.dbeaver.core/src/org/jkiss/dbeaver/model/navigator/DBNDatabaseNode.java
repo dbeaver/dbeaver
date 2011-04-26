@@ -84,6 +84,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public String getNodePathName()
     {
+        if (!CommonUtils.isEmpty(nodeName)) {
+            return nodeName;
+        }
         if (getObject() instanceof DBSEntityQualified) {
             return ((DBSEntityQualified)getObject()).getFullQualifiedName();
         } else {
