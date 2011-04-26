@@ -476,25 +476,27 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
     private void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo != null) {
-            if (hostText != null && hostText.isVisible()) {
+            final Set<String> properties = metaURL == null ? Collections.<String>emptySet() : metaURL.getAvailableProperties();
+
+            if (hostText != null && properties.contains(PROP_HOST)) {
                 connectionInfo.setHostName(hostText.getText());
             }
-            if (portText != null && portText.isVisible()) {
+            if (portText != null && properties.contains(PROP_PORT)) {
                 connectionInfo.setHostPort(CommonUtils.toInt(portText.getText()));
             }
-            if (serverText != null && serverText.isVisible()) {
+            if (serverText != null && properties.contains(PROP_SERVER)) {
                 connectionInfo.setServerName(serverText.getText());
             }
-            if (dbText != null && dbText.isVisible()) {
+            if (dbText != null && properties.contains(PROP_DATABASE)) {
                 connectionInfo.setDatabaseName(dbText.getText());
             }
-            if (pathText != null && pathText.isVisible()) {
+            if (pathText != null && (properties.contains(PROP_FOLDER) || properties.contains(PROP_FILE))) {
                 connectionInfo.setDatabaseName(pathText.getText());
             }
-            if (userNameText != null && userNameText.isVisible()) {
+            if (userNameText != null) {
                 connectionInfo.setUserName(userNameText.getText());
             }
-            if (passwordText != null && passwordText.isVisible()) {
+            if (passwordText != null) {
                 connectionInfo.setUserPassword(passwordText.getText());
             }
             if (urlText != null) {

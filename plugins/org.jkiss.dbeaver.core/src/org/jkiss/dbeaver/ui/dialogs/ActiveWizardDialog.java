@@ -4,6 +4,10 @@
 
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.IPageChangingListener;
+import org.eclipse.jface.dialogs.PageChangedEvent;
+import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -33,6 +37,18 @@ public class ActiveWizardDialog extends WizardDialog
             }
             ((IWorkbenchWizard)wizard).init(window.getWorkbench(), selection);
         }
+        addPageChangingListener(new IPageChangingListener() {
+            public void handlePageChanging(PageChangingEvent event)
+            {
+                if (event.getCurrentPage() instanceof ActiveWizardPage) {
+                    ((ActiveWizardPage) event.getCurrentPage()).deactivatePage();
+                }
+//                if (event.getTargetPage() instanceof ActiveWizardPage) {
+//                    ((ActiveWizardPage) event.getTargetPage()).activatePage();
+//                }
+            }
+        });
+
 
     }
 
