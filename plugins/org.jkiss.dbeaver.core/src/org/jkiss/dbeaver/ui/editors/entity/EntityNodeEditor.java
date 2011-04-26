@@ -73,7 +73,7 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         itemControl.createProgressPanel();
 
         // Hook context menu
-        ViewUtils.addContextMenu(this, itemControl.getNavigatorViewer());
+        ViewUtils.addContextMenu(this, itemControl.getSelectionProvider(), itemControl);
         // Add drag and drop support
         ViewUtils.addDragAndDropSupport(itemControl.getNavigatorViewer());
         //ISelectionProvider selectionProvider = itemControl.getSelectionProvider();

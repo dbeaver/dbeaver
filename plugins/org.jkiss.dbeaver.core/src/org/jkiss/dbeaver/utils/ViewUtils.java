@@ -11,11 +11,13 @@ import org.eclipse.core.commands.Command;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TreeItem;
@@ -81,7 +83,7 @@ public class ViewUtils
         return null;
     }
 
-    public static DBNNode getSelectedNode(Viewer viewer)
+    public static DBNNode getSelectedNode(ISelectionProvider viewer)
     {
         if (viewer == null) {
             return null;
@@ -154,12 +156,12 @@ public class ViewUtils
             false));
     }
 
-    public static void addContextMenu(final IWorkbenchPart workbenchPart, final Viewer viewer)
+    public static void addContextMenu(final IWorkbenchPart workbenchPart, final ISelectionProvider selectionProvider, final Control control)
     {
-        addContextMenu(workbenchPart, viewer, null);
+        addContextMenu(workbenchPart, selectionProvider, control, null);
     }
 
-    public static void addContextMenu(final IWorkbenchPart workbenchPart, final Viewer viewer, final IMenuListener menuListener)
+    public static void addContextMenu(final IWorkbenchPart workbenchPart, final ISelectionProvider selectionProvider, final Control control, final IMenuListener menuListener)
     {
         if (workbenchPart == null) {
             // No menu for such views (e.g. control embedded in some dialog)
@@ -167,7 +169,7 @@ public class ViewUtils
         }
 
         MenuManager menuMgr = new MenuManager();
-        Menu menu = menuMgr.createContextMenu(viewer.getControl());
+        Menu menu = menuMgr.createContextMenu(control);
         menu.addMenuListener(new MenuListener()
         {
             public void menuHidden(MenuEvent e)
@@ -177,7 +179,7 @@ public class ViewUtils
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
-                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                IStructuredSelection selection = (IStructuredSelection) selectionProvider.getSelection();
                 DBNNode node = ViewUtils.getSelectedNode(selection);
                 boolean multipleSelection = selection.size() > 1;
                 if (node != null && !node.isLocked()) {
@@ -204,7 +206,7 @@ public class ViewUtils
                                     item.setText(actionName + " " + node.getNodeType());
                                 }
                             } else if (ICommandIds.CMD_OBJECT_CREATE.equals(contribId)) {
-                                String objectName = "";
+                                String objectName;
                                 if (node instanceof DBNContainer) {
                                     objectName = ((DBNContainer)node).getItemsLabel();
                                 } else {
@@ -227,9 +229,9 @@ public class ViewUtils
             public void menuAboutToShow(final IMenuManager manager)
             {
                 // Fill context menu
-                final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+                final IStructuredSelection selection = (IStructuredSelection)selectionProvider.getSelection();
 
-                final DBNNode selectedNode = ViewUtils.getSelectedNode(viewer);
+                final DBNNode selectedNode = ViewUtils.getSelectedNode(selectionProvider);
                 if (selectedNode == null || selectedNode.isLocked()) {
                     //manager.
                     return;
@@ -282,8 +284,8 @@ public class ViewUtils
         }
 
         menuMgr.setRemoveAllWhenShown(true);
-        viewer.getControl().setMenu(menu);
-        workbenchPart.getSite().registerContextMenu(menuMgr, viewer);
+        control.setMenu(menu);
+        workbenchPart.getSite().registerContextMenu(menuMgr, selectionProvider);
     }
 
     public static void addDragAndDropSupport(final Viewer viewer)

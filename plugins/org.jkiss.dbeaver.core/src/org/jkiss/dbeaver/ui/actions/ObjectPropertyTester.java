@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
@@ -44,12 +43,6 @@ public class ObjectPropertyTester extends PropertyTester
             return false;
         }
         DBNNode node = (DBNNode)receiver;
-
-        // Check for persisted object
-        // We do not support create/delete/open of child items for non-persisted objects
-        if (!node.isPersisted()) {
-            return false;
-        }
 
         if (property.equals(PROP_CAN_CREATE) || property.equals(PROP_CAN_PASTE)) {
             Class objectType = null;

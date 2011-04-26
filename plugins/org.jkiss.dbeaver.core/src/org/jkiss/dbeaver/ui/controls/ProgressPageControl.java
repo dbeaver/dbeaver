@@ -98,7 +98,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         this.curInfo = info;
         if (ownerPageControl != null) {
             ownerPageControl.setInfo(info);
-        } else if (!listInfoLabel.isDisposed()) {
+        } else if (listInfoLabel != null && !listInfoLabel.isDisposed()) {
             listInfoLabel.setText(info);
         }
     }

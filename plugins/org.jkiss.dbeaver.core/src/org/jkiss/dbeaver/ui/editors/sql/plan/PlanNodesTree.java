@@ -116,7 +116,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
 
     private void createContextMenu()
     {
-        Control control = getItemsViewer().getControl();
+        Control control = getControl();
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
         menuMgr.addMenuListener(new IMenuListener() {
@@ -135,7 +135,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
                         }
                     }
                 };
-                copyAction.setEnabled(!getItemsViewer().getSelection().isEmpty());
+                copyAction.setEnabled(!getSelectionProvider().getSelection().isEmpty());
                 //copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 
                 manager.add(copyAction);
@@ -145,7 +145,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
         });
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
-        workbenchPart.getSite().registerContextMenu(menuMgr, getItemsViewer());
+        workbenchPart.getSite().registerContextMenu(menuMgr, getSelectionProvider());
     }
 
     public void init(DBCQueryPlanner planner, String query)

@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -313,7 +312,6 @@ public class SearchObjectsView extends ViewPart {
             gd.heightHint = 500;
             itemList.setLayoutData(gd);
             getSite().setSelectionProvider(itemList.getSelectionProvider());
-            ViewUtils.addDragAndDropSupport(itemList.getItemsViewer());
             //itemList.addFocusListener(new ItemsFocusListener());
         }
 

@@ -84,7 +84,10 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
             itemControl.loadData();
         }
         prevSelectionProvider = editor.getSite().getSelectionProvider();
-        editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
+        // Update selection provider and selection
+        final ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
+        editor.getSite().setSelectionProvider(selectionProvider);
+        selectionProvider.setSelection(selectionProvider.getSelection());
         itemControl.activate(true);
     }
 
@@ -120,7 +123,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
         }
 
         //ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
-        editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
+        //editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
 
         parent.layout();
     }

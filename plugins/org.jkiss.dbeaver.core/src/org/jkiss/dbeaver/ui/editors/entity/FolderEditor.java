@@ -29,10 +29,6 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         itemControl = new ItemListControl(parent, SWT.NONE, this, getEditorInput().getTreeNode(), null);
         itemControl.createProgressPanel();
         itemControl.loadData();
-        // Hook context menu
-        ViewUtils.addContextMenu(this, itemControl.getNavigatorViewer());
-        // Add drag and drop support
-        ViewUtils.addDragAndDropSupport(itemControl.getNavigatorViewer());
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
     }
 

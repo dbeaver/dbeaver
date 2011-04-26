@@ -102,7 +102,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         });
 
         // Hook context menu
-        ViewUtils.addContextMenu(this, navigatorTree.getViewer());
+        ViewUtils.addContextMenu(this, navigatorTree.getViewer(), navigatorTree.getViewer().getControl());
         // Add drag and drop support
         ViewUtils.addDragAndDropSupport(navigatorTree.getViewer());
 

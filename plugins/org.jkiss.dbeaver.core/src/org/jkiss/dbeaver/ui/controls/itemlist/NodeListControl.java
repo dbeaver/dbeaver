@@ -7,10 +7,7 @@ package org.jkiss.dbeaver.ui.controls.itemlist;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -52,23 +49,25 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
     private IWorkbenchPart workbenchPart;
-    private DBNNode node;
+    private DBNNode rootNode;
     private DBXTreeNode nodeMeta;
+    private NodeSelectionProvider selectionProvider;
 
     public NodeListControl(
         Composite parent,
         int style,
         final IWorkbenchPart workbenchPart,
-        DBNNode node,
+        DBNNode rootNode,
         DBXTreeNode nodeMeta)
     {
-        super(parent, style, createContentProvider(node, nodeMeta));
+        super(parent, style, createContentProvider(rootNode, nodeMeta));
         this.workbenchPart = workbenchPart;
-        this.node = node;
+        this.rootNode = rootNode;
         this.nodeMeta = nodeMeta;
+        this.selectionProvider = new NodeSelectionProvider(super.getSelectionProvider());
 
         // Add context menu
-        ViewUtils.addContextMenu(workbenchPart, getItemsViewer(), this);
+        ViewUtils.addContextMenu(workbenchPart, getSelectionProvider(), getItemsViewer().getControl(), this);
         // Add drag and drop support
         ViewUtils.addDragAndDropSupport(getItemsViewer());
 
@@ -85,6 +84,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         });
 
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
+
+        //getSelectionProvider().setSelection(new StructuredSelection(rootNode));
     }
 
     public IWorkbenchPart getWorkbenchPart()
@@ -94,8 +95,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
     public DBPDataSource getDataSource()
     {
-        if (node instanceof DBNDatabaseNode) {
-            return ((DBNDatabaseNode) node).getObject().getDataSource();
+        if (rootNode instanceof DBNDatabaseNode) {
+            return ((DBNDatabaseNode) rootNode).getObject().getDataSource();
         }
         return null;
     }
@@ -103,8 +104,14 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     public void dispose()
     {
+        selectionProvider.dispose();
         DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
         super.dispose();
+    }
+
+    public ISelectionProvider getSelectionProvider()
+    {
+        return selectionProvider;
     }
 
     private static IContentProvider createContentProvider(DBNNode node, DBXTreeNode metaNode)
@@ -202,7 +209,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     public DBNNode getRootNode() {
-        return node;
+        return rootNode;
     }
 
     public DBXTreeNode getNodeMeta()
@@ -226,8 +233,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     protected boolean isHyperlink(Object cellValue)
     {
         Object ownerObject = null;
-        if (node instanceof DBNDatabaseNode) {
-            ownerObject = ((DBNDatabaseNode)node).getValueObject();
+        if (rootNode instanceof DBNDatabaseNode) {
+            ownerObject = ((DBNDatabaseNode) rootNode).getValueObject();
         }
         return cellValue instanceof DBSObject && cellValue != ownerObject;
     }
@@ -328,4 +335,65 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
 
+    private class NodeSelectionProvider implements ISelectionProvider, ISelectionChangedListener {
+
+        private final ISelectionProvider original;
+        private final List<ISelectionChangedListener> listeners = new ArrayList<ISelectionChangedListener>();
+        private final StructuredSelection defaultSelection;
+
+        public NodeSelectionProvider(ISelectionProvider original)
+        {
+            this.original = original;
+            this.defaultSelection = new StructuredSelection(rootNode);
+            this.original.addSelectionChangedListener(this);
+        }
+
+        public void addSelectionChangedListener(ISelectionChangedListener listener)
+        {
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
+        }
+
+        public ISelection getSelection()
+        {
+            final ISelection selection = original.getSelection();
+            if (selection == null || selection.isEmpty()) {
+                return defaultSelection;
+            } else {
+                return selection;
+            }
+        }
+
+        public void removeSelectionChangedListener(ISelectionChangedListener listener)
+        {
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
+        }
+
+        public void setSelection(ISelection selection)
+        {
+            if (selection == defaultSelection) {
+                original.setSelection(new StructuredSelection());
+            } else {
+                original.setSelection(selection);
+            }
+        }
+
+        public void selectionChanged(SelectionChangedEvent event)
+        {
+            synchronized (listeners) {
+                event = new SelectionChangedEvent(this, getSelection());
+                for (ISelectionChangedListener listener : listeners) {
+                    listener.selectionChanged(event);
+                }
+            }
+        }
+
+        void dispose()
+        {
+            this.original.removeSelectionChangedListener(this);
+        }
+    }
 }

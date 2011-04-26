@@ -84,7 +84,7 @@ public class SelectObjectDialog<T> extends Dialog {
         gd.heightHint = 300;
         gd.minimumWidth = 300;
         objectList.setLayoutData(gd);
-        objectList.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+        objectList.getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event)
             {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
