@@ -66,6 +66,12 @@ public class DBNDatabaseItem extends DBNDatabaseNode
         return object;
     }
 
+    @Override
+    public boolean isPersisted()
+    {
+        return object != null && object.isPersisted();
+    }
+
     public String getDefaultCommandId()
     {
         return ICommandIds.CMD_OBJECT_OPEN;

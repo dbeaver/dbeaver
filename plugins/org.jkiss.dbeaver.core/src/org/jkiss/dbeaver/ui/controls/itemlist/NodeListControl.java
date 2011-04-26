@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -45,7 +47,7 @@ import java.util.Set;
 /**
  * NodeListControl
  */
-public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceProvider, INavigatorModelView, IDBNListener
+public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceProvider, INavigatorModelView, IDBNListener, IMenuListener
 {
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
@@ -65,7 +67,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         this.node = node;
         this.nodeMeta = nodeMeta;
 
-        ViewUtils.addContextMenu(workbenchPart, getItemsViewer());
+        // Add context menu
+        ViewUtils.addContextMenu(workbenchPart, getItemsViewer(), this);
+        // Add drag and drop support
+        ViewUtils.addDragAndDropSupport(getItemsViewer());
 
         setDoubleClickHandler(new IDoubleClickListener() {
             public void doubleClick(DoubleClickEvent event)
@@ -265,6 +270,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 });
             }
         }
+    }
+
+    public void menuAboutToShow(IMenuManager manager)
+    {
+        // Hook context menu
     }
 
     private class NodeListPropertySource extends PropertySourceEditable {

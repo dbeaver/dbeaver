@@ -102,7 +102,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
 
     public boolean isPersisted()
     {
-        return true;
+        return getParentNode().isPersisted();
     }
 
     public String getDefaultCommandId()

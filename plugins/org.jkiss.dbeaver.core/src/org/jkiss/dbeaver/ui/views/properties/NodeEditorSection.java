@@ -119,10 +119,6 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
             itemControl.createProgressPanel();
         }
 
-        // Hook context menu
-        ViewUtils.addContextMenu(editor, itemControl.getNavigatorViewer());
-        // Add drag and drop support
-        ViewUtils.addDragAndDropSupport(itemControl.getNavigatorViewer());
         //ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
         editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
 

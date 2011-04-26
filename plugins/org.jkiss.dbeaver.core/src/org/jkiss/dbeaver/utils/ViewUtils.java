@@ -156,6 +156,11 @@ public class ViewUtils
 
     public static void addContextMenu(final IWorkbenchPart workbenchPart, final Viewer viewer)
     {
+        addContextMenu(workbenchPart, viewer, null);
+    }
+
+    public static void addContextMenu(final IWorkbenchPart workbenchPart, final Viewer viewer, final IMenuListener menuListener)
+    {
         if (workbenchPart == null) {
             // No menu for such views (e.g. control embedded in some dialog)
             return;
@@ -218,8 +223,7 @@ public class ViewUtils
                 }
             }
         });
-        menuMgr.addMenuListener(new IMenuListener()
-        {
+        menuMgr.addMenuListener(new IMenuListener() {
             public void menuAboutToShow(final IMenuManager manager)
             {
                 // Fill context menu
@@ -234,7 +238,7 @@ public class ViewUtils
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Add "Set active object" menu
-                if (selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
+                if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
                     final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
                         DBSEntitySelector.class, ((DBNDatabaseNode)selectedNode).getObject());
                     if (activeContainer != null && activeContainer.supportsEntitySelect()) {
@@ -261,18 +265,22 @@ public class ViewUtils
                 manager.add(new GroupMarker(MB_ADDITIONS_END));
 
                 // Add properties button
-                if (!selection.isEmpty()) {
-                    if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
-                        //propertyDialogAction.selectionChanged(selection);
-                        //manager.add(propertyDialogAction);
-                        manager.add(makeCommandContribution(workbenchPart.getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES));
-                    }
+                if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
+                    //propertyDialogAction.selectionChanged(selection);
+                    //manager.add(propertyDialogAction);
+                    manager.add(makeCommandContribution(workbenchPart.getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES));
                 }
 
-                // Add refresh button
-                manager.add(makeCommandContribution(workbenchPart.getSite(), IWorkbenchCommandConstants.FILE_REFRESH));
+                if (selectedNode.isPersisted()) {
+                    // Add refresh button
+                    manager.add(makeCommandContribution(workbenchPart.getSite(), IWorkbenchCommandConstants.FILE_REFRESH));
+                }
             }
         });
+        if (menuListener != null) {
+            menuMgr.addMenuListener(menuListener);
+        }
+
         menuMgr.setRemoveAllWhenShown(true);
         viewer.getControl().setMenu(menu);
         workbenchPart.getSite().registerContextMenu(menuMgr, viewer);

@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -18,7 +19,7 @@ import java.util.List;
 /**
  * DBNNode
  */
-public abstract class DBNNode implements DBPNamedObject
+public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
 {
     static final Log log = LogFactory.getLog(DBNNode.class);
 
@@ -61,6 +62,11 @@ public abstract class DBNNode implements DBPNamedObject
     public boolean isLocked()
     {
         return getParentNode() != null && getParentNode().isLocked();
+    }
+
+    public boolean isPersisted()
+    {
+        return true;
     }
 
     public boolean isManagable()

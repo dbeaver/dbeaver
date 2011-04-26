@@ -44,13 +44,11 @@ public class ObjectPropertyTester extends PropertyTester
             return false;
         }
         DBNNode node = (DBNNode)receiver;
+
         // Check for persisted object
         // We do not support create/delete/open of child items for non-persisted objects
-        if (node instanceof DBNDatabaseNode) {
-            final Object object = ((DBNDatabaseNode) node).getValueObject();
-            if (!(object instanceof DBSObject) || !((DBSObject)object).isPersisted()) {
-                return false;
-            }
+        if (!node.isPersisted()) {
+            return false;
         }
 
         if (property.equals(PROP_CAN_CREATE) || property.equals(PROP_CAN_PASTE)) {
