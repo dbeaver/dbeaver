@@ -29,6 +29,7 @@ public class ObjectPropertyTester extends PropertyTester
     //static final Log log = LogFactory.getLog(ObjectPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.object";
+    public static final String PROP_CAN_OPEN = "canOpen";
     public static final String PROP_CAN_CREATE = "canCreate";
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_DELETE = "canDelete";
@@ -44,7 +45,9 @@ public class ObjectPropertyTester extends PropertyTester
         }
         DBNNode node = (DBNNode)receiver;
 
-        if (property.equals(PROP_CAN_CREATE) || property.equals(PROP_CAN_PASTE)) {
+        if (property.equals(PROP_CAN_OPEN)) {
+            return node.isPersisted();
+        } else if (property.equals(PROP_CAN_CREATE) || property.equals(PROP_CAN_PASTE)) {
             Class objectType = null;
             if (node instanceof DBNContainer) {
                 // Try to detect child type
