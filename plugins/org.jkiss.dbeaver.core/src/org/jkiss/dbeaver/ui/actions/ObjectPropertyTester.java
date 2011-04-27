@@ -83,7 +83,6 @@ public class ObjectPropertyTester extends PropertyTester
                 return
                     node.getParentNode() instanceof DBNContainer &&
                     object != null &&
-                    object.isPersisted() &&
                     hasObjectMaker(object.getClass());
             } else if (node instanceof DBNResource) {
                 if ((((DBNResource)node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
