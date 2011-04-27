@@ -271,7 +271,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         if (rowCount != null) {
             return rowCount;
         }
-        if (isView()) {
+        if (isView() || !isPersisted()) {
             // Do not count rows for views
             return null;
         }
