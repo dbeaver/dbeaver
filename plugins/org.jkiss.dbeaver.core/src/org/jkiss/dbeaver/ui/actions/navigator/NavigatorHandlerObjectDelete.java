@@ -109,16 +109,12 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             if (!(node.getParentNode() instanceof DBNContainer)) {
                 throw new DBException("Node '" + node + "' doesn't have a container");
             }
+            final DBNContainer container = (DBNContainer) node.getParentNode();
 
             // Try to delete object using object manager
             DBSObject object = node.getObject();
             if (object == null) {
                 throw new DBException("Can't delete node with null object");
-            }
-            if (!object.isPersisted()) {
-                // Not a real object delete because it's not persisted
-                // There should be command context somewhere
-                return deleteNewObject(workbenchWindow, node);
             }
             DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
             if (objectManager == null) {
@@ -131,33 +127,57 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             DBEObjectMaker objectMaker = (DBEObjectMaker)objectManager;
             Map<String, Object> deleteOptions = null;
 
-            ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, true);
-            if (confirmResult == ConfirmResult.NO) {
-                return false;
+            ConfirmResult confirmResult = ConfirmResult.YES;
+            if (!object.isPersisted()) {
+                // Not a real object delete because it's not persisted
+                // There should be command context somewhere
+                if (deleteNewObject(workbenchWindow, node)) {
+                    return true;
+                }
+                // No direct editor host found for this object -
+                // try to find corresponding command context
+                // and execute command within it
+            } else {
+                // Persisted object - confirm delete
+                confirmResult = confirmObjectDelete(workbenchWindow, node, true);
+                if (confirmResult == ConfirmResult.NO) {
+                    return false;
+                }
             }
-            DBECommandContext commander = null;
+
+            DBECommandContext commandContext = getCommandContext(
+                workbenchWindow,
+                container,
+                container.getValueObject());
             if (!(node instanceof DBNDataSource)) {
                 DBPDataSource dataSource = node.getObject().getDataSource();
                 if (dataSource == null) {
                     log.error("Node '" + node.getNodeName() + "' object is notify() attached toString() datasource");
                     return false;
                 }
-                commander = new DBECommandContextImpl(dataSource.getContainer());
+                commandContext = new DBECommandContextImpl(dataSource.getContainer());
             }
-            objectMaker.deleteObject(commander, node.getObject(), deleteOptions);
-            if (commander == null) {
+
+            objectMaker.deleteObject(commandContext, node.getObject(), deleteOptions);
+            if (commandContext == null) {
                 return true;
             }
             if (confirmResult == ConfirmResult.DETAILS) {
-                if (!showScript(workbenchWindow, commander)) {
-                    commander.resetChanges();
+                if (!showScript(workbenchWindow, commandContext)) {
+                    commandContext.resetChanges();
                     return false;
                 }
             }
 
             // Delete object
-            ObjectDeleter deleter = new ObjectDeleter(commander);
+            ObjectDeleter deleter = new ObjectDeleter(commandContext);
             DBeaverCore.getInstance().runInProgressService(deleter);
+
+            // Remove node
+            if (!node.isDisposed()) {
+                container.removeChildItem(node);
+            }
+
         } catch (InterruptedException e) {
             // do nothing
         } catch (Throwable e) {
@@ -166,18 +186,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             }
             UIUtils.showErrorDialog(workbenchWindow.getShell(), "Delete object", "Can't delete object '" + node.getNodeName() + "'", e);
             return false;
-        }
-
-        // Remove node
-        if (!node.isDisposed()) {
-            DBNNode parent = node.getParentNode();
-            if (parent instanceof DBNContainer) {
-                try {
-                    ((DBNContainer)parent).removeChildItem(node);
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
         }
 
         return true;
@@ -191,22 +199,19 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             if (editor instanceof IDatabaseNodeEditor) {
                 final IDatabaseNodeEditorInput editorInput = ((IDatabaseNodeEditor)editor).getEditorInput();
                 if (editorInput.getDatabaseObject() == node.getObject()) {
+
+                    ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, true);
+                    if (confirmResult == ConfirmResult.NO) {
+                        return true;
+                    }
                     // Just close editor
                     // It should dismiss new object and remove navigator node
-                    ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, false);
-                    if (confirmResult == ConfirmResult.NO) {
-                        return false;
-                    }
                     workbenchWindow.getActivePage().closeEditor(editor, false);
                     return true;
-                } else {
-                    // May be it is a nested object
-                    editorInput.getCommandContext();
-                    //throw new DBException("Can't detect object '" + node.getNodeName() + "' owner host");
                 }
             }
         }
-        throw new DBException("Can't detect object '" + node.getNodeName() + "' host editor");
+        return false;
     }
 
     private boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commander)

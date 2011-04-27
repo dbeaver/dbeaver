@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -14,13 +12,11 @@ import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -34,64 +30,50 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 
     protected boolean createNewObject(final IWorkbenchWindow workbenchWindow, DBNNode element, DBNDatabaseNode copyFrom)
     {
-        DBNContainer container = null;
-        if (element instanceof DBNContainer) {
-            container = (DBNContainer) element;
-        } else if (element instanceof DBNNode) {
-            DBNNode parentNode = element.getParentNode();
-            if (parentNode instanceof DBNContainer) {
-                container = (DBNContainer) parentNode;
-            }
-        }
-        Class<?> childType = container.getItemsClass();
-        if (childType == null) {
-            log.error("Can't determine child element type for container '" + container + "'");
-            return false;
-        }
-
-        DBSObject sourceObject = copyFrom == null ? null : copyFrom.getObject();
-        if (sourceObject != null && sourceObject.getClass() != childType) {
-            log.error("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
-            return false;
-        }
-        DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(childType);
-        if (objectManager == null) {
-            log.error("Object manager not found for type '" + childType.getName() + "'");
-            return false;
-        }
-        DBEObjectMaker objectMaker = (DBEObjectMaker) objectManager;
-        DBECommandContext commandContext = null;
-        if (container instanceof DBNDatabaseNode) {
-            DBSDataSourceContainer dsContainer = ((DBNDatabaseNode) container).getObject().getDataSource().getContainer();
-            commandContext = new DBECommandContextImpl(dsContainer);
-        }
-
-        final Object parentObject = container.getValueObject();
-        DBSObject result = objectMaker.createNewObject(workbenchWindow, commandContext, parentObject, sourceObject);
-        if (result == null) {
-            return true;
-        }
-        if (commandContext == null) {
-            log.error("Non-database container '" + container + "' must save new objects itself - command context is not accessible");
-            return false;
-        }
-
-        // Save object manager's content
-        IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
         try {
+            DBNContainer container = null;
+            if (element instanceof DBNContainer) {
+                container = (DBNContainer) element;
+            } else if (element instanceof DBNNode) {
+                DBNNode parentNode = element.getParentNode();
+                if (parentNode instanceof DBNContainer) {
+                    container = (DBNContainer) parentNode;
+                }
+            }
+            Class<?> childType = container.getItemsClass();
+            if (childType == null) {
+                throw new DBException("Can't determine child element type for container '" + container + "'");
+            }
+
+            DBSObject sourceObject = copyFrom == null ? null : copyFrom.getObject();
+            if (sourceObject != null && sourceObject.getClass() != childType) {
+                throw new DBException("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
+            }
+            DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(childType);
+            if (objectManager == null) {
+                throw new DBException("Object manager not found for type '" + childType.getName() + "'");
+            }
+            final Object parentObject = container.getValueObject();
+            DBEObjectMaker objectMaker = (DBEObjectMaker) objectManager;
+            DBECommandContext commandContext = getCommandContext(workbenchWindow, container, parentObject);
+
+            DBSObject result = objectMaker.createNewObject(workbenchWindow, commandContext, parentObject, sourceObject);
+            if (result == null) {
+                return true;
+            }
+            if (commandContext == null) {
+                throw new DBException("Non-database container '" + container + "' must save new objects itself - command context is not accessible");
+            }
+
+            // Save object manager's content
             ObjectSaver objectSaver = new ObjectSaver(
                 container,
                 commandContext,
                 result,
                 (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0);
-            try {
-                DBeaverCore.getInstance().runInProgressService(objectSaver);
-            } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(workbenchWindow.getShell(), "New object", "Can't create new object", e.getTargetException());
-                return false;
-            } catch (InterruptedException e) {
-                // do nothing
-            }
+
+            DBeaverCore.getInstance().runInProgressService(objectSaver);
+
             final DBNNode newChild = objectSaver.getNewChild();
             if (newChild != null) {
                 Display.getDefault().asyncExec(new Runnable() {
@@ -110,24 +92,23 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     // Can open editor only for database nodes
                     if (newChild instanceof DBNDatabaseNode) {
                         EntityEditorInput editorInput = new EntityEditorInput((DBNDatabaseNode)newChild);
-                        try {
-                            workbenchWindow.getActivePage().openEditor(
-                                editorInput,
-                                EntityEditor.class.getName());
-                        } catch (Exception e) {
-                            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Open editor", "Can't open editor for new object", e);
-                            return false;
-                        }
+                        workbenchWindow.getActivePage().openEditor(
+                            editorInput,
+                            EntityEditor.class.getName());
                     }
                 }
             } else {
-                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Navigator node not found", "Can't find node corresponding to new object");
+                throw new DBException("Can't find node corresponding to new object");
             }
+        } catch (InterruptedException e) {
+            // do nothing
         }
-        finally {
-            if (!(oldActivePart instanceof IEditorPart)) {
-                //workbenchWindow.getActivePage().activate(oldActivePart);
+        catch (Throwable e) {
+            if (e instanceof InvocationTargetException) {
+                e = ((InvocationTargetException)e).getTargetException();
             }
+            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Create object", null, e);
+            return false;
         }
 
         return true;
