@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -134,7 +131,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             DBEObjectMaker objectMaker = (DBEObjectMaker)objectManager;
             Map<String, Object> deleteOptions = null;
 
-            ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, objectManager instanceof DBECommandContext);
+            ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, true);
             if (confirmResult == ConfirmResult.NO) {
                 return false;
             }
@@ -190,6 +187,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
     {
         for (final IEditorReference editorRef : workbenchWindow.getActivePage().getEditorReferences()) {
             final IEditorPart editor = editorRef.getEditor(false);
+
             if (editor instanceof IDatabaseNodeEditor) {
                 final IDatabaseNodeEditorInput editorInput = ((IDatabaseNodeEditor)editor).getEditorInput();
                 if (editorInput.getDatabaseObject() == node.getObject()) {
@@ -262,8 +260,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         MessageDialog dialog = new MessageDialog(
             workbenchWindow.getShell(),
             UIUtils.formatMessage(bundle.getString(titleKey), nodeTypeName, node.getNodeName()),
-            workbenchWindow.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ETOOL_DELETE),
-            UIUtils.formatMessage(bundle.getString(messageKey), nodeTypeName, node.getNodeName()),
+            DBIcon.REJECT.getImage(),
+            UIUtils.formatMessage(bundle.getString(messageKey), nodeTypeName.toLowerCase(), node.getNodeName()),
             MessageDialog.CONFIRM, null, 0)
         {
             @Override

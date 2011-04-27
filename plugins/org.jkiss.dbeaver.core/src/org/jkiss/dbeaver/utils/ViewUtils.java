@@ -217,7 +217,7 @@ public class ViewUtils
                                 if (multipleSelection) {
                                     item.setText("Delete Objects");
                                 } else {
-                                    item.setText("Delete " + node.getNodeType());
+                                    item.setText("Delete " + node.getNodeType()/* + " '" + node.getNodeName() + "'"*/);
                                 }
                             }
                         }
