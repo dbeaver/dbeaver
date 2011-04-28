@@ -9,6 +9,22 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+/*
+select x.start_date,(select max(s3.event_date) from term_status s3 where s3.term_id=1 and s3.TERM_STATUS=1 and s3.event_date<x.end_date ),
+count(*) as event_count
+from (
+	SELECT
+		s1.EVENT_DATE as start_date,
+		(select min(s2.event_date) from term_status s2 where s2.event_date > s1.event_date and s2.TERM_STATUS=0) as end_date
+	FROM test.term_status s1
+	where s1.term_id=1 and s1.term_status=1
+	order by s1.event_date
+) x
+where x.end_date is not null
+group by x.end_date
+having event_count>1
+*/
+
 /**
  * Sample DB creator
  */
