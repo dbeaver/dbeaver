@@ -25,6 +25,32 @@ from (
 where x.end_date is not null
 group by x.end_date
 having event_count>1
+
+
+select days.day,TIME(stats.period_start),TIME(stats.period_end) from
+(
+	SELECT @row := @row + 1 as day
+	FROM information_schema.TABLES t, (SELECT @row := 0) r
+	where @row < DAY(LAST_DAY(NOW()))
+) days
+LEFT OUTER JOIN (
+	select
+		min(x.start_date) as period_start,
+		max(x.start_date) as period_end,
+		count(*) as event_count
+	from (
+		SELECT
+			s1.EVENT_DATE as start_date,
+			(select min(s2.event_date) from term_status s2 where s2.terminal_id=1 and s2.event_date > s1.event_date and s2.status=0) as end_date
+		FROM test.term_status s1
+		where s1.terminal_id=1 and s1.status=1
+		order by s1.event_date
+	) x
+	where x.end_date is not null
+	group by x.end_date
+	having event_count>1
+) stats ON DAY(stats.period_start)=days.day
+order by days.day,stats.period_start
 */
 
 /**
