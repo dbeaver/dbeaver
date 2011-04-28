@@ -316,11 +316,11 @@ public class DBECommandContextImpl implements DBECommandContext {
                 CommandInfo firstCommand = null;
                 DBECommand<?> result = lastCommand.command;
                 if (mergedCommands.isEmpty()) {
-                    result = lastCommand.command.merge(null, userParams);
+                    result = lastCommand.command.merge((DBECommandQueue) queue, null, userParams);
                 } else {
                     for (int k = mergedCommands.size(); k > 0; k--) {
                         firstCommand = mergedCommands.get(k - 1);
-                        result = lastCommand.command.merge(firstCommand.command, userParams);
+                        result = lastCommand.command.merge((DBECommandQueue)queue, firstCommand.command, userParams);
                         if (result != lastCommand.command) {
                             break;
                         }

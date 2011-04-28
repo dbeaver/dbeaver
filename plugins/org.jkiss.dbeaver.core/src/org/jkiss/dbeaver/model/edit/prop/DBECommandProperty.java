@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandQueue;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
 
 import java.util.Map;
@@ -68,12 +69,16 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
     }
 
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<String, Object> userParams)
+    public DBECommand<?> merge(DBECommandQueue<OBJECT_TYPE> commandQueue, DBECommand<?> prevCommand, Map<String, Object> userParams)
     {
-        String compositeName = handler.getClass().getName() + PROP_COMPOSITE_COMMAND;
+        if (!(prevCommand instanceof DBECommandProperty) || prevCommand.getObject() != getObject()) {
+            // Dunno what to do with it
+            //return this;
+        }
+        String compositeName = getObject().toString() + PROP_COMPOSITE_COMMAND;
         DBECommandComposite compositeCommand = (DBECommandComposite)userParams.get(compositeName);
         if (compositeCommand == null) {
-            compositeCommand = handler.createCompositeCommand(getObject());
+            compositeCommand = handler.createCompositeCommand(commandQueue);
             userParams.put(compositeName, compositeCommand);
         }
         compositeCommand.addPropertyHandler(handler, newValue);

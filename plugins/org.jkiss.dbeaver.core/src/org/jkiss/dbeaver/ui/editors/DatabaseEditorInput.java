@@ -29,8 +29,15 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
 
     protected DatabaseEditorInput(NODE node)
     {
+        this(node, null);
+    }
+
+    protected DatabaseEditorInput(NODE node, DBECommandContext commandContext)
+    {
         this.node = node;
-        this.commandContext = new DBECommandContextImpl(getDataSource().getContainer());
+        this.commandContext = commandContext != null ?
+            commandContext :
+            new DBECommandContextImpl(node.getObject().getDataSource().getContainer());
     }
 
     public boolean exists()

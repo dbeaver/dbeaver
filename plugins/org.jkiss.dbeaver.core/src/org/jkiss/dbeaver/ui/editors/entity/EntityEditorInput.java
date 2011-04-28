@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -18,6 +19,11 @@ public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
     public EntityEditorInput(DBNDatabaseNode dbmNode)
     {
         super(dbmNode);
+    }
+
+    public EntityEditorInput(DBNDatabaseNode dbnDatabaseNode, DBECommandContext commandContext)
+    {
+        super(dbnDatabaseNode, commandContext);
     }
 
     public String getToolTipText()

@@ -91,7 +91,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 } else if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_EDITOR_ON_CREATE) != 0) {
                     // Can open editor only for database nodes
                     if (newChild instanceof DBNDatabaseNode) {
-                        EntityEditorInput editorInput = new EntityEditorInput((DBNDatabaseNode)newChild);
+                        EntityEditorInput editorInput = new EntityEditorInput((DBNDatabaseNode)newChild, commandContext);
                         workbenchWindow.getActivePage().openEditor(
                             editorInput,
                             EntityEditor.class.getName());

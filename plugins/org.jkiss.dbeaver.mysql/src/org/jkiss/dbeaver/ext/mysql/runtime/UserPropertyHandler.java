@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.mysql.runtime;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.edit.DBECommandQueue;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyReflector;
 
@@ -24,9 +25,9 @@ public enum UserPropertyHandler implements DBEPropertyHandler<MySQLUser>, DBEPro
     MAX_USER_CONNECTIONS;
 
 
-    public MySQLCommandChangeUser createCompositeCommand(MySQLUser object)
+    public MySQLCommandChangeUser createCompositeCommand(DBECommandQueue<MySQLUser> commandQueue)
     {
-        return new MySQLCommandChangeUser(object);
+        return new MySQLCommandChangeUser(commandQueue.getObject());
     }
 
     public void reflectValueChange(MySQLUser object, Object oldValue, Object newValue)

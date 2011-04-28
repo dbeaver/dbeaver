@@ -5,11 +5,12 @@
 package org.jkiss.dbeaver.model.edit.prop;
 
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.edit.DBECommandQueue;
 
 /**
  * Database object property handler
  */
 public interface DBEPropertyHandler<OBJECT_TYPE extends DBPObject> {
 
-    DBECommandComposite<OBJECT_TYPE, ? extends DBEPropertyHandler<OBJECT_TYPE>> createCompositeCommand(OBJECT_TYPE object);
+    DBECommandComposite<OBJECT_TYPE, ? extends DBEPropertyHandler<OBJECT_TYPE>> createCompositeCommand(DBECommandQueue<OBJECT_TYPE> commandQueue);
 }
