@@ -22,7 +22,6 @@ from (
 	where s1.terminal_id=1 and s1.status=1
 	order by s1.event_date
 ) x
-where x.end_date is not null
 group by x.end_date
 having event_count>1
 
@@ -46,7 +45,6 @@ LEFT OUTER JOIN (
 		where s1.terminal_id=1 and s1.status=1
 		order by s1.event_date
 	) x
-	where x.end_date is not null
 	group by x.end_date
 	having event_count>1
 ) stats ON DAY(stats.period_start)=days.day
@@ -100,7 +98,7 @@ public class CreateSampleDB2 {
         Properties connectionProps = new Properties();
         connectionProps.put("user", "root");
         connectionProps.put("password", "1978");
-        final String url = "jdbc:mysql://jurgen/test";
+        final String url = "jdbc:mysql://localhost/test";
         final Connection connection = DriverManager.getConnection(url, connectionProps);
         try {
             System.out.println("Connected to '" + url + "'");

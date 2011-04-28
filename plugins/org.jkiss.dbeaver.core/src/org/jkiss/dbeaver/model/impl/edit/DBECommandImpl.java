@@ -14,11 +14,11 @@ import java.util.Map;
 /**
  * Abstract object command
  */
-public abstract class DBECommandImpl<OBJECT_TYPE extends DBPObject> implements DBECommand<OBJECT_TYPE> {
+public class DBECommandImpl<OBJECT_TYPE extends DBPObject> implements DBECommand<OBJECT_TYPE> {
     private final OBJECT_TYPE object;
     private final String title;
 
-    protected DBECommandImpl(OBJECT_TYPE object, String title)
+    public DBECommandImpl(OBJECT_TYPE object, String title)
     {
         this.object = object;
         this.title = title;

@@ -31,8 +31,8 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commander, Object parent, Object copyFrom)
     {
         OBJECT_TYPE newTable = createNewTable((CONTAINER_TYPE) parent, copyFrom);
-
-        commander.addCommand(new CommandCreateTable(newTable), null);
+        // Add dummy command (it does nothing)
+        commander.addCommand(new DBECommandImpl<OBJECT_TYPE>(newTable, "Create table"), null);
 
         return newTable;
     }
@@ -44,26 +44,6 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
 
     protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, Object copyFrom);
 
-    private class CommandCreateTable extends DBECommandImpl<OBJECT_TYPE> {
-        protected CommandCreateTable(OBJECT_TYPE table)
-        {
-            super(table, "Create table");
-        }
-        public IDatabasePersistAction[] getPersistActions()
-        {
-            return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction("Create table", "CREATE TABLE " + getObject().getFullQualifiedName()) {
-                    @Override
-                    public void handleExecute(Throwable error)
-                    {
-                        if (error == null) {
-                            //object.setPersisted(true);
-                        }
-                    }
-                }};
-        }
-    }
-
     private class CommandDropTable extends DBECommandImpl<OBJECT_TYPE> {
         protected CommandDropTable(OBJECT_TYPE table)
         {
@@ -73,7 +53,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         public IDatabasePersistAction[] getPersistActions()
         {
             return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction("Drop schema", "DROP TABLE " + getObject().getFullQualifiedName()) {
+                new AbstractDatabasePersistAction("Drop table", "DROP TABLE " + getObject().getFullQualifiedName()) {
                     @Override
                     public void handleExecute(Throwable error)
                     {
@@ -84,7 +64,6 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
                 }};
         }
     }
-
 
 }
 

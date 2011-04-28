@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyReflector;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPropertyDescriptor;
 
@@ -30,7 +29,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         return new PropertyHandler(property);
     }
 
-    protected abstract Collection<IDatabasePersistAction> makePersistActions(PropertiesChangeCommand command);
+    protected abstract Collection<IDatabasePersistAction> makePersistActions(ObjectChangeCommand command);
 
     protected class PropertyHandler extends ProxyPropertyDescriptor implements DBEPropertyHandler<OBJECT_TYPE>, DBEPropertyReflector<OBJECT_TYPE> {
 
@@ -41,7 +40,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
 
         public DBECommandComposite<OBJECT_TYPE, ? extends DBEPropertyHandler<OBJECT_TYPE>> createCompositeCommand(OBJECT_TYPE object)
         {
-            return new PropertiesChangeCommand(object);
+            return new ObjectChangeCommand(object);
         }
 
         public void reflectValueChange(OBJECT_TYPE object, Object oldValue, Object newValue)
@@ -70,9 +69,9 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         }
     }
 
-    protected class PropertiesChangeCommand extends DBECommandComposite<OBJECT_TYPE, PropertyHandler> {
+    protected class ObjectChangeCommand extends DBECommandComposite<OBJECT_TYPE, PropertyHandler> {
 
-        protected PropertiesChangeCommand(OBJECT_TYPE object)
+        protected ObjectChangeCommand(OBJECT_TYPE object)
         {
             super(object, "JDBC Composite");
         }

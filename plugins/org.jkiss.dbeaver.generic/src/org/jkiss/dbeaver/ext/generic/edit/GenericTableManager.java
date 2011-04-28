@@ -27,7 +27,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
     }
 
     @Override
-    protected Collection<IDatabasePersistAction> makePersistActions(PropertiesChangeCommand command)
+    protected Collection<IDatabasePersistAction> makePersistActions(ObjectChangeCommand command)
     {
         GenericTable table = command.getObject();
         final Object tableName = command.getProperty(DBConstants.PROP_ID_NAME);

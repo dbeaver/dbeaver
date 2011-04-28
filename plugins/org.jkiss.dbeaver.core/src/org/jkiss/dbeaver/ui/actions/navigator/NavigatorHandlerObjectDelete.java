@@ -214,9 +214,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         return false;
     }
 
-    private boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commander)
+    private boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext)
     {
-        Collection<? extends DBECommand> commands = commander.getCommands();
+        Collection<? extends DBECommand> commands = commandContext.getCommands();
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
             IDatabasePersistAction[] persistActions = command.getPersistActions();
@@ -226,7 +226,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
                         script.append('\n');
                     }
                     script.append(action.getScript());
-                    script.append(commander.getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
+                    script.append(commandContext.getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
                 }
             }
         }
@@ -234,7 +234,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         if (view != null) {
             ViewSQLDialog dialog = new ViewSQLDialog(
                 view.getSite(),
-                commander.getDataSourceContainer(),
+                commandContext.getDataSourceContainer(),
                 "Delete script",
                 script.toString());
             dialog.setImage(DBIcon.SQL_PREVIEW.getImage());

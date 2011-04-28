@@ -88,7 +88,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         return getEditorInput().getDatabaseObject();
     }
 
-    public DBECommandContext getObjectCommander()
+    public DBECommandContext getCommandContext()
     {
         return getEditorInput().getCommandContext();
     }
@@ -99,8 +99,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 //        if (getCommandContext() != null && getCommandContext().isDirty()) {
 //            getCommandContext().resetChanges();
 //        }
-        if (commandListener != null && getObjectCommander() != null) {
-            getObjectCommander().removeCommandListener(commandListener);
+        if (commandListener != null && getCommandContext() != null) {
+            getCommandContext().removeCommandListener(commandListener);
             commandListener = null;
         }
         if (getDatabaseObject() != null) {
@@ -129,7 +129,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     @Override
     public boolean isDirty()
     {
-        final DBECommandContext commandContext = getObjectCommander();
+        final DBECommandContext commandContext = getCommandContext();
         return commandContext != null && commandContext.isDirty();
     }
 
@@ -165,7 +165,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         if (previewResult == IDialogConstants.PROCEED_ID) {
             Throwable error = null;
             try {
-                getObjectCommander().saveChanges(new DefaultProgressMonitor(monitor));
+                getCommandContext().saveChanges(new DefaultProgressMonitor(monitor));
             } catch (DBException e) {
                 error = e;
             }
@@ -185,33 +185,33 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     public void revertChanges()
     {
         if (isDirty()) {
-            getObjectCommander().resetChanges();
+            getCommandContext().resetChanges();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void undoChanges()
     {
-        if (getObjectCommander() != null && getObjectCommander().canUndoCommand()) {
-            getObjectCommander().undoCommand();
+        if (getCommandContext() != null && getCommandContext().canUndoCommand()) {
+            getCommandContext().undoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void redoChanges()
     {
-        if (getObjectCommander() != null && getObjectCommander().canRedoCommand()) {
-            getObjectCommander().redoCommand();
+        if (getCommandContext() != null && getCommandContext().canRedoCommand()) {
+            getCommandContext().redoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public int showChanges(boolean allowSave)
     {
-        if (getObjectCommander() == null) {
+        if (getCommandContext() == null) {
             return IDialogConstants.CANCEL_ID;
         }
-        Collection<? extends DBECommand> commands = getObjectCommander().getCommands();
+        Collection<? extends DBECommand> commands = getCommandContext().getCommands();
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
             try {
@@ -232,7 +232,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                         script.append('\n');
                     }
                     script.append(action.getScript());
-                    script.append(getObjectCommander().getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
+                    script.append(getCommandContext().getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
                 }
             }
         }
@@ -276,7 +276,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 firePropertyChange(IEditorPart.PROP_DIRTY);
             }
         };
-        getObjectCommander().addCommandListener(commandListener);
+        getCommandContext().addCommandListener(commandListener);
 
         // Property listener
         addPropertyListener(new IPropertyListener() {

@@ -21,7 +21,7 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
 
 
     @Override
-    protected Collection<IDatabasePersistAction> makePersistActions(PropertiesChangeCommand command)
+    protected Collection<IDatabasePersistAction> makePersistActions(ObjectChangeCommand command)
     {
         final GenericTable table = command.getObject().getTable();
         final GenericTableColumn column = command.getObject();

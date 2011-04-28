@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * JDBC abstract table column
@@ -30,6 +31,13 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
     public TABLE_TYPE getTable()
     {
         return table;
+    }
+
+    @Property(name = "Column Name", viewable = true, editable = true, order = 10)
+    @Override
+    public String getName()
+    {
+        return super.getName();
     }
 
     public boolean isPersisted()
