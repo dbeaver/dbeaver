@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBECommandQueue;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
 
@@ -58,7 +57,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandImpl<MySQLUser> {
     }
 
     @Override
-    public DBECommand<?> merge(DBECommandQueue<MySQLUser> commandQueue, DBECommand<?> prevCommand, Map<String, Object> userParams)
+    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<String, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege)prevCommand;
@@ -70,7 +69,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandImpl<MySQLUser> {
                 }
             }
         }
-        return super.merge(commandQueue, prevCommand, userParams);
+        return super.merge(prevCommand, userParams);
     }
 
     private String getObjectName()

@@ -8,7 +8,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBECommandQueue;
 
 import java.util.Map;
 
@@ -49,7 +48,7 @@ public class DBECommandImpl<OBJECT_TYPE extends DBPObject> implements DBECommand
     {
     }
 
-    public DBECommand<?> merge(DBECommandQueue<OBJECT_TYPE> commandQueue, DBECommand<?> prevCommand, Map<String, Object> userParams)
+    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<String, Object> userParams)
     {
         return this;
     }

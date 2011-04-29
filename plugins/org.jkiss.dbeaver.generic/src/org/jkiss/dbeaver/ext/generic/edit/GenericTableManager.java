@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.edit.DBECommandQueue;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 
@@ -39,7 +38,6 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
         } else {
             actions.add( new AbstractDatabasePersistAction("Alter table", "ALTER TABLE " + table.getName()) );
         }
-        final Collection<DBECommandQueue> children = command.getCommandQueue().getSubQueues();
         return actions;
     }
 

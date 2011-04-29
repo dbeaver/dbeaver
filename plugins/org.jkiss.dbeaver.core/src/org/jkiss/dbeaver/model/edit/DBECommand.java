@@ -31,7 +31,6 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
     void updateModel();
 
     DBECommand<?> merge(
-        DBECommandQueue<OBJECT_TYPE> commandQueue,
         DBECommand<?> prevCommand,
         Map<String, Object> userParams);
 
