@@ -14,7 +14,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.views.properties.ProxyPropertyDescriptor;
 
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -29,7 +28,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         return new PropertyHandler(property);
     }
 
-    protected abstract Collection<IDatabasePersistAction> makePersistActions(ObjectChangeCommand command);
+    protected abstract IDatabasePersistAction[] makePersistActions(ObjectChangeCommand command);
 
     protected class PropertyHandler extends ProxyPropertyDescriptor implements DBEPropertyHandler<OBJECT_TYPE>, DBEPropertyReflector<OBJECT_TYPE> {
 
@@ -62,10 +61,9 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         @Override
         public boolean equals(Object obj)
         {
-            if (obj == null || obj.getClass() != PropertyHandler.class) {
-                return false;
-            }
-            return original.equals(((PropertyHandler) obj).original);
+            return obj != null &&
+                obj.getClass() == PropertyHandler.class &&
+                original.equals(((PropertyHandler) obj).original);
         }
     }
 
@@ -88,8 +86,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
 
         public IDatabasePersistAction[] getPersistActions()
         {
-            Collection<IDatabasePersistAction> actions = makePersistActions(this);
-            return actions.toArray(new IDatabasePersistAction[actions.size()]);
+            return makePersistActions(this);
         }
     }
 

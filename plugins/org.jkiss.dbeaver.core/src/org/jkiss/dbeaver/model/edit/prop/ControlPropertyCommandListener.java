@@ -149,7 +149,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                         if (!CommonUtils.equalObjects(newValue, originalValue)) {
                             final DBECommandProperty<OBJECT_TYPE> command = new DBECommandProperty<OBJECT_TYPE>(objectEditor.getDatabaseObject(), handler);
                             command.setOldValue(originalValue);
-                            command.setNewValue(objectEditor.getDatabaseObject(), newValue);
+                            command.setNewValue(newValue);
                             curCommand = command;
                             DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>> commandReflector = new DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>>() {
                                 public void redoCommand(DBECommandProperty<OBJECT_TYPE> object_typeControlDBOCommand)
@@ -169,7 +169,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                             objectEditor.removeChangeCommand(curCommand);
                             curCommand = null;
                         } else {
-                            curCommand.setNewValue(objectEditor.getDatabaseObject(), newValue);
+                            curCommand.setNewValue(newValue);
                             objectEditor.updateChangeCommand(curCommand);
                         }
                     }

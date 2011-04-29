@@ -8,14 +8,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 
 import java.util.Map;
 
 /**
  * Abstract object command
  */
-public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBECommandImpl<OBJECT_TYPE> {
+public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBECommandAbstract<OBJECT_TYPE> {
 
     public static final String PROP_COMPOSITE_COMMAND = ".composite";
 
@@ -55,7 +55,7 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         return newValue;
     }
 
-    void setNewValue(OBJECT_TYPE object, Object newValue)
+    public void setNewValue(Object newValue)
     {
         Object prevValue = this.newValue;
         if (prevValue == null) {
@@ -63,7 +63,7 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         }
         this.newValue = newValue;
         if (handler instanceof DBEPropertyReflector) {
-            ((DBEPropertyReflector<OBJECT_TYPE>)handler).reflectValueChange(object, prevValue, this.newValue);
+            ((DBEPropertyReflector<OBJECT_TYPE>)handler).reflectValueChange(getObject(), prevValue, this.newValue);
         }
     }
 

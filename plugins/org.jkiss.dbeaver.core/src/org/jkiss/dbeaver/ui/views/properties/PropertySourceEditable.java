@@ -27,6 +27,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 {
     private DBECommandContext commandContext;
     private Map<Object, Object> updatedValues = new HashMap<Object, Object>();
+    private DBECommandProperty<? extends DBPObject> curCommand = null;
 
     public PropertySourceEditable(DBECommandContext commandContext, Object sourceObject, Object object)
     {
@@ -43,7 +44,12 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     private DBEObjectEditor getObjectEditor()
     {
         final Object editableValue = getEditableValue();
-        return editableValue == null ? null : DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(editableValue.getClass(), DBEObjectEditor.class);
+        if (editableValue == null) {
+            return null;
+        }
+        return DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(
+            editableValue.getClass(),
+            DBEObjectEditor.class);
     }
 
     public DBECommandContext getCommandContext()
@@ -80,18 +86,25 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             log.warn("Can't detect property meta info for property '" + id + "'");
             return;
         }
-        final DBEObjectEditor objectEditor = getObjectEditor();
+        final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor();
         if (objectEditor == null) {
             log.error("Can't obtain object editor for " + getEditableValue());
             return;
         }
-        final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler((DBPObject) getEditableValue(), propertyDescriptor);
-        final DBECommandProperty<? extends DBPObject> command = new DBECommandProperty<DBPObject>(
-            (DBPObject) getEditableValue(),
-            propertyHandler,
-            value);
-        final CommandReflector reflector = new CommandReflector();
-        getCommandContext().addCommand(command, reflector);
+        if (curCommand == null) {
+            final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
+                (DBPObject) getEditableValue(),
+                propertyDescriptor);
+            curCommand = new DBECommandProperty<DBPObject>(
+                (DBPObject) getEditableValue(),
+                propertyHandler,
+                value);
+            final CommandReflector reflector = new CommandReflector();
+            getCommandContext().addCommand(curCommand, reflector);
+        } else {
+            curCommand.setNewValue(value);
+            getCommandContext().updateCommand(curCommand);
+        }
 
         handlePropertyChange(id, value);
     }

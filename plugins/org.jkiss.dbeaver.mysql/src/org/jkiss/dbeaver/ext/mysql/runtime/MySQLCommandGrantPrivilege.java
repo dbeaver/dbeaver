@@ -12,14 +12,14 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 
 import java.util.Map;
 
 /**
  * Grant/Revoke privilege command
  */
-public class MySQLCommandGrantPrivilege extends DBECommandImpl<MySQLUser> {
+public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
 
     private boolean grant;
     private MySQLCatalog schema;

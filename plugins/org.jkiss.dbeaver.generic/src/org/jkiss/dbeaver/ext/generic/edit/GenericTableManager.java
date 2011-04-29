@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -27,18 +26,23 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
     }
 
     @Override
-    protected Collection<IDatabasePersistAction> makePersistActions(ObjectChangeCommand command)
+    protected IDatabasePersistAction[] makePersistActions(ObjectChangeCommand command)
     {
         GenericTable table = command.getObject();
-        final Object tableName = command.getProperty(DBConstants.PROP_ID_NAME);
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        boolean newObject = !table.isPersisted();
-        if (newObject) {
-            actions.add( new AbstractDatabasePersistAction("Create new table", "CREATE TABLE " + tableName) );
-        } else {
-            actions.add( new AbstractDatabasePersistAction("Alter table", "ALTER TABLE " + table.getName()) );
-        }
-        return actions;
+        actions.add( new AbstractDatabasePersistAction("Alter table", "ALTER TABLE " + table.getName()) );
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+    }
+
+    @Override
+    protected IDatabasePersistAction[] makePersistActions(CommandCreateStruct command)
+    {
+        final ObjectChangeCommand tableProps = command.getObjectCommands().get(command.getObject());
+        final Object tableName = tableProps.getProperty(DBConstants.PROP_ID_NAME);
+
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        actions.add( new AbstractDatabasePersistAction("Create new table", "CREATE TABLE " + tableName) );
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
     public Class<?>[] getChildTypes()

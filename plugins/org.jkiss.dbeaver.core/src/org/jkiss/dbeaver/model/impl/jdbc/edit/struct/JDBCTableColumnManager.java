@@ -8,8 +8,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 
@@ -45,7 +44,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
 
     protected abstract OBJECT_TYPE createNewTableColumn(CONTAINER_TYPE parent, Object copyFrom);
 
-    private class CommandCreateTableColumn extends DBECommandImpl<OBJECT_TYPE> {
+    private class CommandCreateTableColumn extends DBECommandAbstract<OBJECT_TYPE> {
         protected CommandCreateTableColumn(OBJECT_TYPE table)
         {
             super(table, "Create table column");
@@ -57,7 +56,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         }
     }
 
-    private class CommandDropTableColumn extends DBECommandImpl<OBJECT_TYPE> {
+    private class CommandDropTableColumn extends DBECommandAbstract<OBJECT_TYPE> {
         protected CommandDropTableColumn(OBJECT_TYPE table)
         {
             super(table, "Drop table column");

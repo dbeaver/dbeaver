@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -21,7 +20,7 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
 
 
     @Override
-    protected Collection<IDatabasePersistAction> makePersistActions(ObjectChangeCommand command)
+    protected IDatabasePersistAction[] makePersistActions(ObjectChangeCommand command)
     {
         final GenericTable table = command.getObject().getTable();
         final GenericTableColumn column = command.getObject();
@@ -33,7 +32,7 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
         } else {
             actions.add( new AbstractDatabasePersistAction("Alter table column", "ALTER TABLE " + table.getFullQualifiedName() + " ALTER "  + columnName) );
         }
-        return actions;
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
     @Override

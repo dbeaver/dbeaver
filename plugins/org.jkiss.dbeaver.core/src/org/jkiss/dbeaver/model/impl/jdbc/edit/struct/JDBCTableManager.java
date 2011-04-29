@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
@@ -32,7 +32,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     {
         OBJECT_TYPE newTable = createNewTable((CONTAINER_TYPE) parent, copyFrom);
         // Add dummy command (it does nothing)
-        commander.addCommand(new DBECommandImpl<OBJECT_TYPE>(newTable, "Create table"), null);
+        commander.addCommand(new CommandCreateStruct(newTable), null);
 
         return newTable;
     }
@@ -44,7 +44,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
 
     protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, Object copyFrom);
 
-    private class CommandDropTable extends DBECommandImpl<OBJECT_TYPE> {
+    private class CommandDropTable extends DBECommandAbstract<OBJECT_TYPE> {
         protected CommandDropTable(OBJECT_TYPE table)
         {
             super(table, "Drop table");

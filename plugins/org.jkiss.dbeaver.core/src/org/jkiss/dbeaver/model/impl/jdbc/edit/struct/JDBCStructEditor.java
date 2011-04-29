@@ -4,11 +4,14 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import org.jkiss.dbeaver.model.edit.DBECommandQueue;
-import org.jkiss.dbeaver.model.edit.DBEStructEditor;
-import org.jkiss.dbeaver.model.edit.DBEStructHandler;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * JDBC struct editor
@@ -18,10 +21,41 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity>
     implements DBEStructEditor<OBJECT_TYPE>
 {
 
-    public DBEStructHandler<OBJECT_TYPE> makeStructHandler(DBECommandQueue queue)
-    {
-        return null;
+    protected abstract IDatabasePersistAction[] makePersistActions(CommandCreateStruct command);
+
+    protected class CommandCreateStruct
+        extends DBECommandAbstract<OBJECT_TYPE>
+        implements DBECommandAggregator<OBJECT_TYPE> {
+
+        private final Map<DBPObject, ObjectChangeCommand> objectCommands = new IdentityHashMap<DBPObject, ObjectChangeCommand>();
+
+        public CommandCreateStruct(OBJECT_TYPE object)
+        {
+            super(object, "Create table");
+        }
+
+        public Map<DBPObject, ObjectChangeCommand> getObjectCommands()
+        {
+            return objectCommands;
+        }
+
+        public boolean aggregateCommand(DBECommand<?> command)
+        {
+            if (ObjectChangeCommand.class.isAssignableFrom(command.getClass())) {
+                objectCommands.put(command.getObject(), (ObjectChangeCommand) command);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public IDatabasePersistAction[] getPersistActions()
+        {
+            return makePersistActions(this);
+        }
     }
+
+
 
 }
 

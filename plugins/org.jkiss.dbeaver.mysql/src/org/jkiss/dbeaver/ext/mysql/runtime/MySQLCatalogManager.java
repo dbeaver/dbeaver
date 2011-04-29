@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -57,7 +57,7 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         //saveChanges(monitor);
     }
 
-    private class CommandCreateCatalog extends DBECommandImpl<MySQLCatalog> {
+    private class CommandCreateCatalog extends DBECommandAbstract<MySQLCatalog> {
         protected CommandCreateCatalog(MySQLCatalog catalog)
         {
             super(catalog, "Create schema");
@@ -77,7 +77,7 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         }
     }
 
-    private class CommandDropCatalog extends DBECommandImpl<MySQLCatalog> {
+    private class CommandDropCatalog extends DBECommandAbstract<MySQLCatalog> {
         protected CommandDropCatalog(MySQLCatalog catalog)
         {
             super(catalog, "Drop schema");
@@ -97,7 +97,7 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         }
     }
 
-    private class CommandRenameCatalog extends DBECommandImpl<MySQLCatalog> {
+    private class CommandRenameCatalog extends DBECommandAbstract<MySQLCatalog> {
         private String newName;
 
         protected CommandRenameCatalog(MySQLCatalog catalog, String newName)

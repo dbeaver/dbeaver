@@ -15,6 +15,4 @@ public interface DBEStructEditor<OBJECT_TYPE extends DBPObject> extends DBEObjec
 
     Class<?>[] getChildTypes();
 
-    DBEStructHandler<OBJECT_TYPE> makeStructHandler(DBECommandQueue queue);
-
 }

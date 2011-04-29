@@ -148,7 +148,7 @@ public class DBECommandContextImpl implements DBECommandContext {
             List<DBECommand<?>> cmdCopy = new ArrayList<DBECommand<?>>(commands.size());
             for (CommandQueue queue : getCommandQueues()) {
                 for (CommandInfo cmdInfo : queue.commands) {
-                    if (cmdInfo.mergedBy != null) {
+                    while (cmdInfo.mergedBy != null) {
                         cmdInfo = cmdInfo.mergedBy;
                     }
                     if (!cmdCopy.contains(cmdInfo.command)) {
@@ -286,8 +286,12 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
         commandQueues = new ArrayList<CommandQueue>();
 
+        CommandInfo aggregator = null;
         // Create queues from commands
         for (CommandInfo commandInfo : commands) {
+            if (commandInfo.command instanceof DBECommandAggregator) {
+                aggregator = commandInfo;
+            }
             DBPObject object = commandInfo.command.getObject();
             CommandQueue queue = null;
             if (!commandQueues.isEmpty()) {
@@ -370,6 +374,17 @@ public class DBECommandContextImpl implements DBECommandContext {
         for (CommandQueue queue : commandQueues) {
             if (queue.objectManager instanceof DBECommandFilter) {
                 ((DBECommandFilter) queue.objectManager).filterCommands(queue);
+            }
+        }
+
+        // Aggregate commands
+        if (aggregator != null) {
+            for (CommandQueue queue : commandQueues) {
+                for (CommandInfo cmd : queue.commands) {
+                    if (cmd.mergedBy == null && ((DBECommandAggregator)aggregator.command).aggregateCommand(cmd.command)) {
+                        cmd.mergedBy = aggregator;
+                    }
+                }
             }
         }
 

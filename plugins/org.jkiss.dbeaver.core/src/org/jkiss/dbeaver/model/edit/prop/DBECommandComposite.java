@@ -6,8 +6,7 @@ package org.jkiss.dbeaver.model.edit.prop;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandImpl;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +15,7 @@ import java.util.Map;
  * Composite object command
  */
 public abstract class DBECommandComposite<OBJECT_TYPE extends DBPObject, HANDLER_TYPE extends DBEPropertyHandler<OBJECT_TYPE>>
-    extends DBECommandImpl<OBJECT_TYPE> {
+    extends DBECommandAbstract<OBJECT_TYPE> {
 
     private Map<HANDLER_TYPE, Object> properties = new HashMap<HANDLER_TYPE, Object>();
 
