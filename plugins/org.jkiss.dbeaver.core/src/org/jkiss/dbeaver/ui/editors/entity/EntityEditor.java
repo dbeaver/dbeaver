@@ -439,7 +439,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             getSite().getShell(),
             PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,
-            getDatabaseObject().getName());
+            getEditorInput().getTreeNode().getNodeName());
         if (result == IDialogConstants.YES_ID) {
 //            getWorkbenchPart().getSite().getPage().saveEditor(this, false);
             return ISaveablePart2.YES;
