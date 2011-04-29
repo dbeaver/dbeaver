@@ -28,13 +28,13 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commander, Object parent, Object copyFrom)
+    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, Object parent, Object copyFrom)
     {
-        OBJECT_TYPE newTable = createNewTableColumn((CONTAINER_TYPE) parent, copyFrom);
+        OBJECT_TYPE newColumn = createNewTableColumn((CONTAINER_TYPE) parent, copyFrom);
 
-        commander.addCommand(new CommandCreateTableColumn(newTable), null);
+        makeInitialCommands(newColumn, context, new CommandCreateTableColumn(newColumn));
 
-        return newTable;
+        return newColumn;
     }
 
     public void deleteObject(DBECommandContext commander, OBJECT_TYPE object, Map<String, Object> options)

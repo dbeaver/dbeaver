@@ -40,6 +40,13 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         return super.getName();
     }
 
+    @Property(name = "Data Type", viewable = true, editable = true, order = 20)
+    @Override
+    public String getTypeName()
+    {
+        return super.getTypeName();
+    }
+
     public boolean isPersisted()
     {
         return persisted;

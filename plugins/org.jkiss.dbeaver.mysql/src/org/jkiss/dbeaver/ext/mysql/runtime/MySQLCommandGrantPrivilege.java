@@ -57,7 +57,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     }
 
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<String, Object> userParams)
+    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege)prevCommand;

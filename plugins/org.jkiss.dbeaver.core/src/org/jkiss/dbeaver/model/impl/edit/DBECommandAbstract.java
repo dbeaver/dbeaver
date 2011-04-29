@@ -48,7 +48,7 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
     {
     }
 
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<String, Object> userParams)
+    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
     {
         return this;
     }

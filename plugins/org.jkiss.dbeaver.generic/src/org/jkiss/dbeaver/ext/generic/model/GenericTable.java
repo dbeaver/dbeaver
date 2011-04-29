@@ -149,6 +149,11 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         return DBUtils.findObject(getColumns(monitor), columnName);
     }
 
+    public List<GenericTableColumn> getColumnsCache()
+    {
+        return columns;
+    }
+
     boolean isColumnsCached()
     {
         return this.columns != null;

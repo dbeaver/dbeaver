@@ -32,7 +32,7 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
 
     DBECommand<?> merge(
         DBECommand<?> prevCommand,
-        Map<String, Object> userParams);
+        Map<Object, Object> userParams);
 
     IDatabasePersistAction[] getPersistActions();
 

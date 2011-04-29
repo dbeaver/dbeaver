@@ -29,6 +29,7 @@ public class DBECommandContextImpl implements DBECommandContext {
     //private List<CommandInfo> mergedCommands = null;
     private List<CommandQueue> commandQueues;
 
+    private final Map<Object, Object> userParams = new HashMap<Object, Object>();
     private final List<DBECommandListener> listeners = new ArrayList<DBECommandListener>();
 
     public DBECommandContextImpl(DBSDataSourceContainer dataSourceContainer)
@@ -173,6 +174,22 @@ public class DBECommandContextImpl implements DBECommandContext {
         fireCommandChange(command);
     }
 
+    public void addCommandBatch(List<DBECommand> commandBatch)
+    {
+        synchronized (commands) {
+            for (DBECommand command : commandBatch) {
+                commands.add(new CommandInfo(command, null));
+            }
+            clearUndidCommands();
+            clearCommandQueues();
+        }
+
+        if (!commandBatch.isEmpty()) {
+            // Fire only single event
+            fireCommandChange(commandBatch.get(0));
+        }
+    }
+
     public void removeCommand(DBECommand<?> command)
     {
         synchronized (commands) {
@@ -209,6 +226,11 @@ public class DBECommandContextImpl implements DBECommandContext {
         synchronized (listeners) {
             listeners.remove(listener);
         }
+    }
+
+    public Map<Object, Object> getUserParams()
+    {
+        return userParams;
     }
 
     private void fireCommandChange(DBECommand<?> command)
@@ -312,7 +334,6 @@ public class DBECommandContextImpl implements DBECommandContext {
         // Merge commands
         for (CommandQueue queue : commandQueues) {
             final Map<DBECommand, CommandInfo> mergedByMap = new IdentityHashMap<DBECommand, CommandInfo>();
-            final Map<String, Object> userParams = new HashMap<String, Object>();
             final List<CommandInfo> mergedCommands = new ArrayList<CommandInfo>();
             for (int i = 0; i < queue.commands.size(); i++) {
                 CommandInfo lastCommand = queue.commands.get(i);

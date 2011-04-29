@@ -101,6 +101,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return isNewObject(propertySource) ? propInfo.editable() : propInfo.updatable();
     }
 
+    public boolean isEditPossible()
+    {
+        return propInfo.editable();
+    }
+
     private boolean isNewObject(IPropertySource source)
     {
         Object value = source.getEditableValue();
@@ -180,6 +185,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     public boolean isCollectionAnno()
     {
         return Collection.class.isAssignableFrom(getGetter().getReturnType());
+    }
+
+    @Override
+    public String toString()
+    {
+        return getId() + " (" + propInfo.name() + ")";
     }
 
     private class DefaultLabelProvider extends LabelProvider implements IFontProvider {

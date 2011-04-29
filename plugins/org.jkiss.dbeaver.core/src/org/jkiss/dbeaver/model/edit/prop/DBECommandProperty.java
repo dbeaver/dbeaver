@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBECommandAbstract<OBJECT_TYPE> {
 
-    public static final String PROP_COMPOSITE_COMMAND = ".composite";
+    //public static final String PROP_COMPOSITE_COMMAND = ".composite";
 
     private DBEPropertyHandler<OBJECT_TYPE> handler;
     private Object oldValue;
@@ -68,17 +68,16 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
     }
 
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<String, Object> userParams)
+    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
     {
         if (!(prevCommand instanceof DBECommandProperty) || prevCommand.getObject() != getObject()) {
             // Dunno what to do with it
             //return this;
         }
-        String compositeName = getObject().toString() + PROP_COMPOSITE_COMMAND;
-        DBECommandComposite compositeCommand = (DBECommandComposite)userParams.get(compositeName);
+        DBECommandComposite compositeCommand = (DBECommandComposite)userParams.get(getObject());
         if (compositeCommand == null) {
             compositeCommand = handler.createCompositeCommand(getObject());
-            userParams.put(compositeName, compositeCommand);
+            userParams.put(getObject(), compositeCommand);
         }
         compositeCommand.addPropertyHandler(handler, newValue);
         return compositeCommand;

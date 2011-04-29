@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
@@ -13,6 +14,8 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,11 +31,11 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commander, Object parent, Object copyFrom)
+    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, Object parent, Object copyFrom)
     {
         OBJECT_TYPE newTable = createNewTable((CONTAINER_TYPE) parent, copyFrom);
-        // Add dummy command (it does nothing)
-        commander.addCommand(new CommandCreateStruct(newTable), null);
+
+        makeInitialCommands(newTable, context, new CommandCreateStruct(newTable));
 
         return newTable;
     }

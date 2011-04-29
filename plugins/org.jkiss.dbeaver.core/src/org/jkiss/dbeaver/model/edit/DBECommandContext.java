@@ -11,6 +11,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Command context.
@@ -36,6 +38,8 @@ public interface DBECommandContext extends IDataSourceContainerProvider {
 
     void addCommand(DBECommand<?> command, DBECommandReflector<?, DBECommand<?>> reflector);
 
+    void addCommandBatch(List<DBECommand> commands);
+
     void removeCommand(DBECommand<?> command);
 
     void updateCommand(DBECommand<?> command);
@@ -43,4 +47,7 @@ public interface DBECommandContext extends IDataSourceContainerProvider {
     void addCommandListener(DBECommandListener listener);
 
     void removeCommandListener(DBECommandListener listener);
+
+    Map<Object, Object> getUserParams();
+
 }

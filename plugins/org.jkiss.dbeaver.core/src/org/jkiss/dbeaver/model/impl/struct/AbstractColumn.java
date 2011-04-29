@@ -57,7 +57,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         return name;
     }
 
-    protected void setName(String columnName)
+    public void setName(String columnName)
     {
         this.name = columnName;
     }
@@ -68,7 +68,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         return typeName;
     }
 
-    protected void setTypeName(String typeName)
+    public void setTypeName(String typeName)
     {
         this.typeName = typeName;
     }
@@ -79,7 +79,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         return ordinalPosition;
     }
 
-    protected void setOrdinalPosition(int ordinalPosition)
+    public void setOrdinalPosition(int ordinalPosition)
     {
         this.ordinalPosition = ordinalPosition;
     }
