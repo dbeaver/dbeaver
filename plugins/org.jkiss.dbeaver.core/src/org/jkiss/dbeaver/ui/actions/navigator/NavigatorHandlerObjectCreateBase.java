@@ -8,16 +8,18 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPPersistedObject;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
@@ -49,26 +51,33 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             if (sourceObject != null && sourceObject.getClass() != childType) {
                 throw new DBException("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
             }
-            DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(childType);
+
+            final EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
+            DBEObjectManager<?> objectManager = editorsRegistry.getObjectManager(childType);
             if (objectManager == null) {
                 throw new DBException("Object manager not found for type '" + childType.getName() + "'");
             }
-            final Object parentObject = container.getValueObject();
             DBEObjectMaker objectMaker = (DBEObjectMaker) objectManager;
-            DBECommandContext commandContext = getCommandContext(workbenchWindow, container, parentObject);
+            final boolean openEditor = (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_EDITOR_ON_CREATE) != 0;
+            CommandTarget commandTarget = getCommandTarget(
+                workbenchWindow,
+                container,
+                childType,
+                openEditor);
 
-            DBSObject result = objectMaker.createNewObject(workbenchWindow, commandContext, parentObject, sourceObject);
+            final Object parentObject = container.getValueObject();
+            DBSObject result = objectMaker.createNewObject(workbenchWindow, commandTarget.getContext(), parentObject, sourceObject);
             if (result == null) {
                 return true;
             }
-            if (commandContext == null) {
+            if (commandTarget == null) {
                 throw new DBException("Non-database container '" + container + "' must save new objects itself - command context is not accessible");
             }
 
             // Save object manager's content
             ObjectSaver objectSaver = new ObjectSaver(
                 container,
-                commandContext,
+                commandTarget.getContext(),
                 result,
                 (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0);
 
@@ -85,17 +94,18 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         }
                     }
                 });
-                if (parentObject instanceof DBPPersistedObject && !((DBPPersistedObject)parentObject).isPersisted()) {
-                    // Parent is not persisted
-                    // Just do not open editor for new child because it should be handled by parent's editor
-                } else if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_EDITOR_ON_CREATE) != 0) {
-                    // Can open editor only for database nodes
-                    if (newChild instanceof DBNDatabaseNode) {
-                        EntityEditorInput editorInput = new EntityEditorInput((DBNDatabaseNode)newChild, commandContext);
-                        workbenchWindow.getActivePage().openEditor(
-                            editorInput,
-                            EntityEditor.class.getName());
-                    }
+                IDatabaseNodeEditor editor = commandTarget.getEditor();
+                if (editor != null) {
+                    // Just activate existing editor
+                    workbenchWindow.getActivePage().activate(editor);
+                } else if (openEditor && newChild instanceof DBNDatabaseNode) {
+                    // Open new one with existing context
+                    EntityEditorInput editorInput = new EntityEditorInput(
+                        (DBNDatabaseNode) newChild,
+                        commandTarget.getContext());
+                    workbenchWindow.getActivePage().openEditor(
+                        editorInput,
+                        EntityEditor.class.getName());
                 }
             } else {
                 throw new DBException("Can't find node corresponding to new object");

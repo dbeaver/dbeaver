@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -18,6 +20,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * JDBCObjectManager
  */
 public abstract class JDBCObjectManager<OBJECT_TYPE extends DBSObject> implements DBEObjectManager<OBJECT_TYPE> {
+
+    protected static final Log log = LogFactory.getLog(JDBCObjectManager.class);
 
     public void executePersistAction(DBCExecutionContext context, DBECommand<OBJECT_TYPE> command, IDatabasePersistAction action) throws DBException
     {

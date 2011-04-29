@@ -16,10 +16,12 @@ import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -31,30 +33,74 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     static final Log log = LogFactory.getLog(NavigatorHandlerObjectBase.class);
 
-    protected DBECommandContext getCommandContext(IWorkbenchWindow workbenchWindow, DBNContainer container, Object parentObject) throws DBException
+    protected static class CommandTarget {
+        private DBECommandContext context;
+        private IDatabaseNodeEditor editor;
+        private IDatabaseNodeEditorInput editorInput;
+        private CommandTarget(DBECommandContextImpl context)
+        {
+            this.context = context;
+        }
+        public CommandTarget(IDatabaseNodeEditor editor)
+        {
+            this.editor = editor;
+            this.context = editor.getEditorInput().getCommandContext();
+        }
+
+        public DBECommandContext getContext()
+        {
+            return context;
+        }
+        public IDatabaseNodeEditor getEditor()
+        {
+            return editor;
+        }
+        public IDatabaseNodeEditorInput getEditorInput()
+        {
+            return editorInput;
+        }
+    }
+
+    protected CommandTarget getCommandTarget(
+        IWorkbenchWindow workbenchWindow,
+        DBNContainer container,
+        Class<?> childType,
+        boolean openEditor)
+        throws DBException
     {
-        if (parentObject instanceof DBPPersistedObject && !((DBPPersistedObject)parentObject).isPersisted()) {
-            // Parent is not yet persisted
-            // It seems that child object is created within some editor
-            // Obtain command context from it
+        final Object parentObject = container.getValueObject();
+
+        DBSObject objectToSeek = null;
+        if (parentObject instanceof DBSObject) {
+            final DBEStructEditor parentStructEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(parentObject.getClass(), DBEStructEditor.class);
+            if (parentStructEditor != null && parentStructEditor.isChildType(childType)) {
+                objectToSeek = (DBSObject) parentObject;
+            }
+        }
+        if (objectToSeek != null) {
             for (final IEditorReference editorRef : workbenchWindow.getActivePage().getEditorReferences()) {
                 final IEditorPart editor = editorRef.getEditor(false);
                 if (editor instanceof IDatabaseNodeEditor) {
                     final IDatabaseNodeEditorInput editorInput = ((IDatabaseNodeEditor) editor).getEditorInput();
-                    if (editorInput.getDatabaseObject() == parentObject) {
-                        return editorInput.getCommandContext();
+                    if (editorInput.getDatabaseObject() == objectToSeek) {
+                        return new CommandTarget((IDatabaseNodeEditor) editor);
                     }
                 }
             }
 
-            throw new DBException("Can't find host editor for object " + parentObject);
-        } else if (container instanceof DBNDatabaseNode) {
-            DBSDataSourceContainer dsContainer = ((DBNDatabaseNode) container).getObject().getDataSource().getContainer();
-            return new DBECommandContextImpl(dsContainer);
-        } else {
-            // No command context supported for this object
-            return null;
+            if (openEditor && container instanceof DBNDatabaseNode) {
+                final IDatabaseNodeEditor editor = (IDatabaseNodeEditor) NavigatorHandlerObjectOpen.openEntityEditor(
+                    (DBNDatabaseNode) container,
+                    null,
+                    workbenchWindow);
+                if (editor != null) {
+                    return new CommandTarget(editor);
+                }
+            }
         }
+        // No editor found and no need to create one - create new command context
+        DBSDataSourceContainer dsContainer = ((DBNDatabaseNode) container).getObject().getDataSource().getContainer();
+        return new CommandTarget(new DBECommandContextImpl(dsContainer));
     }
 
     public static DBNDatabaseNode getNodeByObject(DBSObject object)

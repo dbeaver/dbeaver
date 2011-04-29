@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
 
@@ -13,6 +14,5 @@ import java.util.Collection;
  */
 public interface DBEStructEditor<OBJECT_TYPE extends DBPObject> extends DBEObjectEditor<OBJECT_TYPE> {
 
-    Class<?>[] getChildTypes();
-
+    boolean isChildType(Class<?> object);
 }

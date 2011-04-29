@@ -18,7 +18,6 @@ import java.util.List;
  */
 public class GenericTableManager extends JDBCTableManager<GenericTable, GenericEntityContainer> {
 
-
     @Override
     protected GenericTable createNewTable(GenericEntityContainer parent, Object copyFrom)
     {
@@ -38,6 +37,10 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
     protected IDatabasePersistAction[] makePersistActions(CommandCreateStruct command)
     {
         final ObjectChangeCommand tableProps = command.getObjectCommands().get(command.getObject());
+        if (tableProps == null) {
+            log.warn("Object change command not found");
+            return null;
+        }
         final Object tableName = tableProps.getProperty(DBConstants.PROP_ID_NAME);
 
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
@@ -45,14 +48,12 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
-    public Class<?>[] getChildTypes()
+    public boolean isChildType(Class<?> childType)
     {
-        return new Class[] {
-            GenericTableColumn.class,
-            GenericPrimaryKey.class,
-            GenericForeignKey.class,
-            GenericIndex.class,
-        };
+        return
+            childType == GenericTableColumn.class ||
+            childType == GenericPrimaryKey.class ||
+            childType == GenericForeignKey.class ||
+            childType == GenericIndex.class;
     }
-
 }

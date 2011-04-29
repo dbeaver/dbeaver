@@ -17,7 +17,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -25,10 +27,14 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.*;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -145,33 +151,28 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
                 }
             }
 
-            DBECommandContext commandContext = getCommandContext(
+            CommandTarget commandTarget = getCommandTarget(
                 workbenchWindow,
                 container,
-                container.getValueObject());
-            if (!(node instanceof DBNDataSource)) {
-                DBPDataSource dataSource = node.getObject().getDataSource();
-                if (dataSource == null) {
-                    log.error("Node '" + node.getNodeName() + "' object is notify() attached toString() datasource");
-                    return false;
-                }
-                commandContext = new DBECommandContextImpl(dataSource.getContainer());
-            }
+                object.getClass(),
+                false);
 
-            objectMaker.deleteObject(commandContext, node.getObject(), deleteOptions);
-            if (commandContext == null) {
+            objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
+            if (commandTarget == null) {
                 return true;
             }
             if (confirmResult == ConfirmResult.DETAILS) {
-                if (!showScript(workbenchWindow, commandContext)) {
-                    commandContext.resetChanges();
+                if (!showScript(workbenchWindow, commandTarget.getContext())) {
+                    commandTarget.getContext().resetChanges();
                     return false;
                 }
             }
 
-            // Delete object
-            ObjectDeleter deleter = new ObjectDeleter(commandContext);
-            DBeaverCore.getInstance().runInProgressService(deleter);
+            if (commandTarget.getEditor() == null) {
+                // Persist object deletion - only if there is not host editor
+                ObjectDeleter deleter = new ObjectDeleter(commandTarget.getContext());
+                DBeaverCore.getInstance().runInProgressService(deleter);
+            }
 
             // Remove node
             if (!node.isDisposed()) {

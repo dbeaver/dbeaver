@@ -12,13 +12,16 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -74,13 +77,12 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
         }
     }
 
-    public static void openEntityEditor(DBNDatabaseNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
+    public static IEditorPart openEntityEditor(DBNDatabaseNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
     {
         if (selectedNode.getObject() instanceof DBEPrivateObjectEditor) {
             ((DBEPrivateObjectEditor)selectedNode.getObject()).editObject(workbenchWindow);
-            return;
+            return null;
         }
-        IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
         try {
             String defaultFolderId = null;
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
@@ -94,41 +96,34 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
                         ((IFolderedPart)editor).switchFolder(defaultFolderId);
                     }
                     workbenchWindow.getActivePage().activate(editor);
-                    return;
+                    return editor;
                 }
             }
             if (selectedNode instanceof DBNDatabaseFolder) {
                 FolderEditorInput folderInput = new FolderEditorInput((DBNDatabaseFolder)selectedNode);
                 folderInput.setDefaultPageId(defaultPageId);
-                workbenchWindow.getActivePage().openEditor(
+                return workbenchWindow.getActivePage().openEditor(
                     folderInput,
                     FolderEditor.class.getName());
             } else if (selectedNode instanceof DBNDatabaseObject) {
                 DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
                 ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
-                workbenchWindow.getActivePage().openEditor(
+                return workbenchWindow.getActivePage().openEditor(
                     objectInput,
                     objectNode.getMeta().getEditorId());
             } else if (selectedNode.getObject() != null) {
                 EntityEditorInput editorInput = new EntityEditorInput(selectedNode);
                 editorInput.setDefaultPageId(defaultPageId);
                 editorInput.setDefaultFolderId(defaultFolderId);
-                workbenchWindow.getActivePage().openEditor(
+                return workbenchWindow.getActivePage().openEditor(
                     editorInput,
                     EntityEditor.class.getName());
+            } else {
+                throw new DBException("Don't know how to open object '" + selectedNode.getNodeName() + "'");
             }
         } catch (Exception ex) {
             UIUtils.showErrorDialog(workbenchWindow.getShell(), "Open entity", "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
-        }
-        finally {
-            // Reactivate navigator
-            // Actually it still focused but we need to use it's selection
-            // I think it is an eclipse bug
-
-            // !! Remove this crap. Editor should just implement setFocus() to prevent this problem
-            if (!(oldActivePart instanceof IEditorPart)) {
-                //workbenchWindow.getActivePage().activate(oldActivePart);
-            }
+            return null;
         }
     }
 
