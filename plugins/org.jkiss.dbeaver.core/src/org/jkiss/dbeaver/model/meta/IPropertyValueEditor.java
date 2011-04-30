@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.model.meta;
 
 import org.eclipse.jface.viewers.CellEditor;
@@ -10,7 +14,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface IPropertyValueEditor<OBJECT_TYPE extends DBSObject> {
 
-    CellEditor createCellEditor(Composite parent, Property property);
+    CellEditor createCellEditor(Composite parent, Object object, Property property);
 
 
 

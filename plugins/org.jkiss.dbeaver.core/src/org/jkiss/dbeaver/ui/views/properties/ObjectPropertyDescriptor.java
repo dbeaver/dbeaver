@@ -84,10 +84,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public CellEditor createPropertyEditor(Composite parent)
     {
-        if (!isEditable(getSource().getEditableValue())) {
+        final Object object = getSource().getEditableValue();
+        if (!isEditable(object)) {
             return null;
         }
-        return valueEditor.createCellEditor(parent, propInfo);
+        return valueEditor.createCellEditor(parent, object, propInfo);
     }
 
     public boolean isEditable(Object object)
@@ -222,7 +223,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     private class DefaultValueEditor implements IPropertyValueEditor {
 
-        public CellEditor createCellEditor(Composite parent, Property property)
+        public CellEditor createCellEditor(Composite parent, Object object, Property property)
         {
             Class<?> propertyType = getGetter().getReturnType();
             if (CharSequence.class.isAssignableFrom(propertyType)) {

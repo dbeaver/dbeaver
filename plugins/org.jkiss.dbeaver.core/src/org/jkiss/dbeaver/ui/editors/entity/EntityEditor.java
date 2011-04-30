@@ -106,6 +106,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             getCommandContext().removeCommandListener(commandListener);
             commandListener = null;
         }
+        super.dispose();
+
         if (getDatabaseObject() != null) {
             DBNDatabaseNode treeNode = getEditorInput().getTreeNode();
             if (getDatabaseObject().isPersisted()) {
@@ -132,8 +134,6 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 }
             }
         }
-
-        super.dispose();
     }
 
     @Override
