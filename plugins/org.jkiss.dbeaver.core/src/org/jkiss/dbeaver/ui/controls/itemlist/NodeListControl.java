@@ -314,22 +314,6 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             final Class<?> curClass = editableValue.getClass();
             DBEStructEditor structEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(((DBNDatabaseNode) rootNode).getValueObject().getClass(), DBEStructEditor.class);
             return structEditor != null && structEditor.isChildType(curClass);
-            /*
-            if (nodeMeta instanceof DBXTreeFolder) {
-                Class<?> listClass = nodeMeta.getSource().getObjectClass(((DBXTreeFolder) nodeMeta).getType());
-                if (listClass != null && structEditor.isChildType(listClass)) {
-                    return true;
-                }
-            }
-*/
-//            final Class[] childTypes = structEditor.getChildTypes();
-//            for (Class aClass : childTypes) {
-//                if (aClass == curClass) {
-//                    return true;
-//                }
-//            }
-//            return false;
-            //return true;
         }
 
         public IPropertyDescriptor[] getPropertyDescriptors()
@@ -338,6 +322,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             return props.toArray(new IPropertyDescriptor[props.size()]);
         }
 
+        protected void handlePropertyChange(Object editableValue, Object id, Object value)
+        {
+            super.handlePropertyChange(editableValue, id, value);
+            getItemsViewer().update(getCurrentListObject(), null);
+        }
     }
 
 

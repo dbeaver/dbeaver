@@ -16,8 +16,10 @@ import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
@@ -26,7 +28,7 @@ import java.util.Map;
 public class PropertySourceEditable extends PropertySourceAbstract implements DBPObject, IPropertySourceEditable
 {
     private DBECommandContext commandContext;
-    private Map<Object, Object> updatedValues = new HashMap<Object, Object>();
+    private Map<DBPObject, Map<Object, Object>> updatedValues = new IdentityHashMap<DBPObject, Map<Object, Object>>();
     private DBECommandProperty<? extends DBPObject> curCommand = null;
 
     public PropertySourceEditable(DBECommandContext commandContext, Object sourceObject, Object object)
@@ -57,27 +59,31 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         return commandContext;
     }
 
-    @Override
-    public void resetPropertyValue(Object id)
+    private Map<Object, Object> getObjectProps(Object object)
     {
-
+        Map<Object, Object> props = updatedValues.get((DBPObject)object);
+        if (props == null) {
+            props = new HashMap<Object, Object>();
+            updatedValues.put((DBPObject)object, props);
+        }
+        return props;
     }
 
     @Override
-    public Object getPropertyValue(Object id)
+    public Object getPropertyValue(Object editableValue, Object id)
     {
-        final Object value = updatedValues.get(id);
+        final Object value = getObjectProps(editableValue).get(id);
         if (value != null) {
             return value;
         } else {
-            return super.getPropertyValue(id);
+            return super.getPropertyValue(editableValue, id);
         }
     }
 
     @Override
-    public void setPropertyValue(Object id, Object value)
+    public void setPropertyValue(Object editableValue, Object id, Object value)
     {
-        final Object oldValue = updatedValues.put(id, value);
+        final Object oldValue = getObjectProps(editableValue).put(id, value);
         if (CommonUtils.equalObjects(oldValue, value)) {
             return;
         }
@@ -93,10 +99,10 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         }
         if (curCommand == null) {
             final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
-                (DBPObject) getEditableValue(),
+                (DBPObject)editableValue,
                 propertyDescriptor);
             curCommand = new DBECommandProperty<DBPObject>(
-                (DBPObject) getEditableValue(),
+                (DBPObject)editableValue,
                 propertyHandler,
                 value);
             final CommandReflector reflector = new CommandReflector();
@@ -106,14 +112,17 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             getCommandContext().updateCommand(curCommand);
         }
 
-        handlePropertyChange(id, value);
+        handlePropertyChange(editableValue, id, value);
     }
 
-    private void handlePropertyChange(Object id, Object value)
+    protected void handlePropertyChange(Object editableValue, Object id, Object value)
     {
-        if (DBConstants.PROP_ID_NAME.equals(id) && getSourceObject() instanceof DBNDatabaseNode) {
-            // Update object in navigator
-            ((DBNDatabaseNode)getSourceObject()).setNodeName(CommonUtils.toString(value));
+        if (getSourceObject() instanceof DBNDatabaseNode) {
+            final DBNDatabaseNode sourceNode = (DBNDatabaseNode) getSourceObject();
+            if (DBConstants.PROP_ID_NAME.equals(id) && sourceNode.getObject() == editableValue) {
+                // Update object in navigator
+                sourceNode.setNodeName(CommonUtils.toString(value));
+            }
         }
     }
 

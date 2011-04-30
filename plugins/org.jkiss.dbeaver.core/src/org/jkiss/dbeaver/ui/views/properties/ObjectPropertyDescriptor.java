@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -229,21 +230,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 try {
                     IPropertyValueListProvider provider = property.listProvider().newInstance();
                     final String[] items = provider.getPossibleValues(object);
-                    final ComboBoxCellEditor editor = new ComboBoxCellEditor(parent, items) {
-                        @Override
-                        protected void doSetValue(Object value)
-                        {
-                            if (value instanceof String) {
-                                for (int i = 0 ; i < items.length; i++) {
-                                    if (items[i].equalsIgnoreCase((String)value)) {
-                                        value = i;
-                                        break;
-                                    }
-                                }
-                            }
-                            super.doSetValue(value);
-                        }
-                    };
+                    final CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(parent, items);
                     editor.setStyle(SWT.DROP_DOWN);
                     return editor;
                 } catch (Exception e) {

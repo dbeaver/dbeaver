@@ -104,13 +104,18 @@ public abstract class PropertySourceAbstract implements IPropertySource
         return null;
     }
 
-    public Object getPropertyValue(final Object id)
+    public final Object getPropertyValue(final Object id)
+    {
+        return getPropertyValue(getEditableValue(), id);
+    }
+
+    public Object getPropertyValue(final Object object, final Object id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
             try {
                 ObjectPropertyDescriptor annoDescriptor = (ObjectPropertyDescriptor) value;
-                if (annoDescriptor.isLazy(getEditableValue(), true)) {
+                if (annoDescriptor.isLazy(object, true)) {
                     if (!loadLazyProps) {
                         return null;
                     } else {
@@ -143,7 +148,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
                         return PropertySheetLoadService.TEXT_LOADING;
                     }
                 } else {
-                    value = annoDescriptor.readValue(getEditableValue(), null);
+                    value = annoDescriptor.readValue(object, null);
                 }
             } catch (Exception e) {
                 return e.getMessage();
@@ -163,12 +168,17 @@ public abstract class PropertySourceAbstract implements IPropertySource
         return false;
     }
 
-    public void resetPropertyValue(Object id)
+    public final void resetPropertyValue(Object id)
     {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
 
-    public void setPropertyValue(Object id, Object value)
+    public final void setPropertyValue(Object id, Object value)
+    {
+        setPropertyValue(getEditableValue(), id, value);
+    }
+
+    public void setPropertyValue(Object object, Object id, Object value)
     {
         throw new UnsupportedOperationException("Cannot update property in non-editable property source");
 /*

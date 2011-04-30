@@ -172,7 +172,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         });
     }
 
-    public IPropertySource getListPropertySource()
+    public PropertySourceAbstract getListPropertySource()
     {
         return listPropertySource;
     }
@@ -443,17 +443,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             return LOADING_LABEL;
         }
-        try {
-            return prop.readValue(objectValue, null);
-        }
-        catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
-            return null;
-        }
-        catch (Exception e) {
-            log.error(e);
-            return null;
-        }
+        return listPropertySource.getPropertyValue(objectValue, prop.getId());
     }
 
     private Rectangle getCellLinkBounds(Item item, int column, Object cellValue) {

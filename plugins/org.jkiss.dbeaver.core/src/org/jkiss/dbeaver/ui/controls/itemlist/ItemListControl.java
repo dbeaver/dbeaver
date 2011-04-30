@@ -170,10 +170,7 @@ public class ItemListControl extends NodeListControl
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null) {
-                // Set new current object here
-                // getValue may be invoked before selection change so current list object may be still not valid
-                setCurListObject(object);
-                return getListPropertySource().getPropertyValue(property.getId());
+                return getListPropertySource().getPropertyValue(getObjectValue(object), property.getId());
             }
             return null;
         }
@@ -183,8 +180,7 @@ public class ItemListControl extends NodeListControl
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null) {
-                setCurListObject(object);
-                getListPropertySource().setPropertyValue(property.getId(), value);
+                getListPropertySource().setPropertyValue(getObjectValue(object), property.getId(), value);
             }
         }
 
