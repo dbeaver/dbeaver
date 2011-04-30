@@ -4,12 +4,8 @@
 
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.commands.IElementUpdater;
-import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
@@ -31,9 +27,8 @@ import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
 
-public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerObjectBase implements IElementUpdater {
+public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerObjectBase {
 
     protected boolean createNewObject(final IWorkbenchWindow workbenchWindow, DBNNode element, DBNDatabaseNode copyFrom)
     {
@@ -170,26 +165,6 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 return false;
             }
             return true;
-        }
-    }
-
-    public void updateElement(UIElement element, Map parameters)
-    {
-        IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
-        if (partSite != null) {
-            final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
-            if (selectionProvider != null) {
-                DBNNode node = ViewUtils.getSelectedNode(selectionProvider.getSelection());
-                if (node != null) {
-                    String objectName;
-                    if (node instanceof DBNContainer) {
-                        objectName = ((DBNContainer)node).getItemsLabel();
-                    } else {
-                        objectName = node.getNodeType();
-                    }
-                    element.setText("Create New " + objectName);
-                }
-            }
         }
     }
 

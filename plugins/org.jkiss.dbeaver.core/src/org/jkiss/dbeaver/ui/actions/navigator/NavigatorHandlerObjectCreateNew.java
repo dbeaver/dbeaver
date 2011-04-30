@@ -7,11 +7,19 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
-public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreateBase {
+import java.util.Map;
+
+public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
@@ -26,6 +34,26 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             }
         }
         return null;
+    }
+
+    public void updateElement(UIElement element, Map parameters)
+    {
+        IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
+        if (partSite != null) {
+            final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
+            if (selectionProvider != null) {
+                DBNNode node = ViewUtils.getSelectedNode(selectionProvider.getSelection());
+                if (node != null) {
+                    String objectName;
+                    if (node instanceof DBNContainer) {
+                        objectName = ((DBNContainer)node).getItemsLabel();
+                    } else {
+                        objectName = node.getNodeType();
+                    }
+                    element.setText("Create New " + objectName);
+                }
+            }
+        }
     }
 
 }

@@ -309,24 +309,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         }
     }
 
-    private static class ObjectDeleter implements DBRRunnableWithProgress {
-        private final DBECommandContext commander;
-
-        public ObjectDeleter(DBECommandContext commandContext)
-        {
-            this.commander = commandContext;
-        }
-
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-        {
-            try {
-                commander.saveChanges(monitor);
-            } catch (DBException e) {
-                throw new InvocationTargetException(e);
-            }
-        }
-    }
-
     public void updateElement(UIElement element, Map parameters)
     {
         //IWorkbenchPartSite partSite = (IWorkbenchPartSite) parameters.get(IServiceScopes.PARTSITE_SCOPE);
@@ -347,4 +329,23 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             }
         }
     }
+
+    private static class ObjectDeleter implements DBRRunnableWithProgress {
+        private final DBECommandContext commander;
+
+        public ObjectDeleter(DBECommandContext commandContext)
+        {
+            this.commander = commandContext;
+        }
+
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        {
+            try {
+                commander.saveChanges(monitor);
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
+            }
+        }
+    }
+
 }

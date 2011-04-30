@@ -5,8 +5,16 @@
 package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.utils.ViewUtils;
+
+import java.util.Map;
 
 public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
 
@@ -20,4 +28,18 @@ public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
             return null;
         }
     }
+
+    @Override
+    protected String getSelectionTitle(IStructuredSelection selection)
+    {
+        if (selection.size() > 1) {
+            return "Copy Objects";
+        }
+        DBNNode node = ViewUtils.getSelectedNode(selection);
+        if (node != null) {
+            return "Copy " + node.getNodeType();
+        }
+        return null;
+    }
+
 }
