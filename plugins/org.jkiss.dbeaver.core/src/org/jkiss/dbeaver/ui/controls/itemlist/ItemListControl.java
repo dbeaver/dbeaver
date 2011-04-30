@@ -33,6 +33,7 @@ public class ItemListControl extends NodeListControl
     private Searcher searcher;
     private SearchColorProvider searchColorProvider;
     private Color searchHighlightColor;
+    private Color newObjectColor;
 
     public ItemListControl(
         Composite parent,
@@ -45,6 +46,7 @@ public class ItemListControl extends NodeListControl
         searcher = new Searcher();
         searchColorProvider = new SearchColorProvider();
         searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
+        newObjectColor = new Color(parent.getDisplay(), 0xFF, 0xB6, 0xC1);
     }
 
     @Override
@@ -55,6 +57,7 @@ public class ItemListControl extends NodeListControl
 //            objectEditorHandler = null;
 //        }
         UIUtils.dispose(searchHighlightColor);
+        UIUtils.dispose(newObjectColor);
         super.dispose();
     }
 
@@ -229,7 +232,13 @@ public class ItemListControl extends NodeListControl
 
         public Color getBackground(Object element)
         {
-            return searcher != null && searcher.hasObject((DBNNode) element) ? searchHighlightColor : null;
+            if (searcher != null && searcher.hasObject((DBNNode) element)) {
+                return searchHighlightColor;
+            }
+            if (element instanceof DBNDatabaseNode && !((DBNDatabaseNode) element).getObject().isPersisted()) {
+                return newObjectColor;
+            }
+            return null;
         }
     }
 

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.views.properties;
 import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -14,6 +15,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.meta.IPropertyValueEditor;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -58,7 +60,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         }
 
         // Obtain value editor
-        Class<IPropertyValueEditor> valueEditorClass = propInfo.valueEditor();
+        Class<? extends IPropertyValueEditor> valueEditorClass = propInfo.valueEditor();
         if (valueEditorClass != null && valueEditorClass != IPropertyValueEditor.class) {
             try {
                 valueEditor = valueEditorClass.newInstance();
@@ -108,10 +110,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     private boolean isNewObject(Object object)
     {
-        if (object instanceof DBPPersistedObject) {
-            return !((DBPPersistedObject)object).isPersisted();
-        }
-        return false;
+        return object instanceof DBPPersistedObject && !((DBPPersistedObject) object).isPersisted();
     }
 
     public String getCategory()
@@ -225,15 +224,43 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
         public CellEditor createCellEditor(Composite parent, Object object, Property property)
         {
-            Class<?> propertyType = getGetter().getReturnType();
-            if (CharSequence.class.isAssignableFrom(propertyType)) {
-                return new TextCellEditor(parent);
-            } else if (Number.class.isAssignableFrom(propertyType)) {
-                return new TextCellEditor(parent);
-            } else if (Boolean.class.isAssignableFrom(propertyType)) {
-                return new CheckboxCellEditor(parent);
+            if (property.listProvider() != IPropertyValueListProvider.class) {
+                // List
+                try {
+                    IPropertyValueListProvider provider = property.listProvider().newInstance();
+                    final String[] items = provider.getPossibleValues(object);
+                    final ComboBoxCellEditor editor = new ComboBoxCellEditor(parent, items) {
+                        @Override
+                        protected void doSetValue(Object value)
+                        {
+                            if (value instanceof String) {
+                                for (int i = 0 ; i < items.length; i++) {
+                                    if (items[i].equalsIgnoreCase((String)value)) {
+                                        value = i;
+                                        break;
+                                    }
+                                }
+                            }
+                            super.doSetValue(value);
+                        }
+                    };
+                    editor.setStyle(SWT.DROP_DOWN);
+                    return editor;
+                } catch (Exception e) {
+                    log.error(e);
+                    return null;
+                }
             } else {
-                return null;
+                Class<?> propertyType = getGetter().getReturnType();
+                if (CharSequence.class.isAssignableFrom(propertyType)) {
+                    return new TextCellEditor(parent);
+                } else if (Number.class.isAssignableFrom(propertyType)) {
+                    return new TextCellEditor(parent);
+                } else if (Boolean.class.isAssignableFrom(propertyType)) {
+                    return new CheckboxCellEditor(parent);
+                } else {
+                    return null;
+                }
             }
         }
 

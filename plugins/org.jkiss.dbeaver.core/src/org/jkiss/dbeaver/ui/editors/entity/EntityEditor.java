@@ -113,18 +113,6 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             if (getDatabaseObject().isPersisted()) {
                 // Reset node name (if it was set by editor)
                 treeNode.setNodeName(null);
-            } else {
-//                // If edited object is still not persisted then remove object's node
-//                if (treeNode instanceof DBNDatabaseItem) {
-//                    DBNNode parentNode = treeNode.getParentNode();
-//                    if (parentNode instanceof DBNDatabaseFolder) {
-//                        try {
-//                            ((DBNDatabaseFolder)parentNode).removeChildItem(treeNode);
-//                        } catch (DBException e) {
-//                            log.error(e);
-//                        }
-//                    }
-//                }
             }
 
             // Remove all non-persisted objects

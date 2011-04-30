@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
  */
 public class JDBCDataType implements DBSDataType
 {
-    private int type;
+    private int valueType;
     private String name;
     private String remarks;
     private boolean isUnsigned;
@@ -22,7 +22,7 @@ public class JDBCDataType implements DBSDataType
     private int maxScale;
 
     public JDBCDataType(
-        int type,
+        int valueType,
         String name,
         String remarks,
         boolean unsigned,
@@ -31,7 +31,7 @@ public class JDBCDataType implements DBSDataType
         int minScale,
         int maxScale)
     {
-        this.type = type;
+        this.valueType = valueType;
         this.name = name;
         this.remarks = remarks;
         isUnsigned = unsigned;
@@ -43,7 +43,7 @@ public class JDBCDataType implements DBSDataType
 
     public int getTypeNumber()
     {
-        return type;
+        return valueType;
     }
 
     public String getName()
@@ -58,7 +58,7 @@ public class JDBCDataType implements DBSDataType
 
     public DBSDataKind getDataKind()
     {
-        switch (type) {
+        switch (valueType) {
             case java.sql.Types.BOOLEAN:
                 return DBSDataKind.BOOLEAN;
             case java.sql.Types.CHAR:
@@ -90,7 +90,7 @@ public class JDBCDataType implements DBSDataType
             case java.sql.Types.ARRAY:
                 return DBSDataKind.ARRAY;
         }
-        return null;
+        return DBSDataKind.UNKNOWN;
     }
 
     public boolean isUnsigned()

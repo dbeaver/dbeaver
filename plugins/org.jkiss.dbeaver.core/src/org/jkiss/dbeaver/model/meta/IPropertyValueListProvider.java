@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.model.meta;
 
 import java.util.Collection;
@@ -7,6 +11,6 @@ import java.util.Collection;
  */
 public interface IPropertyValueListProvider {
 
-    Collection<Object> getPossibleValues();
+    String[] getPossibleValues(Object object);
 
 }

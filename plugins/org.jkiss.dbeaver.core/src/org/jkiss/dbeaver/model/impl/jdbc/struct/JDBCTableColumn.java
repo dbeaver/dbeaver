@@ -4,8 +4,15 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * JDBC abstract table column
@@ -40,7 +47,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         return super.getName();
     }
 
-    @Property(name = "Data Type", viewable = true, editable = true, order = 20)
+    @Property(name = "Data Type", viewable = true, editable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
     {
@@ -56,6 +63,21 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
     {
         this.persisted = persisted;
         getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this));
+    }
+
+    public static class ColumnTypeNameListProvider implements IPropertyValueListProvider {
+
+        public String[] getPossibleValues(Object object)
+        {
+            Set<String> typeNames = new TreeSet<String>();
+            JDBCTableColumn column = (JDBCTableColumn) object;
+            for (DBSDataType type : column.getDataSource().getInfo().getSupportedDataTypes()) {
+                if (type.getDataKind() != DBSDataKind.UNKNOWN && !CommonUtils.isEmpty(type.getName()) && Character.isLetter(type.getName().charAt(0))) {
+                    typeNames.add(type.getName());
+                }
+            }
+            return typeNames.toArray(new String[typeNames.size()]);
+        }
     }
 
 }
