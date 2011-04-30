@@ -29,10 +29,8 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -88,17 +86,19 @@ public class ViewUtils
         if (viewer == null) {
             return null;
         }
-        return getSelectedNode((IStructuredSelection)viewer.getSelection());
+        return getSelectedNode(viewer.getSelection());
     }
 
-    public static DBNNode getSelectedNode(IStructuredSelection selection)
+    public static DBNNode getSelectedNode(ISelection selection)
     {
         if (selection.isEmpty()) {
             return null;
         }
-        Object selectedObject = selection.getFirstElement();
-        if (selectedObject instanceof DBNNode) {
-            return (DBNNode) selectedObject;
+        if (selection instanceof IStructuredSelection) {
+            Object selectedObject = ((IStructuredSelection)selection).getFirstElement();
+            if (selectedObject instanceof DBNNode) {
+                return (DBNNode) selectedObject;
+            }
         }
         return null;
     }
@@ -179,9 +179,7 @@ public class ViewUtils
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
-                IStructuredSelection selection = (IStructuredSelection) selectionProvider.getSelection();
-                DBNNode node = ViewUtils.getSelectedNode(selection);
-                boolean multipleSelection = selection.size() > 1;
+                DBNNode node = ViewUtils.getSelectedNode(selectionProvider.getSelection());
                 if (node != null && !node.isLocked()) {
                     String defaultCommandId = node.getDefaultCommandId();
 
@@ -193,32 +191,6 @@ public class ViewUtils
                             String contribId = ((IContributionItem)itemData).getId();
                             if (contribId != null && defaultCommandId != null && contribId.equals(defaultCommandId)) {
                                 m.setDefaultItem(item);
-                            }
-                            if (ICommandIds.CMD_OBJECT_OPEN.equals(contribId)) {
-                                String actionName = "Open";
-                                if (node instanceof DBNDatabaseNode) {
-                                    DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(((DBNDatabaseNode) node).getObject().getClass());
-                                    actionName = objectManager == null ? "View" : "Edit";
-                                }
-                                if (multipleSelection) {
-                                    item.setText(actionName + " Objects");
-                                } else {
-                                    item.setText(actionName + " " + node.getNodeType());
-                                }
-                            } else if (ICommandIds.CMD_OBJECT_CREATE.equals(contribId)) {
-                                String objectName;
-                                if (node instanceof DBNContainer) {
-                                    objectName = ((DBNContainer)node).getItemsLabel();
-                                } else {
-                                    objectName = node.getNodeType();
-                                }
-                                item.setText("Create New " + objectName);
-                            } else if (ICommandIds.CMD_OBJECT_DELETE.equals(contribId) || IWorkbenchCommandConstants.EDIT_DELETE.equals(contribId)) {
-                                if (multipleSelection) {
-                                    item.setText("Delete Objects");
-                                } else {
-                                    item.setText("Delete " + node.getNodeType()/* + " '" + node.getNodeName() + "'"*/);
-                                }
                             }
                         }
                     }

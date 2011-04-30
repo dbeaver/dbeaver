@@ -9,19 +9,22 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
+import org.eclipse.ui.services.IServiceScopes;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -30,10 +33,12 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.util.Iterator;
+import java.util.Map;
 
-public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
+public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase implements IElementUpdater {
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
@@ -127,4 +132,30 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
         }
     }
 
+    public void updateElement(UIElement element, Map parameters)
+    {
+        //IWorkbenchPartSite partSite = (IWorkbenchPartSite) parameters.get(IServiceScopes.PARTSITE_SCOPE);
+        IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
+        if (partSite != null) {
+            final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
+            if (selectionProvider != null) {
+                ISelection selection = selectionProvider.getSelection();
+                DBNNode node = ViewUtils.getSelectedNode(selection);
+                if (node != null) {
+                    String actionName = "Open";
+                    if (node instanceof DBNDatabaseNode) {
+                        DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(((DBNDatabaseNode) node).getObject().getClass());
+                        actionName = objectManager == null ? "View" : "Edit";
+                    }
+                    String label;
+                    if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
+                        label = actionName + " Objects";
+                    } else {
+                        label = actionName + " " + node.getNodeType();
+                    }
+                    element.setText(label);
+                }
+            }
+        }
+    }
 }

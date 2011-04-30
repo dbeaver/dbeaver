@@ -1257,6 +1257,7 @@
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.object.find" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+H"/>
         <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+D"/>
+        <key commandId="org.jkiss.dbeaver.core.object.create" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="NUMPAD_ADD"/>
 
         <!-- SQL Editor -->
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Enter"/>
