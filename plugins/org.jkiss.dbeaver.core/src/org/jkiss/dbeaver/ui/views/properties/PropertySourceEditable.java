@@ -36,7 +36,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         //this.objectManager = editorInput.getObjectManager(DBEObjectEditor.class);
     }
 
-    public boolean isEditable()
+    public boolean isEditable(Object object)
     {
         return commandContext != null && getObjectEditor() != null;
     }

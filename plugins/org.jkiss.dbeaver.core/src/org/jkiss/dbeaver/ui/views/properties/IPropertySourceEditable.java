@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
  */
 public interface IPropertySourceEditable {
 
-    boolean isEditable();
+    boolean isEditable(Object object);
 
     DBECommandContext getCommandContext();
 }

@@ -6,9 +6,8 @@ package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +34,8 @@ public interface DBECommandContext extends IDataSourceContainerProvider {
     void redoCommand();
 
     Collection<? extends DBECommand<?>> getCommands();
+
+    Collection<DBPObject> getEditedObjects();
 
     void addCommand(DBECommand<?> command, DBECommandReflector<?, DBECommand<?>> reflector);
 

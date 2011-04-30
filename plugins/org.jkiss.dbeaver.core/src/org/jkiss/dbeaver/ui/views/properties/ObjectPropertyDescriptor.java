@@ -17,7 +17,6 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueEditor;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -85,20 +84,20 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public CellEditor createPropertyEditor(Composite parent)
     {
-        if (!isEditable()) {
+        if (!isEditable(getSource().getEditableValue())) {
             return null;
         }
         return valueEditor.createCellEditor(parent, propInfo);
     }
 
-    public boolean isEditable()
+    public boolean isEditable(Object object)
     {
         final IPropertySource propertySource = getSource();
-        if (!(propertySource instanceof IPropertySourceEditable) || !((IPropertySourceEditable) propertySource).isEditable()) {
+        if (!(propertySource instanceof IPropertySourceEditable) || !((IPropertySourceEditable) propertySource).isEditable(object)) {
             return false;
         }
         // Read-only or non-updatable property for non-new object
-        return isNewObject(propertySource) ? propInfo.editable() : propInfo.updatable();
+        return isNewObject(object) ? propInfo.editable() : propInfo.updatable();
     }
 
     public boolean isEditPossible()
@@ -106,11 +105,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.editable();
     }
 
-    private boolean isNewObject(IPropertySource source)
+    private boolean isNewObject(Object object)
     {
-        Object value = source.getEditableValue();
-        if (value instanceof DBPPersistedObject) {
-            return !((DBPPersistedObject)value).isPersisted();
+        if (object instanceof DBPPersistedObject) {
+            return !((DBPPersistedObject)object).isPersisted();
         }
         return false;
     }

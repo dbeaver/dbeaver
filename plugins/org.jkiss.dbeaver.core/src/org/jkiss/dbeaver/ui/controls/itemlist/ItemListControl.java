@@ -148,7 +148,7 @@ public class ItemListControl extends NodeListControl
         {
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
-            if (property != null && property.isEditable()) {
+            if (property != null && property.isEditable(getObjectValue(object))) {
                 return property.createPropertyEditor(getControl());
             }
             return null;
@@ -159,7 +159,7 @@ public class ItemListControl extends NodeListControl
         {
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
-            return property != null && property.isEditable();
+            return property != null && property.isEditable(getObjectValue(object));
         }
 
         protected Object getValue(Object element)
@@ -167,6 +167,9 @@ public class ItemListControl extends NodeListControl
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null) {
+                // Set new current object here
+                // getValue may be invoked before selection change so current list object may be still not valid
+                setCurListObject(object);
                 return getListPropertySource().getPropertyValue(property.getId());
             }
             return null;
@@ -177,7 +180,8 @@ public class ItemListControl extends NodeListControl
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null) {
-                getListPropertySource().setPropertyValue(element, value);
+                setCurListObject(object);
+                getListPropertySource().setPropertyValue(property.getId(), value);
             }
         }
 

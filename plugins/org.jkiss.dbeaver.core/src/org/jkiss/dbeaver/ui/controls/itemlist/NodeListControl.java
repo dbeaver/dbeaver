@@ -13,7 +13,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
@@ -250,7 +250,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     @Override
-    protected IPropertySource createListPropertySource()
+    protected PropertySourceAbstract createListPropertySource()
     {
         if (workbenchPart instanceof IDatabaseNodeEditor) {
             return new NodeListPropertySource(((IDatabaseNodeEditor) workbenchPart).getEditorInput().getCommandContext());
@@ -302,27 +302,26 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
 
         @Override
-        public boolean isEditable()
+        public boolean isEditable(Object editableValue)
         {
+            if (editableValue == null) {
+                return false;
+            }
             final DBNNode rootNode = getRootNode();
             if (!(rootNode instanceof DBNDatabaseNode)) {
                 return false;
             }
-            final Object editableValue = ((DBNDatabaseNode) rootNode).getValueObject();
-            if (editableValue == null) {
-                return false;
-            }
             final Class<?> curClass = editableValue.getClass();
-            DBEStructEditor structEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(curClass, DBEStructEditor.class);
-            if (structEditor == null) {
-                return false;
-            }
+            DBEStructEditor structEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(((DBNDatabaseNode) rootNode).getValueObject().getClass(), DBEStructEditor.class);
+            return structEditor != null && structEditor.isChildType(curClass);
+            /*
             if (nodeMeta instanceof DBXTreeFolder) {
                 Class<?> listClass = nodeMeta.getSource().getObjectClass(((DBXTreeFolder) nodeMeta).getType());
                 if (listClass != null && structEditor.isChildType(listClass)) {
                     return true;
                 }
             }
+*/
 //            final Class[] childTypes = structEditor.getChildTypes();
 //            for (Class aClass : childTypes) {
 //                if (aClass == curClass) {
@@ -330,7 +329,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 //                }
 //            }
 //            return false;
-            return false;
+            //return true;
         }
 
         public IPropertyDescriptor[] getPropertyDescriptors()

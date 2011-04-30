@@ -20,6 +20,9 @@ import org.jkiss.dbeaver.ext.ui.IFolderListener;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
@@ -109,16 +112,23 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 // Reset node name (if it was set by editor)
                 treeNode.setNodeName(null);
             } else {
-                // If edited object is still not persisted then remove object's node
-                if (treeNode instanceof DBNDatabaseItem) {
-                    DBNNode parentNode = treeNode.getParentNode();
-                    if (parentNode instanceof DBNDatabaseFolder) {
-                        try {
-                            ((DBNDatabaseFolder)parentNode).removeChildItem(treeNode);
-                        } catch (DBException e) {
-                            log.error(e);
-                        }
-                    }
+//                // If edited object is still not persisted then remove object's node
+//                if (treeNode instanceof DBNDatabaseItem) {
+//                    DBNNode parentNode = treeNode.getParentNode();
+//                    if (parentNode instanceof DBNDatabaseFolder) {
+//                        try {
+//                            ((DBNDatabaseFolder)parentNode).removeChildItem(treeNode);
+//                        } catch (DBException e) {
+//                            log.error(e);
+//                        }
+//                    }
+//                }
+            }
+
+            // Remove all non-persisted objects
+            for (DBPObject object : getCommandContext().getEditedObjects()) {
+                if (object instanceof DBPPersistedObject && !((DBPPersistedObject)object).isPersisted()) {
+                    getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_REMOVE, (DBSObject) object));
                 }
             }
         }

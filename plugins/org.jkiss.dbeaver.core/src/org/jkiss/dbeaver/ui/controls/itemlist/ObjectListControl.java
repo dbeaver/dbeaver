@@ -61,7 +61,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
     private SortListener sortListener;
     private IDoubleClickListener doubleClickHandler;
-    private IPropertySource listPropertySource;
+    private PropertySourceAbstract listPropertySource;
 
     private final TextLayout linkLayout;
     private final Color linkColor;
@@ -141,9 +141,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             {
                 IStructuredSelection selection = (IStructuredSelection)event.getSelection();
                 if (selection.isEmpty()) {
-                    curListObject = null;
+                    setCurListObject(null);
                 } else {
-                    curListObject = (OBJECT_TYPE) selection.getFirstElement();
+                    setCurListObject((OBJECT_TYPE) selection.getFirstElement());
                 }
             }
         });
@@ -177,7 +177,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return listPropertySource;
     }
 
-    protected IPropertySource createListPropertySource()
+    protected PropertySourceAbstract createListPropertySource()
     {
         return new DefaultListPropertySource();
     }
@@ -250,6 +250,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public OBJECT_TYPE getCurrentListObject()
     {
         return curListObject;
+    }
+
+    protected void setCurListObject(OBJECT_TYPE curListObject)
+    {
+        this.curListObject = curListObject;
     }
 
     protected ColumnViewer getItemsViewer()
@@ -777,6 +782,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     if (!prop.isViewable()) {
                         continue;
                     }
+                    listPropertySource.addProperty(prop);
                     createColumn(objectClass, prop);
                 }
             }

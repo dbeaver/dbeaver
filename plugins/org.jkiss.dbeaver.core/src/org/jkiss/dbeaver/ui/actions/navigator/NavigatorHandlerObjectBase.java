@@ -14,14 +14,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -83,6 +81,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                 if (editor instanceof IDatabaseNodeEditor) {
                     final IDatabaseNodeEditorInput editorInput = ((IDatabaseNodeEditor) editor).getEditorInput();
                     if (editorInput.getDatabaseObject() == objectToSeek) {
+                        switchEditorFolder(container, editor);
                         return new CommandTarget((IDatabaseNodeEditor) editor);
                     }
                 }
@@ -94,6 +93,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                     null,
                     workbenchWindow);
                 if (editor != null) {
+                    switchEditorFolder(container, editor);
                     return new CommandTarget(editor);
                 }
             }
@@ -101,6 +101,13 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         // No editor found and no need to create one - create new command context
         DBSDataSourceContainer dsContainer = ((DBNDatabaseNode) container).getObject().getDataSource().getContainer();
         return new CommandTarget(new DBECommandContextImpl(dsContainer));
+    }
+
+    private void switchEditorFolder(DBNContainer container, IEditorPart editor)
+    {
+        if (editor instanceof IFolderedPart && container instanceof DBNDatabaseFolder) {
+            ((IFolderedPart) editor).switchFolder(((DBNDatabaseFolder) container).getMeta().getLabel());
+        }
     }
 
     public static DBNDatabaseNode getNodeByObject(DBSObject object)

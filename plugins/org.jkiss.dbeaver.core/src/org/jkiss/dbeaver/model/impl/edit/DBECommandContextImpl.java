@@ -161,6 +161,16 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    public Collection<DBPObject> getEditedObjects()
+    {
+        final List<CommandQueue> queues = getCommandQueues();
+        List<DBPObject> result = new ArrayList<DBPObject>(queues.size());
+        for (CommandQueue queue : queues) {
+            result.add(queue.getObject());
+        }
+        return result;
+    }
+
     public void addCommand(
         DBECommand<?> command,
         DBECommandReflector<?, DBECommand<?>> reflector)
