@@ -47,12 +47,10 @@ public class UIUtils {
     public static final VerifyListener INTEGER_VERIFY_LISTENER = new VerifyListener() {
         public void verifyText(VerifyEvent e)
         {
-            for (int i = 0; i < e.text.length(); i++) {
-                char ch = e.text.charAt(i);
-                if (!Character.isDigit(ch) && ch != '-' && ch != '+') {
-                    e.doit = false;
-                    return;
-                }
+            try {
+                Long.parseLong(e.text);
+            } catch (NumberFormatException e1) {
+                e.doit = false;
             }
         }
     };
@@ -60,12 +58,10 @@ public class UIUtils {
     public static final VerifyListener NUMBER_VERIFY_LISTENER = new VerifyListener() {
         public void verifyText(VerifyEvent e)
         {
-            for (int i = 0; i < e.text.length(); i++) {
-                char ch = e.text.charAt(i);
-                if (!Character.isDigit(ch) && ch != '.' && ch != '-' && ch != 'e' && ch != 'E') {
-                    e.doit = false;
-                    return;
-                }
+            try {
+                Double.parseDouble(e.text);
+            } catch (NumberFormatException e1) {
+                e.doit = false;
             }
         }
     };

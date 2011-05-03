@@ -54,6 +54,20 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         return super.getTypeName();
     }
 
+    @Property(name = "Length", viewable = true, editable = true, order = 40)
+    @Override
+    public long getMaxLength()
+    {
+        return super.getMaxLength();
+    }
+
+    @Property(name = "Nullable", viewable = true, editable = true, order = 50)
+    @Override
+    public boolean isNullable()
+    {
+        return super.isNullable();
+    }
+
     public boolean isPersisted()
     {
         return persisted;

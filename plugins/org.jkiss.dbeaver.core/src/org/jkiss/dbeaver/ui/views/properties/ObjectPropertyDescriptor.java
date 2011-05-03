@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
+import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -241,9 +242,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 Class<?> propertyType = getGetter().getReturnType();
                 if (CharSequence.class.isAssignableFrom(propertyType)) {
                     return new TextCellEditor(parent);
-                } else if (Number.class.isAssignableFrom(propertyType)) {
-                    return new TextCellEditor(parent);
-                } else if (Boolean.class.isAssignableFrom(propertyType)) {
+                } else if (BeanUtils.isNumericType(propertyType)) {
+                    return new CustomNumberCellEditor(parent, propertyType);
+                } else if (BeanUtils.isBooleanType(propertyType)) {
                     return new CheckboxCellEditor(parent);
                 } else {
                     return null;

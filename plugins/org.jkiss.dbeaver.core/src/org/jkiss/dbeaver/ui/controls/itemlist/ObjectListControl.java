@@ -118,7 +118,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             editorActivationStrategy = new EditorActivationStrategy(tableViewer);
             TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
         }
-        editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
+        //editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
+
+        itemsViewer.getColumnViewerEditor().addEditorActivationListener(new EditorActivationListener());
+
         itemsViewer.getControl().setCursor(arrowCursor);
         itemsViewer.setContentProvider(contentProvider);
         itemsViewer.setLabelProvider(new ItemLabelProvider());
@@ -700,7 +703,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     //////////////////////////////////////////////////////
-    // Editor activation strategu
+    // Editor activation
 
     private class EditorActivationStrategy extends ColumnViewerEditorActivationStrategy {
 
@@ -710,6 +713,29 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
     }
+
+    private static class EditorActivationListener extends ColumnViewerEditorActivationListener {
+        @Override
+        public void beforeEditorActivated(ColumnViewerEditorActivationEvent event)
+        {
+        }
+
+        @Override
+        public void afterEditorActivated(ColumnViewerEditorActivationEvent event)
+        {
+        }
+
+        @Override
+        public void beforeEditorDeactivated(ColumnViewerEditorDeactivationEvent event)
+        {
+        }
+
+        @Override
+        public void afterEditorDeactivated(ColumnViewerEditorDeactivationEvent event)
+        {
+        }
+    }
+
 
     //////////////////////////////////////////////////////
     // Property source implementation
