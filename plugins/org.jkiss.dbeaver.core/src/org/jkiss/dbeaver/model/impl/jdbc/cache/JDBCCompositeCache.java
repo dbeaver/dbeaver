@@ -36,6 +36,8 @@ public abstract class JDBCCompositeCache<
 {
     static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
 
+    private final Map<String, ObjectInfo> PRECACHED_MARK = new HashMap<String, ObjectInfo>();
+
     private JDBCObjectCache<PARENT> parentCache;
     private List<OBJECT> objectList;
     private final String parentColumnName;
@@ -140,6 +142,7 @@ public abstract class JDBCCompositeCache<
                         }
                         if (isObjectsCached(parent)) {
                             // Already read
+                            parentObjectMap.put(parent, PRECACHED_MARK);
                             continue;
                         }
                         // Add to map
@@ -171,6 +174,10 @@ public abstract class JDBCCompositeCache<
 
                         // All objects are read. Now assign them to parents
                         for (Map.Entry<PARENT,Map<String,ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
+                            if (colEntry.getValue() == PRECACHED_MARK) {
+                                // Do not overwrite this object's cache
+                                continue;
+                            }
                             Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
                             ArrayList<OBJECT> objects = new ArrayList<OBJECT>(objectInfos.size());
                             for (ObjectInfo objectInfo : objectInfos) {

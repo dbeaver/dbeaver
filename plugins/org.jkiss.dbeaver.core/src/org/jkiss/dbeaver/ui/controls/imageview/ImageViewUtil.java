@@ -16,7 +16,7 @@ import java.awt.geom.Point2D;
  *
  * @author Chengdong Li: cli4@uky.edu
  */
-class ImageUtil {
+class ImageViewUtil {
 
     /**
      * Given an arbitrary rectangle, get the rectangle with the given transform.

@@ -65,4 +65,16 @@ public class GenericPrimaryKey extends GenericConstraint
             });
         }
     }
+
+    public boolean hasColumn(GenericTableColumn column)
+    {
+        if (this.columns != null) {
+            for (GenericConstraintColumn constColumn : columns) {
+                if (constColumn.getTableColumn() == column) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

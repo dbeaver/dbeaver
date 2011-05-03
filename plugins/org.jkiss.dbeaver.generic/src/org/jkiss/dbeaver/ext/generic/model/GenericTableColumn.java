@@ -4,15 +4,19 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
+import java.util.List;
+
 /**
  * GenericTable
  */
-public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements DBSTableColumn
+public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements DBSTableColumn, JDBCColumnKeyType
 {
     private String defaultValue;
     private int sourceType;
@@ -90,9 +94,34 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         return autoIncrement;
     }
 
+    public JDBCColumnKeyType getKeyType()
+    {
+        return this;
+    }
+
+    @Property(name = "Key", viewable = true, order = 80)
+    public boolean isInUniqueKey()
+    {
+        final List<GenericPrimaryKey> uniqueKeysCache = getTable().getUniqueKeysCache();
+        if (!CommonUtils.isEmpty(uniqueKeysCache)) {
+            for (GenericPrimaryKey key : uniqueKeysCache) {
+                if (key.hasColumn(this)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isInReferenceKey()
+    {
+        return false;
+    }
+
     @Override
     public String toString()
     {
         return getTable().getFullQualifiedName() + "." + getName();
     }
+
 }

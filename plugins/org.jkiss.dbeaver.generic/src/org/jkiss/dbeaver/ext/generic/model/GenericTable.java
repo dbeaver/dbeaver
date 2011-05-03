@@ -50,7 +50,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
 
     private List<GenericTableColumn> columns;
     private List<GenericIndex> indexes;
-    private List<GenericPrimaryKey> constraints;
+    private List<GenericPrimaryKey> uniqueKeys;
     private List<GenericForeignKey> foreignKeys;
     private Long rowCount;
 
@@ -139,6 +139,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         if (columns == null) {
             // Read columns using container
             this.getContainer().getTableCache().loadChildren(monitor, this);
+            if (columns != null && uniqueKeys == null) {
+                // Cache unique keys (they are used by columns to detect key flag)
+                getUniqueKeys(monitor);
+            }
         }
         return columns;
     }
@@ -159,7 +163,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         return this.columns != null;
     }
 
-    void setColumns(List<GenericTableColumn> columns)
+    synchronized void setColumns(List<GenericTableColumn> columns)
     {
         this.columns = columns;
     }
@@ -180,7 +184,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         return DBUtils.findObject(getIndexes(monitor), indexName);
     }
 
-    void setIndexes(List<GenericIndex> indexes)
+    synchronized void setIndexes(List<GenericIndex> indexes)
     {
         this.indexes = indexes;
     }
@@ -193,20 +197,29 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     public List<GenericPrimaryKey> getUniqueKeys(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (constraints == null) {
+        if (uniqueKeys == null) {
+            if (columns == null) {
+                // ensure all columns are already cached
+                getColumns(monitor);
+            }
             getContainer().getPrimaryKeysCache().getObjects(monitor, this);
         }
-        return constraints;
+        return uniqueKeys;
     }
 
-    void setConstraints(List<GenericPrimaryKey> uniqueKeys)
+    List<GenericPrimaryKey> getUniqueKeysCache()
     {
-        this.constraints = uniqueKeys;
+        return uniqueKeys;
     }
 
-    void addConstraint(GenericPrimaryKey constraint) {
-        if (constraints != null) {
-            constraints.add(constraint);
+    synchronized void setUniqueKeys(List<GenericPrimaryKey> uniqueKeys)
+    {
+        this.uniqueKeys = uniqueKeys;
+    }
+
+    synchronized void addUniqueKey(GenericPrimaryKey constraint) {
+        if (uniqueKeys != null) {
+            uniqueKeys.add(constraint);
         }
     }
 
@@ -225,7 +238,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         return foreignKeys;
     }
 
-    void setForeignKeys(List<GenericForeignKey> foreignKeys)
+    synchronized void setForeignKeys(List<GenericForeignKey> foreignKeys)
     {
         this.foreignKeys = foreignKeys;
     }
@@ -248,7 +261,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
 
     public boolean isConstraintsCached()
     {
-        return constraints != null;
+        return uniqueKeys != null;
     }
 
 /*
@@ -425,7 +438,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                     pk = new GenericPrimaryKey(this, info.pkName, null, DBSConstraintType.PRIMARY_KEY);
                     pk.addColumn(new GenericConstraintColumn(pk, pkColumn, info.keySeq));
                     // Add this fake constraint to it's owner
-                    this.addConstraint(pk);
+                    this.addUniqueKey(pk);
                 }
 
                 // Find (or create) FK

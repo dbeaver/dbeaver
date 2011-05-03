@@ -81,14 +81,14 @@ class ImageViewCanvas extends Canvas {
 		Rectangle clientRect = getClientArea(); /* Canvas' painting area */
 		if (sourceImage != null) {
 			Rectangle imageRect =
-				ImageUtil.inverseTransformRect(transform, clientRect);
+				ImageViewUtil.inverseTransformRect(transform, clientRect);
 			int gap = 2; /* find a better start point to render */
 			imageRect.x -= gap; imageRect.y -= gap;
 			imageRect.width += 2 * gap; imageRect.height += 2 * gap;
 
 			Rectangle imageBound = sourceImage.getBounds();
 			imageRect = imageRect.intersection(imageBound);
-			Rectangle destRect = ImageUtil.transformRect(transform, imageRect);
+			Rectangle destRect = ImageViewUtil.transformRect(transform, imageRect);
 
 			if (screenImage != null)
 				screenImage.dispose();

@@ -621,7 +621,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
 
         protected void cacheObjects(GenericTable parent, List<GenericPrimaryKey> primaryKeys)
         {
-            parent.setConstraints(primaryKeys);
+            parent.setUniqueKeys(primaryKeys);
         }
 
         protected void cacheRows(GenericPrimaryKey primaryKey, List<GenericConstraintColumn> rows)
@@ -724,7 +724,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                         pk = new GenericPrimaryKey(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);
                         pkMap.put(pkFullName, pk);
                         // Add this fake constraint to it's owner
-                        pk.getTable().addConstraint(pk);
+                        pk.getTable().addUniqueKey(pk);
                     }
                     pk.addColumn(new GenericConstraintColumn(pk, pkColumn, keySeq));
                 }
