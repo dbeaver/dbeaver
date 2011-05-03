@@ -83,7 +83,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         @Override
         public int hashCode()
         {
-            return original.hashCode();
+            return original.getId().hashCode();
         }
 
         @Override
@@ -91,7 +91,8 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         {
             return obj != null &&
                 obj.getClass() == PropertyHandler.class &&
-                original.equals(((PropertyHandler) obj).original);
+                editor == ((PropertyHandler)obj).editor &&
+                getId().equals(((PropertyHandler) obj).getId());
         }
     }
 
