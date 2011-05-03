@@ -170,7 +170,7 @@ public class ItemListControl extends NodeListControl
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null) {
-                return getListPropertySource().getPropertyValue(getObjectValue(object), property.getId());
+                return getListPropertySource().getPropertyValue(getObjectValue(object), property);
             }
             return null;
         }
@@ -180,7 +180,7 @@ public class ItemListControl extends NodeListControl
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null) {
-                getListPropertySource().setPropertyValue(getObjectValue(object), property.getId(), value);
+                getListPropertySource().setPropertyValue(getObjectValue(object), property, value);
             }
         }
 

@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -291,7 +293,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             super(commandContext, NodeListControl.this, NodeListControl.this);
         }
 
-        public Object getSourceObject()
+        public DBNNode getSourceObject()
         {
             return getCurrentListObject();
         }
@@ -322,10 +324,17 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             return props.toArray(new IPropertyDescriptor[props.size()]);
         }
 
-        protected void handlePropertyChange(Object editableValue, Object id, Object value)
+        protected void handlePropertyChange(Object editableValue, ObjectPropertyDescriptor prop, Object value)
         {
-            super.handlePropertyChange(editableValue, id, value);
-            getItemsViewer().update(getCurrentListObject(), null);
+            if (getSourceObject() instanceof DBNDatabaseNode) {
+                final DBNDatabaseNode sourceNode = (DBNDatabaseNode) getSourceObject();
+                if (DBConstants.PROP_ID_NAME.equals(prop.getId()) && sourceNode.getObject() == editableValue) {
+                    // Update object in navigator
+                    sourceNode.setNodeName(CommonUtils.toString(value));
+                } else {
+                    getItemsViewer().update(getCurrentListObject(), null);
+                }
+            }
         }
     }
 

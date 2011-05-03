@@ -12,11 +12,9 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -32,7 +30,7 @@ import java.util.*;
 /**
  * PropertyCollector
  */
-public abstract class PropertySourceAbstract implements IPropertySource
+public abstract class PropertySourceAbstract implements IPropertySourceEx
 {
     static final Log log = LogFactory.getLog(PropertySourceAbstract.class);
 
@@ -106,61 +104,59 @@ public abstract class PropertySourceAbstract implements IPropertySource
 
     public final Object getPropertyValue(final Object id)
     {
-        return getPropertyValue(getEditableValue(), id);
-    }
-
-    public Object getPropertyValue(final Object object, final Object id)
-    {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
-            try {
-                ObjectPropertyDescriptor annoDescriptor = (ObjectPropertyDescriptor) value;
-                if (annoDescriptor.isLazy(object, true)) {
-                    if (!loadLazyProps) {
-                        return null;
-                    } else {
-                        synchronized (lazyProps) {
-                            lazyProps.add(annoDescriptor);
-                            if (lazyLoadJob == null) {
-                                // We assume that it can be called ONLY by properties viewer
-                                // So, start lazy loading job to update it after value will be loaded
-                                lazyLoadJob = LoadingUtils.createService(
-                                    new PropertySheetLoadService(),
-                                    new PropertySheetLoadVisualizer());
-                                lazyLoadJob.addJobChangeListener(new JobChangeAdapter() {
-                                    @Override
-                                    public void done(IJobChangeEvent event)
-                                    {
-                                        synchronized (lazyProps) {
-                                            if (!lazyProps.isEmpty()) {
-                                                lazyLoadJob.schedule(100);
-                                            } else {
-                                                lazyLoadJob = null;
-                                            }
-                                        }
-                                    }
-                                });
-                                lazyLoadJob.schedule(100);
-                            }
-                        }
-                        // Return dummy string for now
-                        propValues.put(id, PropertySheetLoadService.TEXT_LOADING);
-                        return PropertySheetLoadService.TEXT_LOADING;
-                    }
-                } else {
-                    value = annoDescriptor.readValue(object, null);
-                }
-            } catch (Exception e) {
-                return e.getMessage();
-            }
-        }
-        if (value instanceof Collection) {
+            value = getPropertyValue(getEditableValue(), (ObjectPropertyDescriptor) value);
+        } else if (value instanceof Collection) {
             // Make descriptor of collection
             // Each element as separate property
             Collection<?> collection = (Collection<?>)value;
             collection.size();
         }
         return UIUtils.makeStringForUI(value);
+    }
+
+    public Object getPropertyValue(final Object object, final ObjectPropertyDescriptor prop)
+    {
+        try {
+            if (prop.isLazy(object, true)) {
+                if (!loadLazyProps) {
+                    return null;
+                } else {
+                    synchronized (lazyProps) {
+                        lazyProps.add(prop);
+                        if (lazyLoadJob == null) {
+                            // We assume that it can be called ONLY by properties viewer
+                            // So, start lazy loading job to update it after value will be loaded
+                            lazyLoadJob = LoadingUtils.createService(
+                                new PropertySheetLoadService(),
+                                new PropertySheetLoadVisualizer());
+                            lazyLoadJob.addJobChangeListener(new JobChangeAdapter() {
+                                @Override
+                                public void done(IJobChangeEvent event)
+                                {
+                                    synchronized (lazyProps) {
+                                        if (!lazyProps.isEmpty()) {
+                                            lazyLoadJob.schedule(100);
+                                        } else {
+                                            lazyLoadJob = null;
+                                        }
+                                    }
+                                }
+                            });
+                            lazyLoadJob.schedule(100);
+                        }
+                    }
+                    // Return dummy string for now
+                    propValues.put(prop, PropertySheetLoadService.TEXT_LOADING);
+                    return PropertySheetLoadService.TEXT_LOADING;
+                }
+            } else {
+                return prop.readValue(object, null);
+            }
+        } catch (Exception e) {
+            return e.getMessage();
+        }
     }
 
     public boolean isPropertySet(Object id)
@@ -175,10 +171,15 @@ public abstract class PropertySourceAbstract implements IPropertySource
 
     public final void setPropertyValue(Object id, Object value)
     {
-        setPropertyValue(getEditableValue(), id, value);
+        Object prop = propValues.get(id);
+        if (prop instanceof ObjectPropertyDescriptor) {
+            setPropertyValue(getEditableValue(), (ObjectPropertyDescriptor)prop, value);
+        } else {
+            propValues.put(id, value);
+        }
     }
 
-    public void setPropertyValue(Object object, Object id, Object value)
+    public void setPropertyValue(Object object, ObjectPropertyDescriptor prop, Object value)
     {
         throw new UnsupportedOperationException("Cannot update property in non-editable property source");
 /*
@@ -291,7 +292,7 @@ public abstract class PropertySourceAbstract implements IPropertySource
 
     private class PropertySheetLoadVisualizer implements ILoadVisualizer<Map<ObjectPropertyDescriptor, Object>> {
         //private Object propertyId;
-        private int callCount = 0;
+        //private int callCount = 0;
         private boolean completed = false;
 
         private PropertySheetLoadVisualizer()

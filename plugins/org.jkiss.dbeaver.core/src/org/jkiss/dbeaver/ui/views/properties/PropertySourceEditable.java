@@ -5,9 +5,7 @@
 package org.jkiss.dbeaver.ui.views.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -15,10 +13,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
 
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -28,8 +23,11 @@ import java.util.Map;
 public class PropertySourceEditable extends PropertySourceAbstract implements DBPObject, IPropertySourceEditable
 {
     private DBECommandContext commandContext;
-    private Map<DBPObject, Map<Object, Object>> updatedValues = new IdentityHashMap<DBPObject, Map<Object, Object>>();
-    private DBECommandProperty<? extends DBPObject> curCommand = null;
+    private Map<DBPObject, ObjectProps> updatedValues = new IdentityHashMap<DBPObject, ObjectProps>();
+
+    private static class ObjectProps {
+        Map<ObjectPropertyDescriptor, DBECommandProperty> propValues = new IdentityHashMap<ObjectPropertyDescriptor, DBECommandProperty>();
+    }
 
     public PropertySourceEditable(DBECommandContext commandContext, Object sourceObject, Object object)
     {
@@ -59,37 +57,34 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         return commandContext;
     }
 
-    private Map<Object, Object> getObjectProps(Object object)
+    private ObjectProps getObjectProps(Object object)
     {
-        Map<Object, Object> props = updatedValues.get((DBPObject)object);
+        ObjectProps props = updatedValues.get((DBPObject)object);
         if (props == null) {
-            props = new HashMap<Object, Object>();
+            props = new ObjectProps();
             updatedValues.put((DBPObject)object, props);
         }
         return props;
     }
 
     @Override
-    public Object getPropertyValue(Object editableValue, Object id)
+    public Object getPropertyValue(Object editableValue, ObjectPropertyDescriptor prop)
     {
-        final Object value = getObjectProps(editableValue).get(id);
-        if (value != null) {
-            return value;
+        final ObjectProps objectProps = getObjectProps(editableValue);
+        final DBECommandProperty value = objectProps.propValues.get(prop);
+        if (value != null && value.getNewValue() != null) {
+            return value.getNewValue();
         } else {
-            return super.getPropertyValue(editableValue, id);
+            return super.getPropertyValue(editableValue, prop);
         }
     }
 
     @Override
-    public void setPropertyValue(Object editableValue, Object id, Object value)
+    public void setPropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object value)
     {
-        final Object oldValue = getObjectProps(editableValue).put(id, value);
-        if (CommonUtils.equalObjects(oldValue, value)) {
-            return;
-        }
-        final IPropertyDescriptor propertyDescriptor = getPropertyDescriptor(id);
-        if (propertyDescriptor == null) {
-            log.warn("Can't detect property meta info for property '" + id + "'");
+        final ObjectProps objectProps = getObjectProps(editableValue);
+        DBECommandProperty curCommand = objectProps.propValues.get(prop);
+        if (curCommand != null && CommonUtils.equalObjects(curCommand.getNewValue(), value)) {
             return;
         }
         final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor();
@@ -100,11 +95,12 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (curCommand == null) {
             final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
                 (DBPObject)editableValue,
-                propertyDescriptor);
+                prop);
             curCommand = new DBECommandProperty<DBPObject>(
                 (DBPObject)editableValue,
                 propertyHandler,
                 value);
+            objectProps.propValues.put(prop, curCommand);
             final CommandReflector reflector = new CommandReflector();
             getCommandContext().addCommand(curCommand, reflector);
         } else {
@@ -112,18 +108,11 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             getCommandContext().updateCommand(curCommand);
         }
 
-        handlePropertyChange(editableValue, id, value);
+        handlePropertyChange(editableValue, prop, value);
     }
 
-    protected void handlePropertyChange(Object editableValue, Object id, Object value)
+    protected void handlePropertyChange(Object editableValue, ObjectPropertyDescriptor prop, Object value)
     {
-        if (getSourceObject() instanceof DBNDatabaseNode) {
-            final DBNDatabaseNode sourceNode = (DBNDatabaseNode) getSourceObject();
-            if (DBConstants.PROP_ID_NAME.equals(id) && sourceNode.getObject() == editableValue) {
-                // Update object in navigator
-                sourceNode.setNodeName(CommonUtils.toString(value));
-            }
-        }
     }
 
     private class CommandReflector <T extends DBPObject>  implements DBECommandReflector<T, DBECommand<T>> {
@@ -137,4 +126,5 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
         }
     }
+
 }

@@ -22,7 +22,6 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -443,7 +442,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             return LOADING_LABEL;
         }
-        return listPropertySource.getPropertyValue(objectValue, prop.getId());
+        return listPropertySource.getPropertyValue(objectValue, prop);
     }
 
     private Rectangle getCellLinkBounds(Item item, int column, Object cellValue) {
