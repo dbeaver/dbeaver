@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.ext.ui.IFolderListener;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
@@ -99,6 +100,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     @Override
     public void dispose()
     {
+        final DBPDataSource dataSource = getDataSource();
+
 //        if (getCommandContext() != null && getCommandContext().isDirty()) {
 //            getCommandContext().resetChanges();
 //        }
@@ -118,7 +121,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             // Remove all non-persisted objects
             for (DBPObject object : getCommandContext().getEditedObjects()) {
                 if (object instanceof DBPPersistedObject && !((DBPPersistedObject)object).isPersisted()) {
-                    getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_REMOVE, (DBSObject) object));
+                    dataSource.getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_REMOVE, (DBSObject) object));
                 }
             }
         }
