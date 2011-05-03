@@ -188,9 +188,8 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
             }
         }
         if (!itemControl.isDisposed()) {
-            itemControl.clearData();
             if (loadNewData) {
-                itemControl.loadData();
+                itemControl.loadData(false);
             }
         }
     }

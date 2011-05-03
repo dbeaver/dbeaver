@@ -107,13 +107,6 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
                 new ObjectsLoadVisualizer());
     }
 
-    @Override
-    public void clearData()
-    {
-        super.clearData();
-        //createColumn("", "", null);
-    }
-
     private void createContextMenu()
     {
         Control control = getControl();

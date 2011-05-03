@@ -89,4 +89,5 @@ public class LoadingJob<RESULT>  extends AbstractJob {
     {
         run(VoidProgressMonitor.INSTANCE, false);
     }
+
 }

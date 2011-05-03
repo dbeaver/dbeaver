@@ -124,9 +124,8 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
             }
         }
         if (!itemControl.isDisposed()) {
-            itemControl.clearData();
             if (loadNewData) {
-                itemControl.loadData();
+                itemControl.loadData(false);
             }
         }
     }

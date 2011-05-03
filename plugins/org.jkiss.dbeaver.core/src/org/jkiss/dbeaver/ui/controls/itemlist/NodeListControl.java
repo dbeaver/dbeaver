@@ -269,7 +269,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         if (event.getNode().isChildOf(getRootNode())) {
             if (event.getAction() != DBNEvent.Action.UPDATE) {
                 // Add or remove - just reload list content
-                loadData();
+                loadData(false);
             } else {
                 Display.getDefault().asyncExec(new Runnable() {
                     public void run()

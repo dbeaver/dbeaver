@@ -78,6 +78,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private Map<OBJECT_TYPE, List<ObjectColumn>> lazyObjects;
     private final Map<OBJECT_TYPE, Map<String, Object>> lazyCache = new IdentityHashMap<OBJECT_TYPE, Map<String, Object>>();
     private volatile boolean lazyLoadCanceled;
+    private List<OBJECT_TYPE> objectList = null;
 
     public ObjectListControl(
         Composite parent,
@@ -319,22 +320,131 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         clearLazyCache();
         this.lazyLoadCanceled = false;
 
-        this.loadingJob = createLoadService();
-        this.loadingJob.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void done(IJobChangeEvent event)
-            {
-                loadingJob = null;
-            }
-        });
         if (lazy) {
+            // start loading service
+            this.loadingJob = createLoadService();
+            this.loadingJob.addJobChangeListener(new JobChangeAdapter() {
+                @Override
+                public void done(IJobChangeEvent event)
+                {
+                    loadingJob = null;
+                }
+            });
             this.loadingJob.schedule(LAZY_LOAD_DELAY);
         } else {
-            this.loadingJob.syncRun();
+            // Load data synchronously
+            final LoadingJob<Collection<OBJECT_TYPE>> loadService = createLoadService();
+            loadService.syncRun();
         }
     }
 
-    public void clearData()
+    private void setListData(Collection<OBJECT_TYPE> items)
+    {
+        final Control itemsControl = itemsViewer.getControl();
+        if (itemsControl.isDisposed()) {
+            return;
+        }
+
+        final boolean reload = objectList == null;
+
+        if (reload) {
+            clearListData();
+
+            // Collect list of items' classes
+            final List<Class<?>> classList = new ArrayList<Class<?>>();
+            Class<?>[] baseTypes = getListBaseTypes();
+            if (!CommonUtils.isEmpty(baseTypes)) {
+                Collections.addAll(classList, baseTypes);
+            }
+            if (!CommonUtils.isEmpty(items)) {
+                for (OBJECT_TYPE item : items) {
+                    Object object = getObjectValue(item);
+                    if (!classList.contains(object.getClass())) {
+                        classList.add(object.getClass());
+                    }
+                    if (isTree) {
+                        collectItemClasses(item, classList);
+                    }
+                }
+            }
+
+            IFilter propertyFilter = new DataSourcePropertyFilter(
+                ObjectListControl.this instanceof IDataSourceProvider ?
+                    ((IDataSourceProvider)ObjectListControl.this).getDataSource() :
+                    null);
+
+            // Create columns from classes' annotations
+            for (Class<?> objectClass : classList) {
+                List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass, propertyFilter);
+                for (ObjectPropertyDescriptor prop : props) {
+                    if (!prop.isViewable()) {
+                        continue;
+                    }
+                    listPropertySource.addProperty(prop);
+                    createColumn(objectClass, prop);
+                }
+            }
+        }
+
+        if (!itemsControl.isDisposed()) {
+            if (reload) {
+                // Set viewer content
+                objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<OBJECT_TYPE>(items);
+
+                // Pack columns
+                sampleItems = true;
+                try {
+                    List<OBJECT_TYPE> sampleList;
+                    if (objectList.size() > 200) {
+                        sampleList = objectList.subList(0, 100);
+                    } else {
+                        sampleList = objectList;
+                    }
+                    itemsViewer.setInput(sampleList);
+
+                    if (isTree) {
+                        ((TreeViewer)itemsViewer).expandAll();
+                        UIUtils.packColumns(getTree(), isFitWidth);
+                    } else {
+                        UIUtils.packColumns(getTable());
+                    }
+                } finally {
+                    sampleItems = false;
+                }
+
+                // Set real content
+                itemsViewer.setInput(objectList);
+            } else {
+                // Update object list and refresh
+                if (!objectList.equals(items)) {
+                    int newListSize = items.size();
+                    int itemIndex = 0;
+                    for (Iterator<OBJECT_TYPE> iter = items.iterator(); iter.hasNext(); ) {
+                        OBJECT_TYPE newObject = iter.next();
+                        if (itemIndex >= objectList.size()) {
+                            // Add to tail
+                            objectList.add(itemIndex, newObject);
+                        } else {
+                            OBJECT_TYPE oldObject = objectList.get(itemIndex);
+                            if (!CommonUtils.equalObjects(oldObject, newObject)) {
+                                // Replace old object
+                                objectList.set(itemIndex, newObject);
+                            }
+                        }
+                        itemIndex++;
+                    }
+                    while (objectList.size() > newListSize) {
+                        objectList.remove(objectList.size() - 1);
+                    }
+                }
+
+                itemsViewer.refresh();
+            }
+        }
+        setInfo(getItemsLoadMessage(objectList.size()));
+    }
+
+    public void clearListData()
     {
         for (ObjectColumn column : columns) {
             column.item.dispose();
@@ -346,10 +456,38 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         clearLazyCache();
     }
 
+    private void collectItemClasses(OBJECT_TYPE item, List<Class<?>> classList)
+    {
+        ITreeContentProvider contentProvider = (ITreeContentProvider) itemsViewer.getContentProvider();
+        if (!contentProvider.hasChildren(item)) {
+            return;
+        }
+        Object[] children = contentProvider.getChildren(item);
+        if (!CommonUtils.isEmpty(children)) {
+            for (Object child : children) {
+                OBJECT_TYPE childItem = (OBJECT_TYPE)child;
+                Object objectValue = getObjectValue(childItem);
+                if (!classList.contains(objectValue.getClass())) {
+                    classList.add(objectValue.getClass());
+                }
+                collectItemClasses(childItem, classList);
+            }
+        }
+    }
+
     private void clearLazyCache()
     {
         synchronized (lazyCache) {
             lazyCache.clear();
+        }
+    }
+
+    protected String getItemsLoadMessage(int count)
+    {
+        if (count == 0) {
+            return "No items";
+        } else {
+            return count + " items";
         }
     }
 
@@ -740,105 +878,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public void completeLoading(Collection<OBJECT_TYPE> items)
         {
             super.completeLoading(items);
-            clearData();
-
-            final Control itemsControl = itemsViewer.getControl();
-            if (itemsControl.isDisposed()) {
-                return;
-            }
-
-            // Collect list of items' classes
-            final List<Class<?>> classList = new ArrayList<Class<?>>();
-            Class<?>[] baseTypes = getListBaseTypes();
-            if (!CommonUtils.isEmpty(baseTypes)) {
-                Collections.addAll(classList, baseTypes);
-            }
-            if (!CommonUtils.isEmpty(items)) {
-                for (OBJECT_TYPE item : items) {
-                    Object object = getObjectValue(item);
-                    if (!classList.contains(object.getClass())) {
-                        classList.add(object.getClass());
-                    }
-                    if (isTree) {
-                        collectItemClasses(item, classList);
-                    }
-                }
-            }
-
-            IFilter propertyFilter = new DataSourcePropertyFilter(
-                ObjectListControl.this instanceof IDataSourceProvider ?
-                    ((IDataSourceProvider)ObjectListControl.this).getDataSource() :
-                    null);
-
-            // Create columns from classes' annotations
-            for (Class<?> objectClass : classList) {
-                List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass, propertyFilter);
-                for (ObjectPropertyDescriptor prop : props) {
-                    if (!prop.isViewable()) {
-                        continue;
-                    }
-                    listPropertySource.addProperty(prop);
-                    createColumn(objectClass, prop);
-                }
-            }
-
-            // Set viewer content
-            final List<OBJECT_TYPE> objectList = CommonUtils.isEmpty(items) ? Collections.<OBJECT_TYPE>emptyList() : new ArrayList<OBJECT_TYPE>(items);
-            setInfo(getItemsLoadMessage(objectList.size()));
-
-            if (!itemsControl.isDisposed()) {
-                // Pack columns
-                sampleItems = true;
-                try {
-                    List<OBJECT_TYPE> sampleList;
-                    if (objectList.size() > 200) {
-                        sampleList = objectList.subList(0, 100);
-                    } else {
-                        sampleList = objectList;
-                    }
-                    itemsViewer.setInput(sampleList);
-
-                    if (isTree) {
-                        ((TreeViewer)itemsViewer).expandAll();
-                        UIUtils.packColumns(getTree(), isFitWidth);
-                    } else {
-                        UIUtils.packColumns(getTable());
-                    }
-                } finally {
-                    sampleItems = false;
-                }
-
-                // Set real content
-                itemsViewer.setInput(objectList);
-            }
-        }
-
-        private void collectItemClasses(OBJECT_TYPE item, List<Class<?>> classList)
-        {
-            ITreeContentProvider contentProvider = (ITreeContentProvider) itemsViewer.getContentProvider();
-            if (!contentProvider.hasChildren(item)) {
-                return;
-            }
-            Object[] children = contentProvider.getChildren(item);
-            if (!CommonUtils.isEmpty(children)) {
-                for (Object child : children) {
-                    OBJECT_TYPE childItem = (OBJECT_TYPE)child;
-                    Object objectValue = getObjectValue(childItem);
-                    if (!classList.contains(objectValue.getClass())) {
-                        classList.add(objectValue.getClass());
-                    }
-                    collectItemClasses(childItem, classList);
-                }
-            }
-        }
-
-        protected String getItemsLoadMessage(int count)
-        {
-            if (count == 0) {
-                return "No items";
-            } else {
-                return count + " items";
-            }
+            setListData(items);
         }
 
     }

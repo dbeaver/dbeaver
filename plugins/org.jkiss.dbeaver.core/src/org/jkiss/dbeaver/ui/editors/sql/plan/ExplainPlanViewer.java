@@ -116,7 +116,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         // Refresh plan
         DBPDataSource dataSource = getDataSource();
         planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
-        planTree.clearData();
+        planTree.clearListData();
     }
 
     public void propertyChange(PropertyChangeEvent event)
@@ -129,7 +129,6 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
             throw new DBCException("This datasource doesn't support execution plans");
         }
 
-        planTree.clearData();
         planTree.init(planner, query);
         planTree.loadData();
     }

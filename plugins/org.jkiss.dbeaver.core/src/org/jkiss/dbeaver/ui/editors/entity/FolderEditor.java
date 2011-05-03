@@ -48,7 +48,7 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
             {
 
                 if (!itemControl.isDisposed()) {
-                    itemControl.loadData();
+                    itemControl.loadData(false);
                 }
 
             }
