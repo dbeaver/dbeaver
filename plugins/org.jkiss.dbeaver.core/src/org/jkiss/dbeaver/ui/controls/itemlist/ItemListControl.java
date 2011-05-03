@@ -31,7 +31,7 @@ import java.util.List;
 public class ItemListControl extends NodeListControl
 {
     private Searcher searcher;
-    private SearchColorProvider searchColorProvider;
+    private ItemColorProvider itemColorProvider;
     private Color searchHighlightColor;
     private Color newObjectColor;
 
@@ -44,7 +44,7 @@ public class ItemListControl extends NodeListControl
     {
         super(parent, style, workbenchPart, node, metaNode);
         searcher = new Searcher();
-        searchColorProvider = new SearchColorProvider();
+        itemColorProvider = new ItemColorProvider();
         searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
         newObjectColor = new Color(parent.getDisplay(), 0xFF, 0xB6, 0xC1);
     }
@@ -84,7 +84,7 @@ public class ItemListControl extends NodeListControl
     @Override
     public IColorProvider getObjectColorProvider()
     {
-        return searchColorProvider;
+        return itemColorProvider;
     }
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
@@ -219,7 +219,7 @@ public class ItemListControl extends NodeListControl
 
     }
 
-    private class SearchColorProvider implements IColorProvider {
+    private class ItemColorProvider implements IColorProvider {
 
         public Color getForeground(Object element)
         {

@@ -577,6 +577,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (prop == null) {
             return null;
         }
+        if (!prop.isEditable(objectValue) && isNewObject(object)) {
+            // Non-editable properties are empty for new objects
+            return null;
+        }
         if (prop.isLazy(objectValue, true)) {
             synchronized (lazyCache) {
                 final Map<String, Object> cache = lazyCache.get(object);
@@ -636,6 +640,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     protected Image getObjectImage(OBJECT_TYPE item)
     {
         return null;
+    }
+
+    protected boolean isNewObject(OBJECT_TYPE objectValue)
+    {
+        return false;
     }
 
     protected Set<IPropertyDescriptor> getAllProperties()

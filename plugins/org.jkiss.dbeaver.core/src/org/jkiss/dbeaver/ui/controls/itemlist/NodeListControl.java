@@ -232,6 +232,12 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     @Override
+    protected boolean isNewObject(DBNNode objectValue)
+    {
+        return !objectValue.isPersisted();
+    }
+
+    @Override
     protected boolean isHyperlink(Object cellValue)
     {
         Object ownerObject = null;
