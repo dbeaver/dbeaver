@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.ext.ui.IRefreshableContainer;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -81,7 +82,8 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
 
         if (!activated) {
             activated = true;
-            itemControl.loadData();
+            boolean isLazy = !(node instanceof DBNDatabaseNode) || ((DBNDatabaseNode) node).isLazyNode();
+            itemControl.loadData(isLazy);
         }
         prevSelectionProvider = editor.getSite().getSelectionProvider();
         // Update selection provider and selection
