@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.custom.CCombo;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -64,13 +64,13 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         if (controller.isInlineEdit()) {
             Object value = controller.getValue();
 
-            Combo editor = new Combo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
+            CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
             editor.add("FALSE");
             editor.add("TRUE");
             editor.setText(value == null ? "FALSE" : value.toString().toUpperCase());
             editor.setFocus();
-            initInlineControl(controller, editor, new ValueExtractor<Combo>() {
-                public Object getValueFromControl(Combo control)
+            initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
+                public Object getValueFromControl(CCombo control)
                 {
                     switch (control.getSelectionIndex()) {
                         case 0: return Boolean.FALSE;

@@ -98,13 +98,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             viewerStyle |= SWT.BORDER;
         }
 
+        EditorActivationStrategy editorActivationStrategy;
         if (isTree) {
             TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
             final Tree tree = treeViewer.getTree();
             tree.setLinesVisible (true);
             tree.setHeaderVisible(true);
             itemsViewer = treeViewer;
-            TreeViewerEditor.create(treeViewer, new ColumnViewerEditorActivationStrategy(treeViewer), ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
+            editorActivationStrategy = new EditorActivationStrategy(treeViewer);
+            TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
         } else {
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
@@ -113,8 +115,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             itemsViewer = tableViewer;
             //UIUtils.applyCustomTolTips(table);
             //itemsEditor = new TableEditor(table);
-            TableViewerEditor.create(tableViewer, new ColumnViewerEditorActivationStrategy(tableViewer), ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
+            editorActivationStrategy = new EditorActivationStrategy(tableViewer);
+            TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
         }
+        editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
         itemsViewer.getControl().setCursor(arrowCursor);
         itemsViewer.setContentProvider(contentProvider);
         itemsViewer.setLabelProvider(new ItemLabelProvider());
@@ -693,6 +697,18 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     protected EditingSupport makeEditingSupport(ViewerColumn viewerColumn, int columnIndex)
     {
         return null;
+    }
+
+    //////////////////////////////////////////////////////
+    // Editor activation strategu
+
+    private class EditorActivationStrategy extends ColumnViewerEditorActivationStrategy {
+
+        public EditorActivationStrategy(ColumnViewer viewer)
+        {
+            super(viewer);
+        }
+
     }
 
     //////////////////////////////////////////////////////

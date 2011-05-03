@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -135,13 +135,13 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             Object value = controller.getValue();
 
             if (controller.getColumnMetaData().getValueType() == java.sql.Types.BIT) {
-                Combo editor = new Combo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
+                CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
                 editor.add("0");
                 editor.add("1");
                 editor.setText(value == null ? "0" : value.toString());
                 editor.setFocus();
-                initInlineControl(controller, editor, new ValueExtractor<Combo>() {
-                    public Object getValueFromControl(Combo control)
+                initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
+                    public Object getValueFromControl(CCombo control)
                     {
                         switch (control.getSelectionIndex()) {
                             case 0: return (byte)0;
