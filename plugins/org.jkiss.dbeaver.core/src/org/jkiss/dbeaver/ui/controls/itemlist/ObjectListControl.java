@@ -304,6 +304,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public void loadData()
     {
+        loadData(true);
+    }
+
+    public void loadData(boolean lazy)
+    {
         if (this.loadingJob != null) {
             return;
         }
@@ -322,7 +327,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 loadingJob = null;
             }
         });
-        this.loadingJob.schedule(LAZY_LOAD_DELAY);
+        if (lazy) {
+            this.loadingJob.schedule(LAZY_LOAD_DELAY);
+        } else {
+            this.loadingJob.syncRun();
+        }
     }
 
     public void clearData()

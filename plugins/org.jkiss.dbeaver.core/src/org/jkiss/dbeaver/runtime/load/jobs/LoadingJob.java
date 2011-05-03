@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
@@ -46,6 +47,11 @@ public class LoadingJob<RESULT>  extends AbstractJob {
 
     protected IStatus run(DBRProgressMonitor monitor)
     {
+        return run(monitor, true);
+    }
+
+    private IStatus run(DBRProgressMonitor monitor, boolean lazy)
+    {
         monitor = visualizer.overwriteMonitor(monitor);
 
         LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<RESULT>(this, monitor);
@@ -64,7 +70,12 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             return new Status(Status.CANCEL, DBeaverConstants.PLUGIN_ID, "Loading interrupted");
         }
         finally {
-            new LoadingFinishJob<RESULT>(getName(), visualizer, result, error).schedule();
+            final LoadingFinishJob<RESULT> finisher = new LoadingFinishJob<RESULT>(getName(), visualizer, result, error);
+            if (lazy) {
+                finisher.schedule();
+            } else {
+                finisher.runInUIThread(monitor);
+            }
         }
         return Status.OK_STATUS;
     }
@@ -74,4 +85,8 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         return family == loadingService.getFamily();
     }
 
+    public void syncRun()
+    {
+        run(VoidProgressMonitor.INSTANCE, false);
+    }
 }
