@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
+import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -76,7 +77,7 @@ public class CustomNumberCellEditor extends TextCellEditor {
             }
         } catch (RuntimeException e) {
             log.error(e);
-            throw e;
+            return BeanUtils.getDefaultPrimitiveValue(valueType);
         }
     }
 

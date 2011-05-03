@@ -47,24 +47,38 @@ public class UIUtils {
     public static final VerifyListener INTEGER_VERIFY_LISTENER = new VerifyListener() {
         public void verifyText(VerifyEvent e)
         {
-            try {
-                Long.parseLong(e.text);
-            } catch (NumberFormatException e1) {
-                e.doit = false;
-            }
+            e.doit = isValidInteger(e.text);
         }
     };
 
     public static final VerifyListener NUMBER_VERIFY_LISTENER = new VerifyListener() {
         public void verifyText(VerifyEvent e)
         {
-            try {
-                Double.parseDouble(e.text);
-            } catch (NumberFormatException e1) {
-                e.doit = false;
-            }
+            e.doit = isValidNumber(e.text);
         }
     };
+
+    public static boolean isValidInteger(String value)
+    {
+        for (int i = 0; i < value.length(); i++) {
+            char ch = value.charAt(i);
+            if (!Character.isDigit(ch) && ch != '-' && ch != '+') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isValidNumber(String value)
+    {
+        for (int i = 0; i < value.length(); i++) {
+            char ch = value.charAt(i);
+            if (!Character.isDigit(ch) && ch != '.' && ch != '-' && ch != 'e' && ch != 'E') {
+                return false;
+            }
+        }
+        return true;
+    }
 
     public static Object makeStringForUI(Object object)
     {
