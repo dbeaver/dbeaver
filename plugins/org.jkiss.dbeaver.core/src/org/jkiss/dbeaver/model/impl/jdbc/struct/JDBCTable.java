@@ -87,9 +87,15 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         if (hasWhere) query.append(" AND ");
                         hasWhere = true;
                         query
-                            .append(DBUtils.getQuotedIdentifier(getDataSource(), filter.getColumnName()))
-                            .append(' ')
-                            .append(filter.getWhere());
+                            .append(DBUtils.getQuotedIdentifier(getDataSource(), filter.getColumnName()));
+
+                        final String condition = filter.getWhere();
+                        final char firstChar = condition.trim().charAt(0);
+                        if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
+                            query.append('=').append(condition);
+                        } else {
+                            query.append(' ').append(condition);
+                        }
                     }
                 }
                 if (!CommonUtils.isEmpty(dataFilter.getWhere())) {
