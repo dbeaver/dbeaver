@@ -170,20 +170,6 @@ public class EditablePropertiesControl extends Composite {
         treeControl.setHeaderVisible(true);
         treeControl.setLinesVisible(true);
 
-        treeControl.addKeyListener(new KeyListener() {
-            public void keyPressed(KeyEvent e)
-            {
-                if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
-                    e.doit = false;
-                } else if (e.keyCode == SWT.ESC) {
-                    e.doit = false;
-                }
-            }
-
-            public void keyReleased(KeyEvent e)
-            {
-            }
-        });
         treeControl.addControlListener(new ControlAdapter() {
             private boolean packing = false;
             @Override
@@ -199,21 +185,6 @@ public class EditablePropertiesControl extends Composite {
                 }
             }
         });
-
-/*
-        Combo tmpCombo = new Combo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
-        final int comboHeight = tmpCombo.getBounds().height;
-        tmpCombo.dispose();
-
-        treeControl.addListener(SWT.MeasureItem, new Listener() {
-            public void handleEvent(Event event) {
-                Rectangle rect = ((TreeItem) event.item).getBounds();
-                event.width = rect.width;
-                event.height = comboHeight;
-            }
-        });
-*/
-
 
         this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
 
@@ -267,111 +238,110 @@ public class EditablePropertiesControl extends Composite {
         treeControl.addSelectionListener(new SelectionListener() {
 
             public void widgetDefaultSelected(SelectionEvent e) {
-                showEditor(e, true);
+                showEditor((TreeItem) e.item, true);
             }
 
             public void widgetSelected(SelectionEvent e) {
-                showEditor(e, (e.stateMask & SWT.BUTTON_MASK) != 0);
-            }
-
-            public void showEditor(SelectionEvent e, boolean isDef) {
-                // Clean up any previous editor control
-                disposeOldEditor();
-
-                // Identify the selected row
-                TreeItem item = (TreeItem)e.item;
-                if (item == null) {
-                    return;
-                }
-                if (item.getData() instanceof DBPProperty) {
-                    final DBPProperty prop = (DBPProperty)item.getData();
-                    Object[] validValues = prop.getValidValues();
-                    Control newEditor;
-                    if (validValues == null) {
-                        switch (prop.getType()) {
-                            case BOOLEAN:
-                            {
-                                CCombo control = new CCombo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
-                                control.add("true");
-                                control.add("false");
-                                control.select(Boolean.valueOf(item.getText(1)) ? 0 : 1);
-                                control.addModifyListener(new ModifyListener() {
-                                    public void modifyText(ModifyEvent e) {
-                                        Combo combo = (Combo) treeEditor.getEditor();
-                                        changeProperty(prop, combo.getText());
-                                        treeEditor.getItem().setText(1, combo.getText());
-                                    }
-                                });
-                                newEditor = control;
-                                break;
-                            }
-                            default:
-                            {
-                                Text text = new Text(treeControl, SWT.BORDER);
-                                if (prop.getType() == DBPProperty.PropertyType.INTEGER) {
-                                    text.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
-                                } else if (prop.getType() == DBPProperty.PropertyType.NUMERIC) {
-                                    text.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
-                                }
-                                text.setText(item.getText(1));
-                                text.addModifyListener(new ModifyListener() {
-                                    public void modifyText(ModifyEvent e) {
-                                        Text text = (Text) treeEditor.getEditor();
-                                        changeProperty(prop, text.getText());
-                                        treeEditor.getItem().setText(1, text.getText());
-                                    }
-                                });
-                                text.selectAll();
-                                newEditor = text;
-                                break;
-                            }
-                        }
-                    } else {
-                        CCombo control = new CCombo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
-                        int selIndex = -1;
-                        for (int i = 0; i < validValues.length; i++) {
-                            String value =  String.valueOf(validValues[i]);
-                            control.add(value);
-                            if (value.equals(item.getText(1))) {
-                                selIndex = i;
-                            }
-                        }
-                        if (selIndex >= 0) {
-                            control.select(selIndex);
-                        }
-                        control.addModifyListener(new ModifyListener() {
-                            public void modifyText(ModifyEvent e) {
-                                CCombo combo = (CCombo) treeEditor.getEditor();
-                                changeProperty(prop, combo.getText());
-                                treeEditor.getItem().setText(1, combo.getText());
-                            }
-                        });
-                        newEditor = control;
-                    }
-
-                    newEditor.addTraverseListener(new TraverseListener() {
-                        public void keyTraversed(TraverseEvent e)
-                        {
-                            if (e.detail == SWT.TRAVERSE_RETURN) {
-                                e.doit = false;
-                                e.detail = SWT.TRAVERSE_NONE;
-                                disposeOldEditor();
-                            } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                                e.doit = false;
-                                e.detail = SWT.TRAVERSE_NONE;
-                                new ActionResetProperty(prop).run();
-                            }
-                        }
-                    });
-
-                    if (isDef) {
-                        // Selected by mouse
-                        newEditor.setFocus();
-                    }
-                    treeEditor.setEditor(newEditor, item, 1);
-                }
+                showEditor((TreeItem) e.item, (e.stateMask & SWT.BUTTON_MASK) != 0);
             }
         });
+    }
+
+    private void showEditor(final TreeItem item, boolean isDef) {
+        // Clean up any previous editor control
+        disposeOldEditor();
+        if (item == null) {
+            return;
+        }
+
+        // Identify the selected row
+        if (item.getData() instanceof DBPProperty) {
+            final Tree treeControl = propsTree.getTree();
+            final DBPProperty prop = (DBPProperty)item.getData();
+            Object[] validValues = prop.getValidValues();
+            Control newEditor;
+            if (validValues == null) {
+                switch (prop.getType()) {
+                    case BOOLEAN:
+                    {
+                        final CCombo combo = new CCombo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
+                        combo.add("true");
+                        combo.add("false");
+                        combo.select(Boolean.valueOf(item.getText(1)) ? 0 : 1);
+                        combo.addModifyListener(new ModifyListener() {
+                            public void modifyText(ModifyEvent e)
+                            {
+                                changeProperty(prop, combo.getText());
+                                item.setText(1, combo.getText());
+                            }
+                        });
+                        newEditor = combo;
+                        break;
+                    }
+                    default:
+                    {
+                        final Text text = new Text(treeControl, SWT.BORDER);
+                        if (prop.getType() == DBPProperty.PropertyType.INTEGER) {
+                            text.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+                        } else if (prop.getType() == DBPProperty.PropertyType.NUMERIC) {
+                            text.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
+                        }
+                        text.setText(item.getText(1));
+                        text.addModifyListener(new ModifyListener() {
+                            public void modifyText(ModifyEvent e) {
+                                changeProperty(prop, text.getText());
+                                item.setText(1, text.getText());
+                            }
+                        });
+                        text.selectAll();
+                        newEditor = text;
+                        break;
+                    }
+                }
+            } else {
+                final CCombo combo = new CCombo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
+                int selIndex = -1;
+                for (int i = 0; i < validValues.length; i++) {
+                    String value =  String.valueOf(validValues[i]);
+                    combo.add(value);
+                    if (value.equals(item.getText(1))) {
+                        selIndex = i;
+                    }
+                }
+                if (selIndex >= 0) {
+                    combo.select(selIndex);
+                }
+                combo.addModifyListener(new ModifyListener() {
+                    public void modifyText(ModifyEvent e)
+                    {
+                        changeProperty(prop, combo.getText());
+                        item.setText(1, combo.getText());
+                    }
+                });
+                newEditor = combo;
+            }
+
+            newEditor.addTraverseListener(new TraverseListener() {
+                public void keyTraversed(TraverseEvent e)
+                {
+                    if (e.detail == SWT.TRAVERSE_RETURN) {
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
+                        disposeOldEditor();
+                    } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
+                        new ActionResetProperty(prop).run();
+                    }
+                }
+            });
+
+            if (isDef) {
+                // Selected by mouse
+                newEditor.setFocus();
+            }
+            treeEditor.setEditor(newEditor, item, 1);
+        }
     }
 
     private void registerContextMenu() {
