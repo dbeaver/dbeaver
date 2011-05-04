@@ -184,11 +184,13 @@ public class DBECommandContextImpl implements DBECommandContext {
         fireCommandChange(command);
     }
 
-    public void addCommandBatch(List<DBECommand> commandBatch)
+    public void addCommandBatch(List<DBECommand> commandBatch,
+        DBECommandReflector<?, DBECommand<?>> reflector)
     {
         synchronized (commands) {
-            for (DBECommand command : commandBatch) {
-                commands.add(new CommandInfo(command, null));
+            for (int i = 0, commandBatchSize = commandBatch.size(); i < commandBatchSize; i++) {
+                DBECommand command = commandBatch.get(i);
+                commands.add(new CommandInfo(command, i == 0 ? reflector : null));
             }
             clearUndidCommands();
             clearCommandQueues();

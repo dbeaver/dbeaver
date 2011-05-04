@@ -25,29 +25,29 @@ import java.util.Map;
 /**
  * MySQLCatalogManager
  */
-public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> implements DBEObjectMaker<MySQLCatalog>, DBEObjectRenamer<MySQLCatalog> {
+public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> implements DBEObjectMaker<MySQLCatalog, MySQLDataSource>, DBEObjectRenamer<MySQLCatalog> {
 
     public long getMakerOptions()
     {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
-    public MySQLCatalog createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commander, Object parent, Object copyFrom)
+    public MySQLCatalog createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
     {
         String schemaName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Schema name");
         if (CommonUtils.isEmpty(schemaName)) {
             return null;
         }
-        MySQLCatalog newCatalog = new MySQLCatalog((MySQLDataSource) parent, null);
+        MySQLCatalog newCatalog = new MySQLCatalog(parent, null);
         newCatalog.setName(schemaName);
-        commander.addCommand(new CommandCreateCatalog(newCatalog), null);
+        commandContext.addCommand(new CommandCreateCatalog(newCatalog), null);
 
         return newCatalog;
     }
 
-    public void deleteObject(DBECommandContext commander, MySQLCatalog object, Map<String, Object> options)
+    public void deleteObject(DBECommandContext commandContext, MySQLCatalog object, Map<String, Object> options)
     {
-        commander.addCommand(new CommandDropCatalog(object), null);
+        commandContext.addCommand(new CommandDropCatalog(object), null);
     }
 
     public void renameObject(DBRProgressMonitor monitor, MySQLCatalog catalog, String newName) throws DBException

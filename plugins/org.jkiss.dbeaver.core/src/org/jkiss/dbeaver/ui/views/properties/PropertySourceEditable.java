@@ -115,7 +115,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     {
     }
 
-    private class CommandReflector <T extends DBPObject>  implements DBECommandReflector<T, DBECommand<T>> {
+    private class CommandReflector <T extends DBPObject> implements DBECommandReflector<T, DBECommand<T>> {
         public void redoCommand(DBECommand<T> command)
         {
 

@@ -130,7 +130,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (objectManager == null) {
                 throw new DBException("Object manager not found for type '" + object.getClass().getName() + "'");
             }
-            if (!(objectManager instanceof DBEObjectMaker<?>)) {
+            if (!(objectManager instanceof DBEObjectMaker)) {
                 throw new DBException("Object manager '" + objectManager.getClass().getName() + "' do not supports object deletion");
             }
 
@@ -172,8 +172,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 }
             }
 
-            if (commandTarget.getEditor() == null) {
-                // Persist object deletion - only if there is not host editor
+            if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
+                // Persist object deletion - only if there is no host editor and we have a command context
                 ObjectDeleter deleter = new ObjectDeleter(commandTarget.getContext());
                 DBeaverCore.getInstance().runInProgressService(deleter);
             }

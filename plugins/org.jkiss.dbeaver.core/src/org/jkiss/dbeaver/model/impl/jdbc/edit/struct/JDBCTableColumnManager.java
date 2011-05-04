@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn, CONTAINER_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE>
-    implements DBEObjectMaker<OBJECT_TYPE>
+    implements DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE>
 {
     //private final Map<IPropertyDescriptor, TablePropertyHandler> handlerMap = new IdentityHashMap<IPropertyDescriptor, TablePropertyHandler>();
 
@@ -28,18 +28,18 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, Object parent, Object copyFrom)
+    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
-        OBJECT_TYPE newColumn = createNewTableColumn((CONTAINER_TYPE) parent, copyFrom);
+        OBJECT_TYPE newColumn = createNewTableColumn(parent, copyFrom);
 
-        makeInitialCommands(newColumn, context, new CommandCreateTableColumn(newColumn));
+        makeInitialCommands(newColumn, commandContext, new CommandCreateTableColumn(newColumn));
 
         return newColumn;
     }
 
-    public void deleteObject(DBECommandContext commander, OBJECT_TYPE object, Map<String, Object> options)
+    public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
     {
-        commander.addCommand(new CommandDropTableColumn(object), null);
+        commandContext.addCommand(new CommandDropTableColumn(object), null);
     }
 
     protected abstract OBJECT_TYPE createNewTableColumn(CONTAINER_TYPE parent, Object copyFrom);

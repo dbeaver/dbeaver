@@ -20,16 +20,16 @@ import java.util.Map;
 /**
  * MySQLUserManager
  */
-public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DBEObjectMaker<MySQLUser>, DBECommandFilter<MySQLUser> {
+public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DBEObjectMaker<MySQLUser, MySQLDataSource>, DBECommandFilter<MySQLUser> {
 
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public MySQLUser createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commander, Object parent, Object copyFrom)
+    public MySQLUser createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
     {
-        MySQLUser newUser = new MySQLUser((MySQLDataSource) parent, null);
+        MySQLUser newUser = new MySQLUser(parent, null);
         if (copyFrom instanceof MySQLUser) {
             MySQLUser tplUser = (MySQLUser)copyFrom;
             newUser.setUserName(tplUser.getUserName());
@@ -39,15 +39,15 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
             newUser.setMaxConnections(tplUser.getMaxConnections());
             newUser.setMaxUserConnections(tplUser.getMaxUserConnections());
         }
-        commander.addCommand(new NewUserPropertyCommand(newUser, UserPropertyHandler.NAME, newUser.getUserName()), null);
-        commander.addCommand(new NewUserPropertyCommand(newUser, UserPropertyHandler.HOST, newUser.getHost()), null);
+        commandContext.addCommand(new NewUserPropertyCommand(newUser, UserPropertyHandler.NAME, newUser.getUserName()), null);
+        commandContext.addCommand(new NewUserPropertyCommand(newUser, UserPropertyHandler.HOST, newUser.getHost()), null);
 
         return newUser;
     }
 
-    public void deleteObject(DBECommandContext commander, MySQLUser user, Map<String, Object> options)
+    public void deleteObject(DBECommandContext commandContext, MySQLUser user, Map<String, Object> options)
     {
-        commander.addCommand(new MySQLCommandDropUser(user), null);
+        commandContext.addCommand(new MySQLCommandDropUser(user), null);
     }
 
     public void filterCommands(DBECommandQueue<MySQLUser> queue)

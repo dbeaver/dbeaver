@@ -19,18 +19,18 @@ import java.util.Map;
 /**
  * DataSourceDescriptorManager
  */
-public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor> {
+public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor, DataSourceRegistry> {
 
     public long getMakerOptions()
     {
         return 0;
     }
 
-    public DataSourceDescriptor createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commander, Object parent, Object copyFrom)
+    public DataSourceDescriptor createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, DataSourceRegistry parent, Object copyFrom)
     {
         if (copyFrom != null) {
             DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;
-            DataSourceRegistry registry = parent instanceof DataSourceRegistry ? (DataSourceRegistry)parent : dsTpl.getRegistry();
+            DataSourceRegistry registry = parent != null ? parent : dsTpl.getRegistry();
             DataSourceDescriptor dataSource = new DataSourceDescriptor(
                 registry,
                 DataSourceDescriptor.generateNewId(dsTpl.getDriver()),
@@ -66,7 +66,7 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
         return null;
     }
 
-    public void deleteObject(DBECommandContext commander, final DataSourceDescriptor object, Map<String, Object> options)
+    public void deleteObject(DBECommandContext commandContext, final DataSourceDescriptor object, Map<String, Object> options)
     {
         Runnable remover = new Runnable() {
             public void run()

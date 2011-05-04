@@ -6,8 +6,10 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
@@ -35,8 +37,10 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         return new PropertyHandler<OBJECT_TYPE>(this, property);
     }
 
-
-    protected void makeInitialCommands(OBJECT_TYPE object, DBECommandContext context, DBECommand createCommand)
+    protected void makeInitialCommands(
+        OBJECT_TYPE object,
+        DBECommandContext context,
+        DBECommand<OBJECT_TYPE> createCommand)
     {
         List<DBECommand> commands = new ArrayList<DBECommand>();
         commands.add(createCommand);
@@ -52,7 +56,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
             }
         }
 
-        context.addCommandBatch(commands);
+        context.addCommandBatch(commands, new NewObjectReflector());
     }
 
     protected abstract IDatabasePersistAction[] makePersistActions(ObjectChangeCommand<OBJECT_TYPE> command);
@@ -132,5 +136,19 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
             return true;
         }
     }
+
+    protected static class NewObjectReflector<OBJECT_TYPE extends DBPObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
+
+        public void redoCommand(DBECommand<OBJECT_TYPE> object)
+        {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        public void undoCommand(DBECommand<OBJECT_TYPE> object)
+        {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
+    }
+
 }
 
