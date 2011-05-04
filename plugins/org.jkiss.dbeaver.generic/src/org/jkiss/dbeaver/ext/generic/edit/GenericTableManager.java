@@ -9,8 +9,10 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.*;
@@ -31,7 +33,8 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
     {
         GenericTable table = command.getObject();
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        actions.add( new AbstractDatabasePersistAction("Alter table", "ALTER TABLE " + table.getName()) );
+        final String tableName = table.getFullQualifiedName();
+        actions.add( new AbstractDatabasePersistAction("Alter table", "ALTER TABLE " + tableName) );
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
@@ -46,7 +49,10 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
         }
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
 
-        final Object tableName = CommonUtils.toString(tableProps.getProperty(DBConstants.PROP_ID_NAME));
+        String tableName = DBUtils.getQuotedIdentifier(
+            table.getDataSource(),
+            CommonUtils.toString(tableProps.getProperty(DBConstants.PROP_ID_NAME)),
+            table.getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.META_CASE_SENSITIVE));
 
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);

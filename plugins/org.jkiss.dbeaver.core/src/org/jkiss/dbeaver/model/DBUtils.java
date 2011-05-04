@@ -71,6 +71,11 @@ public final class DBUtils {
 
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
+        return getQuotedIdentifier(dataSource, str, true);
+    }
+
+    public static String getQuotedIdentifier(DBPDataSource dataSource, String str, boolean caseSensitiveNames)
+    {
         final DBPDataSourceInfo info = dataSource.getInfo();
         String quoteString = info.getIdentifierQuoteString();
         if (quoteString == null) {
@@ -86,14 +91,16 @@ public final class DBUtils {
         // Check for keyword conflict
         boolean hasBadChars = dataSource.getContainer().getKeywordManager().getKeywordType(strUpper) == DBPKeywordType.KEYWORD;
 
-        // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
-        if (!hasBadChars && info.supportsQuotedMixedCase()) {
-            // See how unquoted idents are stored
-            // If passed identifier case differs from unquoted then we need to escape it
-            if (info.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
-                hasBadChars = !str.equals(strUpper);
-            } else if (info.storesUnquotedCase() == DBPIdentifierCase.LOWER) {
-                hasBadChars = !str.equals(str.toLowerCase());
+        if (caseSensitiveNames) {
+            // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
+            if (!hasBadChars && info.supportsQuotedMixedCase()) {
+                // See how unquoted idents are stored
+                // If passed identifier case differs from unquoted then we need to escape it
+                if (info.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
+                    hasBadChars = !str.equals(strUpper);
+                } else if (info.storesUnquotedCase() == DBPIdentifierCase.LOWER) {
+                    hasBadChars = !str.equals(str.toLowerCase());
+                }
             }
         }
 

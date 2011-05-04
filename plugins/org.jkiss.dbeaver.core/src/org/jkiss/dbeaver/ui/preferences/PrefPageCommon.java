@@ -26,6 +26,7 @@ public class PrefPageCommon extends TargetPrefPage
     private Spinner resultSetSize;
     private Spinner memoryContentSize;
     private Button readExpensiveCheck;
+    private Button caseSensitiveNamesCheck;
 
     public PrefPageCommon()
     {
@@ -41,7 +42,8 @@ public class PrefPageCommon extends TargetPrefPage
             store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(PrefConstants.DEFAULT_AUTO_COMMIT) ||
             store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE) ||
-            store.contains(PrefConstants.READ_EXPENSIVE_PROPERTIES)
+            store.contains(PrefConstants.READ_EXPENSIVE_PROPERTIES) ||
+            store.contains(PrefConstants.META_CASE_SENSITIVE)
             ;
     }
 
@@ -90,6 +92,12 @@ public class PrefPageCommon extends TargetPrefPage
             memoryContentSize.setMinimum(0);
             memoryContentSize.setMaximum(1024 * 1024 * 1024);
         }
+
+        {
+            Group metadataGroup = UIUtils.createControlGroup(composite, "Metadata", 2, SWT.NONE, 0);
+
+            caseSensitiveNamesCheck = UIUtils.createLabelCheckbox(metadataGroup, "Use case-sensitive names in DDL statements", false);
+        }
         return composite;
     }
 
@@ -101,6 +109,7 @@ public class PrefPageCommon extends TargetPrefPage
             resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
             memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
             readExpensiveCheck.setSelection(store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES));
+            caseSensitiveNamesCheck.setSelection(store.getBoolean(PrefConstants.META_CASE_SENSITIVE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -114,6 +123,7 @@ public class PrefPageCommon extends TargetPrefPage
             store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
             store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
             store.setValue(PrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
+            store.setValue(PrefConstants.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -127,6 +137,7 @@ public class PrefPageCommon extends TargetPrefPage
         store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
         store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);
         store.setToDefault(PrefConstants.READ_EXPENSIVE_PROPERTIES);
+        store.setToDefault(PrefConstants.META_CASE_SENSITIVE);
     }
 
     public void applyData(Object data)
