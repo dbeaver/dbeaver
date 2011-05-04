@@ -44,7 +44,7 @@ public class ItemListControl extends NodeListControl
         super(parent, style, workbenchPart, node, metaNode);
         searcher = new Searcher();
         searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
-        disabledCellColor = new Color(parent.getDisplay(), 0xC0, 0xC0, 0xC0);
+        disabledCellColor = new Color(parent.getDisplay(), 0xD0, 0xD0, 0xD0);
     }
 
     @Override

@@ -252,7 +252,7 @@ public class EditablePropertiesControl extends Composite {
             {
                 TreeItem item = treeControl.getItem(new Point(e.x, e.y));
                 if (item != null) {
-                    selectedColumn = UIUtils.getColumnAtPos(treeControl, item, e.x, e.y);
+                    selectedColumn = UIUtils.getColumnAtPos(item, e.x, e.y);
                 } else {
                     selectedColumn = -1;
                 }

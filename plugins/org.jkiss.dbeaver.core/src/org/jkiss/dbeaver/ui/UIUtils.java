@@ -297,9 +297,9 @@ public class UIUtils {
         }
     }
 
-    public static int getColumnAtPos(Table table, TableItem item, int x, int y)
+    public static int getColumnAtPos(TableItem item, int x, int y)
     {
-        int columnCount = table.getColumnCount();
+        int columnCount = item.getParent().getColumnCount();
         for (int i = 0; i < columnCount; i++) {
             Rectangle rect = item.getBounds(i);
             if (rect.contains(x, y)) {
@@ -309,9 +309,9 @@ public class UIUtils {
         return -1;
     }
 
-    public static int getColumnAtPos(Tree table, TreeItem item, int x, int y)
+    public static int getColumnAtPos(TreeItem item, int x, int y)
     {
-        int columnCount = table.getColumnCount();
+        int columnCount = item.getParent().getColumnCount();
         for (int i = 0; i < columnCount; i++) {
             Rectangle rect = item.getBounds(i);
             if (rect.contains(x, y)) {

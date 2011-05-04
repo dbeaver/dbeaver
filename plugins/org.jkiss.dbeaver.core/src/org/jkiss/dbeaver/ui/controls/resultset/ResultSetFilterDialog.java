@@ -287,7 +287,7 @@ public class ResultSetFilterDialog extends Dialog {
             if (item == null) {
                 return;
             }
-            int columnIndex = UIUtils.getColumnAtPos(columnsTable, item, e.x, e.y);
+            int columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
             if (columnIndex <= 0) {
                 return;
             }

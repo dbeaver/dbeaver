@@ -200,7 +200,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         Point pt = new Point(x, y);
         TableItem item = getTable().getItem(pt);
         if (item == null) return null;
-        selectedColumn = UIUtils.getColumnAtPos(getTable(), item, x, y);
+        selectedColumn = UIUtils.getColumnAtPos(item, x, y);
         selectedItem = getTable().indexOf(item);
         return item;
     }
@@ -212,7 +212,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         Point pt = new Point(x, y);
         TreeItem item = getTree().getItem(pt);
         if (item == null) return null;
-        selectedColumn = UIUtils.getColumnAtPos(getTree(), item, x, y);
+        selectedColumn = UIUtils.getColumnAtPos(item, x, y);
         selectedItem = getTree().indexOf(item);
         return item;
     }
