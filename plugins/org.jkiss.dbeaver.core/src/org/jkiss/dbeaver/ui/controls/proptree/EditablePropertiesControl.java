@@ -45,6 +45,7 @@ public class EditablePropertiesControl extends Composite {
     //private Color colorBlue;
     private Clipboard clipboard;
     private Map<String,String> defaultValues = new TreeMap<String, String>();
+    private int selectedColumn = -1;
 
     public EditablePropertiesControl(Composite parent, int style)
     {
@@ -242,7 +243,40 @@ public class EditablePropertiesControl extends Composite {
             }
 
             public void widgetSelected(SelectionEvent e) {
-                showEditor((TreeItem) e.item, (e.stateMask & SWT.BUTTON_MASK) != 0);
+                showEditor((TreeItem) e.item, selectedColumn == 1 && (e.stateMask & SWT.BUTTON_MASK) != 0);
+            }
+        });
+        treeControl.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e)
+            {
+                TreeItem item = treeControl.getItem(new Point(e.x, e.y));
+                if (item != null) {
+                    selectedColumn = UIUtils.getColumnAtPos(treeControl, item, e.x, e.y);
+                } else {
+                    selectedColumn = -1;
+                }
+            }
+        });
+        treeControl.addTraverseListener(new TraverseListener() {
+            public void keyTraversed(TraverseEvent e)
+            {
+                if (e.detail == SWT.TRAVERSE_RETURN) {
+                    // Set focus on editor
+                    if (treeEditor.getEditor() != null) {
+                        if (treeEditor.getEditor().isDisposed()) {
+                            final TreeItem[] selection = treeControl.getSelection();
+                            if (selection.length == 0) {
+                                return;
+                            }
+                            showEditor(selection[0], true);
+                        } else {
+                            treeEditor.getEditor().setFocus();
+                        }
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
+                    }
+                }
             }
         });
     }
