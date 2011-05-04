@@ -186,15 +186,15 @@ public class CustomComboBoxCellEditor extends CellEditor {
 
     public void activate(ColumnViewerEditorActivationEvent activationEvent) {
         super.activate(activationEvent);
-        if (activationEvent.eventType == ColumnViewerEditorActivationEvent.MOUSE_CLICK_SELECTION ||
-            activationEvent.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION ||
-            activationEvent.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED)
-        {
-            getControl().getDisplay().asyncExec(new Runnable() {
-                public void run() {
-                    ((CCombo) getControl()).setListVisible(true);
-                }
-            });
-        }
+//        if (activationEvent.eventType == ColumnViewerEditorActivationEvent.MOUSE_CLICK_SELECTION ||
+//            activationEvent.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION ||
+//            activationEvent.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED)
+//        {
+//            getControl().getDisplay().asyncExec(new Runnable() {
+//                public void run() {
+//                    ((CCombo) getControl()).setListVisible(true);
+//                }
+//            });
+//        }
     }
 }

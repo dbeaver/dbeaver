@@ -9,6 +9,7 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -16,7 +17,6 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -179,17 +179,28 @@ public class EditablePropertiesControl extends Composite {
                     e.doit = false;
                 }
             }
+
             public void keyReleased(KeyEvent e)
             {
             }
         });
         treeControl.addControlListener(new ControlAdapter() {
+            private boolean packing = false;
             @Override
             public void controlResized(ControlEvent e) {
-                UIUtils.packColumns(treeControl, true);
+                if (!packing) {
+                    try {
+                        packing = true;
+                        UIUtils.packColumns(treeControl, true);
+                    }
+                    finally {
+                        packing = false;
+                    }
+                }
             }
         });
 
+/*
         Combo tmpCombo = new Combo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
         final int comboHeight = tmpCombo.getBounds().height;
         tmpCombo.dispose();
@@ -201,6 +212,7 @@ public class EditablePropertiesControl extends Composite {
                 event.height = comboHeight;
             }
         });
+*/
 
 
         this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
@@ -248,7 +260,7 @@ public class EditablePropertiesControl extends Composite {
         final Tree treeControl = propsTree.getTree();
         treeEditor = new TreeEditor(treeControl);
         treeEditor.horizontalAlignment = SWT.CENTER;
-        treeEditor.verticalAlignment = SWT.TOP;
+        treeEditor.verticalAlignment = SWT.CENTER;
         treeEditor.grabHorizontal = true;
         treeEditor.minimumWidth = 50;
 
@@ -259,7 +271,7 @@ public class EditablePropertiesControl extends Composite {
             }
 
             public void widgetSelected(SelectionEvent e) {
-                showEditor(e, false);
+                showEditor(e, (e.stateMask & SWT.BUTTON_MASK) != 0);
             }
 
             public void showEditor(SelectionEvent e, boolean isDef) {
@@ -279,7 +291,7 @@ public class EditablePropertiesControl extends Composite {
                         switch (prop.getType()) {
                             case BOOLEAN:
                             {
-                                Combo control = new Combo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
+                                CCombo control = new CCombo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
                                 control.add("true");
                                 control.add("false");
                                 control.select(Boolean.valueOf(item.getText(1)) ? 0 : 1);
@@ -296,6 +308,11 @@ public class EditablePropertiesControl extends Composite {
                             default:
                             {
                                 Text text = new Text(treeControl, SWT.BORDER);
+                                if (prop.getType() == DBPProperty.PropertyType.INTEGER) {
+                                    text.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+                                } else if (prop.getType() == DBPProperty.PropertyType.NUMERIC) {
+                                    text.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
+                                }
                                 text.setText(item.getText(1));
                                 text.addModifyListener(new ModifyListener() {
                                     public void modifyText(ModifyEvent e) {
@@ -310,7 +327,7 @@ public class EditablePropertiesControl extends Composite {
                             }
                         }
                     } else {
-                        Combo control = new Combo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
+                        CCombo control = new CCombo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
                         int selIndex = -1;
                         for (int i = 0; i < validValues.length; i++) {
                             String value =  String.valueOf(validValues[i]);
@@ -324,13 +341,29 @@ public class EditablePropertiesControl extends Composite {
                         }
                         control.addModifyListener(new ModifyListener() {
                             public void modifyText(ModifyEvent e) {
-                                Combo combo = (Combo) treeEditor.getEditor();
+                                CCombo combo = (CCombo) treeEditor.getEditor();
                                 changeProperty(prop, combo.getText());
                                 treeEditor.getItem().setText(1, combo.getText());
                             }
                         });
                         newEditor = control;
                     }
+
+                    newEditor.addTraverseListener(new TraverseListener() {
+                        public void keyTraversed(TraverseEvent e)
+                        {
+                            if (e.detail == SWT.TRAVERSE_RETURN) {
+                                e.doit = false;
+                                e.detail = SWT.TRAVERSE_NONE;
+                                disposeOldEditor();
+                            } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                                e.doit = false;
+                                e.detail = SWT.TRAVERSE_NONE;
+                                new ActionResetProperty(prop).run();
+                            }
+                        }
+                    });
+
                     if (isDef) {
                         // Selected by mouse
                         newEditor.setFocus();
@@ -368,20 +401,8 @@ public class EditablePropertiesControl extends Composite {
                             }
                         });
                         if (isPropertyChanged(prop)) {
-                            final boolean isCustom = isCustomProperty(prop);
-                            manager.add(new Action("Reset value") {
-                                @Override
-                                public void run() {
-                                    if (originalValues.containsKey(propId)) {
-                                        changeProperty(prop, originalValues.get(propId));
-                                    } else if (!isCustom) {
-                                        changeProperty(prop, null);
-                                    }
-                                    propsTree.update(prop, null);
-                                    disposeOldEditor();
-                                }
-                            });
-                            if (!isCustom) {
+                            manager.add(new ActionResetProperty(prop));
+                            if (!isCustomProperty(prop)) {
                                 manager.add(new Action("Reset value to default") {
                                     @Override
                                     public void run() {
@@ -628,4 +649,24 @@ public class EditablePropertiesControl extends Composite {
         }
     }
 
+    private class ActionResetProperty extends Action {
+        private final DBPProperty prop;
+
+        public ActionResetProperty(DBPProperty prop)
+        {
+            super("Reset value");
+            this.prop = prop;
+        }
+
+        @Override
+        public void run() {
+            if (originalValues.containsKey(prop.getId())) {
+                changeProperty(prop, originalValues.get(prop.getId()));
+            } else if (!isCustomProperty(prop)) {
+                changeProperty(prop, null);
+            }
+            propsTree.update(prop, null);
+            disposeOldEditor();
+        }
+    }
 }
