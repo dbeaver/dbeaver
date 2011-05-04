@@ -7,11 +7,13 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -22,6 +24,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
@@ -48,6 +51,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                 public void run() {
                     List<DBNNode> selectedNodes = new ArrayList<DBNNode>();
                     List<DBPNamedObject> selectedObjects = new ArrayList<DBPNamedObject>();
+                    List<String> selectedFiles = new ArrayList<String>();
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ){
                         Object object = iter.next();
@@ -66,6 +70,10 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                         if (node != null) {
                             selectedNodes.add(node);
                         }
+                        if (node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFile) {
+                            final IFile file = (IFile) ((DBNResource) node).getResource();
+                            selectedFiles.add(file.getLocation().makeAbsolute().toFile().getAbsolutePath());
+                        }
                         if (dbObject != null) {
                             selectedObjects.add(dbObject);
                         }
@@ -74,18 +82,32 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                         }
                         buf.append(objectValue);
                     }
-                    if (buf.length() > 0) {
+                    {
                         Clipboard clipboard = new Clipboard(workbenchWindow.getShell().getDisplay());
-                        clipboard.setContents(
-                            new Object[]{
-                                buf.toString(),
-                                selectedNodes,
-                                selectedObjects},
-                            new Transfer[]{
-                                TextTransfer.getInstance(),
-                                TreeNodeTransfer.getInstance(),
-                                DatabaseObjectTransfer.getInstance()});
-                        ObjectPropertyTester.firePropertyChange(ObjectPropertyTester.PROP_CAN_PASTE);
+                        List<Object> dataList = new ArrayList<Object>();
+                        List<Transfer> dataTypeList = new ArrayList<Transfer>();
+                        if (buf.length() > 0) {
+                            dataList.add(buf.toString());
+                            dataTypeList.add(TextTransfer.getInstance());
+                        }
+                        if (!selectedNodes.isEmpty()) {
+                            dataList.add(selectedNodes);
+                            dataTypeList.add(TreeNodeTransfer.getInstance());
+                        }
+                        if (!selectedObjects.isEmpty()) {
+                            dataList.add(selectedObjects);
+                            dataTypeList.add(DatabaseObjectTransfer.getInstance());
+                        }
+                        if (!selectedFiles.isEmpty()) {
+                            dataList.add(selectedFiles.toArray(new String[selectedFiles.size()]));
+                            dataTypeList.add(FileTransfer.getInstance());
+                        }
+                        if (!dataList.isEmpty()) {
+                            clipboard.setContents(
+                                dataList.toArray(),
+                                dataTypeList.toArray(new Transfer[dataTypeList.size()]));
+                            ObjectPropertyTester.firePropertyChange(ObjectPropertyTester.PROP_CAN_PASTE);
+                        }
                     }
                 }
             });
