@@ -188,9 +188,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService();
 
-    public IColorProvider getObjectColorProvider()
+    protected CellLabelProvider getColumnLabelProvider(int columnIndex)
     {
-        return null;
+        return new ObjectColumnLabelProvider(columnIndex);
     }
 
     private TableItem detectTableItem(int x, int y)
@@ -275,6 +275,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public ISelectionProvider getSelectionProvider()
     {
         return itemsViewer;
+    }
+
+    protected ObjectColumn getColumn(int index)
+    {
+        return columns.get(index);
     }
 
     protected ObjectPropertyDescriptor getObjectProperty(OBJECT_TYPE object, int columnIndex)
@@ -686,7 +691,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 newColumn = viewerColumn;
                 columnItem = viewerColumn.getColumn();
             }
-            newColumn.setLabelProvider(new ObjectColumnLabelProvider(columns.size()));
+            newColumn.setLabelProvider(getColumnLabelProvider(columns.size()));
             final EditingSupport editingSupport = makeEditingSupport(newColumn, columns.size());
             if (editingSupport != null) {
                 newColumn.setEditingSupport(editingSupport);
@@ -777,7 +782,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     //////////////////////////////////////////////////////
     // Column descriptor
 
-    private static class ObjectColumn {
+    protected static class ObjectColumn {
         String id;
         Item item;
         ViewerColumn column;
@@ -879,9 +884,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     }
 
-    class ObjectColumnLabelProvider extends ColumnLabelProvider
+    protected class ObjectColumnLabelProvider extends ColumnLabelProvider
     {
-        private final int columnIndex;
+        protected final int columnIndex;
 
         ObjectColumnLabelProvider(int columnIndex)
         {
@@ -905,19 +910,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return getCellString(cellValue);
         }
 
-        @Override
-        public Color getForeground(Object element)
-        {
-            final IColorProvider colorProvider = getObjectColorProvider();
-            return colorProvider == null ? null : colorProvider.getForeground(element);
-        }
-
-        @Override
-        public Color getBackground(Object element)
-        {
-            final IColorProvider colorProvider = getObjectColorProvider();
-            return colorProvider == null ? null : colorProvider.getBackground(element);
-        }
     }
 
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {

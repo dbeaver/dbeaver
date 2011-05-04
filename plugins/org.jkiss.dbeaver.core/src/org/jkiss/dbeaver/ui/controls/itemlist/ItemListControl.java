@@ -31,9 +31,8 @@ import java.util.List;
 public class ItemListControl extends NodeListControl
 {
     private Searcher searcher;
-    private ItemColorProvider itemColorProvider;
     private Color searchHighlightColor;
-    private Color newObjectColor;
+    private Color disabledCellColor;
 
     public ItemListControl(
         Composite parent,
@@ -44,9 +43,8 @@ public class ItemListControl extends NodeListControl
     {
         super(parent, style, workbenchPart, node, metaNode);
         searcher = new Searcher();
-        itemColorProvider = new ItemColorProvider();
         searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
-        newObjectColor = new Color(parent.getDisplay(), 0xFF, 0xB6, 0xC1);
+        disabledCellColor = new Color(parent.getDisplay(), 0xC0, 0xC0, 0xC0);
     }
 
     @Override
@@ -57,7 +55,7 @@ public class ItemListControl extends NodeListControl
 //            objectEditorHandler = null;
 //        }
         UIUtils.dispose(searchHighlightColor);
-        UIUtils.dispose(newObjectColor);
+        UIUtils.dispose(disabledCellColor);
         super.dispose();
     }
 
@@ -81,10 +79,9 @@ public class ItemListControl extends NodeListControl
         return new CellEditingSupport(columnIndex);
     }
 
-    @Override
-    public IColorProvider getObjectColorProvider()
+    protected CellLabelProvider getColumnLabelProvider(int columnIndex)
     {
-        return itemColorProvider;
+        return new ItemColorProvider(columnIndex);
     }
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
@@ -219,7 +216,12 @@ public class ItemListControl extends NodeListControl
 
     }
 
-    private class ItemColorProvider implements IColorProvider {
+    private class ItemColorProvider extends ObjectColumnLabelProvider {
+
+        ItemColorProvider(int columnIndex)
+        {
+            super(columnIndex);
+        }
 
         public Color getForeground(Object element)
         {
@@ -228,11 +230,15 @@ public class ItemListControl extends NodeListControl
 
         public Color getBackground(Object element)
         {
-            if (searcher != null && searcher.hasObject((DBNNode) element)) {
+            DBNNode node = (DBNNode) element;
+            if (searcher != null && searcher.hasObject(node)) {
                 return searchHighlightColor;
             }
-            if (element instanceof DBNDatabaseNode && !((DBNDatabaseNode) element).getObject().isPersisted()) {
-                return newObjectColor;
+            final Object objectValue = getObjectValue(node);
+            if (isNewObject(node) &&
+                !getColumn(columnIndex).getProperty(objectValue).isEditable(objectValue))
+            {
+                return disabledCellColor;
             }
             return null;
         }

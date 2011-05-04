@@ -86,9 +86,10 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         }
         createPathPanel(node, container);
         //createNamePanel(node, container);
-        createPropertyBrowser(container);
 
         pageControl.createProgressPanel();
+
+        createPropertyBrowser(container);
     }
 
     private void createPathPanel(DBNNode node, Composite container)
