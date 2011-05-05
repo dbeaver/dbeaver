@@ -34,13 +34,11 @@ public class ERDObjectAdapter implements IAdapterFactory {
                     }
                 }
             }
-        } else if (adapterType == IPropertySource.class) {
-            System.out.println();
         }
         return null;
     }
 
     public Class[] getAdapterList() {
-        return new Class[] { ERDObject.class, DBPNamedObject.class, DBSObject.class, DBNNode.class, IPropertySource.class };
+        return new Class[] { ERDObject.class, DBPNamedObject.class, DBSObject.class, DBNNode.class };
     }
 }
