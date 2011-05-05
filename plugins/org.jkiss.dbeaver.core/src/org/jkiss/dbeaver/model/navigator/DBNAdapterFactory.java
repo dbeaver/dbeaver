@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 
 /**
  * Navigator AdapterFactory

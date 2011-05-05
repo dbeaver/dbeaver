@@ -1,4 +1,8 @@
-package org.jkiss.dbeaver.ui.views.properties;
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
+package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IFilter;

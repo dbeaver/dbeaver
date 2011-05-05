@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
+import org.jkiss.dbeaver.ui.properties.EditablePropertiesControl;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 

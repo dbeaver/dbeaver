@@ -19,7 +19,7 @@ import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
-import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

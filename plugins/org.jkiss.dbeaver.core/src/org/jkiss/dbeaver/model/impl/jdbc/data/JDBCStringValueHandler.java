@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
-import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

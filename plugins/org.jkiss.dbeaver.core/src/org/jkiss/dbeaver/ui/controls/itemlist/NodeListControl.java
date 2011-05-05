@@ -34,9 +34,9 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
-import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
-import org.jkiss.dbeaver.ui.views.properties.PropertySourceEditable;
+import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.util.ArrayList;
@@ -130,11 +130,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                     @Override
                     public boolean hasChildren(Object parentElement)
                     {
-                        if (parentElement instanceof DBNDatabaseNode) {
-                            return ((DBNDatabaseNode) parentElement).hasChildren();
-                        } else {
-                            return false;
-                        }
+                        return parentElement instanceof DBNDatabaseNode &&
+                            ((DBNDatabaseNode) parentElement).hasChildren();
                     }
 
                     @Override

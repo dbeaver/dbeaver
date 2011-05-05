@@ -21,7 +21,6 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
@@ -35,8 +34,8 @@ import org.jkiss.dbeaver.registry.DriverFileType;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
-import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
-import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
+import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
+import org.jkiss.dbeaver.ui.properties.EditablePropertiesControl;
 
 import java.io.File;
 import java.io.IOException;

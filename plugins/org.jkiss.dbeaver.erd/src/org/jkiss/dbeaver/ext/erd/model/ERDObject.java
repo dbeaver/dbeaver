@@ -11,7 +11,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -20,7 +19,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -30,7 +29,7 @@ import java.lang.reflect.InvocationTargetException;
  * Provides base class support for model objects to participate in event handling framework
  * @author Serge Rieder
  */
-public abstract class ERDObject<OBJECT> implements IPropertySource, IAdaptable, DBPNamedObject
+public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
 {
     static final Log log = LogFactory.getLog(ERDObject.class);
 
@@ -85,31 +84,6 @@ public abstract class ERDObject<OBJECT> implements IPropertySource, IAdaptable, 
 		listeners.firePropertyChange(prop, old, newValue);
 	}
 
-    public Object getEditableValue() {
-        return getPropertyCollector().getEditableValue();
-    }
-
-    public IPropertyDescriptor[] getPropertyDescriptors() {
-        return getPropertyCollector().getPropertyDescriptors();
-    }
-
-    public Object getPropertyValue(Object id) {
-        return getPropertyCollector().getPropertyValue(id);
-    }
-
-    public boolean isPropertySet(Object id) {
-        return getPropertyCollector().isPropertySet(id);
-    }
-
-    public void resetPropertyValue(Object id) {
-        getPropertyCollector().resetPropertyValue(id);
-    }
-
-    public void setPropertyValue(Object id, Object value) {
-        getPropertyCollector().setPropertyValue(id, value);
-    }
-
-
     public void openEditor() {
         if (object instanceof DBSObject) {
             DBeaverCore.runUIJob("Open object editor", new DBRRunnableWithProgress() {
@@ -130,6 +104,9 @@ public abstract class ERDObject<OBJECT> implements IPropertySource, IAdaptable, 
     }
 
     public Object getAdapter(Class adapter) {
+        if (adapter == IPropertySource.class) {
+            return getPropertyCollector();
+        }
         return null;
     }
 }

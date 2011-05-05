@@ -112,7 +112,7 @@ Export-Package: net.sf.jkiss.utils,
  org.jkiss.dbeaver.ui.views.navigator.database,
  org.jkiss.dbeaver.ui.views.navigator.database.load,
  org.jkiss.dbeaver.ui.views.navigator.project,
- org.jkiss.dbeaver.ui.views.properties,
+ org.jkiss.dbeaver.ui.properties,
  org.jkiss.dbeaver.ui.views.qm,
  org.jkiss.dbeaver.ui.views.search,
  org.jkiss.dbeaver.utils

@@ -6,13 +6,14 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.gef.EditPart;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * Object adapter
+ * ERD object adapter
  */
 public class ERDObjectAdapter implements IAdapterFactory {
 
@@ -33,11 +34,13 @@ public class ERDObjectAdapter implements IAdapterFactory {
                     }
                 }
             }
+        } else if (adapterType == IPropertySource.class) {
+            System.out.println();
         }
         return null;
     }
 
     public Class[] getAdapterList() {
-        return new Class[] { ERDObject.class, DBPNamedObject.class, DBSObject.class, DBNNode.class };
+        return new Class[] { ERDObject.class, DBPNamedObject.class, DBSObject.class, DBNNode.class, IPropertySource.class };
     }
 }

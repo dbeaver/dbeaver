@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.controls.proptree;
+package org.jkiss.dbeaver.ui.controls;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.DBPProperty;
 import org.jkiss.dbeaver.model.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.ui.properties.EditablePropertiesControl;
 
 import java.util.*;
 

@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
+import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 
 /**
  * MySQLConnectionPage

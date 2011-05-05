@@ -2,9 +2,8 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.views.properties;
+package org.jkiss.dbeaver.ui.properties;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -30,7 +29,7 @@ import java.util.*;
 /**
  * PropertyCollector
  */
-public abstract class PropertySourceAbstract implements IPropertySourceEx
+public abstract class PropertySourceAbstract implements IMultiPropertySource
 {
     static final Log log = LogFactory.getLog(PropertySourceAbstract.class);
 
@@ -92,6 +91,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceEx
         return props.toArray(new IPropertyDescriptor[props.size()]);
     }
 
+/*
     public IPropertyDescriptor getPropertyDescriptor(final Object id)
     {
         for (IPropertyDescriptor prop : props) {
@@ -100,6 +100,27 @@ public abstract class PropertySourceAbstract implements IPropertySourceEx
             }
         }
         return null;
+    }
+*/
+
+    public boolean isPropertySet(Object id)
+    {
+        Object value = propValues.get(id);
+        if (value instanceof ObjectPropertyDescriptor) {
+            return isPropertySet(getEditableValue(), (ObjectPropertyDescriptor) value);
+        } else {
+            return value != null;
+        }
+    }
+
+    public boolean isPropertySet(Object object, ObjectPropertyDescriptor prop)
+    {
+        try {
+            return !prop.isLazy(object, true) && prop.readValue(object, null) != null;
+        } catch (Exception e) {
+            log.error(e);
+            return false;
+        }
     }
 
     public final Object getPropertyValue(final Object id)
@@ -115,6 +136,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceEx
         }
         return UIUtils.makeStringForUI(value);
     }
+
 
     public Object getPropertyValue(final Object object, final ObjectPropertyDescriptor prop)
     {
@@ -155,16 +177,38 @@ public abstract class PropertySourceAbstract implements IPropertySourceEx
                 return prop.readValue(object, null);
             }
         } catch (Exception e) {
+            log.error(e);
             return e.getMessage();
         }
     }
 
-    public boolean isPropertySet(Object id)
+    public boolean isPropertyResettable(Object id)
+    {
+        Object value = propValues.get(id);
+        if (value instanceof ObjectPropertyDescriptor) {
+            return isPropertyResettable(getEditableValue(), (ObjectPropertyDescriptor) value);
+        } else {
+            // No by default
+            return false;
+        }
+    }
+
+    public boolean isPropertyResettable(Object object, ObjectPropertyDescriptor prop)
     {
         return false;
     }
 
     public final void resetPropertyValue(Object id)
+    {
+        Object value = propValues.get(id);
+        if (value instanceof ObjectPropertyDescriptor) {
+            resetPropertyValue(getEditableValue(), (ObjectPropertyDescriptor) value);
+        } else {
+            throw new UnsupportedOperationException("Direct property reset not implemented");
+        }
+    }
+
+    public void resetPropertyValue(Object object, ObjectPropertyDescriptor id)
     {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
@@ -182,19 +226,6 @@ public abstract class PropertySourceAbstract implements IPropertySourceEx
     public void setPropertyValue(Object object, ObjectPropertyDescriptor prop, Object value)
     {
         throw new UnsupportedOperationException("Cannot update property in non-editable property source");
-/*
-        if (getEditableValue() instanceof DBPObject) {
-            DBECommandContext objectCommander = getCommandContext();
-            if (objectCommander != null) {
-                objectCommander.addCommand(
-                    new DBECommandProperty<DBPObject>(
-                        (DBPObject) getEditableValue(),
-                        null,
-                        value),
-                    null);
-            }
-        }
-*/
     }
 
     public void collectProperties()

@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
+import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 
 import java.io.File;
 import java.util.*;

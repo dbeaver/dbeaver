@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
-import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;

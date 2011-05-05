@@ -17,9 +17,9 @@ import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyReflector;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.views.properties.ProxyPropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.ProxyPropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;

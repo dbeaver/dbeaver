@@ -6,9 +6,7 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -17,10 +15,9 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
-import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
-import org.jkiss.dbeaver.ui.views.properties.ProxyPageSite;
+import org.jkiss.dbeaver.ui.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.properties.ProxyPageSite;
 
 import java.util.ArrayList;
 import java.util.List;

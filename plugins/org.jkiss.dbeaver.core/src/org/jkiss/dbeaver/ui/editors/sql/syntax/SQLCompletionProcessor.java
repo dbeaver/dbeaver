@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

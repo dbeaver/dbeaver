@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.views.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
