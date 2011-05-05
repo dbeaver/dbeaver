@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
-import org.jkiss.dbeaver.ui.properties.EditablePropertiesControl;
+import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,7 +72,7 @@ public class DriverEditDialog extends Dialog
     private Text driverClassText;
     private Text driverURLText;
     private Text driverPortText;
-    private EditablePropertiesControl parametersEditor;
+    private EditablePropertyTree parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
     private List<DriverFileDescriptor> libList;
     //private Button anonymousCheck;
@@ -446,7 +446,7 @@ public class DriverEditDialog extends Dialog
         Composite paramsGroup = new Composite(group, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
 
-        parametersEditor = new EditablePropertiesControl(paramsGroup, SWT.NONE);
+        parametersEditor = new EditablePropertyTree(paramsGroup, SWT.NONE);
         parametersEditor.setMarginVisible(false);
         parametersEditor.loadProperties(driver.getProviderDescriptor().getDriverPropertyGroups(), driver.getDriverParameters(), driver.getDefaultDriverParameters());
 

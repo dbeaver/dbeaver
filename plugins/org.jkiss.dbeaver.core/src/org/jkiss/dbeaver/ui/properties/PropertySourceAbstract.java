@@ -29,7 +29,7 @@ import java.util.*;
 /**
  * PropertyCollector
  */
-public abstract class PropertySourceAbstract implements IMultiPropertySource
+public abstract class PropertySourceAbstract implements IPropertySourceMulti
 {
     static final Log log = LogFactory.getLog(PropertySourceAbstract.class);
 

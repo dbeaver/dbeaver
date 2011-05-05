@@ -16,14 +16,14 @@ import org.jkiss.dbeaver.model.DBPProperty;
 import org.jkiss.dbeaver.model.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
-import org.jkiss.dbeaver.ui.properties.EditablePropertiesControl;
+import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
 
 import java.util.*;
 
 /**
  * Connection properties control
  */
-public class ConnectionPropertiesControl extends EditablePropertiesControl {
+public class ConnectionPropertiesControl extends EditablePropertyTree {
 
     static final Log log = LogFactory.getLog(ConnectionPropertiesControl.class);
 

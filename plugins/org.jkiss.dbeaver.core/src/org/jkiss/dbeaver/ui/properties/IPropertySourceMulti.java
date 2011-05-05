@@ -9,7 +9,7 @@ import org.eclipse.ui.views.properties.IPropertySource2;
 /**
  * Property source which allows editing of multiple objects.
  */
-public interface IMultiPropertySource extends IPropertySource2 {
+public interface IPropertySourceMulti extends IPropertySource2 {
 
     boolean isPropertySet(Object object, ObjectPropertyDescriptor id);
 

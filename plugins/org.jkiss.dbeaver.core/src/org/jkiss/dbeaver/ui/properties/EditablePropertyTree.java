@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Driver properties control
  */
-public class EditablePropertiesControl extends Composite {
+public class EditablePropertyTree extends Composite {
 
     private boolean expandSingleRoot = true;
     private TreeViewer propsTree;
@@ -47,7 +47,7 @@ public class EditablePropertiesControl extends Composite {
     private Map<String,String> defaultValues = new TreeMap<String, String>();
     private int selectedColumn = -1;
 
-    public EditablePropertiesControl(Composite parent, int style)
+    public EditablePropertyTree(Composite parent, int style)
     {
         super(parent, style);
 

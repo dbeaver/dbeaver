@@ -176,7 +176,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         });
     }
 
-    public IMultiPropertySource getListPropertySource()
+    public IPropertySourceMulti getListPropertySource()
     {
         return listPropertySource;
     }

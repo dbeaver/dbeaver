@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
-import org.jkiss.dbeaver.ui.properties.EditablePropertiesControl;
+import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
 import org.jkiss.dbeaver.ui.dialogs.misc.DataFormatProfilesEditDialog;
 
 import java.util.*;
@@ -38,7 +38,7 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     private Font boldFont;
     private Combo typeCombo;
-    private EditablePropertiesControl propertiesControl;
+    private EditablePropertyTree propertiesControl;
     private Text sampleText;
 
     private List<DataFormatterDescriptor> formatterDescriptors;
@@ -133,7 +133,7 @@ public class PrefPageDataFormat extends TargetPrefPage
 
             Label propsLabel = UIUtils.createControlLabel(formatGroup, "Settings");
             propsLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            propertiesControl = new EditablePropertiesControl(formatGroup, SWT.NONE);
+            propertiesControl = new EditablePropertyTree(formatGroup, SWT.NONE);
             propertiesControl.setMarginVisible(false);
             propertiesControl.setLayoutData(new GridData(GridData.FILL_BOTH));
             propertiesControl.addListener(SWT.Modify, new Listener() {
