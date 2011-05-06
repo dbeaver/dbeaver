@@ -5,9 +5,6 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
 import java.util.*;
@@ -54,18 +51,6 @@ public class PropertySourceCustom implements IPropertySourceEx {
         allValues.putAll(originalValues);
         allValues.putAll(propValues);
         return allValues;
-    }
-
-    public IPropertyDescriptor addProperty(Object id, String displayName, String description, String category, Class<Object> dataType, boolean required)
-    {
-        return addProperty(id, displayName, description, category, dataType, required, null, null, null);
-    }
-
-    public IPropertyDescriptor addProperty(Object id, String displayName, String description, String category, Class<Object> dataType, boolean required, Object[] possibleValues, String[] filterFlags, Object helpContextIds)
-    {
-        PropertyDescriptor prop = new PropertyDescriptor(id, displayName, description, category, dataType, required, possibleValues, filterFlags, helpContextIds);
-        props.add(prop);
-        return prop;
     }
 
     public void addProperties(Collection<? extends IPropertyDescriptor> properties)
@@ -154,110 +139,4 @@ public class PropertySourceCustom implements IPropertySourceEx {
         originalValues.remove(id);
     }
 
-    private class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValueListProvider {
-
-        private Object id;
-        private String displayName;
-        private String description;
-        private String category;
-        private Class<Object> dataType;
-        private boolean required;
-        private Object[] possibleValues;
-        private String[] filterFlags;
-        private Object helpContextIds;
-
-        private PropertyDescriptor(
-            Object id,
-            String displayName,
-            String description,
-            String category,
-            Class<Object> dataType,
-            boolean required,
-            Object[] possibleValues,
-            String[] filterFlags,
-            Object helpContextIds)
-        {
-            this.category = category;
-            this.description = description;
-            this.displayName = displayName;
-            this.dataType = dataType;
-            this.required = required;
-            this.possibleValues = possibleValues;
-            this.filterFlags = filterFlags;
-            this.helpContextIds = helpContextIds;
-            this.id = id;
-        }
-
-        public CellEditor createPropertyEditor(Composite parent)
-        {
-            return ObjectPropertyDescriptor.createCellEditor(parent, getEditableValue(), this);
-        }
-
-        public String getCategory()
-        {
-            return category;
-        }
-
-        public String getDescription()
-        {
-            return description;
-        }
-
-        public String getDisplayName()
-        {
-            return displayName;
-        }
-
-        public String[] getFilterFlags()
-        {
-            return filterFlags;
-        }
-
-        public Object getHelpContextIds()
-        {
-            return helpContextIds;
-        }
-
-        public Object getId()
-        {
-            return id;
-        }
-
-        public ILabelProvider getLabelProvider()
-        {
-            return null;
-        }
-
-        public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
-        {
-            return anotherProperty instanceof PropertyDescriptor && anotherProperty.getId().equals(id);
-        }
-
-        public Class<?> getDataType()
-        {
-            return dataType;
-        }
-
-        public boolean isRequired()
-        {
-            return required;
-        }
-
-        public Object getDefaultValue()
-        {
-            return null;
-        }
-
-        public boolean allowCustomValue()
-        {
-            return false;
-        }
-
-        public Object[] getPossibleValues(Object object)
-        {
-            return possibleValues;
-        }
-
-    }
-    
 }
