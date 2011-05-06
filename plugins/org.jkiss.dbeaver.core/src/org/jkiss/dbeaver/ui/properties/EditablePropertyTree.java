@@ -81,7 +81,8 @@ public class EditablePropertyTree extends Composite {
         }
         Object root;
         if (categories.size() == 1 && expandSingleRoot) {
-            root = categories.get(0);
+            final Collection<TreeNode> values = categories.values();
+            root = values.iterator().next();
         } else {
             root = categories.values();
         }

@@ -9,7 +9,11 @@ public enum PropertyType
 {
     STRING(String.class),
     BOOLEAN(Boolean.class),
-    INTEGER(Long.class),
+    SHORT(Short.class),
+    INTEGER(Integer.class),
+    LONG(Long.class),
+    FLOAT(Float.class),
+    DOUBLE(Double.class),
     NUMERIC(Double.class),
     RESOURCE(IResource.class);
 

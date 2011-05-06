@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.runtime;
 
-import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlEngine;
@@ -35,6 +34,8 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -136,6 +137,87 @@ public class RuntimeUtils
             store.setValue(name, value.toString());
         }
         store.setDefault(name, value.toString());
+    }
+
+    public static Object getPreferenceValue(IPreferenceStore store, String propName, Class<?> valueType)
+    {
+        try {
+            if (!store.contains(propName)) {
+                return null;
+            }
+            if (valueType == null || CharSequence.class.isAssignableFrom(valueType)) {
+                final String str = store.getString(propName);
+                return CommonUtils.isEmpty(str) ? null : str;
+            } else if (valueType == Boolean.class || valueType == Boolean.TYPE) {
+                return store.getBoolean(propName);
+            } else if (valueType == Long.class || valueType == Long.TYPE) {
+                return store.getLong(propName);
+            } else if (valueType == Integer.class || valueType == Integer.TYPE ||
+                valueType == Short.class || valueType == Short.TYPE ||
+                valueType == Byte.class || valueType == Byte.TYPE)
+            {
+                return store.getInt(propName);
+            } else if (valueType == Double.class || valueType == Double.TYPE) {
+                return store.getDouble(propName);
+            } else if (valueType == Float.class || valueType == Float.TYPE) {
+                return store.getFloat(propName);
+            } else if (valueType == BigInteger.class) {
+                final String str = store.getString(propName);
+                return str == null ? null : new BigInteger(str);
+            } else if (valueType == BigDecimal.class) {
+                final String str = store.getString(propName);
+                return str == null ? null : new BigDecimal(str);
+            }
+        } catch (RuntimeException e) {
+            log.error(e);
+        }
+        final String string = store.getString(propName);
+        return CommonUtils.isEmpty(string) ? null : string;
+    }
+
+    public static Object convertString(String value, Class<?> valueType)
+    {
+        try {
+            if (CommonUtils.isEmpty(value)) {
+                return null;
+            }
+            if (valueType == null || CharSequence.class.isAssignableFrom(valueType)) {
+                return value;
+            } else if (valueType == Long.class) {
+                return new Long(value);
+            } else if (valueType == Long.TYPE) {
+                return Long.parseLong(value);
+            } else if (valueType == Integer.class) {
+                return new Integer(value);
+            } else if (valueType == Integer.TYPE) {
+                return Integer.parseInt(value);
+            } else if (valueType == Short.class) {
+                return new Short(value);
+            } else if (valueType == Short.TYPE) {
+                return Short.parseShort(value);
+            } else if (valueType == Byte.class) {
+                return new Byte(value);
+            } else if (valueType == Byte.TYPE) {
+                return Byte.parseByte(value);
+            } else if (valueType == Double.class) {
+                return new Double(value);
+            } else if (valueType == Double.TYPE) {
+                return Double.parseDouble(value);
+            } else if (valueType == Float.class) {
+                return new Float(value);
+            } else if (valueType == Float.TYPE) {
+                return Float.parseFloat(value);
+            } else if (valueType == BigInteger.class) {
+                return new BigInteger(value);
+            } else if (valueType == BigDecimal.class) {
+                return new BigDecimal(value);
+            } else {
+                return value;
+            }
+        } catch (RuntimeException e) {
+            log.error(e);
+            return value;
+        }
     }
 
     public static File getUserHomeDir()

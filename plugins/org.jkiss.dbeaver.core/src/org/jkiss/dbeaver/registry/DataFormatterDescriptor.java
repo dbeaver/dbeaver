@@ -24,7 +24,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
     private String className;
     private String name;
     private String description;
-    private List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
+    private List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
     private DBDDataFormatterSample sample;
     private Class<?> formatterClass;
 
@@ -69,7 +69,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         return sample;
     }
 
-    public List<IPropertyDescriptor> getProperties() {
+    public List<PropertyDescriptor> getProperties() {
         return properties;
     }
 

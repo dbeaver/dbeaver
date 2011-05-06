@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +43,8 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
     private String category;
     private Class<?> type;
     private boolean required;
-    private String defaultValue;
-    private String[] validValues;
+    private Object defaultValue;
+    private Object[] validValues;
 
     public static List<PropertyDescriptor> extractProperties(IConfigurationElement config)
     {
@@ -78,10 +79,14 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
                 type = String.class;
             }
         }
-        this.defaultValue = config.getAttribute(ATTR_DEFAULT_VALUE);
+        this.defaultValue = RuntimeUtils.convertString(config.getAttribute(ATTR_DEFAULT_VALUE), type);
         String valueList = config.getAttribute(ATTR_VALID_VALUES);
         if (valueList != null) {
-            validValues = valueList.split(VALUE_SPLITTER);
+            final String[] values = valueList.split(VALUE_SPLITTER);
+            validValues = new Object[values.length];
+            for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {
+                validValues[i] = RuntimeUtils.convertString(values[i], type);
+            }
         }
     }
 
@@ -141,7 +146,7 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
         return description;
     }
 
-    public String getDefaultValue()
+    public Object getDefaultValue()
     {
         return defaultValue;
     }

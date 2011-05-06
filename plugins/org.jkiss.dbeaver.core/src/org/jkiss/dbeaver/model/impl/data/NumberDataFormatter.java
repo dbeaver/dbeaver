@@ -20,30 +20,30 @@ public class NumberDataFormatter implements DBDDataFormatter {
     public void init(Locale locale, Map<Object, Object> properties)
     {
         numberFormat = NumberFormat.getNumberInstance(locale);
-        String propValue = CommonUtils.toString(properties.get(NumberFormatSample.PROP_USE_GROUPING));
-        if (!CommonUtils.isEmpty(propValue)) {
-            numberFormat.setGroupingUsed(Boolean.valueOf(propValue));
+        Boolean useGrouping = (Boolean)properties.get(NumberFormatSample.PROP_USE_GROUPING);
+        if (useGrouping != null) {
+            numberFormat.setGroupingUsed(useGrouping);
         }
-        propValue = CommonUtils.toString(properties.get(NumberFormatSample.PROP_MAX_INT_DIGITS));
-        if (!CommonUtils.isEmpty(propValue)) {
-            numberFormat.setMaximumIntegerDigits(Integer.valueOf(propValue));
+        Integer maxIntDigits = (Integer) properties.get(NumberFormatSample.PROP_MAX_INT_DIGITS);
+        if (maxIntDigits != null) {
+            numberFormat.setMaximumIntegerDigits(maxIntDigits);
         }
-        propValue = CommonUtils.toString(properties.get(NumberFormatSample.PROP_MIN_INT_DIGITS));
-        if (!CommonUtils.isEmpty(propValue)) {
-            numberFormat.setMinimumIntegerDigits(Integer.valueOf(propValue));
+        Integer minIntDigits = (Integer) properties.get(NumberFormatSample.PROP_MIN_INT_DIGITS);
+        if (minIntDigits != null) {
+            numberFormat.setMinimumIntegerDigits(minIntDigits);
         }
-        propValue = CommonUtils.toString(properties.get(NumberFormatSample.PROP_MAX_FRACT_DIGITS));
-        if (!CommonUtils.isEmpty(propValue)) {
-            numberFormat.setMaximumFractionDigits(Integer.valueOf(propValue));
+        Integer maxFractDigits = (Integer) properties.get(NumberFormatSample.PROP_MAX_FRACT_DIGITS);
+        if (maxFractDigits != null) {
+            numberFormat.setMaximumFractionDigits(maxFractDigits);
         }
-        propValue = CommonUtils.toString(properties.get(NumberFormatSample.PROP_MIN_FRACT_DIGITS));
-        if (!CommonUtils.isEmpty(propValue)) {
-            numberFormat.setMinimumFractionDigits(Integer.valueOf(propValue));
+        Integer minFractDigits = (Integer) properties.get(NumberFormatSample.PROP_MIN_FRACT_DIGITS);
+        if (minFractDigits != null) {
+            numberFormat.setMinimumFractionDigits(minFractDigits);
         }
-        propValue = CommonUtils.toString(properties.get(NumberFormatSample.PROP_ROUNDING_MODE));
-        if (!CommonUtils.isEmpty(propValue)) {
+        String roundingMode = CommonUtils.toString(properties.get(NumberFormatSample.PROP_ROUNDING_MODE));
+        if (!CommonUtils.isEmpty(roundingMode)) {
             try {
-                numberFormat.setRoundingMode(RoundingMode.valueOf(propValue));
+                numberFormat.setRoundingMode(RoundingMode.valueOf(roundingMode));
             } catch (Exception e) {
                 // just skip it
             }

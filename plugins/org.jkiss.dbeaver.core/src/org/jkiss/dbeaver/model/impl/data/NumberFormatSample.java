@@ -24,11 +24,11 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     {
         NumberFormat tmp = NumberFormat.getNumberInstance(locale);
         Map<Object, Object> props = new HashMap<Object, Object>();
-        props.put(PROP_USE_GROUPING, String.valueOf(tmp.isGroupingUsed()));
-        props.put(PROP_MAX_INT_DIGITS, String.valueOf(tmp.getMaximumIntegerDigits()));
-        props.put(PROP_MIN_INT_DIGITS, String.valueOf(tmp.getMinimumIntegerDigits()));
-        props.put(PROP_MAX_FRACT_DIGITS, String.valueOf(tmp.getMaximumFractionDigits()));
-        props.put(PROP_MIN_FRACT_DIGITS, String.valueOf(tmp.getMinimumFractionDigits()));
+        props.put(PROP_USE_GROUPING, tmp.isGroupingUsed());
+        props.put(PROP_MAX_INT_DIGITS, tmp.getMaximumIntegerDigits());
+        props.put(PROP_MIN_INT_DIGITS, tmp.getMinimumIntegerDigits());
+        props.put(PROP_MAX_FRACT_DIGITS, tmp.getMaximumFractionDigits());
+        props.put(PROP_MIN_FRACT_DIGITS, tmp.getMinimumFractionDigits());
         props.put(PROP_ROUNDING_MODE, tmp.getRoundingMode().name());
         return props;
     }

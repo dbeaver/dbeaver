@@ -26,7 +26,7 @@ public class PropertySourceCustom implements IPropertySourceEx {
     {
     }
 
-    public PropertySourceCustom(Collection<IPropertyDescriptor> properties, Map<Object, Object> values)
+    public PropertySourceCustom(Collection<? extends IPropertyDescriptor> properties, Map<Object, Object> values)
     {
         addProperties(properties);
         setValues(values);
@@ -64,7 +64,7 @@ public class PropertySourceCustom implements IPropertySourceEx {
         return prop;
     }
 
-    public void addProperties(Collection<IPropertyDescriptor> properties)
+    public void addProperties(Collection<? extends IPropertyDescriptor> properties)
     {
         props.addAll(properties);
         for (IPropertyDescriptor prop : properties) {
