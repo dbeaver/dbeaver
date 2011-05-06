@@ -6,54 +6,56 @@ package org.jkiss.dbeaver.ui.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 
 /**
  * StandardPropertiesSection
  */
-public class StandardPropertiesSection extends AbstractPropertySection {
+public class StandardPropertiesSection extends AbstractPropertySection implements ILazyPropertyLoadListener {
 
-	protected PropertyPageStandard pageStandard;
-    private IDatabaseNodeEditor editor;
+	protected EditablePropertyTree propertyTree;
+    private IPropertySource curPropertySource;
 
-    public PropertyPageStandard getPage()
+    public void createControls(Composite parent, final TabbedPropertySheetPage tabbedPropertySheetPage)
     {
-        return pageStandard;
-    }
-
-    public void createControls(Composite parent,
-			final TabbedPropertySheetPage tabbedPropertySheetPage) {
 		super.createControls(parent, tabbedPropertySheetPage);
 
-		pageStandard = new PropertyPageStandard();
-		pageStandard.createControl(parent);
+		propertyTree = new EditablePropertyTree(parent, SWT.NONE);
+        PropertiesContributor.getInstance().addLazyListener(this);
 
 	}
 
 	public void setInput(IWorkbenchPart part, ISelection newSelection) {
         if (!CommonUtils.equalObjects(getSelection(), newSelection)) {
 		    super.setInput(part, newSelection);
-		    pageStandard.selectionChanged(part, newSelection);
-        }
-        if (part instanceof IDatabaseNodeEditor) {
-            this.editor = (IDatabaseNodeEditor)part;
+            if (!newSelection.isEmpty() && newSelection instanceof IStructuredSelection) {
+                Object element = ((IStructuredSelection) newSelection).getFirstElement();
+                if (element instanceof IPropertySource) {
+                    curPropertySource = (IPropertySource)element;
+                    propertyTree.loadProperties((IPropertySource)element);
+                }
+            }
+		    //pageStandard.selectionChanged(part, newSelection);
         }
 	}
 
 	public void dispose() {
+        PropertiesContributor.getInstance().removeLazyListener(this);
 		super.dispose();
-		if (pageStandard != null) {
-			pageStandard.dispose();
-			pageStandard = null;
+		if (propertyTree != null) {
+			propertyTree.dispose();
+			propertyTree = null;
 		}
 	}
 
 	public void refresh() {
-		//pageStandard.refresh();
+		//propertyTree.refresh();
 	}
 
 	public boolean shouldUseExtraSpace()
@@ -74,4 +76,12 @@ public class StandardPropertiesSection extends AbstractPropertySection {
     {
 
     }
+
+    public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
+    {
+        if (curPropertySource.getEditableValue() == object && !propertyTree.isDisposed()) {
+            propertyTree.refresh();
+        }
+    }
+
 }

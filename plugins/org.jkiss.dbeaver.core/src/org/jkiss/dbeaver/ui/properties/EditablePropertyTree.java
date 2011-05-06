@@ -52,8 +52,8 @@ public class EditablePropertyTree extends Composite {
         clipboard = new Clipboard(getDisplay());
 
         this.setLayout(new GridLayout(1, false));
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        this.setLayoutData(gd);
+        //GridData gd = new GridData(GridData.FILL_BOTH);
+        //this.setLayoutData(gd);
 
         setMarginVisible(true);
         initPropTree();
