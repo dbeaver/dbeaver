@@ -185,7 +185,7 @@ public class EditablePropertyTree extends Composite {
         // Make an editor
         final Tree treeControl = propsTree.getTree();
         treeEditor = new TreeEditor(treeControl);
-        treeEditor.horizontalAlignment = SWT.CENTER;
+        treeEditor.horizontalAlignment = SWT.RIGHT;
         treeEditor.verticalAlignment = SWT.CENTER;
         treeEditor.grabHorizontal = true;
         treeEditor.minimumWidth = 50;

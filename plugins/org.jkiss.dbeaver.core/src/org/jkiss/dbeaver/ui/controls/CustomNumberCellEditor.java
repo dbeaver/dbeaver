@@ -4,25 +4,17 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 /**
  * Number cell editor
  */
 public class CustomNumberCellEditor extends TextCellEditor {
-
-    static final Log log = LogFactory.getLog(CustomNumberCellEditor.class);
 
     private final Class<?> valueType;
 

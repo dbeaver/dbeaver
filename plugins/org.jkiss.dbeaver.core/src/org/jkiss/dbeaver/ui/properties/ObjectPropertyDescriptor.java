@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueEditorProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
 
@@ -258,7 +259,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         } else if (BeanUtils.isNumericType(propertyType)) {
             return new CustomNumberCellEditor(parent, propertyType);
         } else if (BeanUtils.isBooleanType(propertyType)) {
-            return new CheckboxCellEditor(parent);
+            return new CustomCheckboxCellEditor(parent);
         } else {
             return null;
         }
