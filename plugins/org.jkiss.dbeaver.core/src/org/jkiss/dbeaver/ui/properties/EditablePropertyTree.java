@@ -14,13 +14,13 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.text.Collator;
@@ -135,7 +135,7 @@ public class EditablePropertyTree extends Composite {
                 }
             }
         });
-
+        treeControl.addListener(SWT.PaintItem, new PaintListener());
         this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
 
         ColumnViewerToolTipSupport.enableFor(propsTree, ToolTip.NO_RECREATE);
@@ -153,7 +153,6 @@ public class EditablePropertyTree extends Composite {
         column.getColumn().setMoveable(true);
         column.getColumn().setText("Value");
         column.setLabelProvider(labelProvider);
-
 
         /*
                 List<? extends DBPProperty> props = ((DBPPropertyGroup) parent).getProperties();
@@ -572,7 +571,11 @@ public class EditablePropertyTree extends Composite {
                 }
             } else {
                 if (node.property != null) {
-                    return CommonUtils.toString(node.propertySource.getPropertyValue(node.property.getId()));
+                    final Object propertyValue = node.propertySource.getPropertyValue(node.property.getId());
+                    if (propertyValue instanceof Boolean) {
+                        return "";
+                    }
+                    return CommonUtils.toString(propertyValue);
                 } else {
                     return "";
                 }
@@ -678,6 +681,33 @@ public class EditablePropertyTree extends Composite {
             handlePropertyChange(prop);
             propsTree.update(prop, null);
             disposeOldEditor();
+        }
+    }
+
+    class PaintListener implements Listener {
+
+        public void handleEvent(Event event) {
+            if (isDisposed()) {
+                return;
+            }
+            switch(event.type) {
+                case SWT.PaintItem: {
+                    if (event.index == 1) {
+                        final TreeNode node = (TreeNode)event.item.getData();
+                        if (node != null && node.property != null) {
+                            final Object propertyValue = node.propertySource.getPropertyValue(node.property.getId());
+                            if (propertyValue instanceof Boolean && (Boolean)propertyValue) {
+                                GC gc = event.gc;
+                                int columnWidth = propsTree.getTree().getColumn(1).getWidth();
+                                Image image = DBIcon.CHECK.getImage();
+                                gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
+                                event.doit = false;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
         }
     }
 }

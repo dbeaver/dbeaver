@@ -11,6 +11,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -35,11 +36,18 @@ public class CustomCheckboxCellEditor extends CellEditor {
     }
 
     protected Control createControl(Composite parent) {
-        Composite placeholder = UIUtils.createPlaceholder(parent, 1);
+        Composite placeholder = new Composite(parent, SWT.NONE);
+        placeholder.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        GridLayout gl = new GridLayout(1, false);
+        gl.verticalSpacing = 0;
+        gl.horizontalSpacing = 0;
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        placeholder.setLayout(gl);
+
         checkbox = new Button(placeholder, SWT.CHECK);
-        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.FILL_HORIZONTAL);
+        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalIndent = 20;
         checkbox.setLayoutData(gd);
         checkbox.setFont(parent.getFont());
         checkbox.addSelectionListener(new SelectionAdapter() {
