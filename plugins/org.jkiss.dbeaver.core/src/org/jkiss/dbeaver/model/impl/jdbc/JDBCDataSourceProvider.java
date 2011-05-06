@@ -13,10 +13,7 @@ import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
 
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * JDBCDataSourceProvider
@@ -44,7 +41,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
         if (driverInstance instanceof Driver) {
             return readDriverProperties(connectionInfo, (Driver) driverInstance);
         } else {
-            return null;
+            return Collections.emptyList();
         }
     }
 
@@ -80,7 +77,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
                 desc.description,
                 String.class,
                 desc.required,
-                null,
+                desc.value,
                 desc.choices));
         }
         return properties;

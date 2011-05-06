@@ -208,6 +208,19 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return null;
     }
 
+    public boolean allowCustomValue()
+    {
+        if (propInfo.listProvider() != IPropertyValueListProvider.class) {
+            // List
+            try {
+                return propInfo.listProvider().newInstance().allowCustomValue();
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        return false;
+    }
+
     public Object[] getPossibleValues(Object object)
     {
         if (propInfo.listProvider() != IPropertyValueListProvider.class) {
@@ -225,14 +238,17 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     {
         // List
         if (property instanceof IPropertyValueListProvider) {
-            final Object[] items = ((IPropertyValueListProvider)property).getPossibleValues(object);
+            final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
+            final Object[] items = listProvider.getPossibleValues(object);
             if (!CommonUtils.isEmpty(items)) {
                 final String[] strings = new String[items.length];
                 for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
                     strings[i] = CommonUtils.toString(items[i]);
                 }
-                final CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(parent, strings);
-                editor.setStyle(SWT.DROP_DOWN);
+                final CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
+                    parent,
+                    strings,
+                    SWT.DROP_DOWN | (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY));
                 return editor;
             }
         }

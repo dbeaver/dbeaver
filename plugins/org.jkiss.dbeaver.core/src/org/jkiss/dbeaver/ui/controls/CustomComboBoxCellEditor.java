@@ -64,6 +64,7 @@ public class CustomComboBoxCellEditor extends CellEditor {
 	protected Control createControl(Composite parent) {
 
 		comboBox = new CCombo(parent, getStyle());
+        //comboBox.setEditable((getStyle() & SWT.READ_ONLY) == 0);
 		comboBox.setFont(parent.getFont());
 
 		populateComboBoxItems();

@@ -156,6 +156,11 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
         return required;
     }
 
+    public boolean allowCustomValue()
+    {
+        return CommonUtils.isEmpty(validValues);
+    }
+
     public Object[] getPossibleValues(Object object)
     {
         return validValues;

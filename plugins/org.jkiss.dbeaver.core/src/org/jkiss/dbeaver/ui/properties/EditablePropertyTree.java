@@ -83,7 +83,7 @@ public class EditablePropertyTree extends Composite {
         if (categories.size() == 1 && expandSingleRoot) {
             root = categories.get(0);
         } else {
-            root = categories;
+            root = categories.values();
         }
 
         if (propsTree != null) {
@@ -216,19 +216,17 @@ public class EditablePropertyTree extends Composite {
             {
                 if (e.detail == SWT.TRAVERSE_RETURN) {
                     // Set focus on editor
-                    if (treeEditor.getEditor() != null) {
-                        if (treeEditor.getEditor().isDisposed()) {
-                            final TreeItem[] selection = treeControl.getSelection();
-                            if (selection.length == 0) {
-                                return;
-                            }
-                            showEditor(selection[0], true);
-                        } else {
-                            treeEditor.getEditor().setFocus();
+                    if (curCellEditor != null) {
+                        curCellEditor.setFocus();
+                    } else {
+                        final TreeItem[] selection = treeControl.getSelection();
+                        if (selection.length == 0) {
+                            return;
                         }
-                        e.doit = false;
-                        e.detail = SWT.TRAVERSE_NONE;
+                        showEditor(selection[0], true);
                     }
+                    e.doit = false;
+                    e.detail = SWT.TRAVERSE_NONE;
                 }
             }
         });
@@ -252,7 +250,8 @@ public class EditablePropertyTree extends Composite {
             if (cellEditor == null) {
                 return;
             }
-            cellEditor.addListener(new ICellEditorListener() {
+            final Object propertyValue = prop.propertySource.getPropertyValue(prop.property.getId());
+            final ICellEditorListener cellEditorListener = new ICellEditorListener() {
                 public void applyEditorValue()
                 {
                     editorValueChanged(true, true);
@@ -267,13 +266,20 @@ public class EditablePropertyTree extends Composite {
                 {
                     if (newValidState) {
                         final Object value = cellEditor.getValue();
-                        prop.propertySource.setPropertyValue(
-                            prop.property.getId(),
-                            value);
-                        changeProperty(prop, value);
+                        final Object oldValue = prop.propertySource.getPropertyValue(prop.property.getId());
+                        if (!CommonUtils.equalObjects(oldValue, value)) {
+                            prop.propertySource.setPropertyValue(
+                                prop.property.getId(),
+                                value);
+                            handlePropertyChange(prop);
+                        }
                     }
                 }
-            });
+            };
+            cellEditor.addListener(cellEditorListener);
+            if (propertyValue != null) {
+                cellEditor.setValue(propertyValue);
+            }
             curCellEditor = cellEditor;
 /*
             Object[] validValues = prop.getPossibleValues();
@@ -289,7 +295,7 @@ public class EditablePropertyTree extends Composite {
                         combo.addModifyListener(new ModifyListener() {
                             public void modifyText(ModifyEvent e)
                             {
-                                changeProperty(prop, combo.getText());
+                                handlePropertyChange(prop, combo.getText());
                                 item.setText(1, combo.getText());
                             }
                         });
@@ -307,7 +313,7 @@ public class EditablePropertyTree extends Composite {
                         text.setText(item.getText(1));
                         text.addModifyListener(new ModifyListener() {
                             public void modifyText(ModifyEvent e) {
-                                changeProperty(prop, text.getText());
+                                handlePropertyChange(prop, text.getText());
                                 item.setText(1, text.getText());
                             }
                         });
@@ -332,7 +338,7 @@ public class EditablePropertyTree extends Composite {
                 combo.addModifyListener(new ModifyListener() {
                     public void modifyText(ModifyEvent e)
                     {
-                        changeProperty(prop, combo.getText());
+                        handlePropertyChange(prop, combo.getText());
                         item.setText(1, combo.getText());
                     }
                 });
@@ -349,19 +355,20 @@ public class EditablePropertyTree extends Composite {
                         if (e.detail == SWT.TRAVERSE_RETURN) {
                             e.doit = false;
                             e.detail = SWT.TRAVERSE_NONE;
+                            cellEditorListener.applyEditorValue();
                             disposeOldEditor();
                         } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
                             e.doit = false;
                             e.detail = SWT.TRAVERSE_NONE;
-                            new ActionResetProperty(prop).run();
+                            new ActionResetProperty(prop, false).run();
                         }
                     }
                 });
-                if (isDef) {
-                    // Selected by mouse
-                    editorControl.setFocus();
-                }
                 treeEditor.setEditor(editorControl, item, 1);
+            }
+            if (isDef) {
+                // Selected by mouse
+                cellEditor.setFocus();
             }
         }
     }
@@ -393,16 +400,11 @@ public class EditablePropertyTree extends Composite {
                                 }
                             });
                             if (isPropertyChanged(prop)) {
-                                manager.add(new ActionResetProperty(prop));
-                                if (!isCustomProperty(prop.property)) {
-                                    manager.add(new Action("Reset value to default") {
-                                        @Override
-                                        public void run() {
-                                            changeProperty(prop, null);
-                                            propsTree.update(prop, null);
-                                            disposeOldEditor();
-                                        }
-                                    });
+                                manager.add(new ActionResetProperty(prop, false));
+                                if (!isCustomProperty(prop.property) &&
+                                    prop.propertySource instanceof IPropertySourceEx)
+                                {
+                                    manager.add(new ActionResetProperty(prop, true));
                                 }
                             }
                             manager.add(new Separator());
@@ -443,9 +445,8 @@ public class EditablePropertyTree extends Composite {
         return prop.propertySource.isPropertySet(prop.property.getId());
     }
 
-    private void changeProperty(TreeNode prop, Object text)
+    private void handlePropertyChange(TreeNode prop)
     {
-        prop.propertySource.setPropertyValue(prop.property.getId(), text);
         propsTree.update(prop, null);
 
         // Send modify event
@@ -454,14 +455,14 @@ public class EditablePropertyTree extends Composite {
         this.notifyListeners(SWT.Modify, event);
     }
 
-    protected void handlePropertyCreate(TreeNode prop, Object newValue) {
-        changeProperty(prop, newValue);
+    protected void handlePropertyCreate(TreeNode prop) {
+        handlePropertyChange(prop);
         propsTree.refresh(prop.parent);
         propsTree.expandToLevel(prop.parent, 1);
     }
 
     protected void handlePropertyRemove(TreeNode prop) {
-        changeProperty(prop, null);
+        handlePropertyChange(prop);
         propsTree.refresh(prop.parent);
     }
 
@@ -537,7 +538,9 @@ public class EditablePropertyTree extends Composite {
 
         public Object[] getChildren(Object parent)
         {
-            if (parent instanceof TreeNode) {
+            if (parent instanceof Collection) {
+                return ((Collection) parent).toArray();
+            } else if (parent instanceof TreeNode) {
                 // Add all available property groups
                 return ((TreeNode) parent).children.toArray();
             } else {
@@ -598,7 +601,7 @@ public class EditablePropertyTree extends Composite {
             Object element = cell.getElement();
             cell.setText(getText(element, cell.getColumnIndex()));
             boolean changed = false;
-            if (element instanceof TreeNode) {
+            if (element instanceof TreeNode && ((TreeNode) element).property != null) {
                 changed = isPropertyChanged((TreeNode)element);
 /*
                 if (((DBPProperty)element).isRequired() && cell.getColumnIndex() == 0) {
@@ -655,17 +658,23 @@ public class EditablePropertyTree extends Composite {
 
     private class ActionResetProperty extends Action {
         private final TreeNode prop;
+        private final boolean toDefault;
 
-        public ActionResetProperty(TreeNode prop)
+        public ActionResetProperty(TreeNode prop, boolean toDefault)
         {
-            super("Reset value");
+            super("Reset value" + (!toDefault ? "" : " to default"));
             this.prop = prop;
+            this.toDefault = toDefault;
         }
 
         @Override
         public void run() {
-            prop.propertySource.resetPropertyValue(prop.property.getId());
-            changeProperty(prop, null);
+            if (toDefault && prop.propertySource instanceof IPropertySourceEx) {
+                ((IPropertySourceEx)prop.propertySource).resetPropertyValueToDefault(prop.property.getId());
+            } else {
+                prop.propertySource.resetPropertyValue(prop.property.getId());
+            }
+            handlePropertyChange(prop);
             propsTree.update(prop, null);
             disposeOldEditor();
         }

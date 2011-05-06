@@ -9,6 +9,8 @@ package org.jkiss.dbeaver.ui.properties;
  */
 public interface IPropertyValueListProvider {
 
+    boolean allowCustomValue();
+
     Object[] getPossibleValues(Object object);
 
 }

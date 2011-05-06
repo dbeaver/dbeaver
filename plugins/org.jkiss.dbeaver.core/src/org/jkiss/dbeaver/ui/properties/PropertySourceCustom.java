@@ -103,7 +103,7 @@ public class PropertySourceCustom implements IPropertySourceEx {
 
     public boolean isPropertySet(Object id)
     {
-        return propValues.containsKey(id) || originalValues.containsKey(id);
+        return propValues.containsKey(id) || originalValues.get(id) != null;
     }
 
     public void resetPropertyValue(Object id)
@@ -113,10 +113,16 @@ public class PropertySourceCustom implements IPropertySourceEx {
 
     public void setPropertyValue(Object id, Object value)
     {
-        if (!originalValues.containsKey(id) && propValues.containsKey(id)) {
-            originalValues.put(id, propValues.get(id));
+        if (!originalValues.containsKey(id)) {
+            if (propValues.containsKey(id)) {
+                originalValues.put(id, propValues.get(id));
+            } else if (defaultValues.containsKey(id)) {
+                originalValues.put(id, defaultValues.get(id));
+            } else {
+                originalValues.put(id, null);
+            }
         }
-        if (value == null) {
+        if (value == null || value.equals(originalValues.get(id))) {
             propValues.remove(id);
         } else {
             propValues.put(id, value);
@@ -231,6 +237,11 @@ public class PropertySourceCustom implements IPropertySourceEx {
         public Object getDefaultValue()
         {
             return null;
+        }
+
+        public boolean allowCustomValue()
+        {
+            return false;
         }
 
         public Object[] getPossibleValues(Object object)
