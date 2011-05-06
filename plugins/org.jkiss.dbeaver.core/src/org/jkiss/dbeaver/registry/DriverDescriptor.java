@@ -18,6 +18,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.xml.sax.Attributes;
 
@@ -65,13 +67,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean modified;
     private boolean disabled;
     private List<DriverFileDescriptor> files = new ArrayList<DriverFileDescriptor>(), origFiles;
-    private List<PropertyGroupDescriptor> connectionPropertyGroups = new ArrayList<PropertyGroupDescriptor>();
+    private List<IPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<IPropertyDescriptor>();
 
-    private Map<String, String> defaultParameters = new HashMap<String, String>();
-    private Map<String, String> customParameters = new HashMap<String, String>();
+    private Map<Object, Object> defaultParameters = new HashMap<Object, Object>();
+    private Map<Object, Object> customParameters = new HashMap<Object, Object>();
 
-    private Map<String, String> defaultConnectionProperties = new HashMap<String, String>();
-    private Map<String, String> customConnectionProperties = new HashMap<String, String>();
+    private Map<Object, Object> defaultConnectionProperties = new HashMap<Object, Object>();
+    private Map<Object, Object> customConnectionProperties = new HashMap<Object, Object>();
 
     private Class driverClass;
     private boolean isLoaded;
@@ -131,9 +133,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         {
             // Connection property groups
-            IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.TAG_PROPERTY_GROUP);
+            IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
             for (IConfigurationElement prop : propElements) {
-                connectionPropertyGroups.add(new PropertyGroupDescriptor(prop));
+                connectionPropertyDescriptors.addAll(PropertyDescriptor.extractProperties(prop));
             }
         }
 
@@ -481,17 +483,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    public List<PropertyGroupDescriptor> getConnectionPropertyGroups()
+    public List<IPropertyDescriptor> getConnectionPropertyDescriptors()
     {
-        return connectionPropertyGroups;
+        return connectionPropertyDescriptors;
     }
 
-    public Map<String, String> getDefaultConnectionProperties()
+    public Map<Object, Object> getDefaultConnectionProperties()
     {
         return defaultConnectionProperties;
     }
 
-    public Map<String, String> getConnectionProperties()
+    public Map<Object, Object> getConnectionProperties()
     {
         return customConnectionProperties;
     }
@@ -501,23 +503,23 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         customConnectionProperties.put(name, value);
     }
 
-    public void setConnectionProperties(Map<String, String> parameters)
+    public void setConnectionProperties(Map<Object, Object> parameters)
     {
         customConnectionProperties.clear();
         customConnectionProperties.putAll(parameters);
     }
 
-    public Map<String, String> getDefaultDriverParameters()
+    public Map<Object, Object> getDefaultDriverParameters()
     {
         return defaultParameters;
     }
 
-    public Map<String, String> getDriverParameters()
+    public Map<Object, Object> getDriverParameters()
     {
         return customParameters;
     }
 
-    public String getDriverParameter(String name)
+    public Object getDriverParameter(String name)
     {
         return customParameters.get(name);
     }
@@ -527,7 +529,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         customParameters.put(name, value);
     }
 
-    public void setDriverParameters(Map<String, String> parameters)
+    public void setDriverParameters(Map<Object, Object> parameters)
     {
         customParameters.clear();
         customParameters.putAll(parameters);
@@ -850,21 +852,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
 
         // Parameters
-        for (Map.Entry<String, String> paramEntry : customParameters.entrySet()) {
+        for (Map.Entry<Object, Object> paramEntry : customParameters.entrySet()) {
             if (!CommonUtils.equalObjects(paramEntry.getValue(), defaultParameters.get(paramEntry.getKey()))) {
                 xml.startElement(DataSourceConstants.TAG_PARAMETER);
-                xml.addAttribute(DataSourceConstants.ATTR_NAME, paramEntry.getKey());
-                xml.addAttribute(DataSourceConstants.ATTR_VALUE, paramEntry.getValue());
+                xml.addAttribute(DataSourceConstants.ATTR_NAME, CommonUtils.toString(paramEntry.getKey()));
+                xml.addAttribute(DataSourceConstants.ATTR_VALUE, CommonUtils.toString(paramEntry.getValue()));
                 xml.endElement();
             }
         }
 
         // Properties
-        for (Map.Entry<String, String> propEntry : customConnectionProperties.entrySet()) {
+        for (Map.Entry<Object, Object> propEntry : customConnectionProperties.entrySet()) {
             if (!CommonUtils.equalObjects(propEntry.getValue(), defaultConnectionProperties.get(propEntry.getKey()))) {
                 xml.startElement(DataSourceConstants.TAG_PROPERTY);
-                xml.addAttribute(DataSourceConstants.ATTR_NAME, propEntry.getKey());
-                xml.addAttribute(DataSourceConstants.ATTR_VALUE, propEntry.getValue());
+                xml.addAttribute(DataSourceConstants.ATTR_NAME, CommonUtils.toString(propEntry.getKey()));
+                xml.addAttribute(DataSourceConstants.ATTR_VALUE, CommonUtils.toString(propEntry.getValue()));
                 xml.endElement();
             }
         }

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
 import org.jkiss.dbeaver.ui.dialogs.misc.DataFormatProfilesEditDialog;
+import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
 import java.util.*;
 import java.util.List;
@@ -46,8 +47,9 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     private String profileName;
     private Locale profileLocale;
-    private Map<String, Map<String, String>> profileProperties = new HashMap<String, Map<String, String>>();
+    private Map<String, Map<Object, Object>> profileProperties = new HashMap<String, Map<Object, Object>>();
     private Combo profilesCombo;
+    private PropertySourceCustom propertySource;
 
     private static DataFormatterRegistry getRegistry()
     {
@@ -197,7 +199,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         profileLocale = formatterProfile.getLocale();
         profileProperties.clear();
         for (DataFormatterDescriptor dfd : formatterDescriptors) {
-            Map<String, String> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
+            Map<Object, Object> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
             if (formatterProps != null) {
                 profileProperties.put(dfd.getId(), formatterProps);
             }
@@ -266,12 +268,13 @@ public class PrefPageDataFormat extends TargetPrefPage
             return;
         }
 
-        Map<String,String> formatterProps = profileProperties.get(formatterDescriptor.getId());
-        Map<String, String> defaultProps = formatterDescriptor.getSample().getDefaultProperties(localeSelector.getSelectedLocale());
-        propertiesControl.loadProperties(
-            formatterDescriptor.getPropertyGroups(),
-            formatterProps,
-            defaultProps);
+        Map<Object,Object> formatterProps = profileProperties.get(formatterDescriptor.getId());
+        Map<Object, Object> defaultProps = formatterDescriptor.getSample().getDefaultProperties(localeSelector.getSelectedLocale());
+        propertySource = new PropertySourceCustom(
+            formatterDescriptor.getProperties(),
+            formatterProps);
+        propertySource.setDefaultValues(defaultProps);
+        propertiesControl.loadProperties(propertySource);
         reloadSample();
     }
 
@@ -284,9 +287,9 @@ public class PrefPageDataFormat extends TargetPrefPage
         try {
             DBDDataFormatter formatter = formatterDescriptor.createFormatter();
 
-            Map<String, String> defProps = formatterDescriptor.getSample().getDefaultProperties(profileLocale);
-            Map<String, String> props = profileProperties.get(formatterDescriptor.getId());
-            Map<String, String> formatterProps = new HashMap<String, String>();
+            Map<Object, Object> defProps = formatterDescriptor.getSample().getDefaultProperties(profileLocale);
+            Map<Object, Object> props = profileProperties.get(formatterDescriptor.getId());
+            Map<Object, Object> formatterProps = new HashMap<Object, Object>();
             if (defProps != null && !defProps.isEmpty()) {
                 formatterProps.putAll(defProps);
             }
@@ -308,7 +311,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         if (formatterDescriptor == null) {
             return;
         }
-        Map<String, String> props = propertiesControl.getProperties();
+        Map<Object, Object> props = propertySource.getProperties();
         profileProperties.put(formatterDescriptor.getId(), props);
         reloadSample();
     }
@@ -319,7 +322,8 @@ public class PrefPageDataFormat extends TargetPrefPage
             profileLocale = locale;
             DataFormatterDescriptor formatter = getCurrentFormatter();
             if (formatter != null) {
-                propertiesControl.reloadDefaultValues(formatter.getSample().getDefaultProperties(locale));
+                propertySource.setDefaultValues(formatter.getSample().getDefaultProperties(locale));
+                propertiesControl.refresh();
             }
             reloadSample();
         }

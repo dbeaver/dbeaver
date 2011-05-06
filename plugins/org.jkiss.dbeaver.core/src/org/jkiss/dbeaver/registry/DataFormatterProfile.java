@@ -8,9 +8,8 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPProperty;
-import org.jkiss.dbeaver.model.DBPPropertyGroup;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
@@ -28,7 +27,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
     private IPreferenceStore store;
     private String name;
     private Locale locale;
-    private Map<String, Map<String, String>> properties = new HashMap<String, Map<String, String>>();
+    private Map<String, Map<Object, Object>> properties = new HashMap<String, Map<Object, Object>>();
     private static final String PROP_LANGUAGE = "dataformat.profile.language";
     private static final String PROP_COUNTRY = "dataformat.profile.country";
     private static final String PROP_VARIANT = "dataformat.profile.variant";
@@ -61,13 +60,11 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
         }
         properties.clear();
         for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
-            Map<String, String> formatterProps = new HashMap<String, String>();
-            for (DBPPropertyGroup group : formatter.getPropertyGroups()) {
-                for (DBPProperty prop : group.getProperties()) {
-                    String propValue = store.getString("dataformat.type." + formatter.getId() + "." + prop.getId());
-                    if (!CommonUtils.isEmpty(propValue)) {
-                        formatterProps.put(prop.getId(), propValue);
-                    }
+            Map<Object, Object> formatterProps = new HashMap<Object, Object>();
+            for (IPropertyDescriptor prop : formatter.getProperties()) {
+                String propValue = store.getString("dataformat.type." + formatter.getId() + "." + prop.getId());
+                if (!CommonUtils.isEmpty(propValue)) {
+                    formatterProps.put(prop.getId(), propValue);
                 }
             }
             properties.put(formatter.getId(), formatterProps);
@@ -81,15 +78,13 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
         store.setValue(PROP_VARIANT, locale.getVariant());
 
         for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
-            Map<String, String> formatterProps = properties.get(formatter.getId());
-            for (DBPPropertyGroup group : formatter.getPropertyGroups()) {
-                for (DBPProperty prop : group.getProperties()) {
-                    String propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
-                    if (!CommonUtils.isEmpty(propValue)) {
-                        store.setValue("dataformat.type." + formatter.getId() + "." + prop.getId(), propValue);
-                    } else {
-                        store.setToDefault("dataformat.type." + formatter.getId() + "." + prop.getId());
-                    }
+            Map<Object, Object> formatterProps = properties.get(formatter.getId());
+            for (IPropertyDescriptor prop : formatter.getProperties()) {
+                Object propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
+                if (propValue != null) {
+                    store.setValue("dataformat.type." + formatter.getId() + "." + prop.getId(), CommonUtils.toString(propValue));
+                } else {
+                    store.setToDefault("dataformat.type." + formatter.getId() + "." + prop.getId());
                 }
             }
         }
@@ -123,14 +118,14 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
         this.locale = locale;
     }
 
-    public Map<String, String> getFormatterProperties(String typeId)
+    public Map<Object, Object> getFormatterProperties(String typeId)
     {
         return properties.get(typeId);
     }
 
-    public void setFormatterProperties(String typeId, Map<String, String> properties)
+    public void setFormatterProperties(String typeId, Map<Object, Object> properties)
     {
-        this.properties.put(typeId, new HashMap<String, String>(properties));
+        this.properties.put(typeId, new HashMap<Object, Object>(properties));
     }
 
     public boolean isOverridesParent()
@@ -159,9 +154,9 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
         }
         DBDDataFormatter formatter = descriptor.createFormatter();
 
-        Map<String, String> defProps = descriptor.getSample().getDefaultProperties(locale);
-        Map<String, String> props = getFormatterProperties(typeId);
-        Map<String, String> formatterProps = new HashMap<String, String>();
+        Map<Object, Object> defProps = descriptor.getSample().getDefaultProperties(locale);
+        Map<Object, Object> props = getFormatterProperties(typeId);
+        Map<Object, Object> formatterProps = new HashMap<Object, Object>();
         if (defProps != null && !defProps.isEmpty()) {
             formatterProps.putAll(defProps);
         }

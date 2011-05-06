@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.data;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 
 import java.text.DateFormat;
@@ -18,9 +19,11 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
 
     private DateFormat dateFormat;
 
-    public void init(Locale locale, Map<String, String> properties)
+    public void init(Locale locale, Map<Object, Object> properties)
     {
-        dateFormat = new SimpleDateFormat(properties.get(PROP_PATTERN), locale);
+        dateFormat = new SimpleDateFormat(
+            CommonUtils.toString(properties.get(PROP_PATTERN)),
+            locale);
     }
 
     public String formatValue(Object value)

@@ -25,9 +25,9 @@ public interface DBDDataFormatterProfile {
 
     void setLocale(Locale locale);
 
-    Map<String, String> getFormatterProperties(String typeId);
+    Map<Object, Object> getFormatterProperties(String typeId);
 
-    void setFormatterProperties(String typeId, Map<String, String> properties);
+    void setFormatterProperties(String typeId, Map<Object, Object> properties);
 
     boolean isOverridesParent();
 

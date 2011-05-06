@@ -18,13 +18,8 @@ public class DefaultDataFormatter implements DBDDataFormatter {
     {
     }
 
-    public void init(Locale locale, Map<String, String> properties)
+    public void init(Locale locale, Map<Object, Object> properties)
     {
-    }
-
-    public Object getSampleValue()
-    {
-        return "";
     }
 
     public String formatValue(Object value)

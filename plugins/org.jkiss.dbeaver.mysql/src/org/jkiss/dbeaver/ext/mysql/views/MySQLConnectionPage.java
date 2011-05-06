@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
+import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
 /**
  * MySQLConnectionPage
@@ -37,6 +38,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
     private ConnectionPropertiesControl connectionProps;
     private Button testButton;
     private Image logoImage;
+    private PropertySourceCustom propertySource;
 
     @Override
     public void dispose()
@@ -241,7 +243,8 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
         saveSettings(tmpConnectionInfo);
         tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
-        connectionProps.loadProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
+        propertySource = connectionProps.makeProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
+        connectionProps.loadProperties(propertySource);
     }
 
     public void saveSettings()
@@ -267,7 +270,9 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
             if (passwordText != null) {
                 connectionInfo.setUserPassword(passwordText.getText());
             }
-            connectionInfo.setProperties(connectionProps.getProperties());
+            if (propertySource != null) {
+                connectionInfo.setProperties(propertySource.getProperties());
+            }
             connectionInfo.setUrl(
                 "jdbc:mysql://" + connectionInfo.getHostName() +
                     ":" + connectionInfo.getHostPort() +

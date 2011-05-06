@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
@@ -38,15 +39,15 @@ public interface DBPDriver extends DBPObject
 
     boolean isAnonymousAccess();
 
-    List<? extends DBPPropertyGroup> getConnectionPropertyGroups();
+    List<IPropertyDescriptor> getConnectionPropertyDescriptors();
 
-    Map<String, String> getDefaultConnectionProperties();
+    Map<Object, Object> getDefaultConnectionProperties();
 
-    Map<String, String> getConnectionProperties();
+    Map<Object, Object> getConnectionProperties();
 
-    Map<String, String> getDriverParameters();
+    Map<Object, Object> getDriverParameters();
 
-    String getDriverParameter(String name);
+    Object getDriverParameter(String name);
 
     void loadDriver()
         throws DBException;

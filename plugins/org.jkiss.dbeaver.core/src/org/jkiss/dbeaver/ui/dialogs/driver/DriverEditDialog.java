@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
+import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,6 +76,8 @@ public class DriverEditDialog extends Dialog
     private EditablePropertyTree parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
     private List<DriverFileDescriptor> libList;
+    private PropertySourceCustom driverPropertySource;
+    private PropertySourceCustom connectionPropertySource;
     //private Button anonymousCheck;
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
@@ -448,7 +451,11 @@ public class DriverEditDialog extends Dialog
 
         parametersEditor = new EditablePropertyTree(paramsGroup, SWT.NONE);
         parametersEditor.setMarginVisible(false);
-        parametersEditor.loadProperties(driver.getProviderDescriptor().getDriverPropertyGroups(), driver.getDriverParameters(), driver.getDefaultDriverParameters());
+        driverPropertySource = new PropertySourceCustom(
+            driver.getProviderDescriptor().getDriverProperties(),
+            driver.getDriverParameters());
+        driverPropertySource.setDefaultValues(driver.getDefaultDriverParameters());
+        parametersEditor.loadProperties(driverPropertySource);
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
         paramsTab.setText("Advanced parameters");
@@ -463,7 +470,8 @@ public class DriverEditDialog extends Dialog
 
         connectionPropertiesEditor = new ConnectionPropertiesControl(paramsGroup, SWT.NONE);
         connectionPropertiesEditor.setMarginVisible(false);
-        connectionPropertiesEditor.loadProperties(driver, driver.getConnectionProperties());
+        connectionPropertySource = connectionPropertiesEditor.makeProperties(driver, driver.getConnectionProperties());
+        connectionPropertiesEditor.loadProperties(connectionPropertySource);
 
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
@@ -551,8 +559,8 @@ public class DriverEditDialog extends Dialog
             libList.add(lib);
         }
         changeLibContent();
-        parametersEditor.loadProperties(driver.getProviderDescriptor().getDriverPropertyGroups(), driver.getDriverParameters(), driver.getDefaultDriverParameters());
-        connectionPropertiesEditor.loadProperties(driver, driver.getConnectionProperties());
+        parametersEditor.loadProperties(driverPropertySource);
+        connectionPropertiesEditor.loadProperties(connectionPropertySource);
     }
 
     @Override
@@ -603,8 +611,8 @@ public class DriverEditDialog extends Dialog
             }
         }
 
-        driver.setDriverParameters(parametersEditor.getProperties());
-        driver.setConnectionProperties(connectionPropertiesEditor.getProperties());
+        driver.setDriverParameters(driverPropertySource.getProperties());
+        driver.setConnectionProperties(connectionPropertySource.getProperties());
 
         // Finish
         if (provider.getDriver(driver.getId()) == null) {

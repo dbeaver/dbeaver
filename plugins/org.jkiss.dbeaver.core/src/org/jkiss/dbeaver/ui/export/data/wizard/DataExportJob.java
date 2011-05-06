@@ -115,7 +115,7 @@ public class DataExportJob extends AbstractJob {
             return dataProvider;
         }
 
-        public Map<String, String> getProperties()
+        public Map<Object, Object> getProperties()
         {
             return settings.getExtractorProperties();
         }

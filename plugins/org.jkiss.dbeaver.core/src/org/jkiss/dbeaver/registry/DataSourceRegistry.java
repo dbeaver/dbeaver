@@ -402,10 +402,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute("password", encPassword);
             }
             if (connectionInfo.getProperties() != null) {
-                for (Map.Entry<String, String> entry : connectionInfo.getProperties().entrySet()) {
+                for (Map.Entry<Object, Object> entry : connectionInfo.getProperties().entrySet()) {
                     xml.startElement("property");
-                    xml.addAttribute("name", entry.getKey());
-                    xml.addAttribute("value", entry.getValue());
+                    xml.addAttribute("name", CommonUtils.toString(entry.getKey()));
+                    xml.addAttribute("value", CommonUtils.toString(entry.getValue()));
                     xml.endElement();
                 }
             }

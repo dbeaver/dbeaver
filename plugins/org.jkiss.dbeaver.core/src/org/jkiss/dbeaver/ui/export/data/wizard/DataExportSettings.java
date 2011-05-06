@@ -7,10 +7,9 @@ package org.jkiss.dbeaver.ui.export.data.wizard;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.program.Program;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPProperty;
-import org.jkiss.dbeaver.model.DBPPropertyGroup;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
@@ -60,7 +59,7 @@ public class DataExportSettings {
     private LobExtractType lobExtractType = LobExtractType.SKIP;
     private LobEncoding lobEncoding = LobEncoding.HEX;
 
-    private Map<String, String> extractorProperties = new HashMap<String, String>();
+    private Map<Object, Object> extractorProperties = new HashMap<Object, Object>();
 
     private String outputFolder = System.getProperty("user.home");
     private String outputFilePattern = PATTERN_TABLE + "_" + PATTERN_TIMESTAMP;
@@ -73,7 +72,7 @@ public class DataExportSettings {
     private boolean openFolderOnFinish = true;
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
-    private Map<DataExporterDescriptor, Map<String,String>> exporterPropsHistory = new HashMap<DataExporterDescriptor, Map<String, String>>();
+    private Map<DataExporterDescriptor, Map<Object,Object>> exporterPropsHistory = new HashMap<DataExporterDescriptor, Map<Object, Object>>();
 
     private transient boolean folderOpened = false;
     private transient int curProviderNum = 0;
@@ -115,9 +114,9 @@ public class DataExportSettings {
 
     public void setDataExporter(DataExporterDescriptor dataExporter)
     {
-        Map<String, String> historyProps = this.exporterPropsHistory.get(dataExporter);
+        Map<Object, Object> historyProps = this.exporterPropsHistory.get(dataExporter);
         if (historyProps == null) {
-            historyProps = new HashMap<String, String>();
+            historyProps = new HashMap<Object, Object>();
         }
         if (this.dataExporter != null) {
             this.exporterPropsHistory.put(this.dataExporter, this.extractorProperties);
@@ -178,12 +177,12 @@ public class DataExportSettings {
         this.lobEncoding = lobEncoding;
     }
 
-    public Map<String, String> getExtractorProperties()
+    public Map<Object, Object> getExtractorProperties()
     {
         return extractorProperties;
     }
 
-    public void setExtractorProperties(Map<String, String> extractorProperties)
+    public void setExtractorProperties(Map<Object, Object> extractorProperties)
     {
         this.extractorProperties = extractorProperties;
     }
@@ -396,14 +395,12 @@ public class DataExportSettings {
                 expId = expSection.getName();
                 DataExporterDescriptor exporter = DBeaverCore.getInstance().getDataExportersRegistry().getDataExporter(expId);
                 if (exporter != null) {
-                    Map<String, String> expProps = new HashMap<String, String>();
+                    Map<Object, Object> expProps = new HashMap<Object, Object>();
                     exporterPropsHistory.put(exporter, expProps);
-                    for (DBPPropertyGroup group : exporter.getPropertyGroups()) {
-                        for (DBPProperty prop : group.getProperties()) {
-                            String value = expSection.get(prop.getId());
-                            if (value != null) {
-                                expProps.put(prop.getId(), value);
-                            }
+                    for (IPropertyDescriptor prop : exporter.getProperties()) {
+                        String value = expSection.get(prop.getId().toString());
+                        if (value != null) {
+                            expProps.put(prop.getId(), value);
                         }
                     }
                 }
@@ -445,10 +442,10 @@ public class DataExportSettings {
             if (expSettings == null) {
                 expSettings = dialogSettings.addNewSection(exp.getId());
             }
-            Map<String, String> props = exporterPropsHistory.get(exp);
+            Map<Object, Object> props = exporterPropsHistory.get(exp);
             if (props != null) {
-                for (Map.Entry<String,String> prop : props.entrySet()) {
-                    expSettings.put(prop.getKey(), prop.getValue());
+                for (Map.Entry<Object,Object> prop : props.entrySet()) {
+                    expSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
                 }
             }
         }

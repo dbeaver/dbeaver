@@ -7,7 +7,9 @@ package org.jkiss.dbeaver.registry;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.ui.export.data.IDataExporter;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,7 @@ public class DataExporterDescriptor extends AbstractDescriptor
     private String description;
     private String fileExtension;
     private Image icon;
-    private List<PropertyGroupDescriptor> propertyGroups = new ArrayList<PropertyGroupDescriptor>();
+    private List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
 
     private Class<?> exporterClass;
 
@@ -54,9 +56,9 @@ public class DataExporterDescriptor extends AbstractDescriptor
             }
         }
 
-        IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.TAG_PROPERTY_GROUP);
+        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
         for (IConfigurationElement prop : propElements) {
-            propertyGroups.add(new PropertyGroupDescriptor(prop));
+            properties.addAll(PropertyDescriptor.extractProperties(prop));
         }
     }
 
@@ -85,8 +87,8 @@ public class DataExporterDescriptor extends AbstractDescriptor
         return icon;
     }
 
-    public List<PropertyGroupDescriptor> getPropertyGroups() {
-        return propertyGroups;
+    public List<IPropertyDescriptor> getProperties() {
+        return properties;
     }
 
     public boolean appliesToType(Class objectType)

@@ -15,11 +15,11 @@ import java.util.Map;
 
 public class TimeFormatSample implements DBDDataFormatterSample {
 
-    public Map<String, String> getDefaultProperties(Locale locale)
+    public Map<Object, Object> getDefaultProperties(Locale locale)
     {
         SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getTimeInstance(DateFormat.LONG, locale);
         String pattern = tmp.toPattern();
-        return Collections.singletonMap(DateTimeDataFormatter.PROP_PATTERN, pattern);
+        return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)pattern);
     }
 
     public Object getSampleValue()

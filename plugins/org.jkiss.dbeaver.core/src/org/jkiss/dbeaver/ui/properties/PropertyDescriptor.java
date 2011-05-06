@@ -2,22 +2,30 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.ui.properties;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.DBPProperty;
-import org.jkiss.dbeaver.model.DBPPropertyGroup;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PropertyDescriptor
  */
-public class PropertyDescriptor implements DBPProperty
+public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValueListProvider
 {
 
     static final Log log = LogFactory.getLog(PropertyDescriptor.class);
 
+    public static final String TAG_PROPERTY_GROUP = "propertyGroup"; //NON-NLS-1
+    public static final String NAME_UNDEFINED = "<undefined>"; //NON-NLS-1
     public static final String TAG_PROPERTY = "property"; //NON-NLS-1
     public static final String ATTR_ID = "id"; //NON-NLS-1
     public static final String ATTR_LABEL = "label"; //NON-NLS-1
@@ -28,32 +36,46 @@ public class PropertyDescriptor implements DBPProperty
     public static final String ATTR_VALID_VALUES = "validValues"; //NON-NLS-1
     public static final String VALUE_SPLITTER = ","; //NON-NLS-1
 
-    private DBPPropertyGroup group;
     private String id;
     private String name;
     private String description;
-    private DBPProperty.PropertyType type;
+    private String category;
+    private Class<?> type;
     private boolean required;
     private String defaultValue;
     private String[] validValues;
 
-    public PropertyDescriptor(PropertyGroupDescriptor group, IConfigurationElement config)
+    public static List<PropertyDescriptor> extractProperties(IConfigurationElement config)
     {
-        this.group = group;
+        String category = config.getAttribute(ATTR_LABEL);
+        if (CommonUtils.isEmpty(category)) {
+            category = NAME_UNDEFINED;
+        }
+        List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
+        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY);
+        for (IConfigurationElement prop : propElements) {
+            properties.add(new PropertyDescriptor(category, prop));
+        }
+        return properties;
+    }
+
+    public PropertyDescriptor(String category, IConfigurationElement config)
+    {
+        this.category = category;
         this.id = config.getAttribute(ATTR_ID);
         this.name = config.getAttribute(ATTR_LABEL);
         this.description = config.getAttribute(ATTR_DESCRIPTION);
         this.required = "true".equals(config.getAttribute(ATTR_REQUIRED));
         String typeString = config.getAttribute(ATTR_TYPE);
         if (typeString == null) {
-            type = PropertyType.STRING;
+            type = String.class;
         } else {
             try {
-                type = PropertyType.valueOf(typeString.toUpperCase());
+                type = PropertyType.valueOf(typeString.toUpperCase()).getValueType();
             }
             catch (IllegalArgumentException ex) {
                 log.warn(ex);
-                type = PropertyType.STRING;
+                type = String.class;
             }
         }
         this.defaultValue = config.getAttribute(ATTR_DEFAULT_VALUE);
@@ -63,8 +85,8 @@ public class PropertyDescriptor implements DBPProperty
         }
     }
 
-    public PropertyDescriptor(DBPPropertyGroup group, String id, String name, String description, PropertyType type, boolean required, String defaultValue, String[] validValues) {
-        this.group = group;
+    public PropertyDescriptor(String category, String id, String name, String description, Class<?> type, boolean required, String defaultValue, String[] validValues) {
+        this.category = category;
         this.id = id;
         this.name = name;
         this.description = description;
@@ -74,9 +96,14 @@ public class PropertyDescriptor implements DBPProperty
         this.validValues = validValues;
     }
 
-    public DBPPropertyGroup getGroup()
+    public CellEditor createPropertyEditor(Composite parent)
     {
-        return group;
+        return ObjectPropertyDescriptor.createCellEditor(parent, null, this);
+    }
+
+    public String getCategory()
+    {
+        return category;
     }
 
     public String getId()
@@ -84,9 +111,29 @@ public class PropertyDescriptor implements DBPProperty
         return id;
     }
 
-    public String getName()
+    public ILabelProvider getLabelProvider()
+    {
+        return null;
+    }
+
+    public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
+    {
+        return category.equals(anotherProperty.getCategory()) && id.equals(anotherProperty.getId());
+    }
+
+    public String getDisplayName()
     {
         return name;
+    }
+
+    public String[] getFilterFlags()
+    {
+        return new String[0];  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public Object getHelpContextIds()
+    {
+        return null;
     }
 
     public String getDescription()
@@ -99,7 +146,7 @@ public class PropertyDescriptor implements DBPProperty
         return defaultValue;
     }
 
-    public PropertyType getType()
+    public Class<?> getDataType()
     {
         return type;
     }
@@ -109,7 +156,7 @@ public class PropertyDescriptor implements DBPProperty
         return required;
     }
 
-    public String[] getValidValues()
+    public Object[] getPossibleValues(Object object)
     {
         return validValues;
     }

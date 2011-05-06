@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
+import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
 import java.io.File;
 import java.util.*;
@@ -67,6 +68,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
     private static final String GROUP_DB = "db";
     private static final String GROUP_PATH = "path";
     private static final String GROUP_LOGIN = "login";
+    private PropertySourceCustom propertySource;
 
     public void createControl(Composite composite)
     {
@@ -463,7 +465,8 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
             DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
             saveSettings(tmpConnectionInfo);
             tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
-            propsControl.loadProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
+            propertySource = propsControl.makeProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
+            propsControl.loadProperties(propertySource);
             driverPropsLoaded = true;
         }
     }
@@ -502,7 +505,9 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
             if (urlText != null) {
                 connectionInfo.setUrl(urlText.getText());
             }
-            connectionInfo.setProperties(propsControl.getProperties());
+            if (propertySource != null) {
+                connectionInfo.setProperties(propertySource.getProperties());
+            }
         }
     }
 

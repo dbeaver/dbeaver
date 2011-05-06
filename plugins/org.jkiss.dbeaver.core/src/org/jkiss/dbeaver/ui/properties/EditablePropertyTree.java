@@ -276,7 +276,7 @@ public class EditablePropertyTree extends Composite {
             });
             curCellEditor = cellEditor;
 /*
-            Object[] validValues = prop.getValidValues();
+            Object[] validValues = prop.getPossibleValues();
             Control newEditor;
             if (validValues == null) {
                 switch (prop.getType()) {

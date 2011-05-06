@@ -203,6 +203,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return false;
     }
 
+    public Object getDefaultValue()
+    {
+        return null;
+    }
+
     public Object[] getPossibleValues(Object object)
     {
         if (propInfo.listProvider() != IPropertyValueListProvider.class) {

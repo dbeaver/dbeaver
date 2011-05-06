@@ -4,9 +4,12 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+
+import java.util.Collection;
 
 /**
  * Data source provider
@@ -35,7 +38,7 @@ public interface DBPDataSourceProvider
      * @return property group which contains all supported properties
      * @throws DBException on any error
      */
-    DBPPropertyGroup getConnectionProperties(
+    Collection<IPropertyDescriptor> getConnectionProperties(
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)
         throws DBException;

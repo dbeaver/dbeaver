@@ -19,7 +19,7 @@ public class ImportDriverInfo {
     private String sampleURL;
     private String driverClass;
     private List<String> libraries = new ArrayList<String>();
-    private Map<String, String> properties = new HashMap<String, String>();
+    private Map<Object, Object> properties = new HashMap<Object, Object>();
     private int defaultPort;
     private String description;
 
@@ -76,7 +76,7 @@ public class ImportDriverInfo {
         libraries.add(path);
     }
 
-    public Map<String,String> getProperties()
+    public Map<Object,Object> getProperties()
     {
         return properties;
     }

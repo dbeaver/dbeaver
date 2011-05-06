@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
+import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
 class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
 
@@ -36,6 +37,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     private Label lobEncodingLabel;
     private Combo lobEncodingCombo;
     private Combo formatProfilesCombo;
+    private PropertySourceCustom propertySource;
 
     DataExportPageSettings() {
         super("Settings");
@@ -195,7 +197,8 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     public void activatePage() {
         DataExportSettings exportSettings = getWizard().getSettings();
         DataExporterDescriptor exporter = exportSettings.getDataExporter();
-        propsEditor.loadProperties(exporter.getPropertyGroups(), exportSettings.getExtractorProperties());
+        propertySource = new PropertySourceCustom(exporter.getProperties(), exportSettings.getExtractorProperties());
+        propsEditor.loadProperties(propertySource);
 
         switch (exportSettings.getLobExtractType()) {
             case SKIP: lobExtractType.select(EXTRACT_LOB_SKIP); break;
@@ -214,7 +217,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     @Override
     public void deactivatePage()
     {
-        getWizard().getSettings().setExtractorProperties(propsEditor.getPropertiesWithDefaults());
+        getWizard().getSettings().setExtractorProperties(propertySource.getPropertiesWithDefaults());
         super.deactivatePage();
     }
 

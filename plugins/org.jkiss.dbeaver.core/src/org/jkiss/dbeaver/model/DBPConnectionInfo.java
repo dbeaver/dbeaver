@@ -20,7 +20,7 @@ public class DBPConnectionInfo implements DBPObject
     private String userName;
     private String userPassword;
     private String url;
-    private Map<String, String> properties = new HashMap<String, String>();
+    private Map<Object, Object> properties = new HashMap<Object, Object>();
 
     public DBPConnectionInfo()
     {
@@ -35,7 +35,7 @@ public class DBPConnectionInfo implements DBPObject
         this.userName = info.userName;
         this.userPassword = info.userPassword;
         this.url = info.url;
-        this.properties = new HashMap<String, String>(info.properties);
+        this.properties = new HashMap<Object, Object>(info.properties);
     }
 
 /*
@@ -120,14 +120,14 @@ public class DBPConnectionInfo implements DBPObject
         this.userPassword = userPassword;
     }
 
-    public Map<String, String> getProperties()
+    public Map<Object, Object> getProperties()
     {
         return properties;
     }
 
-    public void setProperties(Map<String, String> properties)
+    public void setProperties(Map<Object, Object> properties)
     {
-        this.properties = new HashMap<String, String>();
+        this.properties = new HashMap<Object, Object>();
         this.properties.putAll(properties);
     }
 

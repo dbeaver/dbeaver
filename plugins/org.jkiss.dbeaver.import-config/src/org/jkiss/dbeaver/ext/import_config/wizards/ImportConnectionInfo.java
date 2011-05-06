@@ -24,7 +24,7 @@ public class ImportConnectionInfo {
     private String database;
     private String user;
     private String password;
-    private Map<String, String> properties = new HashMap<String, String>();
+    private Map<Object, Object> properties = new HashMap<Object, Object>();
     private boolean checked = false;
 
     public ImportConnectionInfo(ImportDriverInfo driverInfo, String id, String alias, String url, String host, int port, String database, String user, String password)
@@ -105,7 +105,7 @@ public class ImportConnectionInfo {
         return password;
     }
 
-    public Map<String, String> getProperties()
+    public Map<Object, Object> getProperties()
     {
         return properties;
     }

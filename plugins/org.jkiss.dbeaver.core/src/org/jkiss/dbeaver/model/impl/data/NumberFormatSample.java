@@ -20,10 +20,10 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     public static final String PROP_MIN_FRACT_DIGITS  ="minFractionDigits";
     public static final String PROP_ROUNDING_MODE ="roundingMode";
 
-    public Map<String, String> getDefaultProperties(Locale locale)
+    public Map<Object, Object> getDefaultProperties(Locale locale)
     {
         NumberFormat tmp = NumberFormat.getNumberInstance(locale);
-        Map<String, String> props = new HashMap<String, String>();
+        Map<Object, Object> props = new HashMap<Object, Object>();
         props.put(PROP_USE_GROUPING, String.valueOf(tmp.isGroupingUsed()));
         props.put(PROP_MAX_INT_DIGITS, String.valueOf(tmp.getMaximumIntegerDigits()));
         props.put(PROP_MIN_INT_DIGITS, String.valueOf(tmp.getMinimumIntegerDigits()));

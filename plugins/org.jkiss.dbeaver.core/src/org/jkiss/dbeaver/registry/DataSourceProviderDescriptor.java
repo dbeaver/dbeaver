@@ -10,11 +10,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.registry.tree.*;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +60,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private DBPDataSourceProvider instance;
     private DBXTreeNode treeDescriptor;
     private boolean driversManagable;
-    private List<PropertyGroupDescriptor> driverPropertyGroups = new ArrayList<PropertyGroupDescriptor>();
+    private List<IPropertyDescriptor> driverProperties = new ArrayList<IPropertyDescriptor>();
     private List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
     private List<DataSourceViewDescriptor> views = new ArrayList<DataSourceViewDescriptor>();
 
@@ -89,9 +91,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         IConfigurationElement[] driverPropsGroup = config.getChildren("driver-properties");
         if (!CommonUtils.isEmpty(driverPropsGroup)) {
             for (IConfigurationElement propsElement : driverPropsGroup) {
-                IConfigurationElement[] propElements = propsElement.getChildren(PropertyGroupDescriptor.TAG_PROPERTY_GROUP);
+                IConfigurationElement[] propElements = propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
                 for (IConfigurationElement prop : propElements) {
-                    driverPropertyGroups.add(new PropertyGroupDescriptor(prop));
+                    driverProperties.addAll(PropertyDescriptor.extractProperties(prop));
                 }
             }
         }
@@ -204,9 +206,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return driversManagable;
     }
 
-    public List<PropertyGroupDescriptor> getDriverPropertyGroups()
+    public List<IPropertyDescriptor> getDriverProperties()
     {
-        return driverPropertyGroups;
+        return driverProperties;
     }
 
     public List<DriverDescriptor> getDrivers()

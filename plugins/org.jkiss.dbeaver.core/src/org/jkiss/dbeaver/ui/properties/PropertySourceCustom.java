@@ -16,11 +16,21 @@ import java.util.*;
  */
 public class PropertySourceCustom implements IPropertySourceEx {
 
-    private List<PropertyDescriptor> props = new ArrayList<PropertyDescriptor>();
+    private List<IPropertyDescriptor> props = new ArrayList<IPropertyDescriptor>();
 
     private Map<Object, Object> originalValues = new TreeMap<Object, Object>();
     private Map<Object, Object> propValues = new TreeMap<Object, Object>();
     private Map<Object,Object> defaultValues = new TreeMap<Object, Object>();
+
+    public PropertySourceCustom()
+    {
+    }
+
+    public PropertySourceCustom(Collection<IPropertyDescriptor> properties, Map<Object, Object> values)
+    {
+        addProperties(properties);
+        setValues(values);
+    }
 
     public void setValues(Map<Object, Object> originalValues)
     {
@@ -52,6 +62,19 @@ public class PropertySourceCustom implements IPropertySourceEx {
         PropertyDescriptor prop = new PropertyDescriptor(id, displayName, description, category, dataType, required, possibleValues, filterFlags, helpContextIds);
         props.add(prop);
         return prop;
+    }
+
+    public void addProperties(Collection<IPropertyDescriptor> properties)
+    {
+        props.addAll(properties);
+        for (IPropertyDescriptor prop : properties) {
+            if (prop instanceof IPropertyDescriptorEx) {
+                final Object defaultValue = ((IPropertyDescriptorEx) prop).getDefaultValue();
+                if (defaultValue != null) {
+                    defaultValues.put(prop.getId(), defaultValue);
+                }
+            }
+        }
     }
 
     public Object getEditableValue()
@@ -203,6 +226,11 @@ public class PropertySourceCustom implements IPropertySourceEx {
         public boolean isRequired()
         {
             return required;
+        }
+
+        public Object getDefaultValue()
+        {
+            return null;
         }
 
         public Object[] getPossibleValues(Object object)

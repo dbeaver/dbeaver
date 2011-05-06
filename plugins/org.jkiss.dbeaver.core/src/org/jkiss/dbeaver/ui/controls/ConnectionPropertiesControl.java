@@ -4,20 +4,17 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.DBPProperty;
-import org.jkiss.dbeaver.model.DBPPropertyGroup;
-import org.jkiss.dbeaver.registry.PropertyDescriptor;
-import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
 import java.util.*;
 
@@ -30,8 +27,8 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
 
     public static final String USER_PROPERTIES_CATEGORY = "User Properties";
 
-    private DBPPropertyGroup driverProvidedProperties;
-    private DBPPropertyGroup customProperties;
+    private List<IPropertyDescriptor> driverProvidedProperties;
+    private List<IPropertyDescriptor> customProperties;
 
     public ConnectionPropertiesControl(Composite parent, int style)
     {
@@ -39,9 +36,9 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
         setExpandSingleRoot(false);
     }
 
-    public void loadProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    public PropertySourceCustom makeProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
-        Map<String, String> connectionProps = new HashMap<String, String>();
+        Map<Object, Object> connectionProps = new HashMap<Object, Object>();
         connectionProps.putAll(driver.getConnectionProperties());
         connectionProps.putAll(connectionInfo.getProperties());
         driverProvidedProperties = null;
@@ -50,17 +47,21 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
         loadDriverProperties(driver, connectionInfo);
         loadCustomProperties(driver, connectionProps);
 
-        super.loadProperties(getAllPropertyGroups(driver, true), connectionProps);
+        return new PropertySourceCustom(
+            getAllProperties(driver, true),
+            connectionProps);
     }
 
-    public void loadProperties(DBPDriver driver, Map<String, String> properties)
+    public PropertySourceCustom makeProperties(DBPDriver driver, Map<Object, Object> properties)
     {
         driverProvidedProperties = null;
         customProperties = null;
 
         loadCustomProperties(driver, properties);
 
-        super.loadProperties(getAllPropertyGroups(driver, true), properties);
+        return new PropertySourceCustom(
+            getAllProperties(driver, true),
+            properties);
     }
 
     protected boolean isCustomProperty(IPropertyDescriptor property)
@@ -68,6 +69,7 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
         return USER_PROPERTIES_CATEGORY.equals(property.getCategory());
     }
 
+/*
     protected void contributeContextMenu(IMenuManager manager, final Object selectedObject)
     {
         boolean isCustom = false;
@@ -123,90 +125,54 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
         }
 
     }
+*/
 
-    private List<DBPPropertyGroup> getAllPropertyGroups(DBPDriver driver, boolean includeCustom) {
-        List<DBPPropertyGroup> groups = new ArrayList<DBPPropertyGroup>();
-        groups.addAll(driver.getConnectionPropertyGroups());
+    private List<IPropertyDescriptor> getAllProperties(DBPDriver driver, boolean includeCustom) {
+        List<IPropertyDescriptor> propertyDescriptors = new ArrayList<IPropertyDescriptor>();
+        propertyDescriptors.addAll(driver.getConnectionPropertyDescriptors());
         if (driverProvidedProperties != null) {
-            groups.add(driverProvidedProperties);
+            propertyDescriptors.addAll(driverProvidedProperties);
         }
         if (includeCustom && customProperties != null) {
-            groups.add(customProperties);
+            propertyDescriptors.addAll(customProperties);
         }
-        return groups;
+        return propertyDescriptors;
     }
 
     private void loadDriverProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         try {
-            driverProvidedProperties = driver.getDataSourceProvider().getConnectionProperties(driver, connectionInfo);
+            driverProvidedProperties = new ArrayList<IPropertyDescriptor>(
+                driver.getDataSourceProvider().getConnectionProperties(driver, connectionInfo));
         } catch (DBException e) {
             log.warn("Can't load driver properties", e);
         }
     }
 
-    private void loadCustomProperties(DBPDriver driver, Map<String, String> properties)
+    private void loadCustomProperties(DBPDriver driver, Map<Object, Object> properties)
     {
-        // Custom properties are properties which are came not from driver and not from
-        Set<String> customNames = new TreeSet<String>();
-
         // Collect all driver (and all other) properties
         Set<String> propNames = new TreeSet<String>();
-        List<DBPPropertyGroup> allGroups = getAllPropertyGroups(driver, false);
-        for (DBPPropertyGroup group : allGroups) {
-            for (DBPProperty prop : group.getProperties()) {
-                propNames.add(prop.getName());
-            }
+        List<IPropertyDescriptor> allProperties = getAllProperties(driver, false);
+        for (IPropertyDescriptor prop : allProperties) {
+            propNames.add(CommonUtils.toString(prop.getId()));
         }
 
+        customProperties = new ArrayList<IPropertyDescriptor>();
         // Find prop values which are not from driver
         for (Object propName : properties.keySet()) {
             if (!propNames.contains(propName.toString())) {
-                customNames.add(propName.toString());
+                customProperties.add(new PropertyDescriptor(
+                    USER_PROPERTIES_CATEGORY,
+                    propName.toString(),
+                    propName.toString(),
+                    null,
+                    String.class,
+                    false,
+                    null,
+                    null));
             }
         }
-        customProperties = new CustomPropertyGroup(customNames);
     }
-
-    private class CustomPropertyGroup implements DBPPropertyGroup
-    {
-        private List<DBPProperty> propList;
-
-        public CustomPropertyGroup(Set<String> propNames)
-        {
-            this.propList = new ArrayList<DBPProperty>();
-            if (propNames != null) {
-                for (String name : propNames) {
-                    propList.add(new PropertyDescriptor(this, name, name, null, DBPProperty.PropertyType.STRING, false, null, null));
-                }
-            }
-        }
-
-        public String getName()
-        {
-            return USER_PROPERTIES_CATEGORY;
-        }
-
-        public String getDescription()
-        {
-            return "User defined properties";
-        }
-
-        public List<? extends DBPProperty> getProperties()
-        {
-            return propList;
-        }
-
-        public PropertyDescriptor addProperty(String name) {
-            PropertyDescriptor prop = new PropertyDescriptor(this, name, name, null, DBPProperty.PropertyType.STRING, false, null, null);
-            propList.add(prop);
-            return prop;
-        }
-
-        public void removeProperty(DBPProperty prop) {
-            propList.remove(prop);
-        }
-    }
-
 
 }

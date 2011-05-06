@@ -87,7 +87,7 @@ public abstract class JDBCDataSource
 
         {
             // Use driver properties
-            final Map<String, String> driverProperties = container.getDriver().getConnectionProperties();
+            final Map<Object, Object> driverProperties = container.getDriver().getConnectionProperties();
             if (driverProperties != null) {
                 connectProps.putAll(driverProperties);
             }

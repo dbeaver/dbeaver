@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public interface DBDDataFormatter {
 
-    void init(Locale locale, Map<String, String> properties);
+    void init(Locale locale, Map<Object, Object> properties);
 
     String formatValue(Object value);
 
