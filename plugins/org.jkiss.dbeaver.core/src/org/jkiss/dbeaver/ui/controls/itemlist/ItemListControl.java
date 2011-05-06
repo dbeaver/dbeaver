@@ -147,6 +147,8 @@ public class ItemListControl extends NodeListControl
         protected CellEditor getCellEditor(Object element)
         {
             DBNNode object = (DBNNode) element;
+            // Set cur list object to let property see it in createPropertyEditor
+            setCurListObject(object);
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null && property.isEditable(getObjectValue(object))) {
                 return property.createPropertyEditor(getControl());
