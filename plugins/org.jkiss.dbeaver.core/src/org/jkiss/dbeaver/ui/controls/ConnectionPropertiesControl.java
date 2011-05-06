@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -26,6 +27,8 @@ import java.util.*;
 public class ConnectionPropertiesControl extends EditablePropertyTree {
 
     static final Log log = LogFactory.getLog(ConnectionPropertiesControl.class);
+
+    public static final String USER_PROPERTIES_CATEGORY = "User Properties";
 
     private DBPPropertyGroup driverProvidedProperties;
     private DBPPropertyGroup customProperties;
@@ -60,9 +63,9 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
         super.loadProperties(getAllPropertyGroups(driver, true), properties);
     }
 
-    protected boolean isCustomProperty(DBPProperty property)
+    protected boolean isCustomProperty(IPropertyDescriptor property)
     {
-        return property.getGroup() instanceof CustomPropertyGroup;
+        return USER_PROPERTIES_CATEGORY.equals(property.getCategory());
     }
 
     protected void contributeContextMenu(IMenuManager manager, final Object selectedObject)
@@ -181,7 +184,7 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
 
         public String getName()
         {
-            return "User Properties";
+            return USER_PROPERTIES_CATEGORY;
         }
 
         public String getDescription()

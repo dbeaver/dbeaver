@@ -8,12 +8,8 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Simple property source which store properties in map
@@ -34,6 +30,16 @@ public class PropertySourceCustom implements IPropertySourceEx {
     public void setDefaultValues(Map<Object, Object> defaultValues)
     {
         this.defaultValues = defaultValues;
+    }
+
+    public Map<Object, Object> getProperties() {
+        return propValues;
+    }
+
+    public Map<Object, Object> getPropertiesWithDefaults() {
+        Map<Object, Object> allValues = new HashMap<Object, Object>(defaultValues);
+        allValues.putAll(propValues);
+        return allValues;
     }
 
     public IPropertyDescriptor addProperty(Object id, String displayName, String description, String category, Class<Object> dataType, boolean required)
@@ -84,7 +90,19 @@ public class PropertySourceCustom implements IPropertySourceEx {
 
     public void setPropertyValue(Object id, Object value)
     {
-        propValues.put(id, value);
+        if (!originalValues.containsKey(id) && propValues.containsKey(id)) {
+            originalValues.put(id, propValues.get(id));
+        }
+        if (value == null) {
+            propValues.remove(id);
+        } else {
+            propValues.put(id, value);
+        }
+    }
+
+    public boolean isDirty(Object id)
+    {
+        return !propValues.isEmpty();
     }
 
     public boolean hasDefaultValue(Object id)

@@ -11,6 +11,8 @@ import org.eclipse.ui.views.properties.IPropertySource2;
  */
 public interface IPropertySourceEx extends IPropertySource2 {
 
+    boolean isDirty(Object id);
+
     boolean hasDefaultValue(Object id);
 
     void resetPropertyValueToDefault(Object id);

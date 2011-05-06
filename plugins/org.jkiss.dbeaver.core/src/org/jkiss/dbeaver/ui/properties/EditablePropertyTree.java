@@ -9,7 +9,6 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -20,9 +19,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.model.DBPProperty;
-import org.jkiss.dbeaver.model.DBPPropertyGroup;
-import org.jkiss.dbeaver.registry.PropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.text.Collator;
@@ -38,14 +36,11 @@ public class EditablePropertyTree extends Composite {
     private TreeViewer propsTree;
     private TreeEditor treeEditor;
 
-    private Map<String, String> originalValues = new TreeMap<String, String>();
-    private Map<String, String> propValues = new TreeMap<String, String>();
-
     private Font boldFont;
     //private Color colorBlue;
     private Clipboard clipboard;
-    private Map<String,String> defaultValues = new TreeMap<String, String>();
     private int selectedColumn = -1;
+    private CellEditor curCellEditor;
 
     public EditablePropertyTree(Composite parent, int style)
     {
@@ -62,47 +57,33 @@ public class EditablePropertyTree extends Composite {
         initPropTree();
     }
 
-    public void loadProperties(
-        List<? extends DBPPropertyGroup> propertyGroups,
-        Map<String, String> propertyValues)
+    public void loadProperties(IPropertySource propertySource)
     {
-        loadProperties(propertyGroups, propertyValues, null);
+        loadProperties(null, propertySource);
     }
 
-    public void loadProperties(
-        List<? extends DBPPropertyGroup> propertyGroups,
-        Map<String, String> propertyValues,
-        Map<String, String> defaultValues)
+    protected void loadProperties(TreeNode parent, IPropertySource propertySource)
     {
-        this.propValues.clear();
-        this.originalValues.clear();
-        if (propertyValues != null) {
-            this.propValues.putAll(propertyValues);
-            this.originalValues.putAll(propertyValues);
-        }
-
-        Object root;
-        if (propertyGroups.size() == 1 && expandSingleRoot) {
-            root = propertyGroups.get(0);
-        } else {
-            root = propertyGroups;
-        }
-
-        this.defaultValues.clear();
-        if (defaultValues != null) {
-            // Set specified default values
-            this.defaultValues.putAll(defaultValues);
-        } else {
-            // Collect default values from property model
-            if (root instanceof DBPPropertyGroup) {
-                addDefaultValues((DBPPropertyGroup)root);
-            } else if (root instanceof Collection) {
-                for (Object group : (Collection<?>)root) {
-                    if (group instanceof DBPPropertyGroup) {
-                        addDefaultValues((DBPPropertyGroup)group);
-                    }
-                }
+        // Make tree model
+        Map<String, TreeNode> categories = new LinkedHashMap<String, TreeNode>();
+        final IPropertyDescriptor[] props = propertySource.getPropertyDescriptors();
+        for (IPropertyDescriptor prop : props) {
+            String categoryName = prop.getCategory();
+            if (CommonUtils.isEmpty(categoryName)) {
+                categoryName = "";
             }
+            TreeNode category = categories.get(categoryName);
+            if (category == null) {
+                category = new TreeNode(parent, propertySource, categoryName);
+                categories.put(categoryName, category);
+            }
+            new TreeNode(category, propertySource, prop);
+        }
+        Object root;
+        if (categories.size() == 1 && expandSingleRoot) {
+            root = categories.get(0);
+        } else {
+            root = categories;
         }
 
         if (propsTree != null) {
@@ -113,43 +94,10 @@ public class EditablePropertyTree extends Composite {
         disposeOldEditor();
     }
 
-    public void reloadDefaultValues(Map<String, String> defaultValues)
+    public void refresh()
     {
-        this.defaultValues.clear();
-        if (defaultValues != null) {
-            this.defaultValues.putAll(defaultValues);
-        }
         disposeOldEditor();
         propsTree.refresh();
-    }
-
-    public Map<String, String> getProperties() {
-        return propValues;
-    }
-
-    public Map<String, String> getPropertiesWithDefaults() {
-        Map<String, String> allValues = new HashMap<String, String>(defaultValues);
-        allValues.putAll(propValues);
-        return allValues;
-    }
-
-    private String getDefaultValue(DBPProperty property)
-    {
-        String value = defaultValues.get(property.getId());
-        if (value == null) {
-            value = property.getDefaultValue();
-        }
-        return value;
-    }
-
-    private void addDefaultValues(DBPPropertyGroup propertyGroup)
-    {
-        for (DBPProperty property : propertyGroup.getProperties()) {
-            String defaultValue = getDefaultValue(property);
-            if (defaultValue != null) {
-                defaultValues.put(property.getId(), defaultValue);
-            }
-        }
     }
 
     private void initPropTree()
@@ -223,6 +171,11 @@ public class EditablePropertyTree extends Composite {
 
     private void disposeOldEditor()
     {
+        if (curCellEditor != null) {
+            curCellEditor.deactivate();
+            curCellEditor.dispose();
+            curCellEditor = null;
+        }
         Control oldEditor = treeEditor.getEditor();
         if (oldEditor != null) oldEditor.dispose();
     }
@@ -289,9 +242,40 @@ public class EditablePropertyTree extends Composite {
         }
 
         // Identify the selected row
-        if (item.getData() instanceof DBPProperty) {
+        if (item.getData() instanceof TreeNode) {
             final Tree treeControl = propsTree.getTree();
-            final DBPProperty prop = (DBPProperty)item.getData();
+            final TreeNode prop = (TreeNode)item.getData();
+            if (prop.property == null) {
+                return;
+            }
+            final CellEditor cellEditor = prop.property.createPropertyEditor(treeControl);
+            if (cellEditor == null) {
+                return;
+            }
+            cellEditor.addListener(new ICellEditorListener() {
+                public void applyEditorValue()
+                {
+                    editorValueChanged(true, true);
+                }
+
+                public void cancelEditor()
+                {
+                    disposeOldEditor();
+                }
+
+                public void editorValueChanged(boolean oldValidState, boolean newValidState)
+                {
+                    if (newValidState) {
+                        final Object value = cellEditor.getValue();
+                        prop.propertySource.setPropertyValue(
+                            prop.property.getId(),
+                            value);
+                        changeProperty(prop, value);
+                    }
+                }
+            });
+            curCellEditor = cellEditor;
+/*
             Object[] validValues = prop.getValidValues();
             Control newEditor;
             if (validValues == null) {
@@ -354,27 +338,31 @@ public class EditablePropertyTree extends Composite {
                 });
                 newEditor = combo;
             }
+*/
 
-            newEditor.addTraverseListener(new TraverseListener() {
-                public void keyTraversed(TraverseEvent e)
-                {
-                    if (e.detail == SWT.TRAVERSE_RETURN) {
-                        e.doit = false;
-                        e.detail = SWT.TRAVERSE_NONE;
-                        disposeOldEditor();
-                    } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                        e.doit = false;
-                        e.detail = SWT.TRAVERSE_NONE;
-                        new ActionResetProperty(prop).run();
+            cellEditor.activate();
+            final Control editorControl = cellEditor.getControl();
+            if (editorControl != null) {
+                editorControl.addTraverseListener(new TraverseListener() {
+                    public void keyTraversed(TraverseEvent e)
+                    {
+                        if (e.detail == SWT.TRAVERSE_RETURN) {
+                            e.doit = false;
+                            e.detail = SWT.TRAVERSE_NONE;
+                            disposeOldEditor();
+                        } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                            e.doit = false;
+                            e.detail = SWT.TRAVERSE_NONE;
+                            new ActionResetProperty(prop).run();
+                        }
                     }
+                });
+                if (isDef) {
+                    // Selected by mouse
+                    editorControl.setFocus();
                 }
-            });
-
-            if (isDef) {
-                // Selected by mouse
-                newEditor.setFocus();
+                treeEditor.setEditor(editorControl, item, 1);
             }
-            treeEditor.setEditor(newEditor, item, 1);
         }
     }
 
@@ -392,32 +380,33 @@ public class EditablePropertyTree extends Composite {
                         return;
                     }
                     final Object object = selection.getFirstElement();
-                    if (object instanceof DBPProperty) {
-                        final DBPProperty prop = (DBPProperty)object;
-                        final String propId = prop.getId();
-                        manager.add(new Action("Copy value") {
-                            @Override
-                            public void run() {
-                                TextTransfer textTransfer = TextTransfer.getInstance();
-                                clipboard.setContents(
-                                    new Object[]{getPropertyValue(prop)},
-                                    new Transfer[]{textTransfer});
+                    if (object instanceof TreeNode) {
+                        final TreeNode prop = (TreeNode)object;
+                        if (prop.property != null) {
+                            manager.add(new Action("Copy value") {
+                                @Override
+                                public void run() {
+                                    TextTransfer textTransfer = TextTransfer.getInstance();
+                                    clipboard.setContents(
+                                        new Object[]{getPropertyValue(prop)},
+                                        new Transfer[]{textTransfer});
+                                }
+                            });
+                            if (isPropertyChanged(prop)) {
+                                manager.add(new ActionResetProperty(prop));
+                                if (!isCustomProperty(prop.property)) {
+                                    manager.add(new Action("Reset value to default") {
+                                        @Override
+                                        public void run() {
+                                            changeProperty(prop, null);
+                                            propsTree.update(prop, null);
+                                            disposeOldEditor();
+                                        }
+                                    });
+                                }
                             }
-                        });
-                        if (isPropertyChanged(prop)) {
-                            manager.add(new ActionResetProperty(prop));
-                            if (!isCustomProperty(prop)) {
-                                manager.add(new Action("Reset value to default") {
-                                    @Override
-                                    public void run() {
-                                        changeProperty(prop, null);
-                                        propsTree.update(prop, null);
-                                        disposeOldEditor();
-                                    }
-                                });
-                            }
+                            manager.add(new Separator());
                         }
-                        manager.add(new Separator());
                     }
                     contributeContextMenu(manager, object);
                 }
@@ -430,7 +419,7 @@ public class EditablePropertyTree extends Composite {
         }
     }
 
-    protected boolean isCustomProperty(DBPProperty property)
+    protected boolean isCustomProperty(IPropertyDescriptor property)
     {
         return false;
     }
@@ -440,53 +429,40 @@ public class EditablePropertyTree extends Composite {
 
     }
 
-    private String getPropertyValue(DBPProperty prop)
+    private String getPropertyValue(TreeNode prop)
     {
-        Object propValue = propValues.get(prop.getId());
-        if (propValue == null) {
-            propValue = getDefaultValue(prop);
-        }
-        if (propValue != null) {
-            return String.valueOf(propValue);
+        if (prop.category != null) {
+            return prop.category;
         } else {
-            return "";
+            return CommonUtils.toString(prop.propertySource.getPropertyValue(prop.property.getId()));
         }
     }
 
-    private boolean isPropertyChanged(DBPProperty prop)
+    private boolean isPropertyChanged(TreeNode prop)
     {
-        Object propValue = propValues.get(prop.getId());
-        return propValue != null && !CommonUtils.equalObjects(propValue, getDefaultValue(prop));
+        return prop.propertySource.isPropertySet(prop.property.getId());
     }
 
-    private void changeProperty(DBPProperty prop, String text)
+    private void changeProperty(TreeNode prop, Object text)
     {
-        String propId = prop.getId();
-        if (!originalValues.containsKey(propId) && propValues.containsKey(propId)) {
-            originalValues.put(propId, propValues.get(propId));
-        }
-        if (text == null) {
-            propValues.remove(propId);
-        } else {
-            propValues.put(propId, text);
-        }
+        prop.propertySource.setPropertyValue(prop.property.getId(), text);
         propsTree.update(prop, null);
 
         // Send modify event
         Event event = new Event();
-        event.data = prop;
+        event.data = prop.property;
         this.notifyListeners(SWT.Modify, event);
     }
 
-    protected void handlePropertyCreate(PropertyDescriptor newProp, String newValue) {
-        changeProperty(newProp, newValue);
-        propsTree.refresh(newProp.getGroup());
-        propsTree.expandToLevel(newProp.getGroup(), 1);
+    protected void handlePropertyCreate(TreeNode prop, Object newValue) {
+        changeProperty(prop, newValue);
+        propsTree.refresh(prop.parent);
+        propsTree.expandToLevel(prop.parent, 1);
     }
 
-    protected void handlePropertyRemove(DBPProperty prop) {
+    protected void handlePropertyRemove(TreeNode prop) {
         changeProperty(prop, null);
-        propsTree.refresh(prop.getGroup());
+        propsTree.refresh(prop.parent);
     }
 
     public void setMarginVisible(boolean visible)
@@ -506,9 +482,33 @@ public class EditablePropertyTree extends Composite {
         this.expandSingleRoot = expandSingleRoot;
     }
 
-    public boolean isDirty()
-    {
-        return !propValues.isEmpty();
+    private static class TreeNode {
+        final TreeNode parent;
+        final IPropertySource propertySource;
+        final IPropertyDescriptor property;
+        final String category;
+        final List<TreeNode> children = new ArrayList<TreeNode>();
+
+        private TreeNode(TreeNode parent, IPropertySource propertySource, IPropertyDescriptor property, String category)
+        {
+            this.parent = parent;
+            this.propertySource = propertySource;
+            this.property = property;
+            this.category = category;
+            if (parent != null) {
+                parent.children.add(this);
+            }
+        }
+
+        private TreeNode(TreeNode parent, IPropertySource propertySource, IPropertyDescriptor property)
+        {
+            this(parent, propertySource, property, null);
+        }
+
+        private TreeNode(TreeNode parent, IPropertySource propertySource, String category)
+        {
+            this(parent, propertySource, null, category);
+        }
     }
 
     class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider
@@ -528,10 +528,8 @@ public class EditablePropertyTree extends Composite {
 
         public Object getParent(Object child)
         {
-            if (child instanceof DBPPropertyGroup) {
-                return propsTree.getInput();
-            } else if (child instanceof DBPProperty) {
-                return ((DBPProperty) child).getGroup();
+            if (child instanceof TreeNode) {
+                return ((TreeNode) child).parent;
             } else {
                 return null;
             }
@@ -539,12 +537,9 @@ public class EditablePropertyTree extends Composite {
 
         public Object[] getChildren(Object parent)
         {
-            if (parent instanceof List) {
+            if (parent instanceof TreeNode) {
                 // Add all available property groups
-                return ((List<?>) parent).toArray();
-            } else if (parent instanceof DBPPropertyGroup) {
-                // Sort props by name
-                return ((DBPPropertyGroup) parent).getProperties().toArray();
+                return ((TreeNode) parent).children.toArray();
             } else {
                 return new Object[0];
             }
@@ -561,17 +556,19 @@ public class EditablePropertyTree extends Composite {
 
         public String getText(Object obj, int columnIndex)
         {
+            if (!(obj instanceof TreeNode)) {
+                return "";
+            }
+            TreeNode node = (TreeNode)obj;
             if (columnIndex == 0) {
-                if (obj instanceof DBPPropertyGroup) {
-                    return ((DBPPropertyGroup) obj).getName();
-                } else if (obj instanceof DBPProperty) {
-                    return ((DBPProperty) obj).getName();
+                if (node.category != null) {
+                    return node.category;
                 } else {
-                    return obj.toString();
+                    return node.property.getDisplayName();
                 }
             } else {
-                if (obj instanceof DBPProperty) {
-                    return getPropertyValue((DBPProperty) obj);
+                if (node.property != null) {
+                    return CommonUtils.toString(node.propertySource.getPropertyValue(node.property.getId()));
                 } else {
                     return "";
                 }
@@ -580,12 +577,14 @@ public class EditablePropertyTree extends Composite {
 
         public String getToolTipText(Object obj)
         {
-            if (obj instanceof DBPPropertyGroup) {
-                return ((DBPPropertyGroup) obj).getDescription();
-            } else if (obj instanceof DBPProperty) {
-                return ((DBPProperty) obj).getDescription();
+            if (!(obj instanceof TreeNode)) {
+                return "";
+            }
+            TreeNode node = (TreeNode)obj;
+            if (node.category != null) {
+                return node.category;
             } else {
-                return obj.toString();
+                return node.property.getDescription();
             }
         }
 
@@ -599,8 +598,8 @@ public class EditablePropertyTree extends Composite {
             Object element = cell.getElement();
             cell.setText(getText(element, cell.getColumnIndex()));
             boolean changed = false;
-            if (element instanceof DBPProperty) {
-                changed = isPropertyChanged((DBPProperty)element);
+            if (element instanceof TreeNode) {
+                changed = isPropertyChanged((TreeNode)element);
 /*
                 if (((DBPProperty)element).isRequired() && cell.getColumnIndex() == 0) {
                     cell.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_WARN_TSK));
@@ -640,10 +639,11 @@ public class EditablePropertyTree extends Composite {
                 {
                     int mul = (sortDirection == SWT.UP ? 1 : -1);
                     int result;
-                    if (e1 instanceof DBPProperty && e2 instanceof DBPProperty) {
-                        result = ((DBPProperty)e1).getName().compareTo(((DBPProperty)e2).getName());
-                    } else if (e1 instanceof DBPPropertyGroup && e2 instanceof DBPPropertyGroup) {
-                        result = ((DBPPropertyGroup)e1).getName().compareTo(((DBPPropertyGroup)e2).getName());
+                    TreeNode n1 = (TreeNode) e1, n2 = (TreeNode) e2;
+                    if (n1.property != null && n2.property != null) {
+                        result = n1.property.getDisplayName().compareTo(n2.property.getDisplayName());
+                    } else if (n1.category != null && n2.category != null) {
+                        result = n1.category.compareTo(n2.category);
                     } else {
                         result = 0;
                     }
@@ -654,9 +654,9 @@ public class EditablePropertyTree extends Composite {
     }
 
     private class ActionResetProperty extends Action {
-        private final DBPProperty prop;
+        private final TreeNode prop;
 
-        public ActionResetProperty(DBPProperty prop)
+        public ActionResetProperty(TreeNode prop)
         {
             super("Reset value");
             this.prop = prop;
@@ -664,11 +664,8 @@ public class EditablePropertyTree extends Composite {
 
         @Override
         public void run() {
-            if (originalValues.containsKey(prop.getId())) {
-                changeProperty(prop, originalValues.get(prop.getId()));
-            } else if (!isCustomProperty(prop)) {
-                changeProperty(prop, null);
-            }
+            prop.propertySource.resetPropertyValue(prop.property.getId());
+            changeProperty(prop, null);
             propsTree.update(prop, null);
             disposeOldEditor();
         }

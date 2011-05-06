@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
