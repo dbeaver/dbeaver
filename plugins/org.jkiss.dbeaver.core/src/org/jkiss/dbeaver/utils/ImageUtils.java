@@ -5,10 +5,10 @@
 package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.PaletteData;
-import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * Image-related utils
@@ -18,6 +18,73 @@ import org.eclipse.swt.graphics.RGB;
  * @author Anthony Hunter, cmahoney
  */
 public class ImageUtils {
+
+    private static Image imageCheckboxEnabledOn, imageCheckboxEnabledOff, imageCheckboxDisabledOn, imageCheckboxDisabledOff;
+
+    public static Image getImageCheckboxEnabledOn()
+    {
+        if (imageCheckboxEnabledOn == null) {
+            initImages();
+        }
+        return imageCheckboxEnabledOn;
+    }
+
+    public static Image getImageCheckboxEnabledOff()
+    {
+        if (imageCheckboxEnabledOff == null) {
+            initImages();
+        }
+        return imageCheckboxEnabledOff;
+    }
+
+    public static Image getImageCheckboxDisabledOn()
+    {
+        if (imageCheckboxDisabledOn == null) {
+            initImages();
+        }
+        return imageCheckboxDisabledOn;
+    }
+
+    public static Image getImageCheckboxDisabledOff()
+    {
+        if (imageCheckboxDisabledOff == null) {
+            initImages();
+        }
+        return imageCheckboxDisabledOff;
+    }
+
+    private static synchronized void initImages()
+    {
+        final Display display = Display.getDefault();
+        Button checkBox = new Button(DBeaverCore.getActiveWorkbenchShell(), SWT.CHECK);
+        Point checkboxSize = checkBox.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        checkBox.setBounds(0, 0, checkboxSize.x, checkboxSize.y);
+        try {
+            checkBox.setSelection(false);
+            imageCheckboxEnabledOff = captureWidget(checkBox);
+            checkBox.setSelection(true);
+            imageCheckboxEnabledOn = captureWidget(checkBox);
+            checkBox.setEnabled(false);
+            imageCheckboxDisabledOn = captureWidget(checkBox);
+            checkBox.setSelection(false);
+            imageCheckboxDisabledOff = captureWidget(checkBox);
+        } finally {
+            checkBox.dispose();
+        }
+    }
+
+    public static Image captureWidget(Control widget)
+    {
+        Point size = widget.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        Image image = new Image(widget.getDisplay(), size.x, size.y);
+        GC gc = new GC(image);
+        try {
+            widget.print(gc);
+        } finally {
+            gc.dispose();
+        }
+        return image;
+    }
 
     /**
      * Retrieve the image data for the image, using a palette of at most 256

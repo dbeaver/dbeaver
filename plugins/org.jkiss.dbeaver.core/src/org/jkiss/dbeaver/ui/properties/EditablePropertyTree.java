@@ -20,8 +20,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ImageUtils;
 
 import java.text.Collator;
 import java.util.*;
@@ -696,10 +696,11 @@ public class EditablePropertyTree extends Composite {
                         final TreeNode node = (TreeNode)event.item.getData();
                         if (node != null && node.property != null) {
                             final Object propertyValue = node.propertySource.getPropertyValue(node.property.getId());
-                            if (propertyValue instanceof Boolean && (Boolean)propertyValue) {
+                            if (propertyValue instanceof Boolean) {
                                 GC gc = event.gc;
-                                int columnWidth = propsTree.getTree().getColumn(1).getWidth();
-                                Image image = DBIcon.CHECK.getImage();
+                                final Tree tree = propsTree.getTree();
+                                int columnWidth = tree.getColumn(1).getWidth();
+                                Image image = (Boolean)propertyValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff();
                                 gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
                                 event.doit = false;
                             }

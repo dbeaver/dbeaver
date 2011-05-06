@@ -69,6 +69,8 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     protected void doSetFocus() {
         checkbox.setFocus();
+        checkbox.setSelection(!checkbox.getSelection());
+        applyEditorValue();
     }
 
     protected void doSetValue(Object value) {

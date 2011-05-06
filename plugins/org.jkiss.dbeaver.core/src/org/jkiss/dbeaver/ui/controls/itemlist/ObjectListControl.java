@@ -28,10 +28,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.properties.*;
+import org.jkiss.dbeaver.utils.ImageUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
@@ -928,20 +928,23 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 			switch(event.type) {
 				case SWT.PaintItem: {
                     final OBJECT_TYPE object = (OBJECT_TYPE)event.item.getData();
+                    final Object objectValue = getObjectValue(object);
                     Object cellValue = getCellValue(object, event.index);
+                    final ObjectColumn objectColumn = columns.get(event.index);
                     if (cellValue == LOADING_LABEL) {
                         if (!lazyLoadCanceled) {
-                            addLazyObject(object, columns.get(event.index));
+                            addLazyObject(object, objectColumn);
                         }
                     } else if (cellValue != null ) {
                         GC gc = event.gc;
                         if (cellValue instanceof Boolean) {
-                            if (((Boolean)cellValue)) {
-                                int columnWidth = UIUtils.getColumnWidth(columns.get(event.index).item);
-                                Image image = DBIcon.CHECK.getImage();
-                                gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
-                                event.doit = false;
-                            }
+                            int columnWidth = UIUtils.getColumnWidth(objectColumn.item);
+                            ObjectPropertyDescriptor prop = objectColumn.propMap.get(objectValue.getClass());
+                            Image image = (Boolean)cellValue ?
+                                (prop.isEditable(objectValue) ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxDisabledOn()) :
+                                (prop.isEditable(objectValue) ? ImageUtils.getImageCheckboxEnabledOff() : ImageUtils.getImageCheckboxDisabledOff());
+                            gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
+                            event.doit = false;
                         } else if (isHyperlink(cellValue)) {
                             boolean isSelected = linkColor.equals(gc.getBackground());
                             // Print link

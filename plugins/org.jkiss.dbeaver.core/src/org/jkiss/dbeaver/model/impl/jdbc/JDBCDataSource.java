@@ -179,12 +179,12 @@ public abstract class JDBCDataSource
         return container;
     }
 
-    public DBPDataSourceInfo getInfo()
+    public synchronized DBPDataSourceInfo getInfo()
     {
         return dataSourceInfo;
     }
 
-    public boolean isConnected()
+    public synchronized boolean isConnected()
     {
         return connection != null;
     }
@@ -203,7 +203,7 @@ public abstract class JDBCDataSource
         }
     }
 
-    public void initialize(DBRProgressMonitor monitor)
+    public synchronized void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read database meta data");
