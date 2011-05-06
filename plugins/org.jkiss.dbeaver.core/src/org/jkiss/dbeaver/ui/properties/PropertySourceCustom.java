@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.properties;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.widgets.Composite;
@@ -48,6 +49,7 @@ public class PropertySourceCustom implements IPropertySourceEx {
 
     public Map<Object, Object> getPropertiesWithDefaults() {
         Map<Object, Object> allValues = new HashMap<Object, Object>(defaultValues);
+        allValues.putAll(originalValues);
         allValues.putAll(propValues);
         return allValues;
     }
@@ -103,7 +105,12 @@ public class PropertySourceCustom implements IPropertySourceEx {
 
     public boolean isPropertySet(Object id)
     {
-        return propValues.containsKey(id) || originalValues.get(id) != null;
+        final Object value = getPropertyValue(id);
+        if (value == null) {
+            return false;
+        }
+        final Object defaultValue = defaultValues.get(id);
+        return !CommonUtils.equalObjects(value, defaultValue);
     }
 
     public void resetPropertyValue(Object id)

@@ -175,6 +175,28 @@ public class RuntimeUtils
         return CommonUtils.isEmpty(string) ? null : string;
     }
 
+    public static void setPreferenceValue(IPreferenceStore store, String propName, Object value)
+    {
+        if (value == null) {
+            return;
+        }
+        if (value instanceof CharSequence) {
+            store.setValue(propName, value.toString());
+        } else if (value instanceof Boolean) {
+            store.setValue(propName, (Boolean) value);
+        } else if (value instanceof Long) {
+            store.setValue(propName, (Long) value);
+        } else if (value instanceof Integer || value instanceof Short || value instanceof Byte) {
+            store.setValue(propName, ((Number) value).intValue());
+        } else if (value instanceof Double) {
+            store.setValue(propName, (Double) value);
+        } else if (value instanceof Float) {
+            store.setValue(propName, (Float) value);
+        } else {
+            store.setValue(propName, value.toString());
+        }
+    }
+
     public static Object convertString(String value, Class<?> valueType)
     {
         try {

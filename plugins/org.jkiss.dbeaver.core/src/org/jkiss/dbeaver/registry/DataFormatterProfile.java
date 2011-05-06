@@ -81,10 +81,10 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
 
         for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
             Map<Object, Object> formatterProps = properties.get(formatter.getId());
-            for (IPropertyDescriptor prop : formatter.getProperties()) {
+            for (PropertyDescriptor prop : formatter.getProperties()) {
                 Object propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
                 if (propValue != null) {
-                    store.setValue("dataformat.type." + formatter.getId() + "." + prop.getId(), CommonUtils.toString(propValue));
+                    RuntimeUtils.setPreferenceValue(store, "dataformat.type." + formatter.getId() + "." + prop.getId(), propValue);
                 } else {
                     store.setToDefault("dataformat.type." + formatter.getId() + "." + prop.getId());
                 }
