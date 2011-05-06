@@ -69,7 +69,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         this.addDoubleClickListener(this);
         this.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.packColumns(getTree(), false);
+        UIUtils.packColumns(getTree());
     }
 
     class ViewContentProvider implements ITreeContentProvider

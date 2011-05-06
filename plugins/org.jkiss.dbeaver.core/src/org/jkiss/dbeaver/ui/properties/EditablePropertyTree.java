@@ -103,7 +103,6 @@ public class EditablePropertyTree extends Composite {
         if (propsTree != null) {
             propsTree.setInput(root);
             propsTree.expandAll();
-            UIUtils.packColumns(propsTree.getTree(), true);
         }
         disposeOldEditor();
     }
@@ -166,7 +165,7 @@ public class EditablePropertyTree extends Composite {
                 if (!packing) {
                     try {
                         packing = true;
-                        UIUtils.packColumns(treeControl, true);
+                        UIUtils.packColumns(treeControl, true, new float[] { 0.2f , 0.8f });
                     }
                     finally {
                         packing = false;

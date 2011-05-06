@@ -409,7 +409,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                     if (isTree) {
                         ((TreeViewer)itemsViewer).expandAll();
-                        UIUtils.packColumns(getTree(), isFitWidth);
+                        UIUtils.packColumns(getTree(), isFitWidth, null);
                     } else {
                         UIUtils.packColumns(getTable());
                     }

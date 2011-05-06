@@ -227,9 +227,10 @@ public class UIUtils {
 
     public static void packColumns(Tree tree)
     {
-        packColumns(tree, false);
+        packColumns(tree, false, null);
     }
-    public static void packColumns(Tree tree, boolean fit)
+
+    public static void packColumns(Tree tree, boolean fit, float[] ratios)
     {
         tree.setRedraw(false);
         try {
@@ -241,7 +242,8 @@ public class UIUtils {
                 }
             }
             int totalWidth = 0;
-            for (TreeColumn column : tree.getColumns()) {
+            final TreeColumn[] columns = tree.getColumns();
+            for (TreeColumn column : columns) {
                 column.pack();
                 totalWidth += column.getWidth();
             }
@@ -252,17 +254,23 @@ public class UIUtils {
             if (fit) {
                 if (totalWidth > clientArea.width) {
                     int extraSpace = totalWidth - clientArea.width;
-                    for (TreeColumn tc : tree.getColumns()) {
+                    for (TreeColumn tc : columns) {
                         double ratio = (double) tc.getWidth() / totalWidth;
                         tc.setWidth((int) (tc.getWidth() - extraSpace * ratio));
                     }
                 } else if (totalWidth < clientArea.width) {
-                    int extraSpace = clientArea.width - totalWidth;
-                    int columnCount = tree.getColumnCount();
-                    if (columnCount > 0) {
-                        extraSpace /= columnCount;
-                        for (TreeColumn tc : tree.getColumns()) {
-                            tc.setWidth(tc.getWidth() + extraSpace);
+                    float extraSpace = clientArea.width - totalWidth;
+                    if (columns.length > 0) {
+                        if (ratios == null || ratios.length < columns.length) {
+                            extraSpace /= columns.length;
+                            for (TreeColumn tc : columns) {
+                                tc.setWidth((int)(tc.getWidth() + extraSpace));
+                            }
+                        } else {
+                            for (int i = 0; i < columns.length; i++) {
+                                TreeColumn tc = columns[i];
+                                tc.setWidth((int)(tc.getWidth() + extraSpace * ratios[i]));
+                            }
                         }
                     }
                 }
@@ -279,14 +287,16 @@ public class UIUtils {
             int columnCount = table.getColumnCount();
             if (columnCount > 0) {
                 int totalWidth = 0;
-                for (TableColumn tc : table.getColumns()) {
+                final TableColumn[] columns = table.getColumns();
+                for (TableColumn tc : columns) {
                     tc.pack();
                     totalWidth += tc.getWidth();
                 }
-                if (totalWidth < table.getClientArea().width) {
-                    int extraSpace = table.getClientArea().width - totalWidth;
+                final Rectangle clientArea = table.getClientArea();
+                if (totalWidth < clientArea.width) {
+                    int extraSpace = clientArea.width - totalWidth;
                     extraSpace /= columnCount;
-                    for (TableColumn tc : table.getColumns()) {
+                    for (TableColumn tc : columns) {
                         tc.setWidth(tc.getWidth() + extraSpace);
                     }
                 }
