@@ -81,7 +81,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
 
     public static class ColumnTypeNameListProvider implements IPropertyValueListProvider {
 
-        public String[] getPossibleValues(Object object)
+        public Object[] getPossibleValues(Object object)
         {
             Set<String> typeNames = new TreeSet<String>();
             JDBCTableColumn column = (JDBCTableColumn) object;

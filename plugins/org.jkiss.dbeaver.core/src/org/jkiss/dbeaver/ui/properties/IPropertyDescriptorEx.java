@@ -15,6 +15,4 @@ public interface IPropertyDescriptorEx extends IPropertyDescriptor {
 
     boolean isRequired();
 
-    Object[] getValidValues();
-
 }

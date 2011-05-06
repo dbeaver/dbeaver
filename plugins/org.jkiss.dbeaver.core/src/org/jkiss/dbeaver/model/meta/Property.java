@@ -40,7 +40,7 @@ public @interface Property
 
     Class<ILabelProvider> labelProvider() default ILabelProvider.class;
 
-    Class<? extends IPropertyValueEditor> valueEditor() default IPropertyValueEditor.class;
+    Class<? extends IPropertyValueEditorProvider> valueEditor() default IPropertyValueEditorProvider.class;
 
     Class<? extends IPropertyValueListProvider> listProvider() default IPropertyValueListProvider.class;
 

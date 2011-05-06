@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * Property value editor
  */
-public interface IPropertyValueEditor {
+public interface IPropertyValueEditorProvider {
 
     CellEditor createCellEditor(Composite parent, Object object, Property property);
 

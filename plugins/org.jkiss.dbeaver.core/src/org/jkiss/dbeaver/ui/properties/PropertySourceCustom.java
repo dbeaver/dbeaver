@@ -8,6 +8,7 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.TreeMap;
 /**
  * Simple property source which store properties in map
  */
-public class PropertySourceSimple implements IPropertySourceEx {
+public class PropertySourceCustom implements IPropertySourceEx {
 
     private List<PropertyDescriptor> props = new ArrayList<PropertyDescriptor>();
 
@@ -35,14 +36,14 @@ public class PropertySourceSimple implements IPropertySourceEx {
         this.defaultValues = defaultValues;
     }
 
-    public IPropertyDescriptor addProperty(Object id, String displayName, String description, String category)
+    public IPropertyDescriptor addProperty(Object id, String displayName, String description, String category, Class<Object> dataType, boolean required)
     {
-        return addProperty(id, displayName, description, category, null, null);
+        return addProperty(id, displayName, description, category, dataType, required, null, null, null);
     }
 
-    public IPropertyDescriptor addProperty(Object id, String displayName, String description, String category, String[] filterFlags, Object helpContextIds)
+    public IPropertyDescriptor addProperty(Object id, String displayName, String description, String category, Class<Object> dataType, boolean required, Object[] possibleValues, String[] filterFlags, Object helpContextIds)
     {
-        PropertyDescriptor prop = new PropertyDescriptor(id, displayName, description, category, filterFlags, helpContextIds);
+        PropertyDescriptor prop = new PropertyDescriptor(id, displayName, description, category, dataType, required, possibleValues, filterFlags, helpContextIds);
         props.add(prop);
         return prop;
     }
@@ -97,20 +98,35 @@ public class PropertySourceSimple implements IPropertySourceEx {
         originalValues.remove(id);
     }
 
-    private static class PropertyDescriptor implements IPropertyDescriptor {
+    private class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValueListProvider {
 
-        private String category;
-        private String description;
+        private Object id;
         private String displayName;
+        private String description;
+        private String category;
+        private Class<Object> dataType;
+        private boolean required;
+        private Object[] possibleValues;
         private String[] filterFlags;
         private Object helpContextIds;
-        private Object id;
 
-        private PropertyDescriptor(Object id, String displayName, String description, String category, String[] filterFlags, Object helpContextIds)
+        private PropertyDescriptor(
+            Object id,
+            String displayName,
+            String description,
+            String category,
+            Class<Object> dataType,
+            boolean required,
+            Object[] possibleValues,
+            String[] filterFlags,
+            Object helpContextIds)
         {
             this.category = category;
             this.description = description;
             this.displayName = displayName;
+            this.dataType = dataType;
+            this.required = required;
+            this.possibleValues = possibleValues;
             this.filterFlags = filterFlags;
             this.helpContextIds = helpContextIds;
             this.id = id;
@@ -118,7 +134,7 @@ public class PropertySourceSimple implements IPropertySourceEx {
 
         public CellEditor createPropertyEditor(Composite parent)
         {
-            return null;
+            return ObjectPropertyDescriptor.createCellEditor(parent, getEditableValue(), this);
         }
 
         public String getCategory()
@@ -160,6 +176,22 @@ public class PropertySourceSimple implements IPropertySourceEx {
         {
             return anotherProperty instanceof PropertyDescriptor && anotherProperty.getId().equals(id);
         }
+
+        public Class<?> getDataType()
+        {
+            return dataType;
+        }
+
+        public boolean isRequired()
+        {
+            return required;
+        }
+
+        public Object[] getPossibleValues(Object object)
+        {
+            return possibleValues;
+        }
+
     }
     
 }

@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
-import org.jkiss.dbeaver.model.meta.IPropertyValueEditor;
+import org.jkiss.dbeaver.model.meta.IPropertyValueEditorProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,12 +29,12 @@ import java.util.Collection;
 /**
  * ObjectPropertyDescriptor
 */
-public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements IPropertyDescriptor
+public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements IPropertyDescriptorEx, IPropertyValueListProvider
 {
     private Property propInfo;
     private Method setter;
     private ILabelProvider labelProvider;
-    private IPropertyValueEditor valueEditor;
+    private IPropertyValueEditorProvider valueEditor;
 
     public ObjectPropertyDescriptor(
         IPropertySource source,
@@ -62,16 +62,13 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         }
 
         // Obtain value editor
-        Class<? extends IPropertyValueEditor> valueEditorClass = propInfo.valueEditor();
-        if (valueEditorClass != null && valueEditorClass != IPropertyValueEditor.class) {
+        Class<? extends IPropertyValueEditorProvider> valueEditorClass = propInfo.valueEditor();
+        if (valueEditorClass != null && valueEditorClass != IPropertyValueEditorProvider.class) {
             try {
                 valueEditor = valueEditorClass.newInstance();
             } catch (Throwable e) {
                 log.warn(e);
             }
-        }
-        if (valueEditor == null) {
-            valueEditor = new DefaultValueEditor();
         }
         //valueEditor.initEditor();
     }
@@ -92,7 +89,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (!isEditable(object)) {
             return null;
         }
-        return valueEditor.createCellEditor(parent, object, propInfo);
+        if (valueEditor != null) {
+            return valueEditor.createCellEditor(parent, object, propInfo);
+        } else {
+            return createCellEditor(parent, object, this);
+        }
     }
 
     public boolean isEditable(Object object)
@@ -193,6 +194,56 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return getId() + " (" + propInfo.name() + ")";
     }
 
+    public Class<?> getDataType()
+    {
+        return getGetter().getReturnType();
+    }
+
+    public boolean isRequired()
+    {
+        return false;
+    }
+
+    public Object[] getPossibleValues(Object object)
+    {
+        if (propInfo.listProvider() != IPropertyValueListProvider.class) {
+            // List
+            try {
+                return propInfo.listProvider().newInstance().getPossibleValues(object);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        return null;
+    }
+
+    public static CellEditor createCellEditor(Composite parent, Object object, IPropertyDescriptorEx property)
+    {
+        // List
+        if (property instanceof IPropertyValueListProvider) {
+            final Object[] items = ((IPropertyValueListProvider)property).getPossibleValues(object);
+            if (!CommonUtils.isEmpty(items)) {
+                final String[] strings = new String[items.length];
+                for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
+                    strings[i] = CommonUtils.toString(items[i]);
+                }
+                final CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(parent, strings);
+                editor.setStyle(SWT.DROP_DOWN);
+                return editor;
+            }
+        }
+        Class<?> propertyType = property.getDataType();
+        if (propertyType == null || CharSequence.class.isAssignableFrom(propertyType)) {
+            return new TextCellEditor(parent);
+        } else if (BeanUtils.isNumericType(propertyType)) {
+            return new CustomNumberCellEditor(parent, propertyType);
+        } else if (BeanUtils.isBooleanType(propertyType)) {
+            return new CheckboxCellEditor(parent);
+        } else {
+            return null;
+        }
+    }
+
     private class DefaultLabelProvider extends LabelProvider implements IFontProvider {
 
         public Image getImage(Object element)
@@ -222,35 +273,4 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         }
     }
 
-    private class DefaultValueEditor implements IPropertyValueEditor {
-
-        public CellEditor createCellEditor(Composite parent, Object object, Property property)
-        {
-            if (property.listProvider() != IPropertyValueListProvider.class) {
-                // List
-                try {
-                    IPropertyValueListProvider provider = property.listProvider().newInstance();
-                    final String[] items = provider.getPossibleValues(object);
-                    final CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(parent, items);
-                    editor.setStyle(SWT.DROP_DOWN);
-                    return editor;
-                } catch (Exception e) {
-                    log.error(e);
-                    return null;
-                }
-            } else {
-                Class<?> propertyType = getGetter().getReturnType();
-                if (CharSequence.class.isAssignableFrom(propertyType)) {
-                    return new TextCellEditor(parent);
-                } else if (BeanUtils.isNumericType(propertyType)) {
-                    return new CustomNumberCellEditor(parent, propertyType);
-                } else if (BeanUtils.isBooleanType(propertyType)) {
-                    return new CheckboxCellEditor(parent);
-                } else {
-                    return null;
-                }
-            }
-        }
-
-    }
 }
