@@ -44,7 +44,9 @@ public class PropertySourceCustom implements IPropertySourceEx {
     }
 
     public Map<Object, Object> getProperties() {
-        return propValues;
+        Map<Object, Object> allValues = new HashMap<Object, Object>(originalValues);
+        allValues.putAll(propValues);
+        return allValues;
     }
 
     public Map<Object, Object> getPropertiesWithDefaults() {

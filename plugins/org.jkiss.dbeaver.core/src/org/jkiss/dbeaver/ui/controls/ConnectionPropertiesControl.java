@@ -7,11 +7,14 @@ package org.jkiss.dbeaver.ui.controls;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
@@ -64,68 +67,40 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
             properties);
     }
 
-    protected boolean isCustomProperty(IPropertyDescriptor property)
+    protected String[] getCustomCategories()
     {
-        return USER_PROPERTIES_CATEGORY.equals(property.getCategory());
+        return new String[] { USER_PROPERTIES_CATEGORY };
     }
 
-/*
-    protected void contributeContextMenu(IMenuManager manager, final Object selectedObject)
+    protected void contributeContextMenu(IMenuManager manager, final Object node, final String category, final IPropertyDescriptor property)
     {
-        boolean isCustom = false;
-        if (selectedObject instanceof CustomPropertyGroup) {
-            isCustom = true;
-        } else if (selectedObject instanceof DBPProperty && ((DBPProperty)selectedObject).getGroup() instanceof CustomPropertyGroup) {
-            isCustom = true;
-        }
+        boolean isCustom = USER_PROPERTIES_CATEGORY.equals(category);
         if (isCustom) {
             manager.add(new Action("Add new property") {
                 @Override
                 public void run() {
-                    addNewProperty(selectedObject);
+                    createNewProperty(node, category);
                 }
             });
-            if (selectedObject instanceof DBPProperty) {
+            if (property != null) {
                 manager.add(new Action("Remove property") {
                     @Override
                     public void run() {
-                        removeProperty((DBPProperty)selectedObject);
+                        removeProperty(node);
                     }
                 });
             }
         }
     }
 
-    private void addNewProperty(Object parent) {
-        CustomPropertyGroup customGroup = null;
-        if (parent instanceof DBPProperty && ((DBPProperty)parent).getGroup() instanceof CustomPropertyGroup) {
-            customGroup = (CustomPropertyGroup)((DBPProperty)parent).getGroup();
-        } else if (parent instanceof CustomPropertyGroup) {
-            customGroup = (CustomPropertyGroup)parent;
-        }
-        if (customGroup != null) {
-            // Ask user for new property name
-            String propName = EnterNameDialog.chooseName(getShell(), "Property Name");
-            if (propName != null) {
-                // Check property name (must be unique
-                PropertyDescriptor newProp = customGroup.addProperty(propName);
-                handlePropertyCreate(newProp, "");
-            }
+    private void createNewProperty(Object node, String category) {
+        // Ask user for new property name
+        String propName = EnterNameDialog.chooseName(getShell(), "Property Name");
+        if (propName != null) {
+            // Check property name (must be unique
+            addProperty(node, new PropertyDescriptor(category, propName, propName, null, null, false, null, null));
         }
     }
-
-    private void removeProperty(DBPProperty prop) {
-        CustomPropertyGroup customGroup = null;
-        if (prop.getGroup() instanceof CustomPropertyGroup) {
-            customGroup = (CustomPropertyGroup)prop.getGroup();
-        }
-        if (customGroup != null) {
-            customGroup.removeProperty(prop);
-            handlePropertyRemove(prop);
-        }
-
-    }
-*/
 
     private List<IPropertyDescriptor> getAllProperties(DBPDriver driver, boolean includeCustom) {
         List<IPropertyDescriptor> propertyDescriptors = new ArrayList<IPropertyDescriptor>();

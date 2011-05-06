@@ -12,10 +12,11 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * Image-related utils
- * <p/>
- * Originally get from org.eclipse.gmf.runtime.diagram.ui.render.util.CopyToImageUtil
  *
- * @author Anthony Hunter, cmahoney
+ * <p/>
+ * Web image transformation originally get from org.eclipse.gmf.runtime.diagram.ui.render.util.CopyToImageUtil
+ *
+ * Web image transformation by Anthony Hunter, cmahoney
  */
 public class ImageUtils {
 

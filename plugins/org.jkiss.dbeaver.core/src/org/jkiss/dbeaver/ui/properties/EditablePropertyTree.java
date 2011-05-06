@@ -42,6 +42,8 @@ public class EditablePropertyTree extends Composite {
     private int selectedColumn = -1;
     private CellEditor curCellEditor;
 
+    private String[] customCategories;
+
     public EditablePropertyTree(Composite parent, int style)
     {
         super(parent, style);
@@ -65,6 +67,8 @@ public class EditablePropertyTree extends Composite {
     protected void loadProperties(TreeNode parent, IPropertySource propertySource)
     {
         // Make tree model
+        customCategories = getCustomCategories();
+
         Map<String, TreeNode> categories = new LinkedHashMap<String, TreeNode>();
         final IPropertyDescriptor[] props = propertySource.getPropertyDescriptors();
         for (IPropertyDescriptor prop : props) {
@@ -78,6 +82,15 @@ public class EditablePropertyTree extends Composite {
                 categories.put(categoryName, category);
             }
             new TreeNode(category, propertySource, prop);
+        }
+        if (customCategories != null) {
+            for (String customCategory : customCategories) {
+                TreeNode node = categories.get(customCategory);
+                if (node == null) {
+                    node = new TreeNode(parent, propertySource, customCategory);
+                    categories.put(customCategory, node);
+                }
+            }
         }
         Object root;
         if (categories.size() == 1 && expandSingleRoot) {
@@ -93,6 +106,32 @@ public class EditablePropertyTree extends Composite {
             UIUtils.packColumns(propsTree.getTree(), true);
         }
         disposeOldEditor();
+    }
+
+    protected void addProperty(Object node, IPropertyDescriptor property)
+    {
+        if (node instanceof TreeNode) {
+            TreeNode treeNode = (TreeNode)node;
+            while (treeNode.property != null) {
+                treeNode = treeNode.parent;
+            }
+            final TreeNode newNode = new TreeNode(treeNode, treeNode.propertySource, property);
+            handlePropertyCreate(newNode);
+        }
+    }
+
+    protected void removeProperty(Object node)
+    {
+        if (node instanceof TreeNode) {
+            TreeNode treeNode = (TreeNode)node;
+            if (treeNode.propertySource instanceof IPropertySourceEx) {
+                ((IPropertySourceEx) treeNode.propertySource).resetPropertyValueToDefault(treeNode.property.getId());
+            } else {
+                treeNode.propertySource.resetPropertyValue(treeNode.property.getId());
+            }
+            treeNode.parent.children.remove(treeNode);
+            handlePropertyRemove(treeNode);
+        }
     }
 
     public void refresh()
@@ -281,70 +320,6 @@ public class EditablePropertyTree extends Composite {
                 cellEditor.setValue(propertyValue);
             }
             curCellEditor = cellEditor;
-/*
-            Object[] validValues = prop.getPossibleValues();
-            Control newEditor;
-            if (validValues == null) {
-                switch (prop.getType()) {
-                    case BOOLEAN:
-                    {
-                        final CCombo combo = new CCombo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
-                        combo.add("true");
-                        combo.add("false");
-                        combo.select(Boolean.valueOf(item.getText(1)) ? 0 : 1);
-                        combo.addModifyListener(new ModifyListener() {
-                            public void modifyText(ModifyEvent e)
-                            {
-                                handlePropertyChange(prop, combo.getText());
-                                item.setText(1, combo.getText());
-                            }
-                        });
-                        newEditor = combo;
-                        break;
-                    }
-                    default:
-                    {
-                        final Text text = new Text(treeControl, SWT.BORDER);
-                        if (prop.getType() == DBPProperty.PropertyType.INTEGER) {
-                            text.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
-                        } else if (prop.getType() == DBPProperty.PropertyType.NUMERIC) {
-                            text.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
-                        }
-                        text.setText(item.getText(1));
-                        text.addModifyListener(new ModifyListener() {
-                            public void modifyText(ModifyEvent e) {
-                                handlePropertyChange(prop, text.getText());
-                                item.setText(1, text.getText());
-                            }
-                        });
-                        text.selectAll();
-                        newEditor = text;
-                        break;
-                    }
-                }
-            } else {
-                final CCombo combo = new CCombo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
-                int selIndex = -1;
-                for (int i = 0; i < validValues.length; i++) {
-                    String value =  String.valueOf(validValues[i]);
-                    combo.add(value);
-                    if (value.equals(item.getText(1))) {
-                        selIndex = i;
-                    }
-                }
-                if (selIndex >= 0) {
-                    combo.select(selIndex);
-                }
-                combo.addModifyListener(new ModifyListener() {
-                    public void modifyText(ModifyEvent e)
-                    {
-                        handlePropertyChange(prop, combo.getText());
-                        item.setText(1, combo.getText());
-                    }
-                });
-                newEditor = combo;
-            }
-*/
 
             cellEditor.activate();
             final Control editorControl = cellEditor.getControl();
@@ -409,8 +384,8 @@ public class EditablePropertyTree extends Composite {
                             }
                             manager.add(new Separator());
                         }
+                        contributeContextMenu(manager, object, prop.category != null ? prop.category : prop.property.getCategory(), prop.property);
                     }
-                    contributeContextMenu(manager, object);
                 }
             });
 
@@ -421,12 +396,24 @@ public class EditablePropertyTree extends Composite {
         }
     }
 
-    protected boolean isCustomProperty(IPropertyDescriptor property)
+    private boolean isCustomProperty(IPropertyDescriptor property)
     {
+        if (customCategories != null) {
+            for (String category : customCategories) {
+                if (category.equals(property.getCategory())) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
-    protected void contributeContextMenu(IMenuManager manager, Object selectedObject)
+    protected String[] getCustomCategories()
+    {
+        return null;
+    }
+
+    protected void contributeContextMenu(IMenuManager manager, Object node, String category, IPropertyDescriptor property)
     {
 
     }
@@ -459,6 +446,8 @@ public class EditablePropertyTree extends Composite {
         handlePropertyChange(prop);
         propsTree.refresh(prop.parent);
         propsTree.expandToLevel(prop.parent, 1);
+        propsTree.reveal(prop);
+        propsTree.setSelection(new StructuredSelection(prop));
     }
 
     protected void handlePropertyRemove(TreeNode prop) {
