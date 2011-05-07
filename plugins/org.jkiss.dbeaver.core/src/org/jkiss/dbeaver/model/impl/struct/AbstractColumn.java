@@ -15,7 +15,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
     protected String name;
     protected int valueType;
     protected long maxLength;
-    protected boolean nullable;
+    protected boolean notNull;
     protected int scale;
     protected int precision;
     protected int radix;
@@ -36,7 +36,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         int scale,
         int radix,
         int precision,
-        boolean nullable,
+        boolean notNull,
         String description)
     {
         this.name = name;
@@ -45,7 +45,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.scale = scale;
         this.radix = radix;
         this.precision = precision;
-        this.nullable = nullable;
+        this.notNull = notNull;
         this.description = description;
         this.typeName = typeName;
         this.ordinalPosition = ordinalPosition;
@@ -105,15 +105,15 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.maxLength = maxLength;
     }
 
-    @Property(name = "Nullable", viewable = true, order = 50)
-    public boolean isNullable()
+    @Property(name = "Not Null", viewable = true, order = 50)
+    public boolean isNotNull()
     {
-        return nullable;
+        return notNull;
     }
 
-    public void setNullable(boolean nullable)
+    public void setNotNull(boolean notNull)
     {
-        this.nullable = nullable;
+        this.notNull = notNull;
     }
 
     @Property(name = "Scale", viewable = false, order = 60)

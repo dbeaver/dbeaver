@@ -40,7 +40,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         int scale,
         int precision,
         int radix,
-        boolean nullable,
+        boolean notNull,
         String remarks,
         String defaultValue,
         boolean autoIncrement)
@@ -55,7 +55,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
             scale,
             radix,
             precision,
-            nullable,
+            notNull,
             remarks);
         this.sourceType = sourceType;
         this.defaultValue = defaultValue;

@@ -28,7 +28,7 @@ public class GenericProcedureColumn extends JDBCColumn implements DBSProcedureCo
         int scale,
         int precision,
         int radix,
-        boolean nullable,
+        boolean notNull,
         String remarks,
         DBSProcedureColumnType columnType)
     {
@@ -40,7 +40,7 @@ public class GenericProcedureColumn extends JDBCColumn implements DBSProcedureCo
             scale,
             radix,
             precision,
-            nullable,
+            notNull,
             remarks);
         this.procedure = procedure;
         this.columnType = columnType;

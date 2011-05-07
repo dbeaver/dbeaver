@@ -426,7 +426,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             int sourceType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SOURCE_DATA_TYPE);
             String typeName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TYPE_NAME);
             long columnSize = JDBCUtils.safeGetLong(dbResult, JDBCConstants.COLUMN_SIZE);
-            boolean isNullable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) != DatabaseMetaData.columnNoNulls;
+            boolean isNotNull = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.columnNoNulls;
             int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS);
             int precision = 0;//GenericUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_);
             int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NUM_PREC_RADIX);
@@ -450,7 +450,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 columnName,
                 typeName, valueType, sourceType, ordinalPos,
                 columnSize,
-                charLength, scale, precision, radix, isNullable,
+                charLength, scale, precision, radix, isNotNull,
                 remarks, defaultValue, autoIncrement
             );
         }

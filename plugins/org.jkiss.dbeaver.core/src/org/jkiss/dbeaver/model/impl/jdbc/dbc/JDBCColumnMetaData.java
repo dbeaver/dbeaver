@@ -36,7 +36,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
 
     private JDBCResultSetMetaData resultSetMeta;
     private int index;
-    private boolean nullable;
+    private boolean notNull;
     private long displaySize;
     private String label;
     private String name;
@@ -105,7 +105,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
                 log.warn(e);
             }
             if (this.tableColumn != null) {
-                this.nullable = this.tableColumn.isNullable();
+                this.notNull = this.tableColumn.isNotNull();
                 this.displaySize = this.tableColumn.getMaxLength();
                 DBSObject tableParent = ownerTable.getParentObject();
                 DBSObject tableGrandParent = tableParent == null ? null : tableParent.getParentObject();
@@ -134,7 +134,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         }
 
         if (!hasData) {
-            this.nullable = metaData.isNullable(index) > 0;
+            this.notNull = metaData.isNullable(index) == ResultSetMetaData.columnNoNulls;
             try {
                 this.displaySize = metaData.getColumnDisplaySize(index);
             } catch (SQLException e) {
@@ -184,9 +184,9 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return index;
     }
 
-    public boolean isNullable()
+    public boolean isNotNull()
     {
-        return nullable;
+        return notNull;
     }
 
     public long getDisplaySize()
@@ -352,7 +352,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         JDBCColumnMetaData col = (JDBCColumnMetaData)obj;
         return
             index == col.index &&
-            nullable == col.nullable &&
+            notNull == col.notNull &&
             displaySize == col.displaySize &&
             CommonUtils.equalObjects(label, col.label) &&
             CommonUtils.equalObjects(name, col.name) &&

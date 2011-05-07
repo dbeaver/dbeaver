@@ -114,7 +114,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
                     String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
                     int columnSize = JDBCUtils.safeGetInt(dbResult, JDBCConstants.LENGTH);
-                    boolean isNullable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) != DatabaseMetaData.procedureNoNulls;
+                    boolean notNull = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.procedureNoNulls;
                     int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE);
                     int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
                     int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
@@ -152,7 +152,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                         valueType,
                         position,
                         columnSize,
-                        scale, precision, radix, isNullable,
+                        scale, precision, radix, notNull,
                         remarks,
                         columnType);
 

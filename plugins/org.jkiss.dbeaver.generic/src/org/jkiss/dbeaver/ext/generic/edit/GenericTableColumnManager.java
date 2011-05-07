@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -112,14 +111,14 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
             }
         }
 
-        final Boolean nullable = (Boolean) command.getProperty(DBConstants.PROP_ID_NULLABLE);
+        final Boolean notNull = (Boolean) command.getProperty(DBConstants.PROP_ID_NOT_NULL);
         final Long maxLength = (Long) command.getProperty(DBConstants.PROP_ID_MAX_LENGTH);
         StringBuilder decl = new StringBuilder(40);
         decl.append(columnName).append(' ').append(typeName);
         if (useMaxLength && maxLength != null) {
             decl.append('(').append(maxLength).append(')');
         }
-        if (nullable == null || !nullable) {
+        if (notNull != null && notNull) {
             decl.append(" NOT NULL");
         }
         return decl.toString();

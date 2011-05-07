@@ -61,11 +61,11 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         return super.getMaxLength();
     }
 
-    @Property(name = "Nullable", viewable = true, editable = true, order = 50)
+    @Property(name = "Not Null", viewable = true, editable = true, order = 50)
     @Override
-    public boolean isNullable()
+    public boolean isNotNull()
     {
-        return super.isNullable();
+        return super.isNotNull();
     }
 
     public boolean isPersisted()

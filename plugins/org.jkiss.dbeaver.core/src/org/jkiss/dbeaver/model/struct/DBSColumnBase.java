@@ -11,6 +11,6 @@ public interface DBSColumnBase extends DBSTypedObject
 {
     String getName();
 
-    boolean isNullable();
+    boolean isNotNull();
 
 }

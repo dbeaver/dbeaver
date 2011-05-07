@@ -120,7 +120,7 @@ public class SQLAssistProposal {
             {
                 setImage(SQLEditorResources.getImage("column_fkey")); //$NON-NLS-1$
             }
-            else if (((Column) dbObject).isNullable())
+            else if (((Column) dbObject).isNotNull())
             {
                 setImage(SQLEditorResources.getImage("column_null")); //$NON-NLS-1$
             }
