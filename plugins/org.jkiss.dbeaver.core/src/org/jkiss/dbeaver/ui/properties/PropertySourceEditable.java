@@ -111,6 +111,16 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         handlePropertyChange(editableValue, prop, value);
     }
 
+    @Override
+    public void resetPropertyValue(Object object, ObjectPropertyDescriptor prop)
+    {
+        final ObjectProps objectProps = getObjectProps(object);
+        DBECommandProperty curCommand = objectProps.propValues.get(prop);
+        if (curCommand != null) {
+            curCommand.resetValue();
+        }
+    }
+
     protected void handlePropertyChange(Object editableValue, ObjectPropertyDescriptor prop, Object value)
     {
     }

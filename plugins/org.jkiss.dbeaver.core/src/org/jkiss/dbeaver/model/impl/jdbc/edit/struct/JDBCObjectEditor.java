@@ -141,12 +141,12 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
 
         public void redoCommand(DBECommand<OBJECT_TYPE> object)
         {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public void undoCommand(DBECommand<OBJECT_TYPE> object)
         {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
     }
 

@@ -32,7 +32,7 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
     public DBECommandProperty(OBJECT_TYPE object, DBEPropertyHandler<OBJECT_TYPE> handler, Object newValue)
     {
         this(object, handler);
-        this.newValue = newValue;
+        this.oldValue = this.newValue = newValue;
     }
 
     public DBEPropertyHandler<OBJECT_TYPE> getHandler()
@@ -65,6 +65,11 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         if (handler instanceof DBEPropertyReflector) {
             ((DBEPropertyReflector<OBJECT_TYPE>)handler).reflectValueChange(getObject(), prevValue, this.newValue);
         }
+    }
+
+    public void resetValue()
+    {
+        this.newValue = this.oldValue;
     }
 
     @Override
@@ -105,4 +110,5 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         }
         return null;
     }
+
 }

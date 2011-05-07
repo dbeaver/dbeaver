@@ -70,7 +70,12 @@ public class CustomCheckboxCellEditor extends CellEditor {
     protected void doSetFocus() {
         checkbox.setFocus();
         checkbox.setSelection(!checkbox.getSelection());
-        applyEditorValue();
+        checkbox.getDisplay().asyncExec(new Runnable() {
+            public void run()
+            {
+                applyEditorValue();
+            }
+        });
     }
 
     protected void doSetValue(Object value) {
@@ -82,7 +87,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         LayoutData layoutData = super.getLayoutData();
         layoutData.grabHorizontal = true;
         layoutData.horizontalAlignment = SWT.CENTER;
-        layoutData.minimumWidth = 100;
+        //layoutData.minimumWidth = 100;
         return layoutData;
     }
 

@@ -40,8 +40,10 @@ public class PropertyTreeViewer extends TreeViewer {
     private Clipboard clipboard;
     private int selectedColumn = -1;
     private CellEditor curCellEditor;
+    private IPropertyDescriptor curEditorProperty;
 
     private String[] customCategories;
+    private IBaseLabelProvider extraLabelProvider;
 
     public PropertyTreeViewer(Composite parent, int style)
     {
@@ -205,6 +207,7 @@ public class PropertyTreeViewer extends TreeViewer {
             curCellEditor.deactivate();
             curCellEditor.dispose();
             curCellEditor = null;
+            curEditorProperty = null;
         }
         Control oldEditor = treeEditor.getEditor();
         if (oldEditor != null) oldEditor.dispose();
@@ -311,6 +314,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 cellEditor.setValue(propertyValue);
             }
             curCellEditor = cellEditor;
+            curEditorProperty = prop.property;
 
             cellEditor.activate();
             final Control editorControl = cellEditor.getControl();
@@ -454,6 +458,11 @@ public class PropertyTreeViewer extends TreeViewer {
         this.expandSingleRoot = expandSingleRoot;
     }
 
+    public void setExtraLabelProvider(IBaseLabelProvider extraLabelProvider)
+    {
+        this.extraLabelProvider = extraLabelProvider;
+    }
+
     private static class TreeNode {
         final TreeNode parent;
         final IPropertySource propertySource;
@@ -584,16 +593,23 @@ public class PropertyTreeViewer extends TreeViewer {
         {
             Object element = cell.getElement();
             cell.setText(getText(element, cell.getColumnIndex()));
+            if (!(element instanceof TreeNode)) {
+                return;
+            }
+            TreeNode node = (TreeNode) element;
             boolean changed = false;
-            if (element instanceof TreeNode && ((TreeNode) element).property != null) {
-                changed = ((TreeNode)element).isEditable() && isPropertyChanged((TreeNode)element);
+            if (node.property != null) {
+                changed = node.isEditable() && isPropertyChanged(node);
 /*
                 if (((DBPProperty)element).isRequired() && cell.getColumnIndex() == 0) {
                     cell.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_WARN_TSK));
                 }
 */
             }
-            if (changed) {
+            if (extraLabelProvider instanceof IFontProvider) {
+                cell.setFont(((IFontProvider) extraLabelProvider).getFont(node.property));
+
+            } else if (changed) {
                 cell.setFont(boldFont);
             } else {
                 cell.setFont(null);
@@ -674,7 +690,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 case SWT.PaintItem: {
                     if (event.index == 1) {
                         final TreeNode node = (TreeNode)event.item.getData();
-                        if (node != null && node.property != null) {
+                        if (node != null && node.property != null && node.property != curEditorProperty) {
                             final Object propertyValue = node.propertySource.getPropertyValue(node.property.getId());
                             if (propertyValue instanceof Boolean) {
                                 GC gc = event.gc;

@@ -28,6 +28,7 @@ import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
 import org.eclipse.ui.views.properties.tabbed.TabContents;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.properties.ProxyPageSite;
@@ -184,7 +186,17 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         PropertySourceEditable propertySource = new PropertySourceEditable(
             getEditorInput().getCommandContext(),
             getEditorInput().getTreeNode(),
-            getEditorInput().getDatabaseObject());
+            getEditorInput().getDatabaseObject())
+        {
+            @Override
+            protected void handlePropertyChange(Object editableValue, ObjectPropertyDescriptor prop, Object value)
+            {
+                if (DBConstants.PROP_ID_NAME.equals(prop.getId()) && getEditorInput().getDatabaseObject() == editableValue) {
+                    // Update object in navigator
+                    getEditorInput().getTreeNode().setNodeName(CommonUtils.toString(value));
+                }
+            }
+        };
         propertySource.collectProperties();
         properties.selectionChanged(this, new StructuredSelection(propertySource));
     }

@@ -5,14 +5,15 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * StandardPropertiesSection
@@ -21,12 +22,15 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 
 	protected PropertyTreeViewer propertyTree;
     private IPropertySource curPropertySource;
+    private Font boldFont;
 
     public void createControls(Composite parent, final TabbedPropertySheetPage tabbedPropertySheetPage)
     {
 		super.createControls(parent, tabbedPropertySheetPage);
+        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
 
 		propertyTree = new PropertyTreeViewer(parent, SWT.NONE);
+        propertyTree.setExtraLabelProvider(new PropertyLabelProvider());
         PropertiesContributor.getInstance().addLazyListener(this);
 
 	}
@@ -36,7 +40,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 		    super.setInput(part, newSelection);
             if (!newSelection.isEmpty() && newSelection instanceof IStructuredSelection) {
                 Object element = ((IStructuredSelection) newSelection).getFirstElement();
-                if (element instanceof IPropertySource) {
+                if (element instanceof IPropertySource && element != curPropertySource) {
                     curPropertySource = (IPropertySource)element;
                     propertyTree.loadProperties((IPropertySource)element);
                 }
@@ -46,6 +50,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 	}
 
 	public void dispose() {
+        UIUtils.dispose(boldFont);
         PropertiesContributor.getInstance().removeLazyListener(this);
 		super.dispose();
 	}
@@ -77,6 +82,16 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
     {
         if (curPropertySource.getEditableValue() == object && !propertyTree.getControl().isDisposed()) {
             propertyTree.refresh();
+        }
+    }
+
+    private class PropertyLabelProvider extends ColumnLabelProvider implements IFontProvider {
+        public Font getFont(Object element)
+        {
+            if (element instanceof IPropertyDescriptorEx && curPropertySource != null && ((IPropertyDescriptorEx) element).isEditable(curPropertySource.getEditableValue())) {
+                return boldFont;
+            }
+            return null;
         }
     }
 
