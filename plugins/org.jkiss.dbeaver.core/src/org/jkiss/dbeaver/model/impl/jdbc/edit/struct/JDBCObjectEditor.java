@@ -5,16 +5,14 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
-import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
-import org.jkiss.dbeaver.model.edit.prop.DBEPropertyReflector;
+import org.jkiss.dbeaver.model.edit.prop.*;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
@@ -59,9 +57,23 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         context.addCommandBatch(commands, new NewObjectReflector());
     }
 
+    protected void validateObjectProperty(OBJECT_TYPE object, IPropertyDescriptor property, Object value) throws DBException
+    {
+
+    }
+
+    protected void validateObjectProperties(ObjectChangeCommand<OBJECT_TYPE> command)
+        throws DBException
+    {
+
+    }
+
     protected abstract IDatabasePersistAction[] makePersistActions(ObjectChangeCommand<OBJECT_TYPE> command);
 
-    protected static class PropertyHandler<OBJECT_TYPE extends DBSObject> extends ProxyPropertyDescriptor implements DBEPropertyHandler<OBJECT_TYPE>, DBEPropertyReflector<OBJECT_TYPE> {
+    protected static class PropertyHandler<OBJECT_TYPE extends DBSObject>
+        extends ProxyPropertyDescriptor
+        implements DBEPropertyHandler<OBJECT_TYPE>, DBEPropertyReflector<OBJECT_TYPE>, DBEPropertyValidator<OBJECT_TYPE>
+    {
         private final JDBCObjectEditor<OBJECT_TYPE> editor;
         private PropertyHandler(JDBCObjectEditor<OBJECT_TYPE> editor, IPropertyDescriptor property)
         {
@@ -98,9 +110,17 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
                 editor == ((PropertyHandler)obj).editor &&
                 getId().equals(((PropertyHandler) obj).getId());
         }
+
+        public void validate(OBJECT_TYPE object, Object value) throws DBException
+        {
+            editor.validateObjectProperty(object, original, value);
+        }
+
     }
 
-    protected static class ObjectChangeCommand<OBJECT_TYPE extends DBSObject> extends DBECommandComposite<OBJECT_TYPE, PropertyHandler<OBJECT_TYPE>> {
+    protected static class ObjectChangeCommand<OBJECT_TYPE extends DBSObject>
+        extends DBECommandComposite<OBJECT_TYPE, PropertyHandler<OBJECT_TYPE>>
+    {
         private final JDBCObjectEditor<OBJECT_TYPE> editor;
         private ObjectChangeCommand(JDBCObjectEditor<OBJECT_TYPE> editor, OBJECT_TYPE object)
         {
@@ -121,6 +141,12 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         public IDatabasePersistAction[] getPersistActions()
         {
             return editor.makePersistActions(this);
+        }
+
+        @Override
+        public void validateCommand() throws DBException
+        {
+            editor.validateObjectProperties(this);
         }
     }
 

@@ -134,7 +134,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
             Collection<?> collection = (Collection<?>)value;
             collection.size();
         }
-        return UIUtils.makeStringForUI(value);
+        return value;
     }
 
 

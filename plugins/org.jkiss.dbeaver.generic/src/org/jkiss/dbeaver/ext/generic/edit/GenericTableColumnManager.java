@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -32,7 +34,6 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
     {
         final GenericTable table = command.getObject().getTable();
         final GenericTableColumn column = command.getObject();
-        final Object columnName = CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME));
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
         boolean newObject = !column.isPersisted();
         if (newObject) {
@@ -46,7 +47,7 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
     @Override
     protected GenericTableColumn createNewTableColumn(GenericTable parent, Object copyFrom)
     {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar", "char", "integer", "number");
+        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar", "varchar2", "char", "integer", "number");
 
         final GenericTableColumn column = new GenericTableColumn(parent);
         column.setName("NewColumn");
@@ -55,6 +56,27 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeNumber());
         column.setOrdinalPosition(-1);
         return column;
+    }
+
+    protected void validateObjectProperties(ObjectChangeCommand<GenericTableColumn> command)
+        throws DBException
+    {
+        if (CommonUtils.isEmpty((String)command.getProperty(DBConstants.PROP_ID_NAME))) {
+            throw new DBException("Column name cannot be empty");
+        }
+        if (CommonUtils.isEmpty((String)command.getProperty(DBConstants.PROP_ID_TYPE_NAME))) {
+            throw new DBException("Column type name cannot be empty");
+        }
+    }
+
+    private static DBSDataType findDataType(GenericDataSource dataSource, String typeName)
+    {
+        for (DBSDataType type : dataSource.getInfo().getSupportedDataTypes()) {
+            if (type.getName().equalsIgnoreCase(typeName)) {
+                return type;
+            }
+        }
+        return null;
     }
 
     private static DBSDataType findBestDataType(GenericDataSource dataSource, String ... typeNames)
@@ -79,7 +101,27 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
             CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME)),
             column.getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.META_CASE_SENSITIVE));
 
-        final Object typeName = CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_TYPE_NAME));
-        return columnName + " " + typeName;
+        final String typeName = (String)command.getProperty(DBConstants.PROP_ID_TYPE_NAME);
+        boolean useMaxLength = false;
+        final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
+        if (dataType == null) {
+            log.debug("Type name '" + typeName + "' is not supported by driver");
+        } else if (dataType.getDataKind() == DBSDataKind.STRING) {
+            if (typeName.indexOf('(') == -1) {
+                useMaxLength = true;
+            }
+        }
+
+        final Boolean nullable = (Boolean) command.getProperty(DBConstants.PROP_ID_NULLABLE);
+        final Long maxLength = (Long) command.getProperty(DBConstants.PROP_ID_MAX_LENGTH);
+        StringBuilder decl = new StringBuilder(40);
+        decl.append(columnName).append(' ').append(typeName);
+        if (useMaxLength && maxLength != null) {
+            decl.append('(').append(maxLength).append(')');
+        }
+        if (nullable == null || !nullable) {
+            decl.append(" NOT NULL");
+        }
+        return decl.toString();
     }
 }

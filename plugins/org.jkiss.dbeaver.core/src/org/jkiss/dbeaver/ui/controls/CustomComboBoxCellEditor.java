@@ -110,6 +110,10 @@ public class CustomComboBoxCellEditor extends CellEditor {
 	 */
 	protected void doSetFocus() {
 		comboBox.setFocus();
+        fireEnablementChanged(DELETE);
+        fireEnablementChanged(COPY);
+        fireEnablementChanged(CUT);
+        fireEnablementChanged(PASTE);
 	}
 
 	public LayoutData getLayoutData() {
@@ -181,22 +185,44 @@ public class CustomComboBoxCellEditor extends CellEditor {
 	protected void keyReleaseOccured(KeyEvent keyEvent) {
 		if (keyEvent.character == '\u001b') { // Escape character
 			fireCancelEditor();
-		} else if (keyEvent.character == '\t') { // tab key
+		} else if (keyEvent.character == SWT.TAB) { // tab key
 			applyEditorValueAndDeactivate();
+        } else if (keyEvent.character == SWT.DEL) { // tab key
+            comboBox.setText("");
+            keyEvent.doit = false;
 		}
 	}
 
-    public void activate(ColumnViewerEditorActivationEvent activationEvent) {
-        super.activate(activationEvent);
-//        if (activationEvent.eventType == ColumnViewerEditorActivationEvent.MOUSE_CLICK_SELECTION ||
-//            activationEvent.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION ||
-//            activationEvent.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED)
-//        {
-//            getControl().getDisplay().asyncExec(new Runnable() {
-//                public void run() {
-//                    ((CCombo) getControl()).setListVisible(true);
-//                }
-//            });
-//        }
+    public boolean isCopyEnabled() {
+        return comboBox != null && !comboBox.isDisposed();
     }
+
+    public boolean isCutEnabled() {
+        return comboBox != null && !comboBox.isDisposed();
+    }
+
+    public boolean isDeleteEnabled() {
+        return comboBox != null && !comboBox.isDisposed();
+    }
+
+    public boolean isPasteEnabled() {
+        return comboBox != null && !comboBox.isDisposed();
+    }
+
+    public void performCopy() {
+        comboBox.copy();
+    }
+
+    public void performCut() {
+        comboBox.cut();
+    }
+
+    public void performDelete() {
+        comboBox.setText("");
+    }
+
+    public void performPaste() {
+        comboBox.paste();
+    }
+
 }

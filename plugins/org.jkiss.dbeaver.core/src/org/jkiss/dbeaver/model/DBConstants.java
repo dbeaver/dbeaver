@@ -17,5 +17,7 @@ public class DBConstants {
     public static final String PROP_ID_NAME = "name"; //NON-NLS-1
     public static final String PROP_ID_DESCRIPTION = "description"; //NON-NLS-1
     public static final String PROP_ID_TYPE_NAME = "typeName"; //NON-NLS-1
+    public static final String PROP_ID_MAX_LENGTH = "maxLength"; //NON-NLS-1
+    public static final String PROP_ID_NULLABLE = "nullable"; //NON-NLS-1
 
 }
