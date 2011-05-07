@@ -17,4 +17,5 @@ public interface IPropertyDescriptorEx extends IPropertyDescriptor {
 
     Object getDefaultValue();
 
+    boolean isEditable(Object object);
 }

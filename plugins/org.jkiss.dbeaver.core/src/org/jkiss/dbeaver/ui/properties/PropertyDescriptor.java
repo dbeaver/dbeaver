@@ -151,6 +151,11 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
         return defaultValue;
     }
 
+    public boolean isEditable(Object object)
+    {
+        return true;
+    }
+
     public Class<?> getDataType()
     {
         return type;

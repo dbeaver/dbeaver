@@ -683,12 +683,18 @@ public class EditablePropertyTree extends Composite {
                     if (event.index == 1) {
                         final TreeNode node = (TreeNode)event.item.getData();
                         if (node != null && node.property != null) {
+                            boolean editable = true;
+                            if (node.property instanceof IPropertyDescriptorEx) {
+                                editable = ((IPropertyDescriptorEx) node.property).isEditable(node.propertySource.getEditableValue());
+                            }
                             final Object propertyValue = node.propertySource.getPropertyValue(node.property.getId());
                             if (propertyValue instanceof Boolean) {
                                 GC gc = event.gc;
                                 final Tree tree = propsTree.getTree();
                                 int columnWidth = tree.getColumn(1).getWidth();
-                                Image image = (Boolean)propertyValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff();
+                                Image image = editable ?
+                                    ((Boolean)propertyValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
+                                    ((Boolean)propertyValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
                                 gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
                                 event.doit = false;
                             }
