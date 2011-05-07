@@ -201,10 +201,13 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
+        monitor.subTask("Cache tables");
         tableCache.loadObjects(monitor);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
+            monitor.subTask("Cache table columns");
             tableCache.loadChildren(monitor, null);
         }
+        monitor.subTask("Cache table constraints");
         loadConstraints(monitor, null);
     }
 

@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
@@ -159,7 +158,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
                     final DBNDatabaseNode parentNode = getModel().getParentNode(event.getObject());
 
                     if (parentNode != null) {
-                        if (CommonUtils.isEmpty(parentNode.getChildNodes())) {
+                        if (parentNode.getChildNodes() == null) {
                             // We have to load children here
                             try {
                                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
@@ -178,7 +177,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
                                 // do nothing
                             }
                         }
-                        if (!CommonUtils.isEmpty(parentNode.getChildNodes())) {
+                        if (parentNode.getChildNodes() != null) {
                             parentNode.addChildItem(event.getObject());
                         }
                     }

@@ -72,28 +72,12 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             return new Status(Status.CANCEL, DBeaverConstants.PLUGIN_ID, "Loading interrupted");
         }
         finally {
-            final RESULT innerResult = result;
-            final Throwable innerError = error;
-            Display.getDefault().syncExec(new Runnable() {
-                public void run()
-                {
-                    visualizer.completeLoading(innerResult);
-
-                    if (innerError != null) {
-                        log.debug(innerError);
-                        UIUtils.showErrorDialog(
-                            visualizer.getShell(),
-                            getName(),
-                            innerError.getMessage());
-                    }
-                }
-            });
-//            final LoadingFinishJob<RESULT> finisher = new LoadingFinishJob<RESULT>(getName(), visualizer, result, error);
-//            if (lazy) {
-//                finisher.schedule();
-//            } else {
-//                finisher.runInUIThread(monitor);
-//            }
+            final LoadFinisher finisher = new LoadFinisher(result, error);
+            if (lazy) {
+                Display.getDefault().syncExec(finisher);
+            } else {
+                finisher.run();
+            }
         }
         return Status.OK_STATUS;
     }
@@ -108,4 +92,27 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         run(VoidProgressMonitor.INSTANCE, false);
     }
 
+    private class LoadFinisher implements Runnable {
+        private final RESULT innerResult;
+        private final Throwable innerError;
+
+        public LoadFinisher(RESULT innerResult, Throwable innerError)
+        {
+            this.innerResult = innerResult;
+            this.innerError = innerError;
+        }
+
+        public void run()
+        {
+            visualizer.completeLoading(innerResult);
+
+            if (innerError != null) {
+                log.debug(innerError);
+                UIUtils.showErrorDialog(
+                    visualizer.getShell(),
+                    getName(),
+                    innerError.getMessage());
+            }
+        }
+    }
 }
