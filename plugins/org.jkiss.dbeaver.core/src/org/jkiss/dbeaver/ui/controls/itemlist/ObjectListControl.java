@@ -316,6 +316,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public void loadData(boolean lazy)
     {
         if (this.loadingJob != null) {
+            try {
+                loadingJob.join();
+            } catch (InterruptedException e) {
+                // interrupted
+            }
+            if (loadingJob != null) {
+                log.warn("Can't start new loading service because old one still running");
+                return;
+            }
             return;
         }
         if (this.listPropertySource == null) {

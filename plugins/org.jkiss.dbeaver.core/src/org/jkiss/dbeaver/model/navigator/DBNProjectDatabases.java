@@ -13,10 +13,12 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.DBIcon;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -155,8 +157,30 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
                     addDataSource((DataSourceDescriptor) event.getObject(), true);
                 } else if (getModel().getNodeByObject(event.getObject()) == null) {
                     final DBNDatabaseNode parentNode = getModel().getParentNode(event.getObject());
-                    if (parentNode != null && !CommonUtils.isEmpty(parentNode.getChildNodes())) {
-                        parentNode.addChildItem(event.getObject());
+
+                    if (parentNode != null) {
+                        if (CommonUtils.isEmpty(parentNode.getChildNodes())) {
+                            // We have to load children here
+                            try {
+                                DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                                    {
+                                        try {
+                                            parentNode.getChildren(monitor);
+                                        } catch (Exception e) {
+                                            throw new InvocationTargetException(e);
+                                        }
+                                    }
+                                });
+                            } catch (InvocationTargetException e) {
+                                log.error(e.getTargetException());
+                            } catch (InterruptedException e) {
+                                // do nothing
+                            }
+                        }
+                        if (!CommonUtils.isEmpty(parentNode.getChildNodes())) {
+                            parentNode.addChildItem(event.getObject());
+                        }
                     }
                 }
                 break;

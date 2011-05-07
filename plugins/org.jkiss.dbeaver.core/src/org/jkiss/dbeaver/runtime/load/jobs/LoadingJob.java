@@ -8,12 +8,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -57,8 +59,8 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<RESULT>(this, monitor);
         updateUIJob.schedule();
         this.loadingService.setProgressMonitor(monitor);
-        RESULT result = null;
         Throwable error = null;
+        RESULT result = null;
         try {
             result = this.loadingService.evaluate();
         }
@@ -70,12 +72,28 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             return new Status(Status.CANCEL, DBeaverConstants.PLUGIN_ID, "Loading interrupted");
         }
         finally {
-            final LoadingFinishJob<RESULT> finisher = new LoadingFinishJob<RESULT>(getName(), visualizer, result, error);
-            if (lazy) {
-                finisher.schedule();
-            } else {
-                finisher.runInUIThread(monitor);
-            }
+            final RESULT innerResult = result;
+            final Throwable innerError = error;
+            Display.getDefault().syncExec(new Runnable() {
+                public void run()
+                {
+                    visualizer.completeLoading(innerResult);
+
+                    if (innerError != null) {
+                        log.debug(innerError);
+                        UIUtils.showErrorDialog(
+                            visualizer.getShell(),
+                            getName(),
+                            innerError.getMessage());
+                    }
+                }
+            });
+//            final LoadingFinishJob<RESULT> finisher = new LoadingFinishJob<RESULT>(getName(), visualizer, result, error);
+//            if (lazy) {
+//                finisher.schedule();
+//            } else {
+//                finisher.runInUIThread(monitor);
+//            }
         }
         return Status.OK_STATUS;
     }

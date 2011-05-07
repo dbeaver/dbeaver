@@ -19,7 +19,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
@@ -74,19 +73,13 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 throw new DBException("Non-database container '" + container + "' must save new objects itself - command context is not accessible");
             }
 
-            // Save object manager's content
-            ObjectSaver objectSaver = new ObjectSaver(
-                container,
-                commandTarget.getContext(),
-                result,
-                (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0);
-            if (!objectSaver.isLazy()) {
-                objectSaver.run(VoidProgressMonitor.INSTANCE);
-            } else {
+            if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0) {
+                // Save object manager's content
+                ObjectSaver objectSaver = new ObjectSaver(commandTarget.getContext());
                 DBeaverCore.getInstance().runInProgressService(objectSaver);
             }
 
-            final DBNNode newChild = objectSaver.getNewChild();
+            final DBNNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(result);
             if (newChild != null) {
                 Display.getDefault().asyncExec(new Runnable() {
                     public void run()
@@ -128,44 +121,22 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
     }
 
     private static class ObjectSaver implements DBRRunnableWithProgress {
-        private final DBNContainer container;
         private final DBECommandContext commandContext;
-        private final DBSObject newObject;
-        private final boolean saveObject;
-        DBNNode newChild;
 
-        public ObjectSaver(DBNContainer container, DBECommandContext commandContext, DBSObject newObject, boolean saveObject)
+        public ObjectSaver(DBECommandContext commandContext)
         {
-            this.container = container;
             this.commandContext = commandContext;
-            this.newObject = newObject;
-            this.saveObject = saveObject;
         }
 
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
-                if (saveObject) {
-                    commandContext.saveChanges(monitor);
-                }
-                newChild = container.addChildItem(monitor, newObject);
+                commandContext.saveChanges(monitor);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
         }
 
-        public DBNNode getNewChild()
-        {
-            return newChild;
-        }
-
-        boolean isLazy()
-        {
-            if (!saveObject && container instanceof DBNDatabaseNode && !((DBNDatabaseNode) container).isLazyNode()) {
-                return false;
-            }
-            return true;
-        }
     }
 
 }

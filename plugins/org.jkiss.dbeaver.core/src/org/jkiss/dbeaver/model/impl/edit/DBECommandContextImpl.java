@@ -172,8 +172,13 @@ public class DBECommandContextImpl implements DBECommandContext {
     }
 
     public void addCommand(
-        DBECommand<?> command,
-        DBECommandReflector<?, DBECommand<?>> reflector)
+        DBECommand command,
+        DBECommandReflector reflector)
+    {
+        addCommand(command, reflector, false);
+    }
+
+    public void addCommand(DBECommand command, DBECommandReflector reflector, boolean execute)
     {
         synchronized (commands) {
             commands.add(new CommandInfo(command, reflector));
@@ -182,10 +187,19 @@ public class DBECommandContextImpl implements DBECommandContext {
             clearCommandQueues();
         }
         fireCommandChange(command);
+        if (execute && reflector != null) {
+            reflector.redoCommand(command);
+        }
     }
 
-    public void addCommandBatch(List<DBECommand> commandBatch,
-        DBECommandReflector<?, DBECommand<?>> reflector)
+    public void addCommandBatch(
+        List<DBECommand> commandBatch,
+        DBECommandReflector reflector)
+    {
+        addCommandBatch(commandBatch, reflector, false);
+    }
+
+    public void addCommandBatch(List<DBECommand> commandBatch, DBECommandReflector reflector, boolean execute)
     {
         synchronized (commands) {
             for (int i = 0, commandBatchSize = commandBatch.size(); i < commandBatchSize; i++) {
@@ -199,6 +213,9 @@ public class DBECommandContextImpl implements DBECommandContext {
         if (!commandBatch.isEmpty()) {
             // Fire only single event
             fireCommandChange(commandBatch.get(0));
+            if (execute && reflector != null) {
+                reflector.redoCommand(commandBatch.get(0));
+            }
         }
     }
 

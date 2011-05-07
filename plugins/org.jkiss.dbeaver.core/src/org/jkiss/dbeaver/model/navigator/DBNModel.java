@@ -196,7 +196,6 @@ public class DBNModel implements IResourceChangeListener {
         }
         for (int i = 0; i < path.size(); i++) {
             DBSObject item = path.get(i);
-            DBSObject nextItem = path.get(i + 1);
             node = getNodeByObject(item);
             if (node == null) {
                 // Parent node read
@@ -213,7 +212,7 @@ public class DBNModel implements IResourceChangeListener {
                 for (DBNDatabaseNode child : children) {
                     if (child instanceof DBNDatabaseFolder) {
                         Class<?> itemsClass = ((DBNDatabaseFolder) child).getItemsClass();
-                        if (itemsClass != null && itemsClass.isAssignableFrom(nextItem.getClass())) {
+                        if (itemsClass != null && itemsClass.isAssignableFrom(object.getClass())) {
                             return child;
                         }
                     }

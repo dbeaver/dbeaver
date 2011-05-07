@@ -178,11 +178,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 DBeaverCore.getInstance().runInProgressService(deleter);
             }
 
-            // Remove node
-            if (!node.isDisposed()) {
-                container.removeChildItem(node);
-            }
-
         } catch (InterruptedException e) {
             // do nothing
         } catch (Throwable e) {

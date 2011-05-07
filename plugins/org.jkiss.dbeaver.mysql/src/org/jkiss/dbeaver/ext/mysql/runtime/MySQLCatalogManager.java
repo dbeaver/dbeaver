@@ -40,14 +40,14 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         }
         MySQLCatalog newCatalog = new MySQLCatalog(parent, null);
         newCatalog.setName(schemaName);
-        commandContext.addCommand(new CommandCreateCatalog(newCatalog), null);
+        commandContext.addCommand(new CommandCreateCatalog(newCatalog), new CreateObjectReflector(), true);
 
         return newCatalog;
     }
 
     public void deleteObject(DBECommandContext commandContext, MySQLCatalog object, Map<String, Object> options)
     {
-        commandContext.addCommand(new CommandDropCatalog(object), null);
+        commandContext.addCommand(new CommandDropCatalog(object), new DeleteObjectReflector(), true);
     }
 
     public void renameObject(DBRProgressMonitor monitor, MySQLCatalog catalog, String newName) throws DBException

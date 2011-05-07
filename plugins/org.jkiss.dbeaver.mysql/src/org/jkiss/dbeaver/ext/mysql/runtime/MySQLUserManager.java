@@ -39,6 +39,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
             newUser.setMaxConnections(tplUser.getMaxConnections());
             newUser.setMaxUserConnections(tplUser.getMaxUserConnections());
         }
+        commandContext.addCommand(new MySQLCommandCreateUser(newUser), new CreateObjectReflector(), true);
         commandContext.addCommand(new NewUserPropertyCommand(newUser, UserPropertyHandler.NAME, newUser.getUserName()), null);
         commandContext.addCommand(new NewUserPropertyCommand(newUser, UserPropertyHandler.HOST, newUser.getHost()), null);
 
@@ -47,7 +48,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
 
     public void deleteObject(DBECommandContext commandContext, MySQLUser user, Map<String, Object> options)
     {
-        commandContext.addCommand(new MySQLCommandDropUser(user), null);
+        commandContext.addCommand(new MySQLCommandDropUser(user), new DeleteObjectReflector(), true);
     }
 
     public void filterCommands(DBECommandQueue<MySQLUser> queue)

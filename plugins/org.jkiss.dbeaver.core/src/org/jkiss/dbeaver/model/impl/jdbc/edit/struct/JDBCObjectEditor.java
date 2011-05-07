@@ -7,10 +7,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.*;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
@@ -54,7 +52,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
             }
         }
 
-        context.addCommandBatch(commands, new NewObjectReflector());
+        context.addCommandBatch(commands, new CreateObjectReflector(), true);
     }
 
     protected void validateObjectProperty(OBJECT_TYPE object, IPropertyDescriptor property, Object value) throws DBException
@@ -160,19 +158,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         public boolean isUndoable()
         {
             return true;
-        }
-    }
-
-    protected static class NewObjectReflector<OBJECT_TYPE extends DBPObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
-
-        public void redoCommand(DBECommand<OBJECT_TYPE> object)
-        {
-
-        }
-
-        public void undoCommand(DBECommand<OBJECT_TYPE> object)
-        {
-
         }
     }
 

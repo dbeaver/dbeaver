@@ -39,7 +39,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
 
     public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
     {
-        commandContext.addCommand(new CommandDropTable(object), null);
+        commandContext.addCommand(new CommandDropTable(object), new DeleteObjectReflector(), true);
     }
 
     protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, Object copyFrom);
