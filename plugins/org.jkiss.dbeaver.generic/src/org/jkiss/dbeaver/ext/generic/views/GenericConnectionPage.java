@@ -26,9 +26,9 @@ import java.util.*;
 import java.util.List;
 
 /**
- * ConnectionEditorPage
+ * GenericConnectionPage
  */
-public class ConnectionEditorPage extends DialogPage implements IDataSourceConnectionEditor
+public class GenericConnectionPage extends DialogPage implements IDataSourceConnectionEditor
 {
     private static final String PROP_HOST = "host";
     private static final String PROP_PORT = "port";
@@ -362,10 +362,11 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
         return emptyLabel;
     }
 
-    private ConnectionPropertiesControl createPropertiesTab(Composite parent)
+    private Composite createPropertiesTab(Composite parent)
     {
-        propsControl = new ConnectionPropertiesControl(parent, SWT.NONE);
-        return propsControl;
+        final Composite placeholder = UIUtils.createPlaceholder(parent, 1);
+        propsControl = new ConnectionPropertiesControl(placeholder, SWT.NONE);
+        return placeholder;
     }
 
     public void setSite(IDataSourceConnectionEditorSite site)

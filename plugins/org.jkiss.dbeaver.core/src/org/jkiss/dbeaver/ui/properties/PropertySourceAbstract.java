@@ -65,7 +65,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
             props.add(new PropertyDescriptor(id, name));
             propValues.put(id, new PropertySourceCollection(this, id, loadLazyProps, (Collection<?>) value));
         } else {
-            props.add(new PropertyDescriptor(id, name));
+            props.add(new PropertyDescriptorEx(null, id, name, null, null, false, null, null, false));
             propValues.put(id, value);
         }
         return this;

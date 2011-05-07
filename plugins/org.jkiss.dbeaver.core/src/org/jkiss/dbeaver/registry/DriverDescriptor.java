@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.xml.sax.Attributes;
 
@@ -133,9 +133,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         {
             // Connection property groups
-            IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
+            IConfigurationElement[] propElements = config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
             for (IConfigurationElement prop : propElements) {
-                connectionPropertyDescriptors.addAll(PropertyDescriptor.extractProperties(prop));
+                connectionPropertyDescriptors.addAll(PropertyDescriptorEx.extractProperties(prop));
             }
         }
 

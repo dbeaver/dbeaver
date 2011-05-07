@@ -18,12 +18,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PropertyDescriptor
+ * PropertyDescriptorEx
  */
-public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValueListProvider
+public class PropertyDescriptorEx implements IPropertyDescriptorEx, IPropertyValueListProvider
 {
 
-    static final Log log = LogFactory.getLog(PropertyDescriptor.class);
+    static final Log log = LogFactory.getLog(PropertyDescriptorEx.class);
 
     public static final String TAG_PROPERTY_GROUP = "propertyGroup"; //NON-NLS-1
     public static final String NAME_UNDEFINED = "<undefined>"; //NON-NLS-1
@@ -37,7 +37,7 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
     public static final String ATTR_VALID_VALUES = "validValues"; //NON-NLS-1
     public static final String VALUE_SPLITTER = ","; //NON-NLS-1
 
-    private String id;
+    private Object id;
     private String name;
     private String description;
     private String category;
@@ -45,22 +45,23 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
     private boolean required;
     private Object defaultValue;
     private Object[] validValues;
+    private boolean editable;
 
-    public static List<PropertyDescriptor> extractProperties(IConfigurationElement config)
+    public static List<PropertyDescriptorEx> extractProperties(IConfigurationElement config)
     {
         String category = config.getAttribute(ATTR_LABEL);
         if (CommonUtils.isEmpty(category)) {
             category = NAME_UNDEFINED;
         }
-        List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
-        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY);
+        List<PropertyDescriptorEx> properties = new ArrayList<PropertyDescriptorEx>();
+        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptorEx.TAG_PROPERTY);
         for (IConfigurationElement prop : propElements) {
-            properties.add(new PropertyDescriptor(category, prop));
+            properties.add(new PropertyDescriptorEx(category, prop));
         }
         return properties;
     }
 
-    public PropertyDescriptor(String category, IConfigurationElement config)
+    public PropertyDescriptorEx(String category, IConfigurationElement config)
     {
         this.category = category;
         this.id = config.getAttribute(ATTR_ID);
@@ -88,9 +89,10 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
                 validValues[i] = RuntimeUtils.convertString(values[i], type);
             }
         }
+        this.editable = true;
     }
 
-    public PropertyDescriptor(String category, String id, String name, String description, Class<?> type, boolean required, String defaultValue, String[] validValues) {
+    public PropertyDescriptorEx(String category, Object id, String name, String description, Class<?> type, boolean required, String defaultValue, String[] validValues, boolean editable) {
         this.category = category;
         this.id = id;
         this.name = name;
@@ -99,6 +101,7 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
         this.required = required;
         this.defaultValue = defaultValue;
         this.validValues = validValues;
+        this.editable = editable;
     }
 
     public CellEditor createPropertyEditor(Composite parent)
@@ -111,7 +114,7 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
         return category;
     }
 
-    public String getId()
+    public Object getId()
     {
         return id;
     }
@@ -153,7 +156,7 @@ public class PropertyDescriptor implements IPropertyDescriptorEx, IPropertyValue
 
     public boolean isEditable(Object object)
     {
-        return true;
+        return editable;
     }
 
     public Class<?> getDataType()

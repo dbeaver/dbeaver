@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
@@ -32,7 +32,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     private static final int LOB_ENCODING_HEX = 1;
     private static final int LOB_ENCODING_BINARY = 2;
 
-    private EditablePropertyTree propsEditor;
+    private PropertyTreeViewer propsEditor;
     private Combo lobExtractType;
     private Label lobEncodingLabel;
     private Combo lobEncodingCombo;
@@ -156,8 +156,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
         exporterSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
         exporterSettings.setLayout(new GridLayout(1, false));
         
-        propsEditor = new EditablePropertyTree(exporterSettings, SWT.NONE);
-        propsEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
+        propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
 
         setControl(composite);
     }

@@ -9,7 +9,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.ui.export.data.IDataExporter;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +56,9 @@ public class DataExporterDescriptor extends AbstractDescriptor
             }
         }
 
-        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
+        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
         for (IConfigurationElement prop : propElements) {
-            properties.addAll(PropertyDescriptor.extractProperties(prop));
+            properties.addAll(PropertyDescriptorEx.extractProperties(prop));
         }
     }
 

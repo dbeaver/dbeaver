@@ -19,14 +19,14 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
  */
 public class StandardPropertiesSection extends AbstractPropertySection implements ILazyPropertyLoadListener {
 
-	protected EditablePropertyTree propertyTree;
+	protected PropertyTreeViewer propertyTree;
     private IPropertySource curPropertySource;
 
     public void createControls(Composite parent, final TabbedPropertySheetPage tabbedPropertySheetPage)
     {
 		super.createControls(parent, tabbedPropertySheetPage);
 
-		propertyTree = new EditablePropertyTree(parent, SWT.NONE);
+		propertyTree = new PropertyTreeViewer(parent, SWT.NONE);
         PropertiesContributor.getInstance().addLazyListener(this);
 
 	}
@@ -48,10 +48,6 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 	public void dispose() {
         PropertiesContributor.getInstance().removeLazyListener(this);
 		super.dispose();
-		if (propertyTree != null) {
-			propertyTree.dispose();
-			propertyTree = null;
-		}
 	}
 
 	public void refresh() {
@@ -79,7 +75,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 
     public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
     {
-        if (curPropertySource.getEditableValue() == object && !propertyTree.isDisposed()) {
+        if (curPropertySource.getEditableValue() == object && !propertyTree.getControl().isDisposed()) {
             propertyTree.refresh();
         }
     }

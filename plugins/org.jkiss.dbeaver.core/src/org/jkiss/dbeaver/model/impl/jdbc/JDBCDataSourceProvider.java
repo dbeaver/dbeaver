@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
@@ -70,7 +70,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
                 continue;
             }
             desc.value = getConnectionPropertyDefaultValue(desc.name, desc.value);
-            properties.add(new PropertyDescriptor(
+            properties.add(new PropertyDescriptorEx(
                 "Driver properties",
                 desc.name,
                 desc.name,
@@ -78,7 +78,8 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
                 String.class,
                 desc.required,
                 desc.value,
-                desc.choices));
+                desc.choices,
+                true));
         }
         return properties;
     }

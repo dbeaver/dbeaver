@@ -15,8 +15,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
-import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
 import java.util.*;
@@ -24,7 +24,7 @@ import java.util.*;
 /**
  * Connection properties control
  */
-public class ConnectionPropertiesControl extends EditablePropertyTree {
+public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     static final Log log = LogFactory.getLog(ConnectionPropertiesControl.class);
 
@@ -95,10 +95,10 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
 
     private void createNewProperty(Object node, String category) {
         // Ask user for new property name
-        String propName = EnterNameDialog.chooseName(getShell(), "Property Name");
+        String propName = EnterNameDialog.chooseName(getControl().getShell(), "Property Name");
         if (propName != null) {
             // Check property name (must be unique
-            addProperty(node, new PropertyDescriptor(category, propName, propName, null, null, false, null, null));
+            addProperty(node, new PropertyDescriptorEx(category, propName, propName, null, null, false, null, null, true));
         }
     }
 
@@ -137,7 +137,7 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
         // Find prop values which are not from driver
         for (Object propName : properties.keySet()) {
             if (!propNames.contains(propName.toString())) {
-                customProperties.add(new PropertyDescriptor(
+                customProperties.add(new PropertyDescriptorEx(
                     USER_PROPERTIES_CATEGORY,
                     propName.toString(),
                     propName.toString(),
@@ -145,7 +145,8 @@ public class ConnectionPropertiesControl extends EditablePropertyTree {
                     String.class,
                     false,
                     null,
-                    null));
+                    null,
+                    true));
             }
         }
     }

@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -17,6 +18,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.ui.properties.ProxyPageSite;
 
 import java.util.ArrayList;
@@ -51,10 +53,12 @@ public class ColumnInfoPanel extends Composite {
         {
             Composite ph = UIUtils.createPlaceholder(this, 1);
             ph.setLayout(new FillLayout());
-            PropertyPageStandard properties = new PropertyPageStandard();
-            properties.init(new ProxyPageSite(valueController.getValueSite()));
-            properties.createControl(ph);
-            properties.selectionChanged(valueController.getValueSite().getPart(), new StructuredSelection(infoItem));
+            PropertyTreeViewer propViewer = new PropertyTreeViewer(ph, SWT.NONE);
+            propViewer.loadProperties(infoItem);
+//            PropertyPageStandard properties = new PropertyPageStandard();
+//            properties.init(new ProxyPageSite(valueController.getValueSite()));
+//            properties.createControl(ph);
+//            properties.selectionChanged(valueController.getValueSite().getPart(), new StructuredSelection(infoItem));
         }
     }
 

@@ -5,10 +5,9 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +23,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
     private String className;
     private String name;
     private String description;
-    private List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
+    private List<PropertyDescriptorEx> properties = new ArrayList<PropertyDescriptorEx>();
     private DBDDataFormatterSample sample;
     private Class<?> formatterClass;
 
@@ -37,9 +36,9 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
 
-        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
+        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
         for (IConfigurationElement prop : propElements) {
-            properties.addAll(PropertyDescriptor.extractProperties(prop));
+            properties.addAll(PropertyDescriptorEx.extractProperties(prop));
         }
         Class<?> objectClass = getObjectClass(config.getAttribute("sampleClass"));
         try {
@@ -69,7 +68,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         return sample;
     }
 
-    public List<PropertyDescriptor> getProperties() {
+    public List<PropertyDescriptorEx> getProperties() {
         return properties;
     }
 

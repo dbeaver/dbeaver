@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.registry.tree.*;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,9 +91,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         IConfigurationElement[] driverPropsGroup = config.getChildren("driver-properties");
         if (!CommonUtils.isEmpty(driverPropsGroup)) {
             for (IConfigurationElement propsElement : driverPropsGroup) {
-                IConfigurationElement[] propElements = propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
+                IConfigurationElement[] propElements = propsElement.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
                 for (IConfigurationElement prop : propElements) {
-                    driverProperties.addAll(PropertyDescriptor.extractProperties(prop));
+                    driverProperties.addAll(PropertyDescriptorEx.extractProperties(prop));
                 }
             }
         }

@@ -30,10 +30,9 @@ import java.util.List;
 /**
  * Driver properties control
  */
-public class EditablePropertyTree extends Composite {
+public class PropertyTreeViewer extends TreeViewer {
 
     private boolean expandSingleRoot = true;
-    private TreeViewer propsTree;
     private TreeEditor treeEditor;
 
     private Font boldFont;
@@ -44,19 +43,81 @@ public class EditablePropertyTree extends Composite {
 
     private String[] customCategories;
 
-    public EditablePropertyTree(Composite parent, int style)
+    public PropertyTreeViewer(Composite parent, int style)
     {
-        super(parent, style);
+        super(parent, style | SWT.SINGLE | SWT.FULL_SELECTION);
 
         //colorBlue = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
-        clipboard = new Clipboard(getDisplay());
+        clipboard = new Clipboard(parent.getDisplay());
 
-        this.setLayout(new GridLayout(1, false));
+        //this.setLayout(new GridLayout(1, false));
         //GridData gd = new GridData(GridData.FILL_BOTH);
         //this.setLayoutData(gd);
 
-        setMarginVisible(true);
-        initPropTree();
+        PropsLabelProvider labelProvider = new PropsLabelProvider();
+
+        super.setContentProvider(new PropsContentProvider());
+        //super.setLabelProvider(labelProvider);
+        final Tree treeControl = super.getTree();
+        if (parent.getLayout() instanceof GridLayout) {
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.grabExcessHorizontalSpace = true;
+            gd.grabExcessVerticalSpace = true;
+            gd.minimumHeight = 120;
+            gd.heightHint = 120;
+            gd.widthHint = 300;
+            treeControl.setLayoutData(gd);
+        }
+        treeControl.setHeaderVisible(true);
+        treeControl.setLinesVisible(true);
+
+        treeControl.addControlListener(new ControlAdapter() {
+            private boolean packing = false;
+            @Override
+            public void controlResized(ControlEvent e) {
+                if (!packing) {
+                    try {
+                        packing = true;
+                        UIUtils.packColumns(treeControl, true, new float[] { 0.2f , 0.8f });
+                    }
+                    finally {
+                        packing = false;
+                    }
+                }
+            }
+        });
+        treeControl.addListener(SWT.PaintItem, new PaintListener());
+        this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
+
+        ColumnViewerToolTipSupport.enableFor(this, ToolTip.NO_RECREATE);
+
+        TreeViewerColumn column = new TreeViewerColumn(this, SWT.NONE);
+        column.getColumn().setWidth(200);
+        column.getColumn().setMoveable(true);
+        column.getColumn().setText("Name");
+        column.setLabelProvider(labelProvider);
+        column.getColumn().addListener(SWT.Selection, new SortListener());
+
+
+        column = new TreeViewerColumn(this, SWT.NONE);
+        column.getColumn().setWidth(120);
+        column.getColumn().setMoveable(true);
+        column.getColumn().setText("Value");
+        column.setLabelProvider(labelProvider);
+
+        /*
+                List<? extends DBPProperty> props = ((DBPPropertyGroup) parent).getProperties();
+                Collections.sort(props, new Comparator<DBPProperty>() {
+                    public int compare(DBPProperty o1, DBPProperty o2)
+                    {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                });
+                return props.toArray();
+
+        */
+        registerEditor();
+        registerContextMenu();
     }
 
     public void loadProperties(IPropertySource propertySource)
@@ -100,10 +161,9 @@ public class EditablePropertyTree extends Composite {
             root = categories.values();
         }
 
-        if (propsTree != null) {
-            propsTree.setInput(root);
-            propsTree.expandAll();
-        }
+        super.setInput(root);
+        super.expandAll();
+
         disposeOldEditor();
     }
 
@@ -136,75 +196,7 @@ public class EditablePropertyTree extends Composite {
     public void refresh()
     {
         disposeOldEditor();
-        propsTree.refresh();
-    }
-
-    private void initPropTree()
-    {
-        PropsLabelProvider labelProvider = new PropsLabelProvider();
-
-        propsTree = new TreeViewer(this, SWT.BORDER | SWT.FULL_SELECTION);
-        propsTree.setContentProvider(new PropsContentProvider());
-        propsTree.setLabelProvider(labelProvider);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.grabExcessHorizontalSpace = true;
-        gd.grabExcessVerticalSpace = true;
-        gd.minimumHeight = 120;
-        gd.heightHint = 120;
-        gd.widthHint = 300;
-
-        final Tree treeControl = propsTree.getTree();
-        treeControl.setLayoutData(gd);
-        treeControl.setHeaderVisible(true);
-        treeControl.setLinesVisible(true);
-
-        treeControl.addControlListener(new ControlAdapter() {
-            private boolean packing = false;
-            @Override
-            public void controlResized(ControlEvent e) {
-                if (!packing) {
-                    try {
-                        packing = true;
-                        UIUtils.packColumns(treeControl, true, new float[] { 0.2f , 0.8f });
-                    }
-                    finally {
-                        packing = false;
-                    }
-                }
-            }
-        });
-        treeControl.addListener(SWT.PaintItem, new PaintListener());
-        this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
-
-        ColumnViewerToolTipSupport.enableFor(propsTree, ToolTip.NO_RECREATE);
-
-        TreeViewerColumn column = new TreeViewerColumn(propsTree, SWT.NONE);
-        column.getColumn().setWidth(200);
-        column.getColumn().setMoveable(true);
-        column.getColumn().setText("Name");
-        column.setLabelProvider(labelProvider);
-        column.getColumn().addListener(SWT.Selection, new SortListener());
-
-
-        column = new TreeViewerColumn(propsTree, SWT.NONE);
-        column.getColumn().setWidth(120);
-        column.getColumn().setMoveable(true);
-        column.getColumn().setText("Value");
-        column.setLabelProvider(labelProvider);
-
-        /*
-                List<? extends DBPProperty> props = ((DBPPropertyGroup) parent).getProperties();
-                Collections.sort(props, new Comparator<DBPProperty>() {
-                    public int compare(DBPProperty o1, DBPProperty o2)
-                    {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
-                return props.toArray();
-
-        */
-        registerEditor();
-        registerContextMenu();
+        super.refresh();
     }
 
     private void disposeOldEditor()
@@ -220,7 +212,7 @@ public class EditablePropertyTree extends Composite {
 
     private void registerEditor() {
         // Make an editor
-        final Tree treeControl = propsTree.getTree();
+        final Tree treeControl = super.getTree();
         treeEditor = new TreeEditor(treeControl);
         treeEditor.horizontalAlignment = SWT.RIGHT;
         treeEditor.verticalAlignment = SWT.CENTER;
@@ -279,9 +271,9 @@ public class EditablePropertyTree extends Composite {
 
         // Identify the selected row
         if (item.getData() instanceof TreeNode) {
-            final Tree treeControl = propsTree.getTree();
+            final Tree treeControl = super.getTree();
             final TreeNode prop = (TreeNode)item.getData();
-            if (prop.property == null) {
+            if (prop.property == null || !prop.isEditable()) {
                 return;
             }
             final CellEditor cellEditor = prop.property.createPropertyEditor(treeControl);
@@ -334,7 +326,10 @@ public class EditablePropertyTree extends Composite {
                         } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
                             e.doit = false;
                             e.detail = SWT.TRAVERSE_NONE;
-                            new ActionResetProperty(prop, false).run();
+                            disposeOldEditor();
+                            if (prop.isEditable()) {
+                                new ActionResetProperty(prop, false).run();
+                            }
                         }
                     }
                 });
@@ -355,7 +350,7 @@ public class EditablePropertyTree extends Composite {
             {
                 public void menuAboutToShow(final IMenuManager manager)
                 {
-                    final IStructuredSelection selection = (IStructuredSelection)propsTree.getSelection();
+                    final IStructuredSelection selection = (IStructuredSelection)PropertyTreeViewer.this.getSelection();
 
                     if (selection.isEmpty()) {
                         return;
@@ -373,7 +368,7 @@ public class EditablePropertyTree extends Composite {
                                         new Transfer[]{textTransfer});
                                 }
                             });
-                            if (isPropertyChanged(prop)) {
+                            if (isPropertyChanged(prop) && prop.isEditable()) {
                                 manager.add(new ActionResetProperty(prop, false));
                                 if (!isCustomProperty(prop.property) &&
                                     prop.propertySource instanceof IPropertySourceEx)
@@ -389,9 +384,9 @@ public class EditablePropertyTree extends Composite {
             });
 
             menuMgr.setRemoveAllWhenShown(true);
-            Menu menu = menuMgr.createContextMenu(propsTree.getControl());
+            Menu menu = menuMgr.createContextMenu(getTree());
 
-            propsTree.getControl().setMenu(menu);
+            getTree().setMenu(menu);
         }
     }
 
@@ -433,37 +428,25 @@ public class EditablePropertyTree extends Composite {
 
     private void handlePropertyChange(TreeNode prop)
     {
-        propsTree.update(prop, null);
+        super.update(prop, null);
 
         // Send modify event
         Event event = new Event();
         event.data = prop.property;
-        this.notifyListeners(SWT.Modify, event);
+        getTree().notifyListeners(SWT.Modify, event);
     }
 
     protected void handlePropertyCreate(TreeNode prop) {
         handlePropertyChange(prop);
-        propsTree.refresh(prop.parent);
-        propsTree.expandToLevel(prop.parent, 1);
-        propsTree.reveal(prop);
-        propsTree.setSelection(new StructuredSelection(prop));
+        super.refresh(prop.parent);
+        super.expandToLevel(prop.parent, 1);
+        super.reveal(prop);
+        super.setSelection(new StructuredSelection(prop));
     }
 
     protected void handlePropertyRemove(TreeNode prop) {
         handlePropertyChange(prop);
-        propsTree.refresh(prop.parent);
-    }
-
-    public void setMarginVisible(boolean visible)
-    {
-        GridLayout layout = (GridLayout) getLayout();
-        if (visible) {
-            layout.marginHeight = 5;
-            layout.marginWidth = 5;
-        } else {
-            layout.marginHeight = 0;
-            layout.marginWidth = 0;
-        }
+        super.refresh(prop.parent);
     }
 
     public void setExpandSingleRoot(boolean expandSingleRoot)
@@ -497,6 +480,15 @@ public class EditablePropertyTree extends Composite {
         private TreeNode(TreeNode parent, IPropertySource propertySource, String category)
         {
             this(parent, propertySource, null, category);
+        }
+
+        boolean isEditable()
+        {
+            if (property instanceof IPropertyDescriptorEx) {
+                return ((IPropertyDescriptorEx)property).isEditable(propertySource.getEditableValue());
+            } else {
+                return property != null;
+            }
         }
     }
 
@@ -594,7 +586,7 @@ public class EditablePropertyTree extends Composite {
             cell.setText(getText(element, cell.getColumnIndex()));
             boolean changed = false;
             if (element instanceof TreeNode && ((TreeNode) element).property != null) {
-                changed = isPropertyChanged((TreeNode)element);
+                changed = ((TreeNode)element).isEditable() && isPropertyChanged((TreeNode)element);
 /*
                 if (((DBPProperty)element).isRequired() && cell.getColumnIndex() == 0) {
                     cell.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_WARN_TSK));
@@ -620,7 +612,7 @@ public class EditablePropertyTree extends Composite {
 
             Collator collator = Collator.getInstance(Locale.getDefault());
             TreeColumn column = (TreeColumn)e.widget;
-            Tree tree = propsTree.getTree();
+            Tree tree = getTree();
             if (prevColumn == column) {
                 // Set reverse order
                 sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
@@ -629,7 +621,7 @@ public class EditablePropertyTree extends Composite {
             tree.setSortColumn(column);
             tree.setSortDirection(sortDirection);
 
-            propsTree.setSorter(new ViewerSorter(collator) {
+            PropertyTreeViewer.this.setSorter(new ViewerSorter(collator) {
                 public int compare(Viewer viewer, Object e1, Object e2)
                 {
                     int mul = (sortDirection == SWT.UP ? 1 : -1);
@@ -667,7 +659,7 @@ public class EditablePropertyTree extends Composite {
                 prop.propertySource.resetPropertyValue(prop.property.getId());
             }
             handlePropertyChange(prop);
-            propsTree.update(prop, null);
+            PropertyTreeViewer.this.update(prop, null);
             disposeOldEditor();
         }
     }
@@ -675,7 +667,7 @@ public class EditablePropertyTree extends Composite {
     class PaintListener implements Listener {
 
         public void handleEvent(Event event) {
-            if (isDisposed()) {
+            if (getTree().isDisposed()) {
                 return;
             }
             switch(event.type) {
@@ -683,16 +675,12 @@ public class EditablePropertyTree extends Composite {
                     if (event.index == 1) {
                         final TreeNode node = (TreeNode)event.item.getData();
                         if (node != null && node.property != null) {
-                            boolean editable = true;
-                            if (node.property instanceof IPropertyDescriptorEx) {
-                                editable = ((IPropertyDescriptorEx) node.property).isEditable(node.propertySource.getEditableValue());
-                            }
                             final Object propertyValue = node.propertySource.getPropertyValue(node.property.getId());
                             if (propertyValue instanceof Boolean) {
                                 GC gc = event.gc;
-                                final Tree tree = propsTree.getTree();
+                                final Tree tree = getTree();
                                 int columnWidth = tree.getColumn(1).getWidth();
-                                Image image = editable ?
+                                Image image = node.isEditable() ?
                                     ((Boolean)propertyValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
                                     ((Boolean)propertyValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
                                 gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);

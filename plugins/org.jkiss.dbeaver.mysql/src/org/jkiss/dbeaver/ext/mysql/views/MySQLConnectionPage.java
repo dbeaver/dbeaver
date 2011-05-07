@@ -70,8 +70,9 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
         propsTab.setText("Advanced");
         propsTab.setToolTipText("Advanced/custom driver properties");
-        connectionProps = new ConnectionPropertiesControl(optionsFolder, SWT.NONE);
-        propsTab.setControl(connectionProps);
+        final Composite placeholder = UIUtils.createPlaceholder(optionsFolder, 1);
+        connectionProps = new ConnectionPropertiesControl(placeholder, SWT.NONE);
+        propsTab.setControl(placeholder);
 
         optionsFolder.addSelectionListener(
             new SelectionListener()

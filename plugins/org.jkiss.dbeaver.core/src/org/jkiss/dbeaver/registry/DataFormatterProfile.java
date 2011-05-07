@@ -8,12 +8,11 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.io.IOException;
@@ -63,7 +62,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
         properties.clear();
         for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
             Map<Object, Object> formatterProps = new HashMap<Object, Object>();
-            for (PropertyDescriptor prop : formatter.getProperties()) {
+            for (PropertyDescriptorEx prop : formatter.getProperties()) {
                 Object propValue = RuntimeUtils.getPreferenceValue(store, "dataformat.type." + formatter.getId() + "." + prop.getId(), prop.getDataType());
                 if (propValue != null) {
                     formatterProps.put(prop.getId(), propValue);
@@ -81,7 +80,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
 
         for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
             Map<Object, Object> formatterProps = properties.get(formatter.getId());
-            for (PropertyDescriptor prop : formatter.getProperties()) {
+            for (PropertyDescriptorEx prop : formatter.getProperties()) {
                 Object propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
                 if (propValue != null) {
                     RuntimeUtils.setPreferenceValue(store, "dataformat.type." + formatter.getId() + "." + prop.getId(), propValue);

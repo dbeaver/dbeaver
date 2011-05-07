@@ -311,11 +311,11 @@
                     id="org.jkiss.dbeaver.ext.generic.dataSourceWizardView"
                     targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                     label="Generic JDBC Connection Settings"
-                    class="org.jkiss.dbeaver.ext.generic.views.ConnectionEditorPage"
+                    class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
                     icon="icons/database.png">
                 </view>
                 <view
-                      class="org.jkiss.dbeaver.ext.generic.views.ConnectionEditorPage"
+                      class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
                       icon="icons/database.png"
                       id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
                       label="Generic JDBC Connection Settings"

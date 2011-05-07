@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
-import org.jkiss.dbeaver.ui.properties.EditablePropertyTree;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
 import java.io.File;
@@ -73,7 +73,7 @@ public class DriverEditDialog extends Dialog
     private Text driverClassText;
     private Text driverURLText;
     private Text driverPortText;
-    private EditablePropertyTree parametersEditor;
+    private PropertyTreeViewer parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
     private List<DriverFileDescriptor> libList;
     private PropertySourceCustom driverPropertySource;
@@ -449,8 +449,7 @@ public class DriverEditDialog extends Dialog
         Composite paramsGroup = new Composite(group, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
 
-        parametersEditor = new EditablePropertyTree(paramsGroup, SWT.NONE);
-        parametersEditor.setMarginVisible(false);
+        parametersEditor = new PropertyTreeViewer(paramsGroup, SWT.BORDER);
         driverPropertySource = new PropertySourceCustom(
             driver.getProviderDescriptor().getDriverProperties(),
             driver.getDriverParameters());
@@ -468,8 +467,7 @@ public class DriverEditDialog extends Dialog
         Composite paramsGroup = new Composite(group, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
 
-        connectionPropertiesEditor = new ConnectionPropertiesControl(paramsGroup, SWT.NONE);
-        connectionPropertiesEditor.setMarginVisible(false);
+        connectionPropertiesEditor = new ConnectionPropertiesControl(paramsGroup, SWT.BORDER);
         connectionPropertySource = connectionPropertiesEditor.makeProperties(driver, driver.getConnectionProperties());
         connectionPropertiesEditor.loadProperties(connectionPropertySource);
 
