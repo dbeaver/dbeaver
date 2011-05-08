@@ -128,16 +128,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
             this.editor = editor;
         }
 
-        public Object getProperty(String id)
-        {
-            for (Map.Entry<PropertyHandler<OBJECT_TYPE>,Object> entry : getProperties().entrySet()) {
-                if (id.equals(entry.getKey().getId())) {
-                    return entry.getValue();
-                }
-            }
-            return null;
-        }
-
         public IDatabasePersistAction[] getPersistActions()
         {
             return editor.makePersistActions(this);

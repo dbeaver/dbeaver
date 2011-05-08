@@ -12,8 +12,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
-import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -23,9 +21,7 @@ import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
@@ -219,7 +215,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         if (getCommandContext() == null) {
             return IDialogConstants.CANCEL_ID;
         }
-        Collection<? extends DBECommand> commands = getCommandContext().getCommands();
+        Collection<? extends DBECommand> commands = getCommandContext().getFinalCommands();
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
             try {

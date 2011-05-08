@@ -28,8 +28,8 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
 
     public void updateModel()
     {
-        for (Map.Entry<UserPropertyHandler, Object> entry : getProperties().entrySet()) {
-            switch (entry.getKey()) {
+        for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
+            switch (UserPropertyHandler.valueOf((String) entry.getKey())) {
                 case MAX_QUERIES: getObject().setMaxQuestions(CommonUtils.toInt(entry.getValue())); break;
                 case MAX_UPDATES: getObject().setMaxUpdates(CommonUtils.toInt(entry.getValue())); break;
                 case MAX_CONNECTIONS: getObject().setMaxConnections(CommonUtils.toInt(entry.getValue())); break;
@@ -69,12 +69,12 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         StringBuilder script = new StringBuilder();
         script.append("UPDATE mysql.user SET ");
         boolean hasSet = false;
-        for (Map.Entry<UserPropertyHandler, Object> entry : getProperties().entrySet()) {
+        for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
             if (entry.getKey() == UserPropertyHandler.PASSWORD_CONFIRM) {
                 continue;
             }
             String delim = hasSet ? "," : "";
-            switch (entry.getKey()) {
+            switch (UserPropertyHandler.valueOf((String) entry.getKey())) {
                 case PASSWORD: script.append(delim).append("Password=PASSWORD('").append(SQLUtils.escapeString(CommonUtils.toString(entry.getValue()))).append("')"); hasSet = true; break;
                 case MAX_QUERIES: script.append(delim).append("Max_Questions=").append(CommonUtils.toInt(entry.getValue())); hasSet = true; break;
                 case MAX_UPDATES: script.append(delim).append("Max_Updates=").append(CommonUtils.toInt(entry.getValue())); hasSet = true; break;

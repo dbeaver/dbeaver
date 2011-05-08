@@ -33,15 +33,15 @@ public interface DBECommandContext extends IDataSourceContainerProvider {
 
     void redoCommand();
 
-    Collection<? extends DBECommand<?>> getCommands();
+    Collection<? extends DBECommand<?>> getFinalCommands();
+
+    Collection<? extends DBECommand<?>> getCommands(DBPObject object);
 
     Collection<DBPObject> getEditedObjects();
 
     void addCommand(DBECommand command, DBECommandReflector reflector);
 
     void addCommand(DBECommand command, DBECommandReflector reflector, boolean execute);
-
-    void addCommandBatch(List<DBECommand> commands, DBECommandReflector reflector);
 
     void addCommandBatch(List<DBECommand> commands, DBECommandReflector reflector, boolean execute);
 

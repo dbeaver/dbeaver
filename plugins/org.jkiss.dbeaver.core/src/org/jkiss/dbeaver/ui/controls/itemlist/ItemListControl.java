@@ -237,7 +237,7 @@ public class ItemListControl extends NodeListControl
                 return searchHighlightColor;
             }
             final Object objectValue = getObjectValue(node);
-            if (isNewObject(node) &&
+            if (objectValue != null && isNewObject(node) &&
                 !getColumn(columnIndex).getProperty(objectValue).isEditable(objectValue))
             {
                 return disabledCellColor;

@@ -216,7 +216,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
     private boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext)
     {
-        Collection<? extends DBECommand> commands = commandContext.getCommands();
+        Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
             IDatabasePersistAction[] persistActions = command.getPersistActions();

@@ -156,7 +156,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
-    public Collection<? extends DBECommand<?>> getCommands()
+    public Collection<? extends DBECommand<?>> getFinalCommands()
     {
         synchronized (commands) {
             List<DBECommand<?>> cmdCopy = new ArrayList<DBECommand<?>>(commands.size());
@@ -172,6 +172,16 @@ public class DBECommandContextImpl implements DBECommandContext {
             }
             return cmdCopy;
         }
+    }
+
+    public Collection<? extends DBECommand<?>> getCommands(DBPObject object)
+    {
+        for (CommandQueue queue : getCommandQueues()) {
+            if (queue.getObject() == object) {
+                //return queue.commands;
+            }
+        }
+        return null;
     }
 
     public Collection<DBPObject> getEditedObjects()
@@ -204,13 +214,6 @@ public class DBECommandContextImpl implements DBECommandContext {
             reflector.redoCommand(command);
         }
         refreshCommandState();
-    }
-
-    public void addCommandBatch(
-        List<DBECommand> commandBatch,
-        DBECommandReflector reflector)
-    {
-        addCommandBatch(commandBatch, reflector, false);
     }
 
     public void addCommandBatch(List<DBECommand> commandBatch, DBECommandReflector reflector, boolean execute)

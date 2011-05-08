@@ -4,19 +4,16 @@
 
 package org.jkiss.dbeaver.ui.properties;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.IdentityHashMap;
-import java.util.Map;
 
 /**
  * PropertySourceEditable
@@ -24,11 +21,7 @@ import java.util.Map;
 public class PropertySourceEditable extends PropertySourceAbstract implements DBPObject, IPropertySourceEditable
 {
     private DBECommandContext commandContext;
-    private Map<DBPObject, ObjectProps> updatedValues = new IdentityHashMap<DBPObject, ObjectProps>();
-
-    private static class ObjectProps {
-        Map<ObjectPropertyDescriptor, DBECommandProperty> propValues = new IdentityHashMap<ObjectPropertyDescriptor, DBECommandProperty>();
-    }
+    private PropertyChangeCommand lastCommand = null;
 
     public PropertySourceEditable(DBECommandContext commandContext, Object sourceObject, Object object)
     {
@@ -58,26 +51,17 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         return commandContext;
     }
 
-    private ObjectProps getObjectProps(Object object)
-    {
-        ObjectProps props = updatedValues.get((DBPObject)object);
-        if (props == null) {
-            props = new ObjectProps();
-            updatedValues.put((DBPObject)object, props);
-        }
-        return props;
-    }
-
     @Override
     public Object getPropertyValue(Object editableValue, ObjectPropertyDescriptor prop)
     {
-        final ObjectProps objectProps = getObjectProps(editableValue);
-        final DBECommandProperty value = objectProps.propValues.get(prop);
-        if (value != null && value.getNewValue() != null) {
-            return value.getNewValue();
-        } else {
-            return super.getPropertyValue(editableValue, prop);
+        final DBECommandComposite compositeCommand = (DBECommandComposite)getCommandContext().getUserParams().get(editableValue);
+        if (compositeCommand != null) {
+            final Object value = compositeCommand.getProperty(prop.getId());
+            if (value != null) {
+                return value;
+            }
         }
+        return super.getPropertyValue(editableValue, prop);
     }
 
     @Override
@@ -86,27 +70,22 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (prop.getValueTransformer() != null) {
             value = prop.getValueTransformer().transform(editableValue, value);
         }
-        final ObjectProps objectProps = getObjectProps(editableValue);
-        DBECommandProperty curCommand = objectProps.propValues.get(prop);
-        if (curCommand != null && CommonUtils.equalObjects(curCommand.getNewValue(), value)) {
-            return;
-        }
-        final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor();
-        if (objectEditor == null) {
-            log.error("Can't obtain object editor for " + getEditableValue());
-            return;
-        }
-        if (curCommand == null) {
+        if (lastCommand == null || lastCommand.property != prop) {
+            final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor();
+            if (objectEditor == null) {
+                log.error("Can't obtain object editor for " + getEditableValue());
+                return;
+            }
             final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
                 (DBPObject)editableValue,
                 prop);
-            curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, value);
-            objectProps.propValues.put(prop, curCommand);
+            PropertyChangeCommand curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, value);
             final CommandReflector reflector = new CommandReflector();
             getCommandContext().addCommand(curCommand, reflector);
+            lastCommand = curCommand;
         } else {
-            curCommand.setNewValue(value);
-            getCommandContext().updateCommand(curCommand);
+            lastCommand.setNewValue(value);
+            getCommandContext().updateCommand(lastCommand);
         }
 
         handlePropertyChange(editableValue, prop, value);
@@ -115,11 +94,12 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     @Override
     public void resetPropertyValue(Object object, ObjectPropertyDescriptor prop)
     {
-        final ObjectProps objectProps = getObjectProps(object);
-        DBECommandProperty curCommand = objectProps.propValues.get(prop);
-        if (curCommand != null) {
-            curCommand.resetValue();
-        }
+//        final ObjectProps objectProps = getObjectProps(object);
+//        DBECommandProperty curCommand = objectProps.propValues.get(prop);
+//        if (curCommand != null) {
+//            curCommand.resetValue();
+//        }
+        log.warn("Property reset not implemented");
     }
 
     protected void handlePropertyChange(Object editableValue, ObjectPropertyDescriptor prop, Object value)
@@ -149,13 +129,14 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         }
     }
 
-    private class CommandReflector <T extends DBPObject> implements DBECommandReflector<T, DBECommand<T>> {
-        public void redoCommand(DBECommand<T> command)
-        {
+    private class CommandReflector implements DBECommandReflector<DBPObject, PropertyChangeCommand> {
 
+        public void redoCommand(PropertyChangeCommand propertyChangeCommand)
+        {
+            //propertyChangeCommand.
         }
 
-        public void undoCommand(DBECommand<T> command)
+        public void undoCommand(PropertyChangeCommand propertyChangeCommand)
         {
 
         }
