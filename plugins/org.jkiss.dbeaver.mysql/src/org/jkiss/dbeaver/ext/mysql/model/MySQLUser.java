@@ -97,7 +97,7 @@ public class MySQLUser implements DBAUser
     }
 
     public DBSObject getParentObject() {
-        return dataSource;
+        return dataSource.getContainer();
     }
 
     public MySQLDataSource getDataSource() {
