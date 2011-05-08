@@ -16,12 +16,13 @@ import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * JDBCObjectManager
  */
-public abstract class JDBCObjectManager<OBJECT_TYPE extends DBSObject> implements DBEObjectManager<OBJECT_TYPE> {
+public abstract class JDBCObjectManager<OBJECT_TYPE extends DBSObject> extends AbstractObjectManager<OBJECT_TYPE> {
 
     protected static final Log log = LogFactory.getLog(JDBCObjectManager.class);
 
@@ -39,33 +40,6 @@ public abstract class JDBCObjectManager<OBJECT_TYPE extends DBSObject> implement
         } finally {
             dbStat.close();
         }
-    }
-
-    public static class CreateObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
-
-        public void redoCommand(DBECommand<OBJECT_TYPE> command)
-        {
-            command.getObject().getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_ADD, command.getObject()));
-        }
-
-        public void undoCommand(DBECommand<OBJECT_TYPE> command)
-        {
-            command.getObject().getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_REMOVE, command.getObject()));
-        }
-    }
-
-    public static class DeleteObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
-
-        public void redoCommand(DBECommand<OBJECT_TYPE> command)
-        {
-            command.getObject().getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_REMOVE, command.getObject()));
-        }
-
-        public void undoCommand(DBECommand<OBJECT_TYPE> command)
-        {
-            command.getObject().getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_ADD, command.getObject()));
-        }
-
     }
 
 }

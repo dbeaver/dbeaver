@@ -8,6 +8,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -44,7 +45,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
 
     protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, Object copyFrom);
 
-    private class CommandDropTable extends DBECommandAbstract<OBJECT_TYPE> {
+    private class CommandDropTable extends DBECommandDeleteObject<OBJECT_TYPE> {
         protected CommandDropTable(OBJECT_TYPE table)
         {
             super(table, "Drop table");

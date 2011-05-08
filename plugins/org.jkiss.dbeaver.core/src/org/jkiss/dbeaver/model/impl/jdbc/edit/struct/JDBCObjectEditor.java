@@ -47,13 +47,15 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
             if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isEditPossible()) {
                 final Object propertyValue = propertyCollector.getPropertyValue(prop.getId());
                 if (propertyValue != null) {
-                    commands.add(new NewObjectPropertyCommand(object, new PropertyHandler<OBJECT_TYPE>(this, prop), propertyValue));
+                    commands.add(new DBECommandProperty<OBJECT_TYPE>(object, new PropertyHandler<OBJECT_TYPE>(this, prop), propertyValue));
                 }
             }
         }
 
         context.addCommandBatch(commands, new CreateObjectReflector(), true);
     }
+
+    protected abstract IDatabasePersistAction[] makePersistActions(ObjectChangeCommand<OBJECT_TYPE> command);
 
     protected void validateObjectProperty(OBJECT_TYPE object, IPropertyDescriptor property, Object value) throws DBException
     {
@@ -65,8 +67,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
     {
 
     }
-
-    protected abstract IDatabasePersistAction[] makePersistActions(ObjectChangeCommand<OBJECT_TYPE> command);
 
     protected static class PropertyHandler<OBJECT_TYPE extends DBSObject>
         extends ProxyPropertyDescriptor
@@ -145,19 +145,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         public void validateCommand() throws DBException
         {
             editor.validateObjectProperties(this);
-        }
-    }
-
-    protected class NewObjectPropertyCommand extends DBECommandProperty<OBJECT_TYPE> {
-        public NewObjectPropertyCommand(OBJECT_TYPE object, PropertyHandler<OBJECT_TYPE> handler, Object value)
-        {
-            super(object, handler, value);
-        }
-
-        @Override
-        public boolean isUndoable()
-        {
-            return true;
         }
     }
 

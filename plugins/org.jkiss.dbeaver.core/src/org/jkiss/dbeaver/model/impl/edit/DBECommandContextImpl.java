@@ -413,18 +413,21 @@ public class DBECommandContextImpl implements DBECommandContext {
                 if (mergedCommands.isEmpty()) {
                     result = lastCommand.command.merge(null, userParams);
                 } else {
+                    boolean skipCommand = false;
                     for (int k = mergedCommands.size(); k > 0; k--) {
                         firstCommand = mergedCommands.get(k - 1);
                         result = lastCommand.command.merge(firstCommand.command, userParams);
-                        if (result != lastCommand.command) {
+                        if (result == null) {
+                            // Remove first and skip last command
+                            mergedCommands.remove(firstCommand);
+                            skipCommand = true;
+                        } else if (result != lastCommand.command) {
                             break;
                         }
                     }
-                }
-                if (result == null) {
-                    // Remove first and skip last command
-                    commands.remove(firstCommand);
-                    continue;
+                    if (skipCommand) {
+                        continue;
+                    }
                 }
 
                 mergedCommands.add(lastCommand);

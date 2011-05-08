@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -51,14 +52,9 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         {
             super(table, "Create table column");
         }
-
-        public IDatabasePersistAction[] getPersistActions()
-        {
-            return null;
-        }
     }
 
-    private class CommandDropTableColumn extends DBECommandAbstract<OBJECT_TYPE> {
+    private class CommandDropTableColumn extends DBECommandDeleteObject<OBJECT_TYPE> {
         protected CommandDropTableColumn(OBJECT_TYPE table)
         {
             super(table, "Drop table column");
