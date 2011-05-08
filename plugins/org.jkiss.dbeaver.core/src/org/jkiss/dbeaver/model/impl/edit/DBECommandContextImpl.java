@@ -209,9 +209,13 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
 
         synchronized (commands) {
+            CommandInfo prevInfo = null;
             for (int i = 0, commandBatchSize = commandBatch.size(); i < commandBatchSize; i++) {
                 DBECommand command = commandBatch.get(i);
-                commands.add(new CommandInfo(command, i == 0 ? reflector : null));
+                final CommandInfo info = new CommandInfo(command, i == 0 ? reflector : null);
+                info.prevInBatch = prevInfo;
+                commands.add(info);
+                prevInfo = info;
             }
             clearUndidCommands();
             clearCommandQueues();
@@ -285,15 +289,30 @@ public class DBECommandContextImpl implements DBECommandContext {
     public DBECommand getUndoCommand()
     {
         synchronized (commands) {
-            return !commands.isEmpty() && commands.get(commands.size() - 1).command.isUndoable() ?
-                commands.get(commands.size() - 1).command : null;
+            if (!commands.isEmpty()) {
+                CommandInfo cmd = commands.get(commands.size() - 1);
+                while (cmd.prevInBatch != null) {
+                    cmd = cmd.prevInBatch;
+                }
+                if (cmd.command.isUndoable()) {
+                    return cmd.command;
+                }
+            }
+            return null;
         }
     }
 
     public DBECommand getRedoCommand()
     {
         synchronized (commands) {
-            return !undidCommands.isEmpty() ? undidCommands.get(undidCommands.size() - 1).command : null;
+            if (!undidCommands.isEmpty()) {
+                CommandInfo cmd = undidCommands.get(undidCommands.size() - 1);
+                while (cmd.prevInBatch != null) {
+                    cmd = cmd.prevInBatch;
+                }
+                return cmd.command;
+            }
+            return null;
         }
     }
 
@@ -303,15 +322,20 @@ public class DBECommandContextImpl implements DBECommandContext {
             throw new IllegalStateException("Can't undo command");
         }
         synchronized (commands) {
-            CommandInfo lastCommand = commands.remove(commands.size() - 1);
+            CommandInfo lastCommand = commands.get(commands.size() - 1);
             if (!lastCommand.command.isUndoable()) {
                 throw new IllegalStateException("Last executed command is not undoable");
             }
-            // Undo UI changes and put command in undid command stack
-            if (lastCommand.reflector != null) {
-                lastCommand.reflector.undoCommand(lastCommand.command);
+            // Undo command batch
+            while (lastCommand != null) {
+                commands.remove(lastCommand);
+                // Undo UI changes and put command in undid command stack
+                if (lastCommand.reflector != null) {
+                    lastCommand.reflector.undoCommand(lastCommand.command);
+                }
+                undidCommands.add(lastCommand);
+                lastCommand = lastCommand.prevInBatch;
             }
-            undidCommands.add(lastCommand);
             clearCommandQueues();
 
             refreshCommandState();
@@ -325,11 +349,17 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
         synchronized (commands) {
             // Just redo UI changes and put command on the top of stack
-            CommandInfo commandInfo = undidCommands.remove(undidCommands.size() - 1);
-            if (commandInfo.reflector != null) {
-                commandInfo.reflector.redoCommand(commandInfo.command);
+            CommandInfo commandInfo = null;
+            // Redo batch
+            while (!undidCommands.isEmpty() &&
+                (commandInfo == null || undidCommands.get(undidCommands.size() - 1).prevInBatch == commandInfo))
+            {
+                commandInfo = undidCommands.remove(undidCommands.size() - 1);
+                if (commandInfo.reflector != null) {
+                    commandInfo.reflector.redoCommand(commandInfo.command);
+                }
+                commands.add(commandInfo);
             }
-            commands.add(commandInfo);
             clearCommandQueues();
 
             refreshCommandState();
@@ -499,6 +529,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         final DBECommandReflector<?, DBECommand<?>> reflector;
         List<PersistInfo> persistActions;
         CommandInfo mergedBy = null;
+        CommandInfo prevInBatch = null;
         boolean executed = false;
 
         CommandInfo(DBECommand<?> command, DBECommandReflector<?, DBECommand<?>> reflector)
