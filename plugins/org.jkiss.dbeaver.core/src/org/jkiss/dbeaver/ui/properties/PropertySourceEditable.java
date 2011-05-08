@@ -14,6 +14,8 @@ import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PropertySourceEditable
@@ -22,6 +24,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 {
     private DBECommandContext commandContext;
     private PropertyChangeCommand lastCommand = null;
+    private final List<IPropertySourceListener> listeners = new ArrayList<IPropertySourceListener>();
 
     public PropertySourceEditable(DBECommandContext commandContext, Object sourceObject, Object object)
     {
@@ -49,6 +52,20 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     public DBECommandContext getCommandContext()
     {
         return commandContext;
+    }
+
+    public void addPropertySourceListener(IPropertySourceListener listener)
+    {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removePropertySourceListener(IPropertySourceListener listener)
+    {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
     }
 
     @Override
@@ -87,8 +104,10 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             lastCommand.setNewValue(value);
             getCommandContext().updateCommand(lastCommand);
         }
-
-        handlePropertyChange(editableValue, prop, value);
+        // Notify listeners
+        for (IPropertySourceListener listener : listeners) {
+            listener.handlePropertyChange(editableValue, prop, value);
+        }
     }
 
     @Override
@@ -100,10 +119,6 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 //            curCommand.resetValue();
 //        }
         log.warn("Property reset not implemented");
-    }
-
-    protected void handlePropertyChange(Object editableValue, ObjectPropertyDescriptor prop, Object value)
-    {
     }
 
     private class PropertyChangeCommand extends DBECommandProperty<DBPObject> {
@@ -131,14 +146,20 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
     private class CommandReflector implements DBECommandReflector<DBPObject, PropertyChangeCommand> {
 
-        public void redoCommand(PropertyChangeCommand propertyChangeCommand)
+        public void redoCommand(PropertyChangeCommand command)
         {
-            //propertyChangeCommand.
+            // Notify listeners
+            for (IPropertySourceListener listener : listeners) {
+                listener.handlePropertyChange(command.getObject(), command.property, getPropertyValue(command.getObject(), command.property));
+            }
         }
 
-        public void undoCommand(PropertyChangeCommand propertyChangeCommand)
+        public void undoCommand(PropertyChangeCommand command)
         {
-
+            // Notify listeners
+            for (IPropertySourceListener listener : listeners) {
+                listener.handlePropertyChange(command.getObject(), command.property, getPropertyValue(command.getObject(), command.property));
+            }
         }
     }
 

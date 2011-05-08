@@ -14,4 +14,9 @@ public interface IPropertySourceEditable {
     boolean isEditable(Object object);
 
     DBECommandContext getCommandContext();
+
+    void addPropertySourceListener(IPropertySourceListener listener);
+
+    void removePropertySourceListener(IPropertySourceListener listener);
+
 }

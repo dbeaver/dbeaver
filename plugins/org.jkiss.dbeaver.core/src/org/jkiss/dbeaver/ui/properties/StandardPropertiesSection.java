@@ -5,11 +5,15 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.IFontProvider;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
@@ -18,7 +22,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * StandardPropertiesSection
  */
-public class StandardPropertiesSection extends AbstractPropertySection implements ILazyPropertyLoadListener {
+public class StandardPropertiesSection extends AbstractPropertySection implements ILazyPropertyLoadListener, IPropertySourceListener {
 
 	protected PropertyTreeViewer propertyTree;
     private IPropertySource curPropertySource;
@@ -41,8 +45,15 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
             if (!newSelection.isEmpty() && newSelection instanceof IStructuredSelection) {
                 Object element = ((IStructuredSelection) newSelection).getFirstElement();
                 if (element instanceof IPropertySource && element != curPropertySource) {
+                    if (curPropertySource instanceof IPropertySourceEditable) {
+                        ((IPropertySourceEditable) curPropertySource).removePropertySourceListener(this);
+                    }
                     curPropertySource = (IPropertySource)element;
-                    propertyTree.loadProperties((IPropertySource)element);
+                    propertyTree.loadProperties(curPropertySource);
+                    if (curPropertySource instanceof IPropertySourceEditable) {
+                        ((IPropertySourceEditable) curPropertySource).addPropertySourceListener(this);
+                    }
+
                 }
             }
 		    //pageStandard.selectionChanged(part, newSelection);
@@ -81,6 +92,14 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
     public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
     {
         if (curPropertySource.getEditableValue() == object && !propertyTree.getControl().isDisposed()) {
+            //propertyTree.get
+            propertyTree.refresh();
+        }
+    }
+
+    public void handlePropertyChange(Object editableValue, IPropertyDescriptor prop, Object value)
+    {
+        if (!propertyTree.getTree().isDisposed() && propertyTree.getSelectedProperty() != prop) {
             propertyTree.refresh();
         }
     }

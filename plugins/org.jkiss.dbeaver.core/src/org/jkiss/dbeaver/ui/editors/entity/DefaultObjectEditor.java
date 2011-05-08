@@ -22,6 +22,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
@@ -36,10 +37,7 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
-import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.properties.PropertyPageTabbed;
-import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
-import org.jkiss.dbeaver.ui.properties.ProxyPageSite;
+import org.jkiss.dbeaver.ui.properties.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -183,20 +181,19 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
 
     private void loadObjectProperties()
     {
-        PropertySourceEditable propertySource = new PropertySourceEditable(
+        final PropertySourceEditable propertySource = new PropertySourceEditable(
             getEditorInput().getCommandContext(),
             getEditorInput().getTreeNode(),
-            getEditorInput().getDatabaseObject())
-        {
-            @Override
-            protected void handlePropertyChange(Object editableValue, ObjectPropertyDescriptor prop, Object value)
+            getEditorInput().getDatabaseObject());
+        propertySource.addPropertySourceListener(new IPropertySourceListener() {
+            public void handlePropertyChange(Object editableValue, IPropertyDescriptor prop, Object value)
             {
-                if (DBConstants.PROP_ID_NAME.equals(prop.getId()) && getEditorInput().getDatabaseObject() == editableValue) {
+                if (DBConstants.PROP_ID_NAME.equals(prop.getId()) && propertySource.getEditableValue() == editableValue) {
                     // Update object in navigator
                     getEditorInput().getTreeNode().setNodeName(CommonUtils.toString(value));
                 }
             }
-        };
+        });
         propertySource.collectProperties();
         properties.selectionChanged(this, new StructuredSelection(propertySource));
     }

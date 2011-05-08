@@ -40,7 +40,7 @@ public class PropertyTreeViewer extends TreeViewer {
     private Clipboard clipboard;
     private int selectedColumn = -1;
     private CellEditor curCellEditor;
-    private IPropertyDescriptor curEditorProperty;
+    private IPropertyDescriptor selectedProperty;
 
     private String[] customCategories;
     private IBaseLabelProvider extraLabelProvider;
@@ -201,13 +201,18 @@ public class PropertyTreeViewer extends TreeViewer {
         super.refresh();
     }
 
+    public IPropertyDescriptor getSelectedProperty()
+    {
+        return selectedProperty;
+    }
+
     private void disposeOldEditor()
     {
         if (curCellEditor != null) {
             curCellEditor.deactivate();
             curCellEditor.dispose();
             curCellEditor = null;
-            curEditorProperty = null;
+            selectedProperty = null;
         }
         Control oldEditor = treeEditor.getEditor();
         if (oldEditor != null) oldEditor.dispose();
@@ -314,7 +319,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 cellEditor.setValue(propertyValue);
             }
             curCellEditor = cellEditor;
-            curEditorProperty = prop.property;
+            selectedProperty = prop.property;
 
             cellEditor.activate();
             final Control editorControl = cellEditor.getControl();
@@ -690,7 +695,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 case SWT.PaintItem: {
                     if (event.index == 1) {
                         final TreeNode node = (TreeNode)event.item.getData();
-                        if (node != null && node.property != null && node.property != curEditorProperty) {
+                        if (node != null && node.property != null && node.property != selectedProperty) {
                             final Object propertyValue = node.propertySource.getPropertyValue(node.property.getId());
                             if (propertyValue instanceof Boolean) {
                                 GC gc = event.gc;

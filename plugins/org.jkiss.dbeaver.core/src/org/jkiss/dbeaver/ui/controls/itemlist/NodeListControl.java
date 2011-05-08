@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
-import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.IPropertySourceListener;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -46,8 +46,7 @@ import java.util.Set;
 /**
  * NodeListControl
  */
-public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceProvider, INavigatorModelView, IDBNListener, IMenuListener
-{
+public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceProvider, INavigatorModelView, IDBNListener, IMenuListener, IPropertySourceListener {
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
     private IWorkbenchPart workbenchPart;
@@ -289,11 +288,25 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         // Hook context menu
     }
 
+    public void handlePropertyChange(Object editableValue, IPropertyDescriptor prop, Object value)
+    {
+        DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode((DBSObject) editableValue);
+        if (node != null) {
+            if (DBConstants.PROP_ID_NAME.equals(prop.getId())) {
+                // Update object in navigator
+                node.setNodeName(CommonUtils.toString(value));
+            } else {
+                getItemsViewer().update(node, null);
+            }
+        }
+    }
+
     private class NodeListPropertySource extends PropertySourceEditable {
 
         private NodeListPropertySource(DBECommandContext commandContext)
         {
             super(commandContext, NodeListControl.this, NodeListControl.this);
+            super.addPropertySourceListener(NodeListControl.this);
         }
 
         public DBNNode getSourceObject()
@@ -331,18 +344,6 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             return props.toArray(new IPropertyDescriptor[props.size()]);
         }
 
-        protected void handlePropertyChange(Object editableValue, ObjectPropertyDescriptor prop, Object value)
-        {
-            if (getSourceObject() instanceof DBNDatabaseNode) {
-                final DBNDatabaseNode sourceNode = (DBNDatabaseNode) getSourceObject();
-                if (DBConstants.PROP_ID_NAME.equals(prop.getId()) && sourceNode.getObject() == editableValue) {
-                    // Update object in navigator
-                    sourceNode.setNodeName(CommonUtils.toString(value));
-                } else {
-                    getItemsViewer().update(getCurrentListObject(), null);
-                }
-            }
-        }
     }
 
 

@@ -335,6 +335,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         if (getUndoCommand() == null) {
             throw new IllegalStateException("Can't undo command");
         }
+        List<CommandInfo> processedCommands = new ArrayList<CommandInfo>();
         synchronized (commands) {
             CommandInfo lastCommand = commands.get(commands.size() - 1);
             if (!lastCommand.command.isUndoable()) {
@@ -343,16 +344,20 @@ public class DBECommandContextImpl implements DBECommandContext {
             // Undo command batch
             while (lastCommand != null) {
                 commands.remove(lastCommand);
-                // Undo UI changes and put command in undid command stack
-                if (lastCommand.reflector != null) {
-                    lastCommand.reflector.undoCommand(lastCommand.command);
-                }
                 undidCommands.add(lastCommand);
+                processedCommands.add(lastCommand);
                 lastCommand = lastCommand.prevInBatch;
             }
             clearCommandQueues();
+            getCommandQueues();
+        }
+        refreshCommandState();
 
-            refreshCommandState();
+        // Undo UI changes
+        for (CommandInfo cmd : processedCommands) {
+            if (cmd.reflector != null) {
+                cmd.reflector.undoCommand(cmd.command);
+            }
         }
     }
 
@@ -361,6 +366,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         if (getRedoCommand() == null) {
             throw new IllegalStateException("Can't redo command");
         }
+        List<CommandInfo> processedCommands = new ArrayList<CommandInfo>();
         synchronized (commands) {
             // Just redo UI changes and put command on the top of stack
             CommandInfo commandInfo = null;
@@ -369,14 +375,19 @@ public class DBECommandContextImpl implements DBECommandContext {
                 (commandInfo == null || undidCommands.get(undidCommands.size() - 1).prevInBatch == commandInfo))
             {
                 commandInfo = undidCommands.remove(undidCommands.size() - 1);
-                if (commandInfo.reflector != null) {
-                    commandInfo.reflector.redoCommand(commandInfo.command);
-                }
                 commands.add(commandInfo);
+                processedCommands.add(commandInfo);
             }
             clearCommandQueues();
+            getCommandQueues();
+        }
+        refreshCommandState();
 
-            refreshCommandState();
+        // Redo UI changes
+        for (CommandInfo cmd : processedCommands) {
+            if (cmd.reflector != null) {
+                cmd.reflector.redoCommand(cmd.command);
+            }
         }
     }
 
