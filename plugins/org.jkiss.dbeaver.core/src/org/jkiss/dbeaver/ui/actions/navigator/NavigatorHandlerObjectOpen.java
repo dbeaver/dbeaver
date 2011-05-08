@@ -18,7 +18,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.eclipse.ui.services.IServiceScopes;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
@@ -134,7 +133,6 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
 
     public void updateElement(UIElement element, Map parameters)
     {
-        //IWorkbenchPartSite partSite = (IWorkbenchPartSite) parameters.get(IServiceScopes.PARTSITE_SCOPE);
         IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
         if (partSite != null) {
             final ISelectionProvider selectionProvider = partSite.getSelectionProvider();

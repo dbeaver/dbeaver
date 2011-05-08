@@ -91,7 +91,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         @Override
         public String toString()
         {
-            return original.toString();
+            return original.getDisplayName();
         }
 
         @Override

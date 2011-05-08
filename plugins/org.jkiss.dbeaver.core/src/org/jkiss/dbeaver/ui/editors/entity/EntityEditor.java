@@ -12,6 +12,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -193,7 +195,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
     public void undoChanges()
     {
-        if (getCommandContext() != null && getCommandContext().canUndoCommand()) {
+        if (getCommandContext() != null && getCommandContext().getUndoCommand() != null) {
             getCommandContext().undoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
@@ -201,7 +203,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
     public void redoChanges()
     {
-        if (getCommandContext() != null && getCommandContext().canRedoCommand()) {
+        if (getCommandContext() != null && getCommandContext().getRedoCommand() != null) {
             getCommandContext().redoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }

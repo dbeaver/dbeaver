@@ -178,7 +178,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         if (!CommonUtils.isEmpty(metaChildren) && metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
             final DBNDatabaseItem newChild = new DBNDatabaseItem(this, (DBXTreeItem) metaChildren.get(0), object, false);
             childNodes.add(newChild);
-            getModel().addNode(newChild, true);
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, DBNEvent.NodeChange.LOAD, newChild));
         } else {
             log.error("Cannot add child item to " + getNodeName() + ". Conditions doesn't met");
         }

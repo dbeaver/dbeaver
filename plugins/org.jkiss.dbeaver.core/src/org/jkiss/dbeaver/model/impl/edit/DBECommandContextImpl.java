@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.model.impl.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -190,6 +192,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         if (execute && reflector != null) {
             reflector.redoCommand(command);
         }
+        refreshCommandState();
     }
 
     public void addCommandBatch(
@@ -201,6 +204,10 @@ public class DBECommandContextImpl implements DBECommandContext {
 
     public void addCommandBatch(List<DBECommand> commandBatch, DBECommandReflector reflector, boolean execute)
     {
+        if (commandBatch.isEmpty()) {
+            return;
+        }
+
         synchronized (commands) {
             for (int i = 0, commandBatchSize = commandBatch.size(); i < commandBatchSize; i++) {
                 DBECommand command = commandBatch.get(i);
@@ -210,13 +217,12 @@ public class DBECommandContextImpl implements DBECommandContext {
             clearCommandQueues();
         }
 
-        if (!commandBatch.isEmpty()) {
-            // Fire only single event
-            fireCommandChange(commandBatch.get(0));
-            if (execute && reflector != null) {
-                reflector.redoCommand(commandBatch.get(0));
-            }
+        // Fire only single event
+        fireCommandChange(commandBatch.get(0));
+        if (execute && reflector != null) {
+            reflector.redoCommand(commandBatch.get(0));
         }
+        refreshCommandState();
     }
 
     public void removeCommand(DBECommand<?> command)
@@ -276,23 +282,24 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
-    public boolean canUndoCommand()
+    public DBECommand getUndoCommand()
     {
         synchronized (commands) {
-            return !commands.isEmpty() && commands.get(commands.size() - 1).command.isUndoable();
+            return !commands.isEmpty() && commands.get(commands.size() - 1).command.isUndoable() ?
+                commands.get(commands.size() - 1).command : null;
         }
     }
 
-    public boolean canRedoCommand()
+    public DBECommand getRedoCommand()
     {
         synchronized (commands) {
-            return !undidCommands.isEmpty();
+            return !undidCommands.isEmpty() ? undidCommands.get(undidCommands.size() - 1).command : null;
         }
     }
 
     public void undoCommand()
     {
-        if (!canUndoCommand()) {
+        if (getUndoCommand() == null) {
             throw new IllegalStateException("Can't undo command");
         }
         synchronized (commands) {
@@ -306,12 +313,14 @@ public class DBECommandContextImpl implements DBECommandContext {
             }
             undidCommands.add(lastCommand);
             clearCommandQueues();
+
+            refreshCommandState();
         }
     }
 
     public void redoCommand()
     {
-        if (!canRedoCommand()) {
+        if (getRedoCommand() == null) {
             throw new IllegalStateException("Can't redo command");
         }
         synchronized (commands) {
@@ -322,6 +331,8 @@ public class DBECommandContextImpl implements DBECommandContext {
             }
             commands.add(commandInfo);
             clearCommandQueues();
+
+            refreshCommandState();
         }
     }
 
@@ -461,6 +472,15 @@ public class DBECommandContextImpl implements DBECommandContext {
     protected void closePersistContext(DBCExecutionContext context)
     {
         context.close();
+    }
+
+    private void refreshCommandState()
+    {
+        ICommandService commandService = (ICommandService) DBeaverCore.getActiveWorkbenchWindow().getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.refreshElements(IWorkbenchCommandConstants.EDIT_UNDO, null);
+            commandService.refreshElements(IWorkbenchCommandConstants.EDIT_REDO, null);
+        }
     }
 
     private static class PersistInfo {

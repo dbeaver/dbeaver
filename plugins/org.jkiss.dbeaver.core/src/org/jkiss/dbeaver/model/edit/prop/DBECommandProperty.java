@@ -25,7 +25,7 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
 
     public DBECommandProperty(OBJECT_TYPE object, DBEPropertyHandler<OBJECT_TYPE> handler)
     {
-        super(object, "Change property " + handler);
+        super(object, "Property '" + handler + "' change");
         this.handler = handler;
     }
 

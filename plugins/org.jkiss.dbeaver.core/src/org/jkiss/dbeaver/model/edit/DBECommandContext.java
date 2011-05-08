@@ -21,9 +21,9 @@ public interface DBECommandContext extends IDataSourceContainerProvider {
 
     boolean isDirty();
 
-    boolean canUndoCommand();
+    DBECommand getUndoCommand();
 
-    boolean canRedoCommand();
+    DBECommand getRedoCommand();
 
     void saveChanges(DBRProgressMonitor monitor) throws DBException;
 
