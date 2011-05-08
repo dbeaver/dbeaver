@@ -27,7 +27,7 @@ public abstract class DBECommandDeleteObject<OBJECT_TYPE extends DBPObject> exte
     @Override
     public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
     {
-        if (prevCommand.getObject() == getObject()) {
+        if (prevCommand != null && prevCommand.getObject() == getObject()) {
             return null;
         }
         return this;

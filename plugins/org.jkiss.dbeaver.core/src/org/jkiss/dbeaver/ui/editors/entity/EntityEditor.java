@@ -114,18 +114,23 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         super.dispose();
 
         if (getDatabaseObject() != null) {
-            DBNDatabaseNode treeNode = getEditorInput().getTreeNode();
-            if (getDatabaseObject().isPersisted()) {
-                // Reset node name (if it was set by editor)
-                treeNode.setNodeName(null);
-            }
-
-            // Remove all non-persisted objects
+            // Revert node names and reset all changes in command context
+            final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
             for (DBPObject object : getCommandContext().getEditedObjects()) {
-                if (object instanceof DBPPersistedObject && !((DBPPersistedObject)object).isPersisted()) {
-                    dataSource.getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_REMOVE, (DBSObject) object));
+                if (object instanceof DBSObject) {
+                    final DBNDatabaseNode node = navigatorModel.getNodeByObject((DBSObject) object);
+                    if (node != null) {
+                        node.setNodeName(null);
+                    }
                 }
             }
+            getCommandContext().resetChanges();
+//            // Remove all non-persisted objects
+//            for (DBPObject object : getCommandContext().getEditedObjects()) {
+//                if (object instanceof DBPPersistedObject && !((DBPPersistedObject)object).isPersisted()) {
+//                    dataSource.getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_REMOVE, (DBSObject) object));
+//                }
+//            }
         }
     }
 
