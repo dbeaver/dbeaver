@@ -106,15 +106,15 @@ public class DBNResource extends DBNNode
     }
 
     @Override
-    public boolean hasChildren()
+    public boolean allowsChildren()
     {
         return resource instanceof IContainer;
     }
 
     @Override
-    public boolean hasNavigableChildren()
+    public boolean allowsNavigableChildren()
     {
-        return hasChildren();
+        return allowsChildren();
     }
 
     @Override

@@ -113,12 +113,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return null;
     }
 
-    public boolean hasChildren()
+    public boolean allowsChildren()
     {
         return !isDisposed() && this.getMeta().hasChildren(this);
     }
 
-    public boolean hasNavigableChildren()
+    public boolean allowsNavigableChildren()
     {
         if (isDisposed()) {
             return false;
@@ -157,7 +157,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public List<DBNDatabaseNode> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (this.hasChildren() && childNodes == null) {
+        if (this.allowsChildren() && childNodes == null) {
             if (this.initializeNode(null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<DBNDatabaseNode>();
                 loadChildren(monitor, getMeta(), null, tmpList);
@@ -204,7 +204,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public boolean isLazyNode()
     {
-        return childNodes == null && hasChildren();
+        return childNodes == null && allowsChildren();
     }
 
     public boolean isLocked()
@@ -413,7 +413,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                     if (equalObjects(oldChild.getObject(), object)) {
                         oldChild.reloadObject(monitor, object);
 
-                        if (oldChild.hasChildren() && !oldChild.isLazyNode()) {
+                        if (oldChild.allowsChildren() && !oldChild.isLazyNode()) {
                             // Refresh children recursive
                             oldChild.reloadChildren(monitor);
                         }

@@ -89,15 +89,15 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         return null;
     }
 
-    public boolean hasChildren()
+    public boolean allowsChildren()
     {
         return !projects.isEmpty();
     }
 
     @Override
-    public boolean hasNavigableChildren()
+    public boolean allowsNavigableChildren()
     {
-        return hasChildren();
+        return allowsChildren();
     }
 
     public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)

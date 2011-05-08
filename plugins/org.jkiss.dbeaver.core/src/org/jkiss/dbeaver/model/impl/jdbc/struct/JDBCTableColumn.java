@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
@@ -17,7 +18,7 @@ import java.util.TreeSet;
 /**
  * JDBC abstract table column
  */
-public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBCColumn {
+public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBCColumn implements DBPSaveableObject {
 
     private final TABLE_TYPE table;
     private boolean persisted;
@@ -76,7 +77,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
-        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this));
+        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this, true));
     }
 
     public static class ColumnTypeNameListProvider implements IPropertyValueListProvider {

@@ -91,7 +91,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
     {
         Image image = getNodeIcon();
         if (image == null) {
-            if (this.hasChildren()) {
+            if (this.allowsChildren()) {
                 return DBIcon.TREE_FOLDER.getImage();
             } else {
                 return DBIcon.TREE_PAGE.getImage();
@@ -119,9 +119,9 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         return pathName.toString();
     }
 
-    public abstract boolean hasChildren();
+    public abstract boolean allowsChildren();
 
-    public abstract boolean hasNavigableChildren();
+    public abstract boolean allowsNavigableChildren();
     
     public abstract List<? extends DBNNode> getChildren(DBRProgressMonitor monitor) throws DBException;
 

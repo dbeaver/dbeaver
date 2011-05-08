@@ -7,10 +7,12 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.*;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
@@ -148,5 +150,19 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         }
     }
 
+    protected static abstract class ObjectSaveCommand<OBJECT_TYPE extends DBPSaveableObject> extends DBECommandAbstract<OBJECT_TYPE> {
+
+        protected ObjectSaveCommand(OBJECT_TYPE object, String title)
+        {
+            super(object, title);
+        }
+
+
+        @Override
+        public void updateModel()
+        {
+            getObject().setPersisted(true);
+        }
+    }
 }
 

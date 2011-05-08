@@ -90,7 +90,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             return EMPTY_CHILDREN;
         }
 */
-        if (!parentNode.hasNavigableChildren()) {
+        if (!parentNode.allowsNavigableChildren()) {
             return EMPTY_CHILDREN;
         }
         if (parentNode instanceof DBNDatabaseNode && ((DBNDatabaseNode)parentNode).isLazyNode()) {
@@ -133,7 +133,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
 
     public boolean hasChildren(Object parent)
     {
-        return parent instanceof DBNNode && ((DBNNode) parent).hasNavigableChildren();
+        return parent instanceof DBNNode && ((DBNNode) parent).allowsNavigableChildren();
     }
 
 /*

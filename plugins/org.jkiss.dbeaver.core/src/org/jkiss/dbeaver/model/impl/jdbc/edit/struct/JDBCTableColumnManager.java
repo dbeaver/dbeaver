@@ -48,7 +48,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
 
     protected abstract OBJECT_TYPE createNewTableColumn(CONTAINER_TYPE parent, Object copyFrom);
 
-    private class CommandCreateTableColumn extends DBECommandAbstract<OBJECT_TYPE> {
+    private class CommandCreateTableColumn extends ObjectSaveCommand<OBJECT_TYPE> {
         protected CommandCreateTableColumn(OBJECT_TYPE table)
         {
             super(table, "Create table column");

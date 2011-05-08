@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -26,11 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * JDBC abstract table mplementation
+ * JDBC abstract table implementation
  */
 public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSEntityContainer>
     extends AbstractTable<DATASOURCE, CONTAINER>
-    implements DBSDataContainer
+    implements DBSDataContainer, DBPSaveableObject
 {
     static final Log log = LogFactory.getLog(JDBCTable.class);
 
@@ -56,7 +57,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
-        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this));
+        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this, true));
     }
 
     public int getSupportedFeatures()

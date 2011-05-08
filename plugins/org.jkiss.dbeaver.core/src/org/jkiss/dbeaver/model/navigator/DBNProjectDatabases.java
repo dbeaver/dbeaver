@@ -107,15 +107,15 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
         return DBIcon.CONNECTIONS.getImage();
     }
 
-    public boolean hasChildren()
+    public boolean allowsChildren()
     {
         return !dataSources.isEmpty();
     }
 
     @Override
-    public boolean hasNavigableChildren()
+    public boolean allowsNavigableChildren()
     {
-        return hasChildren();
+        return allowsChildren();
     }
 
     public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)
@@ -158,7 +158,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
                     final DBNDatabaseNode parentNode = getModel().getParentNode(event.getObject());
 
                     if (parentNode != null) {
-                        if (parentNode.getChildNodes() == null) {
+                        if (parentNode.getChildNodes() == null && parentNode.allowsChildren()) {
                             // We have to load children here
                             try {
                                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {

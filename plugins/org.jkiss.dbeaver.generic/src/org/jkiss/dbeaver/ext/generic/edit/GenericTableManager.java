@@ -39,7 +39,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
     }
 
     @Override
-    protected IDatabasePersistAction[] makePersistActions(CommandCreateStruct command)
+    protected IDatabasePersistAction[] makePersistActions(StructCreateCommand command)
     {
         final GenericTable table = command.getObject();
         final ObjectChangeCommand tableProps = command.getObjectCommands().get(table);

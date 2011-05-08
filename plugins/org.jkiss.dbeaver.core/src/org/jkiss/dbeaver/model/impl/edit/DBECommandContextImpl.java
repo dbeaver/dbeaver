@@ -55,75 +55,85 @@ public class DBECommandContextImpl implements DBECommandContext {
         if (!dataSourceContainer.isConnected()) {
             throw new DBException("Not connected to database");
         }
-        synchronized (commands) {
-            List<CommandQueue> commandQueues = getCommandQueues();
+        List<CommandQueue> commandQueues = getCommandQueues();
 
-            // Validate commands
+        // Validate commands
+        for (CommandQueue queue : commandQueues) {
+            for (CommandInfo cmd : queue.commands) {
+                cmd.command.validateCommand();
+            }
+        }
+
+        // Execute commands
+        try {
+            List<DBECommand> executedCommands = new ArrayList<DBECommand>();
             for (CommandQueue queue : commandQueues) {
-                for (CommandInfo cmd : queue.commands) {
-                    cmd.command.validateCommand();
-                }
-                try {
-                    // Make list of not-executed commands
-                    for (int i = 0; i < queue.commands.size(); i++) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
+                // Make list of not-executed commands
+                for (int i = 0; i < queue.commands.size(); i++) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
 
-                        CommandInfo cmd = queue.commands.get(i);
-                        while (cmd.mergedBy != null) {
-                            cmd = cmd.mergedBy;
-                        }
-                        if (!cmd.executed) {
-                            // Persist changes
-                            if (CommonUtils.isEmpty(cmd.persistActions)) {
-                                IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
-                                if (!CommonUtils.isEmpty(persistActions)) {
-                                    cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
-                                    for (IDatabasePersistAction action : persistActions) {
-                                        cmd.persistActions.add(new PersistInfo(action));
-                                    }
+                    CommandInfo cmd = queue.commands.get(i);
+                    while (cmd.mergedBy != null) {
+                        cmd = cmd.mergedBy;
+                    }
+                    if (!cmd.executed) {
+                        // Persist changes
+                        if (CommonUtils.isEmpty(cmd.persistActions)) {
+                            IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
+                            if (!CommonUtils.isEmpty(persistActions)) {
+                                cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
+                                for (IDatabasePersistAction action : persistActions) {
+                                    cmd.persistActions.add(new PersistInfo(action));
                                 }
                             }
-                            if (!CommonUtils.isEmpty(cmd.persistActions)) {
-                                DBCExecutionContext context = openCommandPersistContext(monitor, dataSourceContainer.getDataSource(), cmd.command);
-                                try {
-                                    for (PersistInfo persistInfo : cmd.persistActions) {
-                                        if (persistInfo.executed) {
-                                            continue;
-                                        }
-                                        if (monitor.isCanceled()) {
-                                            break;
-                                        }
-                                        try {
-                                            queue.objectManager.executePersistAction(context, cmd.command, persistInfo.action);
-                                            persistInfo.executed = true;
-                                        } catch (DBException e) {
-                                            persistInfo.error = e;
-                                            persistInfo.executed = false;
-                                            throw e;
-                                        }
-                                    }
-                                } finally {
-                                    closePersistContext(context);
-                                }
-                            }
-                            // Update model
-                            cmd.command.updateModel();
-                            cmd.executed = true;
                         }
+                        if (!CommonUtils.isEmpty(cmd.persistActions)) {
+                            DBCExecutionContext context = openCommandPersistContext(monitor, dataSourceContainer.getDataSource(), cmd.command);
+                            try {
+                                for (PersistInfo persistInfo : cmd.persistActions) {
+                                    if (persistInfo.executed) {
+                                        continue;
+                                    }
+                                    if (monitor.isCanceled()) {
+                                        break;
+                                    }
+                                    try {
+                                        queue.objectManager.executePersistAction(context, cmd.command, persistInfo.action);
+                                        persistInfo.executed = true;
+                                    } catch (DBException e) {
+                                        persistInfo.error = e;
+                                        persistInfo.executed = false;
+                                        throw e;
+                                    }
+                                }
+                            } finally {
+                                closePersistContext(context);
+                            }
+                        }
+                        // Update model
+                        executedCommands.add(cmd.command);
+                        cmd.executed = true;
+                    }
+                    synchronized (commands) {
                         // Remove original command from stack
                         commands.remove(queue.commands.get(i));
                     }
                 }
-                finally {
-                    clearCommandQueues();
-                    clearUndidCommands();
+            }
 
-                    for (DBECommandListener listener : getListeners()) {
-                        listener.onSave();
-                    }
-                }
+            // Update model
+            for (DBECommand cmd : executedCommands) {
+                cmd.updateModel();
+            }
+        }
+        finally {
+            clearCommandQueues();
+            clearUndidCommands();
+
+            for (DBECommandListener listener : getListeners()) {
+                listener.onSave();
             }
         }
     }

@@ -10,7 +10,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
@@ -33,7 +32,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     {
         OBJECT_TYPE newTable = createNewTable(parent, copyFrom);
 
-        makeInitialCommands(newTable, commandContext, new CommandCreateStruct(newTable));
+        makeInitialCommands(newTable, commandContext, new StructCreateCommand(newTable));
 
         return newTable;
     }
@@ -54,15 +53,8 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         public IDatabasePersistAction[] getPersistActions()
         {
             return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction("Drop table", "DROP TABLE " + getObject().getFullQualifiedName()) {
-                    @Override
-                    public void handleExecute(Throwable error)
-                    {
-                        if (error == null) {
-                            //object.setPersisted(false);
-                        }
-                    }
-                }};
+                new AbstractDatabasePersistAction("Drop table", "DROP TABLE " + getObject().getFullQualifiedName())
+            };
         }
     }
 
