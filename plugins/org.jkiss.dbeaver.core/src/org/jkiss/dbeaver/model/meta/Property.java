@@ -39,7 +39,9 @@ public @interface Property
 
     String helpContextId() default "";
 
-    Class<ILabelProvider> labelProvider() default ILabelProvider.class;
+    Class<? extends ILabelProvider> labelProvider() default ILabelProvider.class;
+
+    Class<? extends IPropertyValueTransformer> valueTransformer() default IPropertyValueTransformer.class;
 
     Class<? extends IPropertyValueEditorProvider> valueEditor() default IPropertyValueEditorProvider.class;
 

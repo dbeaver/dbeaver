@@ -317,7 +317,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 return false;
             }
             final Class<?> curClass = editableValue.getClass();
-            DBEStructEditor structEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(((DBNDatabaseNode) rootNode).getValueObject().getClass(), DBEStructEditor.class);
+            final Object valueObject = ((DBNDatabaseNode) rootNode).getValueObject();
+            if (valueObject == null) {
+                return false;
+            }
+            DBEStructEditor structEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(valueObject.getClass(), DBEStructEditor.class);
             return structEditor != null && structEditor.isChildType(curClass);
         }
 

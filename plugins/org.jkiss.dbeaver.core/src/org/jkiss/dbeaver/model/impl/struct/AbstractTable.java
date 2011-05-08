@@ -47,7 +47,7 @@ public abstract class AbstractTable<
         return tableName;
     }
 
-    protected void setName(String tableName)
+    public void setName(String tableName)
     {
         this.tableName = tableName;
     }

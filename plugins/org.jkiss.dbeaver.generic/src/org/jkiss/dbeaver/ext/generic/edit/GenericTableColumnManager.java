@@ -13,10 +13,10 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.sql.Types;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar", "varchar2", "char", "integer", "number");
 
         final GenericTableColumn column = new GenericTableColumn(parent);
-        column.setName("NewColumn");
+        column.setName(JDBCObjectNameCaseTransformer.transformName(column, "NewColumn"));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBSDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeNumber());
@@ -97,8 +97,7 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
         // Create column
         String columnName = DBUtils.getQuotedIdentifier(
             column.getDataSource(),
-            CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME)),
-            column.getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.META_CASE_SENSITIVE));
+            CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME)));
 
         final String typeName = (String)command.getProperty(DBConstants.PROP_ID_TYPE_NAME);
         boolean useMaxLength = false;

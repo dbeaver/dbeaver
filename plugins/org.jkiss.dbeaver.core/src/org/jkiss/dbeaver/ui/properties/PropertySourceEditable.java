@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -82,6 +83,9 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     @Override
     public void setPropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object value)
     {
+        if (prop.getValueTransformer() != null) {
+            value = prop.getValueTransformer().transform(editableValue, value);
+        }
         final ObjectProps objectProps = getObjectProps(editableValue);
         DBECommandProperty curCommand = objectProps.propValues.get(prop);
         if (curCommand != null && CommonUtils.equalObjects(curCommand.getNewValue(), value)) {
@@ -96,10 +100,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
                 (DBPObject)editableValue,
                 prop);
-            curCommand = new DBECommandProperty<DBPObject>(
-                (DBPObject)editableValue,
-                propertyHandler,
-                value);
+            curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, value);
             objectProps.propValues.put(prop, curCommand);
             final CommandReflector reflector = new CommandReflector();
             getCommandContext().addCommand(curCommand, reflector);
@@ -123,6 +124,29 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
     protected void handlePropertyChange(Object editableValue, ObjectPropertyDescriptor prop, Object value)
     {
+    }
+
+    private class PropertyChangeCommand extends DBECommandProperty<DBPObject> {
+        ObjectPropertyDescriptor property;
+        public PropertyChangeCommand(DBPObject editableValue, ObjectPropertyDescriptor property, DBEPropertyHandler<DBPObject> propertyHandler, Object value)
+        {
+            super(editableValue, propertyHandler, value);
+            this.property = property;
+        }
+
+        @Override
+        public void updateModel()
+        {
+            super.updateModel();
+            try {
+                property.writeValue(getObject(), getNewValue());
+            } catch (Throwable e) {
+                if (e instanceof InvocationTargetException) {
+                    e = ((InvocationTargetException) e).getTargetException();
+                }
+                log.error("Can't write property '" + property.getDisplayName() + "' value", e);
+            }
+        }
     }
 
     private class CommandReflector <T extends DBPObject> implements DBECommandReflector<T, DBECommand<T>> {

@@ -15,6 +15,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.meta.IPropertyValueEditorProvider;
+import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -24,6 +25,8 @@ import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 
 /**
@@ -35,6 +38,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     private Method setter;
     private ILabelProvider labelProvider;
     private IPropertyValueEditorProvider valueEditor;
+    private IPropertyValueTransformer valueTransformer;
 
     public ObjectPropertyDescriptor(
         IPropertySource source,
@@ -44,12 +48,19 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     {
         super(source, parent, getter, propInfo.id(), propInfo.order());
         this.propInfo = propInfo;
-        this.setter = BeanUtils.getSetMethod(
-            getter.getDeclaringClass(),
-            BeanUtils.getPropertyNameFromGetter(getter.getName()));
+        final String propertyName = BeanUtils.getPropertyNameFromGetter(getter.getName());
+        Class<?> searchClass = getter.getDeclaringClass();
+        while (setter == null && searchClass != Object.class) {
+            this.setter = BeanUtils.getSetMethod(
+                searchClass,
+                propertyName);
+            if (setter == null) {
+                searchClass = searchClass.getSuperclass();
+            }
+        }
 
         // Obtain label provider
-        Class<ILabelProvider> labelProviderClass = propInfo.labelProvider();
+        Class<? extends ILabelProvider> labelProviderClass = propInfo.labelProvider();
         if (labelProviderClass != null && labelProviderClass != ILabelProvider.class) {
             try {
                 this.labelProvider = labelProviderClass.newInstance();
@@ -67,10 +78,19 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             try {
                 valueEditor = valueEditorClass.newInstance();
             } catch (Throwable e) {
-                log.warn(e);
+                log.warn("Can't create value editor", e);
             }
         }
-        //valueEditor.initEditor();
+
+        // Obtain value transformer
+        Class<? extends IPropertyValueTransformer> valueTransformerClass = propInfo.valueTransformer();
+        if (valueTransformerClass != null && valueTransformerClass != IPropertyValueTransformer.class) {
+            try {
+                valueTransformer = valueTransformerClass.newInstance();
+            } catch (Throwable e) {
+                log.warn("Can't create value transformer", e);
+            }
+        }
     }
 
     public boolean isViewable()
@@ -81,6 +101,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     public boolean isExpensive()
     {
         return propInfo != null && propInfo.expensive();
+    }
+
+    public IPropertyValueTransformer getValueTransformer()
+    {
+        return valueTransformer;
     }
 
     public CellEditor createPropertyEditor(Composite parent)

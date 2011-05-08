@@ -54,23 +54,12 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     private List<GenericForeignKey> foreignKeys;
     private Long rowCount;
 
-    /*
-        private final ILoadService<Long> rowCountLoader = new JDBCLoadService<Long>("Load row count", this, true) {
-            public Long evaluateQuery(Statement statement)
-                throws InvocationTargetException, InterruptedException, DBException, SQLException
-            {
-                ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM " + getFullQualifiedName());
-                try {
-                    resultSet.next();
-                    return resultSet.getLong(1);
-                }
-                finally {
-                    resultSet.close();
-                }
-            }
-        };
+    public GenericTable(
+        GenericEntityContainer container)
+    {
+        this(container, null, null, null, false);
+    }
 
-    */
     public GenericTable(
         GenericEntityContainer container,
         String tableName,

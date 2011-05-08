@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
@@ -41,7 +42,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         return table;
     }
 
-    @Property(name = "Column Name", viewable = true, editable = true, order = 10)
+    @Property(name = "Column Name", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 10)
     @Override
     public String getName()
     {

@@ -80,7 +80,7 @@ public class DBECommandContextImpl implements DBECommandContext {
                     }
                     if (!cmd.executed) {
                         // Persist changes
-                        if (CommonUtils.isEmpty(cmd.persistActions)) {
+                        //if (CommonUtils.isEmpty(cmd.persistActions)) {
                             IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
                             if (!CommonUtils.isEmpty(persistActions)) {
                                 cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
@@ -88,7 +88,7 @@ public class DBECommandContextImpl implements DBECommandContext {
                                     cmd.persistActions.add(new PersistInfo(action));
                                 }
                             }
-                        }
+                        //}
                         if (!CommonUtils.isEmpty(cmd.persistActions)) {
                             DBCExecutionContext context = openCommandPersistContext(monitor, dataSourceContainer.getDataSource(), cmd.command);
                             try {
@@ -112,13 +112,14 @@ public class DBECommandContextImpl implements DBECommandContext {
                                 closePersistContext(context);
                             }
                         }
-                        // Update model
-                        executedCommands.add(cmd.command);
+
                         cmd.executed = true;
                     }
                     synchronized (commands) {
                         // Remove original command from stack
-                        commands.remove(queue.commands.get(i));
+                        final CommandInfo thisCommand = queue.commands.get(i);
+                        executedCommands.add(thisCommand.command);
+                        commands.remove(thisCommand);
                     }
                 }
             }

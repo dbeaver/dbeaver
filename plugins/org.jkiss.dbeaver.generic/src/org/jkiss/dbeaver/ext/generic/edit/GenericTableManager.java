@@ -11,11 +11,14 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Generic table manager
@@ -25,7 +28,10 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
     @Override
     protected GenericTable createNewTable(GenericEntityContainer parent, Object copyFrom)
     {
-        return new GenericTable(parent, "NewTable", null, null, false);
+        final GenericTable table = new GenericTable(parent);
+        table.setName(JDBCObjectNameCaseTransformer.transformName(parent, "NewTable"));
+
+        return table;
     }
 
     @Override
@@ -51,8 +57,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
 
         String tableName = DBUtils.getQuotedIdentifier(
             table.getDataSource(),
-            CommonUtils.toString(tableProps.getProperty(DBConstants.PROP_ID_NAME)),
-            table.getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.META_CASE_SENSITIVE));
+            CommonUtils.toString(tableProps.getProperty(DBConstants.PROP_ID_NAME)));
 
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
