@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -62,7 +63,10 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
 
         public IDatabasePersistAction[] getPersistActions()
         {
-            return null;
+            return new IDatabasePersistAction[] {
+                new AbstractDatabasePersistAction(
+                    "Drop table", "ALTER TABLE " + getObject().getTable().getFullQualifiedName() + " DROP COLUMN " + getObject().getName())
+            };
         }
     }
 

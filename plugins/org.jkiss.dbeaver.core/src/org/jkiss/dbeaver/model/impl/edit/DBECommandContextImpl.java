@@ -56,24 +56,29 @@ public class DBECommandContextImpl implements DBECommandContext {
             throw new DBException("Not connected to database");
         }
         synchronized (commands) {
-            List<CommandQueue> commandQueues = getCommandQueues();
+            // Prepare command map
+            Map<CommandInfo, CommandQueue> commandMap = new LinkedHashMap<CommandInfo, CommandQueue>();
+            for (CommandQueue queue : getCommandQueues()) {
+                for (CommandInfo cmdInfo : queue.commands) {
+                    while (cmdInfo.mergedBy != null) {
+                        cmdInfo = cmdInfo.mergedBy;
+                    }
+                    commandMap.put(cmdInfo, queue);
+                }
+            }
 
-            // Validate commands
-            for (CommandQueue queue : commandQueues) {
-                for (CommandInfo cmd : queue.commands) {
+            {
+                // Validate commands
+                for (CommandInfo cmd : commandMap.keySet()) {
                     cmd.command.validateCommand();
                 }
                 try {
-                    // Make list of not-executed commands
-                    for (int i = 0; i < queue.commands.size(); i++) {
+                    // Execute commands
+                    for (Map.Entry<CommandInfo, CommandQueue> cmdEntry : commandMap.entrySet()) {
                         if (monitor.isCanceled()) {
                             break;
                         }
-
-                        CommandInfo cmd = queue.commands.get(i);
-                        if (cmd.mergedBy != null) {
-                            cmd = cmd.mergedBy;
-                        }
+                        CommandInfo cmd = cmdEntry.getKey();
                         if (!cmd.executed) {
                             // Persist changes
                             if (CommonUtils.isEmpty(cmd.persistActions)) {
@@ -96,7 +101,7 @@ public class DBECommandContextImpl implements DBECommandContext {
                                             break;
                                         }
                                         try {
-                                            queue.objectManager.executePersistAction(context, cmd.command, persistInfo.action);
+                                            cmdEntry.getValue().objectManager.executePersistAction(context, cmd.command, persistInfo.action);
                                             persistInfo.executed = true;
                                         } catch (DBException e) {
                                             persistInfo.error = e;
@@ -113,7 +118,7 @@ public class DBECommandContextImpl implements DBECommandContext {
                             cmd.executed = true;
                         }
                         // Remove original command from stack
-                        commands.remove(queue.commands.get(i));
+                        commands.remove(cmd);
                     }
                 }
                 finally {

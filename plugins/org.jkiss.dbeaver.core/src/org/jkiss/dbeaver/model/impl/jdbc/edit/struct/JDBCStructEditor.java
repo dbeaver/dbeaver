@@ -31,7 +31,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity>
 
         public CommandCreateStruct(OBJECT_TYPE object)
         {
-            super(object, "Create table");
+            super(object, "Create struct");
         }
 
         public Map<DBPObject, ObjectChangeCommand> getObjectCommands()
