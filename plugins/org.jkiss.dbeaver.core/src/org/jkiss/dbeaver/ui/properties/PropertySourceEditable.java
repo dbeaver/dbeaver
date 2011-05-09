@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.properties;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -86,6 +87,10 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     {
         if (prop.getValueTransformer() != null) {
             value = prop.getValueTransformer().transform(editableValue, value);
+        }
+        final Object oldValue = getPropertyValue(editableValue, prop);
+        if (CommonUtils.equalObjects(oldValue, value)) {
+            return;
         }
         if (lastCommand == null || lastCommand.property != prop) {
             final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor();
