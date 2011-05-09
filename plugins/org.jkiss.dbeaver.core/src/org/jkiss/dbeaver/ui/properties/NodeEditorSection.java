@@ -37,7 +37,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
     private DBXTreeNode metaNode;
     private ItemListControl itemControl;
     private boolean activated;
-    private ISelectionProvider prevSelectionProvider;
+    //private ISelectionProvider prevSelectionProvider;
 
     private Composite parent;
 
@@ -79,17 +79,18 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
             createSectionControls();
         }
 
-        if (!activated) {
-            activated = true;
-            boolean isLazy = !(node instanceof DBNDatabaseNode) || ((DBNDatabaseNode) node).isLazyNode();
-            itemControl.loadData(isLazy);
-        }
-        prevSelectionProvider = editor.getSite().getSelectionProvider();
+        //prevSelectionProvider = editor.getSite().getSelectionProvider();
         // Update selection provider and selection
         final ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
         editor.getSite().setSelectionProvider(selectionProvider);
         selectionProvider.setSelection(selectionProvider.getSelection());
         itemControl.activate(true);
+
+        if (!activated) {
+            activated = true;
+            boolean isLazy = !(node instanceof DBNDatabaseNode) || ((DBNDatabaseNode) node).isLazyNode();
+            itemControl.loadData(isLazy);
+        }
     }
 
     public void aboutToBeHidden()
