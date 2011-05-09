@@ -137,6 +137,12 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             DBEObjectMaker objectMaker = (DBEObjectMaker)objectManager;
             Map<String, Object> deleteOptions = null;
 
+            CommandTarget commandTarget = getCommandTarget(
+                workbenchWindow,
+                container,
+                object.getClass(),
+                false);
+
             ConfirmResult confirmResult = ConfirmResult.YES;
             if (!object.isPersisted()) {
                 // Not a real object delete because it's not persisted
@@ -149,17 +155,12 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 // and execute command within it
             } else {
                 // Persisted object - confirm delete
-                confirmResult = confirmObjectDelete(workbenchWindow, node, true);
+                // Show "View script" only if we are not in some editor (because it have its own "View script" button)
+                confirmResult = confirmObjectDelete(workbenchWindow, node, commandTarget.getEditor() == null);
                 if (confirmResult == ConfirmResult.NO) {
                     return false;
                 }
             }
-
-            CommandTarget commandTarget = getCommandTarget(
-                workbenchWindow,
-                container,
-                object.getClass(),
-                false);
 
             objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
             if (commandTarget == null) {
