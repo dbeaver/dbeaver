@@ -6,6 +6,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
@@ -14,8 +16,10 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -24,14 +28,35 @@ import java.util.*;
 /**
  * JDBC abstract constraint
  */
-public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE extends DBSTable>
-    extends AbstractConstraint<DATASOURCE, TABLE>
-    implements DBSConstraintEnumerable
+public abstract class JDBCConstraint<TABLE extends JDBCTable>
+    extends AbstractConstraint<TABLE>
+    implements DBSConstraintEnumerable, DBPSaveableObject
 {
     private static final int MAX_DESC_COLUMN_LENGTH = 1000;
 
-    protected JDBCConstraint(TABLE table, String name, String description, DBSConstraintType constraintType) {
+    private boolean persisted;
+
+    protected JDBCConstraint(TABLE table, String name, String description, DBSConstraintType constraintType, boolean persisted) {
         super(table, name, description, constraintType);
+        this.persisted = persisted;
+    }
+
+    @Property(name = "Name", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 1)
+    @Override
+    public String getName()
+    {
+        return super.getName();
+    }
+
+    public boolean isPersisted()
+    {
+        return persisted;
+    }
+
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
+        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this, true));
     }
 
     /**

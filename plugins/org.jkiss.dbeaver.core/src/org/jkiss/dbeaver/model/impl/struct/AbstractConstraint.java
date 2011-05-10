@@ -15,7 +15,7 @@ import java.util.Collection;
 /**
  * GenericConstraint
  */
-public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE extends DBSTable> implements DBSConstraint
+public abstract class AbstractConstraint<TABLE extends DBSTable> implements DBSConstraint
 {
     private TABLE table;
     private String name;
@@ -68,13 +68,18 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
         return name;
     }
 
-//    @Property(name = "Description", viewable = true, order = 100)
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    //    @Property(name = "Description", viewable = true, order = 100)
     public String getDescription()
     {
         return description;
     }
 
-    protected void setDescription(String description)
+    public void setDescription(String description)
     {
         this.description = description;
     }
@@ -90,9 +95,9 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
         return table;
     }
 
-    public DATASOURCE getDataSource()
+    public DBPDataSource getDataSource()
     {
-        return (DATASOURCE) table.getDataSource();
+        return table.getDataSource();
     }
 
     public boolean isPersisted()

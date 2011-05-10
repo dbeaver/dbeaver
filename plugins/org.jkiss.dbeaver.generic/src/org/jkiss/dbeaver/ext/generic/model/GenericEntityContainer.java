@@ -589,7 +589,8 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 parent,
                 pkName,
                 null,
-                DBSConstraintType.PRIMARY_KEY);
+                DBSConstraintType.PRIMARY_KEY,
+                true);
         }
 
         protected GenericConstraintColumn fetchObjectRow(
@@ -721,7 +722,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                     String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
                     pk = pkMap.get(pkFullName);
                     if (pk == null) {
-                        pk = new GenericPrimaryKey(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);
+                        pk = new GenericPrimaryKey(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY, true);
                         pkMap.put(pkFullName, pk);
                         // Add this fake constraint to it's owner
                         pk.getTable().addUniqueKey(pk);

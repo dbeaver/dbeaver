@@ -67,7 +67,7 @@ public class GenericConstraintColumn extends AbstractConstraintColumn
 
     public GenericDataSource getDataSource()
     {
-        return constraint.getDataSource();
+        return constraint.getTable().getDataSource();
     }
 
 }

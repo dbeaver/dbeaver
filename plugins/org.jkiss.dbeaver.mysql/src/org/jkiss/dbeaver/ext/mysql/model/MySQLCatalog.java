@@ -327,9 +327,9 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
                         MySQLConstraint constraint = constrMap.get(constId);
                         if (constraint == null) {
                             if (MySQLConstants.CONSTRAINT_PRIMARY_KEY.equals(constraintType)) {
-                                constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.PRIMARY_KEY);
+                                constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.PRIMARY_KEY, true);
                             } else if (MySQLConstants.CONSTRAINT_UNIQUE.equals(constraintType)) {
-                                constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.UNIQUE_KEY);
+                                constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.UNIQUE_KEY, true);
                             } else {
                                 log.warn("Constraint type '" + constraintType + "' is not supported");
                                 continue;

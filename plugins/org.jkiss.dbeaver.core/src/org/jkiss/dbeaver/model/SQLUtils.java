@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.model;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 import java.util.Collection;
@@ -20,7 +18,7 @@ import java.util.regex.Pattern;
  */
 public final class SQLUtils {
 
-    static final Log log = LogFactory.getLog(SQLUtils.class);
+    //static final Log log = LogFactory.getLog(SQLUtils.class);
 
     public static final String TOKEN_TRANSFORM_START = "/*DB[*/";
     public static final String TOKEN_TRANSFORM_END = "/*]DB*/";
@@ -149,4 +147,5 @@ public final class SQLUtils {
         }
         return result.toString();
     }
+
 }

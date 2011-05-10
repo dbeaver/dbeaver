@@ -11,11 +11,11 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 /**
  * GenericConstraint
  */
-public abstract class GenericConstraint extends JDBCConstraint<GenericDataSource, GenericTable>
+public abstract class GenericConstraint extends JDBCConstraint<GenericTable>
 {
-    protected GenericConstraint(GenericTable table, String name, String remarks, DBSConstraintType constraintType)
+    protected GenericConstraint(GenericTable table, String name, String remarks, DBSConstraintType constraintType, boolean persisted)
     {
-        super(table, name, remarks, constraintType);
+        super(table, name, remarks, constraintType, persisted);
     }
 
     /**
@@ -24,7 +24,7 @@ public abstract class GenericConstraint extends JDBCConstraint<GenericDataSource
      */
     protected GenericConstraint(GenericConstraint constraint)
     {
-        super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType());
+        super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType(), constraint.isPersisted());
     }
 
     public String getFullQualifiedName()

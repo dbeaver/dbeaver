@@ -20,9 +20,9 @@ public class GenericPrimaryKey extends GenericConstraint
 {
     private List<GenericConstraintColumn> columns;
 
-    protected GenericPrimaryKey(GenericTable table, String name, String remarks, DBSConstraintType constraintType)
+    public GenericPrimaryKey(GenericTable table, String name, String remarks, DBSConstraintType constraintType, boolean persisted)
     {
-        super(table, name, remarks, constraintType);
+        super(table, name, remarks, constraintType, persisted);
     }
 
     /**
@@ -31,7 +31,7 @@ public class GenericPrimaryKey extends GenericConstraint
      */
     GenericPrimaryKey(GenericPrimaryKey constraint)
     {
-        super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType());
+        super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType(), constraint.isPersisted());
         if (constraint.columns != null) {
             this.columns = new ArrayList<GenericConstraintColumn>(constraint.columns.size());
             for (GenericConstraintColumn sourceColumn : constraint.columns) {

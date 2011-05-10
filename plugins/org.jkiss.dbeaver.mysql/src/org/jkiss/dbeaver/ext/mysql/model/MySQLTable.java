@@ -496,7 +496,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
-                            pk = new MySQLConstraint(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);
+                            pk = new MySQLConstraint(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY, true);
                             pk.addColumn(new MySQLConstraintColumn(pk, pkColumn, keySeq));
                             pkMap.put(pkFullName, pk);
                         }

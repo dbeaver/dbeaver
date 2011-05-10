@@ -16,7 +16,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
@@ -33,7 +32,6 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     extends JDBCObjectEditor<OBJECT_TYPE>
     implements DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE>, JDBCNestedEditor<OBJECT_TYPE>
 {
-    //private final Map<IPropertyDescriptor, TablePropertyHandler> handlerMap = new IdentityHashMap<IPropertyDescriptor, TablePropertyHandler>();
 
     public long getMakerOptions()
     {
@@ -155,7 +153,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         {
             return new IDatabasePersistAction[] {
                 new AbstractDatabasePersistAction(
-                    "Drop table", "ALTER TABLE " + getObject().getTable().getFullQualifiedName() + " DROP COLUMN " + getObject().getName())
+                    "Drop table column", "ALTER TABLE " + getObject().getTable().getFullQualifiedName() + " DROP COLUMN " + getObject().getName())
             };
         }
     }

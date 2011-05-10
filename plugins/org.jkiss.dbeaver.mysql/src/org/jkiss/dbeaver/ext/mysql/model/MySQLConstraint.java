@@ -15,12 +15,12 @@ import java.util.List;
 /**
  * GenericPrimaryKey
  */
-public class MySQLConstraint extends JDBCConstraint<MySQLDataSource,MySQLTable> {
+public class MySQLConstraint extends JDBCConstraint<MySQLTable> {
     private List<MySQLConstraintColumn> columns;
 
-    public MySQLConstraint(MySQLTable table, String name, String remarks, DBSConstraintType constraintType)
+    public MySQLConstraint(MySQLTable table, String name, String remarks, DBSConstraintType constraintType, boolean persisted)
     {
-        super(table, name, remarks, constraintType);
+        super(table, name, remarks, constraintType, persisted);
     }
 
     public List<MySQLConstraintColumn> getColumns(DBRProgressMonitor monitor)
