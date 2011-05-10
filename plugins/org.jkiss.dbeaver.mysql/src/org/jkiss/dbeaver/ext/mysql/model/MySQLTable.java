@@ -252,6 +252,20 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
+    @Override
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    {
+        columns = null;
+        indexes = null;
+        uniqueKeys = null;
+        foreignKeys = null;
+        triggers = null;
+        synchronized (additionalInfo) {
+            additionalInfo.loaded = false;
+        }
+        return true;
+    }
+
     private void loadInfo(ResultSet dbResult)
     {
         this.setName(JDBCUtils.safeGetString(dbResult, 1));

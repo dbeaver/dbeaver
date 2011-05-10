@@ -271,6 +271,17 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
 
 */
 
+    @Override
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    {
+        columns = null;
+        indexes = null;
+        uniqueKeys = null;
+        foreignKeys = null;
+        rowCount = null;
+        return true;
+    }
+
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Property(name = "Row Count", viewable = true, expensive = true, order = 5)
     public Long getRowCount(DBRProgressMonitor monitor)
