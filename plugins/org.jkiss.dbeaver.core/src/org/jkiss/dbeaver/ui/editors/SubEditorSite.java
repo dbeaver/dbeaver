@@ -82,6 +82,7 @@ public class SubEditorSite implements IEditorSite {
     {
     }
 
+    @Deprecated
     public IKeyBindingService getKeyBindingService()
     {
         return keyBindingService;

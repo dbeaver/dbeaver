@@ -59,15 +59,13 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
             return null;
         }
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        // Set new table name (its ok because it is new objects)
+        table.setName(CommonUtils.toString(tableProps.getProperty(DBConstants.PROP_ID_NAME)));
+        final String tableName = table.getFullQualifiedName();
 
-        String tableName = DBUtils.getQuotedIdentifier(
-            table.getDataSource(),
-            CommonUtils.toString(tableProps.getProperty(DBConstants.PROP_ID_NAME)));
-
-        String lineSeparator = ContentUtils.getDefaultLineSeparator();
+        final String lineSeparator = ContentUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append("CREATE TABLE ").append(tableName).append(" (").append(lineSeparator);
-        List<ObjectChangeCommand> columnCommands = new ArrayList<ObjectChangeCommand>();
         boolean hasNestedDeclarations = false;
         for (ObjectChangeCommand nestedCommand : getNestedOrderedCommands(command)) {
             if (nestedCommand.getObject() == table) {

@@ -50,6 +50,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         this.queryGetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
         this.querySetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB));
         this.selectedEntityType = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_ACTIVE_ENTITY_TYPE));
+        if (CommonUtils.isEmpty(this.selectedEntityType)) {
+            this.selectedEntityType = null;
+        }
     }
 
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
