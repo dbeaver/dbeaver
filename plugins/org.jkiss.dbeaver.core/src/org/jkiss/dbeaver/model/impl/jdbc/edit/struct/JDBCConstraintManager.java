@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -16,10 +17,10 @@ import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.ui.dialogs.struct.ConstraintColumnsDialog;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * JDBC constraint manager
@@ -36,12 +37,19 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<C
 
     public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
+        ConstraintColumnsDialog editDialog = new ConstraintColumnsDialog(workbenchWindow.getShell(), parent, getSupportedConstraintTypes());
+        if (editDialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+
         OBJECT_TYPE newConstraint = createNewConstraint(workbenchWindow, parent, copyFrom);
 
         makeInitialCommands(newConstraint, commandContext, new CommandCreateConstraint(newConstraint));
 
         return newConstraint;
     }
+
+    protected abstract Collection<DBSConstraintType> getSupportedConstraintTypes();
 
     public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
     {

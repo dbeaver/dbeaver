@@ -12,10 +12,18 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * Generic constraint manager
  */
 public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrimaryKey, GenericTable> {
+
+    protected Collection<DBSConstraintType> getSupportedConstraintTypes()
+    {
+        return Collections.singletonList(DBSConstraintType.PRIMARY_KEY);
+    }
 
     protected GenericPrimaryKey createNewConstraint(IWorkbenchWindow workbenchWindow, GenericTable parent, Object copyFrom)
     {

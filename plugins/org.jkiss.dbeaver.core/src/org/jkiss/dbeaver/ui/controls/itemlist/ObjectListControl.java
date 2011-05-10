@@ -401,7 +401,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         if (!itemsControl.isDisposed()) {
-            if (reload) {
+            if (reload || objectList.isEmpty()) {
                 // Set viewer content
                 objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<OBJECT_TYPE>(items);
 
