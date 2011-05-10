@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
@@ -18,6 +19,7 @@ import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -119,6 +121,21 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             if (sourceViewer instanceof ITextViewerExtension) {
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(symbolInserter);
             }
+        }
+    }
+
+    public void updatePartControl(IEditorInput input) {
+        super.updatePartControl(input);
+    }
+
+    @Override
+    protected void doSetInput(IEditorInput input) throws CoreException
+    {
+        IEditorInput oldInput = getEditorInput();
+        super.doSetInput(input);
+        if (oldInput != null && input != null && !oldInput.equals(input)) {
+            // Editor input changed - it may be a result of resource change (move/rename)
+            reloadSyntaxRules();
         }
     }
 
