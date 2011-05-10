@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -74,7 +75,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         DBSObject objectToSeek = null;
         if (parentObject instanceof DBSObject) {
             final DBEStructEditor parentStructEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(parentObject.getClass(), DBEStructEditor.class);
-            if (parentStructEditor != null && parentStructEditor.isChildType(childType)) {
+            if (parentStructEditor != null && RuntimeUtils.isTypeSupported(childType, parentStructEditor.getChildTypes())) {
                 objectToSeek = (DBSObject) parentObject;
             }
         }

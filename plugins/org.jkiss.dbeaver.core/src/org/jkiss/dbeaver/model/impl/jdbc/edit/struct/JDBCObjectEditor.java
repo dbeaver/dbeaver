@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -136,6 +137,15 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         public void validateCommand() throws DBException
         {
             editor.validateObjectProperties(this);
+        }
+
+        public String getNestedDeclaration(DBPObject owner)
+        {
+            if (editor instanceof JDBCNestedEditor) {
+                return ((JDBCNestedEditor) editor).getNestedDeclaration(owner, this);
+            } else {
+                return null;
+            }
         }
     }
 

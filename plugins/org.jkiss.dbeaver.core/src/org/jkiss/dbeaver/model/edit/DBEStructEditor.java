@@ -14,5 +14,5 @@ import java.util.Collection;
  */
 public interface DBEStructEditor<OBJECT_TYPE extends DBPObject> extends DBEObjectEditor<OBJECT_TYPE> {
 
-    boolean isChildType(Class<?> object);
+    Class<?>[] getChildTypes();
 }

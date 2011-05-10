@@ -304,6 +304,19 @@ public class RuntimeUtils
         }
     }
 
+    public static boolean isTypeSupported(Class<?> type, Class[] supportedTypes)
+    {
+        if (type == null || CommonUtils.isEmpty(supportedTypes)) {
+            return false;
+        }
+        for (Class<?> tmp : supportedTypes) {
+            if (tmp.isAssignableFrom(type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static class SaveRunner implements Runnable {
         private final DBRProgressMonitor monitor;
         private final ISaveablePart saveable;

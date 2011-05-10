@@ -4,18 +4,26 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,7 +31,7 @@ import java.util.Map;
  */
 public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn, CONTAINER_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE>
-    implements DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE>
+    implements DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE>, JDBCNestedEditor<OBJECT_TYPE>
 {
     //private final Map<IPropertyDescriptor, TablePropertyHandler> handlerMap = new IdentityHashMap<IPropertyDescriptor, TablePropertyHandler>();
 
@@ -44,6 +52,88 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
     {
         commandContext.addCommand(new CommandDropTableColumn(object), new DeleteObjectReflector<OBJECT_TYPE>(), true);
+    }
+
+
+    @Override
+    protected IDatabasePersistAction[] makeObjectChangeActions(ObjectChangeCommand<OBJECT_TYPE> command)
+    {
+        final JDBCTable table = command.getObject().getTable();
+        final OBJECT_TYPE column = command.getObject();
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        boolean newObject = !column.isPersisted();
+        if (newObject) {
+            actions.add( new AbstractDatabasePersistAction(
+                "Create new table column",
+                "ALTER TABLE " + table.getFullQualifiedName() + " ADD "  + getNestedDeclaration(table, command)) );
+        }
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+    }
+
+    public String getNestedDeclaration(DBPObject owner, ObjectChangeCommand<OBJECT_TYPE> command)
+    {
+        OBJECT_TYPE column = command.getObject();
+
+        // Create column
+        String columnName = DBUtils.getQuotedIdentifier(
+            column.getDataSource(),
+            CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME)));
+
+        final String typeName = (String)command.getProperty(DBConstants.PROP_ID_TYPE_NAME);
+        boolean useMaxLength = false;
+        final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
+        if (dataType == null) {
+            log.debug("Type name '" + typeName + "' is not supported by driver");
+        } else if (dataType.getDataKind() == DBSDataKind.STRING) {
+            if (typeName.indexOf('(') == -1) {
+                useMaxLength = true;
+            }
+        }
+
+        final Boolean notNull = (Boolean) command.getProperty(DBConstants.PROP_ID_NOT_NULL);
+        final Long maxLength = (Long) command.getProperty(DBConstants.PROP_ID_MAX_LENGTH);
+        StringBuilder decl = new StringBuilder(40);
+        decl.append(columnName).append(' ').append(typeName);
+        if (useMaxLength && maxLength != null) {
+            decl.append('(').append(maxLength).append(')');
+        }
+        if (notNull != null && notNull) {
+            decl.append(" NOT NULL");
+        }
+        return decl.toString();
+    }
+
+    protected void validateObjectProperties(ObjectChangeCommand<OBJECT_TYPE> command)
+        throws DBException
+    {
+        if (CommonUtils.isEmpty((String)command.getProperty(DBConstants.PROP_ID_NAME))) {
+            throw new DBException("Column name cannot be empty");
+        }
+        if (CommonUtils.isEmpty((String)command.getProperty(DBConstants.PROP_ID_TYPE_NAME))) {
+            throw new DBException("Column type name cannot be empty");
+        }
+    }
+
+    private static DBSDataType findDataType(DBPDataSource dataSource, String typeName)
+    {
+        for (DBSDataType type : dataSource.getInfo().getSupportedDataTypes()) {
+            if (type.getName().equalsIgnoreCase(typeName)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    protected static DBSDataType findBestDataType(DBPDataSource dataSource, String ... typeNames)
+    {
+        for (String testType : typeNames) {
+            for (DBSDataType type : dataSource.getInfo().getSupportedDataTypes()) {
+                if (type.getName().equalsIgnoreCase(testType)) {
+                    return type;
+                }
+            }
+        }
+        return null;
     }
 
     protected abstract OBJECT_TYPE createNewTableColumn(CONTAINER_TYPE parent, Object copyFrom);

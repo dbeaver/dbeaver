@@ -92,7 +92,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (CommonUtils.equalObjects(oldValue, value)) {
             return;
         }
-        if (lastCommand == null || lastCommand.property != prop) {
+        if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop) {
             final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor();
             if (objectEditor == null) {
                 log.error("Can't obtain object editor for " + getEditableValue());

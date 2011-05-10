@@ -233,6 +233,9 @@ public class ItemListControl extends NodeListControl
         public Color getBackground(Object element)
         {
             DBNNode node = (DBNNode) element;
+            if (node.isDisposed()) {
+                return null;
+            }
             if (searcher != null && searcher.hasObject(node)) {
                 return searchHighlightColor;
             }

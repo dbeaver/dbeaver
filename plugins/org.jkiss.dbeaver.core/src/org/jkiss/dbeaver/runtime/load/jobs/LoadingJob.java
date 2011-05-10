@@ -72,12 +72,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             return new Status(Status.CANCEL, DBeaverConstants.PLUGIN_ID, "Loading interrupted");
         }
         finally {
-            final LoadFinisher finisher = new LoadFinisher(result, error);
-            if (lazy) {
-                Display.getDefault().syncExec(finisher);
-            } else {
-                finisher.run();
-            }
+            Display.getDefault().syncExec(new LoadFinisher(result, error));
         }
         return Status.OK_STATUS;
     }

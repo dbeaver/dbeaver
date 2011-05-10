@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -335,7 +336,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 return false;
             }
             DBEStructEditor structEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(valueObject.getClass(), DBEStructEditor.class);
-            return structEditor != null && structEditor.isChildType(curClass);
+            return structEditor != null && RuntimeUtils.isTypeSupported(curClass, structEditor.getChildTypes());
         }
 
         public IPropertyDescriptor[] getPropertyDescriptors()
