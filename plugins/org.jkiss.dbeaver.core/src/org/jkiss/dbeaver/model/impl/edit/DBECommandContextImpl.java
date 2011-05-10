@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.model.impl.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.dbeaver.DBException;
@@ -24,6 +26,8 @@ import java.util.*;
  * DBECommandContextImpl
  */
 public class DBECommandContextImpl implements DBECommandContext {
+
+    static final Log log = LogFactory.getLog(DBECommandContextImpl.class);
 
     private final DBSDataSourceContainer dataSourceContainer;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
@@ -65,8 +69,8 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
 
         // Execute commands
+        List<DBECommand> executedCommands = new ArrayList<DBECommand>();
         try {
-            List<DBECommand> executedCommands = new ArrayList<DBECommand>();
             for (CommandQueue queue : commandQueues) {
                 // Make list of not-executed commands
                 for (int i = 0; i < queue.commands.size(); i++) {
@@ -124,15 +128,27 @@ public class DBECommandContextImpl implements DBECommandContext {
                 }
             }
 
-            // Update model
-            for (DBECommand cmd : executedCommands) {
-                cmd.updateModel();
-            }
+            // Let's clear commands
+            // If everything went well then there should be nothing to do else.
+            // But some commands may still remain in queue if they merged each other
+            // (e.g. create + delete of the same entity produce 2 commands and zero actions).
+            // There were no exceptions during save so we assume that everything went well
+            commands.clear();
         }
         finally {
+            try {
+                // Update model
+                for (DBECommand cmd : executedCommands) {
+                    cmd.updateModel();
+                }
+            } catch (Exception e) {
+                log.warn("Error updating model", e);
+            }
+
             clearCommandQueues();
             clearUndidCommands();
 
+            // Notify listeners
             for (DBECommandListener listener : getListeners()) {
                 listener.onSave();
             }
