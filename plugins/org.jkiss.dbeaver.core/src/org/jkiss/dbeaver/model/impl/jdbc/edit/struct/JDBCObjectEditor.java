@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.ui.properties.ProxyPropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * JDBC object editor
@@ -57,7 +56,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         context.addCommandBatch(commands, new CreateObjectReflector(), true);
     }
 
-    protected abstract IDatabasePersistAction[] makePersistActions(ObjectChangeCommand<OBJECT_TYPE> command);
+    protected abstract IDatabasePersistAction[] makeObjectChangeActions(ObjectChangeCommand<OBJECT_TYPE> command);
 
     protected void validateObjectProperty(OBJECT_TYPE object, IPropertyDescriptor property, Object value) throws DBException
     {
@@ -130,7 +129,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
 
         public IDatabasePersistAction[] getPersistActions()
         {
-            return editor.makePersistActions(this);
+            return editor.makeObjectChangeActions(this);
         }
 
         @Override

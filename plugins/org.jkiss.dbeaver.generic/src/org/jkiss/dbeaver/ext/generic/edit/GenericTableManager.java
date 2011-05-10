@@ -34,8 +34,9 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
         return table;
     }
 
+/*
     @Override
-    protected IDatabasePersistAction[] makePersistActions(ObjectChangeCommand<GenericTable> command)
+    protected IDatabasePersistAction[] makeObjectChangeActions(ObjectChangeCommand<GenericTable> command)
     {
         GenericTable table = command.getObject();
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
@@ -43,9 +44,10 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
         actions.add( new AbstractDatabasePersistAction("Alter table", "ALTER TABLE " + tableName) );
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
+*/
 
     @Override
-    protected IDatabasePersistAction[] makePersistActions(StructCreateCommand command)
+    protected IDatabasePersistAction[] makeObjectCreateActions(StructCreateCommand command)
     {
         final GenericTable table = command.getObject();
         final ObjectChangeCommand tableProps = command.getObjectCommands().get(table);

@@ -13,6 +13,8 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,7 +34,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     {
         OBJECT_TYPE newTable = createNewTable(parent, copyFrom);
 
-        makeInitialCommands(newTable, commandContext, new StructCreateCommand(newTable));
+        makeInitialCommands(newTable, commandContext, new StructCreateCommand(newTable, "Create table"));
 
         return newTable;
     }
@@ -43,6 +45,12 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     }
 
     protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, Object copyFrom);
+
+    protected IDatabasePersistAction[] makeObjectChangeActions(ObjectChangeCommand<OBJECT_TYPE> command)
+    {
+        // Base SQL syntax do not support table properties change
+        return null;
+    }
 
     private class CommandDropTable extends DBECommandDeleteObject<OBJECT_TYPE> {
         protected CommandDropTable(OBJECT_TYPE table)

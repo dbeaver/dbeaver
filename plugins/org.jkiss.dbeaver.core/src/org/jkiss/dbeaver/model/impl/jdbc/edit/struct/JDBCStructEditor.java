@@ -8,7 +8,6 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.*;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.util.IdentityHashMap;
@@ -22,7 +21,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
     implements DBEStructEditor<OBJECT_TYPE>
 {
 
-    protected abstract IDatabasePersistAction[] makePersistActions(StructCreateCommand command);
+    protected abstract IDatabasePersistAction[] makeObjectCreateActions(StructCreateCommand command);
 
     protected class StructCreateCommand
         extends ObjectSaveCommand<OBJECT_TYPE>
@@ -30,9 +29,9 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
 
         private final Map<DBPObject, ObjectChangeCommand> objectCommands = new IdentityHashMap<DBPObject, ObjectChangeCommand>();
 
-        public StructCreateCommand(OBJECT_TYPE object)
+        public StructCreateCommand(OBJECT_TYPE object, String table)
         {
-            super(object, "Create struct");
+            super(object, table);
         }
 
         public Map<DBPObject, ObjectChangeCommand> getObjectCommands()
@@ -52,7 +51,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
 
         public IDatabasePersistAction[] getPersistActions()
         {
-            return makePersistActions(this);
+            return makeObjectCreateActions(this);
         }
     }
 
