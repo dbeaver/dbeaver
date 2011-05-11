@@ -56,8 +56,9 @@ public class ImageUtils {
 
     private static synchronized void initImages()
     {
-        final Display display = Display.getDefault();
-        Button checkBox = new Button(DBeaverCore.getActiveWorkbenchShell(), SWT.CHECK);
+        final Shell shell = DBeaverCore.getActiveWorkbenchShell();
+        Button checkBox = new Button(shell, SWT.CHECK);
+        checkBox.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         Point checkboxSize = checkBox.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         checkBox.setBounds(0, 0, checkboxSize.x, checkboxSize.y);
         try {
@@ -78,6 +79,7 @@ public class ImageUtils {
     {
         Point size = widget.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         Image image = new Image(widget.getDisplay(), size.x, size.y);
+        //image.
         GC gc = new GC(image);
         try {
             widget.print(gc);
@@ -85,6 +87,13 @@ public class ImageUtils {
             gc.dispose();
         }
         return image;
+/*
+        final ImageData imageData = image.getImageData();
+        imageData.transparentPixel = imageData.getPixel(0, 0);
+        Image fixedImage = new Image(widget.getDisplay(), imageData);
+        image.dispose();
+        return fixedImage;
+*/
     }
 
     /**

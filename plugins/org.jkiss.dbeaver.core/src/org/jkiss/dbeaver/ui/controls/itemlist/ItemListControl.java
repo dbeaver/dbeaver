@@ -44,7 +44,7 @@ public class ItemListControl extends NodeListControl
         super(parent, style, workbenchPart, node, metaNode);
         searcher = new Searcher();
         searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
-        disabledCellColor = new Color(parent.getDisplay(), 0xD0, 0xD0, 0xD0);
+        disabledCellColor = new Color(parent.getDisplay(), 0xEA, 0xEA, 0xEA);
     }
 
     @Override
@@ -240,10 +240,11 @@ public class ItemListControl extends NodeListControl
                 return searchHighlightColor;
             }
             final Object objectValue = getObjectValue(node);
-            if (isNewObject(node) &&
-                !getColumn(columnIndex).getProperty(objectValue).isEditable(objectValue))
-            {
-                return disabledCellColor;
+            if (isNewObject(node)) {
+                final ObjectPropertyDescriptor prop = getColumn(columnIndex).getProperty(objectValue);
+                if (prop != null && !prop.isEditable(objectValue)) {
+                    return disabledCellColor;
+                }
             }
             return null;
         }

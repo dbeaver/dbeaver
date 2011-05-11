@@ -363,7 +363,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         if (reload) {
             clearListData();
-
+        }
+        {
             // Collect list of items' classes
             final List<Class<?>> classList = new ArrayList<Class<?>>();
             Class<?>[] baseTypes = getListBaseTypes();
@@ -373,7 +374,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (!CommonUtils.isEmpty(items)) {
                 for (OBJECT_TYPE item : items) {
                     Object object = getObjectValue(item);
-                    if (!classList.contains(object.getClass())) {
+                    if (object != null && !classList.contains(object.getClass())) {
                         classList.add(object.getClass());
                     }
                     if (isTree) {
@@ -394,8 +395,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     if (!prop.isViewable()) {
                         continue;
                     }
-                    listPropertySource.addProperty(prop);
-                    createColumn(objectClass, prop);
+                    if (!listPropertySource.hasProperty(prop)) {
+                        listPropertySource.addProperty(prop);
+                        createColumn(objectClass, prop);
+                    }
                 }
             }
         }
@@ -583,10 +586,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (prop == null) {
             return null;
         }
-        if (!prop.isEditable(objectValue) && isNewObject(object)) {
+        //if (!prop.isEditable(objectValue) && isNewObject(object)) {
             // Non-editable properties are empty for new objects
-            return null;
-        }
+            //return null;
+        //}
         if (prop.isLazy(objectValue, true)) {
             synchronized (lazyCache) {
                 final Map<String, Object> cache = lazyCache.get(object);

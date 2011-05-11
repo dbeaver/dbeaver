@@ -288,6 +288,19 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         }
     }
 
+    @Override
+    public int hashCode()
+    {
+        return propInfo.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj instanceof ObjectPropertyDescriptor &&
+            propInfo.equals(((ObjectPropertyDescriptor)obj).propInfo);
+    }
+
     private class DefaultLabelProvider extends LabelProvider implements IFontProvider {
 
         public Image getImage(Object element)
