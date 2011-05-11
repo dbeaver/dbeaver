@@ -57,7 +57,7 @@ public class MySQLIndexColumn extends AbstractIndexColumn
         return tableColumn;
     }
 
-    @Property(name = "Ascending", viewable = false, order = 2)
+    @Property(name = "Position", viewable = false, order = 2)
     public int getOrdinalPosition()
     {
         return ordinalPosition;

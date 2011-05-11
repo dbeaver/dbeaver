@@ -20,6 +20,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ImageUtils;
 
@@ -373,7 +374,7 @@ public class PropertyTreeViewer extends TreeViewer {
                                 public void run() {
                                     TextTransfer textTransfer = TextTransfer.getInstance();
                                     clipboard.setContents(
-                                        new Object[]{getPropertyValue(prop)},
+                                        new Object[]{CommonUtils.toString(getPropertyValue(prop))},
                                         new Transfer[]{textTransfer});
                                 }
                             });
@@ -421,12 +422,16 @@ public class PropertyTreeViewer extends TreeViewer {
 
     }
 
-    private String getPropertyValue(TreeNode prop)
+    private Object getPropertyValue(TreeNode prop)
     {
         if (prop.category != null) {
             return prop.category;
         } else {
-            return CommonUtils.toString(prop.propertySource.getPropertyValue(prop.property.getId()));
+            final Object propertyValue = prop.propertySource.getPropertyValue(prop.property.getId());
+            if (propertyValue instanceof DBPNamedObject) {
+                return ((DBPNamedObject) propertyValue).getName();
+            }
+            return UIUtils.makeStringForUI(propertyValue);
         }
     }
 
@@ -565,7 +570,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 }
             } else {
                 if (node.property != null) {
-                    final Object propertyValue = node.propertySource.getPropertyValue(node.property.getId());
+                    final Object propertyValue = getPropertyValue(node);
                     if (propertyValue instanceof Boolean) {
                         return "";
                     }
@@ -696,7 +701,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     if (event.index == 1) {
                         final TreeNode node = (TreeNode)event.item.getData();
                         if (node != null && node.property != null && node.property != selectedProperty) {
-                            final Object propertyValue = node.propertySource.getPropertyValue(node.property.getId());
+                            final Object propertyValue = getPropertyValue(node);
                             if (propertyValue instanceof Boolean) {
                                 GC gc = event.gc;
                                 final Tree tree = getTree();

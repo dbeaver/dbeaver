@@ -4,10 +4,12 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DBSIndexType
  */
-public class DBSIndexType
+public class DBSIndexType implements DBPNamedObject
 {
     public static final DBSIndexType UNKNOWN = new DBSIndexType("UNKNOWN", "Unknown");
     public static final DBSIndexType STATISTIC = new DBSIndexType("STATISTIC", "Statistic");
