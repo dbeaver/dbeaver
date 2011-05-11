@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * EditConstraintDialog
+ * EditIndexDialog
  *
  * @author Serge Rider
  */

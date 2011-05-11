@@ -289,7 +289,12 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.DBPNamedObject"/>
+                        <and>
+                            <adapt type="org.jkiss.dbeaver.model.DBPNamedObject"/>
+                            <not>
+                                <adapt type="org.jkiss.dbeaver.model.struct.DBSFolder"/>
+                            </not>
+                        </and>
                     </iterate>
                 </with>
             </activeWhen>
