@@ -37,6 +37,7 @@ import java.util.List;
  */
 public class ConstraintColumnsDialog extends Dialog {
 
+    private String title;
     private List<DBSConstraintType> constraintTypes;
     private DBSConstraintType selectedConstraintType;
     private DBNDatabaseNode tableNode;
@@ -56,9 +57,14 @@ public class ConstraintColumnsDialog extends Dialog {
         }
     }
 
-    public ConstraintColumnsDialog(Shell shell, DBSTable table, Collection<DBSConstraintType> constraintTypes) {
+    public ConstraintColumnsDialog(
+        Shell shell,
+        String title,
+        DBSTable table,
+        Collection<DBSConstraintType> constraintTypes) {
         super(shell);
         setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
+        this.title = title;
         this.tableNode = DBeaverCore.getInstance().getNavigatorModel().findNode(table);
         Assert.isNotNull(this.tableNode);
         this.constraintTypes = new ArrayList<DBSConstraintType>(constraintTypes);
@@ -221,7 +227,8 @@ public class ConstraintColumnsDialog extends Dialog {
 
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText(tableNode.getNodeName() + " Constraint Columns");
+        shell.setText(title + " for table '" + tableNode.getNodeName() + "'");
+        shell.setImage(tableNode.getNodeIcon());
     }
 
     public Collection<DBSTableColumn> getConstraintColumns()

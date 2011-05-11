@@ -425,7 +425,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 } finally {
                     sampleItems = false;
                 }
-
                 // Set real content
                 itemsViewer.setInput(objectList);
             } else {

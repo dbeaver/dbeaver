@@ -40,7 +40,11 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<C
 
     public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
-        ConstraintColumnsDialog editDialog = new ConstraintColumnsDialog(workbenchWindow.getShell(), parent, getSupportedConstraintTypes());
+        ConstraintColumnsDialog editDialog = new ConstraintColumnsDialog(
+            workbenchWindow.getShell(),
+            getCreateTitle(),
+            parent,
+            getSupportedConstraintTypes());
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -55,6 +59,11 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<C
         makeInitialCommands(newConstraint, commandContext, new CommandCreateConstraint(newConstraint));
 
         return newConstraint;
+    }
+
+    protected String getCreateTitle()
+    {
+        return "Create constraint";
     }
 
     protected abstract Collection<DBSConstraintType> getSupportedConstraintTypes();
