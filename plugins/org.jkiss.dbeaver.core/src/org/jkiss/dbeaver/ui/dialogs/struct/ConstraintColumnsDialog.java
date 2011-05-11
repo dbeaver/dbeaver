@@ -10,6 +10,8 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -42,6 +44,8 @@ public class ConstraintColumnsDialog extends Dialog {
     private Collection<DBSConstraintType> constraintTypes;
     private DBNDatabaseNode tableNode;
     private Table columnsTable;
+    private Button buttonUp;
+    private Button buttonDown;
 
     public ConstraintColumnsDialog(Shell shell, DBSTable table, Collection<DBSConstraintType> constraintTypes) {
         super(shell);
@@ -88,16 +92,25 @@ public class ConstraintColumnsDialog extends Dialog {
             gd.widthHint = 200;
             gd.heightHint = 200;
             columnsTable.setLayoutData(gd);
+            columnsTable.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    handleItemSelect((TableItem) e.item);
+                }
+            });
 
             Composite buttonsPanel = UIUtils.createPlaceholder(columnsGroup, 1);
             buttonsPanel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_VERTICAL));
-            Button buttonUp = new Button(buttonsPanel, SWT.PUSH);
+            buttonUp = new Button(buttonsPanel, SWT.PUSH);
             buttonUp.setImage(DBIcon.ARROW_UP.getImage());
             buttonUp.setText("Up");
+            buttonUp.setEnabled(false);
 
-            Button buttonDown = new Button(buttonsPanel, SWT.PUSH);
+            buttonDown = new Button(buttonsPanel, SWT.PUSH);
             buttonDown.setImage(DBIcon.ARROW_DOWN.getImage());
             buttonDown.setText("Down");
+            buttonDown.setEnabled(false);
         }
 
         // Load columns
@@ -129,8 +142,20 @@ public class ConstraintColumnsDialog extends Dialog {
             columnItem.setImage(columnNode.getNodeIcon());
             columnItem.setText(columnNode.getNodeName());
         }
+        //columnsTable.set
 
         return dialogGroup;
+    }
+
+    private void handleItemSelect(TableItem item)
+    {
+        if (item.getChecked()) {
+            buttonUp.setEnabled(true);
+            buttonDown.setEnabled(true);
+        } else {
+            buttonUp.setEnabled(false);
+            buttonDown.setEnabled(false);
+        }
     }
 
     @Override
