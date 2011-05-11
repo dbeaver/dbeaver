@@ -17,7 +17,7 @@ import java.util.Collection;
  */
 public abstract class AbstractConstraint<TABLE extends DBSTable> implements DBSConstraint
 {
-    private TABLE table;
+    private final TABLE table;
     private String name;
     protected String description;
     protected DBSConstraintType constraintType;

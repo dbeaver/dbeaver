@@ -5,11 +5,10 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.struct.AbstractIndex;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +16,9 @@ import java.util.List;
 /**
  * GenericTable
  */
-public class MySQLIndex extends AbstractIndex
+public class MySQLIndex extends JDBCIndex<MySQLTable>
 {
-    private MySQLTable table;
     private boolean nonUnique;
-    private String indexName;
-    private DBSIndexType indexType;
     private String comment;
     private List<MySQLIndexColumn> columns;
 
@@ -33,10 +29,8 @@ public class MySQLIndex extends AbstractIndex
         DBSIndexType indexType,
         String comment)
     {
-        this.table = table;
+        super(table, indexName, indexType, true);
         this.nonUnique = nonUnique;
-        this.indexName = indexName;
-        this.indexType = indexType;
         this.comment = comment;
     }
 
@@ -46,10 +40,8 @@ public class MySQLIndex extends AbstractIndex
      */
     MySQLIndex(MySQLIndex source)
     {
-        this.table = source.table;
+        super(source);
         this.nonUnique = source.nonUnique;
-        this.indexName = source.indexName;
-        this.indexType = source.indexType;
         if (source.columns != null) {
             this.columns = new ArrayList<MySQLIndexColumn>(source.columns.size());
             for (MySQLIndexColumn sourceColumn : source.columns) {
@@ -60,13 +52,7 @@ public class MySQLIndex extends AbstractIndex
 
     public MySQLDataSource getDataSource()
     {
-        return table.getDataSource();
-    }
-
-    @Property(name = "Table", viewable = true, order = 2)
-    public MySQLTable getTable()
-    {
-        return table;
+        return getTable().getDataSource();
     }
 
     @Property(name = "Unique", viewable = true, order = 5)
@@ -75,27 +61,10 @@ public class MySQLIndex extends AbstractIndex
         return !nonUnique;
     }
 
-    @Property(name = "Index Type", viewable = true, order = 3)
-    public DBSIndexType getIndexType()
-    {
-        return this.indexType;
-    }
-
-    @Property(name = "Index Name", viewable = true, order = 1)
-    public String getName()
-    {
-        return indexName;
-    }
-
     @Property(name = "Comment", viewable = true, order = 6)
     public String getDescription()
     {
         return comment;
-    }
-
-    public DBSObject getParentObject()
-    {
-        return table;
     }
 
     public List<MySQLIndexColumn> getColumns(DBRProgressMonitor monitor)
@@ -125,7 +94,6 @@ public class MySQLIndex extends AbstractIndex
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),
-            getTable(),
             this);
     }
 }

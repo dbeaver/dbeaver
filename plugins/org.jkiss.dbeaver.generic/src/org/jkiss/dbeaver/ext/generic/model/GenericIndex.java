@@ -5,11 +5,10 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.struct.AbstractIndex;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,13 +16,10 @@ import java.util.List;
 /**
  * GenericTable
  */
-public class GenericIndex extends AbstractIndex
+public class GenericIndex extends JDBCIndex<GenericTable>
 {
-    private GenericTable table;
     private boolean nonUnique;
     private String qualifier;
-    private String indexName;
-    private DBSIndexType indexType;
     private List<GenericIndexColumn> columns;
 
     public GenericIndex(
@@ -31,13 +27,12 @@ public class GenericIndex extends AbstractIndex
         boolean nonUnique,
         String qualifier,
         String indexName,
-        DBSIndexType indexType)
+        DBSIndexType indexType,
+        boolean persisted)
     {
-        this.table = table;
+        super(table, indexName, indexType, persisted);
         this.nonUnique = nonUnique;
         this.qualifier = qualifier;
-        this.indexName = indexName;
-        this.indexType = indexType;
     }
 
     /**
@@ -46,11 +41,9 @@ public class GenericIndex extends AbstractIndex
      */
     GenericIndex(GenericIndex source)
     {
-        this.table = source.table;
+        super(source);
         this.nonUnique = source.nonUnique;
         this.qualifier = source.qualifier;
-        this.indexName = source.indexName;
-        this.indexType = source.indexType;
         if (source.columns != null) {
             this.columns = new ArrayList<GenericIndexColumn>(source.columns.size());
             for (GenericIndexColumn sourceColumn : source.columns) {
@@ -61,13 +54,7 @@ public class GenericIndex extends AbstractIndex
 
     public GenericDataSource getDataSource()
     {
-        return table.getDataSource();
-    }
-
-    @Property(name = "Table", viewable = true, order = 2)
-    public GenericTable getTable()
-    {
-        return table;
+        return getTable().getDataSource();
     }
 
     @Property(name = "Unique", viewable = true, order = 5)
@@ -76,27 +63,10 @@ public class GenericIndex extends AbstractIndex
         return !nonUnique;
     }
 
-    @Property(name = "Index Type", viewable = true, order = 3)
-    public DBSIndexType getIndexType()
-    {
-        return this.indexType;
-    }
-
-    @Property(name = "Index Name", viewable = true, order = 1)
-    public String getName()
-    {
-        return indexName;
-    }
-
     @Property(name = "Index Description", viewable = true, order = 6)
     public String getDescription()
     {
         return null;
-    }
-
-    public DBSObject getParentObject()
-    {
-        return table;
     }
 
     @Property(name = "Qualifier", viewable = true, order = 4)
@@ -120,7 +90,7 @@ public class GenericIndex extends AbstractIndex
         this.columns = columns;
     }
 
-    void addColumn(GenericIndexColumn column)
+    public void addColumn(GenericIndexColumn column)
     {
         if (columns == null) {
             columns = new ArrayList<GenericIndexColumn>();
@@ -133,7 +103,6 @@ public class GenericIndex extends AbstractIndex
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getCatalog(),
             getTable().getSchema(),
-            getTable(),
             this);
     }
 

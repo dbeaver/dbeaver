@@ -10,7 +10,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -45,12 +44,8 @@ public class EditIndexDialog extends ColumnsSelectorDialog {
     @Override
     protected void createContentsBeforeColumns(Composite panel)
     {
-        final Composite typeGroup = new Composite(panel, SWT.NONE);
-        typeGroup.setLayout(new GridLayout(2, false));
-        typeGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        UIUtils.createControlLabel(typeGroup, "Type");
-        final Combo typeCombo = new Combo(typeGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        UIUtils.createControlLabel(panel, "Type");
+        final Combo typeCombo = new Combo(panel, SWT.DROP_DOWN | SWT.READ_ONLY);
         typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         for (DBSIndexType indexType : indexTypes) {
@@ -70,7 +65,7 @@ public class EditIndexDialog extends ColumnsSelectorDialog {
         });
     }
 
-    public DBSIndexType getConstraintType()
+    public DBSIndexType getIndexType()
     {
         return selectedIndexType;
     }

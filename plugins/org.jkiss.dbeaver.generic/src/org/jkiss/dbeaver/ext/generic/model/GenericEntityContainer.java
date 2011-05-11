@@ -476,7 +476,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                         // but other DBs (and logically it's correct) do not want quote chars in this query
                         // so let's fix it in oracle plugin
                         forParent == null ? null : DBUtils.getQuotedIdentifier(getDataSource(), forParent.getName()),
-                        true,
+                        false,
                         true).getSource();
             } catch (SQLException e) {
                 throw e;
@@ -510,7 +510,8 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 isNonUnique,
                 indexQualifier,
                 indexName,
-                indexType);
+                indexType,
+                true);
         }
 
         protected GenericIndexColumn fetchObjectRow(

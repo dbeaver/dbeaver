@@ -201,7 +201,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 final IDatabaseNodeEditorInput editorInput = ((IDatabaseNodeEditor)editor).getEditorInput();
                 if (editorInput.getDatabaseObject() == node.getObject()) {
 
-                    ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, true);
+                    ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, false);
                     if (confirmResult == ConfirmResult.NO) {
                         return true;
                     }

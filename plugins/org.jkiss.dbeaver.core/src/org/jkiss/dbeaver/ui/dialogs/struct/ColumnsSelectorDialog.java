@@ -12,6 +12,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -71,7 +72,16 @@ public abstract class ColumnsSelectorDialog extends Dialog {
 
         final Composite panel = UIUtils.createPlaceholder(dialogGroup, 1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
-        createContentsBeforeColumns(panel);
+
+        {
+            final Composite tableGroup = new Composite(panel, SWT.NONE);
+            tableGroup.setLayout(new GridLayout(2, false));
+            tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createLabelText(tableGroup, "Table", tableNode.getNodeName(), SWT.BORDER | SWT.READ_ONLY);
+
+            createContentsBeforeColumns(tableGroup);
+        }
+
         {
             Composite columnsGroup = UIUtils.createControlGroup(panel, "Columns", 1, GridData.FILL_BOTH, 0);
             columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
@@ -205,7 +215,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         shell.setImage(tableNode.getNodeIcon());
     }
 
-    public Collection<DBSTableColumn> getConstraintColumns()
+    public Collection<DBSTableColumn> getSelectedColumns()
     {
         List<DBSTableColumn> tableColumns = new ArrayList<DBSTableColumn>();
         for (ColumnInfo col : columns) {
