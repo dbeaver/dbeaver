@@ -115,15 +115,19 @@ public class DBECommandContextImpl implements DBECommandContext {
                             } finally {
                                 closePersistContext(context);
                             }
+                            cmd.executed = true;
                         }
-
-                        cmd.executed = true;
                     }
-                    synchronized (commands) {
-                        // Remove original command from stack
-                        final CommandInfo thisCommand = queue.commands.get(i);
-                        executedCommands.add(thisCommand.command);
-                        commands.remove(thisCommand);
+                    if (cmd.executed) {
+                        // Remove only executed commands
+                        // Commands which do not perform any persist actions
+                        // should remain - they constructs queue by merging with other commands
+                        synchronized (commands) {
+                            // Remove original command from stack
+                            final CommandInfo thisCommand = queue.commands.get(i);
+                            executedCommands.add(cmd.command);
+                            commands.remove(cmd);
+                        }
                     }
                 }
             }

@@ -17,7 +17,10 @@ import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.struct.ConstraintColumnsDialog;
 
 import java.util.*;
@@ -42,7 +45,12 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<C
             return null;
         }
 
-        OBJECT_TYPE newConstraint = createNewConstraint(workbenchWindow, parent, copyFrom);
+        OBJECT_TYPE newConstraint = createNewConstraint(
+            workbenchWindow,
+            parent,
+            editDialog.getConstraintType(),
+            editDialog.getConstraintColumns(),
+            copyFrom);
 
         makeInitialCommands(newConstraint, commandContext, new CommandCreateConstraint(newConstraint));
 
@@ -82,11 +90,30 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<C
             CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME)));
 
         StringBuilder decl = new StringBuilder(40);
-        decl.append("CONSTRAINT ").append(constraintName).append(" ").append(constraint.getConstraintType().getName().toUpperCase());
+        decl
+            .append("CONSTRAINT ").append(constraintName)
+            .append(" ").append(constraint.getConstraintType().getName().toUpperCase())
+            .append(" (");
+        // Get columns using void monitor
+        boolean firstColumn = true;
+        for (DBSConstraintColumn constraintColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
+            if (!firstColumn) {
+                decl.append(",");
+            } else {
+                firstColumn = false;
+            }
+            decl.append(constraintColumn.getName());
+        }
+        decl.append(")");
         return decl.toString();
     }
 
-    protected abstract OBJECT_TYPE createNewConstraint(IWorkbenchWindow workbenchWindow, CONTAINER_TYPE parent, Object copyFrom);
+    protected abstract OBJECT_TYPE createNewConstraint(
+        IWorkbenchWindow workbenchWindow,
+        CONTAINER_TYPE parent,
+        DBSConstraintType constraintType,
+        Collection<DBSTableColumn> constraintColumns,
+        Object from);
 
     private class CommandCreateConstraint extends ObjectSaveCommand<OBJECT_TYPE> {
         protected CommandCreateConstraint(OBJECT_TYPE table)

@@ -45,7 +45,7 @@ public class GenericPrimaryKey extends GenericConstraint
         return columns;
     }
 
-    void addColumn(GenericConstraintColumn column)
+    public void addColumn(GenericConstraintColumn column)
     {
         if (columns == null) {
             columns = new ArrayList<GenericConstraintColumn>();
