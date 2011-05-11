@@ -115,16 +115,6 @@ public class MySQLConstants {
 
     public static final String EXTRA_AUTO_INCREMENT = "auto_increment";
 
-    public static final String QUERY_SELECT_TABLE_COLUMNS =
-        "SELECT * FROM " + META_TABLE_COLUMNS +
-        " WHERE " + COL_TABLE_SCHEMA + "=? AND " + COL_TABLE_NAME + "=?" +
-        " ORDER BY " + COL_ORDINAL_POSITION;
-
-    public static final String QUERY_SELECT_ROUTINES =
-        "SELECT * FROM " + META_TABLE_ROUTINES +
-        " WHERE " + COL_ROUTINE_SCHEMA + "=?" +
-        " ORDER BY " + COL_ROUTINE_NAME;
-
     public static final String TYPE_NAME_ENUM = "ENUM";
     public static final String TYPE_NAME_SET = "SET";
 

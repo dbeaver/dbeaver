@@ -532,7 +532,11 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(MySQLConstants.QUERY_SELECT_ROUTINES);
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
+                " WHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?" +
+                " ORDER BY " + MySQLConstants.COL_ROUTINE_NAME
+            );
             dbStat.setString(1, getName());
             return dbStat;
         }
