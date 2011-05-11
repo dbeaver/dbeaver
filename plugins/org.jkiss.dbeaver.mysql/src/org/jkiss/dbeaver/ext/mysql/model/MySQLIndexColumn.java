@@ -16,15 +16,20 @@ public class MySQLIndexColumn extends AbstractIndexColumn
     private MySQLTableColumn tableColumn;
     private int ordinalPosition;
     private boolean ascending;
+    private boolean nullable;
 
-    public MySQLIndexColumn(MySQLIndex index, MySQLTableColumn tableColumn,
+    public MySQLIndexColumn(
+        MySQLIndex index,
+        MySQLTableColumn tableColumn,
         int ordinalPosition,
-        boolean ascending)
+        boolean ascending,
+        boolean nullable)
     {
         this.index = index;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
+        this.nullable = nullable;
     }
 
     MySQLIndexColumn(MySQLIndex toIndex, MySQLIndexColumn source)
@@ -62,6 +67,12 @@ public class MySQLIndexColumn extends AbstractIndexColumn
     public boolean isAscending()
     {
         return ascending;
+    }
+
+    @Property(name = "Nullable", viewable = true, order = 4)
+    public boolean isNullable()
+    {
+        return nullable;
     }
 
     public String getDescription()

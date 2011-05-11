@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ext.mysql;
 
+import org.jkiss.dbeaver.model.struct.DBSIndexType;
+
 /**
  * MySQL constants
  */
@@ -23,6 +25,7 @@ public class MySQLConstants {
     public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".COLUMNS";
     public static final String META_TABLE_TABLE_CONSTRAINTS = INFO_SCHEMA_NAME + ".TABLE_CONSTRAINTS";
     public static final String META_TABLE_KEY_COLUMN_USAGE = INFO_SCHEMA_NAME + ".KEY_COLUMN_USAGE";
+    public static final Object META_TABLE_STATISTICS = INFO_SCHEMA_NAME + ".STATISTICS";
 
     public static final String COL_ENGINE_NAME = "ENGINE";
     public static final String COL_ENGINE_SUPPORT = "SUPPORT";
@@ -49,8 +52,14 @@ public class MySQLConstants {
     public static final String COL_ORDINAL_POSITION = "ORDINAL_POSITION";
     public static final String COL_CREATE_TIME = "CREATE_TIME";
     public static final String COL_COLLATION = "COLLATION";
+    public static final String COL_NULLABLE = "NULLABLE";
     public static final String COL_AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
     public static final String COL_DATA_LENGTH = "DATA_LENGTH";
+    public static final String COL_INDEX_NAME = "INDEX_NAME";
+    public static final String COL_INDEX_TYPE = "INDEX_TYPE";
+    public static final String COL_SEQ_IN_INDEX = "SEQ_IN_INDEX";
+    public static final String COL_NON_UNIQUE = "NON_UNIQUE";
+    public static final String COL_COMMENT = "COMMENT";
     
     public static final String COL_COLUMN_NAME = "COLUMN_NAME";
     public static final String COL_COLUMN_KEY = "COLUMN_KEY";
@@ -118,5 +127,10 @@ public class MySQLConstants {
 
     public static final String TYPE_NAME_ENUM = "ENUM";
     public static final String TYPE_NAME_SET = "SET";
+
+    public static final DBSIndexType INDEX_TYPE_BTREE = new DBSIndexType("BTREE", "BTree");
+    public static final DBSIndexType INDEX_TYPE_FULLTEXT = new DBSIndexType("FULLTEXT", "Full Text");
+    public static final DBSIndexType INDEX_TYPE_HASH = new DBSIndexType("HASH", "Hash");
+    public static final DBSIndexType INDEX_TYPE_RTREE = new DBSIndexType("RTREE", "RTree");
 
 }

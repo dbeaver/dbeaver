@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPEvent;
@@ -140,18 +139,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     public List<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        // Cache tables and columns
-        tableCache.loadChildren(monitor, null);
-
-        // Copy indexes from tables because we do not want
-        // to place the same objects in different places of the tree model
-        List<MySQLIndex> indexList = new ArrayList<MySQLIndex>();
-        for (MySQLTable table : getTables(monitor)) {
-            for (MySQLIndex index : table.getIndexes(monitor)) {
-                indexList.add(new MySQLIndex(index));
-            }
-        }
-        return indexList;
+        return indexCache.getObjects(monitor, null);
     }
 
     public List<MySQLTable> getTables(DBRProgressMonitor monitor)
@@ -433,52 +421,60 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     class IndexCache extends JDBCCompositeCache<MySQLTable, MySQLIndex, MySQLIndexColumn> {
         protected IndexCache()
         {
-            super(tableCache, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
+            super(tableCache, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable forParent)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable forTable)
             throws SQLException, DBException
         {
-            try {
-                return context.getMetaData().getIndexInfo(
-                        getName(),
-                        null,
-                        forParent == null ? null : forParent.getName(),
-                        true,
-                        true).getSource();
-            } catch (SQLException e) {
-                throw e;
-            } catch (Exception e) {
-                if (forParent == null) {
-                    throw new DBException("Global indexes read not supported", e);
-                } else {
-                    throw new DBException(e);
-                }
+            StringBuilder sql = new StringBuilder();
+            sql
+                .append("SELECT * FROM ").append(MySQLConstants.META_TABLE_STATISTICS)
+                .append(" WHERE ").append(MySQLConstants.COL_TABLE_SCHEMA).append("=?");
+            if (forTable != null) {
+                sql.append(" AND ").append(MySQLConstants.COL_TABLE_NAME).append("=?");
             }
+            sql.append(" ORDER BY ").append(MySQLConstants.COL_INDEX_NAME).append(",").append(MySQLConstants.COL_SEQ_IN_INDEX);
+
+            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
+            dbStat.setString(1, MySQLCatalog.this.getName());
+            if (forTable != null) {
+                dbStat.setString(2, forTable.getName());
+            }
+            return dbStat;
+//            return context.getMetaData().getIndexInfo(
+//                    getName(),
+//                    null,
+//                    forParent == null ? null : DBUtils.getQuotedIdentifier(getDataSource(), forParent.getName()),
+//                    true,
+//                    true).getSource();
         }
 
         protected MySQLIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, MySQLTable parent, String indexName)
             throws SQLException, DBException
         {
-            boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
-            String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
-            int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
-
+            boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NON_UNIQUE) != 0;
+            String indexTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_INDEX_TYPE);
             DBSIndexType indexType;
-            switch (indexTypeNum) {
-                case DatabaseMetaData.tableIndexStatistic: indexType = DBSIndexType.STATISTIC; break;
-                case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
-                case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
-                case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
-                default: indexType = DBSIndexType.UNKNOWN; break;
+            if (MySQLConstants.INDEX_TYPE_BTREE.getId().equals(indexTypeName)) {
+                indexType = MySQLConstants.INDEX_TYPE_BTREE;
+            } else if (MySQLConstants.INDEX_TYPE_FULLTEXT.getId().equals(indexTypeName)) {
+                indexType = MySQLConstants.INDEX_TYPE_FULLTEXT;
+            } else if (MySQLConstants.INDEX_TYPE_HASH.getId().equals(indexTypeName)) {
+                indexType = MySQLConstants.INDEX_TYPE_HASH;
+            } else if (MySQLConstants.INDEX_TYPE_RTREE.getId().equals(indexTypeName)) {
+                indexType = MySQLConstants.INDEX_TYPE_RTREE;
+            } else {
+                indexType = DBSIndexType.OTHER;
             }
+            final String comment = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COMMENT);
 
             return new MySQLIndex(
                 parent,
                 isNonUnique,
-                indexQualifier,
                 indexName,
-                indexType);
+                indexType,
+                comment);
         }
 
         protected MySQLIndexColumn fetchObjectRow(
@@ -488,9 +484,10 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             MySQLIndex object)
             throws SQLException, DBException
         {
-            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
-            String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.ASC_OR_DESC);
+            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_SEQ_IN_INDEX);
+            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_COLUMN_NAME);
+            String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_COLLATION);
+            boolean nullable = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_NULLABLE));
 
             MySQLTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
             if (tableColumn == null) {
@@ -502,7 +499,8 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
                 object,
                 tableColumn,
                 ordinalPosition,
-                !"D".equalsIgnoreCase(ascOrDesc));
+                "A".equalsIgnoreCase(ascOrDesc),
+                nullable);
         }
 
         protected boolean isObjectsCached(MySQLTable parent)

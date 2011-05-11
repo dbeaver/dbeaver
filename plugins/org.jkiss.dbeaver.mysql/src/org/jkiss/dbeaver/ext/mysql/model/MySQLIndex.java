@@ -21,23 +21,23 @@ public class MySQLIndex extends AbstractIndex
 {
     private MySQLTable table;
     private boolean nonUnique;
-    private String qualifier;
     private String indexName;
     private DBSIndexType indexType;
+    private String comment;
     private List<MySQLIndexColumn> columns;
 
     public MySQLIndex(
         MySQLTable table,
         boolean nonUnique,
-        String qualifier,
         String indexName,
-        DBSIndexType indexType)
+        DBSIndexType indexType,
+        String comment)
     {
         this.table = table;
         this.nonUnique = nonUnique;
-        this.qualifier = qualifier;
         this.indexName = indexName;
         this.indexType = indexType;
+        this.comment = comment;
     }
 
     /**
@@ -48,7 +48,6 @@ public class MySQLIndex extends AbstractIndex
     {
         this.table = source.table;
         this.nonUnique = source.nonUnique;
-        this.qualifier = source.qualifier;
         this.indexName = source.indexName;
         this.indexType = source.indexType;
         if (source.columns != null) {
@@ -88,21 +87,15 @@ public class MySQLIndex extends AbstractIndex
         return indexName;
     }
 
-    @Property(name = "Index Description", viewable = true, order = 6)
+    @Property(name = "Comment", viewable = true, order = 6)
     public String getDescription()
     {
-        return null;
+        return comment;
     }
 
     public DBSObject getParentObject()
     {
         return table;
-    }
-
-    @Property(name = "Qualifier", viewable = true, order = 4)
-    public String getQualifier()
-    {
-        return qualifier;
     }
 
     public List<MySQLIndexColumn> getColumns(DBRProgressMonitor monitor)
