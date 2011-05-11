@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.dialogs.struct.ConstraintColumnsDialog;
+import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 
 import java.util.*;
 
@@ -40,7 +40,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<C
 
     public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
-        ConstraintColumnsDialog editDialog = new ConstraintColumnsDialog(
+        EditConstraintDialog editDialog = new EditConstraintDialog(
             workbenchWindow.getShell(),
             getCreateTitle(),
             parent,

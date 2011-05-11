@@ -7,11 +7,31 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSIndexType
  */
-public enum DBSIndexType
+public class DBSIndexType
 {
-    UNKNOWN,
-    STATISTIC,
-    CLUSTERED,
-    HASHED,
-    OTHER,
+    public static final DBSIndexType UNKNOWN = new DBSIndexType("UNKNOWN", "Unknown");
+    public static final DBSIndexType STATISTIC = new DBSIndexType("STATISTIC", "Statistic");
+    public static final DBSIndexType CLUSTERED = new DBSIndexType("CLUSTERED", "Clustered");
+    public static final DBSIndexType HASHED = new DBSIndexType("HASHED", "Hashed");
+    public static final DBSIndexType OTHER = new DBSIndexType("OTHER", "Other");
+
+    private final String id;
+    private final String name;
+
+    public DBSIndexType(String id, String name)
+    {
+        this.id = id;
+        this.name = name;
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
 }

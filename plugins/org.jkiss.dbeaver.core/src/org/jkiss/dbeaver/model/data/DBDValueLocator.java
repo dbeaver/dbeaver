@@ -80,7 +80,7 @@ public class DBDValueLocator implements DBPObject {
         if (tableIdentifier.getConstraint() != null) {
             return tableIdentifier.getConstraint().getConstraintType().getName();
         } else {
-            return tableIdentifier.getIndex().getIndexType().name();
+            return tableIdentifier.getIndex().getIndexType().getName();
         }
     }
 

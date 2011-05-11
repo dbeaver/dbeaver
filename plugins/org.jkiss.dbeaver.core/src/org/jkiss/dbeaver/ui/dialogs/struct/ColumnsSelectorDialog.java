@@ -12,7 +12,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -20,7 +19,6 @@ import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -31,15 +29,13 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * ConstraintColumnsDialog
+ * ColumnsSelectorDialog
  *
  * @author Serge Rider
  */
-public class ConstraintColumnsDialog extends Dialog {
+public abstract class ColumnsSelectorDialog extends Dialog {
 
     private String title;
-    private List<DBSConstraintType> constraintTypes;
-    private DBSConstraintType selectedConstraintType;
     private DBNDatabaseNode tableNode;
     private Table columnsTable;
     private List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
@@ -57,23 +53,15 @@ public class ConstraintColumnsDialog extends Dialog {
         }
     }
 
-    public ConstraintColumnsDialog(
+    public ColumnsSelectorDialog(
         Shell shell,
         String title,
-        DBSTable table,
-        Collection<DBSConstraintType> constraintTypes) {
+        DBSTable table) {
         super(shell);
         setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
         this.title = title;
         this.tableNode = DBeaverCore.getInstance().getNavigatorModel().findNode(table);
         Assert.isNotNull(this.tableNode);
-        this.constraintTypes = new ArrayList<DBSConstraintType>(constraintTypes);
-        Assert.isTrue(!CommonUtils.isEmpty(this.constraintTypes));
-    }
-
-    @Override
-    public boolean close() {
-        return super.close();
     }
 
     @Override
@@ -83,32 +71,7 @@ public class ConstraintColumnsDialog extends Dialog {
 
         final Composite panel = UIUtils.createPlaceholder(dialogGroup, 1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        {
-            final Composite typeGroup = new Composite(panel, SWT.NONE);
-            typeGroup.setLayout(new GridLayout(2, false));
-            typeGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            UIUtils.createControlLabel(typeGroup, "Type");
-            final Combo typeCombo = new Combo(typeGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-            typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            for (DBSConstraintType constraintType : constraintTypes) {
-                typeCombo.add(constraintType.getName());
-                if (selectedConstraintType == null) {
-                    selectedConstraintType = constraintType;
-                }
-            }
-            typeCombo.select(0);
-            typeCombo.setEnabled(constraintTypes.size() > 1);
-            typeCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    selectedConstraintType = constraintTypes.get(typeCombo.getSelectionIndex());
-                }
-            });
-        }
+        createContentsBeforeColumns(panel);
         {
             Composite columnsGroup = UIUtils.createControlGroup(panel, "Columns", 1, GridData.FILL_BOTH, 0);
             columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
@@ -132,6 +95,7 @@ public class ConstraintColumnsDialog extends Dialog {
             colPosition.setText("#");
             colPosition.setWidth(30);
         }
+        createContentsAfterColumns(panel);
 
         // Load columns
         final List<DBNDatabaseNode> columnNodes = new ArrayList<DBNDatabaseNode>();
@@ -177,6 +141,16 @@ public class ConstraintColumnsDialog extends Dialog {
         //columnsTable.set
 
         return dialogGroup;
+    }
+
+    protected void createContentsBeforeColumns(Composite panel)
+    {
+
+    }
+
+    protected void createContentsAfterColumns(Composite panel)
+    {
+
     }
 
     private void handleItemSelect(TableItem item)
@@ -240,11 +214,6 @@ public class ConstraintColumnsDialog extends Dialog {
             }
         }
         return tableColumns;
-    }
-
-    public DBSConstraintType getConstraintType()
-    {
-        return selectedConstraintType;
     }
 
 }

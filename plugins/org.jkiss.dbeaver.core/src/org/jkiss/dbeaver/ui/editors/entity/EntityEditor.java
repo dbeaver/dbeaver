@@ -173,6 +173,28 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             } catch (DBException e) {
                 error = e;
             }
+            if (error == null) {
+                // Refresh underlying node
+                // It'll refresh database object and all it's descendants
+                // So we'll get actual data from database
+                final DBNDatabaseNode treeNode = getEditorInput().getTreeNode();
+                try {
+                    DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                        {
+                            try {
+                                treeNode.refreshNode(monitor);
+                            } catch (DBException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    error = e.getTargetException();
+                } catch (InterruptedException e) {
+                    // ok
+                }
+            }
             final Throwable showError = error;
             Display.getDefault().asyncExec(new Runnable() {
                 public void run()
