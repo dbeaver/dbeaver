@@ -475,7 +475,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                         // oracle fails if unquoted complex identifier specified
                         // but other DBs (and logically it's correct) do not want quote chars in this query
                         // so let's fix it in oracle plugin
-                        forParent == null ? null : forParent.getName(), //DBUtils.getQuotedIdentifier(getDataSourceContainer(), forTable.getName()),
+                        forParent == null ? null : DBUtils.getQuotedIdentifier(getDataSource(), forParent.getName()),
                         true,
                         true).getSource();
             } catch (SQLException e) {

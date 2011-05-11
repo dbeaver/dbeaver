@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPEvent;
@@ -18,6 +19,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.struct.AbstractCatalog;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 
 import java.sql.DatabaseMetaData;
@@ -42,9 +45,10 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     private String defaultCharset;
     private String defaultCollation;
     private String sqlPath;
-    private TableCache tableCache = new TableCache();
-    private ProceduresCache proceduresCache = new ProceduresCache();
-    private TriggerCache triggerCache = new TriggerCache();
+    private final TableCache tableCache = new TableCache();
+    private final ProceduresCache proceduresCache = new ProceduresCache();
+    private final TriggerCache triggerCache = new TriggerCache();
+    private final IndexCache indexCache = new IndexCache();
     private boolean constraintsCached = false;
     private boolean persisted;
 
@@ -65,6 +69,11 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     TableCache getTableCache()
     {
         return tableCache;
+    }
+
+    IndexCache getIndexCache()
+    {
+        return indexCache;
     }
 
     ProceduresCache getProceduresCache()
@@ -415,6 +424,100 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             throws SQLException, DBException
         {
             return new MySQLTableColumn(table, dbResult);
+        }
+    }
+
+    /**
+     * Index cache implementation
+     */
+    class IndexCache extends JDBCCompositeCache<MySQLTable, MySQLIndex, MySQLIndexColumn> {
+        protected IndexCache()
+        {
+            super(tableCache, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
+        }
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable forParent)
+            throws SQLException, DBException
+        {
+            try {
+                return context.getMetaData().getIndexInfo(
+                        getName(),
+                        null,
+                        forParent == null ? null : forParent.getName(),
+                        true,
+                        true).getSource();
+            } catch (SQLException e) {
+                throw e;
+            } catch (Exception e) {
+                if (forParent == null) {
+                    throw new DBException("Global indexes read not supported", e);
+                } else {
+                    throw new DBException(e);
+                }
+            }
+        }
+
+        protected MySQLIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, MySQLTable parent, String indexName)
+            throws SQLException, DBException
+        {
+            boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
+            String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
+            int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
+
+            DBSIndexType indexType;
+            switch (indexTypeNum) {
+                case DatabaseMetaData.tableIndexStatistic: indexType = DBSIndexType.STATISTIC; break;
+                case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
+                case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
+                case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
+                default: indexType = DBSIndexType.UNKNOWN; break;
+            }
+
+            return new MySQLIndex(
+                parent,
+                isNonUnique,
+                indexQualifier,
+                indexName,
+                indexType);
+        }
+
+        protected MySQLIndexColumn fetchObjectRow(
+            JDBCExecutionContext context,
+            ResultSet dbResult,
+            MySQLTable parent,
+            MySQLIndex object)
+            throws SQLException, DBException
+        {
+            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
+            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
+            String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.ASC_OR_DESC);
+
+            MySQLTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
+            if (tableColumn == null) {
+                log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
+                return null;
+            }
+
+            return new MySQLIndexColumn(
+                object,
+                tableColumn,
+                ordinalPosition,
+                !"D".equalsIgnoreCase(ascOrDesc));
+        }
+
+        protected boolean isObjectsCached(MySQLTable parent)
+        {
+            return parent.isIndexesCached();
+        }
+
+        protected void cacheObjects(MySQLTable parent, List<MySQLIndex> indexes)
+        {
+            parent.setIndexes(indexes);
+        }
+
+        protected void cacheRows(MySQLIndex index, List<MySQLIndexColumn> rows)
+        {
+            index.setColumns(rows);
         }
     }
 

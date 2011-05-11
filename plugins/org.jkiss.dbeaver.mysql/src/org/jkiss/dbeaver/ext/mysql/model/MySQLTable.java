@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSIndexType;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.DatabaseMetaData;
@@ -143,7 +142,8 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         throws DBException
     {
         if (indexes == null) {
-            indexes = loadIndexes(monitor);
+            // Read indexes using cache
+            this.getContainer().getIndexCache().getObjects(monitor, this);
         }
         return indexes;
     }
@@ -152,6 +152,16 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         throws DBException
     {
         return DBUtils.findObject(getIndexes(monitor), indexName);
+    }
+
+    boolean isIndexesCached()
+    {
+        return indexes != null;
+    }
+
+    void setIndexes(List<MySQLIndex> indexes)
+    {
+        this.indexes = indexes;
     }
 
     public List<MySQLConstraint> getUniqueKeys(DBRProgressMonitor monitor)
@@ -322,83 +332,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         catch (SQLException e) {
             throw new DBCException(e);
         } finally {
-            context.close();
-        }
-    }
-
-    private List<MySQLIndex> loadIndexes(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        // Load columns first
-        getColumns(monitor);
-        // Load index columns
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load indexes");
-        try {
-            List<MySQLIndex> tmpIndexList = new ArrayList<MySQLIndex>();
-            Map<String, MySQLIndex> tmpIndexMap = new HashMap<String, MySQLIndex>();
-            JDBCDatabaseMetaData metaData = context.getMetaData();
-            // Load indexes
-            JDBCResultSet dbResult = metaData.getIndexInfo(
-                getContainer().getName(),
-                null,
-                getName(),
-                false,
-                false);
-            try {
-                while (dbResult.next()) {
-                    String indexName = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_NAME);
-                    boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
-                    String indexQualifier = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_QUALIFIER);
-                    int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
-
-                    int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-                    String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                    String ascOrDesc = JDBCUtils.safeGetString(dbResult, JDBCConstants.ASC_OR_DESC);
-
-                    if (CommonUtils.isEmpty(indexName)) {
-                        // Bad index - can't evaluate it
-                        continue;
-                    }
-                    DBSIndexType indexType;
-                    switch (indexTypeNum) {
-                        case DatabaseMetaData.tableIndexStatistic: indexType = DBSIndexType.STATISTIC; break;
-                        case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
-                        case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
-                        case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
-                        default: indexType = DBSIndexType.UNKNOWN; break;
-                    }
-                    MySQLIndex index = tmpIndexMap.get(indexName);
-                    if (index == null) {
-                        index = new MySQLIndex(
-                            this,
-                            isNonUnique,
-                            indexQualifier,
-                            indexName,
-                            indexType);
-                        tmpIndexList.add(index);
-                        tmpIndexMap.put(indexName, index);
-                    }
-                    MySQLTableColumn tableColumn = this.getColumn(monitor, columnName);
-                    if (tableColumn == null) {
-                        log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "'");
-                        continue;
-                    }
-                    index.addColumn(
-                        new MySQLIndexColumn(
-                            index,
-                            tableColumn,
-                            ordinalPosition,
-                            !"D".equalsIgnoreCase(ascOrDesc)));
-                }
-            }
-            finally {
-                dbResult.close();
-            }
-            return tmpIndexList;
-        } catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
             context.close();
         }
     }

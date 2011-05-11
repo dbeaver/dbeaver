@@ -115,6 +115,11 @@ public class MySQLIndex extends AbstractIndex
         return DBUtils.findObject(columns, columnName);
     }
 
+    void setColumns(List<MySQLIndexColumn> columns)
+    {
+        this.columns = columns;
+    }
+
     void addColumn(MySQLIndexColumn column)
     {
         if (columns == null) {
