@@ -206,6 +206,11 @@ public class UIUtils {
 
     public static void packColumns(Table table)
     {
+        packColumns(table, false);
+    }
+
+    public static void packColumns(Table table, boolean fit)
+    {
         table.setRedraw(false);
         try {
             int totalWidth = 0;
@@ -221,7 +226,7 @@ public class UIUtils {
                     double ratio = (double) tc.getWidth() / totalWidth;
                     tc.setWidth((int) (tc.getWidth() - extraSpace * ratio));
                 }
-            } else if (totalWidth < clientArea.width) {
+            } else if (fit && totalWidth < clientArea.width) {
                 float extraSpace = (clientArea.width - totalWidth) / columns.length;
                 for (TableColumn tc : columns) {
                     tc.setWidth((int)(tc.getWidth() + extraSpace));

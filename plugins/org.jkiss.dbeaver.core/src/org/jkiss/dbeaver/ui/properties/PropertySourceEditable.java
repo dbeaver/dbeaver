@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.properties;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
@@ -92,6 +93,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (CommonUtils.equalObjects(oldValue, value)) {
             return;
         }
+        updatePropertyValue(editableValue, prop, value, false);
         if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop) {
             final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor();
             if (objectEditor == null) {
@@ -112,6 +114,21 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         // Notify listeners
         for (IPropertySourceListener listener : listeners) {
             listener.handlePropertyChange(editableValue, prop, value);
+        }
+    }
+
+    private void updatePropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object value, boolean force)
+    {
+        if (force || !(editableValue instanceof DBPPersistedObject) || !((DBPPersistedObject)editableValue).isPersisted()) {
+            // Write property value only for non-persisted objects
+            try {
+                prop.writeValue(editableValue, value);
+            } catch (Throwable e) {
+                if (e instanceof InvocationTargetException) {
+                    e = ((InvocationTargetException) e).getTargetException();
+                }
+                log.error("Can't write property '" + prop.getDisplayName() + "' value", e);
+            }
         }
     }
 
@@ -138,14 +155,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         public void updateModel()
         {
             super.updateModel();
-            try {
-                property.writeValue(getObject(), getNewValue());
-            } catch (Throwable e) {
-                if (e instanceof InvocationTargetException) {
-                    e = ((InvocationTargetException) e).getTargetException();
-                }
-                log.error("Can't write property '" + property.getDisplayName() + "' value", e);
-            }
+            updatePropertyValue(getObject(), property, getNewValue(), true);
         }
     }
 
@@ -153,17 +163,21 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
         public void redoCommand(PropertyChangeCommand command)
         {
+            final Object propertyValue = getPropertyValue(command.getObject(), command.property);
+            updatePropertyValue(command.getObject(), command.property, propertyValue, false);
             // Notify listeners
             for (IPropertySourceListener listener : listeners) {
-                listener.handlePropertyChange(command.getObject(), command.property, getPropertyValue(command.getObject(), command.property));
+                listener.handlePropertyChange(command.getObject(), command.property, propertyValue);
             }
         }
 
         public void undoCommand(PropertyChangeCommand command)
         {
+            final Object propertyValue = getPropertyValue(command.getObject(), command.property);
+            updatePropertyValue(command.getObject(), command.property, propertyValue, false);
             // Notify listeners
             for (IPropertySourceListener listener : listeners) {
-                listener.handlePropertyChange(command.getObject(), command.property, getPropertyValue(command.getObject(), command.property));
+                listener.handlePropertyChange(command.getObject(), command.property, propertyValue);
             }
         }
     }

@@ -21,11 +21,13 @@ import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -110,16 +112,6 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         super.dispose();
 
         if (getDatabaseObject() != null) {
-            // Revert node names and reset all changes in command context
-            final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-            for (DBPObject object : getCommandContext().getEditedObjects()) {
-                if (object instanceof DBSObject) {
-                    final DBNDatabaseNode node = navigatorModel.getNodeByObject((DBSObject) object);
-                    if (node != null) {
-                        node.setNodeName(null);
-                    }
-                }
-            }
             getCommandContext().resetChanges();
 //            // Remove all non-persisted objects
 //            for (DBPObject object : getCommandContext().getEditedObjects()) {

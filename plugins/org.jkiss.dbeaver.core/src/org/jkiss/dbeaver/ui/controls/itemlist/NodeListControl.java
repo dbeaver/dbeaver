@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -288,14 +289,12 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
     public void handlePropertyChange(Object editableValue, IPropertyDescriptor prop, Object value)
     {
-        DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode((DBSObject) editableValue);
+        final DBSObject dbObject = (DBSObject) editableValue;
+        DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode(dbObject);
         if (node != null) {
-            if (DBConstants.PROP_ID_NAME.equals(prop.getId())) {
-                // Update object in navigator
-                node.setNodeName(CommonUtils.toString(value));
-            } else {
-                getItemsViewer().update(node, null);
-            }
+            //getItemsViewer().update(node, null);
+            dbObject.getDataSource().getContainer().fireEvent(
+                new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, dbObject));
         }
     }
 

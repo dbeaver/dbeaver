@@ -39,7 +39,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     private boolean locked;
     protected List<DBNDatabaseNode> childNodes;
-    private String nodeName;
 
     protected DBNDatabaseNode(DBNNode parentNode)
     {
@@ -63,9 +62,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public String getNodeName()
     {
-        if (!CommonUtils.isEmpty(nodeName)) {
-            return nodeName;
-        }
         if (getObject() == null) {
             return DBConstants.NULL_VALUE_LABEL;
         }
@@ -76,17 +72,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return objectName;
     }
 
-    public void setNodeName(String name)
-    {
-        this.nodeName = name;
-        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
-    }
-
     public String getNodePathName()
     {
-        if (!CommonUtils.isEmpty(nodeName)) {
-            return nodeName;
-        }
         if (getObject() instanceof DBSEntityQualified) {
             return ((DBSEntityQualified)getObject()).getFullQualifiedName();
         } else {
