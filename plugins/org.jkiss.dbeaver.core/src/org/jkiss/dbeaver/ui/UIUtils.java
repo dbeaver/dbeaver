@@ -209,15 +209,22 @@ public class UIUtils {
         table.setRedraw(false);
         try {
             int totalWidth = 0;
-            for (TableColumn column : table.getColumns()) {
+            final TableColumn[] columns = table.getColumns();
+            for (TableColumn column : columns) {
                 column.pack();
                 totalWidth += column.getWidth();
             }
-            if (table.getClientArea().width > 0 && totalWidth > table.getClientArea().width) {
-                int extraSpace = totalWidth - table.getClientArea().width;
-                for (TableColumn tc : table.getColumns()) {
+            final Rectangle clientArea = table.getClientArea();
+            if (clientArea.width > 0 && totalWidth > clientArea.width) {
+                int extraSpace = totalWidth - clientArea.width;
+                for (TableColumn tc : columns) {
                     double ratio = (double) tc.getWidth() / totalWidth;
                     tc.setWidth((int) (tc.getWidth() - extraSpace * ratio));
+                }
+            } else if (totalWidth < clientArea.width) {
+                float extraSpace = (clientArea.width - totalWidth) / columns.length;
+                for (TableColumn tc : columns) {
+                    tc.setWidth((int)(tc.getWidth() + extraSpace));
                 }
             }
         } finally {

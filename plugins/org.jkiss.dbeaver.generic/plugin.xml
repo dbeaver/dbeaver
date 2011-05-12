@@ -48,7 +48,7 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="References" iconId="#references" description="Table references" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey" label="References" iconId="#references" description="Table references" visibleIf="!object.view">
                                     <items label="Reference" path="reference" property="references" iconId="#reference">
                                         <items label="Reference columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>

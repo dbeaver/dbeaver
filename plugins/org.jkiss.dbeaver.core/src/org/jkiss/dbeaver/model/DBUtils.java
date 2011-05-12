@@ -160,6 +160,21 @@ public final class DBUtils {
         return name.toString();
     }
 
+    public static String getSimpleQualifiedName(Object... names)
+    {
+        StringBuilder name = new StringBuilder();
+        for (Object namePart : names) {
+            if (namePart == null) {
+                continue;
+            }
+            if (name.length() > 0) {
+                name.append('.');
+            }
+            name.append(namePart);
+        }
+        return name.toString();
+    }
+
     /**
      * Checks that object has valid object name.
      * Some DB objects have dummy names (like "" or ".") - we won't use them for certain purposes.

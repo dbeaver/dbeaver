@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
@@ -29,7 +30,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         String description = functionName;
         if (args.length > 0) {
-            description += "[]";
+            description += "[" + DBUtils.getSimpleQualifiedName(args) + "]";
         }
         return JDBCResultSetImpl.makeResultSet(connection, resultSet, description);
     }
