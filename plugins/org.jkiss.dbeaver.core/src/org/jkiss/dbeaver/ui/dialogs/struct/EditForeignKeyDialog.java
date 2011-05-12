@@ -10,13 +10,12 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
@@ -25,11 +24,13 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSConstraint;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
+import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -46,16 +47,22 @@ public class EditForeignKeyDialog extends Dialog {
     private IProgressControlProvider progressProvider;
     private DBNDatabaseNode ownerTableNode;
     private DBNDatabaseNode refTableNode;
+    private DBNDatabaseNode refKeyNode;
+    private List<DBNDatabaseNode> constraintNodes;
+    private Combo uniqueKeyCombo;
 
     public EditForeignKeyDialog(
         Shell shell,
         String title,
-        IProgressControlProvider progressProvider,
+        IEditorPart curEditor,
         DBSTable table) {
         super(shell);
         setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
         this.title = title;
-        this.progressProvider = progressProvider;
+        if (curEditor instanceof MultiPageDatabaseEditor) {
+            curEditor = ((MultiPageDatabaseEditor) curEditor).getActiveEditor();
+        }
+        this.progressProvider = curEditor instanceof IProgressControlProvider ? (IProgressControlProvider) curEditor : null;
         this.ownerTableNode = DBeaverCore.getInstance().getNavigatorModel().findNode(table);
         Assert.isNotNull(this.ownerTableNode);
     }
@@ -71,7 +78,7 @@ public class EditForeignKeyDialog extends Dialog {
         {
             final Composite tableGroup = UIUtils.createPlaceholder(panel, 2);
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createLabelText(tableGroup, "Table", ownerTableNode.getNodeName(), SWT.READ_ONLY);
+            UIUtils.createLabelText(tableGroup, "Table", ownerTableNode.getNodeName(), SWT.READ_ONLY | SWT.BORDER);
 
             createContentsBeforeColumns(tableGroup);
         }
@@ -82,7 +89,6 @@ public class EditForeignKeyDialog extends Dialog {
             //Composite columnsGroup = UIUtils.createControlGroup(panel, "Reference Table", 1, GridData.FILL_BOTH, 0);
             UIUtils.createControlLabel(panel, "Reference table");
             ItemListControl tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
-            ProgressPageControl progressControl = null;
             if (progressProvider != null) {
                 tableList.substituteProgressPanel(progressProvider.getProgressControl());
             } else {
@@ -97,10 +103,33 @@ public class EditForeignKeyDialog extends Dialog {
             tableList.getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
                 public void selectionChanged(SelectionChangedEvent event)
                 {
-                    handleItemSelect(event.getSelection());
+                    handleRefTableSelect(event.getSelection());
                 }
             });
         }
+        {
+            final Composite pkGroup = UIUtils.createPlaceholder(panel, 2);
+            pkGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            uniqueKeyCombo = UIUtils.createLabelCombo(pkGroup, "Unique Key", SWT.DROP_DOWN | SWT.READ_ONLY);
+            uniqueKeyCombo.setEnabled(false);
+        }
+        {
+            UIUtils.createControlLabel(panel, "Columns");
+            Table columnsTable = new Table(panel, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
+            columnsTable.setHeaderVisible(true);
+            final GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.widthHint = 500;
+            gd.heightHint = 100;
+            columnsTable.setLayoutData(gd);
+
+            TableColumn colOwnName = UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Name");
+            TableColumn colOwnType = UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Type");
+
+            TableColumn colRefName = UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Ref Name");
+            TableColumn colRefType = UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Ref Type");
+            UIUtils.packColumns(columnsTable);
+        }
+
         createContentsAfterColumns(panel);
 
         // Load columns
@@ -147,7 +176,62 @@ public class EditForeignKeyDialog extends Dialog {
 
     }
 
-    private void handleItemSelect(ISelection selection)
+    private void handleRefTableSelect(ISelection selection)
+    {
+        refTableNode = null;
+        refKeyNode = null;
+        if (!selection.isEmpty() && selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() == 1) {
+            final Object element = ((IStructuredSelection) selection).getFirstElement();
+            if (element instanceof DBNDatabaseNode &&
+                ((DBNDatabaseNode) element).getObject() instanceof DBSTable &&
+                ((DBNDatabaseNode) element).getObject().isPersisted())
+            {
+                refTableNode = (DBNDatabaseNode) element;
+            }
+        }
+        uniqueKeyCombo.removeAll();
+
+        final DBSTable refTable = (DBSTable) refTableNode.getObject();
+        try {
+            constraintNodes = new ArrayList<DBNDatabaseNode>();
+            final DBeaverCore core = DBeaverCore.getInstance();
+            if (refTableNode != null) {
+                core.runInProgressService(new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            final List<? extends DBSConstraint> constraints = refTable.getConstraints(monitor);
+                            if (!CommonUtils.isEmpty(constraints)) {
+                                for (DBSConstraint constraint : constraints) {
+                                    if (constraint.getConstraintType().isUnique()) {
+                                        final DBNDatabaseNode constraintNode = core.getNavigatorModel().getNodeByObject(monitor, constraint, true);
+                                        if (constraintNode != null) {
+                                            constraintNodes.add(constraintNode);
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
+            }
+            for (DBNDatabaseNode node : constraintNodes) {
+                uniqueKeyCombo.add(node.getNodeName());
+            }
+            uniqueKeyCombo.select(0);
+            uniqueKeyCombo.setEnabled(constraintNodes.size() > 1);
+
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(getShell(), "Load constraints", "Can't load table constraints", e.getTargetException());
+        } catch (InterruptedException e) {
+            // do nothing
+        }
+        updateButtons();
+    }
+
+    private void updateButtons()
     {
         getButton(IDialogConstants.OK_ID).setEnabled(false);
     }

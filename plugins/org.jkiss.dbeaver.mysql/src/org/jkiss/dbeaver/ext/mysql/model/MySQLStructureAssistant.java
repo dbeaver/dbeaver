@@ -196,7 +196,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     if (MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constrType)) {
                         constraint = table.getForeignKey(monitor, constrName);
                     } else {
-                        constraint = table.getUniqueKey(monitor, constrName);
+                        constraint = table.getConstraint(monitor, constrName);
                     }
                     if (constraint == null) {
                         log.debug("Constraint '" + constrName + "' not found in table '" + table.getFullQualifiedName() + "'");

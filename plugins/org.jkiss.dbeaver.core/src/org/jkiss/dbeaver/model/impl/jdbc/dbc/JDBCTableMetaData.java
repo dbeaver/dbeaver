@@ -112,7 +112,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
             // Check constraints
-            Collection<? extends DBSConstraint> uniqueKeys = table.getUniqueKeys(monitor);
+            Collection<? extends DBSConstraint> uniqueKeys = table.getConstraints(monitor);
             if (!CommonUtils.isEmpty(uniqueKeys)) {
                 for (DBSConstraint constraint : uniqueKeys) {
                     if (constraint.getConstraintType().isUnique()) {

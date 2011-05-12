@@ -79,7 +79,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     private List<MySQLTableColumn> columns;
     private List<MySQLIndex> indexes;
-    private List<MySQLConstraint> uniqueKeys;
+    private List<MySQLConstraint> constraints;
     private List<MySQLForeignKey> foreignKeys;
     private List<MySQLTrigger> triggers;
 
@@ -163,19 +163,19 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         this.indexes = indexes;
     }
 
-    public List<MySQLConstraint> getUniqueKeys(DBRProgressMonitor monitor)
+    public List<MySQLConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (uniqueKeys == null) {
+        if (constraints == null) {
             getContainer().loadConstraints(monitor, this);
         }
-        return uniqueKeys;
+        return constraints;
     }
 
-    public MySQLConstraint getUniqueKey(DBRProgressMonitor monitor, String ukName)
+    public MySQLConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return DBUtils.findObject(getUniqueKeys(monitor), ukName);
+        return DBUtils.findObject(getConstraints(monitor), ukName);
     }
 
     public List<MySQLForeignKey> getReferences(DBRProgressMonitor monitor)
@@ -266,7 +266,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     {
         columns = null;
         indexes = null;
-        uniqueKeys = null;
+        constraints = null;
         foreignKeys = null;
         triggers = null;
         synchronized (additionalInfo) {
@@ -337,16 +337,16 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     boolean uniqueKeysCached()
     {
-        return this.uniqueKeys != null;
+        return this.constraints != null;
     }
 
     void cacheUniqueKey(MySQLConstraint constraint)
     {
-        if (uniqueKeys == null) {
-            uniqueKeys = new ArrayList<MySQLConstraint>();
+        if (constraints == null) {
+            constraints = new ArrayList<MySQLConstraint>();
         }
         
-        uniqueKeys.add(constraint);
+        constraints.add(constraint);
     }
 
     private List<MySQLForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
@@ -412,15 +412,15 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                     // Find PK
                     MySQLConstraint pk = null;
                     if (pkName != null) {
-                        pk = DBUtils.findObject(pkTable.getUniqueKeys(monitor), pkName);
+                        pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
                         if (pk == null) {
                             log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
                         }
                     }
                     if (pk == null) {
-                        List<MySQLConstraint> uniqueKeys = pkTable.getUniqueKeys(monitor);
-                        if (uniqueKeys != null) {
-                            for (MySQLConstraint pkConstraint : uniqueKeys) {
+                        List<MySQLConstraint> constraints = pkTable.getConstraints(monitor);
+                        if (constraints != null) {
+                            for (MySQLConstraint pkConstraint : constraints) {
                                 if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
                                     pk = pkConstraint;
                                     break;

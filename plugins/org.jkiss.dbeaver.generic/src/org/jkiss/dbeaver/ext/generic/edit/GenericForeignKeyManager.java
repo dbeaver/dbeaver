@@ -24,13 +24,10 @@ public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericForei
     @Override
     protected GenericForeignKey createNewForeignKey(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, GenericTable table, Object from)
     {
-        if (activeEditor instanceof MultiPageDatabaseEditor) {
-            activeEditor = ((MultiPageDatabaseEditor) activeEditor).getActiveEditor();
-        }
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
             workbenchWindow.getShell(),
             "Create foreign key",
-            activeEditor instanceof IProgressControlProvider ? (IProgressControlProvider) activeEditor : null,
+            activeEditor,
             table);
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;

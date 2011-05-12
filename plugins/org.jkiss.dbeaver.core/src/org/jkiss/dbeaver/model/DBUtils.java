@@ -437,7 +437,7 @@ public final class DBUtils {
 
         List<DBSObject> identifiers = new ArrayList<DBSObject>();
         // Check constraints
-        Collection<? extends DBSConstraint> uniqueKeys = table.getUniqueKeys(monitor);
+        Collection<? extends DBSConstraint> uniqueKeys = table.getConstraints(monitor);
         if (!CommonUtils.isEmpty(uniqueKeys)) {
             for (DBSConstraint constraint : uniqueKeys) {
                 if (constraint.getConstraintType().isUnique() && !CommonUtils.isEmpty(constraint.getColumns(monitor))) {

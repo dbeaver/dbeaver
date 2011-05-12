@@ -52,7 +52,7 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException on any DB error
      * @param monitor
      */
-    List<? extends DBSConstraint> getUniqueKeys(DBRProgressMonitor monitor) throws DBException;
+    List<? extends DBSConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets this table foreign keys

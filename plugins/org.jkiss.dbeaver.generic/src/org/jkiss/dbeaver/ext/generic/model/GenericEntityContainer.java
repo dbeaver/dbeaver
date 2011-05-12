@@ -697,7 +697,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             // Find PK
             GenericPrimaryKey pk = null;
             if (pkName != null) {
-                pk = DBUtils.findObject(pkTable.getUniqueKeys(context.getProgressMonitor()), pkName);
+                pk = DBUtils.findObject(pkTable.getConstraints(context.getProgressMonitor()), pkName);
                 if (pk == null) {
                     log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
                 }
@@ -710,7 +710,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                     return null;
                 }
 
-                List<GenericPrimaryKey> uniqueKeys = pkTable.getUniqueKeys(context.getProgressMonitor());
+                List<GenericPrimaryKey> uniqueKeys = pkTable.getConstraints(context.getProgressMonitor());
                 if (uniqueKeys != null) {
                     for (GenericPrimaryKey pkConstraint : uniqueKeys) {
                         if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(context.getProgressMonitor(), pkColumn) != null) {

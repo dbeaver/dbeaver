@@ -493,9 +493,10 @@ public class UIUtils {
     public static Combo createLabelCombo(Composite parent, String label, int style)
     {
         Label labelControl = createControlLabel(parent, label);
-        labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        //labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         final Combo combo = new Combo(parent, style);
+        combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         return combo;
     }

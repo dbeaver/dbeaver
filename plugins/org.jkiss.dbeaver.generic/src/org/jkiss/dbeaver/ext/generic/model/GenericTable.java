@@ -127,7 +127,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             this.getContainer().getTableCache().loadChildren(monitor, this);
             if (columns != null && uniqueKeys == null) {
                 // Cache unique keys (they are used by columns to detect key flag)
-                getUniqueKeys(monitor);
+                getConstraints(monitor);
             }
         }
         return columns;
@@ -180,7 +180,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         return this.indexes != null;
     }
 
-    public List<GenericPrimaryKey> getUniqueKeys(DBRProgressMonitor monitor)
+    public List<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (uniqueKeys == null) {
@@ -447,13 +447,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                 // Find PK
                 GenericPrimaryKey pk = null;
                 if (info.pkName != null) {
-                    pk = DBUtils.findObject(this.getUniqueKeys(monitor), info.pkName);
+                    pk = DBUtils.findObject(this.getConstraints(monitor), info.pkName);
                     if (pk == null) {
                         log.warn("Unique key '" + info.pkName + "' not found in table " + this.getFullQualifiedName());
                     }
                 }
                 if (pk == null) {
-                    List<GenericPrimaryKey> uniqueKeys = this.getUniqueKeys(monitor);
+                    List<GenericPrimaryKey> uniqueKeys = this.getConstraints(monitor);
                     if (uniqueKeys != null) {
                         for (GenericPrimaryKey pkConstraint : uniqueKeys) {
                             if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
