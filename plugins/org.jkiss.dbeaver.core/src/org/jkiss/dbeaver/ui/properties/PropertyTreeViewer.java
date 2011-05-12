@@ -706,10 +706,12 @@ public class PropertyTreeViewer extends TreeViewer {
                                 GC gc = event.gc;
                                 final Tree tree = getTree();
                                 int columnWidth = tree.getColumn(1).getWidth();
+                                int columnHeight = getTree().getItemHeight();
                                 Image image = node.isEditable() ?
                                     ((Boolean)propertyValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
                                     ((Boolean)propertyValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
-                                gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
+                                final Rectangle imageBounds = image.getBounds();
+                                gc.drawImage(image, event.x + (columnWidth - imageBounds.width) / 2, event.y + (columnHeight - imageBounds.height) / 2);
                                 event.doit = false;
                             }
                         }

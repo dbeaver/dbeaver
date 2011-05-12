@@ -9,6 +9,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Image-related utils
@@ -58,24 +59,25 @@ public class ImageUtils {
     {
         final Shell shell = DBeaverCore.getActiveWorkbenchShell();
         Button checkBox = new Button(shell, SWT.CHECK);
-        checkBox.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        final Color borderColor = shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        checkBox.setBackground(borderColor);
         Point checkboxSize = checkBox.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         checkBox.setBounds(0, 0, checkboxSize.x, checkboxSize.y);
         try {
             checkBox.setSelection(false);
-            imageCheckboxEnabledOff = captureWidget(checkBox);
+            imageCheckboxEnabledOff = captureWidget(checkBox, borderColor);
             checkBox.setSelection(true);
-            imageCheckboxEnabledOn = captureWidget(checkBox);
+            imageCheckboxEnabledOn = captureWidget(checkBox, borderColor);
             checkBox.setEnabled(false);
-            imageCheckboxDisabledOn = captureWidget(checkBox);
+            imageCheckboxDisabledOn = captureWidget(checkBox, borderColor);
             checkBox.setSelection(false);
-            imageCheckboxDisabledOff = captureWidget(checkBox);
+            imageCheckboxDisabledOff = captureWidget(checkBox, borderColor);
         } finally {
-            checkBox.dispose();
+            UIUtils.dispose(checkBox);
         }
     }
 
-    public static Image captureWidget(Control widget)
+    public static Image captureWidget(Control widget, Color borderColor)
     {
         Point size = widget.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         Image image = new Image(widget.getDisplay(), size.x, size.y);
@@ -84,9 +86,9 @@ public class ImageUtils {
         try {
             widget.print(gc);
         } finally {
-            gc.dispose();
+            UIUtils.dispose(gc);
         }
-        return image;
+        return removeImageBorder(image, borderColor);
 /*
         final ImageData imageData = image.getImageData();
         imageData.transparentPixel = imageData.getPixel(0, 0);
@@ -95,6 +97,82 @@ public class ImageUtils {
         return fixedImage;
 */
     }
+
+    public static Image removeImageBorder(Image srcImage, Color borderColor)
+    {
+        final ImageData imageData = srcImage.getImageData();
+        if (imageData.height == 0 || imageData.width == 0) {
+            return srcImage;
+        }
+        int borderPixel = imageData.getPixel(0, 0);
+        if (!imageData.palette.getRGB(borderPixel).equals(borderColor.getRGB())) {
+            // First pixel isn't a border
+            return srcImage;
+        }
+
+        int emptyTopRows = 0, emptyBottomRows = 0, emptyLeftColumns = 0, emptyRightColumns = 0;
+        // Check top rows
+        for (int row = 0; row < imageData.height; row++) {
+            boolean emptyRow = true;
+            for (int col = 0; col < imageData.width; col++) {
+                if (borderPixel != imageData.getPixel(col, row)) {
+                    emptyRow = false;
+                    break;
+                }
+            }
+            if (!emptyRow) {
+                emptyTopRows = row;
+                break;
+            }
+        }
+        // Check bottom rows
+        for (int row = imageData.height - 1; row >= 0; row--) {
+            boolean emptyRow = true;
+            for (int col = 0; col < imageData.width; col++) {
+                if (borderPixel != imageData.getPixel(col, row)) {
+                    emptyRow = false;
+                    break;
+                }
+            }
+            if (!emptyRow) {
+                emptyBottomRows = imageData.height - row - 1;
+                break;
+            }
+        }
+        if (emptyTopRows >= 0 || emptyBottomRows > 0 || emptyLeftColumns > 0 || emptyRightColumns > 0) {
+            return cropImage(
+                srcImage,
+                emptyLeftColumns,
+                emptyTopRows,
+                imageData.width - emptyLeftColumns - emptyRightColumns,
+                imageData.height - emptyTopRows - emptyBottomRows);
+        }
+        return srcImage;
+    }
+
+	public static Image cropImage(Image srcImage, int x, int y, int w, int h)
+	{
+		Image cropImage = new Image(srcImage.getDevice(), w, h);
+
+        // Redefine w and h to void them to be too big
+		if (x+w > srcImage.getBounds().width) {
+			w = srcImage.getBounds().width - x;
+		}
+		if (y+h > srcImage.getBounds().height) {
+			h = srcImage.getBounds().height - y;
+		}
+
+		GC cropGC = new GC(cropImage);
+		cropGC.drawImage(srcImage,
+				x, y,
+				w, h,
+				0, 0,
+				w, h);
+		UIUtils.dispose(cropGC);
+        UIUtils.dispose(srcImage);
+
+		return cropImage;
+	}
 
     /**
      * Retrieve the image data for the image, using a palette of at most 256
@@ -123,10 +201,10 @@ public class ImageUtils {
 
         /**
          * if newImageData is null, it has more than 256 colours. Use the web
-         * safe pallette to get an 8 bit image data for the image.
+         * safe palette to get an 8 bit image data for the image.
          */
         if (newImageData == null) {
-            newImageData = getWebSafePalletteImageData(imageData);
+            newImageData = getWebSafePaletteImageData(imageData);
         }
 
         return newImageData;
@@ -191,13 +269,13 @@ public class ImageUtils {
 
     /**
      * If the image has less than 256 colours, simply create a new 8 bit palette
-     * and map the colours to the new palatte.
+     * and map the colours to the new palette.
      */
-    private static ImageData getWebSafePalletteImageData(ImageData imageData)
+    private static ImageData getWebSafePaletteImageData(ImageData imageData)
     {
         PaletteData palette = imageData.palette;
-        RGB[] webSafePallette = getWebSafePallette();
-        PaletteData newPaletteData = new PaletteData(webSafePallette);
+        RGB[] webSafePalette = getWebSafePalette();
+        PaletteData newPaletteData = new PaletteData(webSafePalette);
         ImageData newImageData = new ImageData(imageData.width,
             imageData.height, 8, newPaletteData);
 
@@ -213,7 +291,7 @@ public class ImageUtils {
                     RGB colour = palette.getRGB(pixel);
                     RGB webSafeColour = getWebSafeColour(colour);
                     for (newPixel = 0; newPixel < 256; ++newPixel) {
-                        if (webSafePallette[newPixel].equals(webSafeColour)) {
+                        if (webSafePalette[newPixel].equals(webSafeColour)) {
                             break;
                         }
                     }
@@ -242,12 +320,12 @@ public class ImageUtils {
     }
 
     /**
-     * Retrieves a web safe pallette. Our palette will be 216 web safe colours
+     * Retrieves a web safe palette. Our palette will be 216 web safe colours
      * and the remaining filled with white.
      *
      * @return array of 256 colours.
      */
-    private static RGB[] getWebSafePallette()
+    private static RGB[] getWebSafePalette()
     {
         RGB[] colours = new RGB[256];
         int i = 0;

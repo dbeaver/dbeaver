@@ -950,11 +950,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         GC gc = event.gc;
                         if (cellValue instanceof Boolean) {
                             int columnWidth = UIUtils.getColumnWidth(objectColumn.item);
+                            int columnHeight = isTree ? getTree().getItemHeight() : getTable().getItemHeight();
                             ObjectPropertyDescriptor prop = objectColumn.propMap.get(objectValue.getClass());
                             Image image = (Boolean)cellValue ?
                                 (prop.isEditable(objectValue) ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxDisabledOn()) :
                                 (prop.isEditable(objectValue) ? ImageUtils.getImageCheckboxEnabledOff() : ImageUtils.getImageCheckboxDisabledOff());
-                            gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
+                            final Rectangle imageBounds = image.getBounds();
+                            gc.drawImage(image, event.x + (columnWidth - imageBounds.width) / 2, event.y + (columnHeight - imageBounds.height) / 2);
                             event.doit = false;
                         } else if (isHyperlink(cellValue)) {
                             boolean isSelected = linkColor.equals(gc.getBackground());
