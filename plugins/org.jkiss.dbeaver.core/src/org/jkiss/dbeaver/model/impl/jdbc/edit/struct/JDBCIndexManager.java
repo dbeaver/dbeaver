@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -36,9 +37,9 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, TABLE_TYPE table, Object copyFrom)
+    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, TABLE_TYPE table, Object copyFrom)
     {
-        OBJECT_TYPE newConstraint = createNewIndex(workbenchWindow, table, copyFrom);
+        OBJECT_TYPE newConstraint = createNewIndex(workbenchWindow, activeEditor, table, copyFrom);
 
         makeInitialCommands(newConstraint, commandContext, new CommandCreateIndex(newConstraint));
 
@@ -69,11 +70,8 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
         // Get columns using void monitor
         boolean firstColumn = true;
         for (DBSIndexColumn indexColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
-            if (!firstColumn) {
-                decl.append(",");
-            } else {
-                firstColumn = false;
-            }
+            if (!firstColumn) decl.append(",");
+            firstColumn = false;
             decl.append(indexColumn.getName());
             if (!indexColumn.isAscending()) {
                 decl.append(" DESC");
@@ -93,7 +91,7 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
 
     protected abstract OBJECT_TYPE createNewIndex(
         IWorkbenchWindow workbenchWindow,
-        TABLE_TYPE parent,
+        IEditorPart activeEditor, TABLE_TYPE parent,
         Object from);
 
     private class CommandCreateIndex extends ObjectSaveCommand<OBJECT_TYPE> {

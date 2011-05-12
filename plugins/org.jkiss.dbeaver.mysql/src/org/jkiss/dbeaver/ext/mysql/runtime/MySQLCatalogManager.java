@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -32,7 +33,7 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
-    public MySQLCatalog createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
+    public MySQLCatalog createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
     {
         String schemaName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Schema name");
         if (CommonUtils.isEmpty(schemaName)) {

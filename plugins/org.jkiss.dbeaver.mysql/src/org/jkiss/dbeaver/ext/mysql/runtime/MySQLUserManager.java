@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
@@ -26,7 +27,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public MySQLUser createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
+    public MySQLUser createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
     {
         MySQLUser newUser = new MySQLUser(parent, null);
         if (copyFrom instanceof MySQLUser) {

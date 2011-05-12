@@ -68,31 +68,28 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         this.nodeMeta = nodeMeta;
         this.selectionProvider = new NodeSelectionProvider(super.getSelectionProvider());
 
-        // Add context menu
-        ViewUtils.addContextMenu(workbenchPart, getSelectionProvider(), getItemsViewer().getControl(), this);
-        // Add drag and drop support
-        ViewUtils.addDragAndDropSupport(getItemsViewer());
+        if (workbenchPart != null) {
+            // Add context menu
+            ViewUtils.addContextMenu(workbenchPart, getSelectionProvider(), getItemsViewer().getControl(), this);
+            // Add drag and drop support
+            ViewUtils.addDragAndDropSupport(getItemsViewer());
 
-        setDoubleClickHandler(new IDoubleClickListener() {
-            public void doubleClick(DoubleClickEvent event)
-            {
-                // Run default node action
-                DBNNode dbmNode = ViewUtils.getSelectedNode(getItemsViewer());
-                if (dbmNode == null) {
-                    return;
+            setDoubleClickHandler(new IDoubleClickListener() {
+                public void doubleClick(DoubleClickEvent event)
+                {
+                    // Run default node action
+                    DBNNode dbmNode = ViewUtils.getSelectedNode(getItemsViewer());
+                    if (dbmNode == null) {
+                        return;
+                    }
+                    ViewUtils.runCommand(dbmNode.getDefaultCommandId(), workbenchPart);
                 }
-                ViewUtils.runCommand(dbmNode.getDefaultCommandId(), workbenchPart);
-            }
-        });
+            });
+        }
 
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
 
         //getSelectionProvider().setSelection(new StructuredSelection(rootNode));
-    }
-
-    public IWorkbenchPart getWorkbenchPart()
-    {
-        return workbenchPart;
     }
 
     public DBPDataSource getDataSource()
@@ -249,7 +246,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         if (cellValue instanceof DBSObject) {
             DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
             if (node != null) {
-                NavigatorHandlerObjectOpen.openEntityEditor(node, null, getWorkbenchPart().getSite().getWorkbenchWindow());
+                NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverCore.getActiveWorkbenchWindow());
             }
         }
     }

@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.GenericIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericIndexColumn;
@@ -26,7 +27,7 @@ public class GenericIndexManager extends JDBCIndexManager<GenericIndex, GenericT
 
     protected GenericIndex createNewIndex(
         IWorkbenchWindow workbenchWindow,
-        GenericTable parent,
+        IEditorPart activeEditor, GenericTable parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(

@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -17,10 +18,11 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
+import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -37,9 +39,9 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, TABLE_TYPE parent, Object copyFrom)
+    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, TABLE_TYPE parent, Object copyFrom)
     {
-        OBJECT_TYPE newForeignKey = createNewForeignKey(workbenchWindow, parent, copyFrom);
+        OBJECT_TYPE newForeignKey = createNewForeignKey(workbenchWindow, activeEditor, parent, copyFrom);
         if (newForeignKey == null) {
             return null;
         }
@@ -49,16 +51,10 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
         return newForeignKey;
     }
 
-    protected String getCreateTitle()
-    {
-        return "Create foreign key";
-    }
-
     public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
     {
         commandContext.addCommand(new CommandDropConstraint(object), new DeleteObjectReflector<OBJECT_TYPE>(), true);
     }
-
 
     @Override
     protected IDatabasePersistAction[] makeObjectChangeActions(ObjectChangeCommand<OBJECT_TYPE> command)
@@ -77,35 +73,41 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
 
     public String getNestedDeclaration(DBPObject owner, ObjectChangeCommand<OBJECT_TYPE> command)
     {
-        OBJECT_TYPE constraint = command.getObject();
+        OBJECT_TYPE foreignKey = command.getObject();
 
         // Create column
         String constraintName = DBUtils.getQuotedIdentifier(
-            constraint.getDataSource(),
+            foreignKey.getDataSource(),
             CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME)));
 
         StringBuilder decl = new StringBuilder(40);
         decl
             .append("CONSTRAINT ").append(constraintName)
-            .append(" ").append(constraint.getConstraintType().getName().toUpperCase())
+            .append(" ").append(foreignKey.getConstraintType().getName().toUpperCase())
             .append(" (");
         // Get columns using void monitor
+        final Collection<? extends DBSForeignKeyColumn> columns = (Collection<? extends DBSForeignKeyColumn>) command.getObject().getColumns(VoidProgressMonitor.INSTANCE);
         boolean firstColumn = true;
-        for (DBSConstraintColumn constraintColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
-            if (!firstColumn) {
-                decl.append(",");
-            } else {
-                firstColumn = false;
-            }
+        for (DBSForeignKeyColumn constraintColumn : columns) {
+            if (!firstColumn) decl.append(",");
+            firstColumn = false;
             decl.append(constraintColumn.getName());
         }
+        decl.append(") REFERENCES ").append(foreignKey.getReferencedTable().getFullQualifiedName()).append("(");
+        firstColumn = true;
+        for (DBSForeignKeyColumn constraintColumn : columns) {
+            if (!firstColumn) decl.append(",");
+            firstColumn = false;
+            decl.append(constraintColumn.getReferencedColumn().getName());
+        }
         decl.append(")");
+        //decl.append(" ON DELETE ").append(foreignKey.getDeleteRule().getName());
         return decl.toString();
     }
 
     protected abstract OBJECT_TYPE createNewForeignKey(
         IWorkbenchWindow workbenchWindow,
-        TABLE_TYPE table,
+        IEditorPart activeEditor, TABLE_TYPE table,
         Object from);
 
     private class CommandCreateConstraint extends ObjectSaveCommand<OBJECT_TYPE> {
@@ -129,7 +131,6 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
             };
         }
     }
-
 
 }
 

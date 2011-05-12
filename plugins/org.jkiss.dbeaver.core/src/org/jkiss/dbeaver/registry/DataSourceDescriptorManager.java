@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -26,7 +27,7 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
         return 0;
     }
 
-    public DataSourceDescriptor createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, DataSourceRegistry parent, Object copyFrom)
+    public DataSourceDescriptor createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, DataSourceRegistry parent, Object copyFrom)
     {
         if (copyFrom != null) {
             DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;

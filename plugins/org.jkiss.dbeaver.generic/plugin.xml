@@ -342,6 +342,11 @@
             objectType="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey"
             label="Primary key manager"/>
         <manager
+            id="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"
+            class="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericForeignKey"
+            label="Foreign key manager"/>
+        <manager
             id="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"
             class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"
             objectType="org.jkiss.dbeaver.ext.generic.model.GenericIndex"

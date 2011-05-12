@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -27,7 +28,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -41,16 +43,19 @@ import java.util.List;
 public class EditForeignKeyDialog extends Dialog {
 
     private String title;
+    private IProgressControlProvider progressProvider;
     private DBNDatabaseNode ownerTableNode;
     private DBNDatabaseNode refTableNode;
 
     public EditForeignKeyDialog(
         Shell shell,
         String title,
+        IProgressControlProvider progressProvider,
         DBSTable table) {
         super(shell);
         setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
         this.title = title;
+        this.progressProvider = progressProvider;
         this.ownerTableNode = DBeaverCore.getInstance().getNavigatorModel().findNode(table);
         Assert.isNotNull(this.ownerTableNode);
     }
@@ -60,14 +65,13 @@ public class EditForeignKeyDialog extends Dialog {
     {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
-        final Composite panel = UIUtils.createPlaceholder(dialogGroup, 1);
+        final Composite panel = UIUtils.createPlaceholder(dialogGroup, 1, 5);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            final Composite tableGroup = new Composite(panel, SWT.NONE);
-            tableGroup.setLayout(new GridLayout(2, false));
+            final Composite tableGroup = UIUtils.createPlaceholder(panel, 2);
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createLabelText(tableGroup, "Table", ownerTableNode.getNodeName(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(tableGroup, "Table", ownerTableNode.getNodeName(), SWT.READ_ONLY);
 
             createContentsBeforeColumns(tableGroup);
         }
@@ -75,13 +79,22 @@ public class EditForeignKeyDialog extends Dialog {
         {
             DBNNode rootNode = ownerTableNode.getParentNode();
 
-            Composite columnsGroup = UIUtils.createControlGroup(panel, "Reference Table", 1, GridData.FILL_BOTH, 0);
-            DatabaseNavigatorTree tableTree = new DatabaseNavigatorTree(columnsGroup, rootNode, SWT.SINGLE | SWT.BORDER);
+            //Composite columnsGroup = UIUtils.createControlGroup(panel, "Reference Table", 1, GridData.FILL_BOTH, 0);
+            UIUtils.createControlLabel(panel, "Reference table");
+            ItemListControl tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
+            ProgressPageControl progressControl = null;
+            if (progressProvider != null) {
+                tableList.substituteProgressPanel(progressProvider.getProgressControl());
+            } else {
+                tableList.createProgressPanel();
+            }
+
+            tableList.loadData();
             final GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = 200;
-            gd.heightHint = 200;
-            tableTree.setLayoutData(gd);
-            tableTree.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+            gd.widthHint = 500;
+            gd.heightHint = 150;
+            tableList.setLayoutData(gd);
+            tableList.getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
                 public void selectionChanged(SelectionChangedEvent event)
                 {
                     handleItemSelect(event.getSelection());

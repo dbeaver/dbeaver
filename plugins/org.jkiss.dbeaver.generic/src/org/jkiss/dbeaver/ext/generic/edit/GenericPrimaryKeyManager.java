@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.GenericConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
@@ -17,7 +18,6 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 
-import java.util.Collection;
 import java.util.Collections;
 
 /**
@@ -25,21 +25,16 @@ import java.util.Collections;
  */
 public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrimaryKey, GenericTable> {
 
-    protected Collection<DBSConstraintType> getSupportedConstraintTypes()
-    {
-        return Collections.singletonList(DBSConstraintType.PRIMARY_KEY);
-    }
-
     protected GenericPrimaryKey createNewConstraint(
         IWorkbenchWindow workbenchWindow,
-        GenericTable parent,
+        IEditorPart activeEditor, GenericTable parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(
             workbenchWindow.getShell(),
             "Create constraint",
             parent,
-            getSupportedConstraintTypes());
+            Collections.singletonList(DBSConstraintType.PRIMARY_KEY));
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }

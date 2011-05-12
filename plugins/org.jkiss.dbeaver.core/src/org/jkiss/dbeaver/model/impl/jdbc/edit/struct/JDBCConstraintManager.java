@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -36,9 +37,9 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, TABLE_TYPE parent, Object copyFrom)
+    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, TABLE_TYPE parent, Object copyFrom)
     {
-        OBJECT_TYPE newConstraint = createNewConstraint(workbenchWindow, parent, copyFrom);
+        OBJECT_TYPE newConstraint = createNewConstraint(workbenchWindow, activeEditor, parent, copyFrom);
         if (newConstraint == null) {
             return null;
         }
@@ -84,18 +85,15 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
         // Get columns using void monitor
         boolean firstColumn = true;
         for (DBSConstraintColumn constraintColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
-            if (!firstColumn) {
-                decl.append(",");
-            } else {
-                firstColumn = false;
-            }
+            if (!firstColumn) decl.append(",");
+            firstColumn = false;
             decl.append(constraintColumn.getName());
         }
         decl.append(")");
         return decl.toString();
     }
 
-    protected abstract OBJECT_TYPE createNewConstraint(IWorkbenchWindow workbenchWindow, TABLE_TYPE parent, Object from);
+    protected abstract OBJECT_TYPE createNewConstraint(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, TABLE_TYPE parent, Object from);
 
     private class CommandCreateConstraint extends ObjectSaveCommand<OBJECT_TYPE> {
         protected CommandCreateConstraint(OBJECT_TYPE table)

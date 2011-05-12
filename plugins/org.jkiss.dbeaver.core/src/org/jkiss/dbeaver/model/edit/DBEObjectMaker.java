@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -29,13 +30,19 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * This function can be invoked only once per one manager.
      *
      *
+     *
      * @param workbenchWindow workbench window
+     * @param activeEditor active editor (may be null)
      * @param commandContext command context
      * @param parent parent object
-     * @param copyFrom template for new object (usually result of "paste" operation)
-     * @return null if no additional actions should be performed
+     * @param copyFrom template for new object (usually result of "paste" operation)    @return null if no additional actions should be performed
      * */
-    OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom);
+    OBJECT_TYPE createNewObject(
+        IWorkbenchWindow workbenchWindow,
+        IEditorPart activeEditor,
+        DBECommandContext commandContext,
+        CONTAINER_TYPE parent,
+        Object copyFrom);
 
     /**
      * Deletes specified object.
