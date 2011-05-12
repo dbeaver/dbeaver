@@ -68,6 +68,7 @@ public class JDBCConstants
 
     public static final String NON_UNIQUE = "NON_UNIQUE";
     public static final String INDEX_QUALIFIER = "INDEX_QUALIFIER";
+    public static final String INDEX_CARDINALITY = "CARDINALITY";
     public static final String INDEX_NAME = "INDEX_NAME";
     public static final String TYPE = "TYPE";
     public static final String ASC_OR_DESC = "ASC_OR_DESC";

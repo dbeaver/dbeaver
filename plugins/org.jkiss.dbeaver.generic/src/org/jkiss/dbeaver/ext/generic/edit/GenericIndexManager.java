@@ -43,6 +43,7 @@ public class GenericIndexManager extends JDBCIndexManager<GenericIndex, GenericT
             parent,
             false,
             null,
+            0,
             null,
             editDialog.getIndexType(),
             false);

@@ -19,10 +19,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
-import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -293,36 +290,71 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             // Do not count rows for views
             return null;
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");
-        try {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT COUNT(*) FROM " + getFullQualifiedName());
+
+        if (indexes != null) {
+            rowCount = getRowCountFromIndexes(monitor);
+        }
+
+        if (rowCount == null) {
+            // Query row count
+            JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");
             try {
-//                dbStat.setQueryTimeout(3);
-                JDBCResultSet resultSet = dbStat.executeQuery();
+                JDBCPreparedStatement dbStat = context.prepareStatement(
+                    "SELECT COUNT(*) FROM " + getFullQualifiedName());
                 try {
-                    resultSet.next();
-                    rowCount = resultSet.getLong(1);
+    //                dbStat.setQueryTimeout(3);
+                    JDBCResultSet resultSet = dbStat.executeQuery();
+                    try {
+                        resultSet.next();
+                        rowCount = resultSet.getLong(1);
+                    }
+                    finally {
+                        resultSet.close();
+                    }
                 }
                 finally {
-                    resultSet.close();
+                    dbStat.close();
+                }
+            }
+            catch (SQLException e) {
+                //throw new DBCException(e);
+                // do not throw this error - row count is optional info and some providers may fail
+                log.debug("Can't fetch row count: " + e.getMessage());
+                if (indexes == null) {
+                    rowCount = getRowCountFromIndexes(monitor);
                 }
             }
             finally {
-                dbStat.close();
+                context.close();
             }
         }
-        catch (SQLException e) {
-            //throw new DBCException(e);
-            // do not throw this error - row count is optional info and some providers may fail
-            log.debug("Can't fetch row count: " + e.getMessage());
-            rowCount = -1l;
-        }
-        finally {
-            context.close();
+        if (rowCount == null) {
+            rowCount = -1L;
         }
 
         return rowCount;
+    }
+
+    private Long getRowCountFromIndexes(DBRProgressMonitor monitor)
+    {
+        try {
+// Try to get cardinality from some unique index
+            // Cardinality
+            final List<GenericIndex> indexList = getIndexes(monitor);
+            if (!CommonUtils.isEmpty(indexList)) {
+                for (GenericIndex index : indexList) {
+                    if (index.isUnique() || index.getIndexType() == DBSIndexType.STATISTIC) {
+                        final long cardinality = index.getCardinality();
+                        if (cardinality > 0) {
+                            return cardinality;
+                        }
+                    }
+                }
+            }
+        } catch (DBException e) {
+            log.error(e);
+        }
+        return null;
     }
 
     private static class ForeignKeyInfo {

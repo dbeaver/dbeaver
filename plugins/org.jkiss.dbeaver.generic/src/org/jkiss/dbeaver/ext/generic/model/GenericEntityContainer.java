@@ -494,6 +494,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         {
             boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
             String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
+            long cardinality = JDBCUtils.safeGetLong(dbResult, JDBCConstants.INDEX_CARDINALITY);
             int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
 
             DBSIndexType indexType;
@@ -509,6 +510,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 parent,
                 isNonUnique,
                 indexQualifier,
+                cardinality,
                 indexName,
                 indexType,
                 true);

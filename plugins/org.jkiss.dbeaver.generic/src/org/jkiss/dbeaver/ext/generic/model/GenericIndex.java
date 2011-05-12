@@ -20,12 +20,14 @@ public class GenericIndex extends JDBCIndex<GenericTable>
 {
     private boolean nonUnique;
     private String qualifier;
+    private long cardinality;
     private List<GenericIndexColumn> columns;
 
     public GenericIndex(
         GenericTable table,
         boolean nonUnique,
         String qualifier,
+        long cardinality,
         String indexName,
         DBSIndexType indexType,
         boolean persisted)
@@ -33,6 +35,7 @@ public class GenericIndex extends JDBCIndex<GenericTable>
         super(table, indexName, indexType, persisted);
         this.nonUnique = nonUnique;
         this.qualifier = qualifier;
+        this.cardinality = cardinality;
     }
 
     /**
@@ -44,6 +47,7 @@ public class GenericIndex extends JDBCIndex<GenericTable>
         super(source);
         this.nonUnique = source.nonUnique;
         this.qualifier = source.qualifier;
+        this.cardinality = source.cardinality;
         if (source.columns != null) {
             this.columns = new ArrayList<GenericIndexColumn>(source.columns.size());
             for (GenericIndexColumn sourceColumn : source.columns) {
@@ -57,22 +61,28 @@ public class GenericIndex extends JDBCIndex<GenericTable>
         return getTable().getDataSource();
     }
 
-    @Property(name = "Unique", viewable = true, order = 5)
-    public boolean isUnique()
-    {
-        return !nonUnique;
-    }
-
-    @Property(name = "Index Description", viewable = true, order = 6)
+    @Property(name = "Index Description", viewable = true, order = 100)
     public String getDescription()
     {
         return null;
     }
 
-    @Property(name = "Qualifier", viewable = true, order = 4)
+    @Property(name = "Unique", viewable = true, order = 4)
+    public boolean isUnique()
+    {
+        return !nonUnique;
+    }
+
+    @Property(name = "Qualifier", viewable = true, order = 5)
     public String getQualifier()
     {
         return qualifier;
+    }
+
+    @Property(name = "Cardinality", viewable = true, order = 5)
+    public long getCardinality()
+    {
+        return cardinality;
     }
 
     public List<GenericIndexColumn> getColumns(DBRProgressMonitor monitor)
