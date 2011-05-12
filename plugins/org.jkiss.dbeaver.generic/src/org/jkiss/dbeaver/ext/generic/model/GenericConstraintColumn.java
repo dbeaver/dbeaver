@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
@@ -14,11 +15,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class GenericConstraintColumn extends AbstractConstraintColumn
 {
-    private GenericConstraint constraint;
+    private JDBCConstraint constraint;
     private GenericTableColumn tableColumn;
     private int ordinalPosition;
 
-    public GenericConstraintColumn(GenericConstraint constraint, GenericTableColumn tableColumn, int ordinalPosition)
+    public GenericConstraintColumn(JDBCConstraint constraint, GenericTableColumn tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
@@ -67,7 +68,7 @@ public class GenericConstraintColumn extends AbstractConstraintColumn
 
     public GenericDataSource getDataSource()
     {
-        return constraint.getTable().getDataSource();
+        return (GenericDataSource) constraint.getDataSource();
     }
 
 }

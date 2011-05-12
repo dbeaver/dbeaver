@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -14,51 +16,22 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class GenericForeignKey extends GenericConstraint implements DBSForeignKey
+public class GenericForeignKey extends JDBCForeignKey<GenericTable, GenericPrimaryKey>
 {
-    private GenericConstraint referencedKey;
-    private DBSConstraintCascade deleteRule;
-    private DBSConstraintCascade updateRule;
     private DBSConstraintDefferability defferability;
     private List<GenericForeignKeyColumn> columns;
 
     public GenericForeignKey(GenericTable table,
         String name,
         String remarks,
-        GenericConstraint referencedKey,
+        GenericPrimaryKey referencedKey,
         DBSConstraintCascade deleteRule,
         DBSConstraintCascade updateRule,
-        DBSConstraintDefferability defferability)
+        DBSConstraintDefferability defferability,
+        boolean persisted)
     {
-        super(table, name, remarks, DBSConstraintType.FOREIGN_KEY, true);
-        this.referencedKey = referencedKey;
-        this.deleteRule = deleteRule;
-        this.updateRule = updateRule;
+        super(table, name, remarks, referencedKey, deleteRule, updateRule, true);
         this.defferability = defferability;
-    }
-
-    @Property(name = "Ref Table", viewable = true, order = 3)
-    public GenericTable getReferencedTable()
-    {
-        return referencedKey.getTable();
-    }
-
-    @Property(id = "reference", name = "Ref Object", viewable = true, order = 4)
-    public GenericConstraint getReferencedKey()
-    {
-        return referencedKey;
-    }
-
-    @Property(name = "On Delete", viewable = true, order = 5)
-    public DBSConstraintCascade getDeleteRule()
-    {
-        return deleteRule;
-    }
-
-    @Property(name = "On Update", viewable = true, order = 6)
-    public DBSConstraintCascade getUpdateRule()
-    {
-        return updateRule;
     }
 
     @Property(name = "Defferability", viewable = true, order = 7)
@@ -72,7 +45,6 @@ public class GenericForeignKey extends GenericConstraint implements DBSForeignKe
         return (GenericForeignKeyColumn)super.getColumn(monitor, tableColumn);
     }
 
-    //@Property(name = "Columns", viewable = true, order = 8)
     public List<GenericForeignKeyColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
@@ -86,13 +58,17 @@ public class GenericForeignKey extends GenericConstraint implements DBSForeignKe
         this.columns.add(column);
     }
 
-    public DBSEntity getAssociatedEntity()
-    {
-        return getReferencedTable();
-    }
-
     void setColumns(List<GenericForeignKeyColumn> columns)
     {
         this.columns = columns;
+    }
+
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getTable().getCatalog(),
+            getTable().getSchema(),
+            getTable(),
+            this);
     }
 }

@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.model.impl.struct.AbstractForeignKey;
+import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -16,23 +16,30 @@ import java.util.List;
 /**
  * Logical foreign key
  */
-public class ERDLogicalForeignKey extends AbstractForeignKey<DBSTable, ERDLogicalPrimaryKey> {
+public class ERDLogicalForeignKey extends AbstractConstraint<DBSTable> implements DBSForeignKey {
 
+    private ERDLogicalPrimaryKey pk;
     private List<? extends DBSForeignKeyColumn> columns = new ArrayList<DBSForeignKeyColumn>();
 
     public ERDLogicalForeignKey(ERDTable table, String name, String description, ERDLogicalPrimaryKey pk)
     {
-        super(table.getObject(), name, description, pk, DBSConstraintCascade.NO_ACTION, DBSConstraintCascade.NO_ACTION);
+        super(table.getObject(), name, description, ERDConstants.CONSTRAINT_LOGICAL_FK);
+        this.pk = pk;
     }
 
-    public DBSConstraintType getConstraintType()
+    public DBSConstraint getReferencedKey()
     {
-        return ERDConstants.CONSTRAINT_LOGICAL_FK;
+        return pk;
     }
 
-    public DBSConstraintDefferability getDefferability()
+    public DBSConstraintCascade getDeleteRule()
     {
-        return DBSConstraintDefferability.UNKNOWN;
+        return DBSConstraintCascade.NO_ACTION;
+    }
+
+    public DBSConstraintCascade getUpdateRule()
+    {
+        return DBSConstraintCascade.NO_ACTION;
     }
 
     public Collection<? extends DBSForeignKeyColumn> getColumns(DBRProgressMonitor monitor)
@@ -43,5 +50,10 @@ public class ERDLogicalForeignKey extends AbstractForeignKey<DBSTable, ERDLogica
     public String getFullQualifiedName()
     {
         return getName();
+    }
+
+    public DBSEntity getAssociatedEntity()
+    {
+        return pk.getTable();
     }
 }

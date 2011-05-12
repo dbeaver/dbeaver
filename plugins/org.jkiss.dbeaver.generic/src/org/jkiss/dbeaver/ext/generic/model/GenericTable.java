@@ -434,7 +434,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                 if (pk == null) {
                     log.warn("Could not find unique key for table " + this.getFullQualifiedName() + " column " + pkColumn.getName());
                     // Too bad. But we have to create new fake PK for this FK
-                    String pkFullName = getFullQualifiedName() + "." + info.pkName;
+                    //String pkFullName = getFullQualifiedName() + "." + info.pkName;
                     pk = new GenericPrimaryKey(this, info.pkName, null, DBSConstraintType.PRIMARY_KEY, true);
                     pk.addColumn(new GenericConstraintColumn(pk, pkColumn, info.keySeq));
                     // Add this fake constraint to it's owner
@@ -455,7 +455,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                 if (fk == null) {
                     fk = fkMap.get(info.fkName);
                     if (fk == null) {
-                        fk = new GenericForeignKey(fkTable, info.fkName, null, pk, deleteRule, updateRule, defferability);
+                        fk = new GenericForeignKey(fkTable, info.fkName, null, pk, deleteRule, updateRule, defferability, true);
                         fkMap.put(info.fkName, fk);
                         fkList.add(fk);
                     }

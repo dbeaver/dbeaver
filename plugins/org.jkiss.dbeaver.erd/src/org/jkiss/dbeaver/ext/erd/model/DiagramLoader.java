@@ -464,10 +464,10 @@ public class DiagramLoader
 
                     if (rel.getObject().getConstraintType() == ERDConstants.CONSTRAINT_LOGICAL_FK) {
                         // Save columns
-                        for (DBSForeignKeyColumn column : rel.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
+                        for (DBSConstraintColumn column : rel.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
                             xml.startElement(TAG_COLUMN);
                             xml.addAttribute(ATTR_NAME, column.getName());
-                            xml.addAttribute(ATTR_REF_NAME, column.getReferencedColumn().getName());
+                            xml.addAttribute(ATTR_REF_NAME, ((DBSForeignKeyColumn)column).getReferencedColumn().getName());
                             xml.endElement();
                         }
                     }

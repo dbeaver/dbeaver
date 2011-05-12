@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
-import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
 import java.io.UnsupportedEncodingException;
@@ -385,17 +384,9 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                     int deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
                     String fkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FK_NAME);
                     String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
-                    int defferabilityNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DEFERRABILITY);
 
                     DBSConstraintCascade deleteRule = getCascadeFromNum(deleteRuleNum);
                     DBSConstraintCascade updateRule = getCascadeFromNum(updateRuleNum);
-                    DBSConstraintDefferability defferability;
-                    switch (defferabilityNum) {
-                        case DatabaseMetaData.importedKeyInitiallyDeferred: defferability = DBSConstraintDefferability.INITIALLY_DEFERRED; break;
-                        case DatabaseMetaData.importedKeyInitiallyImmediate: defferability = DBSConstraintDefferability.INITIALLY_IMMEDIATE; break;
-                        case DatabaseMetaData.importedKeyNotDeferrable: defferability = DBSConstraintDefferability.NOT_DEFERRABLE; break;
-                        default: defferability = DBSConstraintDefferability.UNKNOWN; break;
-                    }
 
                     MySQLTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
                     if (pkTable == null) {
@@ -466,7 +457,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                     if (fk == null) {
                         fk = fkMap.get(fkName);
                         if (fk == null) {
-                            fk = new MySQLForeignKey(fkTable, fkName, null, pk, deleteRule, updateRule, defferability);
+                            fk = new MySQLForeignKey(fkTable, fkName, null, pk, deleteRule, updateRule, true);
                             fkMap.put(fkName, fk);
                             fkList.add(fk);
                         }

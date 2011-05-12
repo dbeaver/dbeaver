@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
@@ -24,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JDBC constraint manager
+ * JDBC foreign key manager
  */
-public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
+public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<TABLE_TYPE, PRIMARY_KEY>, PRIMARY_KEY extends JDBCConstraint<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE>
     implements DBEObjectMaker<OBJECT_TYPE, TABLE_TYPE>, JDBCNestedEditor<OBJECT_TYPE>
 {
@@ -38,19 +39,26 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
 
     public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, TABLE_TYPE parent, Object copyFrom)
     {
-        OBJECT_TYPE newConstraint = createNewConstraint(workbenchWindow, parent, copyFrom);
-        if (newConstraint == null) {
+        OBJECT_TYPE newForeignKey = createNewForeignKey(workbenchWindow, parent, copyFrom);
+        if (newForeignKey == null) {
             return null;
         }
-        makeInitialCommands(newConstraint, commandContext, new CommandCreateConstraint(newConstraint));
 
-        return newConstraint;
+        makeInitialCommands(newForeignKey, commandContext, new CommandCreateConstraint(newForeignKey));
+
+        return newForeignKey;
+    }
+
+    protected String getCreateTitle()
+    {
+        return "Create foreign key";
     }
 
     public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
     {
         commandContext.addCommand(new CommandDropConstraint(object), new DeleteObjectReflector<OBJECT_TYPE>(), true);
     }
+
 
     @Override
     protected IDatabasePersistAction[] makeObjectChangeActions(ObjectChangeCommand<OBJECT_TYPE> command)
@@ -61,7 +69,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
         boolean newObject = !constraint.isPersisted();
         if (newObject) {
             actions.add(new AbstractDatabasePersistAction(
-                "Create new constraint",
+                "Create new foreign key",
                 "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command)));
         }
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
@@ -95,26 +103,29 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
         return decl.toString();
     }
 
-    protected abstract OBJECT_TYPE createNewConstraint(IWorkbenchWindow workbenchWindow, TABLE_TYPE parent, Object from);
+    protected abstract OBJECT_TYPE createNewForeignKey(
+        IWorkbenchWindow workbenchWindow,
+        TABLE_TYPE table,
+        Object from);
 
     private class CommandCreateConstraint extends ObjectSaveCommand<OBJECT_TYPE> {
         protected CommandCreateConstraint(OBJECT_TYPE table)
         {
-            super(table, "Create constraint");
+            super(table, "Create foreign key");
         }
     }
 
     private class CommandDropConstraint extends DBECommandDeleteObject<OBJECT_TYPE> {
         protected CommandDropConstraint(OBJECT_TYPE table)
         {
-            super(table, "Drop constraint");
+            super(table, "Drop foreign key");
         }
 
         public IDatabasePersistAction[] getPersistActions()
         {
             return new IDatabasePersistAction[] {
                 new AbstractDatabasePersistAction(
-                    "Drop constraint", "ALTER TABLE " + getObject().getTable().getFullQualifiedName() + " DROP CONSTRAINT " + getObject().getName())
+                    "Drop foreign key", "ALTER TABLE " + getObject().getTable().getFullQualifiedName() + " DROP CONSTRAINT " + getObject().getName())
             };
         }
     }

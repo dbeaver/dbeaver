@@ -2,34 +2,37 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.impl.struct;
+package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 /**
- * AbstractForeignKey
+ * JDBCForeignKey
  */
-public abstract class AbstractForeignKey<
-    TABLE extends DBSTable,
-    PRIMARY_KEY extends AbstractConstraint<TABLE>>
-    extends AbstractConstraint<TABLE>
+public abstract class JDBCForeignKey<
+    TABLE extends JDBCTable,
+    PRIMARY_KEY extends JDBCConstraint<TABLE>>
+    extends JDBCConstraint<TABLE>
     implements DBSForeignKey
 {
     protected PRIMARY_KEY referencedKey;
     protected DBSConstraintCascade deleteRule;
     protected DBSConstraintCascade updateRule;
 
-    public AbstractForeignKey(
+    public JDBCForeignKey(
         TABLE table,
         String name,
         String description,
         PRIMARY_KEY referencedKey,
         DBSConstraintCascade deleteRule,
-        DBSConstraintCascade updateRule)
+        DBSConstraintCascade updateRule,
+        boolean persisted)
     {
-        super(table, name, description, DBSConstraintType.FOREIGN_KEY);
+        super(table, name, description, DBSConstraintType.FOREIGN_KEY, persisted);
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
         this.updateRule = updateRule;

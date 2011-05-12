@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
@@ -293,18 +294,18 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         {
             final Map<Object, String> keyValues = new TreeMap<Object, String>();
             try {
-                final DBSForeignKeyColumn fkColumn = refConstraint.getColumn(monitor, valueController.getColumnMetaData().getTableColumn(monitor));
+                final DBSForeignKeyColumn fkColumn = (DBSForeignKeyColumn)refConstraint.getColumn(monitor, valueController.getColumnMetaData().getTableColumn(monitor));
                 if (fkColumn == null) {
                     return Status.OK_STATUS;
                 }
                 java.util.List<DBDColumnValue> preceedingKeys = null;
-                Collection<? extends DBSForeignKeyColumn> allColumns = refConstraint.getColumns(monitor);
+                Collection<? extends DBSConstraintColumn> allColumns = refConstraint.getColumns(monitor);
                 if (allColumns.size() > 1) {
                     if (allColumns.iterator().next() != fkColumn) {
                         // Our column is not a first on in foreign key.
                         // So, fill uo preceeding keys
                         preceedingKeys = new ArrayList<DBDColumnValue>();
-                        for (DBSForeignKeyColumn precColumn : allColumns) {
+                        for (DBSConstraintColumn precColumn : allColumns) {
                             if (precColumn == fkColumn) {
                                 // Enough
                                 break;

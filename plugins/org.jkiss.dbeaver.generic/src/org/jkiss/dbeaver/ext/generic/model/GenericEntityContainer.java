@@ -732,7 +732,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 }
             }
 
-            return new GenericForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability);
+            return new GenericForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability, true);
         }
 
         protected GenericForeignKeyColumn fetchObjectRow(

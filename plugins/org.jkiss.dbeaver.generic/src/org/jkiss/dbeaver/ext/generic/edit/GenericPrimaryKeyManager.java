@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.GenericConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
@@ -14,6 +15,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,19 +33,26 @@ public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrima
     protected GenericPrimaryKey createNewConstraint(
         IWorkbenchWindow workbenchWindow,
         GenericTable parent,
-        DBSConstraintType constraintType,
-        Collection<DBSTableColumn> constraintColumns,
         Object from)
     {
+        EditConstraintDialog editDialog = new EditConstraintDialog(
+            workbenchWindow.getShell(),
+            "Create constraint",
+            parent,
+            getSupportedConstraintTypes());
+        if (editDialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+
         final GenericPrimaryKey primaryKey = new GenericPrimaryKey(
             parent,
             null,
             null,
-            constraintType,
+            editDialog.getConstraintType(),
             false);
         primaryKey.setName(JDBCObjectNameCaseTransformer.transformName(primaryKey, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
         int colIndex = 1;
-        for (DBSTableColumn tableColumn : constraintColumns) {
+        for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
             primaryKey.addColumn(
                 new GenericConstraintColumn(
                     primaryKey,

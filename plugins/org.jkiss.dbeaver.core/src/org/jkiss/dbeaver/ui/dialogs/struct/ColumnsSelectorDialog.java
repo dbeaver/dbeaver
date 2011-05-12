@@ -107,7 +107,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         }
         createContentsAfterColumns(panel);
 
-        // Load columns
+        // Collect columns
         final List<DBNDatabaseNode> columnNodes = new ArrayList<DBNDatabaseNode>();
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
@@ -116,15 +116,20 @@ public abstract class ColumnsSelectorDialog extends Dialog {
                     try {
                         final List<DBNDatabaseNode> folders = tableNode.getChildren(monitor);
                         for (DBNDatabaseNode node : folders) {
-                            if (node instanceof DBNContainer && DBSTableColumn.class.isAssignableFrom(((DBNContainer) node).getItemsClass())) {
-                                final List<DBNDatabaseNode> children = node.getChildren(monitor);
-                                if (!CommonUtils.isEmpty(children)) {
-                                    for (DBNDatabaseNode child : children) {
-                                        if (child.getObject() instanceof DBSTableColumn) {
-                                            columnNodes.add(child);
+                            if (node instanceof DBNContainer) {
+                                final Class<?> itemsClass = ((DBNContainer) node).getItemsClass();
+                                if (itemsClass != null && DBSTableColumn.class.isAssignableFrom(itemsClass)) {
+                                    final List<DBNDatabaseNode> children = node.getChildren(monitor);
+                                    if (!CommonUtils.isEmpty(children)) {
+                                        for (DBNDatabaseNode child : children) {
+                                            if (child.getObject() instanceof DBSTableColumn) {
+                                                columnNodes.add(child);
+                                            }
                                         }
                                     }
                                 }
+                            } else if (node.getObject() instanceof DBSTableColumn) {
+                                columnNodes.add(node);
                             }
                         }
                     } catch (DBException e) {
