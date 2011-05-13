@@ -101,7 +101,12 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
             decl.append(constraintColumn.getReferencedColumn().getName());
         }
         decl.append(")");
-        //decl.append(" ON DELETE ").append(foreignKey.getDeleteRule().getName());
+        if (foreignKey.getDeleteRule() != null && !CommonUtils.isEmpty(foreignKey.getDeleteRule().getClause())) {
+            decl.append(" ON DELETE ").append(foreignKey.getDeleteRule().getClause());
+        }
+        if (foreignKey.getUpdateRule() != null && !CommonUtils.isEmpty(foreignKey.getUpdateRule().getClause())) {
+            decl.append(" ON UPDATE ").append(foreignKey.getUpdateRule().getClause());
+        }
         return decl.toString();
     }
 

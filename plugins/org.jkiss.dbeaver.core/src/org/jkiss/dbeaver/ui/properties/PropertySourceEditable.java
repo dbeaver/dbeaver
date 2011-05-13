@@ -5,7 +5,9 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -14,6 +16,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
+import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -122,6 +125,19 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (force || !(editableValue instanceof DBPPersistedObject) || !((DBPPersistedObject)editableValue).isPersisted()) {
             // Write property value only for non-persisted objects
             try {
+                // Check for complex object
+                // If value should be a named object then try to obtain it from list provider
+                if (value != null && value.getClass() == String.class && DBPNamedObject.class.isAssignableFrom(prop.getDataType())) {
+                    final Object[] items = prop.getPossibleValues(editableValue);
+                    if (!CommonUtils.isEmpty(items)) {
+                        for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
+                            if (items[i] instanceof DBPNamedObject && value.equals(((DBPNamedObject)items[i]).getName())) {
+                                value = items[i];
+                                break;
+                            }
+                        }
+                    }
+                }
                 prop.writeValue(editableValue, value);
             } catch (Throwable e) {
                 if (e instanceof InvocationTargetException) {

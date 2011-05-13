@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.meta.IPropertyValueEditorProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
@@ -267,7 +268,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             if (!CommonUtils.isEmpty(items)) {
                 final String[] strings = new String[items.length];
                 for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                    strings[i] = CommonUtils.toString(items[i]);
+                    strings[i] = items[i] instanceof DBPNamedObject ? ((DBPNamedObject)items[i]).getName() : CommonUtils.toString(items[i]);
                 }
                 final CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
                     parent,

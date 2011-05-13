@@ -7,13 +7,13 @@ package org.jkiss.dbeaver.ui.controls;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 import java.text.MessageFormat;
 
@@ -140,8 +140,12 @@ public class CustomComboBoxCellEditor extends CellEditor {
 	 *            <code>Integer</code>
 	 */
 	protected void doSetValue(Object value) {
-		Assert.isTrue(comboBox != null && (value instanceof String));
-		comboBox.setText(CommonUtils.toString(value));
+		Assert.isTrue(comboBox != null && (value instanceof String || value instanceof DBPNamedObject));
+        if (value instanceof DBPNamedObject) {
+            comboBox.setText(((DBPNamedObject) value).getName());
+        } else {
+		    comboBox.setText(CommonUtils.toString(value));
+        }
 	}
 
 	/**

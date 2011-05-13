@@ -4,11 +4,16 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
+
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * JDBCForeignKey
@@ -50,16 +55,26 @@ public abstract class JDBCForeignKey<
         return referencedKey;
     }
 
-    @Property(name = "On Delete", viewable = true, order = 5)
+    @Property(name = "On Delete", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
     public DBSConstraintModifyRule getDeleteRule()
     {
         return deleteRule;
     }
 
-    @Property(name = "On Update", viewable = true, order = 6)
+    public void setDeleteRule(DBSConstraintModifyRule deleteRule)
+    {
+        this.deleteRule = deleteRule;
+    }
+
+    @Property(name = "On Update", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 6)
     public DBSConstraintModifyRule getUpdateRule()
     {
         return updateRule;
+    }
+
+    public void setUpdateRule(DBSConstraintModifyRule updateRule)
+    {
+        this.updateRule = updateRule;
     }
 
     public DBSForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
@@ -70,6 +85,24 @@ public abstract class JDBCForeignKey<
     public DBSEntity getAssociatedEntity()
     {
         return getReferencedTable();
+    }
+
+    public static class ConstraintModifyRuleListProvider implements IPropertyValueListProvider {
+
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+
+        public Object[] getPossibleValues(Object object)
+        {
+            return new DBSConstraintModifyRule[] {
+                DBSConstraintModifyRule.NO_ACTION,
+                DBSConstraintModifyRule.CASCADE,
+                DBSConstraintModifyRule.RESTRICT,
+                DBSConstraintModifyRule.SET_NULL,
+                DBSConstraintModifyRule.SET_DEFAULT };
+        }
     }
 
 }
