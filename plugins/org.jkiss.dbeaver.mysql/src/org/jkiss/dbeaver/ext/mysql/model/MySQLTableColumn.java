@@ -136,10 +136,15 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
         return charLength;
     }
 
-    @Property(name = "Auto Increment", viewable = true, order = 51)
+    @Property(name = "Auto Increment", viewable = true, editable = true, order = 51)
     public boolean isAutoIncrement()
     {
         return autoIncrement;
+    }
+
+    public void setAutoIncrement(boolean autoIncrement)
+    {
+        this.autoIncrement = autoIncrement;
     }
 
     @Property(name = "Key", viewable = true, order = 80)

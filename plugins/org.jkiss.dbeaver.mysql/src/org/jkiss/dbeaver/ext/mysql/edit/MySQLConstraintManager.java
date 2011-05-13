@@ -65,7 +65,7 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstrain
         } else {
             clause = "KEY";
         }
-        return "ALTER TABLE %TABLE% DROP " + clause + " %CONSTRAINT%";
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT;
     }
 
 }

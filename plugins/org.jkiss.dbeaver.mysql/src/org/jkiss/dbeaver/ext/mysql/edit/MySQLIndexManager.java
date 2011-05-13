@@ -67,7 +67,7 @@ public class MySQLIndexManager extends JDBCIndexManager<MySQLIndex, MySQLTable> 
 
     protected String getDropIndexPattern(MySQLIndex index)
     {
-        return "ALTER TABLE %TABLE% DROP INDEX %INDEX_SHORT%";
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP INDEX " + PATTERN_ITEM_INDEX_SHORT;
     }
 
 }

@@ -9,7 +9,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -31,7 +30,7 @@ import java.util.Map;
  */
 public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<TABLE_TYPE, PRIMARY_KEY>, PRIMARY_KEY extends JDBCConstraint<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE>
-    implements DBEObjectMaker<OBJECT_TYPE, TABLE_TYPE>, JDBCNestedEditor<OBJECT_TYPE>
+    implements DBEObjectMaker<OBJECT_TYPE, TABLE_TYPE>, JDBCNestedEditor<OBJECT_TYPE, JDBCTable>
 {
 
     public long getMakerOptions()
@@ -71,7 +70,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
-    public String getNestedDeclaration(DBPObject owner, ObjectChangeCommand<OBJECT_TYPE> command)
+    public String getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
     {
         OBJECT_TYPE foreignKey = command.getObject();
 
@@ -117,7 +116,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
 
     protected String getDropForeignKeyPattern(OBJECT_TYPE constraint)
     {
-        return "ALTER TABLE %TABLE% DROP CONSTRAINT %CONSTRAINT%";
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT;
     }
 
     private class CommandCreateConstraint extends ObjectSaveCommand<OBJECT_TYPE> {
@@ -139,8 +138,8 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
                 new AbstractDatabasePersistAction(
                     "Drop constraint",
                     getDropForeignKeyPattern(getObject())
-                        .replace("%TABLE%", getObject().getTable().getFullQualifiedName())
-                        .replace("%CONSTRAINT%", getObject().getName()))
+                        .replace(PATTERN_ITEM_TABLE, getObject().getTable().getFullQualifiedName())
+                        .replace(PATTERN_ITEM_CONSTRAINT, getObject().getName()))
             };
         }
     }

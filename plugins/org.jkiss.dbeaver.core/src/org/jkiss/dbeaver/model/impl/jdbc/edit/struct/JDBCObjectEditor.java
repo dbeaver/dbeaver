@@ -30,6 +30,11 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
     extends JDBCObjectManager<OBJECT_TYPE>
     implements DBEObjectEditor<OBJECT_TYPE>
 {
+    public static final String PATTERN_ITEM_INDEX = "%INDEX%";
+    public static final String PATTERN_ITEM_TABLE = "%TABLE%";
+    public static final String PATTERN_ITEM_INDEX_SHORT = "%INDEX_SHORT%";
+    public static final String PATTERN_ITEM_CONSTRAINT = "%CONSTRAINT%";
+
     public DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
     {
         return new PropertyHandler<OBJECT_TYPE>(this, property);

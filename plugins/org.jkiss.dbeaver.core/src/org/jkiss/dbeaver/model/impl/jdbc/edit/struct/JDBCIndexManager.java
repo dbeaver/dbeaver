@@ -29,7 +29,7 @@ import java.util.Map;
  */
 public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE>
-    implements DBEObjectMaker<OBJECT_TYPE, TABLE_TYPE>, JDBCNestedEditor<OBJECT_TYPE>
+    implements DBEObjectMaker<OBJECT_TYPE, TABLE_TYPE>, JDBCNestedEditor<OBJECT_TYPE, JDBCTable>
 {
 
     public long getMakerOptions()
@@ -84,14 +84,14 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
-    public String getNestedDeclaration(DBPObject owner, ObjectChangeCommand<OBJECT_TYPE> command)
+    public String getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
     {
         return null;
     }
 
     protected String getDropIndexPattern(OBJECT_TYPE index)
     {
-        return "DROP INDEX %INDEX%";
+        return "DROP INDEX " + PATTERN_ITEM_INDEX;
     }
 
     protected abstract OBJECT_TYPE createNewIndex(
@@ -118,9 +118,9 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
                 new AbstractDatabasePersistAction(
                     "Drop index",
                     getDropIndexPattern(getObject())
-                        .replace("%TABLE%", getObject().getTable().getFullQualifiedName())
-                        .replace("%INDEX%", getObject().getFullQualifiedName())
-                        .replace("%INDEX_SHORT%", getObject().getName()))
+                        .replace(PATTERN_ITEM_TABLE, getObject().getTable().getFullQualifiedName())
+                        .replace(PATTERN_ITEM_INDEX, getObject().getFullQualifiedName())
+                        .replace(PATTERN_ITEM_INDEX_SHORT, getObject().getName()))
             };
         }
     }

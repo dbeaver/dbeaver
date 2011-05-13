@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -31,7 +30,7 @@ import java.util.Map;
  */
 public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn, CONTAINER_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE>
-    implements DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE>, JDBCNestedEditor<OBJECT_TYPE>
+    implements DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE>, JDBCNestedEditor<OBJECT_TYPE, JDBCTable>
 {
 
     public long getMakerOptions()
@@ -69,7 +68,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
-    public String getNestedDeclaration(DBPObject owner, ObjectChangeCommand<OBJECT_TYPE> command)
+    public String getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
     {
         OBJECT_TYPE column = command.getObject();
 
@@ -99,6 +98,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         if (notNull != null && notNull) {
             decl.append(" NOT NULL");
         }
+
         return decl.toString();
     }
 
