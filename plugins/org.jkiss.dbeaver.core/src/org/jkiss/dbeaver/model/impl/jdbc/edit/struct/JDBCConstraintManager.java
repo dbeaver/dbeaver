@@ -95,6 +95,11 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
 
     protected abstract OBJECT_TYPE createNewConstraint(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, TABLE_TYPE parent, Object from);
 
+    protected String getDropConstraintPattern(OBJECT_TYPE constraint)
+    {
+        return "ALTER TABLE %TABLE% DROP CONSTRAINT %CONSTRAINT%";
+    }
+
     private class CommandCreateConstraint extends ObjectSaveCommand<OBJECT_TYPE> {
         protected CommandCreateConstraint(OBJECT_TYPE table)
         {
@@ -112,7 +117,10 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
         {
             return new IDatabasePersistAction[] {
                 new AbstractDatabasePersistAction(
-                    "Drop constraint", "ALTER TABLE " + getObject().getTable().getFullQualifiedName() + " DROP CONSTRAINT " + getObject().getName())
+                    "Drop constraint",
+                    getDropConstraintPattern(getObject())
+                        .replace("%TABLE%", getObject().getTable().getFullQualifiedName())
+                        .replace("%CONSTRAINT%", getObject().getName()))
             };
         }
     }

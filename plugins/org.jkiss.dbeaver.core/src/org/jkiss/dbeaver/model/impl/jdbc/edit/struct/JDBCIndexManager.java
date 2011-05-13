@@ -89,6 +89,11 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
         return null;
     }
 
+    protected String getDropIndexPattern(OBJECT_TYPE index)
+    {
+        return "DROP INDEX %INDEX%";
+    }
+
     protected abstract OBJECT_TYPE createNewIndex(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor, TABLE_TYPE parent,
@@ -111,7 +116,11 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
         {
             return new IDatabasePersistAction[] {
                 new AbstractDatabasePersistAction(
-                    "Drop index", "DROP INDEX " + getObject().getFullQualifiedName())
+                    "Drop index",
+                    getDropIndexPattern(getObject())
+                        .replace("%TABLE%", getObject().getTable().getFullQualifiedName())
+                        .replace("%INDEX%", getObject().getFullQualifiedName())
+                        .replace("%INDEX_SHORT%", getObject().getName()))
             };
         }
     }

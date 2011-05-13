@@ -57,4 +57,15 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstrain
         return constraint;
     }
 
+    protected String getDropConstraintPattern(MySQLConstraint constraint)
+    {
+        String clause;
+        if (constraint.getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
+            clause = "PRIMARY KEY";
+        } else {
+            clause = "KEY";
+        }
+        return "ALTER TABLE %TABLE% DROP " + clause + " %CONSTRAINT%";
+    }
+
 }

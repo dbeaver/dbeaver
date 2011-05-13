@@ -60,4 +60,9 @@ public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKe
         return foreignKey;
     }
 
+    protected String getDropForeignKeyPattern(MySQLForeignKey foreignKey)
+    {
+        return "ALTER TABLE %TABLE% DROP FOREIGN KEY %CONSTRAINT%";
+    }
+
 }

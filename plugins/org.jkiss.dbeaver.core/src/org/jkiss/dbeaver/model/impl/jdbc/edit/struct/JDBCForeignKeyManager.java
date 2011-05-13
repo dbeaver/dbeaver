@@ -115,6 +115,11 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
         IEditorPart activeEditor, TABLE_TYPE table,
         Object from);
 
+    protected String getDropForeignKeyPattern(OBJECT_TYPE constraint)
+    {
+        return "ALTER TABLE %TABLE% DROP CONSTRAINT %CONSTRAINT%";
+    }
+
     private class CommandCreateConstraint extends ObjectSaveCommand<OBJECT_TYPE> {
         protected CommandCreateConstraint(OBJECT_TYPE table)
         {
@@ -132,7 +137,10 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
         {
             return new IDatabasePersistAction[] {
                 new AbstractDatabasePersistAction(
-                    "Drop foreign key", "ALTER TABLE " + getObject().getTable().getFullQualifiedName() + " DROP CONSTRAINT " + getObject().getName())
+                    "Drop constraint",
+                    getDropForeignKeyPattern(getObject())
+                        .replace("%TABLE%", getObject().getTable().getFullQualifiedName())
+                        .replace("%CONSTRAINT%", getObject().getName()))
             };
         }
     }
