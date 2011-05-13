@@ -391,7 +391,6 @@ public class EditForeignKeyDialog extends Dialog {
     private class ColumnsMouseListener extends MouseAdapter {
         private final TableEditor tableEditor;
         private final Table columnsTable;
-        private FKColumnInfo curKeyColumn;
 
         public ColumnsMouseListener(TableEditor tableEditor, Table columnsTable)
         {
@@ -403,7 +402,6 @@ public class EditForeignKeyDialog extends Dialog {
         {
             Control oldEditor = tableEditor.getEditor();
             if (oldEditor != null) oldEditor.dispose();
-            curKeyColumn = null;
         }
 
         public void mouseUp(MouseEvent e)
@@ -423,17 +421,14 @@ public class EditForeignKeyDialog extends Dialog {
             if (columnIndex != 0) {
                 return;
             }
-
+            final FKColumnInfo fkInfo = (FKColumnInfo) item.getData();
             // Identify the selected row
             final CCombo columnsCombo = new CCombo(columnsTable, SWT.DROP_DOWN | SWT.READ_ONLY);
             if (!CommonUtils.isEmpty(ownColumns)) {
                 for (DBSTableColumn ownColumn : ownColumns) {
                     columnsCombo.add(ownColumn.getName());
-                    for (FKColumnInfo fkInfo : fkColumns) {
-                        if (fkInfo.ownColumn == ownColumn) {
-                            curKeyColumn = fkInfo;
-                            columnsCombo.select(columnsCombo.getItemCount() - 1);
-                        }
+                    if (fkInfo.ownColumn == ownColumn) {
+                        columnsCombo.select(columnsCombo.getItemCount() - 1);
                     }
                 }
                 if (columnsCombo.getSelectionIndex() < 0) {
@@ -446,10 +441,12 @@ public class EditForeignKeyDialog extends Dialog {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    if (curKeyColumn != null && columnsCombo.getSelectionIndex() >= 0) {
-                        curKeyColumn.ownColumn = ownColumns.get(columnsCombo.getSelectionIndex());
-                        item.setText(0, curKeyColumn.ownColumn.getName());
-                        item.setImage(0, getColumnIcon(curKeyColumn.ownColumn));
+                    if (columnsCombo.getSelectionIndex() >= 0) {
+                        fkInfo.ownColumn = ownColumns.get(columnsCombo.getSelectionIndex());
+                        item.setText(0, fkInfo.ownColumn.getName());
+                        item.setImage(0, getColumnIcon(fkInfo.ownColumn));
+                        item.setText(1, fkInfo.ownColumn.getTypeName());
+                        updateButtons();
                     }
                 }
             });

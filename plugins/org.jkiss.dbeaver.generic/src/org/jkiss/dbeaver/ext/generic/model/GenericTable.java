@@ -234,7 +234,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         return null;
     }
 
-    @Property(name = "Table Description", viewable = true, editable = true, updatable = true, order = 100)
+    @Property(name = "Table Description", viewable = true, order = 100)
     public String getDescription()
     {
         return description;

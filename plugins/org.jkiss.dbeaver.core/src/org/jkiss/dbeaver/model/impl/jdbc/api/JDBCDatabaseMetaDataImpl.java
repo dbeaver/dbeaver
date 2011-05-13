@@ -30,7 +30,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         String description = functionName;
         if (args.length > 0) {
-            description += "[" + DBUtils.getSimpleQualifiedName(args) + "]";
+            description += " [" + DBUtils.getSimpleQualifiedName(args) + "]";
         }
         return JDBCResultSetImpl.makeResultSet(connection, resultSet, description);
     }
