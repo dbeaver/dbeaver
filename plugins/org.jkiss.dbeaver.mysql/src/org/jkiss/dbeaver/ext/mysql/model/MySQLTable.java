@@ -24,11 +24,10 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
+import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
 import java.io.UnsupportedEncodingException;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -385,8 +384,8 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                     String fkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FK_NAME);
                     String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
 
-                    DBSConstraintCascade deleteRule = getCascadeFromNum(deleteRuleNum);
-                    DBSConstraintCascade updateRule = getCascadeFromNum(updateRuleNum);
+                    DBSConstraintModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
+                    DBSConstraintModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
 
                     MySQLTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
                     if (pkTable == null) {
@@ -475,18 +474,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
         finally {
             context.close();
-        }
-    }
-
-    private static DBSConstraintCascade getCascadeFromNum(int num)
-    {
-        switch (num) {
-            case DatabaseMetaData.importedKeyNoAction: return DBSConstraintCascade.NO_ACTION;
-            case DatabaseMetaData.importedKeyCascade: return DBSConstraintCascade.CASCADE;
-            case DatabaseMetaData.importedKeySetNull: return DBSConstraintCascade.SET_NULL;
-            case DatabaseMetaData.importedKeySetDefault: return DBSConstraintCascade.SET_DEFAULT;
-            case DatabaseMetaData.importedKeyRestrict: return DBSConstraintCascade.RESTRICT;
-            default: return DBSConstraintCascade.UNKNOWN;
         }
     }
 

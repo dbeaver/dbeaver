@@ -20,16 +20,16 @@ public abstract class JDBCForeignKey<
     implements DBSForeignKey
 {
     protected PRIMARY_KEY referencedKey;
-    protected DBSConstraintCascade deleteRule;
-    protected DBSConstraintCascade updateRule;
+    protected DBSConstraintModifyRule deleteRule;
+    protected DBSConstraintModifyRule updateRule;
 
     public JDBCForeignKey(
         TABLE table,
         String name,
         String description,
         PRIMARY_KEY referencedKey,
-        DBSConstraintCascade deleteRule,
-        DBSConstraintCascade updateRule,
+        DBSConstraintModifyRule deleteRule,
+        DBSConstraintModifyRule updateRule,
         boolean persisted)
     {
         super(table, name, description, DBSConstraintType.FOREIGN_KEY, persisted);
@@ -51,13 +51,13 @@ public abstract class JDBCForeignKey<
     }
 
     @Property(name = "On Delete", viewable = true, order = 5)
-    public DBSConstraintCascade getDeleteRule()
+    public DBSConstraintModifyRule getDeleteRule()
     {
         return deleteRule;
     }
 
     @Property(name = "On Update", viewable = true, order = 6)
-    public DBSConstraintCascade getUpdateRule()
+    public DBSConstraintModifyRule getUpdateRule()
     {
         return updateRule;
     }

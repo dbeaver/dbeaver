@@ -4,16 +4,16 @@
 
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.ext.IProgressControlProvider;
-import org.jkiss.dbeaver.ext.generic.model.GenericForeignKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCForeignKeyManager;
+import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
+import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
-import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 
 /**
  * Generic foreign manager
@@ -28,28 +28,36 @@ public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericForei
             workbenchWindow.getShell(),
             "Create foreign key",
             activeEditor,
-            table);
+            table,
+            new DBSConstraintModifyRule[] {
+                DBSConstraintModifyRule.NO_ACTION,
+                DBSConstraintModifyRule.CASCADE, DBSConstraintModifyRule.RESTRICT,
+                DBSConstraintModifyRule.SET_NULL,
+                DBSConstraintModifyRule.SET_DEFAULT });
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
 
-        return null;
-//        final GenericForeignKey primaryKey = new GenericForeignKey(
-//            table,
-//            null,
-//            null,
-//            editDialog.getConstraintType(),
-//            false);
-//        primaryKey.setName(JDBCObjectNameCaseTransformer.transformName(primaryKey, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
-//        int colIndex = 1;
-//        for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
-//            primaryKey.addColumn(
-//                new GenericConstraintColumn(
-//                    primaryKey,
-//                    (GenericTableColumn) tableColumn,
-//                    colIndex++));
-//        }
-//        return primaryKey;
+        final GenericForeignKey foreignKey = new GenericForeignKey(
+            table,
+            null,
+            null,
+            (GenericPrimaryKey) editDialog.getUniqueConstraint(),
+            editDialog.getOnDeleteRule(),
+            editDialog.getOnUpdateRule(),
+            DBSConstraintDefferability.NOT_DEFERRABLE,
+            false);
+        foreignKey.setName(JDBCObjectNameCaseTransformer.transformName(foreignKey, CommonUtils.escapeIdentifier(table.getName()) + "_PK"));
+        int colIndex = 1;
+        for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
+            foreignKey.addColumn(
+                new GenericForeignKeyColumn(
+                    foreignKey,
+                    (GenericTableColumn) tableColumn.getOwnColumn(),
+                    colIndex++,
+                    (GenericTableColumn) tableColumn.getRefColumn()));
+        }
+        return foreignKey;
     }
 
 }

@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 /**
- * DBSConstraintCascade
+ * DBSConstraintModifyRule
  */
 public enum DBSConstraintDefferability
 {

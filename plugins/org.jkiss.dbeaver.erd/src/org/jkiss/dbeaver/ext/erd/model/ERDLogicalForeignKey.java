@@ -32,14 +32,14 @@ public class ERDLogicalForeignKey extends AbstractConstraint<DBSTable> implement
         return pk;
     }
 
-    public DBSConstraintCascade getDeleteRule()
+    public DBSConstraintModifyRule getDeleteRule()
     {
-        return DBSConstraintCascade.NO_ACTION;
+        return DBSConstraintModifyRule.NO_ACTION;
     }
 
-    public DBSConstraintCascade getUpdateRule()
+    public DBSConstraintModifyRule getUpdateRule()
     {
-        return DBSConstraintCascade.NO_ACTION;
+        return DBSConstraintModifyRule.NO_ACTION;
     }
 
     public Collection<? extends DBSForeignKeyColumn> getColumns(DBRProgressMonitor monitor)

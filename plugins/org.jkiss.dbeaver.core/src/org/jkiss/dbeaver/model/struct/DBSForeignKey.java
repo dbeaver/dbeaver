@@ -11,9 +11,9 @@ public interface DBSForeignKey extends DBSConstraint, DBSEntityAssociation
 {
     DBSConstraint getReferencedKey();
 
-    DBSConstraintCascade getDeleteRule();
+    DBSConstraintModifyRule getDeleteRule();
 
-    DBSConstraintCascade getUpdateRule();
+    DBSConstraintModifyRule getUpdateRule();
 
     //Collection<? extends DBSForeignKeyColumn> getColumns(DBRProgressMonitor monitor);
 

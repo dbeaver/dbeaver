@@ -6,10 +6,8 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
-import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
+import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +24,8 @@ public class MySQLForeignKey extends JDBCForeignKey<MySQLTable, MySQLConstraint>
         String name,
         String remarks,
         MySQLConstraint referencedKey,
-        DBSConstraintCascade deleteRule,
-        DBSConstraintCascade updateRule,
+        DBSConstraintModifyRule deleteRule,
+        DBSConstraintModifyRule updateRule,
         boolean persisted)
     {
         super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);

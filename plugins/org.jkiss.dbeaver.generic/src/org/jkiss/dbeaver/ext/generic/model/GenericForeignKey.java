@@ -25,12 +25,12 @@ public class GenericForeignKey extends JDBCForeignKey<GenericTable, GenericPrima
         String name,
         String remarks,
         GenericPrimaryKey referencedKey,
-        DBSConstraintCascade deleteRule,
-        DBSConstraintCascade updateRule,
+        DBSConstraintModifyRule deleteRule,
+        DBSConstraintModifyRule updateRule,
         DBSConstraintDefferability defferability,
         boolean persisted)
     {
-        super(table, name, remarks, referencedKey, deleteRule, updateRule, true);
+        super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
         this.defferability = defferability;
     }
 
@@ -50,7 +50,7 @@ public class GenericForeignKey extends JDBCForeignKey<GenericTable, GenericPrima
         return columns;
     }
 
-    void addColumn(GenericForeignKeyColumn column)
+    public void addColumn(GenericForeignKeyColumn column)
     {
         if (columns == null) {
             columns = new ArrayList<GenericForeignKeyColumn>();

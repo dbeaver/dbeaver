@@ -673,8 +673,8 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             String pkName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PK_NAME);
             int defferabilityNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DEFERRABILITY);
 
-            DBSConstraintCascade deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
-            DBSConstraintCascade updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+            DBSConstraintModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
+            DBSConstraintModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
             DBSConstraintDefferability defferability;
             switch (defferabilityNum) {
                 case DatabaseMetaData.importedKeyInitiallyDeferred: defferability = DBSConstraintDefferability.INITIALLY_DEFERRED; break;

@@ -13,9 +13,11 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorPart;
@@ -27,10 +29,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
@@ -56,23 +55,40 @@ public class EditForeignKeyDialog extends Dialog {
             this.refColumn = refColumn;
         }
 
+        public DBSTableColumn getRefColumn()
+        {
+            return refColumn;
+        }
+
+        public DBSTableColumn getOwnColumn()
+        {
+            return ownColumn;
+        }
     }
 
     private String title;
     private IProgressControlProvider progressProvider;
+    private DBSConstraintModifyRule[] supportedModifyRules;
     private DBSTable ownTable;
+    private DBSTable curRefTable;
     private List<DBSConstraint> curConstraints;
     private DBNDatabaseNode ownerTableNode;
     private Combo uniqueKeyCombo;
     private Table columnsTable;
 
+    private DBSConstraint curConstraint;
+    private List<? extends DBSTableColumn> ownColumns;
     private List<FKColumnInfo> fkColumns = new ArrayList<FKColumnInfo>();
+    private DBSConstraintModifyRule onDeleteRule;
+    private DBSConstraintModifyRule onUpdateRule;
 
     public EditForeignKeyDialog(
         Shell shell,
         String title,
         IEditorPart curEditor,
-        DBSTable table) {
+        DBSTable table,
+        DBSConstraintModifyRule[] supportedModifyRules)
+    {
         super(shell);
         setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
         this.title = title;
@@ -83,6 +99,7 @@ public class EditForeignKeyDialog extends Dialog {
         this.ownTable = table;
         this.ownerTableNode = DBeaverCore.getInstance().getNavigatorModel().findNode(ownTable);
         Assert.isNotNull(this.ownerTableNode);
+        this.supportedModifyRules = supportedModifyRules;
     }
 
     @Override
@@ -97,16 +114,15 @@ public class EditForeignKeyDialog extends Dialog {
             final Composite tableGroup = UIUtils.createPlaceholder(panel, 2);
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createLabelText(tableGroup, "Table", ownTable.getFullQualifiedName(), SWT.READ_ONLY | SWT.BORDER);
-
-            createContentsBeforeColumns(tableGroup);
         }
 
+        ItemListControl tableList;
         {
             DBNNode rootNode = ownerTableNode.getParentNode();
 
             //Composite columnsGroup = UIUtils.createControlGroup(panel, "Reference Table", 1, GridData.FILL_BOTH, 0);
             UIUtils.createControlLabel(panel, "Reference table");
-            ItemListControl tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
+            tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
             if (progressProvider != null) {
                 tableList.substituteProgressPanel(progressProvider.getProgressControl());
             } else {
@@ -125,8 +141,9 @@ public class EditForeignKeyDialog extends Dialog {
                 }
             });
         }
+
+        final Composite pkGroup = UIUtils.createPlaceholder(panel, 2);
         {
-            final Composite pkGroup = UIUtils.createPlaceholder(panel, 2);
             pkGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             uniqueKeyCombo = UIUtils.createLabelCombo(pkGroup, "Unique Key", SWT.DROP_DOWN | SWT.READ_ONLY);
             uniqueKeyCombo.setEnabled(false);
@@ -153,21 +170,49 @@ public class EditForeignKeyDialog extends Dialog {
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Ref Column");
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Ref Column Type");
             UIUtils.packColumns(columnsTable);
+
+            final TableEditor tableEditor = new TableEditor(columnsTable);
+            tableEditor.horizontalAlignment = SWT.CENTER;
+            tableEditor.verticalAlignment = SWT.TOP;
+            tableEditor.grabHorizontal = true;
+            tableEditor.minimumWidth = 50;
+
+            columnsTable.addMouseListener(new ColumnsMouseListener(tableEditor, columnsTable));
         }
 
-        createContentsAfterColumns(panel);
+        final Composite cascadeGroup = UIUtils.createPlaceholder(panel, 4, 5);
+        {
+            // Cascades
+            cascadeGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            final Combo onDeleteCombo = UIUtils.createLabelCombo(cascadeGroup, "On Delete", SWT.DROP_DOWN | SWT.READ_ONLY);
+            onDeleteCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            final Combo onUpdateCombo = UIUtils.createLabelCombo(cascadeGroup, "On Update", SWT.DROP_DOWN | SWT.READ_ONLY);
+            onUpdateCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            for (DBSConstraintModifyRule modifyRule : supportedModifyRules) {
+                onDeleteCombo.add(modifyRule.getName());
+                onUpdateCombo.add(modifyRule.getName());
+            }
+            onDeleteCombo.select(0);
+            onUpdateCombo.select(0);
+            onDeleteRule = onUpdateRule = supportedModifyRules[0];
+            onDeleteCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    onDeleteRule = supportedModifyRules[onDeleteCombo.getSelectionIndex()];
+                }
+            });
+            onUpdateCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    onUpdateRule = supportedModifyRules[onUpdateCombo.getSelectionIndex()];
+                }
+            });
+        }
+        panel.setTabList(new Control[] { tableList, pkGroup, columnsTable, cascadeGroup });
 
         return dialogGroup;
-    }
-
-    protected void createContentsBeforeColumns(Composite panel)
-    {
-
-    }
-
-    protected void createContentsAfterColumns(Composite panel)
-    {
-
     }
 
     private void handleRefTableSelect(ISelection selection)
@@ -182,10 +227,19 @@ public class EditForeignKeyDialog extends Dialog {
                 refTableNode = (DBNDatabaseNode) element;
             }
         }
+        if (refTableNode != null) {
+            if (refTableNode.getObject() == curRefTable) {
+                // The same selection
+                return;
+            } else {
+                curRefTable = (DBSTable) refTableNode.getObject();
+            }
+        }
         uniqueKeyCombo.removeAll();
 
         try {
             curConstraints = new ArrayList<DBSConstraint>();
+            curConstraint = null;
             final DBeaverCore core = DBeaverCore.getInstance();
             if (refTableNode != null) {
                 final DBSTable refTable = (DBSTable) refTableNode.getObject();
@@ -218,6 +272,9 @@ public class EditForeignKeyDialog extends Dialog {
             }
             uniqueKeyCombo.select(0);
             uniqueKeyCombo.setEnabled(curConstraints.size() > 1);
+            if (curConstraints.size() == 1) {
+                curConstraint = curConstraints.get(0);
+            }
 
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(getShell(), "Load constraints", "Can't load table constraints", e.getTargetException());
@@ -230,18 +287,20 @@ public class EditForeignKeyDialog extends Dialog {
 
     private void handleUniqueKeySelect()
     {
+        curConstraint = null;
         fkColumns.clear();
+        ownColumns = null;
         columnsTable.removeAll();
         if (curConstraints.isEmpty() || uniqueKeyCombo.getSelectionIndex() < 0) {
             return;
         }
-        final DBSConstraint uniqueKey = curConstraints.get(uniqueKeyCombo.getSelectionIndex());
+        curConstraint = curConstraints.get(uniqueKeyCombo.getSelectionIndex());
         try {
             // Read column nodes with void monitor because we already cached them above
-            for (DBSConstraintColumn pkColumn : uniqueKey.getColumns(VoidProgressMonitor.INSTANCE)) {
+            for (DBSConstraintColumn pkColumn : curConstraint.getColumns(VoidProgressMonitor.INSTANCE)) {
                 FKColumnInfo fkColumnInfo = new FKColumnInfo(pkColumn.getTableColumn());
                 // Try to find matched column in own table
-                final List<? extends DBSTableColumn> ownColumns = ownTable.getColumns(VoidProgressMonitor.INSTANCE);
+                ownColumns = ownTable.getColumns(VoidProgressMonitor.INSTANCE);
                 if (!CommonUtils.isEmpty(ownColumns)) {
                     for (DBSTableColumn ownColumn : ownColumns) {
                         if (ownColumn.getName().equals(pkColumn.getTableColumn().getName()) && ownTable != pkColumn.getTableColumn().getTable()) {
@@ -313,4 +372,96 @@ public class EditForeignKeyDialog extends Dialog {
     {
         return fkColumns;
     }
+
+    public DBSConstraintModifyRule getOnDeleteRule()
+    {
+        return onDeleteRule;
+    }
+
+    public DBSConstraintModifyRule getOnUpdateRule()
+    {
+        return onUpdateRule;
+    }
+
+    public DBSConstraint getUniqueConstraint()
+    {
+        return curConstraint;
+    }
+
+    private class ColumnsMouseListener extends MouseAdapter {
+        private final TableEditor tableEditor;
+        private final Table columnsTable;
+        private FKColumnInfo curKeyColumn;
+
+        public ColumnsMouseListener(TableEditor tableEditor, Table columnsTable)
+        {
+            this.tableEditor = tableEditor;
+            this.columnsTable = columnsTable;
+        }
+
+        private void disposeOldEditor()
+        {
+            Control oldEditor = tableEditor.getEditor();
+            if (oldEditor != null) oldEditor.dispose();
+            curKeyColumn = null;
+        }
+
+        public void mouseUp(MouseEvent e)
+        {
+            handleColumnClick(e);
+        }
+
+        private void handleColumnClick(MouseEvent e) {
+            // Clean up any previous editor control
+            disposeOldEditor();
+
+            final TableItem item = columnsTable.getItem(new Point(e.x, e.y));
+            if (item == null) {
+                return;
+            }
+            int columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
+            if (columnIndex != 0) {
+                return;
+            }
+
+            // Identify the selected row
+            final CCombo columnsCombo = new CCombo(columnsTable, SWT.DROP_DOWN | SWT.READ_ONLY);
+            if (!CommonUtils.isEmpty(ownColumns)) {
+                for (DBSTableColumn ownColumn : ownColumns) {
+                    columnsCombo.add(ownColumn.getName());
+                    for (FKColumnInfo fkInfo : fkColumns) {
+                        if (fkInfo.ownColumn == ownColumn) {
+                            curKeyColumn = fkInfo;
+                            columnsCombo.select(columnsCombo.getItemCount() - 1);
+                        }
+                    }
+                }
+                if (columnsCombo.getSelectionIndex() < 0) {
+                    columnsCombo.select(0);
+                }
+            }
+            // Selected by mouse
+            columnsCombo.setFocus();
+            columnsCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    if (curKeyColumn != null && columnsCombo.getSelectionIndex() >= 0) {
+                        curKeyColumn.ownColumn = ownColumns.get(columnsCombo.getSelectionIndex());
+                        item.setText(0, curKeyColumn.ownColumn.getName());
+                        item.setImage(0, getColumnIcon(curKeyColumn.ownColumn));
+                    }
+                }
+            });
+            columnsCombo.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e)
+                {
+                    disposeOldEditor();
+                }
+            });
+            tableEditor.setEditor(columnsCombo, item, 0);
+        }
+    }
+
 }

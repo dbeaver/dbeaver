@@ -413,8 +413,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             List<GenericForeignKey> fkList = new ArrayList<GenericForeignKey>();
             Map<String, GenericForeignKey> fkMap = new HashMap<String, GenericForeignKey>();
             for (ForeignKeyInfo info : fkInfos) {
-                DBSConstraintCascade deleteRule = JDBCUtils.getCascadeFromNum(info.deleteRuleNum);
-                DBSConstraintCascade updateRule = JDBCUtils.getCascadeFromNum(info.updateRuleNum);
+                DBSConstraintModifyRule deleteRule = JDBCUtils.getCascadeFromNum(info.deleteRuleNum);
+                DBSConstraintModifyRule updateRule = JDBCUtils.getCascadeFromNum(info.updateRuleNum);
                 DBSConstraintDefferability defferability;
                 switch (info.defferabilityNum) {
                     case DatabaseMetaData.importedKeyInitiallyDeferred: defferability = DBSConstraintDefferability.INITIALLY_DEFERRED; break;
