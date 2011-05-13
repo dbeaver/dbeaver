@@ -84,6 +84,11 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
+    public MySQLTable(MySQLCatalog catalog)
+    {
+        super(catalog, false);
+    }
+
     public MySQLTable(
         MySQLCatalog catalog,
         ResultSet dbResult)

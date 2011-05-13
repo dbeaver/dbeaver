@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
+package org.jkiss.dbeaver.ext.mysql.edit;
+
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+
+import java.sql.Types;
+
+/**
+ * MySQL table column manager
+ */
+public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableColumn, MySQLTable> {
+
+    @Override
+    protected MySQLTableColumn createNewTableColumn(MySQLTable parent, Object copyFrom)
+    {
+        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar", "varchar2", "char", "integer", "number");
+
+        final MySQLTableColumn column = new MySQLTableColumn(parent);
+        column.setName(JDBCObjectNameCaseTransformer.transformName(column, "NewColumn"));
+        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
+        column.setMaxLength(columnType != null && columnType.getDataKind() == DBSDataKind.STRING ? 100 : 0);
+        column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeNumber());
+        column.setOrdinalPosition(-1);
+        return column;
+    }
+
+}

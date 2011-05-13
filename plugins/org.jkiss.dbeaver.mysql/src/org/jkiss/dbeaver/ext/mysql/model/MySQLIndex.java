@@ -24,6 +24,13 @@ public class MySQLIndex extends JDBCIndex<MySQLTable>
 
     public MySQLIndex(
         MySQLTable table,
+        DBSIndexType indexType)
+    {
+        super(table, null, indexType, false);
+    }
+
+    public MySQLIndex(
+        MySQLTable table,
         boolean nonUnique,
         String indexName,
         DBSIndexType indexType,
@@ -82,7 +89,7 @@ public class MySQLIndex extends JDBCIndex<MySQLTable>
         this.columns = columns;
     }
 
-    void addColumn(MySQLIndexColumn column)
+    public void addColumn(MySQLIndexColumn column)
     {
         if (columns == null) {
             columns = new ArrayList<MySQLIndexColumn>();

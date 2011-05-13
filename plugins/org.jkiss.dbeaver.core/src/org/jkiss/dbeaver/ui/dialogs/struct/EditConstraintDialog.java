@@ -17,10 +17,6 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * EditConstraintDialog
  *
@@ -28,16 +24,16 @@ import java.util.List;
  */
 public class EditConstraintDialog extends ColumnsSelectorDialog {
 
-    private List<DBSConstraintType> constraintTypes;
+    private DBSConstraintType[] constraintTypes;
     private DBSConstraintType selectedConstraintType;
 
     public EditConstraintDialog(
         Shell shell,
         String title,
         DBSTable table,
-        Collection<DBSConstraintType> constraintTypes) {
+        DBSConstraintType[] constraintTypes) {
         super(shell, title, table);
-        this.constraintTypes = new ArrayList<DBSConstraintType>(constraintTypes);
+        this.constraintTypes = constraintTypes;
         Assert.isTrue(!CommonUtils.isEmpty(this.constraintTypes));
     }
 
@@ -55,12 +51,12 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
             }
         }
         typeCombo.select(0);
-        typeCombo.setEnabled(constraintTypes.size() > 1);
+        typeCombo.setEnabled(constraintTypes.length > 1);
         typeCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                selectedConstraintType = constraintTypes.get(typeCombo.getSelectionIndex());
+                selectedConstraintType = constraintTypes[typeCombo.getSelectionIndex()];
             }
         });
     }

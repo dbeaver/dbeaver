@@ -36,7 +36,7 @@ public class MySQLForeignKey extends JDBCForeignKey<MySQLTable, MySQLConstraint>
         return columns;
     }
 
-    void addColumn(MySQLForeignKeyColumn column)
+    public void addColumn(MySQLForeignKeyColumn column)
     {
         if (columns == null) {
             columns = new ArrayList<MySQLForeignKeyColumn>();

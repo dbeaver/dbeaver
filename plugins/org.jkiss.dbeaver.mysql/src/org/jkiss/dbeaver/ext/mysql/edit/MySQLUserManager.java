@@ -2,14 +2,18 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql.runtime;
+package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectScriptCommand;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 
@@ -40,7 +44,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
             newUser.setMaxUserConnections(tplUser.getMaxUserConnections());
         }
         List<DBECommand> commands = new ArrayList<DBECommand>();
-        commands.add(new MySQLCommandCreateUser(newUser));
+        commands.add(new CommandCreateUser(newUser));
         commands.add(new DBECommandProperty<MySQLUser>(newUser, UserPropertyHandler.NAME, newUser.getUserName()));
         commands.add(new DBECommandProperty<MySQLUser>(newUser, UserPropertyHandler.HOST, newUser.getHost()));
         commandContext.addCommandBatch(commands, new CreateObjectReflector(), true);
@@ -50,7 +54,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
 
     public void deleteObject(DBECommandContext commandContext, MySQLUser user, Map<String, Object> options)
     {
-        commandContext.addCommand(new MySQLCommandDropUser(user), new DeleteObjectReflector(), true);
+        commandContext.addCommand(new CommandDropUser(user), new DeleteObjectReflector(), true);
     }
 
     public void filterCommands(DBECommandQueue<MySQLUser> queue)
@@ -62,6 +66,34 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
                     queue.getObject(),
                     "Flush privileges",
                     "FLUSH PRIVILEGES"));
+        }
+    }
+
+    private static class CommandCreateUser extends DBECommandAbstract<MySQLUser> {
+        protected CommandCreateUser(MySQLUser user)
+        {
+            super(user, "Create user");
+        }
+    }
+
+
+    private static class CommandDropUser extends DBECommandComposite<MySQLUser, UserPropertyHandler> {
+        protected CommandDropUser(MySQLUser user)
+        {
+            super(user, "Drop user");
+        }
+        public IDatabasePersistAction[] getPersistActions()
+        {
+            return new IDatabasePersistAction[] {
+                new AbstractDatabasePersistAction("Drop user", "DROP USER " + getObject().getFullName()) {
+                    @Override
+                    public void handleExecute(Throwable error)
+                    {
+                        if (error == null) {
+                            getObject().setPersisted(false);
+                        }
+                    }
+                }};
         }
     }
 

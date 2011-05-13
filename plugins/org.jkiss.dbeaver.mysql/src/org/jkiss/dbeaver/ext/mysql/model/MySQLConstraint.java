@@ -28,7 +28,7 @@ public class MySQLConstraint extends JDBCConstraint<MySQLTable> {
         return columns;
     }
 
-    void addColumn(MySQLConstraintColumn column)
+    public void addColumn(MySQLConstraintColumn column)
     {
         if (columns == null) {
             columns = new ArrayList<MySQLConstraintColumn>();

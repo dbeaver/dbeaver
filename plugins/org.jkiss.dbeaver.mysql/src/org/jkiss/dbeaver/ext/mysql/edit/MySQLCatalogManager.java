@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql.runtime;
+package org.jkiss.dbeaver.ext.mysql.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;

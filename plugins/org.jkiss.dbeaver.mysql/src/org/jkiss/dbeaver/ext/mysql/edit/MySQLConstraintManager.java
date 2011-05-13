@@ -2,16 +2,16 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.generic.edit;
+package org.jkiss.dbeaver.ext.mysql.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.ext.generic.model.GenericConstraintColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLConstraint;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLConstraintColumn;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
@@ -19,40 +19,42 @@ import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 
 /**
- * Generic constraint manager
+ * MySQL constraint manager
  */
-public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrimaryKey, GenericTable> {
+public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstraint, MySQLTable> {
 
-    protected GenericPrimaryKey createNewConstraint(
+    protected MySQLConstraint createNewConstraint(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor, GenericTable parent,
+        IEditorPart activeEditor, MySQLTable parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(
             workbenchWindow.getShell(),
             "Create constraint",
             parent,
-            new DBSConstraintType[] {DBSConstraintType.PRIMARY_KEY} );
+            new DBSConstraintType[] {
+                DBSConstraintType.PRIMARY_KEY,
+                DBSConstraintType.UNIQUE_KEY });
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
 
-        final GenericPrimaryKey primaryKey = new GenericPrimaryKey(
+        final MySQLConstraint constraint = new MySQLConstraint(
             parent,
             null,
             null,
             editDialog.getConstraintType(),
             false);
-        primaryKey.setName(JDBCObjectNameCaseTransformer.transformName(primaryKey, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
+        constraint.setName(JDBCObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
         int colIndex = 1;
         for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
-            primaryKey.addColumn(
-                new GenericConstraintColumn(
-                    primaryKey,
-                    (GenericTableColumn) tableColumn,
+            constraint.addColumn(
+                new MySQLConstraintColumn(
+                    constraint,
+                    (MySQLTableColumn) tableColumn,
                     colIndex++));
         }
-        return primaryKey;
+        return constraint;
     }
 
 }
