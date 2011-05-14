@@ -29,10 +29,11 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         this.handler = handler;
     }
 
-    public DBECommandProperty(OBJECT_TYPE object, DBEPropertyHandler<OBJECT_TYPE> handler, Object newValue)
+    public DBECommandProperty(OBJECT_TYPE object, DBEPropertyHandler<OBJECT_TYPE> handler, Object oldValue, Object newValue)
     {
         this(object, handler);
-        this.oldValue = this.newValue = newValue;
+        this.oldValue = oldValue;
+        this.newValue = newValue;
     }
 
     public DBEPropertyHandler<OBJECT_TYPE> getHandler()
@@ -45,11 +46,6 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         return oldValue;
     }
 
-    void setOldValue(Object oldValue)
-    {
-        this.oldValue = oldValue;
-    }
-
     public Object getNewValue()
     {
         return newValue;
@@ -57,13 +53,9 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
 
     public void setNewValue(Object newValue)
     {
-        Object prevValue = this.newValue;
-        if (prevValue == null) {
-            prevValue = this.oldValue;
-        }
         this.newValue = newValue;
         if (handler instanceof DBEPropertyReflector) {
-            ((DBEPropertyReflector<OBJECT_TYPE>)handler).reflectValueChange(getObject(), prevValue, this.newValue);
+            ((DBEPropertyReflector<OBJECT_TYPE>)handler).reflectValueChange(getObject(), oldValue, this.newValue);
         }
     }
 

@@ -45,8 +45,8 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
         }
         List<DBECommand> commands = new ArrayList<DBECommand>();
         commands.add(new CommandCreateUser(newUser));
-        commands.add(new DBECommandProperty<MySQLUser>(newUser, UserPropertyHandler.NAME, newUser.getUserName()));
-        commands.add(new DBECommandProperty<MySQLUser>(newUser, UserPropertyHandler.HOST, newUser.getHost()));
+        commands.add(new DBECommandProperty<MySQLUser>(newUser, UserPropertyHandler.NAME, newUser.getUserName(), newUser.getUserName()));
+        commands.add(new DBECommandProperty<MySQLUser>(newUser, UserPropertyHandler.HOST, newUser.getHost(), newUser.getHost()));
         commandContext.addCommandBatch(commands, new CreateObjectReflector(), true);
 
         return newUser;

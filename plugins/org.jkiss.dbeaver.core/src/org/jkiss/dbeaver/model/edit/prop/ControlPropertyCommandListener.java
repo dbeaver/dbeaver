@@ -147,9 +147,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                     final Object newValue = readWidgetValue();
                     if (curCommand == null) {
                         if (!CommonUtils.equalObjects(newValue, originalValue)) {
-                            final DBECommandProperty<OBJECT_TYPE> command = new DBECommandProperty<OBJECT_TYPE>(objectEditor.getDatabaseObject(), handler);
-                            command.setOldValue(originalValue);
-                            command.setNewValue(newValue);
+                            final DBECommandProperty<OBJECT_TYPE> command = new DBECommandProperty<OBJECT_TYPE>(objectEditor.getDatabaseObject(), handler, originalValue, newValue);
                             curCommand = command;
                             DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>> commandReflector = new DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>>() {
                                 public void redoCommand(DBECommandProperty<OBJECT_TYPE> object_typeControlDBOCommand)

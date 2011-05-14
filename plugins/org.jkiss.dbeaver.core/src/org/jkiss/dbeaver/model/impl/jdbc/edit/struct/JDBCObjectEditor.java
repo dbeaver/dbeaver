@@ -55,7 +55,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
             if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isEditPossible()) {
                 final Object propertyValue = propertyCollector.getPropertyValue(prop.getId());
                 if (propertyValue != null) {
-                    commands.add(new DBECommandProperty<OBJECT_TYPE>(object, new PropertyHandler<OBJECT_TYPE>(this, prop), propertyValue));
+                    commands.add(new DBECommandProperty<OBJECT_TYPE>(object, new PropertyHandler<OBJECT_TYPE>(this, prop), propertyValue, propertyValue));
                 }
             }
         }

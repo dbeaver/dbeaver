@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -16,7 +15,6 @@ import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
-import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -87,16 +85,16 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     }
 
     @Override
-    public void setPropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object value)
+    public void setPropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object newValue)
     {
         if (prop.getValueTransformer() != null) {
-            value = prop.getValueTransformer().transform(editableValue, value);
+            newValue = prop.getValueTransformer().transform(editableValue, newValue);
         }
         final Object oldValue = getPropertyValue(editableValue, prop);
-        if (CommonUtils.equalObjects(oldValue, value)) {
+        if (CommonUtils.equalObjects(oldValue, newValue)) {
             return;
         }
-        updatePropertyValue(editableValue, prop, value, false);
+        updatePropertyValue(editableValue, prop, newValue, false);
         if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop) {
             final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor();
             if (objectEditor == null) {
@@ -106,17 +104,17 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
                 (DBPObject)editableValue,
                 prop);
-            PropertyChangeCommand curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, value);
+            PropertyChangeCommand curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, oldValue, newValue);
             final CommandReflector reflector = new CommandReflector();
             getCommandContext().addCommand(curCommand, reflector);
             lastCommand = curCommand;
         } else {
-            lastCommand.setNewValue(value);
+            lastCommand.setNewValue(newValue);
             getCommandContext().updateCommand(lastCommand);
         }
         // Notify listeners
         for (IPropertySourceListener listener : listeners) {
-            listener.handlePropertyChange(editableValue, prop, value);
+            listener.handlePropertyChange(editableValue, prop, newValue);
         }
     }
 
@@ -161,9 +159,9 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
     private class PropertyChangeCommand extends DBECommandProperty<DBPObject> {
         ObjectPropertyDescriptor property;
-        public PropertyChangeCommand(DBPObject editableValue, ObjectPropertyDescriptor property, DBEPropertyHandler<DBPObject> propertyHandler, Object value)
+        public PropertyChangeCommand(DBPObject editableValue, ObjectPropertyDescriptor property, DBEPropertyHandler<DBPObject> propertyHandler, Object oldValue, Object newValue)
         {
-            super(editableValue, propertyHandler, value);
+            super(editableValue, propertyHandler, oldValue, newValue);
             this.property = property;
         }
 
@@ -179,21 +177,19 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
         public void redoCommand(PropertyChangeCommand command)
         {
-            final Object propertyValue = getPropertyValue(command.getObject(), command.property);
-            updatePropertyValue(command.getObject(), command.property, propertyValue, false);
+            updatePropertyValue(command.getObject(), command.property, command.getNewValue(), false);
             // Notify listeners
             for (IPropertySourceListener listener : listeners) {
-                listener.handlePropertyChange(command.getObject(), command.property, propertyValue);
+                listener.handlePropertyChange(command.getObject(), command.property, command.getNewValue());
             }
         }
 
         public void undoCommand(PropertyChangeCommand command)
         {
-            final Object propertyValue = getPropertyValue(command.getObject(), command.property);
-            updatePropertyValue(command.getObject(), command.property, propertyValue, false);
+            updatePropertyValue(command.getObject(), command.property, command.getOldValue(), false);
             // Notify listeners
             for (IPropertySourceListener listener : listeners) {
-                listener.handlePropertyChange(command.getObject(), command.property, propertyValue);
+                listener.handlePropertyChange(command.getObject(), command.property, command.getOldValue());
             }
         }
     }
