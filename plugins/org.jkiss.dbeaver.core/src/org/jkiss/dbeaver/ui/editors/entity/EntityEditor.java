@@ -211,6 +211,19 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     public void undoChanges()
     {
         if (getCommandContext() != null && getCommandContext().getUndoCommand() != null) {
+            if (!getDatabaseObject().isPersisted() && getCommandContext().getFinalCommands().size() == 1) {
+                // Undo of last command in command context will close editor
+                // Let's ask user about it
+                if (ConfirmationDialog.showConfirmDialog(
+                    null,
+                    PrefConstants.CONFIRM_ENTITY_REJECT,
+                    ConfirmationDialog.QUESTION,
+                    ConfirmationDialog.WARNING,
+                    getDatabaseObject().getName()) != IDialogConstants.YES_ID)
+                {
+                    return;
+                }
+            }
             getCommandContext().undoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
