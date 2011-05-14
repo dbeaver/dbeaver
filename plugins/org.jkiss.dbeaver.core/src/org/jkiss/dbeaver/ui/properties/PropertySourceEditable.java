@@ -145,8 +145,22 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     }
 
     @Override
+    public boolean isPropertyResettable(Object object, ObjectPropertyDescriptor prop)
+    {
+        return (lastCommand != null && lastCommand.property == prop && lastCommand.getObject() == object);
+    }
+
+    @Override
     public void resetPropertyValue(Object object, ObjectPropertyDescriptor prop)
     {
+//        final DBECommandComposite compositeCommand = (DBECommandComposite)getCommandContext().getUserParams().get(obj);
+//        if (compositeCommand != null) {
+//            final Object value = compositeCommand.getProperty(prop.getId());
+//        }
+
+        if (lastCommand != null && lastCommand.property == prop) {
+            setPropertyValue(object, prop, lastCommand.getOldValue());
+        }
 //        final ObjectProps objectProps = getObjectProps(object);
 //        DBECommandProperty curCommand = objectProps.propValues.get(prop);
 //        if (curCommand != null) {

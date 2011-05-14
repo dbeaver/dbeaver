@@ -20,6 +20,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ImageUtils;
@@ -381,11 +382,15 @@ public class PropertyTreeViewer extends TreeViewer {
                                 }
                             });
                             if (isPropertyChanged(prop) && prop.isEditable()) {
-                                manager.add(new ActionResetProperty(prop, false));
-                                if (!isCustomProperty(prop.property) &&
-                                    prop.propertySource instanceof IPropertySourceEx)
-                                {
-                                    manager.add(new ActionResetProperty(prop, true));
+                                if (prop.propertySource instanceof IPropertySource2 && !((IPropertySource2) prop.propertySource).isPropertyResettable(prop.property.getId())) {
+                                    // it is not resettable
+                                } else {
+                                    manager.add(new ActionResetProperty(prop, false));
+                                    if (!isCustomProperty(prop.property) &&
+                                        prop.propertySource instanceof IPropertySourceEx)
+                                    {
+                                        manager.add(new ActionResetProperty(prop, true));
+                                    }
                                 }
                             }
                             manager.add(new Separator());
