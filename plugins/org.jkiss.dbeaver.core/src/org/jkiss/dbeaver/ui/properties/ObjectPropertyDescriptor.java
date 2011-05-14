@@ -288,7 +288,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         } else if (BeanUtils.isNumericType(propertyType)) {
             return new CustomNumberCellEditor(parent, propertyType);
         } else if (BeanUtils.isBooleanType(propertyType)) {
-            return new CustomCheckboxCellEditor(parent);
+            return new CheckboxCellEditor(parent);
         } else {
             return null;
         }

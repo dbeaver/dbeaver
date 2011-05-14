@@ -702,7 +702,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 case SWT.PaintItem: {
                     if (event.index == 1) {
                         final TreeNode node = (TreeNode)event.item.getData();
-                        if (node != null && node.property != null && node.property != selectedProperty) {
+                        if (node != null && node.property != null) {
                             final Object propertyValue = getPropertyValue(node);
                             if (propertyValue instanceof Boolean) {
                                 GC gc = event.gc;

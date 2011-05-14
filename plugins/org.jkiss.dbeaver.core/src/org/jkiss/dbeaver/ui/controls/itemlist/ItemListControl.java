@@ -180,6 +180,11 @@ public class ItemListControl extends NodeListControl
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null) {
                 getListPropertySource().setPropertyValue(getObjectValue(object), property, value);
+                //System.out.println("UPDATE " + value + " " + System.currentTimeMillis());
+                if (value instanceof Boolean) {
+                    // Redraw control to let it repaint checkbox
+                    getItemsViewer().getControl().redraw();
+                }
             }
         }
 
