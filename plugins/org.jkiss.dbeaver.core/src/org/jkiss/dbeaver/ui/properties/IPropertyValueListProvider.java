@@ -7,10 +7,10 @@ package org.jkiss.dbeaver.ui.properties;
 /**
  * Property value provider
  */
-public interface IPropertyValueListProvider {
+public interface IPropertyValueListProvider<OBJECT_TYPE> {
 
     boolean allowCustomValue();
 
-    Object[] getPossibleValues(Object object);
+    Object[] getPossibleValues(OBJECT_TYPE object);
 
 }

@@ -4,16 +4,12 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
-
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * JDBCForeignKey
@@ -87,14 +83,14 @@ public abstract class JDBCForeignKey<
         return getReferencedTable();
     }
 
-    public static class ConstraintModifyRuleListProvider implements IPropertyValueListProvider {
+    public static class ConstraintModifyRuleListProvider implements IPropertyValueListProvider<JDBCForeignKey> {
 
         public boolean allowCustomValue()
         {
             return false;
         }
 
-        public Object[] getPossibleValues(Object object)
+        public Object[] getPossibleValues(JDBCForeignKey foreignKey)
         {
             return new DBSConstraintModifyRule[] {
                 DBSConstraintModifyRule.NO_ACTION,

@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * PropertyDescriptorEx
  */
-public class PropertyDescriptorEx implements IPropertyDescriptorEx, IPropertyValueListProvider
+public class PropertyDescriptorEx implements IPropertyDescriptorEx, IPropertyValueListProvider<Object>
 {
 
     static final Log log = LogFactory.getLog(PropertyDescriptorEx.class);

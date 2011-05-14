@@ -81,17 +81,16 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this, true));
     }
 
-    public static class ColumnTypeNameListProvider implements IPropertyValueListProvider {
+    public static class ColumnTypeNameListProvider implements IPropertyValueListProvider<JDBCTableColumn> {
 
         public boolean allowCustomValue()
         {
             return true;
         }
 
-        public Object[] getPossibleValues(Object object)
+        public Object[] getPossibleValues(JDBCTableColumn column)
         {
             Set<String> typeNames = new TreeSet<String>();
-            JDBCTableColumn column = (JDBCTableColumn) object;
             for (DBSDataType type : column.getDataSource().getInfo().getSupportedDataTypes()) {
                 if (type.getDataKind() != DBSDataKind.UNKNOWN && !CommonUtils.isEmpty(type.getName()) && Character.isLetter(type.getName().charAt(0))) {
                     typeNames.add(type.getName());

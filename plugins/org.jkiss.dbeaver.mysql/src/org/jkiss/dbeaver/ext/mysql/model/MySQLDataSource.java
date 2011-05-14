@@ -394,6 +394,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         return DBUtils.findObject(engines, name);
     }
 
+    public MySQLEngine getDefaultEngine()
+    {
+        for (MySQLEngine engine : engines) {
+            if (engine.getSupport() == MySQLEngine.Support.DEFAULT) {
+                return engine;
+            }
+        }
+        return null;
+    }
+
     public List<MySQLPrivilege> getPrivileges(DBRProgressMonitor monitor)
         throws DBException
     {

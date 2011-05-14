@@ -68,7 +68,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
-    public String getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
+    public StringBuilder getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
     {
         OBJECT_TYPE column = command.getObject();
 
@@ -99,7 +99,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
             decl.append(" NOT NULL");
         }
 
-        return decl.toString();
+        return decl;
     }
 
     protected void validateObjectProperties(ObjectChangeCommand<OBJECT_TYPE> command)

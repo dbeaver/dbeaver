@@ -67,7 +67,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
-    public String getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
+    public StringBuilder getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
     {
         OBJECT_TYPE constraint = command.getObject();
 
@@ -89,7 +89,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
             decl.append(constraintColumn.getName());
         }
         decl.append(")");
-        return decl.toString();
+        return decl;
     }
 
     protected abstract OBJECT_TYPE createNewConstraint(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, TABLE_TYPE parent, Object from);

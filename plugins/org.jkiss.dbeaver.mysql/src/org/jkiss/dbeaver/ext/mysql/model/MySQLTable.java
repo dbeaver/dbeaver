@@ -26,15 +26,13 @@ import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * GenericTable
@@ -56,14 +54,17 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         private long avgRowLength;
         private long dataLength;
 
-        @Property(name = "Engine", viewable = true, order = 3) public MySQLEngine getEngine() { return engine; }
-        @Property(name = "Row Count", viewable = true, order = 5) public long getRowCount() { return rowCount; }
-        @Property(name = "Auto Increment", viewable = true, order = 6) public long getAutoIncrement() { return autoIncrement; }
-        @Property(name = "Create Time", viewable = true, order = 7) public java.util.Date getCreateTime() { return createTime; }
-        @Property(name = "Collation", viewable = true, order = 8) public String getCollation() { return collation; }
-        @Property(name = "Avg Row Length", viewable = true, order = 9) public long getAvgRowLength() { return avgRowLength; }
-        @Property(name = "Data Length", viewable = true, order = 10) public long getDataLength() { return dataLength; }
+        @Property(name = "Engine", viewable = true, editable = true, listProvider = EngineListProvider.class, order = 3) public MySQLEngine getEngine() { return engine; }
+        @Property(name = "Auto Increment", viewable = true, editable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
+        @Property(name = "Collation", viewable = true, editable = true, listProvider = CollationListProvider.class, order = 5) public String getCollation() { return collation; }
         @Property(name = "Description", viewable = true, order = 100) public String getDescription() { return description; }
+        @Property(name = "Row Count", category = "Statistics", viewable = true, order = 10) public long getRowCount() { return rowCount; }
+        @Property(name = "Avg Row Length", category = "Statistics", viewable = true, order = 11) public long getAvgRowLength() { return avgRowLength; }
+        @Property(name = "Data Length", category = "Statistics", viewable = true, order = 12) public long getDataLength() { return dataLength; }
+        @Property(name = "Create Time", category = "Statistics", viewable = true, order = 13) public java.util.Date getCreateTime() { return createTime; }
+
+        public void setEngine(MySQLEngine engine) { this.engine = engine; }
+        public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLTable> {
@@ -293,6 +294,10 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
     {
+        if (!isPersisted()) {
+            additionalInfo.loaded = true;
+            return;
+        }
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -545,6 +550,52 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     public String getDescription()
     {
         return additionalInfo.description;
+    }
+
+    public static class EngineListProvider implements IPropertyValueListProvider<MySQLTable> {
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+        public Object[] getPossibleValues(MySQLTable object)
+        {
+            final List<MySQLEngine> engines = new ArrayList<MySQLEngine>();
+            for (MySQLEngine engine : object.getDataSource().getEngines()) {
+                if (engine.getSupport() == MySQLEngine.Support.YES || engine.getSupport() == MySQLEngine.Support.DEFAULT) {
+                    engines.add(engine);
+                }
+            }
+            Collections.sort(engines, new Comparator<MySQLEngine>() {
+                public int compare(MySQLEngine o1, MySQLEngine o2)
+                {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
+            return engines.toArray(new MySQLEngine[engines.size()]);
+        }
+    }
+
+    public static class CollationListProvider implements IPropertyValueListProvider<MySQLTable> {
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+        public Object[] getPossibleValues(MySQLTable object)
+        {
+            final List<MySQLEngine> engines = new ArrayList<MySQLEngine>();
+            for (MySQLEngine engine : object.getDataSource().getEngines()) {
+                if (engine.getSupport() == MySQLEngine.Support.YES || engine.getSupport() == MySQLEngine.Support.DEFAULT) {
+                    engines.add(engine);
+                }
+            }
+            Collections.sort(engines, new Comparator<MySQLEngine>() {
+                public int compare(MySQLEngine o1, MySQLEngine o2)
+                {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
+            return engines.toArray(new MySQLEngine[engines.size()]);
+        }
     }
 
 }

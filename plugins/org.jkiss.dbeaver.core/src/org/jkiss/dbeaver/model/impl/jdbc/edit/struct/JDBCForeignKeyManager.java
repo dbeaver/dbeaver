@@ -70,7 +70,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
-    public String getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
+    public StringBuilder getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
     {
         OBJECT_TYPE foreignKey = command.getObject();
 
@@ -106,7 +106,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
         if (foreignKey.getUpdateRule() != null && !CommonUtils.isEmpty(foreignKey.getUpdateRule().getClause())) {
             decl.append(" ON UPDATE ").append(foreignKey.getUpdateRule().getClause());
         }
-        return decl.toString();
+        return decl;
     }
 
     protected abstract OBJECT_TYPE createNewForeignKey(

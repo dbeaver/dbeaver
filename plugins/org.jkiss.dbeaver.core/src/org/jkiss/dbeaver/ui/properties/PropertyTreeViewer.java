@@ -33,6 +33,8 @@ import java.util.List;
  */
 public class PropertyTreeViewer extends TreeViewer {
 
+    private static final String CATEGORY_GENERAL = "General";
+
     private boolean expandSingleRoot = true;
     private TreeEditor treeEditor;
 
@@ -138,7 +140,7 @@ public class PropertyTreeViewer extends TreeViewer {
         for (IPropertyDescriptor prop : props) {
             String categoryName = prop.getCategory();
             if (CommonUtils.isEmpty(categoryName)) {
-                categoryName = "";
+                categoryName = CATEGORY_GENERAL;
             }
             TreeNode category = categories.get(categoryName);
             if (category == null) {
