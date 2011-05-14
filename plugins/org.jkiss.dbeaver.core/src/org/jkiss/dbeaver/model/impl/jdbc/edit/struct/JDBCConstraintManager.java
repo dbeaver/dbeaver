@@ -4,11 +4,9 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -72,9 +70,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
         OBJECT_TYPE constraint = command.getObject();
 
         // Create column
-        String constraintName = DBUtils.getQuotedIdentifier(
-            constraint.getDataSource(),
-            CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME)));
+        String constraintName = DBUtils.getQuotedIdentifier(constraint.getDataSource(), constraint.getName());
 
         StringBuilder decl = new StringBuilder(40);
         decl

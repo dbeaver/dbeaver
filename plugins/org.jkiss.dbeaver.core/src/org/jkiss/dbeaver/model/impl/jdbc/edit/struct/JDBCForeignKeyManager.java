@@ -8,7 +8,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -75,9 +74,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
         OBJECT_TYPE foreignKey = command.getObject();
 
         // Create column
-        String constraintName = DBUtils.getQuotedIdentifier(
-            foreignKey.getDataSource(),
-            CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME)));
+        String constraintName = DBUtils.getQuotedIdentifier(foreignKey.getDataSource(), foreignKey.getName());
 
         StringBuilder decl = new StringBuilder(40);
         decl

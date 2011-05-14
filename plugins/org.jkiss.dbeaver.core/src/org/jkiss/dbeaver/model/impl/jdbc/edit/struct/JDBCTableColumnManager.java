@@ -73,11 +73,9 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         OBJECT_TYPE column = command.getObject();
 
         // Create column
-        String columnName = DBUtils.getQuotedIdentifier(
-            column.getDataSource(),
-            CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME)));
+        String columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName());
 
-        final String typeName = (String)command.getProperty(DBConstants.PROP_ID_TYPE_NAME);
+        final String typeName = column.getTypeName();
         boolean useMaxLength = false;
         final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
         if (dataType == null) {
@@ -88,14 +86,14 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
             }
         }
 
-        final Boolean notNull = (Boolean) command.getProperty(DBConstants.PROP_ID_NOT_NULL);
-        final Long maxLength = (Long) command.getProperty(DBConstants.PROP_ID_MAX_LENGTH);
+        final boolean notNull = column.isNotNull();
+        final long maxLength = column.getMaxLength();
         StringBuilder decl = new StringBuilder(40);
         decl.append(columnName).append(' ').append(typeName);
-        if (useMaxLength && maxLength != null) {
+        if (useMaxLength && maxLength > 0) {
             decl.append('(').append(maxLength).append(')');
         }
-        if (notNull != null && notNull) {
+        if (notNull) {
             decl.append(" NOT NULL");
         }
 
@@ -105,10 +103,10 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     protected void validateObjectProperties(ObjectChangeCommand<OBJECT_TYPE> command)
         throws DBException
     {
-        if (CommonUtils.isEmpty((String)command.getProperty(DBConstants.PROP_ID_NAME))) {
+        if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Column name cannot be empty");
         }
-        if (CommonUtils.isEmpty((String)command.getProperty(DBConstants.PROP_ID_TYPE_NAME))) {
+        if (CommonUtils.isEmpty(command.getObject().getTypeName())) {
             throw new DBException("Column type name cannot be empty");
         }
     }

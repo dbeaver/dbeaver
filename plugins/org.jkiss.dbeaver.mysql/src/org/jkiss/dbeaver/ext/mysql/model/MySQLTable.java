@@ -69,7 +69,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         public void setEngine(MySQLEngine engine) { this.engine = engine; }
         public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
 
-        public void setCharset(MySQLCharset charset) { this.charset = charset; }
+        public void setCharset(MySQLCharset charset) { this.charset = charset; this.collation = charset.getDefaultCollation(); }
         public void setCollation(MySQLCollation collation) { this.collation = collation; }
     }
 

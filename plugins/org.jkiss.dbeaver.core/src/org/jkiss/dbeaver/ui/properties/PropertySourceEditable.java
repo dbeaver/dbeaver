@@ -74,13 +74,13 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     @Override
     public Object getPropertyValue(Object editableValue, ObjectPropertyDescriptor prop)
     {
-        final DBECommandComposite compositeCommand = (DBECommandComposite)getCommandContext().getUserParams().get(editableValue);
-        if (compositeCommand != null) {
-            final Object value = compositeCommand.getProperty(prop.getId());
-            if (value != null) {
-                return value;
-            }
-        }
+//        final DBECommandComposite compositeCommand = (DBECommandComposite)getCommandContext().getUserParams().get(editableValue);
+//        if (compositeCommand != null) {
+//            final Object value = compositeCommand.getProperty(prop.getId());
+//            if (value != null) {
+//                return value;
+//            }
+//        }
         return super.getPropertyValue(editableValue, prop);
     }
 
@@ -120,29 +120,27 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
     private void updatePropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object value, boolean force)
     {
-        if (force || !(editableValue instanceof DBPPersistedObject) || !((DBPPersistedObject)editableValue).isPersisted()) {
-            // Write property value only for non-persisted objects
-            try {
-                // Check for complex object
-                // If value should be a named object then try to obtain it from list provider
-                if (value != null && value.getClass() == String.class && DBPNamedObject.class.isAssignableFrom(prop.getDataType())) {
-                    final Object[] items = prop.getPossibleValues(editableValue);
-                    if (!CommonUtils.isEmpty(items)) {
-                        for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                            if (items[i] instanceof DBPNamedObject && value.equals(((DBPNamedObject)items[i]).getName())) {
-                                value = items[i];
-                                break;
-                            }
+        // Write property value
+        try {
+            // Check for complex object
+            // If value should be a named object then try to obtain it from list provider
+            if (value != null && value.getClass() == String.class && DBPNamedObject.class.isAssignableFrom(prop.getDataType())) {
+                final Object[] items = prop.getPossibleValues(editableValue);
+                if (!CommonUtils.isEmpty(items)) {
+                    for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
+                        if (items[i] instanceof DBPNamedObject && value.equals(((DBPNamedObject)items[i]).getName())) {
+                            value = items[i];
+                            break;
                         }
                     }
                 }
-                prop.writeValue(editableValue, value);
-            } catch (Throwable e) {
-                if (e instanceof InvocationTargetException) {
-                    e = ((InvocationTargetException) e).getTargetException();
-                }
-                log.error("Can't write property '" + prop.getDisplayName() + "' value", e);
             }
+            prop.writeValue(editableValue, value);
+        } catch (Throwable e) {
+            if (e instanceof InvocationTargetException) {
+                e = ((InvocationTargetException) e).getTargetException();
+            }
+            log.error("Can't write property '" + prop.getDisplayName() + "' value", e);
         }
     }
 

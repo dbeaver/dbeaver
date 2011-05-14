@@ -4,11 +4,9 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -58,7 +56,7 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
 
         // Create index
-        final String indexName = DBUtils.getQuotedIdentifier(index.getDataSource(), CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_NAME)));
+        final String indexName = DBUtils.getQuotedIdentifier(index.getDataSource(), index.getName());
         index.setName(indexName);
 
         StringBuilder decl = new StringBuilder(40);

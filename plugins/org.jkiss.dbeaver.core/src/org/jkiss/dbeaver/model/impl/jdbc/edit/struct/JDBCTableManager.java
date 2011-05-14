@@ -59,8 +59,6 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
             return null;
         }
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        // Set new table name (its ok because it is new objects)
-        table.setName(CommonUtils.toString(tableProps.getProperty(DBConstants.PROP_ID_NAME)));
         final String tableName = table.getFullQualifiedName();
 
         final String lineSeparator = ContentUtils.getDefaultLineSeparator();
