@@ -28,7 +28,10 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
         final MySQLTable table = new MySQLTable(parent);
         table.setName(JDBCObjectNameCaseTransformer.transformName(parent, "NewTable"));
         try {
-            table.getAdditionalInfo(VoidProgressMonitor.INSTANCE).setEngine(parent.getDataSource().getDefaultEngine());
+            final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
+            additionalInfo.setEngine(parent.getDataSource().getDefaultEngine());
+            additionalInfo.setCharset(parent.getDefaultCharset());
+            additionalInfo.setCollation(parent.getDefaultCollation());
         } catch (DBCException e) {
             // Never be here
             log.error(e);

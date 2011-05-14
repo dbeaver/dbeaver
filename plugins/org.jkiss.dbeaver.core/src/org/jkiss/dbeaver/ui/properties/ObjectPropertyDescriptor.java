@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
@@ -201,6 +202,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         if (setter != null) {
+            if (getParent() != null) {
+                // Use void monitor because this object already read by readValue
+                object = getParent().getGroupObject(object, VoidProgressMonitor.INSTANCE);
+            }
             setter.invoke(object, value);
         } else {
             throw new IllegalAccessError("No setter found for property " + getId());

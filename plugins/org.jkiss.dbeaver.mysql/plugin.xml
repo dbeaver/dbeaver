@@ -141,6 +141,11 @@
                     <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLEngine" label="Engines" iconId="#info" description="Database engines">
                         <items label="Engine" path="engines" property="engines" iconId="#info" navigable="false" virtual="true"/>
                     </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCharset" label="Charsets" iconId="#info" description="Database charsets">
+                        <items label="Charset" path="charsets" property="charsets" iconId="#info">
+                            <items label="Collation" path="collations" property="collations" iconId="#info" navigable="false"/>
+                        </items>
+                    </folder>
                     <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="User Privileges" iconId="#info" description="User privileges">
                         <items label="Privilege" path="privileges" property="privileges" iconId="#info" navigable="false" virtual="true"/>
                     </folder>

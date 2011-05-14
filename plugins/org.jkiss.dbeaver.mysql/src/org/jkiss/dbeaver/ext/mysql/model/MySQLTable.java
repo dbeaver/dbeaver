@@ -49,22 +49,28 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         private long autoIncrement;
         private String description;
         private java.util.Date createTime;
-        private String collation;
+        private MySQLCharset charset;
+        private MySQLCollation collation;
         private MySQLEngine engine;
         private long avgRowLength;
         private long dataLength;
 
         @Property(name = "Engine", viewable = true, editable = true, listProvider = EngineListProvider.class, order = 3) public MySQLEngine getEngine() { return engine; }
         @Property(name = "Auto Increment", viewable = true, editable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
-        @Property(name = "Collation", viewable = true, editable = true, listProvider = CollationListProvider.class, order = 5) public String getCollation() { return collation; }
+        @Property(name = "Charset", viewable = false, editable = true, listProvider = CharsetListProvider.class, order = 5) public MySQLCharset getCharset() { return charset; }
+        @Property(name = "Collation", viewable = false, editable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
         @Property(name = "Description", viewable = true, order = 100) public String getDescription() { return description; }
+
         @Property(name = "Row Count", category = "Statistics", viewable = true, order = 10) public long getRowCount() { return rowCount; }
         @Property(name = "Avg Row Length", category = "Statistics", viewable = true, order = 11) public long getAvgRowLength() { return avgRowLength; }
         @Property(name = "Data Length", category = "Statistics", viewable = true, order = 12) public long getDataLength() { return dataLength; }
-        @Property(name = "Create Time", category = "Statistics", viewable = true, order = 13) public java.util.Date getCreateTime() { return createTime; }
+        @Property(name = "Create Time", category = "Statistics", viewable = false, order = 13) public java.util.Date getCreateTime() { return createTime; }
 
         public void setEngine(MySQLEngine engine) { this.engine = engine; }
         public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
+
+        public void setCharset(MySQLCharset charset) { this.charset = charset; }
+        public void setCollation(MySQLCollation collation) { this.collation = collation; }
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLTable> {
@@ -240,7 +246,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                             return null;
                         } else {
                             try {
-                                return new String(ddl, getContainer().getDefaultCharset());
+                                return new String(ddl, getContainer().getDefaultCharset().getName());
                             } catch (UnsupportedEncodingException e) {
                                 log.debug(e);
                                 return new String(ddl);
@@ -325,7 +331,10 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         additionalInfo.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);
                         additionalInfo.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);
                         additionalInfo.createTime = JDBCUtils.safeGetTimestamp(dbResult, MySQLConstants.COL_CREATE_TIME);
-                        additionalInfo.collation = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION);
+                        additionalInfo.collation = getDataSource().getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION));
+                        if (additionalInfo.collation != null) {
+                            additionalInfo.charset = additionalInfo.collation.getCharset();
+                        }
                         additionalInfo.avgRowLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AVG_ROW_LENGTH);
                         additionalInfo.dataLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_DATA_LENGTH);
                     }
@@ -565,13 +574,19 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                     engines.add(engine);
                 }
             }
-            Collections.sort(engines, new Comparator<MySQLEngine>() {
-                public int compare(MySQLEngine o1, MySQLEngine o2)
-                {
-                    return o1.getName().compareTo(o2.getName());
-                }
-            });
+            Collections.sort(engines, DBUtils.<MySQLEngine>nameComparator());
             return engines.toArray(new MySQLEngine[engines.size()]);
+        }
+    }
+
+    public static class CharsetListProvider implements IPropertyValueListProvider<MySQLTable> {
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+        public Object[] getPossibleValues(MySQLTable object)
+        {
+            return object.getDataSource().getCharsets().toArray();
         }
     }
 
@@ -582,19 +597,11 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
         public Object[] getPossibleValues(MySQLTable object)
         {
-            final List<MySQLEngine> engines = new ArrayList<MySQLEngine>();
-            for (MySQLEngine engine : object.getDataSource().getEngines()) {
-                if (engine.getSupport() == MySQLEngine.Support.YES || engine.getSupport() == MySQLEngine.Support.DEFAULT) {
-                    engines.add(engine);
-                }
+            if (object.additionalInfo.charset == null) {
+                return null;
+            } else {
+                return object.additionalInfo.charset.getCollations().toArray();
             }
-            Collections.sort(engines, new Comparator<MySQLEngine>() {
-                public int compare(MySQLEngine o1, MySQLEngine o2)
-                {
-                    return o1.getName().compareTo(o2.getName());
-                }
-            });
-            return engines.toArray(new MySQLEngine[engines.size()]);
         }
     }
 

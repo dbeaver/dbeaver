@@ -41,8 +41,8 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
 {
     static final Log log = LogFactory.getLog(MySQLCatalog.class);
 
-    private String defaultCharset;
-    private String defaultCollation;
+    private MySQLCharset defaultCharset;
+    private MySQLCollation defaultCollation;
     private String sqlPath;
     private final TableCache tableCache = new TableCache();
     private final ProceduresCache proceduresCache = new ProceduresCache();
@@ -56,8 +56,8 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         super(dataSource, null);
         if (dbResult != null) {
             setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SCHEMA_NAME));
-            defaultCharset = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_CHARACTER_SET_NAME);
-            defaultCollation = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_COLLATION_NAME);
+            defaultCharset = dataSource.getCharset(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_CHARACTER_SET_NAME));
+            defaultCollation = dataSource.getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_COLLATION_NAME));
             sqlPath = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SQL_PATH);
             persisted = true;
         } else {
@@ -104,23 +104,23 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     }
 
     @Property(name = "Default Charset", viewable = true, order = 2)
-    public String getDefaultCharset()
+    public MySQLCharset getDefaultCharset()
     {
         return defaultCharset;
     }
 
-    void setDefaultCharset(String defaultCharset)
+    void setDefaultCharset(MySQLCharset defaultCharset)
     {
         this.defaultCharset = defaultCharset;
     }
 
     @Property(name = "Default Collation", viewable = true, order = 3)
-    public String getDefaultCollation()
+    public MySQLCollation getDefaultCollation()
     {
         return defaultCollation;
     }
 
-    void setDefaultCollation(String defaultCollation)
+    void setDefaultCollation(MySQLCollation defaultCollation)
     {
         this.defaultCollation = defaultCollation;
     }

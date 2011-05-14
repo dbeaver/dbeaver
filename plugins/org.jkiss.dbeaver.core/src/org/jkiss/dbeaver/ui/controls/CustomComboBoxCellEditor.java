@@ -65,6 +65,7 @@ public class CustomComboBoxCellEditor extends CellEditor {
 
 		comboBox = new CCombo(parent, getStyle());
         //comboBox.setEditable((getStyle() & SWT.READ_ONLY) == 0);
+        comboBox.setVisibleItemCount(15);
 		comboBox.setFont(parent.getFont());
         comboBox.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 

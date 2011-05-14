@@ -5,10 +5,8 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,7 +14,7 @@ import java.sql.SQLException;
 /**
  * MySQLEngine
  */
-public class MySQLEngine implements MySQLInformation {
+public class MySQLEngine extends MySQLInformation {
 
     public static enum Support {
         YES,
@@ -25,7 +23,6 @@ public class MySQLEngine implements MySQLInformation {
         DISABLED
     }
 
-    private MySQLDataSource dataSource;
     private String name;
     private String description;
     private Support support;
@@ -36,12 +33,12 @@ public class MySQLEngine implements MySQLInformation {
     public MySQLEngine(MySQLDataSource dataSource, ResultSet dbResult)
         throws SQLException
     {
-        this.dataSource = dataSource;
+        super(dataSource);
         this.loadInfo(dbResult);
     }
 
     public MySQLEngine(MySQLDataSource dataSource, String name) {
-        this.dataSource = dataSource;
+        super(dataSource);
         this.name = name;
     }
 
@@ -91,23 +88,4 @@ public class MySQLEngine implements MySQLInformation {
         return supportsSavepoints;
     }
 
-    public DBSObject getParentObject()
-    {
-        return dataSource.getContainer();
-    }
-
-    public DBPDataSource getDataSource()
-    {
-        return dataSource;
-    }
-
-    public boolean isPersisted()
-    {
-        return true;
-    }
-
-    public String toString()
-    {
-        return name;
-    }
 }

@@ -27,7 +27,10 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -45,6 +48,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
     private List<MySQLCatalog> catalogs;
     private List<MySQLPrivilege> privileges;
     private List<MySQLUser> users;
+    private List<MySQLCharset> charsets;
+    private Map<String, MySQLCollation> collations;
     private String activeCatalogName;
     //private List<MySQLInformationFolder> informationFolders;
 
@@ -82,78 +87,131 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata");
         try {
             // Read engines
-            List<MySQLEngine> tmpEngines = new ArrayList<MySQLEngine>();
-            JDBCPreparedStatement dbStat = context.prepareStatement("SHOW ENGINES");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
+            {
+                engines = new ArrayList<MySQLEngine>();
+                JDBCPreparedStatement dbStat = context.prepareStatement("SHOW ENGINES");
                 try {
-                    while (dbResult.next()) {
-                        MySQLEngine engine = new MySQLEngine(this, dbResult);
-                        tmpEngines.add(engine);
-                    }
-                } finally {
-                    dbResult.close();
-                }
-            } catch (SQLException ex ) {
-                // Engines are not supported. Shame on it. Leave this list empty
-            } finally {
-                dbStat.close();
-            }
-            this.engines = tmpEngines;
-
-            // Read catalogs
-            List<MySQLCatalog> tmpCatalogs = new ArrayList<MySQLCatalog>();
-            StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
-            List<String> catalogFilters = SQLUtils.splitFilter(getContainer().getCatalogFilter());
-            if (!catalogFilters.isEmpty()) {
-                catalogQuery.append(" WHERE ");
-                for (int i = 0; i < catalogFilters.size(); i++) {
-                    if (i > 0) catalogQuery.append(" OR ");
-                    catalogQuery.append(MySQLConstants.COL_SCHEMA_NAME).append(" LIKE ?");
-                }
-            }
-            dbStat = context.prepareStatement(catalogQuery.toString());
-            try {
-                if (!catalogFilters.isEmpty()) {
-                    for (int i = 0; i < catalogFilters.size(); i++) {
-                        dbStat.setString(i + 1, catalogFilters.get(i));
-                    }
-                }
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    while (dbResult.next()) {
-                        MySQLCatalog catalog = new MySQLCatalog(this, dbResult);
-                        if (!getContainer().isShowSystemObjects() && catalog.getName().equalsIgnoreCase(MySQLConstants.INFO_SCHEMA_NAME)) {
-                            // Skip system catalog
-                            continue;
-                        }
-                        tmpCatalogs.add(catalog);
-                    }
-                } finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
-            }
-            this.catalogs = tmpCatalogs;
-
-            // Get active schema
-            try {
-                dbStat = context.prepareStatement("select database()");
-                try {
-                    JDBCResultSet resultSet = dbStat.executeQuery();
+                    JDBCResultSet dbResult = dbStat.executeQuery();
                     try {
-                        resultSet.next();
-                        activeCatalogName = resultSet.getString(1);
+                        while (dbResult.next()) {
+                            MySQLEngine engine = new MySQLEngine(this, dbResult);
+                            engines.add(engine);
+                        }
                     } finally {
-                        resultSet.close();
+                        dbResult.close();
                     }
+                } catch (SQLException ex ) {
+                    // Engines are not supported. Shame on it. Leave this list empty
                 } finally {
                     dbStat.close();
                 }
-            } catch (SQLException e) {
-                log.error(e);
+            }
+
+            // Read charsets and collations
+            {
+                charsets = new ArrayList<MySQLCharset>();
+                JDBCPreparedStatement dbStat = context.prepareStatement("SHOW CHARSET");
+                try {
+                    JDBCResultSet dbResult = dbStat.executeQuery();
+                    try {
+                        while (dbResult.next()) {
+                            MySQLCharset charset = new MySQLCharset(this, dbResult);
+                            charsets.add(charset);
+                        }
+                    } finally {
+                        dbResult.close();
+                    }
+                } catch (SQLException ex ) {
+                    // Engines are not supported. Shame on it. Leave this list empty
+                } finally {
+                    dbStat.close();
+                }
+                Collections.sort(charsets, DBUtils.<MySQLCharset>nameComparator());
+
+
+                collations = new LinkedHashMap<String, MySQLCollation>();
+                dbStat = context.prepareStatement("SHOW COLLATION");
+                try {
+                    JDBCResultSet dbResult = dbStat.executeQuery();
+                    try {
+                        while (dbResult.next()) {
+                            String charsetName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARSET);
+                            MySQLCharset charset = getCharset(charsetName);
+                            if (charset == null) {
+                                log.warn("Charset '" + charsetName + "' not found.");
+                                continue;
+                            }
+                            MySQLCollation collation = new MySQLCollation(charset, dbResult);
+                            collations.put(collation.getName(), collation);
+                            charset.addCollation(collation);
+                        }
+                    } finally {
+                        dbResult.close();
+                    }
+                } catch (SQLException ex ) {
+                    // Engines are not supported. Shame on it. Leave this list empty
+                } finally {
+                    dbStat.close();
+                }
+            }
+
+            {
+                // Read catalogs
+                List<MySQLCatalog> tmpCatalogs = new ArrayList<MySQLCatalog>();
+                StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
+                List<String> catalogFilters = SQLUtils.splitFilter(getContainer().getCatalogFilter());
+                if (!catalogFilters.isEmpty()) {
+                    catalogQuery.append(" WHERE ");
+                    for (int i = 0; i < catalogFilters.size(); i++) {
+                        if (i > 0) catalogQuery.append(" OR ");
+                        catalogQuery.append(MySQLConstants.COL_SCHEMA_NAME).append(" LIKE ?");
+                    }
+                }
+                JDBCPreparedStatement dbStat = context.prepareStatement(catalogQuery.toString());
+                try {
+                    if (!catalogFilters.isEmpty()) {
+                        for (int i = 0; i < catalogFilters.size(); i++) {
+                            dbStat.setString(i + 1, catalogFilters.get(i));
+                        }
+                    }
+                    JDBCResultSet dbResult = dbStat.executeQuery();
+                    try {
+                        while (dbResult.next()) {
+                            MySQLCatalog catalog = new MySQLCatalog(this, dbResult);
+                            if (!getContainer().isShowSystemObjects() && catalog.getName().equalsIgnoreCase(MySQLConstants.INFO_SCHEMA_NAME)) {
+                                // Skip system catalog
+                                continue;
+                            }
+                            tmpCatalogs.add(catalog);
+                        }
+                    } finally {
+                        dbResult.close();
+                    }
+                }
+                finally {
+                    dbStat.close();
+                }
+                this.catalogs = tmpCatalogs;
+            }
+
+            {
+                // Get active schema
+                try {
+                    JDBCPreparedStatement dbStat = context.prepareStatement("SELECT DATABASE()");
+                    try {
+                        JDBCResultSet resultSet = dbStat.executeQuery();
+                        try {
+                            resultSet.next();
+                            activeCatalogName = resultSet.getString(1);
+                        } finally {
+                            resultSet.close();
+                        }
+                    } finally {
+                        dbStat.close();
+                    }
+                } catch (SQLException e) {
+                    log.error(e);
+                }
             }
 
         } catch (SQLException ex) {
@@ -402,6 +460,26 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
             }
         }
         return null;
+    }
+
+    public Collection<MySQLCharset> getCharsets()
+    {
+        return charsets;
+    }
+
+    public MySQLCharset getCharset(String name)
+    {
+        for (MySQLCharset charset : charsets) {
+            if (charset.getName().equals(name)) {
+                return charset;
+            }
+        }
+        return null;
+    }
+
+    public MySQLCollation getCollation(String name)
+    {
+        return collations.get(name);
     }
 
     public List<MySQLPrivilege> getPrivileges(DBRProgressMonitor monitor)

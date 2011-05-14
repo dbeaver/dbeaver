@@ -46,11 +46,6 @@ public class MySQLParameter implements DBSObject
         return description;
     }
 
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
-
     public DBSObject getParentObject()
     {
         return getDataSource();
