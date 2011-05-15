@@ -59,7 +59,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         @Property(name = "Auto Increment", viewable = true, editable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
         @Property(name = "Charset", viewable = false, editable = true, listProvider = CharsetListProvider.class, order = 5) public MySQLCharset getCharset() { return charset; }
         @Property(name = "Collation", viewable = false, editable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
-        @Property(name = "Description", viewable = true, order = 100) public String getDescription() { return description; }
+        @Property(name = "Description", viewable = true, editable = true, order = 100) public String getDescription() { return description; }
 
         @Property(name = "Row Count", category = "Statistics", viewable = true, order = 10) public long getRowCount() { return rowCount; }
         @Property(name = "Avg Row Length", category = "Statistics", viewable = true, order = 11) public long getAvgRowLength() { return avgRowLength; }
@@ -68,6 +68,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
         public void setEngine(MySQLEngine engine) { this.engine = engine; }
         public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
+        public void setDescription(String description) { this.description = description; }
 
         public void setCharset(MySQLCharset charset) { this.charset = charset; this.collation = charset.getDefaultCollation(); }
         public void setCollation(MySQLCollation collation) { this.collation = collation; }
@@ -337,6 +338,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         }
                         additionalInfo.avgRowLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AVG_ROW_LENGTH);
                         additionalInfo.dataLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_DATA_LENGTH);
+                        additionalInfo.description = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COMMENT);
                     }
                     additionalInfo.loaded = true;
                 } finally {

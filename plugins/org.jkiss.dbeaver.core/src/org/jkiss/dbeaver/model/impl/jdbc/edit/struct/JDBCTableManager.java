@@ -87,10 +87,16 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         }
 
         createQuery.append(lineSeparator).append(")");
+        appendTableModifiers(table, tableProps, createQuery);
 
         actions.add( 0, new AbstractDatabasePersistAction("Create new table", createQuery.toString()) );
 
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
+    }
+
+    protected void appendTableModifiers(OBJECT_TYPE table, ObjectChangeCommand tableProps, StringBuilder ddl)
+    {
+
     }
 
     protected abstract OBJECT_TYPE createNewTable(CONTAINER_TYPE parent, Object copyFrom);

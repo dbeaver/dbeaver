@@ -212,6 +212,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     {
         if (getCommandContext() != null && getCommandContext().getUndoCommand() != null) {
             if (!getDatabaseObject().isPersisted() && getCommandContext().getFinalCommands().size() == 1) {
+                //getSite().getPage().closeEditor(this, true);
+                //return;
                 // Undo of last command in command context will close editor
                 // Let's ask user about it
                 if (ConfirmationDialog.showConfirmDialog(
