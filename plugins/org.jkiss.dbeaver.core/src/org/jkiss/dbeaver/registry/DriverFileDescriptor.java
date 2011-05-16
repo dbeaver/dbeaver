@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,7 +100,13 @@ public class DriverFileDescriptor
 
     File getLocalFile()
     {
-        return new File(new File(Platform.getInstallLocation().getURL().getFile()), path);
+        // Try to use relative path from installation dir
+        File file = new File(new File(Platform.getInstallLocation().getURL().getFile()), path);
+        if (!file.exists()) {
+            // Try to use relative path from workspace dir
+            file = new File(DBeaverCore.getInstance().getWorkspace().getRoot().getLocation().toFile(), path);
+        }
+        return file;
     }
 
     public File getFile()
@@ -109,12 +116,13 @@ public class DriverFileDescriptor
         if (libraryFile.exists()) {
             return libraryFile;
         }
-        // Try to use relative path
+        // Try to get local file
         File platformFile = getLocalFile();
         if (platformFile.exists()) {
             // Relative file do not exists - use plain one
             return platformFile;
         }
+
         // Try to get from plugin's bundle
         {
             URL url = driver.getProviderDescriptor().getContributorBundle().getEntry(path);
