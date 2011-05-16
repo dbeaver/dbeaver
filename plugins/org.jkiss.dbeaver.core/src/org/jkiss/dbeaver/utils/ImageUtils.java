@@ -9,6 +9,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverIcons;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -59,36 +61,43 @@ public class ImageUtils {
     {
         final Shell shell = DBeaverCore.getActiveWorkbenchShell();
         Button checkBox = new Button(shell, SWT.CHECK);
+        checkBox.setVisible(true);
         final Color borderColor = shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
         checkBox.setBackground(borderColor);
         Point checkboxSize = checkBox.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         checkBox.setBounds(0, 0, checkboxSize.x, checkboxSize.y);
         try {
             checkBox.setSelection(false);
-            imageCheckboxEnabledOff = captureWidget(checkBox, borderColor);
+            imageCheckboxEnabledOff = captureWidget(checkBox, borderColor, DBIcon.CHECK_OFF.getImage());
             checkBox.setSelection(true);
-            imageCheckboxEnabledOn = captureWidget(checkBox, borderColor);
+            imageCheckboxEnabledOn = captureWidget(checkBox, borderColor, DBIcon.CHECK_ON.getImage());
             checkBox.setEnabled(false);
-            imageCheckboxDisabledOn = captureWidget(checkBox, borderColor);
+            imageCheckboxDisabledOn = captureWidget(checkBox, borderColor, DBIcon.CHECK_ON.getImage());
             checkBox.setSelection(false);
-            imageCheckboxDisabledOff = captureWidget(checkBox, borderColor);
+            imageCheckboxDisabledOff = captureWidget(checkBox, borderColor, DBIcon.CHECK_OFF.getImage());
         } finally {
             UIUtils.dispose(checkBox);
         }
     }
 
-    public static Image captureWidget(Control widget, Color borderColor)
+    public static Image captureWidget(Control widget, Color borderColor, Image defaultImage)
     {
         Point size = widget.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         Image image = new Image(widget.getDisplay(), size.x, size.y);
         //image.
         GC gc = new GC(image);
         try {
+            //gc.copyArea(image, 0, 0);
             widget.print(gc);
         } finally {
             UIUtils.dispose(gc);
         }
-        return removeImageBorder(image, borderColor);
+        Image result = removeImageBorder(image, borderColor);
+        if (result == null) {
+            return defaultImage;
+        } else {
+            return result;
+        }
 /*
         final ImageData imageData = image.getImageData();
         imageData.transparentPixel = imageData.getPixel(0, 0);
@@ -112,7 +121,8 @@ public class ImageUtils {
 
         int emptyTopRows = 0, emptyBottomRows = 0, emptyLeftColumns = 0, emptyRightColumns = 0;
         // Check top rows
-        for (int row = 0; row < imageData.height; row++) {
+        int row;
+        for (row = 0; row < imageData.height; row++) {
             boolean emptyRow = true;
             for (int col = 0; col < imageData.width; col++) {
                 if (borderPixel != imageData.getPixel(col, row)) {
@@ -125,8 +135,12 @@ public class ImageUtils {
                 break;
             }
         }
+        if (row == imageData.height) {
+            // All rows are empty
+            return null;
+        }
         // Check bottom rows
-        for (int row = imageData.height - 1; row >= 0; row--) {
+        for (row = imageData.height - 1; row >= 0; row--) {
             boolean emptyRow = true;
             for (int col = 0; col < imageData.width; col++) {
                 if (borderPixel != imageData.getPixel(col, row)) {
@@ -139,7 +153,7 @@ public class ImageUtils {
                 break;
             }
         }
-        if (emptyTopRows >= 0 || emptyBottomRows > 0 || emptyLeftColumns > 0 || emptyRightColumns > 0) {
+        if (emptyTopRows > 0 || emptyBottomRows > 0 || emptyLeftColumns > 0 || emptyRightColumns > 0) {
             return cropImage(
                 srcImage,
                 emptyLeftColumns,
