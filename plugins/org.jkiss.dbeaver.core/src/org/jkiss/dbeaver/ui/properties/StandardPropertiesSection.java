@@ -99,7 +99,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 
     public void handlePropertyChange(Object editableValue, IPropertyDescriptor prop, Object value)
     {
-        if (!propertyTree.getTree().isDisposed() && propertyTree.getSelectedProperty() != prop) {
+        if (!propertyTree.getTree().isDisposed()) {
             propertyTree.refresh();
         }
     }

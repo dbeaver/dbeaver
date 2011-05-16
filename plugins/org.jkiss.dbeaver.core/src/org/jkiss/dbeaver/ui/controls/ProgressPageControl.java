@@ -155,6 +155,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         infoGroup.setLayout(gl);
 
         listInfoLabel = new Text(infoGroup, SWT.READ_ONLY);
+        listInfoLabel.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.minimumWidth = 100;
         listInfoLabel.setLayoutData(gd);

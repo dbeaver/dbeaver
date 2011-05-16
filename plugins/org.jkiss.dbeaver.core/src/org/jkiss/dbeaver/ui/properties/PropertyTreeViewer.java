@@ -296,7 +296,15 @@ public class PropertyTreeViewer extends TreeViewer {
             final ICellEditorListener cellEditorListener = new ICellEditorListener() {
                 public void applyEditorValue()
                 {
-                    editorValueChanged(true, true);
+                    //editorValueChanged(true, true);
+                    final Object value = cellEditor.getValue();
+                    final Object oldValue = prop.propertySource.getPropertyValue(prop.property.getId());
+                    if (!CommonUtils.equalObjects(oldValue, value)) {
+                        prop.propertySource.setPropertyValue(
+                            prop.property.getId(),
+                            value);
+                        handlePropertyChange(prop);
+                    }
                 }
 
                 public void cancelEditor()
@@ -306,16 +314,6 @@ public class PropertyTreeViewer extends TreeViewer {
 
                 public void editorValueChanged(boolean oldValidState, boolean newValidState)
                 {
-                    if (newValidState) {
-                        final Object value = cellEditor.getValue();
-                        final Object oldValue = prop.propertySource.getPropertyValue(prop.property.getId());
-                        if (!CommonUtils.equalObjects(oldValue, value)) {
-                            prop.propertySource.setPropertyValue(
-                                prop.property.getId(),
-                                value);
-                            handlePropertyChange(prop);
-                        }
-                    }
                 }
             };
             cellEditor.addListener(cellEditorListener);
