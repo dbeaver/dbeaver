@@ -51,7 +51,7 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         commandContext.addCommand(new CommandDropCatalog(object), new DeleteObjectReflector(), true);
     }
 
-    public void renameObject(DBRProgressMonitor monitor, MySQLCatalog catalog, String newName) throws DBException
+    public void describeObject(DBRProgressMonitor monitor, MySQLCatalog catalog, String newName, String newDescription) throws DBException
     {
         throw new DBException("Direct database rename is not yet implemented in MySQL. You should use export/import functions for that.");
         //super.addCommand(new CommandRenameCatalog(newName), null);

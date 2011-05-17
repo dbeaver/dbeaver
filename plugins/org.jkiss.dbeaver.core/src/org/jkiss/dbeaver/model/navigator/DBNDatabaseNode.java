@@ -209,7 +209,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     {
         final DBSObject object = getObject();
         DBEObjectRenamer objectRenamer = (DBEObjectRenamer) DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
-        objectRenamer.renameObject(monitor, object, newName);
+        objectRenamer.describeObject(monitor, object, newName, asdfsadf);
     }
 
     @Override
