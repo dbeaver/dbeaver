@@ -215,7 +215,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         throws DBException
     {
         if (triggers == null) {
-            loadTriggers(monitor);
+            triggers = loadTriggers(monitor);
         }
         return triggers;
     }
@@ -229,6 +229,9 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     public String getDDL(DBRProgressMonitor monitor)
         throws DBException
     {
+        if (!isPersisted()) {
+            return "";
+        }
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
         try {
             PreparedStatement dbStat = context.prepareStatement(
@@ -372,9 +375,12 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     private List<MySQLForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
         throws DBException
     {
+        List<MySQLForeignKey> fkList = new ArrayList<MySQLForeignKey>();
+        if (!isPersisted()) {
+            return fkList;
+        }
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
-            List<MySQLForeignKey> fkList = new ArrayList<MySQLForeignKey>();
             Map<String, MySQLForeignKey> fkMap = new HashMap<String, MySQLForeignKey>();
             Map<String, MySQLConstraint> pkMap = new HashMap<String, MySQLConstraint>();
             JDBCDatabaseMetaData metaData = context.getMetaData();
@@ -498,9 +504,13 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    private void loadTriggers(DBRProgressMonitor monitor)
+    private List<MySQLTrigger> loadTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
+        List<MySQLTrigger> tmpTriggers = new ArrayList<MySQLTrigger>();
+        if (!isPersisted()) {
+            return tmpTriggers;
+        }
         // Load only trigger's owner catalog and trigger name
         // Actual triggers are stored in catalog - we just get em from cache
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table '" + getName() + "' triggers");
@@ -514,7 +524,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                 dbStat.setString(2, getName());
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<MySQLTrigger> tmpTriggers = new ArrayList<MySQLTrigger>();
                     while (dbResult.next()) {
                         String ownerSchema = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_SCHEMA);
                         String triggerName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_NAME);
@@ -530,7 +539,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         }
                         tmpTriggers.add(trigger);
                     }
-                    this.triggers = tmpTriggers;
+                    return tmpTriggers;
                 }
                 finally {
                     dbResult.close();

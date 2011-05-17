@@ -228,6 +228,8 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
         if (forTable == null) {
             tableCache.getObjects(monitor);
+        } else if (!forTable.isPersisted()) {
+            return;
         }
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load constraints");
         try {
