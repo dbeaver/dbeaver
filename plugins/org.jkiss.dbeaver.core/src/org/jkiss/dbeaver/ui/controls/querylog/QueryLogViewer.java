@@ -25,6 +25,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
@@ -276,6 +278,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
         createContextMenu();
         addDragAndDropSupport();
+        logTable.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+                //TableItem item = (TableItem)e.item;
+                showEventDetails();
+            }
+        });
 
         this.filter = filter;
 
@@ -284,6 +294,20 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         QMUtils.registerMetaListener(this);
 
         DBeaverCore.getInstance().getGlobalPreferenceStore().addPropertyChangeListener(this);
+    }
+
+    private void showEventDetails()
+    {
+/*
+        EventSelectionProvider eventSelectionProvider = new EventSelectionProvider();
+        //TableViewer viewer = new TableViewer(logTable);
+        IMemento memento = new XMLMemento(null, null);
+        EventDetailsDialogAction detailsAction = new EventDetailsDialogAction(
+            logTable.getShell(),
+            eventSelectionProvider,
+            memento);
+        detailsAction.run();
+*/
     }
 
     private void createColumns()
@@ -723,5 +747,108 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             return Status.OK_STATUS;
         }
     }
+
+/*
+    private static class EventStatus implements IStatus {
+        private final QMMObject object;
+        private int errorCode;
+        private String errorMessage;
+
+        public EventStatus(QMMObject object)
+        {
+            this.object = object;
+            if (object instanceof QMMStatementExecuteInfo) {
+                QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+                if (exec.hasError()) {
+                    errorCode = exec.getErrorCode();
+                    errorMessage = exec.getErrorMessage();
+                }
+            }
+        }
+
+        public IStatus[] getChildren()
+        {
+            return new IStatus[0];
+        }
+
+        public int getCode()
+        {
+            return errorCode;
+        }
+
+        public Throwable getException()
+        {
+            return null;
+        }
+
+        public String getMessage()
+        {
+            return COLUMN_TEXT.getText(object);
+        }
+
+        public String getPlugin()
+        {
+            return DBeaverConstants.PLUGIN_ID;
+        }
+
+        public int getSeverity()
+        {
+            return errorCode >0 ? ERROR : INFO;
+        }
+
+        public boolean isMultiStatus()
+        {
+            return false;
+        }
+
+        public boolean isOK()
+        {
+            return errorCode == 0;
+        }
+
+        public boolean matches(int severityMask)
+        {
+            return getSeverity() == severityMask;
+        }
+    }
+
+    private class EventSelectionProvider implements ISelectionProvider {
+        private java.util.List<ISelectionChangedListener> listeners = new ArrayList<ISelectionChangedListener>();
+        public void addSelectionChangedListener(ISelectionChangedListener listener)
+        {
+            listeners.add(listener);
+        }
+
+        public void removeSelectionChangedListener(ISelectionChangedListener listener)
+        {
+            listeners.remove(listener);
+        }
+
+        public ISelection getSelection()
+        {
+            java.util.List<LogEntry> events = new ArrayList<LogEntry>();
+            for (TableItem item : logTable.getSelection()) {
+                LogEntry logEntry = new LogEntry(
+                    convertObjectToStatus(
+                        (QMMObject) item.getData()
+                    ));
+                events.add(logEntry);
+                //events.add(new QMEvent((QMMObject) item.getData()));
+            }
+            return new StructuredSelection(events);
+        }
+
+        public void setSelection(ISelection selection)
+        {
+            // Ignore
+        }
+
+    }
+
+    private static IStatus convertObjectToStatus(final QMMObject object)
+    {
+        return new EventStatus(object);
+    }
+*/
 
 }
