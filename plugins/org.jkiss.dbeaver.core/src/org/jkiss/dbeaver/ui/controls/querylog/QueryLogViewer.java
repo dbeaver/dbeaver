@@ -13,6 +13,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -31,6 +33,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -283,7 +286,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             public void widgetDefaultSelected(SelectionEvent e)
             {
                 //TableItem item = (TableItem)e.item;
-                showEventDetails();
+                showEventDetails((QMMObject) e.item.getData());
             }
         });
 
@@ -296,8 +299,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         DBeaverCore.getInstance().getGlobalPreferenceStore().addPropertyChangeListener(this);
     }
 
-    private void showEventDetails()
+    private void showEventDetails(QMMObject object)
     {
+        EventViewDialog dialog = new EventViewDialog(logTable.getShell(), object);
+        dialog.open();
 /*
         EventSelectionProvider eventSelectionProvider = new EventSelectionProvider();
         //TableViewer viewer = new TableViewer(logTable);
@@ -748,107 +753,62 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         }
     }
 
-/*
-    private static class EventStatus implements IStatus {
+
+    private class EventViewDialog extends TrayDialog {
+
         private final QMMObject object;
-        private int errorCode;
-        private String errorMessage;
 
-        public EventStatus(QMMObject object)
+        protected EventViewDialog(Shell shell, QMMObject object)
         {
+            super(shell);
+            setShellStyle(SWT.SHELL_TRIM);
             this.object = object;
-            if (object instanceof QMMStatementExecuteInfo) {
-                QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
-                if (exec.hasError()) {
-                    errorCode = exec.getErrorCode();
-                    errorMessage = exec.getErrorMessage();
-                }
-            }
         }
 
-        public IStatus[] getChildren()
-        {
-            return new IStatus[0];
+        protected void configureShell(Shell shell) {
+            super.configureShell(shell);
+            shell.setText("View " + COLUMN_TYPE.getText(object));
         }
 
-        public int getCode()
-        {
-            return errorCode;
+	    protected Control createDialogArea(Composite parent) {
+
+            final Composite composite = new Composite(parent, SWT.NONE);
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            composite.setLayout(new GridLayout(2, false));
+
+            UIUtils.createLabelText(composite, "Time", COLUMN_TIME.getText(object), SWT.READ_ONLY);
+            UIUtils.createLabelText(composite, "Type", COLUMN_TYPE.getText(object), SWT.BORDER | SWT.READ_ONLY);
+
+            final Label messageLabel = UIUtils.createControlLabel(composite, "Text");
+            messageLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+
+            final Text messageText = new Text(composite, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
+            messageText.setText(COLUMN_TEXT.getText(object));
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.heightHint = 40;
+            gd.widthHint = 300;
+            messageText.setLayoutData(gd);
+
+            final Label resultLabel = UIUtils.createControlLabel(composite, "Result");
+            gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 2;
+
+            final Text resultText = new Text(composite, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
+            resultText.setText(COLUMN_RESULT.getText(object));
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.horizontalSpan = 2;
+            gd.heightHint = 60;
+            gd.widthHint = 300;
+            resultText.setLayoutData(gd);
+
+            return composite;
         }
 
-        public Throwable getException()
+        @Override
+        protected void createButtonsForButtonBar(Composite parent)
         {
-            return null;
-        }
-
-        public String getMessage()
-        {
-            return COLUMN_TEXT.getText(object);
-        }
-
-        public String getPlugin()
-        {
-            return DBeaverConstants.PLUGIN_ID;
-        }
-
-        public int getSeverity()
-        {
-            return errorCode >0 ? ERROR : INFO;
-        }
-
-        public boolean isMultiStatus()
-        {
-            return false;
-        }
-
-        public boolean isOK()
-        {
-            return errorCode == 0;
-        }
-
-        public boolean matches(int severityMask)
-        {
-            return getSeverity() == severityMask;
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         }
     }
-
-    private class EventSelectionProvider implements ISelectionProvider {
-        private java.util.List<ISelectionChangedListener> listeners = new ArrayList<ISelectionChangedListener>();
-        public void addSelectionChangedListener(ISelectionChangedListener listener)
-        {
-            listeners.add(listener);
-        }
-
-        public void removeSelectionChangedListener(ISelectionChangedListener listener)
-        {
-            listeners.remove(listener);
-        }
-
-        public ISelection getSelection()
-        {
-            java.util.List<LogEntry> events = new ArrayList<LogEntry>();
-            for (TableItem item : logTable.getSelection()) {
-                LogEntry logEntry = new LogEntry(
-                    convertObjectToStatus(
-                        (QMMObject) item.getData()
-                    ));
-                events.add(logEntry);
-                //events.add(new QMEvent((QMMObject) item.getData()));
-            }
-            return new StructuredSelection(events);
-        }
-
-        public void setSelection(ISelection selection)
-        {
-            // Ignore
-        }
-
-    }
-
-    private static IStatus convertObjectToStatus(final QMMObject object)
-    {
-        return new EventStatus(object);
-    }
-*/
 
 }
