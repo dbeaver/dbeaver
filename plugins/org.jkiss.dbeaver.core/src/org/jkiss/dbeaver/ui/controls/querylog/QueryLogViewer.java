@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -32,6 +33,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -774,29 +776,37 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
             final Composite composite = new Composite(parent, SWT.NONE);
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-            composite.setLayout(new GridLayout(2, false));
+            composite.setLayout(new GridLayout(1, false));
 
-            UIUtils.createLabelText(composite, "Time", COLUMN_TIME.getText(object), SWT.READ_ONLY);
-            UIUtils.createLabelText(composite, "Type", COLUMN_TYPE.getText(object), SWT.BORDER | SWT.READ_ONLY);
+            SashForm sash = new SashForm(composite, SWT.VERTICAL);
+            sash.setLayoutData(new GridData(GridData.FILL_BOTH));
+            sash.setLayout(new GridLayout(1, false));
 
-            final Label messageLabel = UIUtils.createControlLabel(composite, "Text");
+            final Composite topFrame = UIUtils.createPlaceholder(sash, 2, 5);
+            topFrame.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            UIUtils.createLabelText(topFrame, "Time", COLUMN_TIME.getText(object), SWT.READ_ONLY);
+            UIUtils.createLabelText(topFrame, "Type", COLUMN_TYPE.getText(object), SWT.BORDER | SWT.READ_ONLY);
+
+            final Label messageLabel = UIUtils.createControlLabel(topFrame, "Text");
             messageLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-            final Text messageText = new Text(composite, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
+            final Text messageText = new Text(topFrame, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
             messageText.setText(COLUMN_TEXT.getText(object));
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 40;
             gd.widthHint = 300;
             messageText.setLayoutData(gd);
 
-            final Label resultLabel = UIUtils.createControlLabel(composite, "Result");
-            gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 2;
+            final Composite bottomFrame = UIUtils.createPlaceholder(sash, 1, 5);
+            bottomFrame.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            final Text resultText = new Text(composite, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
+            final Label resultLabel = UIUtils.createControlLabel(bottomFrame, "Result");
+            resultLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+
+            final Text resultText = new Text(bottomFrame, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
             resultText.setText(COLUMN_RESULT.getText(object));
             gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalSpan = 2;
             gd.heightHint = 60;
             gd.widthHint = 300;
             resultText.setLayoutData(gd);
