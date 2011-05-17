@@ -30,7 +30,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
         return new StructCreateCommand(object, "Create new object");
     }
 
-    protected static Collection<ObjectChangeCommand> getNestedOrderedCommands(final Class<?>[] childTypes, StructCreateCommand structCommand)
+    protected Collection<ObjectChangeCommand> getNestedOrderedCommands(StructCreateCommand structCommand)
     {
         List<ObjectChangeCommand> nestedCommands = new ArrayList<ObjectChangeCommand>();
         nestedCommands.addAll(structCommand.getObjectCommands().values());
@@ -40,6 +40,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
                 final DBPObject object1 = o1.getObject();
                 final DBPObject object2 = o2.getObject();
                 int order1 = -1, order2 = 1;
+                Class<?>[] childTypes = getChildTypes();
                 for (int i = 0, childTypesLength = childTypes.length; i < childTypesLength; i++) {
                     Class<?> childType = childTypes[i];
                     if (childType.isAssignableFrom(object1.getClass())) {

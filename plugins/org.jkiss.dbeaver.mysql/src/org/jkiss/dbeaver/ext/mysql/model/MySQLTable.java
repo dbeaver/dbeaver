@@ -59,7 +59,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         @Property(name = "Auto Increment", viewable = true, editable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
         @Property(name = "Charset", viewable = false, editable = true, listProvider = CharsetListProvider.class, order = 5) public MySQLCharset getCharset() { return charset; }
         @Property(name = "Collation", viewable = false, editable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
-        @Property(name = "Description", viewable = true, editable = true, order = 100) public String getDescription() { return description; }
+        @Property(name = "Description", viewable = true, editable = true, updatable = true, order = 100) public String getDescription() { return description; }
 
         @Property(name = "Row Count", category = "Statistics", viewable = true, order = 10) public long getRowCount() { return rowCount; }
         @Property(name = "Avg Row Length", category = "Statistics", viewable = true, order = 11) public long getAvgRowLength() { return avgRowLength; }

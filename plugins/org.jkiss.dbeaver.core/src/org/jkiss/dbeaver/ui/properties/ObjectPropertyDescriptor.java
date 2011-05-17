@@ -21,13 +21,11 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collection;
 
 /**
  * ObjectPropertyDescriptor
@@ -210,11 +208,6 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         } else {
             throw new IllegalAccessError("No setter found for property " + getId());
         }
-    }
-
-    public boolean isCollectionAnno()
-    {
-        return Collection.class.isAssignableFrom(getGetter().getReturnType());
     }
 
     @Override

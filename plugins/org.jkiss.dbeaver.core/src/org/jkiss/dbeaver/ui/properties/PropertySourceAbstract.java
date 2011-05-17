@@ -11,11 +11,8 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.PropertyDescriptor;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
@@ -38,6 +35,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
     private boolean loadLazyProps;
     private final List<IPropertyDescriptor> props = new ArrayList<IPropertyDescriptor>();
     private final Map<Object, Object> propValues = new HashMap<Object, Object>();
+    private final Map<Object, Object> lazyValues = new HashMap<Object, Object>();
     private final List<ObjectPropertyDescriptor> lazyProps = new ArrayList<ObjectPropertyDescriptor>();
     private LoadingJob<Map<ObjectPropertyDescriptor, Object>> lazyLoadJob;
 
@@ -61,13 +59,9 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
 
     public PropertySourceAbstract addProperty(Object id, String name, Object value)
     {
-        if (value instanceof Collection) {
-            props.add(new PropertyDescriptor(id, name));
-            propValues.put(id, new PropertySourceCollection(this, id, loadLazyProps, (Collection<?>) value));
-        } else {
-            props.add(new PropertyDescriptorEx(null, id, name, null, null, false, null, null, false));
-            propValues.put(id, value);
-        }
+        props.add(new PropertyDescriptorEx(null, id, name, null, null, false, null, null, false));
+        propValues.put(id, value);
+
         return this;
     }
 
@@ -133,11 +127,6 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
             value = getPropertyValue(getEditableValue(), (ObjectPropertyDescriptor) value);
-        } else if (value instanceof Collection) {
-            // Make descriptor of collection
-            // Each element as separate property
-            Collection<?> collection = (Collection<?>)value;
-            collection.size();
         }
         return value;
     }
@@ -147,6 +136,10 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
     {
         try {
             if (prop.isLazy(object, true)) {
+                final Object value = lazyValues.get(prop.getId());
+                if (value != null) {
+                    return value;
+                }
                 if (!loadLazyProps) {
                     return null;
                 } else {
@@ -175,7 +168,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
                         }
                     }
                     // Return dummy string for now
-                    propValues.put(prop, PropertySheetLoadService.TEXT_LOADING);
+                    lazyValues.put(prop.getId(), PropertySheetLoadService.TEXT_LOADING);
                     return PropertySheetLoadService.TEXT_LOADING;
                 }
             } else {
@@ -222,7 +215,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
     {
         Object prop = propValues.get(id);
         if (prop instanceof ObjectPropertyDescriptor) {
-            setPropertyValue(getEditableValue(), (ObjectPropertyDescriptor)prop, value);
+            setPropertyValue(getEditableValue(), (ObjectPropertyDescriptor) prop, value);
         } else {
             propValues.put(id, value);
         }
@@ -246,34 +239,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         }
         List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter);
         for (final ObjectPropertyDescriptor desc : annoProps) {
-            if (desc.isCollectionAnno()) {
-                DBRRunnableWithProgress loader = new DBRRunnableWithProgress() {
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            Object value = desc.readValue(editableValue, monitor);
-                            addProperty(desc.getId(), desc.getDisplayName(), value);
-                        } catch (IllegalAccessException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    }
-                };
-                // Add as collection
-                try {
-                    if (desc.isLazy(editableValue, true)) {
-                        DBeaverCore.getInstance().runInProgressService(loader);
-                    } else {
-                        loader.run(null);
-                    }
-                }
-                catch (InvocationTargetException e) {
-                    log.error(e.getTargetException());
-                } catch (InterruptedException e) {
-                    // Do nothing
-                }
-            } else {
-                addProperty(desc);
-            }
+            addProperty(desc);
         }
     }
 
@@ -368,7 +334,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         {
             completed = true;
             for (Map.Entry<ObjectPropertyDescriptor, Object> entry : result.entrySet()) {
-                propValues.put(entry.getKey().getId(), entry.getValue());
+                lazyValues.put(entry.getKey().getId(), entry.getValue());
                 PropertiesContributor.getInstance().notifyPropertyLoad(getEditableValue(), entry.getKey().getId(), entry.getValue(), true);
             }
         }

@@ -7,7 +7,9 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
@@ -41,6 +43,15 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
         }
 
         return table;
+    }
+
+    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    {
+        final Object newComment = command.getProperty(DBConstants.PROP_ID_DESCRIPTION);
+        if (newComment != null) {
+
+        }
+        return null;
     }
 
     @Override

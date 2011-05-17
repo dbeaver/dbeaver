@@ -9,7 +9,6 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append("CREATE TABLE ").append(tableName).append(" (").append(lineSeparator);
         boolean hasNestedDeclarations = false;
-        for (ObjectChangeCommand nestedCommand : getNestedOrderedCommands(getChildTypes(), command)) {
+        for (ObjectChangeCommand nestedCommand : getNestedOrderedCommands(command)) {
             if (nestedCommand.getObject() == table) {
                 continue;
             }
