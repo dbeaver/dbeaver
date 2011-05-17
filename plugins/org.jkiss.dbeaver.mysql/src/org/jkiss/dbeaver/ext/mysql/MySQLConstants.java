@@ -52,6 +52,7 @@ public class MySQLConstants {
     public static final String COL_ORDINAL_POSITION = "ORDINAL_POSITION";
     public static final String COL_CREATE_TIME = "CREATE_TIME";
     public static final String COL_COLLATION = "COLLATION";
+    public static final String COL_COLLATION_NAME = "COLLATION_NAME";
     public static final String COL_NULLABLE = "NULLABLE";
     public static final String COL_AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
     public static final String COL_DATA_LENGTH = "DATA_LENGTH";
@@ -130,4 +131,5 @@ public class MySQLConstants {
     public static final String COL_DEFAULT = "DEFAULT";
     public static final String COL_COMPILED = "COMPILED";
     public static final String COL_SORT_LENGTH = "SORTLEN";
+
 }

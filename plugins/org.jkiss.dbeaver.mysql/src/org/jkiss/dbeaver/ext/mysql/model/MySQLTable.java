@@ -70,7 +70,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
         public void setDescription(String description) { this.description = description; }
 
-        public void setCharset(MySQLCharset charset) { this.charset = charset; this.collation = charset.getDefaultCollation(); }
+        public void setCharset(MySQLCharset charset) { this.charset = charset; this.collation = charset == null ? null : charset.getDefaultCollation(); }
         public void setCollation(MySQLCollation collation) { this.collation = collation; }
     }
 
@@ -581,7 +581,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    public static class CharsetListProvider implements IPropertyValueListProvider<MySQLTable> {
+    private static class CharsetListProvider implements IPropertyValueListProvider<MySQLTable> {
         public boolean allowCustomValue()
         {
             return false;
@@ -592,7 +592,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    public static class CollationListProvider implements IPropertyValueListProvider<MySQLTable> {
+    private static class CollationListProvider implements IPropertyValueListProvider<MySQLTable> {
         public boolean allowCustomValue()
         {
             return false;

@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -52,6 +53,8 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
     private String defaultValue;
     private long charLength;
     private boolean autoIncrement;
+    private MySQLCharset charset;
+    private MySQLCollation collation;
     private KeyType keyType;
 
     private List<String> enumValues;
@@ -100,6 +103,11 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
         setScale(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
         setPrecision(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
         this.defaultValue = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT);
+        this.collation = getDataSource().getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION_NAME));
+        if (this.collation != null) {
+            this.charset = this.collation.getCharset();
+        }
+
         String extra = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_EXTRA);
         this.autoIncrement = extra != null && extra.contains(MySQLConstants.EXTRA_AUTO_INCREMENT);
 
@@ -126,11 +134,6 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
         return getTable().getDataSource();
     }
 
-    public String getDefaultValue()
-    {
-        return defaultValue;
-    }
-
     public long getCharLength()
     {
         return charLength;
@@ -147,6 +150,12 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
         this.autoIncrement = autoIncrement;
     }
 
+    @Property(name = "Default", viewable = true, editable = true, order = 70)
+    public String getDefaultValue()
+    {
+        return defaultValue;
+    }
+
     @Property(name = "Key", viewable = true, order = 80)
     public KeyType getKeyType()
     {
@@ -158,4 +167,52 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
         return enumValues;
     }
 
+    @Property(name = "Charset", viewable = false, editable = true, listProvider = CharsetListProvider.class, order = 81)
+    public MySQLCharset getCharset()
+    {
+        return charset;
+    }
+
+    public void setCharset(MySQLCharset charset)
+    {
+        this.charset = charset;
+        this.collation = charset == null ? null : charset.getDefaultCollation();
+    }
+
+    @Property(name = "Collation", viewable = false, editable = true, listProvider = CollationListProvider.class, order = 82)
+    public MySQLCollation getCollation()
+    {
+        return collation;
+    }
+
+    public void setCollation(MySQLCollation collation)
+    {
+        this.collation = collation;
+    }
+
+    private static class CharsetListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+        public Object[] getPossibleValues(MySQLTableColumn object)
+        {
+            return object.getDataSource().getCharsets().toArray();
+        }
+    }
+
+    private static class CollationListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+        public Object[] getPossibleValues(MySQLTableColumn object)
+        {
+            if (object.charset == null) {
+                return null;
+            } else {
+                return object.charset.getCollations().toArray();
+            }
+        }
+    }
 }
