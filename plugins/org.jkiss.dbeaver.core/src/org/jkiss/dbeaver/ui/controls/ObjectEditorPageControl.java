@@ -5,30 +5,23 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 public class ObjectEditorPageControl extends ProgressPageControl {
 
     //private Button saveChangesButton;
     private IDatabaseNodeEditor workbenchPart;
     private IPropertyListener propertyListener;
-    private ToolBarManager objectEditToolbarManager;
+    //private ToolBarManager objectEditToolbarManager;
 
     public ObjectEditorPageControl(Composite parent, int style, IDatabaseNodeEditor workbenchPart)
     {
@@ -54,10 +47,12 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     @Override
     public void dispose()
     {
+/*
         if (objectEditToolbarManager != null) {
             objectEditToolbarManager.dispose();
             objectEditToolbarManager = null;
         }
+*/
         if (propertyListener != null) {
             getMainEditorPart().removePropertyListener(propertyListener);
             propertyListener = null;
@@ -94,6 +89,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     }
 
 
+/*
     @Override
     protected Composite createProgressPanel(Composite container) {
         Composite panel = super.createProgressPanel(container);
@@ -145,5 +141,6 @@ public class ObjectEditorPageControl extends ProgressPageControl {
 
         return panel;
     }
+*/
 
 }

@@ -45,13 +45,22 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
 
         Composite filterSettings = UIUtils.createPlaceholder(composite, 1, 5);
 
-        Group groupObjects = UIUtils.createControlGroup(filterSettings, "Confirm actions", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_EXIT);
-        createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ORDER_RESULTSET);
-        createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_RS_EDIT_CLOSE);
-        createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_TXN_DISCONNECT);
-        createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE);
-        createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_DRIVER_DOWNLOAD);
+        {
+            Group groupObjects = UIUtils.createControlGroup(filterSettings, "General actions", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_EXIT);
+            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ORDER_RESULTSET);
+            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_RS_EDIT_CLOSE);
+            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_TXN_DISCONNECT);
+            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_DRIVER_DOWNLOAD);
+        }
+
+        {
+            Group groupObjects = UIUtils.createControlGroup(filterSettings, "Object editor", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE);
+            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_DELETE);
+            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_REJECT);
+            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_REVERT);
+        }
 
         performDefaults();
 

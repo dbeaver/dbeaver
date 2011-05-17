@@ -197,7 +197,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
         this.comment = comment;
     }
 
-    private static class CharsetListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
+    public static class CharsetListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
         public boolean allowCustomValue()
         {
             return false;
@@ -208,7 +208,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
         }
     }
 
-    private static class CollationListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
+    public static class CollationListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
         public boolean allowCustomValue()
         {
             return false;

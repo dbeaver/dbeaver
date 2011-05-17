@@ -112,6 +112,7 @@ public enum DBIcon
     SAVE_ALL("save_all", "/icons/file/save_all.png"),
     SAVE_AS("save_as", "/icons/file/save_as.png"),
     LOAD("load", "/icons/file/load.png"),
+    RESET("reset", "/icons/file/reset.png"),
     ACCEPT("accept", "/icons/sql/accept.png"),
     REJECT("reject", "/icons/sql/cancel.png"),
     REVERT("revert", "/icons/sql/revert.png"),

@@ -581,7 +581,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    private static class CharsetListProvider implements IPropertyValueListProvider<MySQLTable> {
+    public static class CharsetListProvider implements IPropertyValueListProvider<MySQLTable> {
         public boolean allowCustomValue()
         {
             return false;
@@ -592,7 +592,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    private static class CollationListProvider implements IPropertyValueListProvider<MySQLTable> {
+    public static class CollationListProvider implements IPropertyValueListProvider<MySQLTable> {
         public boolean allowCustomValue()
         {
             return false;

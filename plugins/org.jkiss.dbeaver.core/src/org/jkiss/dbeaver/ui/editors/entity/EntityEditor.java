@@ -203,6 +203,14 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     public void revertChanges()
     {
         if (isDirty()) {
+            if (ConfirmationDialog.showConfirmDialog(
+                null,
+                PrefConstants.CONFIRM_ENTITY_REVERT,
+                ConfirmationDialog.QUESTION,
+                getDatabaseObject().getName()) != IDialogConstants.YES_ID)
+            {
+                return;
+            }
             getCommandContext().resetChanges();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }

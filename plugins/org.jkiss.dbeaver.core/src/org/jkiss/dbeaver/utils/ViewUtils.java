@@ -138,7 +138,18 @@ public class ViewUtils
 
     public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, ImageDescriptor imageDescriptor)
     {
-        return new CommandContributionItem(new CommandContributionItemParameter(
+        return makeCommandContribution(serviceLocator, commandId, name, imageDescriptor, null, false);
+    }
+
+    public static CommandContributionItem makeCommandContribution(
+        IServiceLocator serviceLocator,
+        String commandId,
+        String name,
+        ImageDescriptor imageDescriptor,
+        String toolTip,
+        boolean showText)
+    {
+        final CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
             serviceLocator,
             null,
             commandId,
@@ -148,10 +159,14 @@ public class ViewUtils
             null,
             name,
             null,
-            null,
+            toolTip,
             CommandContributionItem.STYLE_PUSH,
             null,
-            false));
+            false);
+        if (showText) {
+            contributionParameters.mode = CommandContributionItem.MODE_FORCE_TEXT;
+        }
+        return new CommandContributionItem(contributionParameters);
     }
 
     public static void addContextMenu(final IWorkbenchPart workbenchPart, final ISelectionProvider selectionProvider, final Control control)
