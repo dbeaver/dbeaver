@@ -11,9 +11,13 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * MySQL table manager
@@ -47,11 +51,14 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
 
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
         final Object newComment = command.getProperty(DBConstants.PROP_ID_DESCRIPTION);
         if (newComment != null) {
-
+            actions.add(new AbstractDatabasePersistAction(
+                "ALTER TABLE " + command.getObject().getFullQualifiedName() + " COMMENT = '" + CommonUtils.toString(newComment).replace('\'', '"') + "'"
+            ));
         }
-        return null;
+        return actions.isEmpty() ? null : actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
     @Override
