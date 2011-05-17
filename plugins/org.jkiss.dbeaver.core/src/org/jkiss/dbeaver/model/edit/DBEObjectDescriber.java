@@ -10,16 +10,24 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Object describer.
- * Provide object's rename function
+ * Provide object's rename functions
  */
-public interface DBEObjectRenamer<OBJECT_TYPE extends DBSObject> extends DBEObjectManager<OBJECT_TYPE> {
+public interface DBEObjectDescriber<OBJECT_TYPE extends DBSObject> extends DBEObjectManager<OBJECT_TYPE> {
+
+    public static final int FEATURE_SET_NAME            = 1;
+    public static final int FEATURE_SET_DESCRIPTION    = 2;
 
     /**
-     * Renames object
-     *
+     * Gets features
+     * @return ORed features
+     */
+    int getDescribeFeatures();
+
+    /**
+     * Describes object
      *
      * @param monitor progress monitor
-     * @param newName new name
+     * @param newName new name. If
      * @param newDescription new description
      * @throws DBException on any error
      */

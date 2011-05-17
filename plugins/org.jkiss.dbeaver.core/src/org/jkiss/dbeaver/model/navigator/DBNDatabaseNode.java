@@ -12,8 +12,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.edit.DBEObjectDescriber;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
@@ -208,8 +208,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
         final DBSObject object = getObject();
-        DBEObjectRenamer objectRenamer = (DBEObjectRenamer) DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
-        objectRenamer.describeObject(monitor, object, newName, asdfsadf);
+        DBEObjectDescriber objectDescriber = (DBEObjectDescriber) DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
+        objectDescriber.describeObject(monitor, object, newName, null);
     }
 
     @Override
@@ -219,8 +219,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         if (object == null || !object.isPersisted()) {
             return false;
         }
-        DBEObjectManager objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
-        return objectManager != null && DBEObjectRenamer.class.isAssignableFrom(objectManager.getClass());
+        DBEObjectDescriber objectDescriber = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectDescriber.class);
+        return objectDescriber != null && (objectDescriber.getDescribeFeatures() & DBEObjectDescriber.FEATURE_SET_NAME) != 0;
     }
 
     /**
