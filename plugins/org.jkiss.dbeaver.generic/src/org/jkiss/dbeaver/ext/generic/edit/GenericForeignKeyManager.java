@@ -22,7 +22,7 @@ public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericForei
 
 
     @Override
-    protected GenericForeignKey createNewForeignKey(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, GenericTable table, Object from)
+    protected GenericForeignKey createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, GenericTable table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
             workbenchWindow.getShell(),

@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.edit;
 
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;

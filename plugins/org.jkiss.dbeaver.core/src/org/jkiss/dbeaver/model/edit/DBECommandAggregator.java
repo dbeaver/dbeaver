@@ -15,4 +15,5 @@ public interface DBECommandAggregator<OBJECT_TYPE extends DBPObject> extends DBE
 
     boolean aggregateCommand(DBECommand<?> command);
 
+    void resetAggregatedCommands();
 }

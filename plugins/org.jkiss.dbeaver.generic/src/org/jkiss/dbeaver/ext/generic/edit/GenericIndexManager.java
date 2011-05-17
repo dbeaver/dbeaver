@@ -25,9 +25,10 @@ import java.util.Collections;
  */
 public class GenericIndexManager extends JDBCIndexManager<GenericIndex, GenericTable> {
 
-    protected GenericIndex createNewIndex(
+    protected GenericIndex createNewObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor, GenericTable parent,
+        IEditorPart activeEditor,
+        GenericTable parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(

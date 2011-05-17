@@ -25,9 +25,10 @@ import java.util.Collections;
  */
 public class MySQLIndexManager extends JDBCIndexManager<MySQLIndex, MySQLTable> {
 
-    protected MySQLIndex createNewIndex(
+    protected MySQLIndex createNewObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor, MySQLTable parent,
+        IEditorPart activeEditor,
+        MySQLTable parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(

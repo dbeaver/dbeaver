@@ -4,29 +4,19 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /**
  * JDBC constraint manager
  */
 public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
-    extends JDBCObjectEditor<OBJECT_TYPE>
-    implements DBEObjectMaker<OBJECT_TYPE, TABLE_TYPE>, JDBCNestedEditor<OBJECT_TYPE, JDBCTable>
+    extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
     public long getMakerOptions()
@@ -34,38 +24,30 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, TABLE_TYPE parent, Object copyFrom)
+    @Override
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
     {
-        OBJECT_TYPE newConstraint = createNewConstraint(workbenchWindow, activeEditor, parent, copyFrom);
-        if (newConstraint == null) {
-            return null;
-        }
-        makeInitialCommands(newConstraint, commandContext, new CommandCreateConstraint(newConstraint));
+        final TABLE_TYPE table = command.getObject().getTable();
 
-        return newConstraint;
-    }
-
-    public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
-    {
-        commandContext.addCommand(new CommandDropConstraint(object), new DeleteObjectReflector<OBJECT_TYPE>(), true);
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction(
+                "Create new constraint",
+                "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command))};
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectChangeActions(ObjectChangeCommand<OBJECT_TYPE> command)
+    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        final TABLE_TYPE table = command.getObject().getTable();
-        final OBJECT_TYPE constraint = command.getObject();
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        boolean newObject = !constraint.isPersisted();
-        if (newObject) {
-            actions.add(new AbstractDatabasePersistAction(
-                "Create new constraint",
-                "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command)));
-        }
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction(
+                "Drop constraint",
+                getDropConstraintPattern(command.getObject())
+                    .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())
+                    .replace(PATTERN_ITEM_CONSTRAINT, command.getObject().getName()))
+        };
     }
 
-    public StringBuilder getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
+    public StringBuilder getNestedDeclaration(TABLE_TYPE owner, ObjectChangeCommand command)
     {
         OBJECT_TYPE constraint = command.getObject();
 
@@ -88,38 +70,10 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
         return decl;
     }
 
-    protected abstract OBJECT_TYPE createNewConstraint(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, TABLE_TYPE parent, Object from);
-
     protected String getDropConstraintPattern(OBJECT_TYPE constraint)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT;
     }
-
-    private class CommandCreateConstraint extends ObjectSaveCommand<OBJECT_TYPE> {
-        protected CommandCreateConstraint(OBJECT_TYPE table)
-        {
-            super(table, "Create constraint");
-        }
-    }
-
-    private class CommandDropConstraint extends DBECommandDeleteObject<OBJECT_TYPE> {
-        protected CommandDropConstraint(OBJECT_TYPE table)
-        {
-            super(table, "Drop constraint");
-        }
-
-        public IDatabasePersistAction[] getPersistActions()
-        {
-            return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction(
-                    "Drop constraint",
-                    getDropConstraintPattern(getObject())
-                        .replace(PATTERN_ITEM_TABLE, getObject().getTable().getFullQualifiedName())
-                        .replace(PATTERN_ITEM_CONSTRAINT, getObject().getName()))
-            };
-        }
-    }
-
 
 }
 

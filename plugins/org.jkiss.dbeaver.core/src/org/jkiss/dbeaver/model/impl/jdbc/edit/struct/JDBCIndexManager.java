@@ -4,29 +4,19 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCIndex;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /**
  * JDBC constraint manager
  */
 public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
-    extends JDBCObjectEditor<OBJECT_TYPE>
-    implements DBEObjectMaker<OBJECT_TYPE, TABLE_TYPE>, JDBCNestedEditor<OBJECT_TYPE, JDBCTable>
+    extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
     public long getMakerOptions()
@@ -34,26 +24,11 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, TABLE_TYPE table, Object copyFrom)
-    {
-        OBJECT_TYPE newConstraint = createNewIndex(workbenchWindow, activeEditor, table, copyFrom);
-
-        makeInitialCommands(newConstraint, commandContext, new CommandCreateIndex(newConstraint));
-
-        return newConstraint;
-    }
-
-    public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
-    {
-        commandContext.addCommand(new CommandDropIndex(object), new DeleteObjectReflector<OBJECT_TYPE>(), true);
-    }
-
     @Override
-    protected IDatabasePersistAction[] makeObjectChangeActions(ObjectChangeCommand<OBJECT_TYPE> command)
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
     {
         final TABLE_TYPE table = command.getObject().getTable();
         final OBJECT_TYPE index = command.getObject();
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
 
         // Create index
         final String indexName = DBUtils.getQuotedIdentifier(index.getDataSource(), index.getName());
@@ -76,50 +51,27 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
         }
         decl.append(")");
 
-        actions.add(new AbstractDatabasePersistAction("Create new index", decl.toString()));
-
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction("Create new index", decl.toString())
+        };
     }
 
-    public StringBuilder getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
+    @Override
+    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        return null;
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction(
+                "Drop index",
+                getDropIndexPattern(command.getObject())
+                    .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())
+                    .replace(PATTERN_ITEM_INDEX, command.getObject().getFullQualifiedName())
+                    .replace(PATTERN_ITEM_INDEX_SHORT, command.getObject().getName()))
+        };
     }
 
     protected String getDropIndexPattern(OBJECT_TYPE index)
     {
         return "DROP INDEX " + PATTERN_ITEM_INDEX;
-    }
-
-    protected abstract OBJECT_TYPE createNewIndex(
-        IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor, TABLE_TYPE parent,
-        Object from);
-
-    private class CommandCreateIndex extends ObjectSaveCommand<OBJECT_TYPE> {
-        protected CommandCreateIndex(OBJECT_TYPE table)
-        {
-            super(table, "Create index");
-        }
-    }
-
-    private class CommandDropIndex extends DBECommandDeleteObject<OBJECT_TYPE> {
-        protected CommandDropIndex(OBJECT_TYPE table)
-        {
-            super(table, "Drop index");
-        }
-
-        public IDatabasePersistAction[] getPersistActions()
-        {
-            return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction(
-                    "Drop index",
-                    getDropIndexPattern(getObject())
-                        .replace(PATTERN_ITEM_TABLE, getObject().getTable().getFullQualifiedName())
-                        .replace(PATTERN_ITEM_INDEX, getObject().getFullQualifiedName())
-                        .replace(PATTERN_ITEM_INDEX_SHORT, getObject().getName()))
-            };
-        }
     }
 
 

@@ -4,11 +4,12 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
@@ -19,7 +20,7 @@ import java.sql.Types;
  */
 public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableColumn, MySQLTable> {
 
-    public StringBuilder getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<MySQLTableColumn> command)
+    public StringBuilder getNestedDeclaration(MySQLTable owner, ObjectChangeCommand command)
     {
         StringBuilder decl = super.getNestedDeclaration(owner, command);
         final MySQLTableColumn column = command.getObject();
@@ -29,8 +30,7 @@ public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableCo
         return decl;
     }
 
-    @Override
-    protected MySQLTableColumn createNewTableColumn(MySQLTable parent, Object copyFrom)
+    protected MySQLTableColumn createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, MySQLTable parent, Object copyFrom)
     {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar");
 

@@ -5,14 +5,16 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.*;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
@@ -23,22 +25,44 @@ import org.jkiss.dbeaver.ui.properties.ProxyPropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * JDBC object editor
  */
-public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
+public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveableObject, CONTAINER_TYPE extends DBSObject>
     extends JDBCObjectManager<OBJECT_TYPE>
-    implements DBEObjectEditor<OBJECT_TYPE>
+    implements
+        DBEObjectEditor<OBJECT_TYPE>,
+        DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE>
 {
     public static final String PATTERN_ITEM_INDEX = "%INDEX%";
     public static final String PATTERN_ITEM_TABLE = "%TABLE%";
     public static final String PATTERN_ITEM_INDEX_SHORT = "%INDEX_SHORT%";
     public static final String PATTERN_ITEM_CONSTRAINT = "%CONSTRAINT%";
 
-    public DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
+    public final DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
     {
-        return new PropertyHandler<OBJECT_TYPE>(this, property);
+        return new PropertyHandler(property);
+    }
+
+    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
+    {
+        OBJECT_TYPE newObject = createNewObject(workbenchWindow, activeEditor, parent, copyFrom);
+        if (newObject == null) {
+            return null;
+        }
+
+        makeInitialCommands(newObject, commandContext, new ObjectCreateCommand(newObject, "Create new object"));
+
+        return newObject;
+    }
+
+    public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
+    {
+        commandContext.addCommand(
+            new ObjectDeleteCommand(object, "Delete object"),
+            new DeleteObjectReflector<OBJECT_TYPE>(), true);
     }
 
     protected void makeInitialCommands(
@@ -55,7 +79,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
             if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isEditPossible()) {
                 final Object propertyValue = propertyCollector.getPropertyValue(prop.getId());
                 if (propertyValue != null) {
-                    commands.add(new DBECommandProperty<OBJECT_TYPE>(object, new PropertyHandler<OBJECT_TYPE>(this, prop), propertyValue, propertyValue));
+                    commands.add(new DBECommandProperty<OBJECT_TYPE>(object, new PropertyHandler(prop), propertyValue, propertyValue));
                 }
             }
         }
@@ -63,33 +87,54 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         context.addCommandBatch(commands, new CreateObjectReflector(), true);
     }
 
-    protected abstract IDatabasePersistAction[] makeObjectChangeActions(ObjectChangeCommand<OBJECT_TYPE> command);
+    protected abstract OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, CONTAINER_TYPE parent, Object copyFrom);
+
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
+    {
+        // Base SQL syntax do not support object creation
+        throw new IllegalStateException("Object creation is not supported in " + getClass().getSimpleName());
+    }
+
+    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    {
+        // Base SQL syntax do not support object properties change
+        throw new IllegalStateException("Object modification is not supported in " + getClass().getSimpleName());
+    }
+
+    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    {
+        // Base SQL syntax do not support object delete
+        throw new IllegalStateException("Object delete is not supported in " + getClass().getSimpleName());
+    }
+
+    protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, ObjectChangeCommand command)
+    {
+        return null;
+    }
 
     protected void validateObjectProperty(OBJECT_TYPE object, IPropertyDescriptor property, Object value) throws DBException
     {
 
     }
 
-    protected void validateObjectProperties(ObjectChangeCommand<OBJECT_TYPE> command)
+    protected void validateObjectProperties(ObjectChangeCommand command)
         throws DBException
     {
 
     }
 
-    protected static class PropertyHandler<OBJECT_TYPE extends DBSObject>
+    protected class PropertyHandler
         extends ProxyPropertyDescriptor
         implements DBEPropertyHandler<OBJECT_TYPE>, DBEPropertyReflector<OBJECT_TYPE>, DBEPropertyValidator<OBJECT_TYPE>
     {
-        private final JDBCObjectEditor<OBJECT_TYPE> editor;
-        private PropertyHandler(JDBCObjectEditor<OBJECT_TYPE> editor, IPropertyDescriptor property)
+        private PropertyHandler(IPropertyDescriptor property)
         {
             super(property);
-            this.editor = editor;
         }
 
         public DBECommandComposite<OBJECT_TYPE, ? extends DBEPropertyHandler<OBJECT_TYPE>> createCompositeCommand(OBJECT_TYPE object)
         {
-            return new ObjectChangeCommand<OBJECT_TYPE>(editor, object);
+            return new ObjectChangeCommand(object);
         }
 
         public void reflectValueChange(OBJECT_TYPE object, Object oldValue, Object newValue)
@@ -113,61 +158,69 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject>
         {
             return obj != null &&
                 obj.getClass() == PropertyHandler.class &&
-                editor == ((PropertyHandler)obj).editor &&
+                //editor == ((PropertyHandler)obj).editor &&
                 getId().equals(((PropertyHandler) obj).getId());
         }
 
         public void validate(OBJECT_TYPE object, Object value) throws DBException
         {
-            editor.validateObjectProperty(object, original, value);
+            validateObjectProperty(object, original, value);
         }
 
     }
 
-    protected static class ObjectChangeCommand<OBJECT_TYPE extends DBSObject>
-        extends DBECommandComposite<OBJECT_TYPE, PropertyHandler<OBJECT_TYPE>>
+    protected class ObjectChangeCommand extends DBECommandComposite<OBJECT_TYPE, PropertyHandler>
     {
-        private final JDBCObjectEditor<OBJECT_TYPE> editor;
-        private ObjectChangeCommand(JDBCObjectEditor<OBJECT_TYPE> editor, OBJECT_TYPE object)
+        private ObjectChangeCommand(OBJECT_TYPE object)
         {
             super(object, "JDBC Composite");
-            this.editor = editor;
         }
 
         public IDatabasePersistAction[] getPersistActions()
         {
-            return editor.makeObjectChangeActions(this);
+            if (getObject().isPersisted()) {
+                return makeObjectModifyActions(this);
+            } else {
+                return makeObjectCreateActions(this);
+            }
         }
 
         @Override
         public void validateCommand() throws DBException
         {
-            editor.validateObjectProperties(this);
+            validateObjectProperties(this);
         }
 
-        public String getNestedDeclaration(DBPObject owner)
+        public String getNestedDeclaration(DBSObject owner)
         {
-            if (editor instanceof JDBCNestedEditor) {
-                final StringBuilder decl = ((JDBCNestedEditor) editor).getNestedDeclaration(owner, this);
-                return CommonUtils.isEmpty(decl) ? null : decl.toString();
-            } else {
-                return null;
-            }
+            final StringBuilder decl = JDBCObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this);
+            return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }
     }
 
-    protected static abstract class ObjectSaveCommand<OBJECT_TYPE extends DBPSaveableObject> extends DBECommandAbstract<OBJECT_TYPE> {
+    protected class ObjectCreateCommand extends DBECommandAbstract<OBJECT_TYPE> {
 
-        protected ObjectSaveCommand(OBJECT_TYPE object, String title)
+        protected ObjectCreateCommand(OBJECT_TYPE object, String title)
         {
             super(object, title);
         }
-
 
         @Override
         public void updateModel()
         {
             getObject().setPersisted(true);
+        }
+    }
+
+    protected class ObjectDeleteCommand extends DBECommandDeleteObject<OBJECT_TYPE> {
+        protected ObjectDeleteCommand(OBJECT_TYPE table, String title)
+        {
+            super(table, title);
+        }
+
+        public IDatabasePersistAction[] getPersistActions()
+        {
+            return makeObjectDeleteActions(this);
         }
     }
 }

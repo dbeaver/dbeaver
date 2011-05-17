@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
@@ -20,17 +22,17 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
         GenericIndex.class
     };
 
+    public Class<?>[] getChildTypes()
+    {
+        return CHILD_TYPES;
+    }
+
     @Override
-    protected GenericTable createNewTable(GenericEntityContainer parent, Object copyFrom)
+    protected GenericTable createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, GenericEntityContainer parent, Object copyFrom)
     {
         final GenericTable table = new GenericTable(parent);
         table.setName(JDBCObjectNameCaseTransformer.transformName(parent, "NewTable"));
 
         return table;
-    }
-
-    public Class<?>[] getChildTypes()
-    {
-        return CHILD_TYPES;
     }
 }

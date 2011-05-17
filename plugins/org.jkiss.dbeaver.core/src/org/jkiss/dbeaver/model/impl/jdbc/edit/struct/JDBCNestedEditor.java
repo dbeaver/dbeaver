@@ -15,6 +15,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface JDBCNestedEditor<OBJECT_TYPE extends DBSObject, PARENT extends DBPObject > {
 
-    StringBuilder getNestedDeclaration(PARENT owner, JDBCObjectEditor.ObjectChangeCommand<OBJECT_TYPE> command);
+    //StringBuilder getNestedDeclaration(PARENT owner, JDBCObjectEditor.ObjectChangeCommand<OBJECT_TYPE> command);
 
 }

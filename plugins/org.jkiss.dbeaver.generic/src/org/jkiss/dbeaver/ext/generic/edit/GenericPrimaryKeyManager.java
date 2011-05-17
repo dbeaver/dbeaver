@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
  */
 public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrimaryKey, GenericTable> {
 
-    protected GenericPrimaryKey createNewConstraint(
+    protected GenericPrimaryKey createNewObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor, GenericTable parent,
         Object from)

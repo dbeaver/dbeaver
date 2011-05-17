@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
  */
 public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstraint, MySQLTable> {
 
-    protected MySQLConstraint createNewConstraint(
+    protected MySQLConstraint createNewObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor, MySQLTable parent,
         Object from)

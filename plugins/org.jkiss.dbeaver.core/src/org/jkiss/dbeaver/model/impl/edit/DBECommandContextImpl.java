@@ -518,6 +518,7 @@ public class DBECommandContextImpl implements DBECommandContext {
 
         // Aggregate commands
         if (aggregator != null) {
+            ((DBECommandAggregator)aggregator.command).resetAggregatedCommands();
             for (CommandQueue queue : commandQueues) {
                 for (CommandInfo cmd : queue.commands) {
                     if (cmd.mergedBy == null && ((DBECommandAggregator)aggregator.command).aggregateCommand(cmd.command)) {

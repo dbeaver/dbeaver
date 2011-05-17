@@ -5,31 +5,21 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandDeleteObject;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /**
  * JDBC table column manager
  */
-public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn, CONTAINER_TYPE extends JDBCTable>
-    extends JDBCObjectEditor<OBJECT_TYPE>
-    implements DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE>, JDBCNestedEditor<OBJECT_TYPE, JDBCTable>
+public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn, TABLE_TYPE extends JDBCTable>
+    extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
     public long getMakerOptions()
@@ -37,37 +27,27 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
+    @Override
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
     {
-        OBJECT_TYPE newColumn = createNewTableColumn(parent, copyFrom);
-
-        makeInitialCommands(newColumn, commandContext, new CommandCreateTableColumn(newColumn));
-
-        return newColumn;
+        final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getTable();
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction(
+                "Create new table column",
+                "ALTER TABLE " + table.getFullQualifiedName() + " ADD "  + getNestedDeclaration(table, command)) };
     }
-
-    public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
-    {
-        commandContext.addCommand(new CommandDropTableColumn(object), new DeleteObjectReflector<OBJECT_TYPE>(), true);
-    }
-
 
     @Override
-    protected IDatabasePersistAction[] makeObjectChangeActions(ObjectChangeCommand<OBJECT_TYPE> command)
+    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        final JDBCTable table = command.getObject().getTable();
-        final OBJECT_TYPE column = command.getObject();
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        boolean newObject = !column.isPersisted();
-        if (newObject) {
-            actions.add( new AbstractDatabasePersistAction(
-                "Create new table column",
-                "ALTER TABLE " + table.getFullQualifiedName() + " ADD "  + getNestedDeclaration(table, command)) );
-        }
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction(
+                "Drop table column", "ALTER TABLE " + command.getObject().getTable().getFullQualifiedName() +
+                    " DROP COLUMN " + command.getObject().getName())
+        };
     }
 
-    public StringBuilder getNestedDeclaration(JDBCTable owner, ObjectChangeCommand<OBJECT_TYPE> command)
+    protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, ObjectChangeCommand command)
     {
         OBJECT_TYPE column = command.getObject();
 
@@ -99,7 +79,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         return decl;
     }
 
-    protected void validateObjectProperties(ObjectChangeCommand<OBJECT_TYPE> command)
+    protected void validateObjectProperties(ObjectChangeCommand command)
         throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
@@ -131,31 +111,6 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         }
         return null;
     }
-
-    protected abstract OBJECT_TYPE createNewTableColumn(CONTAINER_TYPE parent, Object copyFrom);
-
-    private class CommandCreateTableColumn extends ObjectSaveCommand<OBJECT_TYPE> {
-        protected CommandCreateTableColumn(OBJECT_TYPE table)
-        {
-            super(table, "Create table column");
-        }
-    }
-
-    private class CommandDropTableColumn extends DBECommandDeleteObject<OBJECT_TYPE> {
-        protected CommandDropTableColumn(OBJECT_TYPE table)
-        {
-            super(table, "Drop table column");
-        }
-
-        public IDatabasePersistAction[] getPersistActions()
-        {
-            return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction(
-                    "Drop table column", "ALTER TABLE " + getObject().getTable().getFullQualifiedName() + " DROP COLUMN " + getObject().getName())
-            };
-        }
-    }
-
 
 }
 

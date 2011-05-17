@@ -5,10 +5,11 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
@@ -25,7 +26,7 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
     };
 
     @Override
-    protected MySQLTable createNewTable(MySQLCatalog parent, Object copyFrom)
+    protected MySQLTable createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, MySQLCatalog parent, Object copyFrom)
     {
         final MySQLTable table = new MySQLTable(parent);
         table.setName(JDBCObjectNameCaseTransformer.transformName(parent, "NewTable"));
@@ -71,4 +72,5 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
     {
         return CHILD_TYPES;
     }
+
 }
