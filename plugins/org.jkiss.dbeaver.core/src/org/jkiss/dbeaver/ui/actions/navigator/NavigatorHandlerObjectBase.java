@@ -85,6 +85,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                 if (editor instanceof IDatabaseNodeEditor) {
                     final IDatabaseNodeEditorInput editorInput = ((IDatabaseNodeEditor) editor).getEditorInput();
                     if (editorInput.getDatabaseObject() == objectToSeek) {
+                        workbenchWindow.getActivePage().activate(editor);
                         switchEditorFolder(container, editor);
                         return new CommandTarget((IDatabaseNodeEditor) editor);
                     }

@@ -144,7 +144,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 false);
 
             ConfirmResult confirmResult = ConfirmResult.YES;
-            if (!object.isPersisted()) {
+            if (!object.isPersisted() || commandTarget.getEditor() != null) {
                 // Not a real object delete because it's not persisted
                 // There should be command context somewhere
                 if (deleteNewObject(workbenchWindow, node)) {
