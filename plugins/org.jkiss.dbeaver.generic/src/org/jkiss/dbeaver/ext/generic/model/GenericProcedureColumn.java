@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
  */
 public class GenericProcedureColumn extends JDBCColumn implements DBSProcedureColumn
 {
+    private String remarks;
     private GenericProcedure procedure;
     private DBSProcedureColumnType columnType;
 
@@ -40,8 +41,8 @@ public class GenericProcedureColumn extends JDBCColumn implements DBSProcedureCo
             scale,
             radix,
             precision,
-            notNull,
-            remarks);
+            notNull);
+        this.remarks = remarks;
         this.procedure = procedure;
         this.columnType = columnType;
     }
@@ -67,4 +68,8 @@ public class GenericProcedureColumn extends JDBCColumn implements DBSProcedureCo
         return columnType;
     }
 
+    public String getDescription()
+    {
+        return remarks;
+    }
 }

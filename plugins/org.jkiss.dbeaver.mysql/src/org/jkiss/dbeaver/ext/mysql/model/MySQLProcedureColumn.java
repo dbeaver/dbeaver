@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureColumn;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 
 /**
- * GenericTable
+ * MySQLProcedureColumn
  */
 public class MySQLProcedureColumn extends JDBCColumn implements DBSProcedureColumn
 {
@@ -29,7 +29,6 @@ public class MySQLProcedureColumn extends JDBCColumn implements DBSProcedureColu
         int precision,
         int radix,
         boolean notNull,
-        String remarks,
         DBSProcedureColumnType columnType)
     {
         super(columnName,
@@ -40,8 +39,7 @@ public class MySQLProcedureColumn extends JDBCColumn implements DBSProcedureColu
             scale,
             radix,
             precision,
-            notNull,
-            remarks);
+            notNull);
         this.procedure = procedure;
         this.columnType = columnType;
     }

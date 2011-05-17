@@ -50,10 +50,10 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
         }
     }
 
+    private String comment;
     private String defaultValue;
     private long charLength;
     private boolean autoIncrement;
-    private MySQLCharset charset;
     private MySQLCollation collation;
     private KeyType keyType;
 
@@ -98,15 +98,12 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
         } else {
             setMaxLength(this.charLength);
         }
-        setDescription(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_COMMENT));
+        this.comment = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_COMMENT);
         setNotNull(!"YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_NULLABLE)));
         setScale(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
         setPrecision(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
         this.defaultValue = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT);
         this.collation = getDataSource().getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION_NAME));
-        if (this.collation != null) {
-            this.charset = this.collation.getCharset();
-        }
 
         String extra = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_EXTRA);
         this.autoIncrement = extra != null && extra.contains(MySQLConstants.EXTRA_AUTO_INCREMENT);
@@ -170,12 +167,11 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
     @Property(name = "Charset", viewable = false, editable = true, listProvider = CharsetListProvider.class, order = 81)
     public MySQLCharset getCharset()
     {
-        return charset;
+        return collation == null ? null : collation.getCharset();
     }
 
     public void setCharset(MySQLCharset charset)
     {
-        this.charset = charset;
         this.collation = charset == null ? null : charset.getDefaultCollation();
     }
 
@@ -188,6 +184,17 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
     public void setCollation(MySQLCollation collation)
     {
         this.collation = collation;
+    }
+
+    @Property(name = "Comment", viewable = true, editable = true, order = 100)
+    public String getComment()
+    {
+        return comment;
+    }
+
+    public void setComment(String comment)
+    {
+        this.comment = comment;
     }
 
     private static class CharsetListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
@@ -208,10 +215,10 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
         }
         public Object[] getPossibleValues(MySQLTableColumn object)
         {
-            if (object.charset == null) {
+            if (object.getCharset() == null) {
                 return null;
             } else {
-                return object.charset.getCollations().toArray();
+                return object.getCharset().getCollations().toArray();
             }
         }
     }

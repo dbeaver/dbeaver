@@ -19,7 +19,6 @@ public abstract class AbstractColumn implements DBSColumnDefinition
     protected int scale;
     protected int precision;
     protected int radix;
-    protected String description;
     protected String typeName;
     protected int ordinalPosition;
 
@@ -36,8 +35,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         int scale,
         int radix,
         int precision,
-        boolean notNull,
-        String description)
+        boolean notNull)
     {
         this.name = name;
         this.valueType = valueType;
@@ -46,7 +44,6 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.radix = radix;
         this.precision = precision;
         this.notNull = notNull;
-        this.description = description;
         this.typeName = typeName;
         this.ordinalPosition = ordinalPosition;
     }
@@ -149,20 +146,14 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.radix = radix;
     }
 
-//    @Property(name = "Description", viewable = true, order = 1000)
     public String getDescription()
     {
-        return description;
+        return null;
     }
 
     public boolean isPersisted()
     {
         return true;
-    }
-
-    public void setDescription(String description)
-    {
-        this.description = description;
     }
 
 }

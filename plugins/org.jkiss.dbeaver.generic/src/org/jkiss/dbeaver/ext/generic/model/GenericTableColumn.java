@@ -18,6 +18,7 @@ import java.util.List;
  */
 public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements DBSTableColumn, JDBCColumnKeyType
 {
+    private String remarks;
     private String defaultValue;
     private int sourceType;
     private long charLength;
@@ -55,12 +56,12 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
             scale,
             radix,
             precision,
-            notNull,
-            remarks);
+            notNull);
         this.sourceType = sourceType;
         this.defaultValue = defaultValue;
         this.charLength = charLength;
         this.autoIncrement = autoIncrement;
+        this.remarks = remarks;
     }
 
     public DBSObject getParentObject()
@@ -116,6 +117,11 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     public boolean isInReferenceKey()
     {
         return false;
+    }
+
+    public String getDescription()
+    {
+        return remarks;
     }
 
     @Override

@@ -88,6 +88,8 @@ public class DefaultCellRenderer extends GridCellRenderer {
         }
 
         String text = TextUtils.getShortString(gc, grid.getCellText(getColumn(), getRow()), width);
+        // Replace linefeeds with space
+        text = text.replace('\n', (char)182);
 
         if (getAlignment() == SWT.RIGHT) {
             int len = gc.stringExtent(text).x;

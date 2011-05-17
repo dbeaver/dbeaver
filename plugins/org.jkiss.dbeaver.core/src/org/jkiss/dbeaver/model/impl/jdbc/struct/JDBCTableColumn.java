@@ -30,9 +30,9 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         this.persisted = persisted;
     }
 
-    protected JDBCTableColumn(TABLE_TYPE table, boolean persisted, String name, String typeName, int valueType, int ordinalPosition, long maxLength, int scale, int radix, int precision, boolean nullable, String description)
+    protected JDBCTableColumn(TABLE_TYPE table, boolean persisted, String name, String typeName, int valueType, int ordinalPosition, long maxLength, int scale, int radix, int precision, boolean nullable)
     {
-        super(name, typeName, valueType, ordinalPosition, maxLength, scale, radix, precision, nullable, description);
+        super(name, typeName, valueType, ordinalPosition, maxLength, scale, radix, precision, nullable);
         this.table = table;
         this.persisted = persisted;
     }
