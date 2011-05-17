@@ -4,12 +4,12 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandAggregator;
+import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -25,18 +25,12 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
 
     protected abstract IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command);
 
-    public final OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
+    ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object)
     {
-        OBJECT_TYPE newObject = createNewObject(workbenchWindow, activeEditor, parent, copyFrom);
-        if (newObject == null) {
-            return null;
-        }
-        makeInitialCommands(newObject, commandContext, new StructCreateCommand(newObject, "Create new object"));
-
-        return newObject;
+        return new StructCreateCommand(object, "Create new object");
     }
 
-    protected Collection<ObjectChangeCommand> getNestedOrderedCommands(StructCreateCommand structCommand)
+    protected static Collection<ObjectChangeCommand> getNestedOrderedCommands(final Class<?>[] childTypes, StructCreateCommand structCommand)
     {
         List<ObjectChangeCommand> nestedCommands = new ArrayList<ObjectChangeCommand>();
         nestedCommands.addAll(structCommand.getObjectCommands().values());
@@ -46,7 +40,6 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
                 final DBPObject object1 = o1.getObject();
                 final DBPObject object2 = o2.getObject();
                 int order1 = -1, order2 = 1;
-                Class<?>[] childTypes = getChildTypes();
                 for (int i = 0, childTypesLength = childTypes.length; i < childTypesLength; i++) {
                     Class<?> childType = childTypes[i];
                     if (childType.isAssignableFrom(object1.getClass())) {

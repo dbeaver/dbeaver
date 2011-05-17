@@ -53,7 +53,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             return null;
         }
 
-        makeInitialCommands(newObject, commandContext, new ObjectCreateCommand(newObject, "Create new object"));
+        makeInitialCommands(newObject, commandContext, makeCreateCommand(newObject));
 
         return newObject;
     }
@@ -63,6 +63,11 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         commandContext.addCommand(
             new ObjectDeleteCommand(object, "Delete object"),
             new DeleteObjectReflector<OBJECT_TYPE>(), true);
+    }
+
+    ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object)
+    {
+        return new ObjectCreateCommand(object, "Create new object");
     }
 
     protected void makeInitialCommands(
@@ -193,6 +198,9 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
         public String getNestedDeclaration(DBSObject owner)
         {
+            // It is a trick
+            // This method may be invoked from another Editor with different OBJECT_TYPE and CONTAINER_TYPE
+            // TODO: May be we should make ObjectChangeCommand static
             final StringBuilder decl = JDBCObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this);
             return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }

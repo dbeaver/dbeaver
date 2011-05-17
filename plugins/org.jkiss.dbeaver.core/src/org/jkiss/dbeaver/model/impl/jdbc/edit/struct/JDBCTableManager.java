@@ -44,7 +44,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append("CREATE TABLE ").append(tableName).append(" (").append(lineSeparator);
         boolean hasNestedDeclarations = false;
-        for (ObjectChangeCommand nestedCommand : getNestedOrderedCommands(command)) {
+        for (ObjectChangeCommand nestedCommand : getNestedOrderedCommands(getChildTypes(), command)) {
             if (nestedCommand.getObject() == table) {
                 continue;
             }

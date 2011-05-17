@@ -7,11 +7,11 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
@@ -22,7 +22,6 @@ import java.util.Collection;
  */
 public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<TABLE_TYPE, PRIMARY_KEY>, PRIMARY_KEY extends JDBCConstraint<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
-    implements DBEObjectMaker<OBJECT_TYPE, TABLE_TYPE>, JDBCNestedEditor<OBJECT_TYPE, JDBCTable>
 {
 
     public long getMakerOptions()
@@ -65,19 +64,19 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
             .append(" ").append(foreignKey.getConstraintType().getName().toUpperCase())
             .append(" (");
         // Get columns using void monitor
-        final Collection<? extends DBSForeignKeyColumn> columns = (Collection<? extends DBSForeignKeyColumn>) command.getObject().getColumns(VoidProgressMonitor.INSTANCE);
+        final Collection<? extends DBSConstraintColumn> columns = command.getObject().getColumns(VoidProgressMonitor.INSTANCE);
         boolean firstColumn = true;
-        for (DBSForeignKeyColumn constraintColumn : columns) {
+        for (DBSConstraintColumn constraintColumn : columns) {
             if (!firstColumn) decl.append(",");
             firstColumn = false;
             decl.append(constraintColumn.getName());
         }
         decl.append(") REFERENCES ").append(foreignKey.getReferencedTable().getFullQualifiedName()).append("(");
         firstColumn = true;
-        for (DBSForeignKeyColumn constraintColumn : columns) {
+        for (DBSConstraintColumn constraintColumn : columns) {
             if (!firstColumn) decl.append(",");
             firstColumn = false;
-            decl.append(constraintColumn.getReferencedColumn().getName());
+            decl.append(((DBSForeignKeyColumn) constraintColumn).getReferencedColumn().getName());
         }
         decl.append(")");
         if (foreignKey.getDeleteRule() != null && !CommonUtils.isEmpty(foreignKey.getDeleteRule().getClause())) {

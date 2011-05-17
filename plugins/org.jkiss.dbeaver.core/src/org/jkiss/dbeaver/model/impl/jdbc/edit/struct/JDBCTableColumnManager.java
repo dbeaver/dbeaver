@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 /**
  * JDBC table column manager
  */
-public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn, TABLE_TYPE extends JDBCTable>
+public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
@@ -30,7 +30,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     @Override
     protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
     {
-        final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getTable();
+        final TABLE_TYPE table = command.getObject().getTable();
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
                 "Create new table column",
