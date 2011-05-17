@@ -64,7 +64,8 @@ class ResultSetDataPumpJob extends DataSourceJob {
                     UIUtils.showErrorDialog(
                         resultSetViewer.getControl().getShell(),
                         "Error executing query",
-                        err.getMessage());
+                        "Can't read data",
+                        err);
                 }
             });
         }
