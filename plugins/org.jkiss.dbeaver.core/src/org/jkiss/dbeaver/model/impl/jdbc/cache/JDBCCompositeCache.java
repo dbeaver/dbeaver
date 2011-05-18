@@ -38,17 +38,20 @@ public abstract class JDBCCompositeCache<
 
     private final Map<String, ObjectInfo> PRECACHED_MARK = new HashMap<String, ObjectInfo>();
 
-    private JDBCObjectCache<PARENT> parentCache;
+    private JDBCObjectCache<?> parentCache;
+    private Class<PARENT> parentType;
     private List<OBJECT> objectList;
     private final String parentColumnName;
     private final String objectColumnName;
 
     protected JDBCCompositeCache(
-        JDBCObjectCache<PARENT> parentCache,
+        JDBCObjectCache<?> parentCache,
+        Class<PARENT> parentType,
         String parentColumnName,
         String objectColumnName)
     {
         this.parentCache = parentCache;
+        this.parentType = parentType;
         this.parentColumnName = parentColumnName;
         this.objectColumnName = objectColumnName;
     }
@@ -134,7 +137,7 @@ public abstract class JDBCCompositeCache<
                         }
                         PARENT parent = forParent;
                         if (parent == null) {
-                            parent = parentCache.getObject(monitor, parentName);
+                            parent = parentCache.getObject(monitor, parentName, parentType);
                             if (parent == null) {
                                 log.debug("Object '" + objectName + "' owner '" + parentName + "' not found");
                                 continue;
@@ -188,7 +191,7 @@ public abstract class JDBCCompositeCache<
                         }
                         // Now set empty object list for other parents
                         if (forParent == null) {
-                            for (PARENT tmpParent : parentCache.getObjects(monitor)) {
+                            for (PARENT tmpParent : parentCache.getObjects(monitor, parentType)) {
                                 if (!parentObjectMap.containsKey(tmpParent)) {
                                     cacheObjects(tmpParent, new ArrayList<OBJECT>());
                                 }

@@ -18,7 +18,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -37,9 +36,8 @@ import java.util.*;
 /**
  * MySQLTable
  */
-public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
+public class MySQLTable extends MySQLTableBase
 {
-    static final Log log = LogFactory.getLog(MySQLTable.class);
 
     private static final String INNODB_COMMENT = "InnoDB free";
 
@@ -81,9 +79,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    private boolean isView;
-
-    private List<MySQLTableColumn> columns;
     private List<MySQLIndex> indexes;
     private List<MySQLConstraint> constraints;
     private List<MySQLForeignKey> foreignKeys;
@@ -94,22 +89,14 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     public MySQLTable(MySQLCatalog catalog)
     {
-        super(catalog, false);
+        super(catalog);
     }
 
     public MySQLTable(
         MySQLCatalog catalog,
         ResultSet dbResult)
     {
-        super(catalog, true);
-        this.loadInfo(dbResult);
-    }
-
-    public String getFullQualifiedName()
-    {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getContainer(),
-            this);
+        super(catalog, dbResult);
     }
 
     @PropertyGroup()
@@ -126,22 +113,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     public boolean isView()
     {
-        return this.isView;
-    }
-
-    public List<MySQLTableColumn> getColumns(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (columns == null) {
-            getContainer().getTableCache().loadChildren(monitor, this);
-        }
-        return columns;
-    }
-
-    public MySQLTableColumn getColumn(DBRProgressMonitor monitor, String columnName)
-        throws DBException
-    {
-        return DBUtils.findObject(getColumns(monitor), columnName);
+        return false;
     }
 
     public List<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
@@ -284,7 +256,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     @Override
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
-        columns = null;
+        super.refreshEntity(monitor);
         indexes = null;
         constraints = null;
         foreignKeys = null;
@@ -293,17 +265,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
             additionalInfo.loaded = false;
         }
         return true;
-    }
-
-    private void loadInfo(ResultSet dbResult)
-    {
-        this.setName(JDBCUtils.safeGetString(dbResult, 1));
-        this.setTableType(JDBCUtils.safeGetString(dbResult, 2));
-
-        if (!CommonUtils.isEmpty(this.getTableType())) {
-            this.isView = (this.getTableType().toUpperCase().indexOf("VIEW") != -1);
-        }
-        this.columns = null;
     }
 
     private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
@@ -613,16 +574,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         finally {
             context.close();
         }
-    }
-
-    public boolean isColumnsCached()
-    {
-        return columns != null;
-    }
-
-    public void setColumns(List<MySQLTableColumn> columns)
-    {
-        this.columns = columns;
     }
 
     public String getDescription()

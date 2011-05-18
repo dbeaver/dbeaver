@@ -63,6 +63,18 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         return objectList;
     }
 
+    public <SUB_TYPE> List<SUB_TYPE> getObjects(DBRProgressMonitor monitor, Class<SUB_TYPE> type)
+        throws DBException
+    {
+        List<SUB_TYPE> result = new ArrayList<SUB_TYPE>();
+        for (OBJECT object : getObjects(monitor)) {
+            if (type.isInstance(object)) {
+                result.add(type.cast(object));
+            }
+        }
+        return result;
+    }
+
     public OBJECT getObject(DBRProgressMonitor monitor, String name)
         throws DBException
     {
@@ -70,6 +82,13 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
             this.loadObjects(monitor);
         }
         return objectMap.get(caseSensitive ? name : name.toUpperCase());
+    }
+
+    public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, String name, Class<SUB_TYPE> type)
+        throws DBException
+    {
+        final OBJECT object = getObject(monitor, name);
+        return type.isInstance(object) ? type.cast(object) : null;
     }
 
     public void clearCache()

@@ -34,42 +34,40 @@
                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="Databases" iconId="#folder_database" description="Server databases">
                     <items label="Database" path="database" property="catalogs" iconId="#database" optional="true">
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="Tables" iconId="#folder_table" description="Tables">
-                            <items label="Table" path="table" property="tables">
-                                <icon iconId="#table" default="true"/>
-                                <icon iconId="#view" if="object.view"/>
+                            <items label="Table" path="table" property="tables" iconId="#table">
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn" label="Columns" iconId="#columns" description="Table columns">
                                     <items label="Column" path="column" property="columns" iconId="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLConstraint" label="Constraints" iconId="#constraints" description="Table constraints" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLConstraint" label="Constraints" iconId="#constraints" description="Table constraints">
                                     <items label="Constraint" path="constraint" property="constraints" iconId="#unique-key">
                                         <items label="Constraint columns" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys">
                                     <items label="Foreign Key" path="foreignKey" property="foreignKeys" iconId="#foreign-key">
                                         <items label="Foreign key columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="References" iconId="#references" description="Table references" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="References" iconId="#references" description="Table references">
                                     <items label="Reference Key" path="referenceKey" property="references" iconId="#reference">
                                         <items label="Reference key columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger" label="Triggers" iconId="#triggers" description="Triggers" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger" label="Triggers" iconId="#triggers" description="Triggers">
                                     <items label="Trigger" path="trigger" property="triggers" iconId="#trigger">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLIndex" label="Indexes" iconId="#indexes" description="Table indexes" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLIndex" label="Indexes" iconId="#indexes" description="Table indexes">
                                     <items label="Index" path="index" property="indexes" iconId="#index">
                                         <items label="Index columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="Partitions" iconId="#partitions" description="Table partitions" visibleIf="!object.view &amp;&amp; object.dataSource.info.databaseProductVersion>='5.1.6'">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="Partitions" iconId="#partitions" description="Table partitions" visibleIf="object.dataSource.info.databaseProductVersion>='5.1.6'">
                                     <items label="Partition" path="partition" property="partitions" iconId="#partition">
                                         <items label="Subpartitions" itemLabel="Subpartition" path="subpartition" property="subPartitions" navigable="false" inline="true">
                                         </items>
@@ -77,8 +75,14 @@
                                 </folder>
                             </items>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLView" label="Views" iconId="#folder_table" description="Views">
+                            <items label="View" path="view" property="views" iconId="#view">
+                                <items label="Columns" itemLabel="Column" path="column" property="columns" iconId="#column">
+                                </items>
+                            </items>
+                        </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" iconId="#indexes" description="Indexes">
-                            <items label="Index" path="indexe" property="indexes" iconId="#index">
+                            <items label="Index" path="index" property="indexes" iconId="#index">
                                 <items label="Index columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                 </items>
                             </items>

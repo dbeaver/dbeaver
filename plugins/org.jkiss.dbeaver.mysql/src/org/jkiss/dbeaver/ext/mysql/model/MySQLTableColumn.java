@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 /**
  * MySQLTableColumn
  */
-public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBSTableColumn
+public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements DBSTableColumn
 {
     static final Log log = LogFactory.getLog(MySQLTableColumn.class);
 
@@ -59,13 +59,13 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTable> implements DBS
 
     private List<String> enumValues;
 
-    public MySQLTableColumn(MySQLTable table)
+    public MySQLTableColumn(MySQLTableBase table)
     {
         super(table, false);
     }
 
     public MySQLTableColumn(
-        MySQLTable table,
+        MySQLTableBase table,
         ResultSet dbResult)
         throws DBException
     {

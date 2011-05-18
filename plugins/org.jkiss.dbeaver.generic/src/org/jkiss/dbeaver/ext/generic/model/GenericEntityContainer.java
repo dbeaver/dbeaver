@@ -462,7 +462,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
     class IndexCache extends JDBCCompositeCache<GenericTable, GenericIndex, GenericIndexColumn> {
         protected IndexCache()
         {
-            super(tableCache, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
+            super(tableCache, GenericTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericTable forParent)
@@ -562,7 +562,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
     class PrimaryKeysCache extends JDBCCompositeCache<GenericTable, GenericPrimaryKey, GenericConstraintColumn> {
         protected PrimaryKeysCache()
         {
-            super(tableCache, JDBCConstants.TABLE_NAME, JDBCConstants.PK_NAME);
+            super(tableCache, GenericTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.PK_NAME);
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericTable forParent)
@@ -640,7 +640,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
 
         protected ForeignKeysCache()
         {
-            super(tableCache, JDBCConstants.FKTABLE_NAME, JDBCConstants.FK_NAME);
+            super(tableCache, GenericTable.class, JDBCConstants.FKTABLE_NAME, JDBCConstants.FK_NAME);
         }
 
         @Override
