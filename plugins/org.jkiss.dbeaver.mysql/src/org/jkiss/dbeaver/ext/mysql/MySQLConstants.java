@@ -16,6 +16,7 @@ public class MySQLConstants {
     public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "LOCAL TEMPORARY"};
 
     public static final String INFO_SCHEMA_NAME = "information_schema";
+    public static final String MYSQL_SCHEMA_NAME = "mysql";
 
     public static final String META_TABLE_ENGINES = INFO_SCHEMA_NAME + ".ENGINES";
     public static final String META_TABLE_SCHEMATA = INFO_SCHEMA_NAME + ".SCHEMATA";

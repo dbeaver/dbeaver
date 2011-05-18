@@ -8,6 +8,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.tabbed.AbstractTabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ISectionDescriptor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,19 +21,24 @@ public class PropertyTabDescriptor extends AbstractTabDescriptor {
     private String id;
     private String label;
     private Image image;
+    private String afterTab;
 
     public PropertyTabDescriptor(
         String category,
         String id,
         String label,
         Image image,
-        List<ISectionDescriptor> sectionDescriptors)
+        ISectionDescriptor ... sectionDescriptors)
     {
         this.category = category;
         this.id = id;
         this.label = label;
         this.image = image;
-        setSectionDescriptors(sectionDescriptors);
+        if (sectionDescriptors != null) {
+            List<ISectionDescriptor> sections = new ArrayList<ISectionDescriptor>(sectionDescriptors.length);
+            Collections.addAll(sections, sectionDescriptors);
+            setSectionDescriptors(sections);
+        }
     }
 
     public String getCategory()
@@ -53,4 +60,19 @@ public class PropertyTabDescriptor extends AbstractTabDescriptor {
     {
         return image;
     }
+
+    @Override
+    public String getAfterTab()
+    {
+        if (afterTab != null) {
+            return afterTab;
+        }
+        return super.getAfterTab();
+    }
+
+    public void setAfterTab(String afterTab)
+    {
+        this.afterTab = afterTab;
+    }
+
 }

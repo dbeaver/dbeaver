@@ -50,6 +50,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     private Map<Annotation, Position> curAnnotations;
 
     private IAnnotationAccess annotationAccess;
+    private int rulerWidth = VERTICAL_RULER_WIDTH;
 
     public SQLEditorBase()
     {
@@ -126,6 +127,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     public void updatePartControl(IEditorInput input) {
         super.updatePartControl(input);
+    }
+
+    @Override
+    protected IVerticalRuler createVerticalRuler()
+    {
+        return new VerticalRuler(rulerWidth);
+    }
+
+    public void setRulerWidth(int rulerWidth)
+    {
+        this.rulerWidth = rulerWidth;
     }
 
     @Override
@@ -234,6 +246,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
             ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
         }
+    }
+
+    public void formatSQL()
+    {
+        ((SQLEditorSourceViewer) getSourceViewer()).doOperation(ISourceViewer.FORMAT);
     }
 
     public synchronized void updateFoldingStructure(int offset, int length, List<Position> positions)

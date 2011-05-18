@@ -374,6 +374,11 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
     }
 
+    public boolean isSystem()
+    {
+        return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || MySQLConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(getName());
+    }
+
     class TableCache extends JDBCStructCache<MySQLTableBase, MySQLTableColumn> {
         
         protected TableCache()

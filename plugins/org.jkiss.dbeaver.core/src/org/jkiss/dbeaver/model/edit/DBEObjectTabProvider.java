@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.edit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -18,11 +19,10 @@ public interface DBEObjectTabProvider<OBJECT_TYPE extends DBSObject> extends DBE
      * Get tab descriptors for particular object.
      *
      * @param workbenchWindow workbench window
-     * @param activeEditor active editor (may be null)
-     * */
+     * @param activeEditor active editor (may be null) */
     ITabDescriptor[] getTabDescriptors(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor,
+        IDatabaseNodeEditor activeEditor,
         OBJECT_TYPE object);
 
 }

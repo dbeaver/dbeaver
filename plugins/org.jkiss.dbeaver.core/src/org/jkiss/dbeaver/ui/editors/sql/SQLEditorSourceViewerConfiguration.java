@@ -83,6 +83,10 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         this.hyperlinkDetector = hyperlinkDetector;
     }
 
+    public IUndoManager getUndoManager(ISourceViewer sourceViewer) {
+        return new TextViewerUndoManager(200);
+    }
+
     /**
      * Returns the annotation hover which will provide the information to be
      * shown in a hover popup window when requested for the given

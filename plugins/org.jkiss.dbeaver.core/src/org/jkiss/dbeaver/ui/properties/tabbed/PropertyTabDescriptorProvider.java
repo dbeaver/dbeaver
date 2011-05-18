@@ -62,35 +62,17 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 
     private void makeStandardPropertiesTabs(List<ITabDescriptor> tabList)
     {
-        List<ISectionDescriptor> standardSections = new ArrayList<ISectionDescriptor>();
-        standardSections.add(new AbstractSectionDescriptor() {
-            public String getId()
-            {
-                return PropertiesContributor.SECTION_STANDARD;
-            }
-
-            public ISection getSectionClass()
-            {
-                return new StandardPropertiesSection();
-            }
-
-            public String getTargetTab()
-            {
-                return PropertiesContributor.TAB_STANDARD;
-            }
-
-            @Override
-            public boolean appliesTo(IWorkbenchPart part, ISelection selection)
-            {
-                return true;
-            }
-        });
         tabList.add(new PropertyTabDescriptor(
             PropertiesContributor.CATEGORY_INFO,
             PropertiesContributor.TAB_STANDARD,
             "Information",
             DBIcon.TREE_INFO.getImage(),
-            standardSections));
+            new SectionDescriptor(PropertiesContributor.SECTION_STANDARD, PropertiesContributor.TAB_STANDARD) {
+                public ISection getSectionClass()
+                {
+                    return new StandardPropertiesSection();
+                }
+            }));
     }
 
     private static class NavigatorTabInfo {
@@ -196,8 +178,6 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 
     private void addNavigatorNodeTab(final IDatabaseNodeEditor part, List<ITabDescriptor> tabList, final NavigatorTabInfo tabInfo)
     {
-        List<ISectionDescriptor> tabSections = new ArrayList<ISectionDescriptor>();
-
 /*
         try {
             EntityNodeEditor nodeEditor = new EntityNodeEditor(tabInfo.node, tabInfo.meta);
@@ -220,34 +200,17 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             log.error("Error adding nested editor", ex);
         }
 */
-        tabSections.add(new AbstractSectionDescriptor() {
-            public String getId()
-            {
-                return "default";
-            }
-
-            public ISection getSectionClass()
-            {
-                return new NodeEditorSection(part, tabInfo.node, tabInfo.meta);
-            }
-
-            public String getTargetTab()
-            {
-                return tabInfo.getName();
-            }
-
-            @Override
-            public boolean appliesTo(IWorkbenchPart part, ISelection selection)
-            {
-                return true;
-            }
-        });
         tabList.add(new PropertyTabDescriptor(
             PropertiesContributor.CATEGORY_STRUCT,
             tabInfo.getName(),
             tabInfo.getName(),
             tabInfo.node.getNodeIconDefault(),
-            tabSections));
+            new SectionDescriptor("default", tabInfo.getName()) {
+                public ISection getSectionClass()
+                {
+                    return new NodeEditorSection(part, tabInfo.node, tabInfo.meta);
+                }
+            }));
     }
 
 }

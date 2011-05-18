@@ -84,6 +84,11 @@ public class MySQLView extends MySQLTableBase
         return true;
     }
 
+    public AdditionalInfo getAdditionalInfo()
+    {
+        return additionalInfo;
+    }
+
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
     public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
@@ -131,7 +136,7 @@ public class MySQLView extends MySQLTableBase
 
     private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
     {
-        if (!isPersisted()) {
+        if (!isPersisted() || getContainer().isSystem()) {
             additionalInfo.loaded = true;
             return;
         }

@@ -229,6 +229,11 @@
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLIndexManager"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLIndex"
             label="Index manager"/>
+        <manager
+            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager"
+            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"
+            label="View manager"/>
 
         <editor
             id="org.jkiss.dbeaver.ext.mysql.editors.MySQLDDLEditor"
