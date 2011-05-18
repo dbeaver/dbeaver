@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * GenericTable
+ * MySQLIndex
  */
 public class MySQLIndex extends JDBCIndex<MySQLTable>
 {

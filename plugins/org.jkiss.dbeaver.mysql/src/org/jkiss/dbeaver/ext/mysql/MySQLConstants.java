@@ -25,7 +25,8 @@ public class MySQLConstants {
     public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".COLUMNS";
     public static final String META_TABLE_TABLE_CONSTRAINTS = INFO_SCHEMA_NAME + ".TABLE_CONSTRAINTS";
     public static final String META_TABLE_KEY_COLUMN_USAGE = INFO_SCHEMA_NAME + ".KEY_COLUMN_USAGE";
-    public static final Object META_TABLE_STATISTICS = INFO_SCHEMA_NAME + ".STATISTICS";
+    public static final String META_TABLE_STATISTICS = INFO_SCHEMA_NAME + ".STATISTICS";
+    public static final String META_TABLE_PARTITIONS = INFO_SCHEMA_NAME + ".PARTITIONS";
 
     public static final String COL_ENGINE_NAME = "ENGINE";
     public static final String COL_ENGINE_SUPPORT = "SUPPORT";
@@ -51,6 +52,8 @@ public class MySQLConstants {
     public static final String COL_COLUMNS_NAME = "COLUMNS_NAME";
     public static final String COL_ORDINAL_POSITION = "ORDINAL_POSITION";
     public static final String COL_CREATE_TIME = "CREATE_TIME";
+    public static final String COL_UPDATE_TIME = "UPDATE_TIME";
+    public static final String COL_CHECK_TIME = "CHECK_TIME";
     public static final String COL_COLLATION = "COLLATION";
     public static final String COL_COLLATION_NAME = "COLLATION_NAME";
     public static final String COL_NULLABLE = "NULLABLE";
@@ -132,4 +135,20 @@ public class MySQLConstants {
     public static final String COL_COMPILED = "COMPILED";
     public static final String COL_SORT_LENGTH = "SORTLEN";
 
+    public static final String COL_PARTITION_NAME = "PARTITION_NAME";
+    public static final String COL_SUBPARTITION_NAME = "SUBPARTITION_NAME";
+    public static final String COL_PARTITION_ORDINAL_POSITION = "PARTITION_ORDINAL_POSITION";
+    public static final String COL_SUBPARTITION_ORDINAL_POSITION = "SUBPARTITION_ORDINAL_POSITION";
+    public static final String COL_PARTITION_METHOD = "PARTITION_METHOD";
+    public static final String COL_SUBPARTITION_METHOD = "SUBPARTITION_METHOD";
+    public static final String COL_PARTITION_EXPRESSION = "PARTITION_EXPRESSION";
+    public static final String COL_SUBPARTITION_EXPRESSION = "SUBPARTITION_EXPRESSION";
+    public static final String COL_PARTITION_DESCRIPTION = "PARTITION_DESCRIPTION";
+    public static final String COL_PARTITION_COMMENT = "PARTITION_COMMENT";
+
+    public static final String COL_MAX_DATA_LENGTH = "MAX_DATA_LENGTH";
+    public static final String COL_INDEX_LENGTH = "INDEX_LENGTH";
+    public static final String COL_NODEGROUP = "NODEGROUP";
+    public static final String COL_DATA_FREE = "DATA_FREE";
+    public static final String COL_CHECKSUM = "CHECKSUM";
 }

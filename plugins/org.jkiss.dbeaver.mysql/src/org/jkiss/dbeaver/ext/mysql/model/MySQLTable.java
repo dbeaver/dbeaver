@@ -35,7 +35,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * GenericTable
+ * MySQLTable
  */
 public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 {
@@ -89,6 +89,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     private List<MySQLConstraint> constraints;
     private List<MySQLForeignKey> foreignKeys;
     private List<MySQLTrigger> triggers;
+    private List<MySQLPartition> partitions;
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
@@ -226,6 +227,16 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return DBUtils.findObject(getTriggers(monitor), triggerName);
     }
 
+    public List<MySQLPartition> getPartitions(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (partitions == null) {
+            partitions = loadPartitions(monitor);
+        }
+        return partitions;
+    }
+
+
     public String getDDL(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -341,7 +352,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         }
                         additionalInfo.avgRowLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AVG_ROW_LENGTH);
                         additionalInfo.dataLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_DATA_LENGTH);
-                        additionalInfo.description = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COMMENT);
                     }
                     additionalInfo.loaded = true;
                 } finally {
@@ -540,6 +550,61 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         tmpTriggers.add(trigger);
                     }
                     return tmpTriggers;
+                }
+                finally {
+                    dbResult.close();
+                }
+            }
+            finally {
+                dbStat.close();
+            }
+        }
+        catch (SQLException e) {
+            throw new DBException(e);
+        }
+        finally {
+            context.close();
+        }
+    }
+
+    private List<MySQLPartition> loadPartitions(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        List<MySQLPartition> tmpPartitions = new ArrayList<MySQLPartition>();
+        if (!isPersisted()) {
+            return tmpPartitions;
+        }
+        Map<String, MySQLPartition> partitionMap = new HashMap<String, MySQLPartition>();
+        // Load only partition's owner catalog and partition name
+        // Actual partitions are stored in catalog - we just get em from cache
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table '" + getName() + "' partitions");
+        try {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM " + MySQLConstants.META_TABLE_PARTITIONS +
+                " WHERE " + MySQLConstants.COL_TABLE_SCHEMA + "=? AND " + MySQLConstants.COL_TABLE_NAME + "=? " +
+                " ORDER BY " + MySQLConstants.COL_PARTITION_ORDINAL_POSITION + "," + MySQLConstants.COL_SUBPARTITION_ORDINAL_POSITION);
+            try {
+                dbStat.setString(1, getContainer().getName());
+                dbStat.setString(2, getName());
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    while (dbResult.next()) {
+                        String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
+                        String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
+                        if (CommonUtils.isEmpty(subPartitionName)) {
+                            MySQLPartition partition = new MySQLPartition(this, null, partitionName, dbResult);
+                            tmpPartitions.add(partition);
+                        } else {
+                            MySQLPartition parentPartition = partitionMap.get(partitionName);
+                            if (parentPartition == null) {
+                                parentPartition = new MySQLPartition(this, null, partitionName, dbResult);
+                                tmpPartitions.add(parentPartition);
+                                partitionMap.put(partitionName, parentPartition);
+                            }
+                            new MySQLPartition(this, parentPartition, subPartitionName, dbResult);
+                        }
+                    }
+                    return tmpPartitions;
                 }
                 finally {
                     dbResult.close();
