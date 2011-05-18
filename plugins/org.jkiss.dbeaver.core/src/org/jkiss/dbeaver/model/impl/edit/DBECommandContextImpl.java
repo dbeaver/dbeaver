@@ -138,6 +138,7 @@ public class DBECommandContextImpl implements DBECommandContext {
             // (e.g. create + delete of the same entity produce 2 commands and zero actions).
             // There were no exceptions during save so we assume that everything went well
             commands.clear();
+            userParams.clear();
         }
         finally {
             try {
@@ -168,6 +169,9 @@ public class DBECommandContextImpl implements DBECommandContext {
                 }
                 clearUndidCommands();
                 clearCommandQueues();
+
+                commands.clear();
+                userParams.clear();
             } finally {
                 for (DBECommandListener listener : getListeners()) {
                     listener.onReset();
@@ -278,11 +282,23 @@ public class DBECommandContextImpl implements DBECommandContext {
         fireCommandChange(command);
     }
 
-    public void updateCommand(DBECommand<?> command)
+    public void updateCommand(DBECommand<?> command, DBECommandReflector commandReflector)
     {
         synchronized (commands) {
-            clearUndidCommands();
-            clearCommandQueues();
+            boolean found = false;
+            for (CommandInfo cmd : commands) {
+                if (cmd.command == command) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                // Actually it is a new command
+                addCommand(command, commandReflector);
+            } else {
+                clearUndidCommands();
+                clearCommandQueues();
+            }
         }
         fireCommandChange(command);
     }

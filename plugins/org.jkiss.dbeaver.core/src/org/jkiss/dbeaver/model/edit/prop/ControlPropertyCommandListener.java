@@ -145,21 +145,20 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                 case SWT.Modify:
                 {
                     final Object newValue = readWidgetValue();
+                    DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>> commandReflector = new DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>>() {
+                        public void redoCommand(DBECommandProperty<OBJECT_TYPE> command)
+                        {
+                            writeWidgetValue(command.getNewValue());
+                        }
+
+                        public void undoCommand(DBECommandProperty<OBJECT_TYPE> command)
+                        {
+                            writeWidgetValue(command.getOldValue());
+                        }
+                    };
                     if (curCommand == null) {
                         if (!CommonUtils.equalObjects(newValue, originalValue)) {
-                            final DBECommandProperty<OBJECT_TYPE> command = new DBECommandProperty<OBJECT_TYPE>(objectEditor.getDatabaseObject(), handler, originalValue, newValue);
-                            curCommand = command;
-                            DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>> commandReflector = new DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>>() {
-                                public void redoCommand(DBECommandProperty<OBJECT_TYPE> object_typeControlDBOCommand)
-                                {
-                                    writeWidgetValue(command.getNewValue());
-                                }
-
-                                public void undoCommand(DBECommandProperty<OBJECT_TYPE> object_typeControlDBOCommand)
-                                {
-                                    writeWidgetValue(command.getOldValue());
-                                }
-                            };
+                            curCommand = new DBECommandProperty<OBJECT_TYPE>(objectEditor.getDatabaseObject(), handler, originalValue, newValue);;
                             objectEditor.addChangeCommand(curCommand, commandReflector);
                         }
                     } else {
@@ -168,7 +167,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                             curCommand = null;
                         } else {
                             curCommand.setNewValue(newValue);
-                            objectEditor.updateChangeCommand(curCommand);
+                            objectEditor.updateChangeCommand(curCommand, commandReflector);
                         }
                     }
                     break;

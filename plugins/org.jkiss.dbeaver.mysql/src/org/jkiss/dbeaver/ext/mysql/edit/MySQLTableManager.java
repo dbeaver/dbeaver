@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -51,14 +52,13 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
 
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        final Object newComment = command.getProperty(DBConstants.PROP_ID_DESCRIPTION);
-        if (newComment != null) {
-            actions.add(new AbstractDatabasePersistAction(
-                "ALTER TABLE " + command.getObject().getFullQualifiedName() + " COMMENT = '" + CommonUtils.toString(newComment).replace('\'', '"') + "'"
-            ));
-        }
-        return actions.isEmpty() ? null : actions.toArray(new IDatabasePersistAction[actions.size()]);
+        StringBuilder query = new StringBuilder("ALTER TABLE ");
+        query.append(command.getObject().getFullQualifiedName()).append(" ");
+        appendTableModifiers(command.getObject(), command, query);
+
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction(query.toString())
+        };
     }
 
     @Override
@@ -66,19 +66,19 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
     {
         try {
             final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
-            if (additionalInfo.getEngine() != null) {
+            if (tableProps.getProperty("engine") != null && additionalInfo.getEngine() != null) {
                 ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName());
             }
-            if (additionalInfo.getCharset() != null) {
+            if (tableProps.getProperty("charset") != null && additionalInfo.getCharset() != null) {
                 ddl.append("\nDEFAULT CHARSET=").append(additionalInfo.getCharset().getName());
             }
-            if (additionalInfo.getCollation() != null) {
+            if (tableProps.getProperty("collation") != null && additionalInfo.getCollation() != null) {
                 ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName());
             }
-            if (!CommonUtils.isEmpty(table.getDescription())) {
-                ddl.append("\nCOMMENT='").append(table.getDescription()).append("'");
+            if (tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null && table.getDescription() != null) {
+                ddl.append("\nCOMMENT='").append(table.getDescription().replace('\'', '"')).append("'");
             }
-            if (additionalInfo.getAutoIncrement() > 0) {
+            if (tableProps.getProperty("autoIncrement") != null && additionalInfo.getAutoIncrement() > 0) {
                 ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement());
             }
         } catch (DBCException e) {

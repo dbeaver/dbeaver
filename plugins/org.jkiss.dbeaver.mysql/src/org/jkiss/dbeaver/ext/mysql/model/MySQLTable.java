@@ -55,10 +55,10 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         private long avgRowLength;
         private long dataLength;
 
-        @Property(name = "Engine", viewable = true, editable = true, listProvider = EngineListProvider.class, order = 3) public MySQLEngine getEngine() { return engine; }
-        @Property(name = "Auto Increment", viewable = true, editable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
-        @Property(name = "Charset", viewable = false, editable = true, listProvider = CharsetListProvider.class, order = 5) public MySQLCharset getCharset() { return charset; }
-        @Property(name = "Collation", viewable = false, editable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
+        @Property(name = "Engine", viewable = true, editable = true, updatable = true, listProvider = EngineListProvider.class, order = 3) public MySQLEngine getEngine() { return engine; }
+        @Property(name = "Auto Increment", viewable = true, editable = true, updatable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
+        @Property(name = "Charset", viewable = false, editable = true, updatable = true, listProvider = CharsetListProvider.class, order = 5) public MySQLCharset getCharset() { return charset; }
+        @Property(name = "Collation", viewable = false, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
         @Property(name = "Description", viewable = true, editable = true, updatable = true, order = 100) public String getDescription() { return description; }
 
         @Property(name = "Row Count", category = "Statistics", viewable = true, order = 10) public long getRowCount() { return rowCount; }

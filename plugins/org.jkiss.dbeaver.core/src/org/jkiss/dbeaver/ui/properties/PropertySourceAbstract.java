@@ -216,6 +216,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         Object prop = propValues.get(id);
         if (prop instanceof ObjectPropertyDescriptor) {
             setPropertyValue(getEditableValue(), (ObjectPropertyDescriptor) prop, value);
+            lazyValues.put(((ObjectPropertyDescriptor) prop).getId(), value);
         } else {
             propValues.put(id, value);
         }
@@ -228,6 +229,10 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
 
     public void collectProperties()
     {
+        lazyValues.clear();
+        props.clear();
+        propValues.clear();
+
         final Object editableValue = getEditableValue();
         IFilter filter;
         if (editableValue instanceof DBSObject) {

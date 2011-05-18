@@ -8,11 +8,9 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 
@@ -28,6 +26,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     private DBECommandContext commandContext;
     private PropertyChangeCommand lastCommand = null;
     private final List<IPropertySourceListener> listeners = new ArrayList<IPropertySourceListener>();
+    private final CommandReflector commandReflector = new CommandReflector();
 
     public PropertySourceEditable(DBECommandContext commandContext, Object sourceObject, Object object)
     {
@@ -105,12 +104,11 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
                 (DBPObject)editableValue,
                 prop);
             PropertyChangeCommand curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, oldValue, newValue);
-            final CommandReflector reflector = new CommandReflector();
-            getCommandContext().addCommand(curCommand, reflector);
+            getCommandContext().addCommand(curCommand, commandReflector);
             lastCommand = curCommand;
         } else {
             lastCommand.setNewValue(newValue);
-            getCommandContext().updateCommand(lastCommand);
+            getCommandContext().updateCommand(lastCommand, commandReflector);
         }
         // Notify listeners
         for (IPropertySourceListener listener : listeners) {

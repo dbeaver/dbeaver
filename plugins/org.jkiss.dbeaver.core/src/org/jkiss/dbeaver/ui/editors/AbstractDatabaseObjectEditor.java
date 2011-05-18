@@ -102,7 +102,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         DBECommand<OBJECT_TYPE> command,
         DBECommandReflector<OBJECT_TYPE, ? extends DBECommand<OBJECT_TYPE>> reflector)
     {
-        getObjectCommander().addCommand(command, (DBECommandReflector) reflector);
+        getObjectCommander().addCommand(command, reflector);
     }
 
     public void removeChangeCommand(DBECommand<OBJECT_TYPE> command)
@@ -110,8 +110,9 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         getObjectCommander().removeCommand(command);
     }
 
-    public void updateChangeCommand(DBECommand<OBJECT_TYPE> command)
+    public void updateChangeCommand(DBECommand<OBJECT_TYPE> command,
+        DBECommandReflector<OBJECT_TYPE, ? extends DBECommand<OBJECT_TYPE>> reflector)
     {
-        getObjectCommander().updateCommand(command);
+        getObjectCommander().updateCommand(command, reflector);
     }
 }
