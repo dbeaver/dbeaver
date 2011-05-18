@@ -13,12 +13,14 @@ import org.eclipse.ui.views.properties.tabbed.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -26,6 +28,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -134,6 +137,16 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 
         for (NavigatorTabInfo tab : tabs) {
             addNavigatorNodeTab(part, tabList, tab);
+        }
+
+        // Query for tab providers
+        final DBSObject object = node.getObject();
+        final DBEObjectTabProvider tabProvider = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectTabProvider.class);
+        if (tabProvider != null) {
+            final ITabDescriptor[] tabDescriptors = tabProvider.getTabDescriptors(part.getSite().getWorkbenchWindow(), part, object);
+            if (!CommonUtils.isEmpty(tabDescriptors)) {
+                Collections.addAll(tabList, tabDescriptors);
+            }
         }
     }
 

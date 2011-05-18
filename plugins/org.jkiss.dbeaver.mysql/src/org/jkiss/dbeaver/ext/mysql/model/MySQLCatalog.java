@@ -85,6 +85,13 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         return triggerCache;
     }
 
+    @Override
+    @Property(name = "Schema Name", viewable = true, editable = true, order = 1)
+    public String getName()
+    {
+        return super.getName();
+    }
+
     public boolean isPersisted()
     {
         return persisted;

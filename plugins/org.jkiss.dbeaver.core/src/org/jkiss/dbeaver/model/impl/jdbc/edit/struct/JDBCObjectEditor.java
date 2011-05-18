@@ -46,7 +46,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         return new PropertyHandler(property);
     }
 
-    public OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
+    public final OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
         OBJECT_TYPE newObject = createNewObject(workbenchWindow, activeEditor, parent, copyFrom);
         if (newObject == null) {
@@ -58,7 +58,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         return newObject;
     }
 
-    public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
+    public final void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
     {
         commandContext.addCommand(
             new ObjectDeleteCommand(object, "Delete object"),
@@ -94,11 +94,11 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
     protected abstract OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, CONTAINER_TYPE parent, Object copyFrom);
 
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
-    {
-        // Base SQL syntax do not support object creation
-        throw new IllegalStateException("Object creation is not supported in " + getClass().getSimpleName());
-    }
+    protected abstract IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command);
+//    {
+//        // Base SQL syntax do not support object creation
+//        throw new IllegalStateException("Object creation is not supported in " + getClass().getSimpleName());
+//    }
 
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
@@ -106,11 +106,11 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         throw new IllegalStateException("Object modification is not supported in " + getClass().getSimpleName());
     }
 
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
-    {
-        // Base SQL syntax do not support object delete
-        throw new IllegalStateException("Object delete is not supported in " + getClass().getSimpleName());
-    }
+    protected abstract IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command);
+//    {
+//        // Base SQL syntax do not support object delete
+//        throw new IllegalStateException("Object delete is not supported in " + getClass().getSimpleName());
+//    }
 
     protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, ObjectChangeCommand command)
     {

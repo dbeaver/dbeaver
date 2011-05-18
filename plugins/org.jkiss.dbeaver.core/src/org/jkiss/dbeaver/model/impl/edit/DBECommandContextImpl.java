@@ -124,11 +124,11 @@ public class DBECommandContextImpl implements DBECommandContext {
                         // should remain - they constructs queue by merging with other commands
                         synchronized (commands) {
                             // Remove original command from stack
-                            final CommandInfo thisCommand = queue.commands.get(i);
-                            executedCommands.add(cmd.command);
+                            //final CommandInfo thisCommand = queue.commands.get(i);
                             commands.remove(cmd);
                         }
                     }
+                    executedCommands.add(cmd.command);
                 }
             }
 

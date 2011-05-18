@@ -11,29 +11,24 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
-
-import java.util.Map;
 
 /**
  * MySQLCatalogManager
  */
-public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> implements DBEObjectMaker<MySQLCatalog, MySQLDataSource>, DBEObjectRenamer<MySQLCatalog> {
+public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDataSource> implements DBEObjectRenamer<MySQLCatalog> {
 
     public long getMakerOptions()
     {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
-    public MySQLCatalog createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
+    @Override
+    protected MySQLCatalog createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, MySQLDataSource parent, Object copyFrom)
     {
         String schemaName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Schema name");
         if (CommonUtils.isEmpty(schemaName)) {
@@ -41,14 +36,23 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         }
         MySQLCatalog newCatalog = new MySQLCatalog(parent, null);
         newCatalog.setName(schemaName);
-        commandContext.addCommand(new CommandCreateCatalog(newCatalog), new CreateObjectReflector(), true);
-
         return newCatalog;
     }
 
-    public void deleteObject(DBECommandContext commandContext, MySQLCatalog object, Map<String, Object> options)
+    @Override
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
     {
-        commandContext.addCommand(new CommandDropCatalog(object), new DeleteObjectReflector(), true);
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction("Create schema", "CREATE SCHEMA " + command.getObject().getName())
+        };
+    }
+
+    @Override
+    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    {
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction("Drop schema", "DROP SCHEMA " + command.getObject().getName())
+        };
     }
 
     public void renameObject(DBRProgressMonitor monitor, MySQLCatalog catalog, String newName) throws DBException
@@ -58,46 +62,7 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         //saveChanges(monitor);
     }
 
-    private class CommandCreateCatalog extends DBECommandAbstract<MySQLCatalog> {
-        protected CommandCreateCatalog(MySQLCatalog catalog)
-        {
-            super(catalog, "Create schema");
-        }
-        public IDatabasePersistAction[] getPersistActions()
-        {
-            return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction("Create schema", "CREATE SCHEMA " + getObject().getName()) {
-                    @Override
-                    public void handleExecute(Throwable error)
-                    {
-                        if (error == null) {
-                            getObject().setPersisted(true);
-                        }
-                    }
-                }};
-        }
-    }
-
-    private class CommandDropCatalog extends DBECommandAbstract<MySQLCatalog> {
-        protected CommandDropCatalog(MySQLCatalog catalog)
-        {
-            super(catalog, "Drop schema");
-        }
-        public IDatabasePersistAction[] getPersistActions()
-        {
-            return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction("Drop schema", "DROP SCHEMA " + getObject().getName()) {
-                    @Override
-                    public void handleExecute(Throwable error)
-                    {
-                        if (error == null) {
-                            getObject().setPersisted(false);
-                        }
-                    }
-                }};
-        }
-    }
-
+/*
     private class CommandRenameCatalog extends DBECommandAbstract<MySQLCatalog> {
         private String newName;
 
@@ -121,6 +86,7 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
                 new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, getObject()));
         }
     }
+*/
 
     /*
 http://www.artfulsoftware.com/infotree/queries.php#112

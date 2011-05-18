@@ -27,6 +27,11 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         return FEATURE_EDITOR_ON_CREATE;
     }
 
+    protected final IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand objectChangeCommand)
+    {
+        throw new IllegalStateException("makeObjectCreateActions should never be called in struct editor");
+    }
+
     @Override
     protected IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command)
     {
