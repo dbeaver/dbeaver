@@ -82,7 +82,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     }
 
     private boolean isView;
-    private boolean isSystem;
 
     private List<MySQLTableColumn> columns;
     private List<MySQLIndex> indexes;
@@ -128,11 +127,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     public boolean isView()
     {
         return this.isView;
-    }
-
-    public boolean isSystem()
-    {
-        return this.isSystem;
     }
 
     public List<MySQLTableColumn> getColumns(DBRProgressMonitor monitor)
@@ -308,7 +302,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
         if (!CommonUtils.isEmpty(this.getTableType())) {
             this.isView = (this.getTableType().toUpperCase().indexOf("VIEW") != -1);
-            this.isSystem = (this.getTableType().toUpperCase().indexOf("SYSTEM") != -1);
         }
         this.columns = null;
     }

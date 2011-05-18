@@ -12,8 +12,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.edit.DBEObjectDescriber;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
@@ -208,19 +207,16 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
         final DBSObject object = getObject();
-        DBEObjectDescriber objectDescriber = (DBEObjectDescriber) DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
-        objectDescriber.describeObject(monitor, object, newName, null);
+        DBEObjectRenamer objectRenamer = (DBEObjectRenamer) DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
+        objectRenamer.renameObject(monitor, object, newName);
     }
 
     @Override
     public boolean supportsRename()
     {
         final DBSObject object = getObject();
-        if (object == null || !object.isPersisted()) {
-            return false;
-        }
-        DBEObjectDescriber objectDescriber = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectDescriber.class);
-        return objectDescriber != null && (objectDescriber.getDescribeFeatures() & DBEObjectDescriber.FEATURE_SET_NAME) != 0;
+        return !(object == null || !object.isPersisted()) &&
+            DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
     }
 
     /**

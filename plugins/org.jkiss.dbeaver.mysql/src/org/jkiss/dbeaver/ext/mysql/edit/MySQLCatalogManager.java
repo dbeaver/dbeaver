@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.DBEObjectDescriber;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * MySQLCatalogManager
  */
-public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> implements DBEObjectMaker<MySQLCatalog, MySQLDataSource>, DBEObjectDescriber<MySQLCatalog> {
+public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> implements DBEObjectMaker<MySQLCatalog, MySQLDataSource>, DBEObjectRenamer<MySQLCatalog> {
 
     public long getMakerOptions()
     {
@@ -51,12 +51,7 @@ public class MySQLCatalogManager extends JDBCObjectManager<MySQLCatalog> impleme
         commandContext.addCommand(new CommandDropCatalog(object), new DeleteObjectReflector(), true);
     }
 
-    public int getDescribeFeatures()
-    {
-        return FEATURE_SET_NAME;
-    }
-
-    public void describeObject(DBRProgressMonitor monitor, MySQLCatalog catalog, String newName, String newDescription) throws DBException
+    public void renameObject(DBRProgressMonitor monitor, MySQLCatalog catalog, String newName) throws DBException
     {
         throw new DBException("Direct database rename is not yet implemented in MySQL. You should use export/import functions for that.");
         //super.addCommand(new CommandRenameCatalog(newName), null);
