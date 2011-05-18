@@ -1448,7 +1448,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
-        <propertyContributor contributorId="org.jkiss.dbeaver.core.propertyViewContributor" tabDescriptorProvider="org.jkiss.dbeaver.ui.properties.PropertyTabDescriptorProvider">
+        <propertyContributor contributorId="org.jkiss.dbeaver.core.propertyViewContributor" tabDescriptorProvider="org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptorProvider">
             <propertyCategory category="core-properties"/>
         </propertyContributor>
     </extension>

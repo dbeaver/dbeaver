@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.properties;
+package org.jkiss.dbeaver.ui.properties.tabbed;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.Platform;
@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.*;
+import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 
 import java.util.Iterator;
 

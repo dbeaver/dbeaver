@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;

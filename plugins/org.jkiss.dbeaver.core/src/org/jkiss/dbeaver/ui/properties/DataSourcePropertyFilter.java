@@ -29,10 +29,7 @@ public class DataSourcePropertyFilter implements IFilter {
     {
         if (toTest instanceof ObjectPropertyDescriptor) {
             ObjectPropertyDescriptor prop = (ObjectPropertyDescriptor)toTest;
-            if (prop.isExpensive() && !showExpensive) {
-                return false;
-            }
-            return true;
+            return !(prop.isExpensive() && !showExpensive);
         }
         return false;
     }

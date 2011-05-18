@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.properties;
+package org.jkiss.dbeaver.ui.properties.tabbed;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -18,6 +18,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.properties.*;
 
 /**
  * StandardPropertiesSection

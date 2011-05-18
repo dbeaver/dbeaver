@@ -2,7 +2,9 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.properties;
+package org.jkiss.dbeaver.ui.properties.tabbed;
+
+import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,7 @@ public class PropertiesContributor {
     public static final String TAB_STANDARD = "standard";
 
     public static final String SECTION_STANDARD = "standard";
+    public static final String SECTION_ADDITIONAL = "additional";
 
     private static final PropertiesContributor instance = new PropertiesContributor();
 

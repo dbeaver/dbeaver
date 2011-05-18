@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.properties;
+package org.jkiss.dbeaver.ui.properties.tabbed;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -48,16 +48,16 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             return curTabs;
         }
         List<ITabDescriptor> tabList = new ArrayList<ITabDescriptor>();
-        makeStandardPropertiesTabs(part, selection, tabList);
+        makeStandardPropertiesTabs(tabList);
         if (part instanceof IDatabaseNodeEditor) {
-            makeDatabaseEditorTabs((IDatabaseNodeEditor)part, selection, tabList);
+            makeDatabaseEditorTabs((IDatabaseNodeEditor)part, tabList);
         }
         curTabs = tabList.toArray(new ITabDescriptor[tabList.size()]);
         curSelection = selection;
         return curTabs;
     }
 
-    private void makeStandardPropertiesTabs(IWorkbenchPart part, ISelection selection, List<ITabDescriptor> tabList)
+    private void makeStandardPropertiesTabs(List<ITabDescriptor> tabList)
     {
         List<ISectionDescriptor> standardSections = new ArrayList<ISectionDescriptor>();
         standardSections.add(new AbstractSectionDescriptor() {
@@ -90,14 +90,14 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             standardSections));
     }
 
-    private static class TabInfo {
+    private static class NavigatorTabInfo {
         DBNDatabaseNode node;
         DBXTreeNode meta;
-        private TabInfo(DBNDatabaseNode node)
+        private NavigatorTabInfo(DBNDatabaseNode node)
         {
             this.node = node;
         }
-        private TabInfo(DBNDatabaseNode node, DBXTreeNode meta)
+        private NavigatorTabInfo(DBNDatabaseNode node, DBXTreeNode meta)
         {
             this.node = node;
             this.meta = meta;
@@ -108,16 +108,16 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         }
     }
 
-    private void makeDatabaseEditorTabs(IDatabaseNodeEditor part, ISelection selection, List<ITabDescriptor> tabList)
+    private void makeDatabaseEditorTabs(IDatabaseNodeEditor part, List<ITabDescriptor> tabList)
     {
         final DBNDatabaseNode node = part.getEditorInput().getTreeNode();
 
         // Collect tabs from navigator tree model
-        final List<TabInfo> tabs = new ArrayList<TabInfo>();
+        final List<NavigatorTabInfo> tabs = new ArrayList<NavigatorTabInfo>();
         DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
             public void run(DBRProgressMonitor monitor)
             {
-                tabs.addAll(collectTabs(monitor, node));
+                tabs.addAll(collectNavigatorTabs(monitor, node));
             }
         };
         try {
@@ -132,14 +132,14 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             // just go further
         }
 
-        for (TabInfo tab : tabs) {
-            addNodeTab(part, tabList, tab);
+        for (NavigatorTabInfo tab : tabs) {
+            addNavigatorNodeTab(part, tabList, tab);
         }
     }
 
-    private List<TabInfo> collectTabs(DBRProgressMonitor monitor, DBNNode node)
+    private List<NavigatorTabInfo> collectNavigatorTabs(DBRProgressMonitor monitor, DBNNode node)
     {
-        List<TabInfo> tabs = new ArrayList<TabInfo>();
+        List<NavigatorTabInfo> tabs = new ArrayList<NavigatorTabInfo>();
 
         // Add all nested folders as tabs
         if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
@@ -151,7 +151,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
                             monitor.subTask("Add folder '" + child.getNodeName() + "'");
-                            tabs.add(new TabInfo((DBNDatabaseFolder)child));
+                            tabs.add(new NavigatorTabInfo((DBNDatabaseFolder)child));
                         }
                     }
                 }
@@ -168,7 +168,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
                                     monitor.subTask("Add node '" + node.getNodeName() + "'");
-                                    tabs.add(new TabInfo((DBNDatabaseNode)node, child));
+                                    tabs.add(new NavigatorTabInfo((DBNDatabaseNode)node, child));
                                 }
                             } catch (DBException e) {
                                 log.debug("Can't add child items tab", e);
@@ -181,7 +181,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         return tabs;
     }
 
-    private void addNodeTab(final IDatabaseNodeEditor part, List<ITabDescriptor> tabList, final TabInfo tabInfo)
+    private void addNavigatorNodeTab(final IDatabaseNodeEditor part, List<ITabDescriptor> tabList, final NavigatorTabInfo tabInfo)
     {
         List<ISectionDescriptor> tabSections = new ArrayList<ISectionDescriptor>();
 

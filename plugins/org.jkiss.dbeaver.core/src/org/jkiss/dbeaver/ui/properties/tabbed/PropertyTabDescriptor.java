@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.properties;
+package org.jkiss.dbeaver.ui.properties.tabbed;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.tabbed.AbstractTabDescriptor;

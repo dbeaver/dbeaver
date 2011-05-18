@@ -39,9 +39,9 @@ import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.properties.IPropertySourceListener;
-import org.jkiss.dbeaver.ui.properties.PropertyPageTabbed;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertyPageTabbed;
 import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
-import org.jkiss.dbeaver.ui.properties.ProxyPageSite;
+import org.jkiss.dbeaver.ui.ProxyPageSite;
 
 import java.util.ArrayList;
 import java.util.List;
