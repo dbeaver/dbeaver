@@ -27,6 +27,7 @@ public class MySQLConstants {
     public static final String META_TABLE_KEY_COLUMN_USAGE = INFO_SCHEMA_NAME + ".KEY_COLUMN_USAGE";
     public static final String META_TABLE_STATISTICS = INFO_SCHEMA_NAME + ".STATISTICS";
     public static final String META_TABLE_PARTITIONS = INFO_SCHEMA_NAME + ".PARTITIONS";
+    public static final String META_TABLE_VIEWS = INFO_SCHEMA_NAME + ".VIEWS";
 
     public static final String COL_ENGINE_NAME = "ENGINE";
     public static final String COL_ENGINE_SUPPORT = "SUPPORT";
@@ -74,6 +75,7 @@ public class MySQLConstants {
     public static final String COL_NUMERIC_SCALE = "NUMERIC_SCALE";
     public static final String COL_COLUMN_DEFAULT = "COLUMN_DEFAULT";
     public static final String COL_IS_NULLABLE = "IS_NULLABLE";
+    public static final String COL_IS_UPDATABLE = "IS_UPDATABLE";
     public static final String COL_COLUMN_COMMENT = "COLUMN_COMMENT";
     public static final String COL_COLUMN_EXTRA = "EXTRA";
     public static final String COL_COLUMN_TYPE = "COLUMN_TYPE";
@@ -151,4 +153,6 @@ public class MySQLConstants {
     public static final String COL_NODEGROUP = "NODEGROUP";
     public static final String COL_DATA_FREE = "DATA_FREE";
     public static final String COL_CHECKSUM = "CHECKSUM";
+    public static final String COL_CHECK_OPTION = "CHECK_OPTION";
+    public static final String COL_VIEW_DEFINITION = "VIEW_DEFINITION";
 }

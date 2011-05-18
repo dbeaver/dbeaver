@@ -225,19 +225,21 @@ public class ERDTable extends ERDObject<DBSTable>
             Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
             // Make associations
             Collection<? extends DBSForeignKey> fks = getObject().getForeignKeys(monitor);
-            for (DBSForeignKey fk : fks) {
-                fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
-                ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
-                if (table2 == null) {
-                    //log.debug("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
-                    if (unresolvedKeys == null) {
-                        unresolvedKeys = new ArrayList<DBSForeignKey>();
+            if (fks != null) {
+                for (DBSForeignKey fk : fks) {
+                    fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
+                    ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
+                    if (table2 == null) {
+                        //log.debug("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
+                        if (unresolvedKeys == null) {
+                            unresolvedKeys = new ArrayList<DBSForeignKey>();
+                        }
+                        unresolvedKeys.add(fk);
+                    } else {
+                        //if (table1 != table2) {
+                        new ERDAssociation(fk, table2, this, reflect);
+                        //}
                     }
-                    unresolvedKeys.add(fk);
-                } else {
-                    //if (table1 != table2) {
-                    new ERDAssociation(fk, table2, this, reflect);
-                    //}
                 }
             }
 

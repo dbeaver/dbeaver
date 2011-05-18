@@ -39,6 +39,7 @@ public enum DBIcon
     TREE_FOLDER("folder", "icons/tree/folder.png"),
     TREE_FOLDER_DATABASE("folder_database", "icons/tree/folder_database.png"),
     TREE_FOLDER_TABLE("folder_table", "icons/tree/folder_table.png"),
+    TREE_FOLDER_VIEW("folder_view", "icons/tree/folder_view.png"),
     TREE_FOLDER_USER("folder_user", "icons/tree/folder_user.png"),
     TREE_FOLDER_ADMIN("folder_admin", "icons/tree/folder_admin.png"),
     TREE_PACKAGE("package", "icons/tree/package.png"),
