@@ -201,7 +201,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
     public void refresh()
     {
-        disposeOldEditor();
+        //disposeOldEditor();
         super.refresh();
     }
 

@@ -140,7 +140,11 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             prop.writeValue(editableValue, value);
             // Fire object update event
             if (editableValue instanceof DBSObject) {
-                ((DBSObject) editableValue).getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, (DBSObject) editableValue));
+                ((DBSObject) editableValue).getDataSource().getContainer().fireEvent(
+                    new DBPEvent(
+                        DBPEvent.Action.OBJECT_UPDATE,
+                        (DBSObject) editableValue,
+                        prop));
             }
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {

@@ -99,6 +99,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
         if (curPropertySource.getEditableValue() == object && !propertyTree.getControl().isDisposed()) {
             //propertyTree.get
             propertyTree.refresh();
+            //propertyTree.update();
         }
     }
 
