@@ -42,25 +42,27 @@ public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<MySQLTable>
 
     public void activatePart()
     {
-        final StringBuilder ddl = new StringBuilder();
-        try {
-            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        ddl.append(getDatabaseObject().getDDL(monitor));
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
+        if (!ddlText.isDisposed() && ddlText.isVisible()) {
+            final StringBuilder ddl = new StringBuilder();
+            try {
+                DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            ddl.append(getDatabaseObject().getDDL(monitor));
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
                     }
-                }
-            });
-        } catch (InvocationTargetException e) {
-            log.error("Can't obtain table DDL", e.getTargetException());
-        } catch (InterruptedException e) {
-            // skip
+                });
+            } catch (InvocationTargetException e) {
+                log.error("Can't obtain table DDL", e.getTargetException());
+            } catch (InterruptedException e) {
+                // skip
+            }
+            ddlText.setText(ddl.toString());
         }
-        ddlText.setText(ddl.toString());
     }
 
     public void refreshPart(Object source)

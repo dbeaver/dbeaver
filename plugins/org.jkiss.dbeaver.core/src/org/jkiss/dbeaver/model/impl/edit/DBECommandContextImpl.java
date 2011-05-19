@@ -128,7 +128,9 @@ public class DBECommandContextImpl implements DBECommandContext {
                             commands.remove(cmd);
                         }
                     }
-                    executedCommands.add(cmd.command);
+                    if (!executedCommands.contains(cmd.command)) {
+                        executedCommands.add(cmd.command);
+                    }
                 }
             }
 
