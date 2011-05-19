@@ -244,6 +244,7 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
         "LIKE",
         "MAX",
         "MIN",
+        "MODIFY",
         "NEXT",
         "NOT",
         "NULL",

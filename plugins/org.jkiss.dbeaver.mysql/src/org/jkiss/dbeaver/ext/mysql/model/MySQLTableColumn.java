@@ -136,7 +136,28 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return charLength;
     }
 
-    @Property(name = "Auto Increment", viewable = true, editable = true, order = 51)
+    @Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
+    @Override
+    public String getTypeName()
+    {
+        return super.getTypeName();
+    }
+
+    @Property(name = "Length", viewable = true, editable = true, updatable = true, order = 40)
+    @Override
+    public long getMaxLength()
+    {
+        return super.getMaxLength();
+    }
+
+    @Property(name = "Not Null", viewable = true, editable = true, updatable = true, order = 50)
+    @Override
+    public boolean isNotNull()
+    {
+        return super.isNotNull();
+    }
+
+    @Property(name = "Auto Increment", viewable = true, editable = true, updatable = true, order = 51)
     public boolean isAutoIncrement()
     {
         return autoIncrement;
@@ -147,10 +168,15 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.autoIncrement = autoIncrement;
     }
 
-    @Property(name = "Default", viewable = true, editable = true, order = 70)
+    @Property(name = "Default", viewable = true, editable = true, updatable = true, order = 70)
     public String getDefaultValue()
     {
         return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue)
+    {
+        this.defaultValue = defaultValue;
     }
 
     @Property(name = "Key", viewable = true, order = 80)
@@ -186,7 +212,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.collation = collation;
     }
 
-    @Property(name = "Comment", viewable = true, editable = true, order = 100)
+    @Property(name = "Comment", viewable = true, editable = true, updatable = true, order = 100)
     public String getComment()
     {
         return comment;

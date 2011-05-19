@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.GC;
@@ -46,18 +48,26 @@ public class CustomCheckboxCellEditor extends CellEditor {
         placeholder.setLayout(gl);
 
         checkbox = new Button(placeholder, SWT.CHECK);
-        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.horizontalIndent = 4;
         gd.grabExcessHorizontalSpace = true;
         checkbox.setLayoutData(gd);
         checkbox.setFont(parent.getFont());
-        checkbox.addSelectionListener(new SelectionAdapter() {
-            public void widgetDefaultSelected(SelectionEvent event) {
-                applyEditorValue();
-            }
-            public void widgetSelected(SelectionEvent event) {
+        checkbox.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e)
+            {
                 applyEditorValue();
             }
         });
+//        checkbox.addSelectionListener(new SelectionAdapter() {
+//            public void widgetDefaultSelected(SelectionEvent event) {
+//                applyEditorValue();
+//            }
+//            public void widgetSelected(SelectionEvent event) {
+//                applyEditorValue();
+//            }
+//        });
 
 
         return placeholder;
@@ -70,12 +80,12 @@ public class CustomCheckboxCellEditor extends CellEditor {
     protected void doSetFocus() {
         checkbox.setFocus();
         checkbox.setSelection(!checkbox.getSelection());
-        checkbox.getDisplay().asyncExec(new Runnable() {
-            public void run()
-            {
-                applyEditorValue();
-            }
-        });
+//        checkbox.getDisplay().asyncExec(new Runnable() {
+//            public void run()
+//            {
+//                applyEditorValue();
+//            }
+//        });
     }
 
     protected void doSetValue(Object value) {
