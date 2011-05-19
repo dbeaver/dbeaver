@@ -15,8 +15,8 @@ public interface IPropertySourceEditable {
 
     DBECommandContext getCommandContext();
 
-    void addPropertySourceListener(IPropertySourceListener listener);
+//    void addPropertySourceListener(IPropertySourceListener listener);
 
-    void removePropertySourceListener(IPropertySourceListener listener);
+//    void removePropertySourceListener(IPropertySourceListener listener);
 
 }

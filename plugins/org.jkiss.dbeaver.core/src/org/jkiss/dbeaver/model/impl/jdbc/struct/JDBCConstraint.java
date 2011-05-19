@@ -56,7 +56,6 @@ public abstract class JDBCConstraint<TABLE extends JDBCTable>
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
-        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this, true));
     }
 
     /**

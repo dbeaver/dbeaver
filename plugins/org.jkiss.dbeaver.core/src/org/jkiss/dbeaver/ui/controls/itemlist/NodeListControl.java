@@ -18,9 +18,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -36,7 +34,6 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
-import org.jkiss.dbeaver.ui.properties.IPropertySourceListener;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -48,7 +45,7 @@ import java.util.Set;
 /**
  * NodeListControl
  */
-public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceProvider, INavigatorModelView, IDBNListener, IMenuListener, IPropertySourceListener {
+public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceProvider, INavigatorModelView, IDBNListener, IMenuListener {
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
     private IWorkbenchPart workbenchPart;
@@ -287,23 +284,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         // Hook context menu
     }
 
-    public void handlePropertyChange(Object editableValue, IPropertyDescriptor prop, Object value)
-    {
-        final DBSObject dbObject = (DBSObject) editableValue;
-        DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode(dbObject);
-        if (node != null) {
-            //getItemsViewer().update(node, null);
-            dbObject.getDataSource().getContainer().fireEvent(
-                new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, dbObject));
-        }
-    }
-
     private class NodeListPropertySource extends PropertySourceEditable {
 
         private NodeListPropertySource(DBECommandContext commandContext)
         {
             super(commandContext, NodeListControl.this, NodeListControl.this);
-            super.addPropertySourceListener(NodeListControl.this);
         }
 
         public DBNNode getSourceObject()

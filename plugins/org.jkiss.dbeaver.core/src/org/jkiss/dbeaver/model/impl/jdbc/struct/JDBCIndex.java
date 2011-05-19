@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.AbstractIndex;
@@ -75,7 +74,6 @@ public abstract class JDBCIndex<TABLE extends JDBCTable>
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
-        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this, true));
     }
 
 }

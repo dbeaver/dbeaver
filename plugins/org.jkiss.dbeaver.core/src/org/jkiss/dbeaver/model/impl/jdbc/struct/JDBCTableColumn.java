@@ -5,13 +5,12 @@
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
-import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.util.Set;
 import java.util.TreeSet;
@@ -78,7 +77,6 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
-        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this, true));
     }
 
     public static class ColumnTypeNameListProvider implements IPropertyValueListProvider<JDBCTableColumn> {

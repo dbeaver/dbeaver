@@ -13,17 +13,20 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.*;
 
 /**
  * StandardPropertiesSection
  */
-public class StandardPropertiesSection extends AbstractPropertySection implements ILazyPropertyLoadListener, IPropertySourceListener {
+public class StandardPropertiesSection extends AbstractPropertySection implements ILazyPropertyLoadListener, DBPEventListener {
 
 	protected PropertyTreeViewer propertyTree;
     private IPropertySource curPropertySource;
@@ -37,7 +40,6 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 		propertyTree = new PropertyTreeViewer(parent, SWT.NONE);
         propertyTree.setExtraLabelProvider(new PropertyLabelProvider());
         PropertiesContributor.getInstance().addLazyListener(this);
-
 	}
 
 	public void setInput(IWorkbenchPart part, ISelection newSelection) {
@@ -46,15 +48,11 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
             if (!newSelection.isEmpty() && newSelection instanceof IStructuredSelection) {
                 Object element = ((IStructuredSelection) newSelection).getFirstElement();
                 if (element instanceof IPropertySource && element != curPropertySource) {
-                    if (curPropertySource instanceof IPropertySourceEditable) {
-                        ((IPropertySourceEditable) curPropertySource).removePropertySourceListener(this);
-                    }
                     curPropertySource = (IPropertySource)element;
                     propertyTree.loadProperties(curPropertySource);
-                    if (curPropertySource instanceof IPropertySourceEditable) {
-                        ((IPropertySourceEditable) curPropertySource).addPropertySourceListener(this);
+                    if (curPropertySource.getEditableValue() instanceof DBSObject) {
+                        ((DBSObject) curPropertySource.getEditableValue()).getDataSource().getContainer().getRegistry().addDataSourceListener(this);
                     }
-
                 }
             }
 		    //pageStandard.selectionChanged(part, newSelection);
@@ -62,6 +60,12 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 	}
 
 	public void dispose() {
+        if (curPropertySource.getEditableValue() instanceof DBSObject) {
+            final DBPDataSource dataSource = ((DBSObject) curPropertySource.getEditableValue()).getDataSource();
+            if (dataSource != null) {
+                dataSource.getContainer().getRegistry().removeDataSourceListener(this);
+            }
+        }
         UIUtils.dispose(boldFont);
         PropertiesContributor.getInstance().removeLazyListener(this);
 		super.dispose();
@@ -98,9 +102,10 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
         }
     }
 
-    public void handlePropertyChange(Object editableValue, IPropertyDescriptor prop, Object value)
+    public void handleDataSourceEvent(DBPEvent event)
     {
-        if (!propertyTree.getTree().isDisposed()) {
+        if (curPropertySource.getEditableValue() == event.getObject() && !propertyTree.getControl().isDisposed()) {
+            //propertyTree.get
             propertyTree.refresh();
         }
     }

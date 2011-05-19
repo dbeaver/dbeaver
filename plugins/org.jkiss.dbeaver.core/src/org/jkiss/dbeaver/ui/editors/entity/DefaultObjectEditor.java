@@ -22,26 +22,22 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
 import org.eclipse.ui.views.properties.tabbed.TabContents;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.*;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.ProxyPageSite;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
-import org.jkiss.dbeaver.ui.properties.IPropertySourceListener;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertyPageTabbed;
 import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
-import org.jkiss.dbeaver.ui.ProxyPageSite;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertyPageTabbed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -189,16 +185,6 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             getEditorInput().getCommandContext(),
             getEditorInput().getTreeNode(),
             getEditorInput().getDatabaseObject());
-        propertySource.addPropertySourceListener(new IPropertySourceListener() {
-            public void handlePropertyChange(Object editableValue, IPropertyDescriptor prop, Object value)
-            {
-                if (DBConstants.PROP_ID_NAME.equals(prop.getId())) {
-                    // Update object in navigator
-                    getEditorInput().getDataSource().getContainer().fireEvent(
-                        new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, getEditorInput().getDatabaseObject()));
-                }
-            }
-        });
         propertySource.collectProperties();
         properties.selectionChanged(this, new StructuredSelection(propertySource));
     }

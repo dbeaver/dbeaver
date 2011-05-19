@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -13,10 +14,9 @@ import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * PropertySourceEditable
@@ -25,7 +25,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 {
     private DBECommandContext commandContext;
     private PropertyChangeCommand lastCommand = null;
-    private final List<IPropertySourceListener> listeners = new ArrayList<IPropertySourceListener>();
+    //private final List<IPropertySourceListener> listeners = new ArrayList<IPropertySourceListener>();
     private final CommandReflector commandReflector = new CommandReflector();
 
     public PropertySourceEditable(DBECommandContext commandContext, Object sourceObject, Object object)
@@ -56,6 +56,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         return commandContext;
     }
 
+/*
     public void addPropertySourceListener(IPropertySourceListener listener)
     {
         synchronized (listeners) {
@@ -69,6 +70,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             listeners.add(listener);
         }
     }
+*/
 
     @Override
     public Object getPropertyValue(Object editableValue, ObjectPropertyDescriptor prop)
@@ -110,10 +112,12 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             lastCommand.setNewValue(newValue);
             getCommandContext().updateCommand(lastCommand, commandReflector);
         }
+/*
         // Notify listeners
         for (IPropertySourceListener listener : listeners) {
             listener.handlePropertyChange(editableValue, prop, newValue);
         }
+*/
     }
 
     private void updatePropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object value, boolean force)
@@ -134,6 +138,10 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
                 }
             }
             prop.writeValue(editableValue, value);
+            // Fire object update event
+            if (editableValue instanceof DBSObject) {
+                ((DBSObject) editableValue).getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, (DBSObject) editableValue));
+            }
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException) e).getTargetException();
@@ -188,19 +196,23 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         public void redoCommand(PropertyChangeCommand command)
         {
             updatePropertyValue(command.getObject(), command.property, command.getNewValue(), false);
+/*
             // Notify listeners
             for (IPropertySourceListener listener : listeners) {
                 listener.handlePropertyChange(command.getObject(), command.property, command.getNewValue());
             }
+*/
         }
 
         public void undoCommand(PropertyChangeCommand command)
         {
             updatePropertyValue(command.getObject(), command.property, command.getOldValue(), false);
+/*
             // Notify listeners
             for (IPropertySourceListener listener : listeners) {
                 listener.handlePropertyChange(command.getObject(), command.property, command.getOldValue());
             }
+*/
         }
     }
 
