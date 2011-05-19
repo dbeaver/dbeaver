@@ -6,10 +6,10 @@ package org.jkiss.dbeaver.ext.mysql.editors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
@@ -20,9 +20,9 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
-import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 import java.lang.reflect.InvocationTargetException;
@@ -37,7 +37,6 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
     private final IDatabaseNodeEditor editor;
     private MySQLView view;
     private Composite parent;
-    private IWorkbenchPart activePart;
     private SQLEditorBase sqlViewer;
     private StringEditorInput sqlEditorInput;
 
@@ -51,7 +50,6 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
     {
 		super.createControls(parent, tabbedPropertySheetPage);
         this.parent = parent;
-        this.activePart = tabbedPropertySheetPage.getSite().getPage().getActivePart();
 	}
 
     private void createEditor()
@@ -73,13 +71,15 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
         sqlViewer.setRulerWidth(0);
         try {
             sqlEditorInput = new StringEditorInput("View", viewInitializer.definition, false);
-            sqlViewer.init(new SubEditorSite(activePart.getSite()), sqlEditorInput);
+            sqlViewer.init(editor.getEditorSite(), sqlEditorInput);
         } catch (PartInitException e) {
             UIUtils.showErrorDialog(parent.getShell(), "Create SQL viewer", null, e);
         }
         sqlViewer.createPartControl(parent);
         sqlViewer.reloadSyntaxRules();
         sqlViewer.formatSQL();
+        sqlViewer.doSave(VoidProgressMonitor.INSTANCE.getNestedMonitor());
+        //sqlViewer.doRevertToSaved();
         parent.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
             {
@@ -102,6 +102,10 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
         if (sqlViewer == null) {
             createEditor();
         }
+        final ISelectionProvider selectionProvider = sqlViewer.getSelectionProvider();
+        editor.getSite().setSelectionProvider(selectionProvider);
+        selectionProvider.setSelection(selectionProvider.getSelection());
+        //sqlViewer.
     }
 
     @Override
