@@ -9,7 +9,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -32,7 +31,10 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * GenericCatalog
@@ -99,10 +101,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
 
     public void setPersisted(boolean persisted)
     {
-        if (this.persisted != persisted) {
-            this.persisted = persisted;
-            getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this, true));
-        }
+        this.persisted = persisted;
     }
 
     public String getDescription()

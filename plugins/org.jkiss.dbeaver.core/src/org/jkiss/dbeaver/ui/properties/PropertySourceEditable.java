@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
@@ -140,11 +141,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             prop.writeValue(editableValue, value);
             // Fire object update event
             if (editableValue instanceof DBSObject) {
-                ((DBSObject) editableValue).getDataSource().getContainer().fireEvent(
-                    new DBPEvent(
-                        DBPEvent.Action.OBJECT_UPDATE,
-                        (DBSObject) editableValue,
-                        prop));
+                DBUtils.fireObjectUpdate((DBSObject) editableValue, prop);
             }
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {

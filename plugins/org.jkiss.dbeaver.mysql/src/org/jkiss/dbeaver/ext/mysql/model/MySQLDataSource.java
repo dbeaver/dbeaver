@@ -15,7 +15,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -354,10 +353,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
 
         // Send notifications
         if (oldSelectedEntity != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldSelectedEntity, false));
+            DBUtils.fireObjectSelect(oldSelectedEntity, false);
         }
         if (this.activeCatalogName != null) {
-            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, entity, true));
+            DBUtils.fireObjectSelect(entity, true);
         }
     }
 

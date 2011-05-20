@@ -9,7 +9,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
@@ -92,7 +91,6 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
                     {
                         if (error == null) {
                             getObject().setPersisted(false);
-                            getObject().getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, getObject(), true));
                         }
                     }
                 }};

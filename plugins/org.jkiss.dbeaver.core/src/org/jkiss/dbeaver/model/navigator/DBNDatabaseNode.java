@@ -206,9 +206,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
-        final DBSObject object = getObject();
-        DBEObjectRenamer objectRenamer = (DBEObjectRenamer) DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
-        objectRenamer.renameObject(monitor, object, newName);
+        //final DBSObject object = getObject();
+        //DBEObjectRenamer objectRenamer = (DBEObjectRenamer) DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
+        //objectRenamer.renameObject(monitor, object, newName);
     }
 
     @Override
@@ -347,7 +347,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
      * Extract items using reflect api
      * @param monitor progress monitor
      * @param meta items meta info
+     * @param oldList previous child items
      * @param toList list ot add new items   @return true on success
+     * @return true on success
      * @throws DBException on any DB error
      */
     private boolean loadTreeItems(

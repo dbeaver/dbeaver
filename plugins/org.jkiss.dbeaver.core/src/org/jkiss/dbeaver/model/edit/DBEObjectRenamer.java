@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -17,12 +16,13 @@ public interface DBEObjectRenamer<OBJECT_TYPE extends DBSObject> extends DBEObje
     /**
      * Describes object
      *
-     * @param monitor progress monitor
+     *
+     * @param commandContext command context. Implementation should add new command to it.
      * @param object object
-     * @param newName new name. If
+     * @param newName new name. Not null only if UI somehow determine possible new name
      * @throws DBException on any error
      */
-    void renameObject(DBRProgressMonitor monitor, OBJECT_TYPE object, String newName)
+    void renameObject(DBECommandContext commandContext, OBJECT_TYPE object, String newName)
         throws DBException;
 
 }

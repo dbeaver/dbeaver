@@ -8,7 +8,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
@@ -63,7 +62,6 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
                     {
                         if (error == null) {
                             getObject().setPersisted(true);
-                            getObject().getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, getObject(), true));
                         }
                     }
                 });

@@ -10,12 +10,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.*;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
@@ -96,10 +94,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     protected abstract OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, CONTAINER_TYPE parent, Object copyFrom);
 
     protected abstract IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command);
-//    {
-//        // Base SQL syntax do not support object creation
-//        throw new IllegalStateException("Object creation is not supported in " + getClass().getSimpleName());
-//    }
 
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
@@ -108,10 +102,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     }
 
     protected abstract IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command);
-//    {
-//        // Base SQL syntax do not support object delete
-//        throw new IllegalStateException("Object delete is not supported in " + getClass().getSimpleName());
-//    }
 
     protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, ObjectChangeCommand command)
     {
@@ -217,8 +207,10 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         @Override
         public void updateModel()
         {
-            getObject().setPersisted(true);
-            getObject().getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, getObject(), true));
+            if (!getObject().isPersisted()) {
+                getObject().setPersisted(true);
+                DBUtils.fireObjectUpdate(getObject());
+            }
         }
     }
 
@@ -233,5 +225,43 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             return makeObjectDeleteActions(this);
         }
     }
+
+    protected static abstract class ObjectRenameCommand<OBJECT_TYPE extends DBSObject & DBPNamedObject2> extends DBECommandAbstract<OBJECT_TYPE> {
+        private String oldName;
+        private String newName;
+
+        protected ObjectRenameCommand(OBJECT_TYPE object, String title, String newName)
+        {
+            super(object, title);
+            this.oldName = object.getName();
+            this.newName = newName;
+        }
+
+        public abstract IDatabasePersistAction[] getPersistActions();
+
+        @Override
+        public void updateModel()
+        {
+            getObject().setName(newName);
+            DBUtils.fireObjectUpdate(getObject());
+        }
+    }
+
+    public static class RenameObjectReflector<OBJECT_TYPE extends DBSObject & DBPNamedObject2> implements DBECommandReflector<OBJECT_TYPE, ObjectRenameCommand<OBJECT_TYPE>> {
+
+        public void redoCommand(ObjectRenameCommand<OBJECT_TYPE> command)
+        {
+            command.getObject().setName(command.newName);
+            DBUtils.fireObjectUpdate(command.getObject());
+        }
+
+        public void undoCommand(ObjectRenameCommand<OBJECT_TYPE> command)
+        {
+            command.getObject().setName(command.oldName);
+            DBUtils.fireObjectUpdate(command.getObject());
+        }
+
+    }
+
 }
 

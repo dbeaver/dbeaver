@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.generic.model;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -163,8 +162,8 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         getDataSource().setActiveEntityName(monitor, entity);
 
         if (oldSelectedEntity != null) {
-            getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, oldSelectedEntity, false));
+            DBUtils.fireObjectSelect(oldSelectedEntity, false);
         }
-        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, entity, true));
+        DBUtils.fireObjectSelect(entity, true);
     }
 }

@@ -42,22 +42,6 @@ public final class DBUtils {
         };
     }
 
-    public static String getUniqueObjectId(DBSObject object)
-    {
-        StringBuilder buffer = new StringBuilder();
-        for (DBSObject obj = object; obj != null; obj = obj.getParentObject()) {
-            final String objectName = obj.getName();
-            //if (!isValidObjectName(objectName)) {
-            //   continue;
-            //}
-            if (buffer.length() > 0) {
-                buffer.insert(0, '.');
-            }
-            buffer.insert(0, objectName);
-        }
-        return buffer.toString();
-    }
-
     public static String getQuotedIdentifier(DBSObject object)
     {
         return getQuotedIdentifier(object.getDataSource(), object.getName());
@@ -603,6 +587,56 @@ public final class DBUtils {
         return statement;
 */
         return context.prepareStatement(statementType, query, false, false, false);
+    }
+
+    public static void fireObjectUpdate(DBSObject object)
+    {
+        fireObjectUpdate(object, null);
+    }
+
+    public static void fireObjectUpdate(DBSObject object, Object data)
+    {
+        final DBSDataSourceContainer container = getContainer(object);
+        if (container != null) {
+            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object, data));
+        }
+    }
+
+    public static void fireObjectAdd(DBSObject object)
+    {
+        final DBSDataSourceContainer container = getContainer(object);
+        if (container != null) {
+            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_ADD, object));
+        }
+    }
+
+    public static void fireObjectRemove(DBSObject object)
+    {
+        final DBSDataSourceContainer container = getContainer(object);
+        if (container != null) {
+            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_REMOVE, object));
+        }
+    }
+
+    public static void fireObjectSelect(DBSObject object, boolean select)
+    {
+        final DBSDataSourceContainer container = getContainer(object);
+        if (container != null) {
+            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, object, select));
+        }
+    }
+
+    public static DBSDataSourceContainer getContainer(DBSObject object)
+    {
+        if (object == null) {
+            log.warn("Null object passed");
+            return null;
+        }
+        final DBPDataSource dataSource = object.getDataSource();
+        if (dataSource == null) {
+            return null;
+        }
+        return dataSource.getContainer();
     }
 
     public static <T extends DBPNamedObject> void orderObjects(List<T> objects)
