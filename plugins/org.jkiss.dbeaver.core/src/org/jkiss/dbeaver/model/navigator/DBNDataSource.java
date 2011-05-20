@@ -64,7 +64,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
 
     public String getNodeDescription()
     {
-        return dataSource.getDescription();
+        return dataSource == null ? "" : dataSource.getDescription();
     }
 
     @Override

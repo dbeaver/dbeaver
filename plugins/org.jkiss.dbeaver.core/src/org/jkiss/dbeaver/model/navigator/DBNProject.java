@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -98,7 +99,8 @@ public class DBNProject extends DBNResource implements IAdaptable
 
     public boolean supportsRename()
     {
-        return true;
+        // Do not rename active projects
+        return DBeaverCore.getInstance().getProjectRegistry().getActiveProject() != getProject();
     }
 
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException

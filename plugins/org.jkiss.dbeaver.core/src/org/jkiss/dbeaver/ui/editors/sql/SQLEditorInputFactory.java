@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -17,7 +19,7 @@ import java.io.ByteArrayInputStream;
 
 public class SQLEditorInputFactory implements IElementFactory
 {
-    //static final Log log = LogFactory.getLog(SQLEditorInputFactory.class);
+    static final Log log = LogFactory.getLog(SQLEditorInputFactory.class);
 
     private static final String ID_FACTORY = SQLEditorInputFactory.class.getName(); //$NON-NLS-1$
 
@@ -45,6 +47,7 @@ public class SQLEditorInputFactory implements IElementFactory
                 try {
                     file.create(new ByteArrayInputStream(new byte[0]), true, new NullProgressMonitor());
                 } catch (CoreException e) {
+                    log.error("Can't create new file", e);
                     return null;
                 }
             }

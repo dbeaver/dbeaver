@@ -49,6 +49,7 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -186,7 +187,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 return DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project).getDataSources();
             }
         }
-        return null;
+        return Collections.emptyList();
     }
 
     public void setActivePart(IWorkbenchPart part)

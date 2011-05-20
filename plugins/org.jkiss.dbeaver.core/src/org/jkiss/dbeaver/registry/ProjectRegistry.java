@@ -220,9 +220,10 @@ public class ProjectRegistry implements IResourceChangeListener {
     public static String getProjectId(IProject project)
     {
         try {
-            final String projectId = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
+            String projectId = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
             if (projectId == null) {
-                throw new IllegalStateException("Project '" + project.getName() + "' do not have project ID");
+                project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, projectId = SecurityUtils.generateGUID(false));
+                log.warn("Project '" + project.getName() + "' didn't has project ID");
             }
             return projectId;
         } catch (CoreException e) {
