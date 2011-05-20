@@ -37,6 +37,7 @@ public final class PrefConstants
     public static final String CONFIRM_ENTITY_DELETE = "entity.delete";
     public static final String CONFIRM_ENTITY_REJECT = "entity.reject";
     public static final String CONFIRM_ENTITY_REVERT = "entity.revert";
+    //public static final String CONFIRM_ENTITY_RENAME = "entity.rename";
     public static final String CONFIRM_EDITOR_CLOSE = "close.editor.edit";
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver.download";
 

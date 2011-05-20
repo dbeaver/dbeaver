@@ -434,6 +434,23 @@ public class ViewUtils
         }
     }
 
+    public static boolean isCommandEnabled(String commandId, IWorkbenchPart part)
+    {
+        if (commandId != null) {
+            try {
+                //Command cmd = new Command();
+                ICommandService commandService = (ICommandService)part.getSite().getService(ICommandService.class);
+                if (commandService != null) {
+                    Command command = commandService.getCommand(commandId);
+                    return command != null && command.isEnabled();
+                }
+            } catch (Exception e) {
+                log.error("Could not execute command '" + commandId + "'", e);
+            }
+        }
+        return false;
+    }
+
     public static void runCommand(String commandId, IWorkbenchPart part)
     {
         if (commandId != null) {

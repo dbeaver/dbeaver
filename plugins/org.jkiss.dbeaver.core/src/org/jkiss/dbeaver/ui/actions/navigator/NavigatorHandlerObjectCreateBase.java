@@ -120,23 +120,4 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         return true;
     }
 
-    private static class ObjectSaver implements DBRRunnableWithProgress {
-        private final DBECommandContext commandContext;
-
-        public ObjectSaver(DBECommandContext commandContext)
-        {
-            this.commandContext = commandContext;
-        }
-
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-        {
-            try {
-                commandContext.saveChanges(monitor);
-            } catch (DBException e) {
-                throw new InvocationTargetException(e);
-            }
-        }
-
-    }
-
 }

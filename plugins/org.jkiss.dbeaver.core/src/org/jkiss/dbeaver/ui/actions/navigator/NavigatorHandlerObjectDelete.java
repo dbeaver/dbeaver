@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFolder;
@@ -30,29 +29,20 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -65,6 +55,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         this.structSelection = null;
         this.deleteAll = null;
 
+        final IWorkbenchWindow activeWorkbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         if (selection instanceof IStructuredSelection) {
@@ -72,9 +63,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
                 if (element instanceof DBNDatabaseNode) {
-                    deleteObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNDatabaseNode)element);
+                    deleteObject(activeWorkbenchWindow, (DBNDatabaseNode)element);
                 } else if (element instanceof DBNResource) {
-                    deleteResource(HandlerUtil.getActiveWorkbenchWindow(event), (DBNResource)element);
+                    deleteResource(activeWorkbenchWindow, (DBNResource)element);
                 } else {
                     log.warn("Don't know how to delete element '" + element + "'");
                 }
@@ -126,15 +117,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (object == null) {
                 throw new DBException("Can't delete node with null object");
             }
-            DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
-            if (objectManager == null) {
-                throw new DBException("Object manager not found for type '" + object.getClass().getName() + "'");
-            }
-            if (!(objectManager instanceof DBEObjectMaker)) {
-                throw new DBException("Object manager '" + objectManager.getClass().getName() + "' do not supports object deletion");
+            DBEObjectMaker objectMaker = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
+            if (objectMaker == null) {
+                throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'");
             }
 
-            DBEObjectMaker objectMaker = (DBEObjectMaker)objectManager;
             Map<String, Object> deleteOptions = null;
 
             CommandTarget commandTarget = getCommandTarget(
@@ -167,7 +154,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 return true;
             }
             if (confirmResult == ConfirmResult.DETAILS) {
-                if (!showScript(workbenchWindow, commandTarget.getContext())) {
+                if (!showScript(workbenchWindow, commandTarget.getContext(), "Delete script")) {
                     commandTarget.getContext().resetChanges();
                     return false;
                 }
@@ -175,7 +162,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
             if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
                 // Persist object deletion - only if there is no host editor and we have a command context
-                ObjectDeleter deleter = new ObjectDeleter(commandTarget.getContext());
+                ObjectSaver deleter = new ObjectSaver(commandTarget.getContext());
                 DBeaverCore.getInstance().runInProgressService(deleter);
             }
 
@@ -213,37 +200,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             }
         }
         return false;
-    }
-
-    private boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext)
-    {
-        Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
-        StringBuilder script = new StringBuilder();
-        for (DBECommand command : commands) {
-            IDatabasePersistAction[] persistActions = command.getPersistActions();
-            if (!CommonUtils.isEmpty(persistActions)) {
-                for (IDatabasePersistAction action : persistActions) {
-                    if (script.length() > 0) {
-                        script.append('\n');
-                    }
-                    script.append(action.getScript());
-                    script.append(commandContext.getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
-                }
-            }
-        }
-        DatabaseNavigatorView view = ViewUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
-        if (view != null) {
-            ViewSQLDialog dialog = new ViewSQLDialog(
-                view.getSite(),
-                commandContext.getDataSourceContainer(),
-                "Delete script",
-                script.toString());
-            dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
-            dialog.setShowSaveButton(true);
-            return dialog.open() == IDialogConstants.PROCEED_ID;
-        } else {
-            return false;
-        }
     }
 
     enum ConfirmResult {
@@ -326,22 +282,5 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         }
     }
 
-    private static class ObjectDeleter implements DBRRunnableWithProgress {
-        private final DBECommandContext commander;
-
-        public ObjectDeleter(DBECommandContext commandContext)
-        {
-            this.commander = commandContext;
-        }
-
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-        {
-            try {
-                commander.saveChanges(monitor);
-            } catch (DBException e) {
-                throw new InvocationTargetException(e);
-            }
-        }
-    }
 
 }

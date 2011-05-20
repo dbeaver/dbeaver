@@ -18,6 +18,7 @@ public final class ICommandIds
     public static final String CMD_OBJECT_OPEN = "org.jkiss.dbeaver.core.object.open";
     public static final String CMD_OBJECT_CREATE = "org.jkiss.dbeaver.core.object.create";
     public static final String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete";
+    //public static final String CMD_OBJECT_RENAME = "org.jkiss.dbeaver.core.object.rename";
     public static final String CMD_OBJECT_FIND = "org.jkiss.dbeaver.core.object.find";
 
     public static final String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement";

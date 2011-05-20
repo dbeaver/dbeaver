@@ -4,9 +4,11 @@
 
 package org.jkiss.dbeaver.ui.actions.navigator;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -14,19 +16,28 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
-import org.jkiss.dbeaver.model.DBPPersistedObject;
+import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 
 public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
@@ -63,7 +74,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         }
     }
 
-    protected CommandTarget getCommandTarget(
+    protected static CommandTarget getCommandTarget(
         IWorkbenchWindow workbenchWindow,
         DBNContainer container,
         Class<?> childType,
@@ -112,7 +123,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         }
     }
 
-    private void switchEditorFolder(DBNContainer container, IEditorPart editor)
+    private static void switchEditorFolder(DBNContainer container, IEditorPart editor)
     {
         if (editor instanceof IFolderedPart && container instanceof DBNDatabaseFolder) {
             ((IFolderedPart) editor).switchFolder(((DBNDatabaseFolder) container).getMeta().getLabel());
@@ -137,6 +148,37 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         return node;
     }
 
+    protected static boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, String dialogTitle)
+    {
+        Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
+        StringBuilder script = new StringBuilder();
+        for (DBECommand command : commands) {
+            IDatabasePersistAction[] persistActions = command.getPersistActions();
+            if (!CommonUtils.isEmpty(persistActions)) {
+                for (IDatabasePersistAction action : persistActions) {
+                    if (script.length() > 0) {
+                        script.append('\n');
+                    }
+                    script.append(action.getScript());
+                    script.append(commandContext.getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
+                }
+            }
+        }
+        DatabaseNavigatorView view = ViewUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
+        if (view != null) {
+            ViewSQLDialog dialog = new ViewSQLDialog(
+                view.getSite(),
+                commandContext.getDataSourceContainer(),
+                dialogTitle,
+                script.toString());
+            dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
+            dialog.setShowSaveButton(true);
+            return dialog.open() == IDialogConstants.PROCEED_ID;
+        } else {
+            return false;
+        }
+    }
+
     private static class NodeLoader implements DBRRunnableWithProgress {
         private final DBNModel model;
         private final DBSObject object;
@@ -153,4 +195,23 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             node = model.getNodeByObject(monitor, object, true);
         }
     }
+
+    protected static class ObjectSaver implements DBRRunnableWithProgress {
+        private final DBECommandContext commander;
+
+        public ObjectSaver(DBECommandContext commandContext)
+        {
+            this.commander = commandContext;
+        }
+
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        {
+            try {
+                commander.saveChanges(monitor);
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
+            }
+        }
+    }
+
 }

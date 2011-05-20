@@ -19,6 +19,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -28,7 +29,10 @@ import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -221,7 +225,8 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 return;
             }
 
-            if (!(newSelection.getData() instanceof DBNNode) || !((DBNNode)newSelection.getData()).supportsRename()) {
+            if (!(newSelection.getData() instanceof DBNNode) ||
+                !(ViewUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActivePart()))) {
                 curSelection = null;
                 return;
             }
@@ -285,27 +290,11 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 if (e.keyCode == SWT.CR) {
                     Text text = (Text) treeEditor.getEditor();
                     final String newName = text.getText();
-                    if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
-                        try {
-                            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
-                                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                                {
-                                    try {
-                                        node.rename(monitor, newName);
-                                    } catch (DBException e1) {
-                                        throw new InvocationTargetException(e1);
-                                    }
-                                }
-                            });
-                        } catch (InvocationTargetException e1) {
-                            UIUtils.showErrorDialog(getShell(), "Rename failed", null, e1.getTargetException());
-                        } catch (InterruptedException e1) {
-                            // do nothing
-                        }
-                    }
-
                     disposeOldEditor();
                     viewer.getTree().setFocus();
+                    if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
+                        NavigatorHandlerObjectRename.renameNode(DBeaverCore.getActiveWorkbenchWindow(), node, newName);
+                    }
                 } else if (e.keyCode == SWT.ESC) {
                     disposeOldEditor();
                     viewer.getTree().setFocus();

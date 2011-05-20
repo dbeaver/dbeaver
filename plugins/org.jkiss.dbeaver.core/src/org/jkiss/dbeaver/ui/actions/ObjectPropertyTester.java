@@ -10,13 +10,14 @@ import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
 import java.util.Collection;
@@ -55,7 +56,7 @@ public class ObjectPropertyTester extends PropertyTester
             } else if (node.isManagable() && node instanceof DBSWrapper) {
                 objectType = ((DBSWrapper)node).getObject() == null ? null : ((DBSWrapper)node).getObject().getClass();
             }
-            if (objectType == null || !hasObjectMaker(objectType)) {
+            if (objectType == null || !hasObjectManager(objectType, DBEObjectMaker.class)) {
                 return false;
             }
             if (property.equals(PROP_CAN_CREATE)) {
@@ -83,23 +84,30 @@ public class ObjectPropertyTester extends PropertyTester
                 return
                     node.getParentNode() instanceof DBNContainer &&
                     object != null &&
-                    hasObjectMaker(object.getClass());
+                    hasObjectManager(object.getClass(), DBEObjectMaker.class);
             } else if (node instanceof DBNResource) {
                 if ((((DBNResource)node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
                     return true;
                 }
             }
         } else if (property.equals(PROP_CAN_RENAME)) {
-            return node.supportsRename();
+            if (node.supportsRename()) {
+                return true;
+            }
+            if (node instanceof DBNDatabaseNode) {
+                DBSObject object = ((DBNDatabaseNode)node).getObject();
+                return
+                    node.getParentNode() instanceof DBNContainer &&
+                    object != null &&
+                    hasObjectManager(object.getClass(), DBEObjectRenamer.class);
+            }
         }
         return false;
     }
 
-    private static boolean hasObjectMaker(Class objectType)
+    private static boolean hasObjectManager(Class objectType, Class<? extends DBEObjectManager> managerType)
     {
-        EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
-        DBEObjectManager<?> objectManager = editorsRegistry.getObjectManager(objectType);
-        return objectManager != null && DBEObjectMaker.class.isAssignableFrom(objectManager.getClass());
+        return DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(objectType, managerType) != null;
     }
 
     public static void firePropertyChange(String propName)

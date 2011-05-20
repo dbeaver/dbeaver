@@ -9,10 +9,8 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
@@ -203,14 +201,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return true;
     }
 
-    @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException
-    {
-        //final DBSObject object = getObject();
-        //DBEObjectRenamer objectRenamer = (DBEObjectRenamer) DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
-        //objectRenamer.renameObject(monitor, object, newName);
-    }
-
+/*
     @Override
     public boolean supportsRename()
     {
@@ -218,6 +209,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return !(object == null || !object.isPersisted()) &&
             DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
     }
+*/
 
     /**
      * Refreshes node.
