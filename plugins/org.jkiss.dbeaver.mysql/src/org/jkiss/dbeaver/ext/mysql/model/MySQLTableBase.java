@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -23,7 +24,7 @@ import java.util.List;
 /**
  * MySQLTable base
  */
-public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCatalog>
+public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCatalog> implements DBPNamedObject2
 {
     static final Log log = LogFactory.getLog(MySQLTableBase.class);
 

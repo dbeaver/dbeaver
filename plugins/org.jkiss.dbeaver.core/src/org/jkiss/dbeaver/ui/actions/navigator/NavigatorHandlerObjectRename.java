@@ -9,7 +9,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
@@ -18,8 +17,6 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,23 +42,18 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
 
     public static boolean renameNode(IWorkbenchWindow workbenchWindow, final DBNNode node, String newName)
     {
-        if (node instanceof DBNDatabaseNode) {
-            if (renameDatabaseObject(
-                workbenchWindow,
-                (DBNDatabaseNode) node,
-                null)) {
-                return true;
-            }
+        if (newName == null) {
+            newName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Rename " + node.getNodeType(), node.getNodeName());
+        }
+        if (CommonUtils.isEmpty(newName) || newName.equals(node.getNodeName())) {
+            return false;
         }
 
-        Shell activeShell = workbenchWindow.getShell();
-        if (newName == null) {
-            newName = EnterNameDialog.chooseName(activeShell, "Rename " + node.getNodeType(), node.getNodeName());
-        }
-        if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
+        if (node.supportsRename()) {
             try {
                 // Rename with null monitor because it is some local resource
                 node.rename(VoidProgressMonitor.INSTANCE, newName);
+                return true;
 /*
                 final String newNodeName = newName;
                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
@@ -76,10 +68,16 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 });
 */
             } catch (DBException e) {
-                UIUtils.showErrorDialog(activeShell, "Rename", "Can't rename object '" + node.getNodeName() + "'", e);
+                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Rename", "Can't rename object '" + node.getNodeName() + "'", e);
             }
         }
-        return true;
+        if (node instanceof DBNDatabaseNode) {
+            return renameDatabaseObject(
+                workbenchWindow,
+                (DBNDatabaseNode) node,
+                newName);
+        }
+        return false;
     }
 
     public static boolean renameDatabaseObject(IWorkbenchWindow workbenchWindow, DBNDatabaseNode node, String newName)

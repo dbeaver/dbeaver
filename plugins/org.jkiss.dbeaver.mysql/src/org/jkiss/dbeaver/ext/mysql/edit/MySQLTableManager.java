@@ -6,9 +6,13 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
@@ -18,7 +22,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 /**
  * MySQL table manager
  */
-public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog> {
+public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog> implements DBEObjectRenamer<MySQLTable> {
 
     private static final Class<?>[] CHILD_TYPES = {
         MySQLTableColumn.class,
@@ -81,9 +85,23 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
         }
     }
 
+    protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    {
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction(
+                "Rename table",
+                "RENAME TABLE " + command.getObject().getFullQualifiedName() +
+                    " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()))
+        };
+    }
+
     public Class<?>[] getChildTypes()
     {
         return CHILD_TYPES;
     }
 
+    public void renameObject(DBECommandContext commandContext, MySQLTable object, String newName) throws DBException
+    {
+        processObjectRename(commandContext, object, newName);
+    }
 }

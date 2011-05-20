@@ -101,6 +101,12 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         throw new IllegalStateException("Object modification is not supported in " + getClass().getSimpleName());
     }
 
+    protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    {
+        // Base SQL syntax do not support object properties change
+        throw new IllegalStateException("Object rename is not supported in " + getClass().getSimpleName());
+    }
+
     protected abstract IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command);
 
     protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, ObjectChangeCommand command)
@@ -117,6 +123,12 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         throws DBException
     {
 
+    }
+
+    protected void processObjectRename(DBECommandContext commandContext, OBJECT_TYPE object, String newName) throws DBException
+    {
+        ObjectRenameCommand command = new ObjectRenameCommand(object, "Rename object", newName);
+        commandContext.addCommand(command, new RenameObjectReflector());
     }
 
     protected class PropertyHandler
@@ -226,7 +238,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         }
     }
 
-    protected static abstract class ObjectRenameCommand<OBJECT_TYPE extends DBSObject & DBPNamedObject2> extends DBECommandAbstract<OBJECT_TYPE> {
+    protected class ObjectRenameCommand extends DBECommandAbstract<OBJECT_TYPE> {
         private String oldName;
         private String newName;
 
@@ -237,28 +249,47 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             this.newName = newName;
         }
 
-        public abstract IDatabasePersistAction[] getPersistActions();
+        public String getOldName()
+        {
+            return oldName;
+        }
+
+        public String getNewName()
+        {
+            return newName;
+        }
+
+        public IDatabasePersistAction[] getPersistActions()
+        {
+            return makeObjectRenameActions(this);
+        }
 
         @Override
         public void updateModel()
         {
-            getObject().setName(newName);
-            DBUtils.fireObjectUpdate(getObject());
+            if (getObject() instanceof DBPNamedObject2) {
+                ((DBPNamedObject2)getObject()).setName(newName);
+                DBUtils.fireObjectUpdate(getObject());
+            }
         }
     }
 
-    public static class RenameObjectReflector<OBJECT_TYPE extends DBSObject & DBPNamedObject2> implements DBECommandReflector<OBJECT_TYPE, ObjectRenameCommand<OBJECT_TYPE>> {
+    public class RenameObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectRenameCommand> {
 
-        public void redoCommand(ObjectRenameCommand<OBJECT_TYPE> command)
+        public void redoCommand(ObjectRenameCommand command)
         {
-            command.getObject().setName(command.newName);
-            DBUtils.fireObjectUpdate(command.getObject());
+            if (command.getObject() instanceof DBPNamedObject2) {
+                ((DBPNamedObject2)command.getObject()).setName(command.newName);
+                DBUtils.fireObjectUpdate(command.getObject());
+            }
         }
 
-        public void undoCommand(ObjectRenameCommand<OBJECT_TYPE> command)
+        public void undoCommand(ObjectRenameCommand command)
         {
-            command.getObject().setName(command.oldName);
-            DBUtils.fireObjectUpdate(command.getObject());
+            if (command.getObject() instanceof DBPNamedObject2) {
+                ((DBPNamedObject2)command.getObject()).setName(command.oldName);
+                DBUtils.fireObjectUpdate(command.getObject());
+            }
         }
 
     }
