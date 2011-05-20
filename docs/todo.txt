@@ -1,0 +1,4 @@
+rename mysql (generic?) table,column
+comment mysql table, column
+
+scripts refactoring
