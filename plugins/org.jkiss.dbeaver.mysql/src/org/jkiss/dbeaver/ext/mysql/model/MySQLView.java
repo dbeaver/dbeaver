@@ -44,6 +44,8 @@ public class MySQLView extends MySQLTableBase
         private boolean updatable;
         private String definer;
 
+        public boolean isLoaded() { return loaded; }
+
         public String getDefinition() { return definition; }
         @Property(name = "Check Option", viewable = true, editable = true, order = 4) public CheckOption getCheckOption() { return checkOption; }
         @Property(name = "Updatable", viewable = true, editable = true, order = 5) public boolean isUpdatable() { return updatable; }

@@ -248,9 +248,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         }
     }
 
-    public void formatSQL()
+    public void doOperation(int operation)
     {
-        ((SQLEditorSourceViewer) getSourceViewer()).doOperation(ISourceViewer.FORMAT);
+        ((SQLEditorSourceViewer) getSourceViewer()).doOperation(operation);
     }
 
     public synchronized void updateFoldingStructure(int offset, int length, List<Position> positions)

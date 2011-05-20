@@ -50,12 +50,17 @@ public class ObjectPropertyTester extends PropertyTester
             return node.isPersisted();
         } else if (property.equals(PROP_CAN_CREATE) || property.equals(PROP_CAN_PASTE)) {
             Class objectType = null;
+            if (!(node instanceof DBNContainer)) {
+                if (node.getParentNode() instanceof DBNContainer) {
+                    node = node.getParentNode();
+                }
+            }
             if (node instanceof DBNContainer) {
                 // Try to detect child type
                 objectType = ((DBNContainer)node).getItemsClass();
-            } else if (node.isManagable() && node instanceof DBSWrapper) {
+            }/* else if (node.isManagable() && node instanceof DBSWrapper) {
                 objectType = ((DBSWrapper)node).getObject() == null ? null : ((DBSWrapper)node).getObject().getClass();
-            }
+            }*/
             if (objectType == null || !hasObjectManager(objectType, DBEObjectMaker.class)) {
                 return false;
             }

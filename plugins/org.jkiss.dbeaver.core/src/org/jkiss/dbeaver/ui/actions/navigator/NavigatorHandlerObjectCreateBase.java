@@ -41,6 +41,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     container = (DBNContainer) parentNode;
                 }
             }
+            if (container == null) {
+                throw new DBException("Can't detect container for '" + element.getNodeName() + "'");
+            }
             Class<?> childType = container.getItemsClass();
             if (childType == null) {
                 throw new DBException("Can't determine child element type for container '" + container + "'");

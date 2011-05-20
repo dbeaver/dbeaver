@@ -83,6 +83,8 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
     @Override
     public void aboutToBeShown()
     {
+        getPart().getSite().setSelectionProvider(propertyTree);
+        //propertyTree.setSelection(propertyTree.getSelection());
 //        if (editor instanceof IProgressControlProvider) {
 //            ((IProgressControlProvider)editor).getProgressControl().activate(true);
 //        }
