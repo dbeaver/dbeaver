@@ -77,7 +77,7 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
         return new ITabDescriptor[] {
             new PropertyTabDescriptor(
                 PropertiesContributor.CATEGORY_INFO,
-                PropertiesContributor.TAB_STANDARD,
+                "view.definition",
                 "Definition",
                 DBIcon.TREE_VIEW.getImage(),
                 new SectionDescriptor("default", "Definition") {
