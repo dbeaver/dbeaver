@@ -9,16 +9,16 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
-import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBECommandFilter;
+import org.jkiss.dbeaver.model.edit.DBECommandQueue;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectScriptCommand;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,11 +43,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
             newUser.setMaxConnections(tplUser.getMaxConnections());
             newUser.setMaxUserConnections(tplUser.getMaxUserConnections());
         }
-        List<DBECommand> commands = new ArrayList<DBECommand>();
-        commands.add(new CommandCreateUser(newUser));
-        commands.add(new DBECommandProperty<MySQLUser>(newUser, UserPropertyHandler.NAME, newUser.getUserName(), newUser.getUserName()));
-        commands.add(new DBECommandProperty<MySQLUser>(newUser, UserPropertyHandler.HOST, newUser.getHost(), newUser.getHost()));
-        commandContext.addCommandBatch(commands, new CreateObjectReflector(), true);
+        commandContext.addCommand(new CommandCreateUser(newUser), new CreateObjectReflector(), true);
 
         return newUser;
     }

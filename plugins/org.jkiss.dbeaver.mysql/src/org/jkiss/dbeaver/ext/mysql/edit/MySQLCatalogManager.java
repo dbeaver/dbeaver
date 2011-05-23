@@ -40,7 +40,7 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction("Create schema", "CREATE SCHEMA " + command.getObject().getName())

@@ -25,7 +25,7 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         final TABLE_TYPE table = command.getObject().getTable();
         final OBJECT_TYPE index = command.getObject();

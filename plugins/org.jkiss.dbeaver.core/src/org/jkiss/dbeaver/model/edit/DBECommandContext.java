@@ -43,7 +43,7 @@ public interface DBECommandContext extends IDataSourceContainerProvider {
 
     void addCommand(DBECommand command, DBECommandReflector reflector, boolean execute);
 
-    void addCommandBatch(List<DBECommand> commands, DBECommandReflector reflector, boolean execute);
+    //void addCommandBatch(List<DBECommand> commands, DBECommandReflector reflector, boolean execute);
 
     void removeCommand(DBECommand<?> command);
 

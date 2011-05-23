@@ -251,6 +251,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         refreshCommandState();
     }
 
+/*
     public void addCommandBatch(List<DBECommand> commandBatch, DBECommandReflector reflector, boolean execute)
     {
         if (commandBatch.isEmpty()) {
@@ -277,6 +278,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
         refreshCommandState();
     }
+*/
 
     public void removeCommand(DBECommand<?> command)
     {
@@ -548,7 +550,7 @@ public class DBECommandContextImpl implements DBECommandContext {
             ((DBECommandAggregator)aggregator.command).resetAggregatedCommands();
             for (CommandQueue queue : commandQueues) {
                 for (CommandInfo cmd : queue.commands) {
-                    if (cmd.mergedBy == null && ((DBECommandAggregator)aggregator.command).aggregateCommand(cmd.command)) {
+                    if (cmd.command != aggregator.command && cmd.mergedBy == null && ((DBECommandAggregator)aggregator.command).aggregateCommand(cmd.command)) {
                         cmd.mergedBy = aggregator;
                     }
                 }

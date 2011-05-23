@@ -61,7 +61,7 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
     }
 
     @Override
-    protected void appendTableModifiers(MySQLTable table, ObjectChangeCommand tableProps, StringBuilder ddl)
+    protected void appendTableModifiers(MySQLTable table, NestedObjectCommand tableProps, StringBuilder ddl)
     {
         try {
             final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);

@@ -30,15 +30,20 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
         return new StructCreateCommand(object, "Create new object");
     }
 
-    protected Collection<ObjectChangeCommand> getNestedOrderedCommands(StructCreateCommand structCommand)
+    protected Collection<NestedObjectCommand> getNestedOrderedCommands(final StructCreateCommand structCommand)
     {
-        List<ObjectChangeCommand> nestedCommands = new ArrayList<ObjectChangeCommand>();
+        List<NestedObjectCommand> nestedCommands = new ArrayList<NestedObjectCommand>();
         nestedCommands.addAll(structCommand.getObjectCommands().values());
-        Collections.sort(nestedCommands, new Comparator<ObjectChangeCommand>() {
-            public int compare(ObjectChangeCommand o1, ObjectChangeCommand o2)
+        Collections.sort(nestedCommands, new Comparator<NestedObjectCommand>() {
+            public int compare(NestedObjectCommand o1, NestedObjectCommand o2)
             {
                 final DBPObject object1 = o1.getObject();
                 final DBPObject object2 = o2.getObject();
+                if (object1 == structCommand.getObject()) {
+                    return 1;
+                } else if (object2 == structCommand.getObject()) {
+                    return -1;
+                }
                 int order1 = -1, order2 = 1;
                 Class<?>[] childTypes = getChildTypes();
                 for (int i = 0, childTypesLength = childTypes.length; i < childTypesLength; i++) {
@@ -60,22 +65,22 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
     protected class StructCreateCommand extends ObjectCreateCommand
         implements DBECommandAggregator<OBJECT_TYPE> {
 
-        private final Map<DBPObject, ObjectChangeCommand> objectCommands = new IdentityHashMap<DBPObject, ObjectChangeCommand>();
+        private final Map<DBPObject, NestedObjectCommand> objectCommands = new IdentityHashMap<DBPObject, NestedObjectCommand>();
 
         public StructCreateCommand(OBJECT_TYPE object, String table)
         {
             super(object, table);
         }
 
-        public Map<DBPObject, ObjectChangeCommand> getObjectCommands()
+        public Map<DBPObject, NestedObjectCommand> getObjectCommands()
         {
             return objectCommands;
         }
 
         public boolean aggregateCommand(DBECommand<?> command)
         {
-            if (ObjectChangeCommand.class.isAssignableFrom(command.getClass())) {
-                objectCommands.put(command.getObject(), (ObjectChangeCommand) command);
+            if (command instanceof NestedObjectCommand) {
+                objectCommands.put(command.getObject(), (NestedObjectCommand) command);
                 return true;
             } else {
                 return false;
@@ -85,6 +90,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
         public void resetAggregatedCommands()
         {
             objectCommands.clear();
+            objectCommands.put(getObject(), this);
         }
 
         public IDatabasePersistAction[] getPersistActions()

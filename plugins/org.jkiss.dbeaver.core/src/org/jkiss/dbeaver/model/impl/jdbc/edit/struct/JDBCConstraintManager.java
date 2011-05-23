@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -25,7 +26,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         final TABLE_TYPE table = command.getObject().getTable();
 
@@ -47,7 +48,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
         };
     }
 
-    public StringBuilder getNestedDeclaration(TABLE_TYPE owner, ObjectChangeCommand command)
+    public StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandComposite<OBJECT_TYPE, PropertyHandler> command)
     {
         OBJECT_TYPE constraint = command.getObject();
 

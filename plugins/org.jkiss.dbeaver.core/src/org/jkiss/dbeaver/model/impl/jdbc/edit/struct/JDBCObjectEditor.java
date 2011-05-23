@@ -13,17 +13,17 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.*;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.ProxyPropertyDescriptor;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,7 +52,10 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             return null;
         }
 
-        makeInitialCommands(newObject, commandContext, makeCreateCommand(newObject));
+        //context.addCommandBatch(commands, );
+        final ObjectCreateCommand createCommand = makeCreateCommand(newObject);
+        commandContext.getUserParams().put(newObject, createCommand);
+        commandContext.addCommand(createCommand, new CreateObjectReflector(), true);
 
         return newObject;
     }
@@ -69,6 +72,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         return new ObjectCreateCommand(object, "Create new object");
     }
 
+/*
     protected void makeInitialCommands(
         OBJECT_TYPE object,
         DBECommandContext context,
@@ -90,10 +94,11 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
         context.addCommandBatch(commands, new CreateObjectReflector(), true);
     }
+*/
 
     protected abstract OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, CONTAINER_TYPE parent, Object copyFrom);
 
-    protected abstract IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command);
+    protected abstract IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command);
 
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
@@ -109,7 +114,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
     protected abstract IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command);
 
-    protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, ObjectChangeCommand command)
+    protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, DBECommandComposite<OBJECT_TYPE, PropertyHandler> command)
     {
         return null;
     }
@@ -177,7 +182,18 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
     }
 
-    protected class ObjectChangeCommand extends DBECommandComposite<OBJECT_TYPE, PropertyHandler>
+    protected static abstract class NestedObjectCommand<OBJECT_TYPE extends DBSObject & DBPSaveableObject, HANDLER_TYPE extends DBEPropertyHandler<OBJECT_TYPE>> extends DBECommandComposite<OBJECT_TYPE, HANDLER_TYPE> {
+
+        protected NestedObjectCommand(OBJECT_TYPE object, String title)
+        {
+            super(object, title);
+        }
+
+        public abstract String getNestedDeclaration(DBSObject owner);
+
+    }
+
+    protected class ObjectChangeCommand extends NestedObjectCommand<OBJECT_TYPE, PropertyHandler>
     {
         private ObjectChangeCommand(OBJECT_TYPE object)
         {
@@ -186,11 +202,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
         public IDatabasePersistAction[] getPersistActions()
         {
-            if (getObject().isPersisted()) {
-                return makeObjectModifyActions(this);
-            } else {
-                return makeObjectCreateActions(this);
-            }
+            return makeObjectModifyActions(this);
         }
 
         @Override
@@ -209,11 +221,16 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         }
     }
 
-    protected class ObjectCreateCommand extends DBECommandAbstract<OBJECT_TYPE> {
+    protected class ObjectCreateCommand extends NestedObjectCommand<OBJECT_TYPE, PropertyHandler> {
 
         protected ObjectCreateCommand(OBJECT_TYPE object, String title)
         {
             super(object, title);
+        }
+
+        public IDatabasePersistAction[] getPersistActions()
+        {
+            return makeObjectCreateActions(this);
         }
 
         @Override
@@ -223,6 +240,15 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
                 getObject().setPersisted(true);
                 DBUtils.fireObjectUpdate(getObject());
             }
+        }
+
+        public String getNestedDeclaration(DBSObject owner)
+        {
+            // It is a trick
+            // This method may be invoked from another Editor with different OBJECT_TYPE and CONTAINER_TYPE
+            // TODO: May be we should make ObjectChangeCommand static
+            final StringBuilder decl = JDBCObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this);
+            return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }
     }
 

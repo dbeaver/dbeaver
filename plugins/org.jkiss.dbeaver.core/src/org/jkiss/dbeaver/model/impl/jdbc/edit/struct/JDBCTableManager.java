@@ -27,7 +27,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    protected final IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand objectChangeCommand)
+    protected final IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectChangeCommand)
     {
         throw new IllegalStateException("makeObjectCreateActions should never be called in struct editor");
     }
@@ -36,7 +36,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     protected IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command)
     {
         final OBJECT_TYPE table = command.getObject();
-        final ObjectChangeCommand tableProps = command.getObjectCommands().get(table);
+        final NestedObjectCommand tableProps = command.getObjectCommands().get(table);
         if (tableProps == null) {
             log.warn("Object change command not found");
             return null;
@@ -48,7 +48,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append("CREATE TABLE ").append(tableName).append(" (").append(lineSeparator);
         boolean hasNestedDeclarations = false;
-        for (ObjectChangeCommand nestedCommand : getNestedOrderedCommands(command)) {
+        for (NestedObjectCommand nestedCommand : getNestedOrderedCommands(command)) {
             if (nestedCommand.getObject() == table) {
                 continue;
             }
@@ -85,7 +85,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         };
     }
 
-    protected void appendTableModifiers(OBJECT_TYPE table, ObjectChangeCommand tableProps, StringBuilder ddl)
+    protected void appendTableModifiers(OBJECT_TYPE table, NestedObjectCommand tableProps, StringBuilder ddl)
     {
 
     }

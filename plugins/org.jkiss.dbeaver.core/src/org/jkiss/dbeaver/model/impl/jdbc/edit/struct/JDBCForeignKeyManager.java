@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
@@ -30,7 +31,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectChangeCommand command)
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         final TABLE_TYPE table = command.getObject().getTable();
         return new IDatabasePersistAction[] {
@@ -51,7 +52,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
         };
     }
 
-    protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, ObjectChangeCommand command)
+    protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandComposite<OBJECT_TYPE, PropertyHandler> command)
     {
         OBJECT_TYPE foreignKey = command.getObject();
 
