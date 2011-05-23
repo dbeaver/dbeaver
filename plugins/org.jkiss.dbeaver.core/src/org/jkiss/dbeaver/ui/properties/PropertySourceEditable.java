@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ui.properties;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;

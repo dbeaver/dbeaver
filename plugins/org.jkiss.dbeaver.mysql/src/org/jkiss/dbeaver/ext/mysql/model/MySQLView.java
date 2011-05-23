@@ -128,6 +128,7 @@ public class MySQLView extends MySQLTableBase
     @Override
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
+        additionalInfo.loaded = false;
         super.refreshEntity(monitor);
         return true;
     }
