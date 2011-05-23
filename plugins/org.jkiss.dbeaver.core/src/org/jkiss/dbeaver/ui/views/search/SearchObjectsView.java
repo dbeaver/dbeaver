@@ -238,7 +238,7 @@ public class SearchObjectsView extends ViewPart {
                         if (element instanceof DBNNode) {
                             if (element instanceof DBNDatabaseFolder) {
                                 DBNDatabaseFolder folder = (DBNDatabaseFolder)element;
-                                Class<? extends DBSObject> folderItemsClass = folder.getItemsClass();
+                                Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
                                 return folderItemsClass != null && DBSEntityContainer.class.isAssignableFrom(folderItemsClass);
                             }
                             if (element instanceof DBNProjectDatabases || element instanceof DBNDataSource || (element instanceof DBSWrapper && ((DBSWrapper)element).getObject() instanceof DBSEntityContainer)) {

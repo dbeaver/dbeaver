@@ -46,7 +46,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 if (node != null) {
                     String objectName;
                     if (node instanceof DBNContainer) {
-                        objectName = ((DBNContainer)node).getItemsLabel();
+                        objectName = ((DBNContainer)node).getChildrenType();
                     } else {
                         objectName = node.getNodeType();
                     }

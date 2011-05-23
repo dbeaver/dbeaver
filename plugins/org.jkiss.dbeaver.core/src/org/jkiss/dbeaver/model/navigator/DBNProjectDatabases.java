@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
@@ -65,31 +64,14 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
         return dataSourceRegistry;
     }
 
-    public String getItemsLabel()
+    public String getChildrenType()
     {
         return "Connection";
     }
 
-    public Class<DataSourceDescriptor> getItemsClass()
+    public Class<DataSourceDescriptor> getChildrenClass()
     {
         return DataSourceDescriptor.class;
-    }
-
-    public DBNNode addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException
-    {
-        if (childObject instanceof DataSourceDescriptor) {
-            return addDataSource((DataSourceDescriptor)childObject, true);
-        }
-        throw new IllegalArgumentException("Only data source descriptors could be added to root node");
-    }
-
-    public void removeChildItem(DBNNode item) throws DBException
-    {
-        if (item instanceof DBNDataSource) {
-            removeDataSource(((DBNDataSource)item).getObject());
-        } else {
-            throw new IllegalArgumentException("Only data source descriptors could be removed from root node");
-        }
     }
 
     public String getNodeName()

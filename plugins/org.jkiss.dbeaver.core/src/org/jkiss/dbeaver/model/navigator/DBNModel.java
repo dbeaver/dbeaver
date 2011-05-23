@@ -170,7 +170,7 @@ public class DBNModel implements IResourceChangeListener {
         if (!CommonUtils.isEmpty(children)) {
             for (DBNDatabaseNode child : children) {
                 if (child instanceof DBNDatabaseFolder) {
-                    Class<?> itemsClass = ((DBNDatabaseFolder) child).getItemsClass();
+                    Class<?> itemsClass = ((DBNDatabaseFolder) child).getChildrenClass();
                     if (itemsClass != null && itemsClass.isAssignableFrom(objectType)) {
                         cacheNodeChildren(monitor, child, objectType);
                     }
@@ -211,7 +211,7 @@ public class DBNModel implements IResourceChangeListener {
                 // Try to find parent node withing children
                 for (DBNDatabaseNode child : children) {
                     if (child instanceof DBNDatabaseFolder) {
-                        Class<?> itemsClass = ((DBNDatabaseFolder) child).getItemsClass();
+                        Class<?> itemsClass = ((DBNDatabaseFolder) child).getChildrenClass();
                         if (itemsClass != null && itemsClass.isAssignableFrom(object.getClass())) {
                             return child;
                         }

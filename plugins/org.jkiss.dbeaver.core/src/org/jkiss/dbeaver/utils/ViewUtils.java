@@ -38,8 +38,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
-import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
@@ -234,12 +232,7 @@ public class ViewUtils
                         if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
                             DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                             if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
-                                DBXTreeNode nodeMeta = databaseNode.getMeta();
-                                String text = "Set Active";
-                                if (nodeMeta instanceof DBXTreeItem) {
-                                    DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
-                                    text += " " + itemMeta.getItemLabel();
-                                }
+                                String text = "Set Active " + databaseNode.getNodeType();
                                 IAction action = makeAction(new NavigatorActionSetActiveObject(), workbenchPart, selection, text, null, null);
 
                                 manager.add(action);

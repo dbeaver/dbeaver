@@ -117,7 +117,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
                         final List<DBNDatabaseNode> folders = tableNode.getChildren(monitor);
                         for (DBNDatabaseNode node : folders) {
                             if (node instanceof DBNContainer) {
-                                final Class<?> itemsClass = ((DBNContainer) node).getItemsClass();
+                                final Class<?> itemsClass = ((DBNContainer) node).getChildrenClass();
                                 if (itemsClass != null && DBSTableColumn.class.isAssignableFrom(itemsClass)) {
                                     final List<DBNDatabaseNode> children = node.getChildren(monitor);
                                     if (!CommonUtils.isEmpty(children)) {

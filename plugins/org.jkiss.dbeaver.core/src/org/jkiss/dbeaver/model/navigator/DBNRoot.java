@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
@@ -47,31 +46,14 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         return this;
     }
 
-    public String getItemsLabel()
+    public String getChildrenType()
     {
         return "Project";
     }
 
-    public Class<IProject> getItemsClass()
+    public Class<IProject> getChildrenClass()
     {
         return IProject.class;
-    }
-
-    public DBNNode addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException
-    {
-        if (childObject instanceof IProject) {
-            return addProject((IProject)childObject, true);
-        }
-        throw new IllegalArgumentException("Only projects could be added to root node");
-    }
-
-    public void removeChildItem(DBNNode item) throws DBException
-    {
-        if (item instanceof DBNProject) {
-            removeProject(((DBNProject)item).getProject());
-        } else {
-            throw new IllegalArgumentException("Only projects could be removed from root node");
-        }
     }
 
     public String getNodeName()

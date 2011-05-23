@@ -4,9 +4,6 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
 /**
  * DBNDatabaseFolder
  */
@@ -14,12 +11,8 @@ public interface DBNContainer //extends DBSFolder
 {
     Object getValueObject();
 
-    String getItemsLabel();
+    String getChildrenType();
 
-    Class<?> getItemsClass();
-
-    DBNNode addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException;
-
-    void removeChildItem(DBNNode item) throws DBException;
+    Class<?> getChildrenClass();
 
 }

@@ -51,6 +51,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
     private Set<SQLScriptPosition> addedPositions = new HashSet<SQLScriptPosition>();
     private Set<SQLScriptPosition> removedPositions = new HashSet<SQLScriptPosition>();
+    private char escapeChar;
 
     public SQLSyntaxManager()
     {
@@ -110,11 +111,14 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             keywordManager = EmptyKeywordManager.INSTANCE;
             quoteSymbol = null;
             structSeparator = ".";
+            escapeChar = '\\';
             statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
         } else {
             keywordManager = dataSource.getContainer().getKeywordManager();
             quoteSymbol = dataSource.getInfo().getIdentifierQuoteString();
             structSeparator = dataSource.getInfo().getStructSeparator();
+            dataSource.getInfo().getSearchStringEscape();
+            escapeChar = '\\';
             statementDelimiter = dataSource.getInfo().getScriptDelimiter();
             if (statementDelimiter == null) {
                 statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
@@ -156,13 +160,13 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
         // Add rules for delimited identifiers and string literals.
         if (quoteSymbol != null) {
-            rules.add(new SingleLineRule(quoteSymbol, quoteSymbol, quotedToken, '\\'));
+            rules.add(new SingleLineRule(quoteSymbol, quoteSymbol, quotedToken, escapeChar));
         }
         if (quoteSymbol == null || !quoteSymbol.equals(SQLConstants.STR_QUOTE_SINGLE)) {
-            rules.add(new NestedMultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, '\\'));
+            rules.add(new NestedMultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, escapeChar));
         }
         if (quoteSymbol == null || !quoteSymbol.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
-            rules.add(new SingleLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, '\\'));
+            rules.add(new SingleLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar));
         }
 
         // Add rules for multi-line comments

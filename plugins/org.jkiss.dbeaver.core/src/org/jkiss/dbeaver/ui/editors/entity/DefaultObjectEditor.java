@@ -128,7 +128,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
             createPathRow(
                 infoGroup,
                 databaseNode.getNodeIconDefault(),
-                databaseNode.getMeta().getItemLabel(),
+                databaseNode.getNodeType(),
                 databaseNode.getNodeName(),
                 databaseNode == node ? null : new SelectionAdapter() {
                     public void widgetSelected(SelectionEvent e)

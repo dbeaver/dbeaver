@@ -9,14 +9,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -44,7 +41,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             if (container == null) {
                 throw new DBException("Can't detect container for '" + element.getNodeName() + "'");
             }
-            Class<?> childType = container.getItemsClass();
+            Class<?> childType = container.getChildrenClass();
             if (childType == null) {
                 throw new DBException("Can't determine child element type for container '" + container + "'");
             }

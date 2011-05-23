@@ -13,7 +13,6 @@ import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
-import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
@@ -65,7 +64,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return getParentNode() instanceof DBNDatabaseNode ? ((DBNDatabaseNode)getParentNode()).getValueObject() : null;
     }
 
-    public String getItemsLabel()
+    public String getChildrenType()
     {
         final List<DBXTreeNode> metaChildren = meta.getChildren(this);
         if (CommonUtils.isEmpty(metaChildren)) {
@@ -106,7 +105,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return ICommandIds.CMD_OBJECT_OPEN;
     }
 
-    public Class<? extends DBSObject> getItemsClass()
+    public Class<? extends DBSObject> getChildrenClass()
     {
         String itemsType = CommonUtils.toString(meta.getType());
         if (CommonUtils.isEmpty(itemsType)) {
@@ -122,35 +121,6 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
             return null;
         }
         return (Class<DBSObject>)aClass ;
-    }
-
-    public DBNDatabaseItem addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException
-    {
-        List<DBXTreeNode> childMetas = getMeta().getChildren(this);
-        if (childMetas.size() != 1 || !(childMetas.get(0) instanceof DBXTreeItem)) {
-            throw new DBException("It's not allowed to add child items to node '" + getNodeName() + "'");
-        }
-        if (!(childObject instanceof DBSObject)) {
-            throw new DBException("Only database structure objects could be added to database folder");
-        }
-        DBXTreeItem childMeta = (DBXTreeItem)childMetas.get(0);
-        // Ensure that children are loaded
-        getChildren(monitor);
-        // Add new child item
-        DBNDatabaseItem childItem = new DBNDatabaseItem(this, childMeta, (DBSObject)childObject, false);
-        this.childNodes.add(childItem);
-        this.getModel().addNode(childItem, true);
-
-        return childItem;
-    }
-
-    public void removeChildItem(DBNNode item) throws DBException
-    {
-        if (!(item instanceof DBNDatabaseNode) || CommonUtils.isEmpty(childNodes) || !childNodes.contains((DBNDatabaseNode)item)) {
-            throw new DBException("Item '" + item.getNodeName() + "' do not belongs to node '" + getNodeName() + "' and can't be removed from it");
-        }
-        childNodes.remove((DBNDatabaseNode)item);
-        item.dispose(true);
     }
 
     public Collection<DBSObject> getChildrenObjects(DBRProgressMonitor monitor) throws DBException
