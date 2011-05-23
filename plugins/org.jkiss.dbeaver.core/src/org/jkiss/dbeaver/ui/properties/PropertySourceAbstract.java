@@ -53,7 +53,11 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
 
     public PropertySourceAbstract addProperty(IPropertyDescriptor prop)
     {
-        props.add(prop);
+        if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isHidden()) {
+            // Do not add it to property list
+        } else {
+            props.add(prop);
+        }
         propValues.put(prop.getId(), prop);
         return this;
     }

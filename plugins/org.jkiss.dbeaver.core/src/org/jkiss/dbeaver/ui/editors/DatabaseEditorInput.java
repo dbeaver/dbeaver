@@ -8,6 +8,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
+import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -16,6 +17,7 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 
 /**
  * DatabaseEditorInput
@@ -26,6 +28,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     private final DBECommandContext commandContext;
     private String defaultPageId;
     private String defaultFolderId;
+    private PropertySourceEditable propertySource;
 
     protected DatabaseEditorInput(NODE node)
     {
@@ -128,6 +131,18 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     public void setDefaultFolderId(String defaultFolderId)
     {
         this.defaultFolderId = defaultFolderId;
+    }
+
+    public IPropertySource2 getPropertySource()
+    {
+        if (propertySource == null) {
+            propertySource = new PropertySourceEditable(
+                getCommandContext(),
+                getTreeNode(),
+                getDatabaseObject());
+            propertySource.collectProperties();
+        }
+        return propertySource;
     }
 
     @Override

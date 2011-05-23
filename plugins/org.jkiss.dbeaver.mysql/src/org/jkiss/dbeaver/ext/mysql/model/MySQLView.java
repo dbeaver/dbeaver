@@ -46,7 +46,9 @@ public class MySQLView extends MySQLTableBase
 
         public boolean isLoaded() { return loaded; }
 
-        public String getDefinition() { return definition; }
+        @Property(name = "Definition", viewable = false, hidden = true, editable = true, updatable = true, order =-14) public String getDefinition() { return definition; }
+        public void setDefinition(String definition) { this.definition = definition; }
+
         @Property(name = "Check Option", viewable = true, editable = true, order = 4) public CheckOption getCheckOption() { return checkOption; }
         @Property(name = "Updatable", viewable = true, editable = true, order = 5) public boolean isUpdatable() { return updatable; }
         @Property(name = "Definer", viewable = true, editable = true, order = 6) public String getDefiner() { return definer; }

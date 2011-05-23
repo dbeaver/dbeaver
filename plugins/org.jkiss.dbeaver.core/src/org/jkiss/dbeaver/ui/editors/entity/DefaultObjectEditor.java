@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
-import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertyPageTabbed;
 
 import java.util.ArrayList;
@@ -181,12 +180,10 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
 
     private void loadObjectProperties()
     {
-        final PropertySourceEditable propertySource = new PropertySourceEditable(
-            getEditorInput().getCommandContext(),
-            getEditorInput().getTreeNode(),
-            getEditorInput().getDatabaseObject());
-        propertySource.collectProperties();
-        properties.selectionChanged(this, new StructuredSelection(propertySource));
+        properties.selectionChanged(
+            this,
+            new StructuredSelection(
+                getEditorInput().getPropertySource()));
     }
 
 /*

@@ -33,6 +33,8 @@ public @interface Property
 
     boolean viewable() default false;
 
+    boolean hidden() default false;
+
     boolean expensive() default false;
 
     int order() default Integer.MAX_VALUE;

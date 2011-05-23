@@ -5,8 +5,8 @@
 package org.jkiss.dbeaver.ext;
 
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -37,4 +37,9 @@ public interface IDatabaseNodeEditorInput extends IEditorInput, IDataSourceProvi
      */
     DBECommandContext getCommandContext();
 
+    /**
+     * Underlying object's property source
+     * @return property source
+     */
+    IPropertySource2 getPropertySource();
 }

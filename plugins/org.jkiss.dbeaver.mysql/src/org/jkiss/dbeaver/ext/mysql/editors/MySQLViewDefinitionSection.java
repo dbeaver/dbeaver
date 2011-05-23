@@ -8,6 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -103,6 +105,16 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
                 }
             }
         });
+        sqlViewer.getDocument().addDocumentListener(new IDocumentListener() {
+            public void documentAboutToBeChanged(DocumentEvent event)
+            {
+            }
+
+            public void documentChanged(DocumentEvent event)
+            {
+                editor.getEditorInput().getPropertySource().setPropertyValue("definition", event.getDocument().get());
+            }
+        });
     }
 
     public boolean shouldUseExtraSpace()
@@ -168,4 +180,11 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
             }
         }
     }
+
+/*
+    private class SourceChangeCommand extends DBECommandAbstract<MySQLView> {
+
+    }
+*/
+
 }
