@@ -53,12 +53,13 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
     @Override
     protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
-        final MySQLView view = command.getObject();
-        StringBuilder decl = new StringBuilder(200);
-        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(" AS ").append(view.getAdditionalInfo().getDefinition());
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Create view", decl.toString())
-        };
+        return createOrReplaceViewQuery(command.getObject());
+    }
+
+    @Override
+    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    {
+        return createOrReplaceViewQuery(command.getObject());
     }
 
     @Override
@@ -66,6 +67,15 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName())
+        };
+    }
+
+    private IDatabasePersistAction[] createOrReplaceViewQuery(MySQLView view)
+    {
+        StringBuilder decl = new StringBuilder(200);
+        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(" AS ").append(view.getAdditionalInfo().getDefinition());
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction("Create view", decl.toString())
         };
     }
 
