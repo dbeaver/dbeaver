@@ -22,6 +22,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.databaseEditor"; //NON-NLS-1
 
+    public static final String POSITION_PROPS = "additions_props"; //NON-NLS-1
     public static final String POSITION_START = "additions_start"; //NON-NLS-1
     public static final String POSITION_END = "additions_end"; //NON-NLS-1
 

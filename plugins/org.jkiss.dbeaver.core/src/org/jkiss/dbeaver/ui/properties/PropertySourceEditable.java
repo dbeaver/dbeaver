@@ -126,11 +126,14 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         try {
             // Check for complex object
             // If value should be a named object then try to obtain it from list provider
-            if (value != null && value.getClass() == String.class && DBPNamedObject.class.isAssignableFrom(prop.getDataType())) {
+            if (value != null && value.getClass() == String.class) {
                 final Object[] items = prop.getPossibleValues(editableValue);
                 if (!CommonUtils.isEmpty(items)) {
                     for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                        if (items[i] instanceof DBPNamedObject && value.equals(((DBPNamedObject)items[i]).getName())) {
+                        if ((items[i] instanceof DBPNamedObject && value.equals(((DBPNamedObject)items[i]).getName())) ||
+                            (items[i] instanceof Enum && value.equals(((Enum)items[i]).name()))
+                            )
+                        {
                             value = items[i];
                             break;
                         }

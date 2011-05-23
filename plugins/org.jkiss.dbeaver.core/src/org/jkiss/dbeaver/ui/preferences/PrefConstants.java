@@ -24,6 +24,8 @@ public final class PrefConstants
     public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive";
     public static final String META_CASE_SENSITIVE = "database.meta.casesensitive";
 
+    public static final String TEXT_EDIT_UNDO_LEVEL = "text.edit.undo.level";
+
     public static final String RS_EDIT_MAX_TEXT_SIZE = "resultset.edit.maxtextsize";
     public static final String RS_EDIT_LONG_AS_LOB = "resultset.edit.longaslob";
     public static final String RS_COMMIT_ON_EDIT_APPLY = "resultset.commit.oneditapply";

@@ -260,6 +260,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             } catch (Exception e) {
                 log.error(e);
             }
+        } else if (getDataType().isEnum()) {
+            return getDataType().getEnumConstants();
         }
         return null;
     }
@@ -290,7 +292,18 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         } else if (BeanUtils.isBooleanType(propertyType)) {
             return new CustomCheckboxCellEditor(parent);
             //return new CheckboxCellEditor(parent);
+        } else if (propertyType.isEnum()) {
+            final Object[] enumConstants = propertyType.getEnumConstants();
+            final String[] strings = new String[enumConstants.length];
+            for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
+                strings[i] = ((Enum)enumConstants[i]).name();
+            }
+            return new CustomComboBoxCellEditor(
+                parent,
+                strings,
+                SWT.DROP_DOWN | SWT.READ_ONLY);
         } else {
+            log.warn("Unsupported property type: " + propertyType.getName());
             return null;
         }
     }

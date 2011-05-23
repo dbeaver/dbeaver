@@ -43,9 +43,14 @@ public abstract class BaseTextEditor extends StatusTextEditor {
 
     }
 
+    public TextViewer getTextViewer()
+    {
+        return (TextViewer) getSourceViewer();
+    }
+
     public void enableUndoManager(boolean enable)
     {
-        TextViewer textViewer = (TextViewer) getSourceViewer();
+        TextViewer textViewer = getTextViewer();
         if (!enable) {
             textViewer.getUndoManager().disconnect();
         } else {

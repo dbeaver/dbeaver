@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.properties.tabbed.*;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 /**
  * MySQLViewManager
@@ -73,7 +74,13 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
     private IDatabasePersistAction[] createOrReplaceViewQuery(MySQLView view)
     {
         StringBuilder decl = new StringBuilder(200);
-        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(" AS ").append(view.getAdditionalInfo().getDefinition());
+        final String lineSeparator = ContentUtils.getDefaultLineSeparator();
+        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator)
+            .append("AS ").append(view.getAdditionalInfo().getDefinition());
+        final MySQLView.CheckOption checkOption = view.getAdditionalInfo().getCheckOption();
+        if (checkOption != null && checkOption != MySQLView.CheckOption.NONE) {
+            decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION");
+        }
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction("Create view", decl.toString())
         };

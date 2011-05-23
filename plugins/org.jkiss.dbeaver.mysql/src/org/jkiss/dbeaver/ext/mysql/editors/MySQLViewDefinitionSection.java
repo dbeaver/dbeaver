@@ -11,6 +11,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.ITextOperationTarget;
+import org.eclipse.jface.text.TextViewerUndoManager;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.ui.CustomSelectionProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -51,6 +53,7 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
     private StringEditorInput sqlEditorInput;
     private ISelectionProvider selectionProvider = new CustomSelectionProvider();
     private IAction actionDelete = new ActionDelete();
+    private boolean visible;
 
     public MySQLViewDefinitionSection(IDatabaseNodeEditor editor)
     {
@@ -95,6 +98,7 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
         sqlViewer.reloadSyntaxRules();
         sqlViewer.doOperation(ISourceViewer.FORMAT);
         sqlViewer.doSave(VoidProgressMonitor.INSTANCE.getNestedMonitor());
+        //sqlViewer.getTextViewer().setUndoManager(new NestedUndoManager());
         //sqlViewer.doRevertToSaved();
         parent.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
@@ -134,6 +138,7 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
 
         final IActionBars actionBars = editor.getEditorSite().getActionBars();
         actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, actionDelete);
+        visible = true;
     }
 
     @Override
@@ -144,6 +149,8 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
         }
         final IActionBars actionBars = editor.getEditorSite().getActionBars();
         actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, null);
+
+        visible = false;
     }
 
     private class ViewInitializer implements DBRRunnableWithProgress {
@@ -184,10 +191,24 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
         }
     }
 
-/*
-    private class SourceChangeCommand extends DBECommandAbstract<MySQLView> {
+    private class NestedUndoManager extends TextViewerUndoManager {
 
+        public NestedUndoManager()
+        {
+            super(DBeaverCore.getInstance().getGlobalPreferenceStore().getInt(PrefConstants.TEXT_EDIT_UNDO_LEVEL));
+        }
+
+        @Override
+        public boolean redoable()
+        {
+            return sqlViewer != null && visible && super.redoable();
+        }
+
+        @Override
+        public boolean undoable()
+        {
+            return sqlViewer != null && visible && super.undoable();
+        }
     }
-*/
 
 }
