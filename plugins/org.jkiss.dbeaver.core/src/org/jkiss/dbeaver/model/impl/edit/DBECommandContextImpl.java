@@ -200,14 +200,23 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
-    public Collection<? extends DBECommand<?>> getCommands(DBPObject object)
+    public Collection<? extends DBECommand<?>> getUndoCommands()
     {
-        for (CommandQueue queue : getCommandQueues()) {
-            if (queue.getObject() == object) {
-                //return queue.commands;
+        synchronized (commands) {
+            List<DBECommand<?>> result = new ArrayList<DBECommand<?>>();
+            for (int i = commands.size() - 1; i >= 0; i--) {
+                CommandInfo cmd = commands.get(i);
+                while (cmd.prevInBatch != null) {
+                    cmd = cmd.prevInBatch;
+                    i--;
+                }
+                if (!cmd.command.isUndoable()) {
+                    break;
+                }
+                result.add(cmd.command);
             }
+            return result;
         }
-        return null;
     }
 
     public Collection<DBPObject> getEditedObjects()

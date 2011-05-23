@@ -35,7 +35,7 @@ public interface DBECommandContext extends IDataSourceContainerProvider {
 
     Collection<? extends DBECommand<?>> getFinalCommands();
 
-    Collection<? extends DBECommand<?>> getCommands(DBPObject object);
+    Collection<? extends DBECommand<?>> getUndoCommands();
 
     Collection<DBPObject> getEditedObjects();
 
