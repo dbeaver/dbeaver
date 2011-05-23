@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.texteditor.StatusTextEditor;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -40,6 +41,16 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         //menu.remove(ITextEditorActionConstants.GROUP_OPEN);
         //menu.remove(ContributionItemFactory.VIEWS_SHOW_IN.getId());
 
+    }
+
+    public void enableUndoManager(boolean enable)
+    {
+        TextViewer textViewer = (TextViewer) getSourceViewer();
+        if (!enable) {
+            textViewer.getUndoManager().disconnect();
+        } else {
+            textViewer.getUndoManager().connect(textViewer);
+        }
     }
 
 }

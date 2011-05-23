@@ -128,7 +128,7 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
         if (sqlViewer == null) {
             createEditor();
         }
-
+        sqlViewer.enableUndoManager(true);
         editor.getSite().setSelectionProvider(selectionProvider);
         selectionProvider.setSelection(new StructuredSelection());
 
@@ -139,6 +139,9 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
     @Override
     public void aboutToBeHidden()
     {
+        if (sqlViewer != null) {
+            sqlViewer.enableUndoManager(false);
+        }
         final IActionBars actionBars = editor.getEditorSite().getActionBars();
         actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, null);
     }

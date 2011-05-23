@@ -66,7 +66,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     public void refreshPart(Object source)
     {
         if (loaded) {
-            resultSetView.refresh();
+            //resultSetView.refresh();
         }
     }
 
