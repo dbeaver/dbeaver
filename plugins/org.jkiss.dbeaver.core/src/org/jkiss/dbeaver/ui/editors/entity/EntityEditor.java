@@ -360,7 +360,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 int index = addPage(new DefaultObjectEditor(node), getEditorInput());
                 setPageText(index, "Properties");
                 if (node instanceof DBNDatabaseNode) {
-                    setPageToolTip(index, ((DBNDatabaseNode)node).getMeta().getLabel() + " Properties");
+                    setPageToolTip(index, ((DBNDatabaseNode)node).getMeta().getChildrenType() + " Properties");
                 }
                 setPageImage(index, node.getNodeIconDefault());
             } catch (PartInitException e) {
@@ -539,7 +539,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         }
         public String getName()
         {
-            return meta == null ? node.getNodeName() : meta.getLabel();
+            return meta == null ? node.getNodeName() : meta.getChildrenType(node.getObject().getDataSource());
         }
     }
 
@@ -635,13 +635,13 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 setPageImage(index, tabInfo.node.getNodeIconDefault());
                 setPageToolTip(index, getEditorInput().getTreeNode().getNodeType() + " " + tabInfo.node.getNodeName());
             } else {
-                setPageText(index, tabInfo.meta.getLabel());
+                setPageText(index, tabInfo.meta.getChildrenType(getDataSource()));
                 if (tabInfo.meta.getDefaultIcon() != null) {
                     setPageImage(index, tabInfo.meta.getDefaultIcon());
                 } else {
                     setPageImage(index, DBIcon.TREE_FOLDER.getImage());
                 }
-                setPageToolTip(index, tabInfo.meta.getLabel());
+                setPageToolTip(index, tabInfo.meta.getChildrenType(getDataSource()));
             }
             editorMap.put("node." + tabInfo.getName(), nodeEditor);
         } catch (PartInitException ex) {

@@ -22,4 +22,8 @@ public class GenericConstants {
     public static final String PARAM_SHUTDOWN_URL_PARAM = "shutdown-url-param";
     public static final String TYPE_MODIFIER_IDENTITY = " IDENTITY";
 
+    public static final String TERM_CATALOG = "catalog";
+    public static final String TERM_SCHEMA = "schema";
+    public static final String TERM_PROCEDURE = "procedure";
+
 }

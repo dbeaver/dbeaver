@@ -70,14 +70,14 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         if (CommonUtils.isEmpty(metaChildren)) {
             return "?";
         } else {
-            return metaChildren.get(0).getLabel();
+            return metaChildren.get(0).getChildrenType(getDataSource());
         }
     }
 
     @Property(name = "Name", viewable = true)
     public String getName()
     {
-        return meta.getLabel();
+        return meta.getChildrenType(getDataSource());
     }
 
     public String getDescription()

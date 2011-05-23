@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -31,7 +32,7 @@ import java.util.List;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSEntitySelector, IAdaptable
+public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSEntitySelector, IDatabaseTermProvider, IAdaptable
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
@@ -534,6 +535,22 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         } else {
             return null;
         }
+    }
+
+    public String getObjectTypeTerm(String path, String objectType, boolean multiple)
+    {
+        String term = null;
+        if (GenericConstants.TERM_CATALOG.equals(objectType)) {
+            term = getInfo().getCatalogTerm();
+        } else if (GenericConstants.TERM_SCHEMA.equals(objectType)) {
+            term = getInfo().getSchemaTerm();
+        } else if (GenericConstants.TERM_PROCEDURE.equals(objectType)) {
+            term = getInfo().getProcedureTerm();
+        }
+        if (term != null && multiple) {
+            term += "s";
+        }
+        return term;
     }
 
     private class DataSourceEntityContainer extends GenericEntityContainer {

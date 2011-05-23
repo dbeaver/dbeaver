@@ -28,6 +28,9 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     static final Log log = LogFactory.getLog(JDBCDataSourceInfo.class);
 
     public static final String STRUCT_SEPARATOR = ".";
+    public static final String TERM_SCHEMA = "Schema";
+    public static final String TERM_PROCEDURE = "Procedure";
+    public static final String TERM_CATALOG = "Database";
     private boolean readOnly;
     private String databaseProductName;
     private String databaseProductVersion;
@@ -178,22 +181,22 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             this.searchStringEscape = "\\";
         }
         try {
-            this.schemaTerm = metaData.getSchemaTerm();
+            this.schemaTerm = makeTermString(metaData.getSchemaTerm(), TERM_SCHEMA);
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.schemaTerm = "Schema";
+            this.schemaTerm = TERM_SCHEMA;
         }
         try {
-            this.procedureTerm = metaData.getProcedureTerm();
+            this.procedureTerm = makeTermString(metaData.getProcedureTerm(), TERM_PROCEDURE);
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.procedureTerm = "Procedure";
+            this.procedureTerm = TERM_PROCEDURE;
         }
         try {
-            this.catalogTerm = metaData.getCatalogTerm();
+            this.catalogTerm = makeTermString(metaData.getCatalogTerm(), TERM_CATALOG);
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.catalogTerm = "Database";
+            this.catalogTerm = TERM_CATALOG;
         }
         try {
             this.catalogSeparator = metaData.getCatalogSeparator();
@@ -313,6 +316,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             // Error getting datatypes list
             log.debug(ex.getMessage());
         }
+    }
+
+    private String makeTermString(String term, String defTerm)
+    {
+        return CommonUtils.isEmpty(term) ? defTerm : CommonUtils.capitalizeWord(term.toLowerCase());
     }
 
     public boolean isReadOnlyData()

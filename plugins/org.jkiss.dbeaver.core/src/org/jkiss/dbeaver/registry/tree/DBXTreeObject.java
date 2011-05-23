@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry.tree;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
 
 /**
@@ -23,7 +24,13 @@ public class DBXTreeObject extends DBXTreeNode
         this.editorId = editorId;
     }
 
-    public String getLabel()
+    @Override
+    public String getNodeType(DBPDataSource dataSource)
+    {
+        return label;
+    }
+
+    public String getChildrenType(DBPDataSource dataSource)
     {
         return label;
     }

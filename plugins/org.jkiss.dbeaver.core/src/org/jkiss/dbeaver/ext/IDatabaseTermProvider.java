@@ -13,6 +13,6 @@ public interface IDatabaseTermProvider {
      * Underlying datasource
      * @return data source object.
      */
-    String getObjectTypeTerm(String path, boolean multiple);
+    String getObjectTypeTerm(String path, String objectType, boolean multiple);
 
 }

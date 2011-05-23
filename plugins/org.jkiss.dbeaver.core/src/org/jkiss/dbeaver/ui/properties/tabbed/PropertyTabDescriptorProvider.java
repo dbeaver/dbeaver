@@ -89,7 +89,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         }
         public String getName()
         {
-            return meta == null ? node.getNodeName() : meta.getLabel();
+            return meta == null ? node.getNodeName() : meta.getChildrenType(node.getObject().getDataSource());
         }
     }
 
@@ -187,13 +187,13 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
                 setPageImage(index, tabInfo.node.getNodeIconDefault());
                 setPageToolTip(index, getEditorInput().getTreeNode().getNodeType() + " " + tabInfo.node.getNodeName());
             } else {
-                setPageText(index, tabInfo.meta.getLabel());
+                setPageText(index, tabInfo.meta.getChildrenType());
                 if (tabInfo.meta.getDefaultIcon() != null) {
                     setPageImage(index, tabInfo.meta.getDefaultIcon());
                 } else {
                     setPageImage(index, PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER));
                 }
-                setPageToolTip(index, tabInfo.meta.getLabel());
+                setPageToolTip(index, tabInfo.meta.getChildrenType());
             }
             editorMap.put("node." + tabInfo.getName(), nodeEditor);
         } catch (PartInitException ex) {

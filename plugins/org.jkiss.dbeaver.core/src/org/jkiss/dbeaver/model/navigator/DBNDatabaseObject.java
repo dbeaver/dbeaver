@@ -96,7 +96,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
-        return meta.getLabel();
+        return meta.getNodeType(getDataSource());
     }
 
     public String getDescription()

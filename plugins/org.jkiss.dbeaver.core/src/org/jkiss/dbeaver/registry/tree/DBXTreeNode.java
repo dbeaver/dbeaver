@@ -12,6 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
@@ -30,7 +31,7 @@ public abstract class DBXTreeNode
     private final AbstractDescriptor source;
     private final DBXTreeNode parent;
     private List<DBXTreeNode> children;
-    private DBXTreeNode recursiveLink;
+    //private DBXTreeNode recursiveLink;
     private Image defaultIcon;
     private List<DBXTreeIcon> icons;
     private final boolean navigable;
@@ -60,12 +61,9 @@ public abstract class DBXTreeNode
         return source;
     }
 
-    public abstract String getLabel();
-    
-    public String getItemLabel()
-    {
-        return getLabel();
-    }
+    public abstract String getNodeType(DBPDataSource dataSource);
+
+    public abstract String getChildrenType(DBPDataSource dataSource);
 
     public boolean isNavigable()
     {
@@ -134,10 +132,10 @@ public abstract class DBXTreeNode
         this.children.add(child);
     }
 
-    public DBXTreeNode getRecursiveLink()
-    {
-        return recursiveLink;
-    }
+//    public DBXTreeNode getRecursiveLink()
+//    {
+//        return recursiveLink;
+//    }
 
     public Image getDefaultIcon()
     {

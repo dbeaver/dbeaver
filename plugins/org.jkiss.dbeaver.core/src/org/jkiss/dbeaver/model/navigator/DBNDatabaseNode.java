@@ -54,7 +54,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     @Override
     public String getNodeType()
     {
-        return getMeta().getItemLabel();
+        return getObject() == null ? "" : getMeta().getNodeType(getObject().getDataSource());
     }
 
     public String getNodeName()
@@ -289,7 +289,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             if (monitor.isCanceled()) {
                 break;
             }
-            monitor.subTask("Load " + child.getLabel());
+            monitor.subTask("Load " + child.getChildrenType(getObject().getDataSource()));
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
                 boolean isLoaded = loadTreeItems(monitor, item, oldList, toList);
@@ -480,7 +480,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             List<Class<?>> result = new ArrayList<Class<?>>();
             for (DBXTreeNode childMeta : childMetas) {
                 if (childMeta instanceof DBXTreeItem) {
-                    Class<?> childrenType = getChildrenType((DBXTreeItem) childMeta);
+                    Class<?> childrenType = getChildrenClass((DBXTreeItem) childMeta);
                     if (childrenType != null) {
                         result.add(childrenType);
                     }
@@ -490,7 +490,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
     }
 
-    private Class<?> getChildrenType(DBXTreeItem childMeta)
+    private Class<?> getChildrenClass(DBXTreeItem childMeta)
     {
         Object valueObject = getValueObject();
         if (valueObject == null) {

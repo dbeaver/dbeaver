@@ -126,7 +126,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
     private static void switchEditorFolder(DBNContainer container, IEditorPart editor)
     {
         if (editor instanceof IFolderedPart && container instanceof DBNDatabaseFolder) {
-            ((IFolderedPart) editor).switchFolder(((DBNDatabaseFolder) container).getMeta().getLabel());
+            ((IFolderedPart) editor).switchFolder(container.getChildrenType());
         }
     }
 
