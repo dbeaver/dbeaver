@@ -359,7 +359,7 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
         "PRIOR",
         "PRIVILEGES",
         "PROCEDURE",
-        "PUBLIC",
+//        "PUBLIC",
         "READ",
         "REAL",
         "REFERENCES",

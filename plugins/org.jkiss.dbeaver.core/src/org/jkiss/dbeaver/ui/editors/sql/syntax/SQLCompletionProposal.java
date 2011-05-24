@@ -26,6 +26,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private String displayString;
     /** The replacement string. */
     private String replacementString;
+    private String replacementLower;
     /** The replacement offset. */
     private int replacementOffset;
     /** The replacement length. */
@@ -44,6 +45,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.syntaxManager = syntaxManager;
         this.displayString = displayString;
         this.replacementString = replacementString;
+        this.replacementLower = replacementString.toLowerCase();
         this.cursorPosition = cursorPosition;
         this.image = image;
         this.contextInformation = contextInformation;
@@ -126,7 +128,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         if (divPos != -1) {
             wordPart = wordPart.substring(divPos + 1);
         }
-        if (!CommonUtils.isEmpty(wordPart) && replacementString.startsWith(wordPart)) {
+        if (!CommonUtils.isEmpty(wordPart) && replacementLower.startsWith(wordPart.toLowerCase())) {
             setPosition(wordDetector);
             return true;
         } else {
