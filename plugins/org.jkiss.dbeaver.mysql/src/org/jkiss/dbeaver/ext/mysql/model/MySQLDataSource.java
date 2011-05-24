@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -629,4 +630,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
     }
 
 
+    public MySQLDataSource getDataSource() {
+        return this;
+    }
 }

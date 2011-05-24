@@ -22,13 +22,13 @@ import java.util.List;
 public class GenericPackage extends GenericEntityContainer implements DBSEntityQualified, GenericStoredCode
 {
 
-    private GenericEntityContainer container;
+    private GenericStructContainer container;
     private String packageName;
     private List<GenericProcedure> procedures = new ArrayList<GenericProcedure>();
     private boolean nameFromCatalog;
 
     public GenericPackage(
-        GenericEntityContainer container,
+        GenericStructContainer container,
         String packageName,
         boolean nameFromCatalog)
     {
@@ -66,7 +66,6 @@ public class GenericPackage extends GenericEntityContainer implements DBSEntityQ
         return container.getSchema();
     }
 
-    @Override
     public DBSObject getObject()
     {
         return this;

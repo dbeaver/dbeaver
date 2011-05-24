@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -29,7 +30,7 @@ import java.util.regex.Pattern;
 /**
  * GenericProcedure
  */
-public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericEntityContainer> implements GenericStoredCode
+public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericStructContainer> implements GenericStoredCode
 {
     private static final Pattern PATTERN_COL_NAME_NUMERIC = Pattern.compile("\\$?([0-9]+)");
 
@@ -38,7 +39,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     private List<GenericProcedureColumn> columns;
 
     public GenericProcedure(
-        GenericEntityContainer container,
+        GenericStructContainer container,
         String procedureName,
         String specificName,
         String description,
@@ -92,7 +93,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
 
     private void loadColumns(DBRProgressMonitor monitor) throws DBException
     {
-        List<GenericProcedure> procedures = getContainer().getProcedures(monitor, getName());
+        Collection<GenericProcedure> procedures = getContainer().getProcedures(monitor, getName());
         if (procedures == null || !procedures.contains(this)) {
             throw new DBException("Internal error - cannot read columns for procedure '" + getName() + "' because its not found in container");
         }

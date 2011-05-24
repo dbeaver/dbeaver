@@ -254,11 +254,6 @@ public abstract class JDBCDataSource
         return container;
     }
 
-    public JDBCDataSource getDataSource()
-    {
-        return this;
-    }
-
     public boolean isPersisted()
     {
         return true;

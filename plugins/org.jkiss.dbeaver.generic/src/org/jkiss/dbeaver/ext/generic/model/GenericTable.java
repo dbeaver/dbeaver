@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * GenericTable
  */
-public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityContainer>
+public class GenericTable extends JDBCTable<GenericDataSource, GenericStructContainer>
 {
     static final Log log = LogFactory.getLog(GenericTable.class);
 
@@ -52,13 +52,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     private Long rowCount;
 
     public GenericTable(
-        GenericEntityContainer container)
+        GenericStructContainer container)
     {
         this(container, null, null, null, false);
     }
 
     public GenericTable(
-        GenericEntityContainer container,
+        GenericStructContainer container,
         String tableName,
         String tableType,
         String remarks,

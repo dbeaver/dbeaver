@@ -34,7 +34,7 @@ public abstract class JDBCCompositeCache<
     OBJECT extends DBSObject,
     ROW_REF extends DBSObject>
 {
-    static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
+    protected static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
 
     private final Map<String, ObjectInfo> PRECACHED_MARK = new HashMap<String, ObjectInfo>();
 

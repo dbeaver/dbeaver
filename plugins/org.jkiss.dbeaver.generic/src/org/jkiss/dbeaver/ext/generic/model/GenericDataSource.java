@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSEntitySelector, IDatabaseTermProvider, IAdaptable
+public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSEntitySelector, IDatabaseTermProvider, IAdaptable, GenericStructContainer
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
@@ -106,6 +106,38 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         return DBUtils.findObject(getSchemas(), name);
     }
 
+    public GenericDataSource getDataSource() {
+        return this;
+    }
+
+    public DBSObject getObject() {
+        return getContainer();
+    }
+
+    public GenericCatalog getCatalog() {
+        return null;
+    }
+
+    public GenericSchema getSchema() {
+        return null;
+    }
+
+    public TableCache getTableCache() {
+        return structureContainer.getTableCache();
+    }
+
+    public IndexCache getIndexCache() {
+        return structureContainer.getIndexCache();
+    }
+
+    public PrimaryKeysCache getPrimaryKeysCache() {
+        return structureContainer.getPrimaryKeysCache();
+    }
+
+    public ForeignKeysCache getForeignKeysCache() {
+        return structureContainer.getForeignKeysCache();
+    }
+
     public List<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -116,6 +148,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         throws DBException
     {
         return DBUtils.findObject(getTables(monitor), name);
+    }
+
+    public Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return structureContainer == null ? null : structureContainer.getPackages(monitor);
     }
 
     public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
@@ -579,10 +617,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             return GenericDataSource.this.getName();
         }
 
-        public String getObjectId() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
         public String getDescription() {
             return GenericDataSource.this.getDescription();
         }
@@ -591,4 +625,5 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             return GenericDataSource.this.getParentObject();
         }
     }
+
 }

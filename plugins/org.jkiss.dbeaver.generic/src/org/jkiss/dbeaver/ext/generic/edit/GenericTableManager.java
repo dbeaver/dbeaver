@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 /**
  * Generic table manager
  */
-public class GenericTableManager extends JDBCTableManager<GenericTable, GenericEntityContainer> {
+public class GenericTableManager extends JDBCTableManager<GenericTable, GenericStructContainer> {
 
     private static final Class<?>[] CHILD_TYPES = {
         GenericTableColumn.class,
@@ -28,7 +28,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericE
     }
 
     @Override
-    protected GenericTable createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, GenericEntityContainer parent, Object copyFrom)
+    protected GenericTable createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, GenericStructContainer parent, Object copyFrom)
     {
         final GenericTable table = new GenericTable(parent);
         table.setName(JDBCObjectNameCaseTransformer.transformName(parent, "NewTable"));
