@@ -11,20 +11,20 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.ITextOperationTarget;
-import org.eclipse.jface.text.TextViewerUndoManager;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
+import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,14 +34,13 @@ import org.jkiss.dbeaver.ui.CustomSelectionProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
 
 /**
  * MySQLViewDefinitionSection
  */
-public class MySQLViewDefinitionSection extends AbstractPropertySection {
+public class MySQLViewDefinitionSection extends AbstractPropertySection implements IRefreshablePart {
 
     static final Log log = LogFactory.getLog(MySQLViewDefinitionSection.class);
 
@@ -49,10 +48,9 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
     private MySQLView view;
     private Composite parent;
     private SQLEditorBase sqlViewer;
-    private StringEditorInput sqlEditorInput;
-    private ISelectionProvider selectionProvider = new CustomSelectionProvider();
-    private IAction actionDelete = new ActionDelete();
-    private boolean visible;
+    private final ISelectionProvider selectionProvider = new CustomSelectionProvider();
+    private final IAction actionDelete = new ActionDelete();
+    private boolean sourcesModified = false;
 
     public MySQLViewDefinitionSection(IDatabaseNodeEditor editor)
     {
@@ -66,30 +64,23 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
         this.parent = parent;
 	}
 
+    @Override
+    public void dispose()
+    {
+        super.dispose();
+    }
+
     private void createEditor()
     {
-        final ViewInitializer viewInitializer = new ViewInitializer();
-        try {
-            if (viewInitializer.isLazy()) {
-                DBeaverCore.getInstance().runInProgressService(viewInitializer);
-            } else {
-                viewInitializer.run(VoidProgressMonitor.INSTANCE);
-            }
-        } catch (InvocationTargetException e) {
-            log.error("Can't load view information", e.getTargetException());
-        } catch (InterruptedException e) {
-            // Skip
-        }
         sqlViewer = new SQLEditorBase() {
             public DBPDataSource getDataSource()
             {
                 return editor.getDataSource();
             }
         };
-        sqlViewer.setRulerWidth(0);
+        sqlViewer.setHasVerticalRuler(false);
         try {
-            sqlEditorInput = new StringEditorInput("View", viewInitializer.definition, false);
-            sqlViewer.init(editor.getEditorSite(), sqlEditorInput);
+            sqlViewer.init(editor.getEditorSite(), makeSourcesInput());
         } catch (PartInitException e) {
             UIUtils.showErrorDialog(parent.getShell(), "Create SQL viewer", null, e);
         }
@@ -104,6 +95,16 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
                 }
             }
         });
+        sqlViewer.getTextViewer().getTextWidget().addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e)
+            {
+                if (sourcesModified) {
+                    updateSources(sqlViewer.getDocument().get());
+                    sourcesModified = false;
+                }
+            }
+        });
         sqlViewer.getDocument().addDocumentListener(new IDocumentListener() {
             public void documentAboutToBeChanged(DocumentEvent event)
             {
@@ -111,9 +112,34 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
 
             public void documentChanged(DocumentEvent event)
             {
-                editor.getEditorInput().getPropertySource().setPropertyValue("definition", event.getDocument().get());
+                if (!sourcesModified) {
+                    updateSources(event.getDocument().get());
+                    sourcesModified = true;
+                }
             }
         });
+    }
+
+    protected IEditorInput makeSourcesInput()
+    {
+        final ViewInitializer viewInitializer = new ViewInitializer();
+        try {
+            if (viewInitializer.isLazy()) {
+                DBeaverCore.getInstance().runInProgressService(viewInitializer);
+            } else {
+                viewInitializer.run(VoidProgressMonitor.INSTANCE);
+            }
+        } catch (InvocationTargetException e) {
+            log.error("Can't load view information", e.getTargetException());
+        } catch (InterruptedException e) {
+            // Skip
+        }
+        return new StringEditorInput("View", viewInitializer.definition, false);
+    }
+
+    protected void updateSources(String source)
+    {
+        editor.getEditorInput().getPropertySource().setPropertyValue("definition", source);
     }
 
     public boolean shouldUseExtraSpace()
@@ -133,7 +159,6 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
 
         final IActionBars actionBars = editor.getEditorSite().getActionBars();
         actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, actionDelete);
-        visible = true;
     }
 
     @Override
@@ -144,8 +169,12 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
         }
         final IActionBars actionBars = editor.getEditorSite().getActionBars();
         actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, null);
+    }
 
-        visible = false;
+    public void refreshPart(Object source)
+    {
+        // Reload sources
+        sqlViewer.setInput(makeSourcesInput());
     }
 
     private class ViewInitializer implements DBRRunnableWithProgress {
@@ -183,26 +212,6 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
             if (sqlViewer != null && !sqlViewer.isDisposed()) {
                 sqlViewer.doOperation(ITextOperationTarget.DELETE);
             }
-        }
-    }
-
-    private class NestedUndoManager extends TextViewerUndoManager {
-
-        public NestedUndoManager()
-        {
-            super(DBeaverCore.getInstance().getGlobalPreferenceStore().getInt(PrefConstants.TEXT_EDIT_UNDO_LEVEL));
-        }
-
-        @Override
-        public boolean redoable()
-        {
-            return sqlViewer != null && visible && super.redoable();
-        }
-
-        @Override
-        public boolean undoable()
-        {
-            return sqlViewer != null && visible && super.undoable();
         }
     }
 

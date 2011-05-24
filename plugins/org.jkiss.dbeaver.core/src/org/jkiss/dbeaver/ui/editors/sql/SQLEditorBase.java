@@ -50,7 +50,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     private Map<Annotation, Position> curAnnotations;
 
     private IAnnotationAccess annotationAccess;
-    private int rulerWidth = VERTICAL_RULER_WIDTH;
+    private boolean hasVerticalRuler = true;
 
     public SQLEditorBase()
     {
@@ -132,12 +132,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     @Override
     protected IVerticalRuler createVerticalRuler()
     {
-        return new VerticalRuler(rulerWidth);
+        return hasVerticalRuler ? super.createVerticalRuler() : new VerticalRuler(0);
     }
 
-    public void setRulerWidth(int rulerWidth)
+    public void setHasVerticalRuler(boolean hasVerticalRuler)
     {
-        this.rulerWidth = rulerWidth;
+        this.hasVerticalRuler = hasVerticalRuler;
     }
 
     @Override
