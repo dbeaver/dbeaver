@@ -218,7 +218,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         // Refresh syntax
         final SQLSyntaxManager syntaxManager = getSyntaxManager();
         if (syntaxManager != null) {
-            syntaxManager.changeDataSource(getDataSource());
+            syntaxManager.setDataSource(getDataSource());
+            syntaxManager.refreshRules();
         }
 
         Document document = (Document) getDocument();

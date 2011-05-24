@@ -6,6 +6,9 @@ package org.jkiss.dbeaver.model;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
+import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -146,6 +149,16 @@ public final class SQLUtils {
             result.append(c);
         }
         return result.toString();
+    }
+
+    public static String formatSQL(DBPDataSource dataSource, String query)
+    {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.setDataSource(dataSource);
+        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(syntaxManager);
+        configuration.setKeywordCase(SQLFormatterConfiguration.KEYWORD_UPPER_CASE);
+        SQLFormatter formatter = new SQLFormatter(configuration);
+        return formatter.format(query);
     }
 
 }

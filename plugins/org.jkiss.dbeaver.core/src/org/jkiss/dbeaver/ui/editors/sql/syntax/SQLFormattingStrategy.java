@@ -10,7 +10,6 @@ import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterException;
 
 import java.util.StringTokenizer;
 
@@ -48,14 +47,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
         configuration.setKeywordCase(SQLFormatterConfiguration.KEYWORD_UPPER_CASE);
         //configuration.setIndentString(indentation);
-        SQLFormatter formatter = new SQLFormatter(configuration);
-        try {
-            return formatter.format(content);
-        } catch (SQLFormatterException e) {
-            log.warn("Error formatting content", e);
-            return content;
-        }
-
+        return new SQLFormatter(configuration).format(content);
 /*
     	if (sqlSyntax == null)
     	{

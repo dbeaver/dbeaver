@@ -96,7 +96,7 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
                 PropertiesContributor.CATEGORY_INFO,
                 "view.definition",
                 "Definition",
-                DBIcon.TREE_VIEW.getImage(),
+                DBIcon.SOURCES.getImage(),
                 new SectionDescriptor("default", "Definition") {
                     public ISection getSectionClass()
                     {

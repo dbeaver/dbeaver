@@ -243,18 +243,8 @@
             label="DDL"
             description="Table DDL"
             position="additions_end"
-            icon="icons/ddl_script.png">
+            icon="#sources">
         </editor>
-        <!--editor
-            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLViewEditor"
-            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLViewEditor"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"
-            main="false"
-            label="Definition"
-            description="View definition"
-            position="additions_props"
-            icon="#view">
-        </editor-->
 
         <editor
             id="org.jkiss.dbeaver.ext.mysql.editors.MySQLProcedureEditor"
@@ -264,7 +254,7 @@
             label="Source"
             description="Procedure source"
             position="additions_end"
-            icon="icons/proc_body.png">
+            icon="#sources">
         </editor>
 
         <editor
@@ -275,7 +265,7 @@
             label="Statement"
             description="Trigger statement"
             position="additions_end"
-            icon="icons/proc_body.png">
+            icon="#sources">
         </editor>
 
         <editor

@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -64,8 +65,9 @@ public class MySQLView extends MySQLTableBase
         public void setCheckOption(CheckOption checkOption) { this.checkOption = checkOption; }
 
         @Property(name = "Updatable", viewable = true, order = 5) public boolean isUpdatable() { return updatable; }
+        public void setUpdatable(boolean updatable) { this.updatable = updatable; }
         @Property(name = "Definer", viewable = true, order = 6) public String getDefiner() { return definer; }
-
+        public void setDefiner(String definer) { this.definer = definer; }
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLView> {
@@ -169,13 +171,16 @@ public class MySQLView extends MySQLTableBase
                 try {
                     if (dbResult.next()) {
                         try {
-                            additionalInfo.checkOption = CheckOption.valueOf(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHECK_OPTION));
+                            additionalInfo.setCheckOption(CheckOption.valueOf(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHECK_OPTION)));
                         } catch (IllegalArgumentException e) {
                             log.warn(e);
                         }
-                        additionalInfo.definer = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFINER);
-                        additionalInfo.definition = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_VIEW_DEFINITION);
-                        additionalInfo.updatable = "YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_UPDATABLE));
+                        additionalInfo.setDefiner(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFINER));
+                        additionalInfo.setDefinition(
+                            SQLUtils.formatSQL(
+                                getDataSource(),
+                                JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_VIEW_DEFINITION)));
+                        additionalInfo.setUpdatable("YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_UPDATABLE)));
                     }
                     additionalInfo.loaded = true;
                 } finally {

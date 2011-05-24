@@ -12,7 +12,6 @@ import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.TextViewerUndoManager;
-import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.events.DisposeEvent;
@@ -96,10 +95,6 @@ public class MySQLViewDefinitionSection extends AbstractPropertySection {
         }
         sqlViewer.createPartControl(parent);
         sqlViewer.reloadSyntaxRules();
-        sqlViewer.doOperation(ISourceViewer.FORMAT);
-        sqlViewer.doSave(VoidProgressMonitor.INSTANCE.getNestedMonitor());
-        //sqlViewer.getTextViewer().setUndoManager(new NestedUndoManager());
-        //sqlViewer.doRevertToSaved();
         parent.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
             {

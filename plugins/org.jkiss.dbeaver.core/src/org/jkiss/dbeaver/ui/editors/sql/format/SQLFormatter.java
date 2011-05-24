@@ -24,34 +24,27 @@ public class SQLFormatter {
     }
 
     public String format(final String argSql)
-            throws SQLFormatterException
     {
         functionBracket.clear();
-        try {
-            boolean isSqlEndsWithNewLine = false;
-            if (argSql.endsWith("\n")) {
-                isSqlEndsWithNewLine = true;
-            }
 
-            List<SQLFormatterToken> list = fParser.parse(argSql);
-            list = format(list);
-
-            StringBuilder after = new StringBuilder(argSql.length() + 20);
-            for (SQLFormatterToken token : list) {
-                after.append(token.getString());
-            }
-
-            if (isSqlEndsWithNewLine) {
-                after.append(ContentUtils.getDefaultLineSeparator());
-            }
-
-            return after.toString();
-        } catch (Exception ex) {
-            final SQLFormatterException sqlException = new SQLFormatterException(
-                    ex.toString());
-            sqlException.initCause(ex);
-            throw sqlException;
+        boolean isSqlEndsWithNewLine = false;
+        if (argSql.endsWith("\n")) {
+            isSqlEndsWithNewLine = true;
         }
+
+        List<SQLFormatterToken> list = fParser.parse(argSql);
+        list = format(list);
+
+        StringBuilder after = new StringBuilder(argSql.length() + 20);
+        for (SQLFormatterToken token : list) {
+            after.append(token.getString());
+        }
+
+        if (isSqlEndsWithNewLine) {
+            after.append(ContentUtils.getDefaultLineSeparator());
+        }
+
+        return after.toString();
     }
 
     private List<SQLFormatterToken> format(final List<SQLFormatterToken> argList) {

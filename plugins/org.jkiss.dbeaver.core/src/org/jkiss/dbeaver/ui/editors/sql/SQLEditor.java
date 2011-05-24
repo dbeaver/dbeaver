@@ -103,7 +103,6 @@ public class SQLEditor extends SQLEditorBase
     private ResultSetViewer resultsView;
 
     private ExplainPlanViewer planView;
-    private SQLLogPanel logViewer;
 
     private SQLQueryJob curJob;
     private boolean curJobRunning;
@@ -222,7 +221,7 @@ public class SQLEditor extends SQLEditorBase
             resultsView = new ResultSetViewer(resultTabs, getSite(), this);
 
             planView = new ExplainPlanViewer(this, resultTabs);
-            logViewer = new SQLLogPanel(resultTabs, this);
+            final SQLLogPanel logViewer = new SQLLogPanel(resultTabs, this);
 
             // Create tabs
             CTabItem item = new CTabItem(resultTabs, SWT.NONE, 0);

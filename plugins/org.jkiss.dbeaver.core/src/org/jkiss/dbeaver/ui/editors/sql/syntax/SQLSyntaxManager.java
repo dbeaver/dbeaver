@@ -105,7 +105,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void changeDataSource(DBPDataSource dataSource)
+    public void setDataSource(DBPDataSource dataSource)
     {
         if (dataSource == null) {
             keywordManager = EmptyKeywordManager.INSTANCE;
@@ -124,11 +124,9 @@ public class SQLSyntaxManager extends RuleBasedScanner {
                 statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
             }
         }
-
-        changeRules();
     }
 
-    private void changeRules()
+    public void refreshRules()
     {
         final Color backgroundColor = getColor(SQLSyntaxManager.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE);
         final IToken keywordToken = new Token(
