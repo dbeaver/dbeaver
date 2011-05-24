@@ -234,28 +234,11 @@
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"
             label="View manager"/>
-
-        <editor
-            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLDDLEditor"
-            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLDDLEditor"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"
-            main="false"
-            label="DDL"
-            description="Table DDL"
-            position="additions_end"
-            icon="#sources">
-        </editor>
-
-        <editor
-            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLProcedureEditor"
-            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLProcedureEditor"
+        <manager
+            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLProcedureManager"
+            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLProcedureManager"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"
-            main="false"
-            label="Source"
-            description="Procedure source"
-            position="additions_end"
-            icon="#sources">
-        </editor>
+            label="Procedure manager"/>
 
         <editor
             id="org.jkiss.dbeaver.ext.mysql.editors.MySQLTriggerEditor"

@@ -6,23 +6,32 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.views.properties.tabbed.ISection;
+import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.mysql.editors.MySQLTableDDLSection;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
+import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
 
 /**
  * MySQL table manager
  */
-public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog> implements DBEObjectRenamer<MySQLTable> {
+public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog> implements DBEObjectRenamer<MySQLTable>, DBEObjectTabProvider<MySQLTable> {
 
     private static final Class<?>[] CHILD_TYPES = {
         MySQLTableColumn.class,
@@ -104,4 +113,25 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
     {
         processObjectRename(commandContext, object, newName);
     }
+
+    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseNodeEditor activeEditor, final MySQLTable object)
+    {
+        if (object.getContainer().isSystem()) {
+            return null;
+        }
+        return new ITabDescriptor[] {
+            new PropertyTabDescriptor(
+                PropertiesContributor.CATEGORY_INFO,
+                "table.ddl",
+                "DDL",
+                DBIcon.SOURCES.getImage(),
+                new SectionDescriptor("default", "DDL") {
+                    public ISection getSectionClass()
+                    {
+                        return new MySQLTableDDLSection(activeEditor);
+                    }
+                })
+        };
+    }
+
 }
