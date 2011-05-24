@@ -541,10 +541,11 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
             }
 */
             final Set<String> properties = metaURL.getAvailableProperties();
-            hostText.setEditable(properties.contains(PROP_HOST));
-            portText.setEditable(properties.contains(PROP_PORT));
-            dbText.setEditable(properties.contains(PROP_DATABASE));
+            //hostText.setEditable(properties.contains(PROP_HOST));
+            //portText.setEditable(properties.contains(PROP_PORT));
+            //dbText.setEditable(properties.contains(PROP_DATABASE));
             urlText.setEditable(false);
+            urlText.setBackground(urlText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
             showControlGroup(GROUP_HOST, properties.contains(PROP_HOST));
             showControlGroup(GROUP_SERVER, properties.contains(PROP_SERVER));
@@ -552,14 +553,15 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
             showControlGroup(GROUP_PATH, properties.contains(PROP_FOLDER) || properties.contains(PROP_FILE));
         } else {
             isCustom = true;
-            hostText.setEditable(false);
-            portText.setEditable(false);
-            dbText.setEditable(false);
+//            hostText.setEditable(false);
+//            portText.setEditable(false);
+//            dbText.setEditable(false);
             showControlGroup(GROUP_HOST, false);
             showControlGroup(GROUP_SERVER, false);
             showControlGroup(GROUP_DB, false);
             showControlGroup(GROUP_PATH, false);
             urlText.setEditable(true);
+            urlText.setBackground(null);
         }
         showControlGroup(GROUP_LOGIN, !driver.isAnonymousAccess());
 
