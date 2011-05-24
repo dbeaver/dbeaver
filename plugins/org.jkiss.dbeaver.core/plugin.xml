@@ -485,6 +485,7 @@
         <handler commandId="org.jkiss.dbeaver.core.object.open" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen">
             <enabledWhen>
                 <with variable="selection">
+                    <count value="+"/>
                     <iterate operator="and">
                         <or>
                             <adapt type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode">
