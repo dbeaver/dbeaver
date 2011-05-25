@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.data;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
@@ -70,4 +71,15 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         }
     }
 
+    @Override
+    public boolean isDirty()
+    {
+        return resultSetView != null && !resultSetView.getControl().isDisposed() && resultSetView.isDirty();
+    }
+
+    @Override
+    public void doSave(IProgressMonitor monitor)
+    {
+        resultSetView.applyChanges();
+    }
 }

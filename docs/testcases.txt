@@ -7,7 +7,7 @@
 4. Execute
     4.1 Queries
     4.2 Scripts
-5. Export tables/resulsets
+5. Export tables/resultsets
 6. Order/filter tables/resultsets
 7. Modify metadata
     7.1 Table
@@ -22,3 +22,4 @@
     9.1 Auto-complete
     9.2 Hyperlinks
     9.3 Auto-indent
+10. Modify resultset
