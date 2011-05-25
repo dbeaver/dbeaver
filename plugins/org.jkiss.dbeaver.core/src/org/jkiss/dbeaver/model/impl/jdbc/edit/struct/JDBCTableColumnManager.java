@@ -25,10 +25,20 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
-
+    public static final long DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP = 1;
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;
+    }
+
+    protected long getDDLFeatures()
+    {
+        return 0;
+    }
+
+    private boolean hasDDLFeature(long feature)
+    {
+        return (getDDLFeatures() & feature) != 0;
     }
 
     @Override
@@ -47,7 +57,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
                 "Drop table column", "ALTER TABLE " + command.getObject().getTable().getFullQualifiedName() +
-                    " DROP COLUMN " + command.getObject().getName())
+                    " DROP " + (hasDDLFeature(DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP) ? "" : "COLUMN ") + DBUtils.getQuotedIdentifier(command.getObject()))
         };
     }
 

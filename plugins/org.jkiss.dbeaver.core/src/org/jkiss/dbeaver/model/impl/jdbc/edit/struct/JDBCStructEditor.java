@@ -65,7 +65,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
     protected class StructCreateCommand extends ObjectCreateCommand
         implements DBECommandAggregator<OBJECT_TYPE> {
 
-        private final Map<DBPObject, NestedObjectCommand> objectCommands = new IdentityHashMap<DBPObject, NestedObjectCommand>();
+        private final Map<DBPObject, NestedObjectCommand> objectCommands = new LinkedHashMap<DBPObject, NestedObjectCommand>();
 
         public StructCreateCommand(OBJECT_TYPE object, String table)
         {
