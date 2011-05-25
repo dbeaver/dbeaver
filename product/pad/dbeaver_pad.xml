@@ -51,8 +51,8 @@
   </NewsFeed>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.1.3</Program_Version>
-    <Program_Release_Month>04</Program_Release_Month>
+    <Program_Version>1.2.0</Program_Version>
+    <Program_Release_Month>05</Program_Release_Month>
     <Program_Release_Day>25</Program_Release_Day>
     <Program_Release_Year>2011</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
@@ -62,19 +62,16 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-- Support of IBM Informix
-- Support of SAP/MAX DB
-- Support of Cache database
-- Driver management was refactored
-- SQL scripts import/export
-- SQL syntax highlighting/scripts parse fixes
+- Generic database metadata editor (allows create/alter/drop tables, columns, primary/unique/foreign keys, indexes)
+- MySQL driver supports edit of views, tables rename, comments for tables/columns
+- Support of undo/redo in object editors
+- A lot of UI updates and bugfixes
+- UI improvements in Linux (GTK) version
 	</Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
     <File_Info>
-      <File_Size_Bytes>21354771</File_Size_Bytes>
-      <File_Size_K>20854</File_Size_K>
-      <File_Size_MB>20</File_Size_MB>
+      <File_Size_Bytes>21565122</File_Size_Bytes>
       <Filename_Versioned></Filename_Versioned>
       <Filename_Previous></Filename_Previous>
       <Filename_Generic></Filename_Generic>
@@ -108,7 +105,7 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.1.3-setup.exe</Primary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.2.0-setup.exe</Primary_Download_URL>
       <Secondary_Download_URL></Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
