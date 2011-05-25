@@ -26,7 +26,7 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar", "varchar2", "char", "integer", "number");
 
         final GenericTableColumn column = new GenericTableColumn(parent);
-        column.setName(JDBCObjectNameCaseTransformer.transformName(column, "NewColumn"));
+        column.setName(JDBCObjectNameCaseTransformer.transformName(column, getNewColumnName(parent)));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBSDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeNumber());

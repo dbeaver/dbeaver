@@ -107,7 +107,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 
     public void handleDataSourceEvent(DBPEvent event)
     {
-        if (curPropertySource.getEditableValue() == event.getObject() && !propertyTree.getControl().isDisposed()) {
+        if (curPropertySource.getEditableValue() == event.getObject() && !Boolean.FALSE.equals(event.getEnabled()) && !propertyTree.getControl().isDisposed()) {
             //propertyTree.get
             propertyTree.refresh();
         }
