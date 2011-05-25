@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.*;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.properties.ProxyPropertyDescriptor;
 
@@ -47,7 +46,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
     public final OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
-        OBJECT_TYPE newObject = createNewObject(workbenchWindow, activeEditor, parent, copyFrom);
+        OBJECT_TYPE newObject = createDatabaseObject(workbenchWindow, activeEditor, commandContext, parent, copyFrom);
         if (newObject == null) {
             return null;
         }
@@ -96,7 +95,12 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     }
 */
 
-    protected abstract OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, CONTAINER_TYPE parent, Object copyFrom);
+    protected abstract OBJECT_TYPE createDatabaseObject(
+        IWorkbenchWindow workbenchWindow,
+        IEditorPart activeEditor,
+        DBECommandContext context,
+        CONTAINER_TYPE parent,
+        Object copyFrom);
 
     protected abstract IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command);
 

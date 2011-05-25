@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 
@@ -28,7 +29,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
     }
 
     @Override
-    protected GenericTable createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, GenericStructContainer parent, Object copyFrom)
+    protected GenericTable createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, GenericStructContainer parent, Object copyFrom)
     {
         final GenericTable table = new GenericTable(parent);
         table.setName(JDBCObjectNameCaseTransformer.transformName(parent, "NewTable"));

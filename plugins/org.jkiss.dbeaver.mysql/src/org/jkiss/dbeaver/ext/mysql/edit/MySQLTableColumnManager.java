@@ -10,6 +10,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
@@ -40,12 +41,12 @@ public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableCo
         return decl;
     }
 
-    protected MySQLTableColumn createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, MySQLTableBase parent, Object copyFrom)
+    protected MySQLTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLTableBase parent, Object copyFrom)
     {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar");
 
         final MySQLTableColumn column = new MySQLTableColumn(parent);
-        column.setName(JDBCObjectNameCaseTransformer.transformName(column, getNewColumnName(parent)));
+        column.setName(JDBCObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBSDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeNumber());

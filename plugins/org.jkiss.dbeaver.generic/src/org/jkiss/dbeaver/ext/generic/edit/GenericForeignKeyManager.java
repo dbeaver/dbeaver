@@ -9,6 +9,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCForeignKeyManager;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
@@ -22,7 +23,7 @@ public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericForei
 
 
     @Override
-    protected GenericForeignKey createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, GenericTable table, Object from)
+    protected GenericForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, GenericTable table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
             workbenchWindow.getShell(),

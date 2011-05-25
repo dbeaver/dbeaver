@@ -9,6 +9,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.mysql.model.*;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCForeignKeyManager;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
@@ -20,7 +21,7 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKey, MySQLConstraint, MySQLTable> {
 
 
-    protected MySQLForeignKey createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, MySQLTable table, Object from)
+    protected MySQLForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLTable table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
             workbenchWindow.getShell(),

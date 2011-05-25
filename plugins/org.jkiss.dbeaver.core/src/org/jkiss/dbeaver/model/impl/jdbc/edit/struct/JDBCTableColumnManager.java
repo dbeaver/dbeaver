@@ -8,17 +8,16 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-
-import java.util.List;
 
 /**
  * JDBC table column manager
@@ -52,19 +51,29 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         };
     }
 
-    protected String getNewColumnName(TABLE_TYPE table)
+    protected String getNewColumnName(DBECommandContext context, TABLE_TYPE table)
     {
-        String name = "Column";
         for (int i = 1; ; i++)  {
+            final String name = "Column" + i;
             try {
-                if (table.getColumn(VoidProgressMonitor.INSTANCE, name) == null) {
+                // check for existing columns
+                boolean exists = table.getColumn(VoidProgressMonitor.INSTANCE, name) != null;
+                if (!exists) {
+                    // Check for new columns (they are present only within command context)
+                    for (DBPObject contextObject : context.getEditedObjects()) {
+                        if (contextObject instanceof JDBCTableColumn && ((JDBCTableColumn) contextObject).getTable() == table && name.equalsIgnoreCase(((JDBCTableColumn) contextObject).getName())) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                }
+                if (!exists) {
                     return name;
                 }
             } catch (DBException e) {
                 log.warn(e);
                 return name;
             }
-            name = "Column" + i;
         }
 
     }

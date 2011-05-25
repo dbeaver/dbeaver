@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.editors.MySQLViewDefinitionSection;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
@@ -44,7 +45,7 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
     }
 
     @Override
-    protected MySQLView createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, MySQLCatalog parent, Object copyFrom)
+    protected MySQLView createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
     {
         MySQLView newCatalog = new MySQLView(parent);
         newCatalog.setName("NewView");

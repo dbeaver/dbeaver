@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLIndex;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLIndexColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
@@ -25,10 +26,10 @@ import java.util.Collections;
  */
 public class MySQLIndexManager extends JDBCIndexManager<MySQLIndex, MySQLTable> {
 
-    protected MySQLIndex createNewObject(
+    protected MySQLIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor,
-        MySQLTable parent,
+        DBECommandContext context, MySQLTable parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(

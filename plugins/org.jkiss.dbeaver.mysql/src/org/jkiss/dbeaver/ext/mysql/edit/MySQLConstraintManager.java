@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLConstraint;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLConstraintColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
@@ -23,9 +24,9 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
  */
 public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstraint, MySQLTable> {
 
-    protected MySQLConstraint createNewObject(
+    protected MySQLConstraint createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor, MySQLTable parent,
+        IEditorPart activeEditor, DBECommandContext context, MySQLTable parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(

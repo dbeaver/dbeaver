@@ -28,7 +28,7 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     }
 
     @Override
-    protected MySQLCatalog createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, MySQLDataSource parent, Object copyFrom)
+    protected MySQLCatalog createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLDataSource parent, Object copyFrom)
     {
         String schemaName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Schema name");
         if (CommonUtils.isEmpty(schemaName)) {

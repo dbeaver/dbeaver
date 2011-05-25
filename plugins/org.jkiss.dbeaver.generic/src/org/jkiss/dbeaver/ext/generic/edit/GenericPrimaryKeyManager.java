@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
@@ -23,9 +24,9 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
  */
 public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrimaryKey, GenericTable> {
 
-    protected GenericPrimaryKey createNewObject(
+    protected GenericPrimaryKey createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor, GenericTable parent,
+        IEditorPart activeEditor, DBECommandContext context, GenericTable parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(

@@ -41,7 +41,7 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
     };
 
     @Override
-    protected MySQLTable createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, MySQLCatalog parent, Object copyFrom)
+    protected MySQLTable createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
     {
         final MySQLTable table = new MySQLTable(parent);
         table.setName(JDBCObjectNameCaseTransformer.transformName(parent, "NewTable"));

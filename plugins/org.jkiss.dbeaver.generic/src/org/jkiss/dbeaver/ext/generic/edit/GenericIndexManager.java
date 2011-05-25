@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericIndexColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
@@ -25,10 +26,10 @@ import java.util.Collections;
  */
 public class GenericIndexManager extends JDBCIndexManager<GenericIndex, GenericTable> {
 
-    protected GenericIndex createNewObject(
+    protected GenericIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor,
-        GenericTable parent,
+        DBECommandContext context, GenericTable parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(
