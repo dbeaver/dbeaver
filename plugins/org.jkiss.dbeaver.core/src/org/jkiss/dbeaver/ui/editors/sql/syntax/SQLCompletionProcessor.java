@@ -129,7 +129,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         keyWord,
                         keyWord,
                         keyWord + " (" + keywordType.name() + ")",
-                        null));
+                        null,
+                        false));
             }
         }
 
@@ -427,7 +428,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 childName,
                 info.toString());
 */
-        return createCompletionProposal(objectName, objectName, info.toString(), node == null ? null : node.getNodeIconDefault());
+        return createCompletionProposal(objectName, objectName, info.toString(), node == null ? null : node.getNodeIconDefault(), true);
     }
 
     /*
@@ -435,22 +436,25 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     */
     protected ICompletionProposal createCompletionProposal(
         String replaceString,
-        String objectName,
-        String objectInfo,
-        Image image)
+        String displayString,
+        String description,
+        Image image,
+        boolean isObject)
     {
-        // Escape replace string if required
-        replaceString = DBUtils.getQuotedIdentifier(editor.getDataSource(), replaceString);
+        if (isObject) {
+            // Escape replace string if required
+            replaceString = DBUtils.getQuotedIdentifier(editor.getDataSource(), replaceString);
+        }
         return new SQLCompletionProposal(
             editor.getSyntaxManager(),
-            objectName,
+            displayString,
             replaceString, // replacementString
             wordDetector, // wordDetector
             replaceString.length(), //cursorPosition the position of the cursor following the insert
                                 // relative to replacementOffset
             image, //image to display
-            new ContextInformation(image, objectName, objectName), //the context information associated with this proposal
-            objectInfo);
+            new ContextInformation(image, displayString, displayString), //the context information associated with this proposal
+            description);
     }
 
     /**

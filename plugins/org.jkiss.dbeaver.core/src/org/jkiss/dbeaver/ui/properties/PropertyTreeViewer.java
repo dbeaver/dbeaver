@@ -79,16 +79,12 @@ public class PropertyTreeViewer extends TreeViewer {
 
         treeControl.addControlListener(new ControlAdapter() {
             private boolean packing = false;
-            @Override
-            public void controlResized(ControlEvent e) {
+            public void controlResized(ControlEvent e)
+            {
                 if (!packing) {
-                    try {
-                        packing = true;
-                        UIUtils.packColumns(treeControl, true, new float[] { 0.2f , 0.8f });
-                    }
-                    finally {
-                        packing = false;
-                    }
+                    packing = true;
+                    UIUtils.packColumns(treeControl, true, new float[]{0.2f, 0.8f});
+                    treeControl.removeControlListener(this);
                 }
             }
         });
