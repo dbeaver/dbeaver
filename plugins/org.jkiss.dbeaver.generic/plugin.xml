@@ -298,7 +298,7 @@
                     label="Firebird (JayBird)"
                     class="org.firebirdsql.jdbc.FBDriver"
                     sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
-                    defaultPort=""
+                    defaultPort="3050"
                     webURL=""
                     description="Firebird JayBird driver">
                     <file type="library" path="drivers/firebird/jaybird-full-2.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/jaybird-full-2.1.6.jar"/>

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
@@ -591,7 +592,16 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     private void addContributions(String position)
     {
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
-        List<EntityEditorDescriptor> descriptors = editorsRegistry.getEntityEditors(getEditorInput().getDatabaseObject().getClass(), position);
+        final DBSObject databaseObject = getEditorInput().getDatabaseObject();
+        Class objectClass;
+        if (databaseObject instanceof DBSDataSourceContainer && databaseObject.getDataSource() != null) {
+            objectClass = databaseObject.getDataSource().getClass();
+        } else {
+            objectClass = databaseObject.getClass();
+        }
+        List<EntityEditorDescriptor> descriptors = editorsRegistry.getEntityEditors(
+            objectClass,
+            position);
         for (EntityEditorDescriptor descriptor : descriptors) {
             addEditorTab(descriptor);
         }

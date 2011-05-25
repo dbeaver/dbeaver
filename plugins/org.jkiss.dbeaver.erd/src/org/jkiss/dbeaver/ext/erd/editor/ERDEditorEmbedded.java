@@ -15,10 +15,7 @@ import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
@@ -84,9 +81,21 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseNodeEdi
         }
     }
 
-    protected synchronized void loadDiagram()
+    private DBSObject getRootObject()
     {
         DBSObject object = getEditorInput().getDatabaseObject();
+        if (object == null) {
+            return null;
+        }
+        if (object instanceof DBSDataSourceContainer && object.getDataSource() instanceof DBSObject) {
+            object = (DBSObject) object.getDataSource();
+        }
+        return object;
+    }
+
+    protected synchronized void loadDiagram()
+    {
+        DBSObject object = getRootObject();
         if (object == null) {
             return;
         }
@@ -134,7 +143,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseNodeEdi
     private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
         throws DBException
     {
-        DBSObject dbObject = getEditorInput().getDatabaseObject();
+        DBSObject dbObject = getRootObject();
         if (dbObject == null) {
             log.error("Database object must be entity container to render ERD diagram");
             return null;
