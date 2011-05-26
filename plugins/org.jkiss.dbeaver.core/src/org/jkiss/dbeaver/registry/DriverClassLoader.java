@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -12,8 +13,25 @@ import java.net.URLClassLoader;
  */
 public class DriverClassLoader extends URLClassLoader
 {
-    public DriverClassLoader(URL[] urls, ClassLoader parent)
+    private final DriverDescriptor driver;
+
+    public DriverClassLoader(DriverDescriptor driver, URL[] urls, ClassLoader parent)
     {
         super(urls, parent);
+        this.driver = driver;
+    }
+
+    @Override
+    protected String findLibrary(String libname)
+    {
+        for (DriverFileDescriptor driverFile : driver.getFiles()) {
+            if (driverFile.getType() == DriverFileType.lib && driverFile.matchesCurrentPlatform()) {
+                final File localFile = driverFile.getLocalFile();
+                if (localFile.exists() && localFile.getName().equalsIgnoreCase(libname)) {
+                    return localFile.getAbsolutePath();
+                }
+            }
+        }
+        return super.findLibrary(libname);
     }
 }

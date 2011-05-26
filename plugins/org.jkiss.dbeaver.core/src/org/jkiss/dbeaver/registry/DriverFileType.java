@@ -8,6 +8,7 @@ package org.jkiss.dbeaver.registry;
  * Driver file type
  */
 public enum DriverFileType {
-    library,
+    jar,
+    lib,
     license
 }

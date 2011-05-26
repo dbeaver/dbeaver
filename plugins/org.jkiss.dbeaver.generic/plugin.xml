@@ -98,7 +98,7 @@
                     defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
-                    <file type="library" path="drivers/postgresql/postgresql-8.4-701.jdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/postgresql-8.4-701.jdbc4.jar"/>
+                    <file type="jar" path="drivers/postgresql/postgresql-8.4-701.jdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/postgresql-8.4-701.jdbc4.jar"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?"/>
@@ -112,7 +112,7 @@
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle thin driver">
-                    <file type="library" path="drivers/oracle/ojdbc6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/ojdbc6.jar"/>
+                    <file type="jar" path="drivers/oracle/ojdbc6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/ojdbc6.jar"/>
                     <file type="license" path="drivers/oracle/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
                     <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
@@ -125,8 +125,8 @@
                     defaultPort="50000"
                     webURL="http://www.ibm.com/software/data/db2/express/download.html"
                     description="DB2 JCC driver">
-					<file type="library" path="drivers/db2/db2jcc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc.jar"/>
-					<file type="library" path="drivers/db2/db2jcc_license_cu.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc_license_cu.jar"/>
+					<file type="jar" path="drivers/db2/db2jcc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc.jar"/>
+					<file type="jar" path="drivers/db2/db2jcc_license_cu.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc_license_cu.jar"/>
                     <file type="license" path="drivers/db2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/LICENSE.txt"/>
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
@@ -144,7 +144,9 @@
                     description="MS SQL Server JTDS driver">
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use ?"/>
-                    <file type="library" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
+                    <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x86/ntlmauth.dll"/>
+                    <file type="lib" os="win32" arch="x64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x64/ntlmauth.dll"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/LICENSE.txt"/>
                 </driver>
                 <driver
@@ -157,7 +159,7 @@
                     description="Sybase JTDS driver">
                     <!--parameter name="query-get-active-db">select db_name()</query>
                     <parameter name="query-set-active-db">use ?</query-->
-                    <file type="library" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
+                    <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/LICENSE.txt"/>
                 </driver>
                 <driver
@@ -168,7 +170,7 @@
                     defaultPort="7200"
                     webURL="http://www.sdn.sap.com/irj/sdn/maxdb"
                     description="SAP MaxDB - The SAP Database System">
-                    <file type="library" path="drivers/maxdb/sapdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/maxdb/sapdbc.jar"/>
+                    <file type="jar" path="drivers/maxdb/sapdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/maxdb/sapdbc.jar"/>
                     <file type="license" path="drivers/maxdb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/maxdb/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
                     <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
@@ -181,8 +183,8 @@
                     defaultPort="1533"
                     webURL="http://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server">
-                    <file type="library" path="drivers/informix/ifxjdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/ifxjdbc.jar"/>
-                    <file type="library" path="drivers/informix/ifxlang.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/ifxlang.jar"/>
+                    <file type="jar" path="drivers/informix/ifxjdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/ifxjdbc.jar"/>
+                    <file type="jar" path="drivers/informix/ifxlang.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/ifxlang.jar"/>
                     <file type="license" path="drivers/informix/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value=""/>
@@ -195,7 +197,7 @@
                     defaultPort="9092"
                     webURL="http://www.h2database.com/"
                     description="H2 Server">
-                    <file type="library" path="drivers/h2/h2-1.2.147.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/h2-1.2.147.jar"/>
+                    <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/h2-1.2.147.jar"/>
                     <file type="license" path="drivers/h2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/LICENSE.txt"/>
                 </driver>
                 <!--driver
@@ -205,7 +207,7 @@
                     sampleURL="jdbc:h2:{database}"
                     webURL="http://www.h2database.com/"
                     description="H2 Embedded">
-                    <file type="library" path="drivers/h2/h2-1.2.147.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/h2-1.2.147.jar"/>
+                    <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/h2-1.2.147.jar"/>
                     <file type="license" path="drivers/h2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/LICENSE.txt"/>
                 </driver-->
                 <driver
@@ -225,7 +227,7 @@
                     anonymous="true"
                     description="Derby (Java DB) embedded driver">
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
-                    <file type="library" path="drivers/derby/derby.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/derby.jar"/>
+                    <file type="jar" path="drivers/derby/derby.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/derby.jar"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
@@ -238,7 +240,7 @@
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
-                    <file type="library" path="drivers/derby/derbyclient.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/derbyclient.jar"/>
+                    <file type="jar" path="drivers/derby/derbyclient.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/derbyclient.jar"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
@@ -251,7 +253,7 @@
                     defaultPort="1360"
                     webURL="http://developer.mimer.com/"
                     description="Mimer SQL TCP/IP driver">
-                    <file type="library" path="drivers/mimer/mimjdbc3.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mimjdbc3.jar"/>
+                    <file type="jar" path="drivers/mimer/mimjdbc3.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mimjdbc3.jar"/>
                 </driver>
                 <driver
                     id="hsqldb_server"
@@ -261,7 +263,7 @@
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
                     description="HyperSQL DataBase - Server Mode">
-                    <file type="library" path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
+                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
                     <file type="license" path="drivers/hsqldb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
@@ -275,7 +277,7 @@
                     webURL="http://hsqldb.org/"
                     anonymous="true"
                     description="HyperSQL DataBase - Embedded Mode">
-                    <file type="library" path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
+                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
                     <file type="license" path="drivers/hsqldb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/LICENSE.txt"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
@@ -290,7 +292,7 @@
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/cache/"
                     description="Intersystems Cache">
-                    <file type="library" path="drivers/cache/CacheDB.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cache/CacheDB.jar"/>
+                    <file type="jar" path="drivers/cache/CacheDB.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cache/CacheDB.jar"/>
                     <file type="license" path="drivers/cache/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cache/LICENSE.txt"/>
                 </driver>
                 <driver
@@ -301,7 +303,7 @@
                     defaultPort="3050"
                     webURL=""
                     description="Firebird JayBird driver">
-                    <file type="library" path="drivers/firebird/jaybird-full-2.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/jaybird-full-2.1.6.jar"/>
+                    <file type="jar" path="drivers/firebird/jaybird-full-2.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/jaybird-full-2.1.6.jar"/>
                     <file type="license" path="drivers/firebird/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/LICENSE.txt"/>
                 </driver>
             </drivers>

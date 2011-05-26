@@ -24,6 +24,8 @@ public class DriverFileDescriptor
 
     private final DriverDescriptor driver;
     private final DriverFileType type;
+    private final String os;
+    private final String osArch;
     private String path;
     private String description;
     private String externalURL;
@@ -33,7 +35,9 @@ public class DriverFileDescriptor
     public DriverFileDescriptor(DriverDescriptor driver, String path)
     {
         this.driver = driver;
-        this.type = DriverFileType.library;
+        this.type = DriverFileType.jar;
+        this.os = Platform.getOS();
+        this.osArch = Platform.getOSArch();
         this.path = path;
         this.custom = true;
     }
@@ -42,6 +46,8 @@ public class DriverFileDescriptor
     {
         this.driver = driver;
         this.type = DriverFileType.valueOf(config.getAttribute("type"));
+        this.os = config.getAttribute("os");
+        this.osArch = config.getAttribute("arch");
         this.path = config.getAttribute("path");
         this.description = config.getAttribute("description");
         this.externalURL = config.getAttribute("url");
@@ -56,6 +62,16 @@ public class DriverFileDescriptor
     public DriverFileType getType()
     {
         return type;
+    }
+
+    public String getOS()
+    {
+        return os;
+    }
+
+    public String getOSArch()
+    {
+        return osArch;
     }
 
     public String getPath()
@@ -143,4 +159,10 @@ public class DriverFileDescriptor
         return libraryFile;
     }
 
+    public boolean matchesCurrentPlatform()
+    {
+        return
+            (os != null && !os.equals(Platform.getOS())) ||
+            (osArch != null && !osArch.equals(Platform.getOSArch()));
+    }
 }

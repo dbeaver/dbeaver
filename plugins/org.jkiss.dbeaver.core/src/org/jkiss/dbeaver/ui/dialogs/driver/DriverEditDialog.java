@@ -272,7 +272,7 @@ public class DriverEditDialog extends Dialog
 
             libList = new ArrayList<DriverFileDescriptor>();
             for (DriverFileDescriptor lib : driver.getFiles()) {
-                if (lib.isDisabled() || lib.getType() != DriverFileType.library) {
+                if (lib.isDisabled() || lib.getType() != DriverFileType.jar) {
                     continue;
                 }
                 libList.add(lib);

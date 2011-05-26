@@ -176,6 +176,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         // Create class loader
         this.classLoader = new DriverClassLoader(
+            this,
             new URL[0],
             //getClass().getClassLoader());
             providerDescriptor.getContributorBundle().getBundleContext().getClass().getClassLoader());
@@ -635,7 +636,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         List<URL> libraryURLs = new ArrayList<URL>();
         // Load libraries
         for (DriverFileDescriptor file : files) {
-            if (file.isDisabled() || file.getType() != DriverFileType.library) {
+            if (file.isDisabled() || file.getType() != DriverFileType.jar) {
                 continue;
             }
             URL url;
@@ -649,6 +650,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         // Make class loader
         this.classLoader = new DriverClassLoader(
+            this,
             libraryURLs.toArray(new URL[libraryURLs.size()]),
             ClassLoader.getSystemClassLoader());
     }
@@ -659,6 +661,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         for (DriverFileDescriptor file : files) {
             if (file.isDisabled() || file.getExternalURL() == null || !file.isLocal()) {
                 // Nothing we can do about it
+                continue;
+            }
+            if (!file.matchesCurrentPlatform()) {
+                // Wrong OS or architecture
                 continue;
             }
             final File libraryFile = file.getLocalFile();
@@ -734,7 +740,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         connection.setInstanceFollowRedirects(true);
         connection.connect();
         if (connection.getResponseCode() != 200) {
-            throw new IOException("Can't find driver file: " + connection.getResponseMessage());
+            throw new IOException("Can't find driver file '" + url + "': " + connection.getResponseMessage());
         }
         final int contentLength = connection.getContentLength();
         final String contentType = connection.getContentType();
