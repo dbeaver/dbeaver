@@ -161,8 +161,9 @@ public class DriverFileDescriptor
 
     public boolean matchesCurrentPlatform()
     {
-        return
+        return !(
             (os != null && !os.equals(Platform.getOS())) ||
-            (osArch != null && !osArch.equals(Platform.getOSArch()));
+            (osArch != null && !osArch.equals(Platform.getOSArch()))
+            );
     }
 }

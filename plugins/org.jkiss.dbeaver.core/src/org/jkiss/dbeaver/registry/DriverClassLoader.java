@@ -27,8 +27,15 @@ public class DriverClassLoader extends URLClassLoader
         for (DriverFileDescriptor driverFile : driver.getFiles()) {
             if (driverFile.getType() == DriverFileType.lib && driverFile.matchesCurrentPlatform()) {
                 final File localFile = driverFile.getLocalFile();
-                if (localFile.exists() && localFile.getName().equalsIgnoreCase(libname)) {
-                    return localFile.getAbsolutePath();
+                if (localFile.exists()) {
+                    final String libName = localFile.getName();
+                    if (libName.equalsIgnoreCase(libname)) {
+                        return localFile.getAbsolutePath();
+                    }
+                    int dotPos = libName.lastIndexOf('.');
+                    if (dotPos != -1 && libName.substring(0, dotPos).equalsIgnoreCase(libname)) {
+                        return localFile.getAbsolutePath();
+                    }
                 }
             }
         }
