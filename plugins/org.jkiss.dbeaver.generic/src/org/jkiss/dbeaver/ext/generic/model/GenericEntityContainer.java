@@ -158,17 +158,21 @@ public abstract class GenericEntityContainer implements GenericStructContainer
                 log.debug(e);
             }
 
-            // Try to read all indexes
-            monitor.subTask("Cache indexes");
-            cacheIndexes(monitor, false);
+            if (getDataSource().getInfo().supportsIndexes()) {
+                // Try to read all indexes
+                monitor.subTask("Cache indexes");
+                cacheIndexes(monitor, false);
+            }
 
-            // Try to read all FKs
-            try {
-                monitor.subTask("Cache foreign keys");
-                foreignKeysCache.getObjects(monitor, null);
-            } catch (Exception e) {
-                // Failed - seems to be unsupported feature
-                log.debug(e);
+            if (getDataSource().getInfo().supportsReferentialIntegrity()) {
+                // Try to read all FKs
+                try {
+                    monitor.subTask("Cache foreign keys");
+                    foreignKeysCache.getObjects(monitor, null);
+                } catch (Exception e) {
+                    // Failed - seems to be unsupported feature
+                    log.debug(e);
+                }
             }
         }
     }

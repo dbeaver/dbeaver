@@ -14,6 +14,8 @@ public class GenericConstants {
     public static final String PARAM_QUERY_GET_ACTIVE_DB = "query-get-active-db";
     public static final String PARAM_QUERY_SET_ACTIVE_DB = "query-set-active-db";
     public static final String PARAM_ACTIVE_ENTITY_TYPE = "active-entity-type";
+    public static final String PARAM_SUPPORTS_REFERENCES = "supports-references";
+    public static final String PARAM_SUPPORTS_INDEXES = "supports-indexes";
 
     public static final String ENTITY_TYPE_CATALOG = "catalog";
     public static final String ENTITY_TYPE_SCHEMA = "schema";

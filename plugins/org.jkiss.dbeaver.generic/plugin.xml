@@ -36,19 +36,19 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
                                     <items label="Foreign Key" path="foreignKey" property="foreignKeys" iconId="#foreign-key">
                                         <items label="Foreign key columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericIndex" label="Indexes" iconId="#indexes" description="Table indexes">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericIndex" label="Indexes" iconId="#indexes" description="Table indexes" visibleIf="object.dataSource.info.supportsIndexes()">
                                     <items label="Index" path="index" property="indexes" iconId="#index">
                                         <items label="Index columns" path="column" property="columns" iconId="#column" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey" label="References" iconId="#references" description="Table references" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey" label="References" iconId="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
                                     <items label="Reference" path="reference" property="references" iconId="#reference">
                                         <items label="Reference columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                         </items>
@@ -316,6 +316,8 @@
                     description="SQLite3 JDBC driver">
                     <file type="jar" path="drivers/sqlite/sqlitejdbc-v056.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/sqlitejdbc-v056.jar"/>
                     <file type="license" path="drivers/sqlite/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/LICENSE.txt"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
                 </driver>
             </drivers>
 

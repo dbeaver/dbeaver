@@ -157,7 +157,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (indexes == null) {
+        if (indexes == null && getDataSource().getInfo().supportsIndexes()) {
             // Read indexes using cache
             this.getContainer().getIndexCache().getObjects(monitor, this);
         }
@@ -218,7 +218,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     public List<GenericForeignKey> getForeignKeys(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (foreignKeys == null) {
+        if (foreignKeys == null && getDataSource().getInfo().supportsReferentialIntegrity()) {
             getContainer().getForeignKeysCache().getObjects(monitor, this);
         }
         return foreignKeys;
@@ -374,7 +374,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     private List<GenericForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!isPersisted()) {
+        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
             return new ArrayList<GenericForeignKey>();
         }
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");

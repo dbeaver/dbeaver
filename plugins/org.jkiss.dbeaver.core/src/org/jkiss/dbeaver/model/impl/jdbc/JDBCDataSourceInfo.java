@@ -62,6 +62,8 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private boolean supportsQuotedMixedCase;
     private DBPIdentifierCase unquotedIdentCase;
     private DBPIdentifierCase quotedIdentCase;
+    private boolean supportsReferences = true;
+    private boolean supportsIndexes = true;
 
     public JDBCDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
@@ -446,6 +448,26 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public boolean supportsSavepoints()
     {
         return false;
+    }
+
+    public boolean supportsReferentialIntegrity()
+    {
+        return supportsReferences;
+    }
+
+    public void setSupportsReferences(boolean supportsReferences)
+    {
+        this.supportsReferences = supportsReferences;
+    }
+
+    public boolean supportsIndexes()
+    {
+        return supportsIndexes;
+    }
+
+    public void setSupportsIndexes(boolean supportsIndexes)
+    {
+        this.supportsIndexes = supportsIndexes;
     }
 
     public List<DBPTransactionIsolation> getSupportedTransactionIsolations()

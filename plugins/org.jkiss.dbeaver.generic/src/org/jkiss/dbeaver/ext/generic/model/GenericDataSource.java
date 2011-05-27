@@ -11,10 +11,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -51,9 +48,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         throws DBException
     {
         super(container);
-        this.queryGetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
-        this.querySetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB));
-        this.selectedEntityType = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_ACTIVE_ENTITY_TYPE));
+        final DBPDriver driver = container.getDriver();
+        this.queryGetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
+        this.querySetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB));
+        this.selectedEntityType = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_ACTIVE_ENTITY_TYPE));
         if (CommonUtils.isEmpty(this.selectedEntityType)) {
             this.selectedEntityType = null;
         }
@@ -61,7 +59,18 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
 
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
-        return new GenericDataSourceInfo(metaData);
+        final GenericDataSourceInfo info = new GenericDataSourceInfo(metaData);
+
+        final Object supportsReferences = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_REFERENCES);
+        if (supportsReferences != null) {
+            info.setSupportsReferences(Boolean.valueOf(supportsReferences.toString()));
+        }
+
+        final Object supportsIndexes = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_INDEXES);
+        if (supportsIndexes != null) {
+            info.setSupportsIndexes(Boolean.valueOf(supportsIndexes.toString()));
+        }
+        return info;
     }
 
     @Override

@@ -28,10 +28,13 @@ class TableCache extends JDBCStructCache<GenericTable, GenericTableColumn> {
     private static final Set<String> INVALID_TABLE_TYPES = new HashSet<String>();
 
     static {
+        // [JDBC: PostgreSQL]
         INVALID_TABLE_TYPES.add("INDEX");
         INVALID_TABLE_TYPES.add("SEQUENCE");
         INVALID_TABLE_TYPES.add("SYSTEM INDEX");
         INVALID_TABLE_TYPES.add("SYSTEM SEQUENCE");
+        // [JDBC: SQLite]
+        INVALID_TABLE_TYPES.add("TRIGGER");
     }
 
     private GenericStructContainer structContainer;

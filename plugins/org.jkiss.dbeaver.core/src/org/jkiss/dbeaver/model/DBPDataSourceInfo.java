@@ -218,6 +218,18 @@ public interface DBPDataSourceInfo
     boolean supportsSavepoints();
 
     /**
+     * Retrieves whether this database supports referential integrity (foreign keys and checks).
+     * @return true or false
+     */
+    boolean supportsReferentialIntegrity();
+
+    /**
+     * Retrieves whether this database supports indexes.
+     * @return true or false
+     */
+    boolean supportsIndexes();
+
+    /**
      * Retrieves list of supported transaction isolation levels
      * @return list of supported transaction isolation levels
      */
