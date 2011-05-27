@@ -121,19 +121,21 @@ public abstract class JDBCStructCache<
                     for (Map.Entry<OBJECT, List<CHILD>> colEntry : columnMap.entrySet()) {
                         cacheChildren(colEntry.getKey(), colEntry.getValue());
                     }
-                    // Now set empty column list for other tables
                     if (forObject == null) {
-                        for (OBJECT tmpObject : getObjects(monitor)) {
-                            if (!isChildrenCached(tmpObject) && !columnMap.containsKey(tmpObject)) {
-                                cacheChildren(tmpObject, new ArrayList<CHILD>());
+                        if (columnMap.isEmpty()) {
+                            // Nothing was read. May be it means empty list of children
+                            // but possibly this feature is not supported [JDBC: SQLite]
+                        } else {
+                            // Now set empty column list for other tables
+                            for (OBJECT tmpObject : getObjects(monitor)) {
+                                if (!isChildrenCached(tmpObject) && !columnMap.containsKey(tmpObject)) {
+                                    cacheChildren(tmpObject, new ArrayList<CHILD>());
+                                }
                             }
+                            this.childrenCached = true;
                         }
                     } else if (!columnMap.containsKey(forObject)) {
                         cacheChildren(forObject, new ArrayList<CHILD>());
-                    }
-
-                    if (forObject == null) {
-                        this.childrenCached = true;
                     }
                 }
                 finally {

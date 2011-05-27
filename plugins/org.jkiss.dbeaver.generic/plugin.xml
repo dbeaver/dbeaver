@@ -306,6 +306,17 @@
                     <file type="jar" path="drivers/firebird/jaybird-full-2.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/jaybird-full-2.1.6.jar"/>
                     <file type="license" path="drivers/firebird/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/LICENSE.txt"/>
                 </driver>
+                <driver
+                    id="sqlite_jdbc"
+                    label="SQLite"
+                    class="org.sqlite.JDBC"
+                    sampleURL="jdbc:sqlite:{file}"
+                    defaultPort=""
+                    webURL="http://www.zentus.com/sqlitejdbc/"
+                    description="SQLite3 JDBC driver">
+                    <file type="jar" path="drivers/sqlite/sqlitejdbc-v056.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/sqlitejdbc-v056.jar"/>
+                    <file type="license" path="drivers/sqlite/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/LICENSE.txt"/>
+                </driver>
             </drivers>
 
             <views>
