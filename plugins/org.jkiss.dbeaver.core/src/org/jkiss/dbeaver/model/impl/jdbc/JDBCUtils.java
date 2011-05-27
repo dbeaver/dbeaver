@@ -147,7 +147,8 @@ public class JDBCUtils {
 
     public static int getDataTypeByName(int valueType, String typeName)
     {
-        if (valueType == java.sql.Types.OTHER) {
+        // [JDBC: SQLite driver uses VARCHAR value type for all LOBs]
+        if (valueType == java.sql.Types.OTHER || valueType == java.sql.Types.VARCHAR) {
             if ("BLOB".equalsIgnoreCase(typeName)) {
                 return java.sql.Types.BLOB;
             } else if ("CLOB".equalsIgnoreCase(typeName)) {
@@ -161,7 +162,7 @@ public class JDBCUtils {
 
     public static DBSDataKind getDataKind(DBSTypedObject type)
     {
-        switch (type.getValueType()) {
+        switch (getDataTypeByName(type.getValueType(), type.getTypeName())) {
             case java.sql.Types.BOOLEAN:
                 return DBSDataKind.BOOLEAN;
             case java.sql.Types.CHAR:
@@ -169,6 +170,7 @@ public class JDBCUtils {
             case java.sql.Types.NVARCHAR:
             case java.sql.Types.LONGVARCHAR:
             case java.sql.Types.LONGNVARCHAR:
+
                 return DBSDataKind.STRING;
             case java.sql.Types.BIGINT:
             case java.sql.Types.DECIMAL:

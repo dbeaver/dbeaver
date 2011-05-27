@@ -135,7 +135,7 @@ class TableCache extends JDBCStructCache<GenericTable, GenericTableColumn> {
         long charLength = JDBCUtils.safeGetLong(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
         int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
         boolean autoIncrement = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.IS_AUTOINCREMENT));
-        if (valueType == java.sql.Types.OTHER && !CommonUtils.isEmpty(typeName)) {
+        if (!CommonUtils.isEmpty(typeName)) {
             // Try to determine value type from type name
             valueType = JDBCUtils.getDataTypeByName(valueType, typeName);
         }
