@@ -106,12 +106,15 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         this.setContentProvider(new ViewContentProvider());
         this.setLabelProvider(new ViewLabelProvider());
         this.setInput(DataSourceProviderRegistry.getDefault());
-        this.expandAll();
+
         this.addSelectionChangedListener(this);
         this.addDoubleClickListener(this);
         this.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        this.expandAll();
         UIUtils.packColumns(getTree());
+        this.collapseAll();
+        this.expandToLevel(2);
     }
 
     class ViewContentProvider implements ITreeContentProvider
@@ -157,28 +160,31 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                 return children.toArray();
             } else if (parent instanceof DataSourceProviderDescriptor) {
                 final List<DriverDescriptor> drivers = ((DataSourceProviderDescriptor) parent).getEnabledDrivers();
-                Collections.sort(drivers, new Comparator<DriverDescriptor>() {
-                    public int compare(DriverDescriptor o1, DriverDescriptor o2)
-                    {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
                 final Map<String, DriverCategory> categoryMap = new HashMap<String, DriverCategory>();
                 final List<Object> children = new ArrayList<Object>();
                 for (DriverDescriptor driver : drivers) {
-                    final String categoryName = driver.getCategory();
+                    String categoryName = driver.getCategory();
                     if (CommonUtils.isEmpty(categoryName)) {
                         children.add(driver);
                     } else {
+                        categoryName = categoryName.trim().toLowerCase();
                         DriverCategory category = categoryMap.get(categoryName);
                         if (category == null) {
-                            category = new DriverCategory((DataSourceProviderDescriptor) parent, categoryName);
+                            category = new DriverCategory((DataSourceProviderDescriptor) parent, driver.getCategory());
                             categoryMap.put(categoryName, category);
                             children.add(category);
                         }
                         category.drivers.add(driver);
                     }
                 }
+                Collections.sort(children, new Comparator<Object>() {
+                    public int compare(Object o1, Object o2)
+                    {
+                        String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory) o1).getName();
+                        String name2 = o2 instanceof DriverDescriptor ? ((DriverDescriptor) o2).getName() : ((DriverCategory) o2).getName();
+                        return name1.compareTo(name2);
+                    }
+                });
                 return children.toArray();
             } else if (parent instanceof DriverCategory) {
                 return ((DriverCategory) parent).drivers.toArray();

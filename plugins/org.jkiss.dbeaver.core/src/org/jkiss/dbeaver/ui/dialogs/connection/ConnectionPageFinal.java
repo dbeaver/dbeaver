@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
+import java.util.StringTokenizer;
+
 /**
  * The "New" wizard page allows setting the container for the new file as well
  * as the file name. The page will only accept file name without the extension
@@ -79,7 +81,15 @@ class ConnectionPageFinal extends ActiveWizardPage
                     if (CommonUtils.isEmpty(newName)) {
                         newName = "New Connection";
                     }
-                    newName = settings.getDriver().getName() + " - " + newName;
+                    StringTokenizer st = new StringTokenizer(newName, "/\\:,?=%$#@!^&*()");
+                    while (st.hasMoreTokens()) {
+                        newName = st.nextToken();
+                    }
+                    if (!CommonUtils.isEmpty(settings.getDriver().getCategory())) {
+                        newName = settings.getDriver().getCategory() + " - " + newName;
+                    } else {
+                        newName = settings.getDriver().getName() + " - " + newName;
+                    }
                     newName = CommonUtils.truncateString(newName, 50);
                 }
                 connectionNameText.setText(newName);

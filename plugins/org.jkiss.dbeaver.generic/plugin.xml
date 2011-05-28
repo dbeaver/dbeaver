@@ -191,7 +191,8 @@
                 </driver>
                 <driver
                     id="h2_server"
-                    label="H2 Server"
+                    label="Server"
+                    category="H2"
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
                     defaultPort="9092"
@@ -200,16 +201,17 @@
                     <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/h2-1.2.147.jar"/>
                     <file type="license" path="drivers/h2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/LICENSE.txt"/>
                 </driver>
-                <!--driver
+                <driver
                     id="h2_embedded"
-                    label="H2 Embedded"
+                    label="Embedded"
+                    category="H2"
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:{database}"
                     webURL="http://www.h2database.com/"
                     description="H2 Embedded">
                     <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/h2-1.2.147.jar"/>
                     <file type="license" path="drivers/h2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/LICENSE.txt"/>
-                </driver-->
+                </driver>
                 <driver
                     id="odbc"
                     label="ODBC"
@@ -311,8 +313,8 @@
                     <file type="license" path="drivers/firebird/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/LICENSE.txt"/>
                 </driver>
                 <driver
-                    id="sqlite_jdbc"
-                    label="JDBC Driver by David Crawshaw"
+                    id="sqlite_zentus"
+                    label="SQLite Zentus driver"
                     category="SQLite"
                     class="org.sqlite.JDBC"
                     sampleURL="jdbc:sqlite:{file}"
@@ -325,8 +327,22 @@
                     <parameter name="supports-indexes" value="false"/>
                 </driver>
                 <driver
-                    id="sqlite_java"
-                    label="JDBC Driver by Christian Werner"
+                    id="sqlite_xerial"
+                    label="SQLite Xerial driver"
+                    category="SQLite"
+                    class="org.sqlite.JDBC"
+                    sampleURL="jdbc:sqlite:{file}"
+                    defaultPort=""
+                    webURL="http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC/"
+                    description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
+                    <file type="jar" path="drivers/sqlite/sqlitejdbc-v056.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/sqlitejdbc-v056.jar"/>
+                    <file type="license" path="drivers/sqlite/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/LICENSE.txt"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                </driver>
+                <driver
+                    id="sqlite_ch_werner"
+                    label="SQLite Wrapper by Christian Werner"
                     category="SQLite"
                     class="SQLite.JDBCDriver"
                     sampleURL="jdbc:sqlite:/{file}"
