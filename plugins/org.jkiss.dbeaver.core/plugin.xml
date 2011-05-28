@@ -168,7 +168,8 @@
         <command id="org.jkiss.dbeaver.core.rollback" name="Rollback changes" description="Rollback changes in SQL Session" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.autocommit" name="Transactional mode" description="Changes transactional mode of active session" categoryId="org.jkiss.dbeaver.core.database"/>
 
-        <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.sql.editor.open" name="SQL Editor" description="Open SQL Editor" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.sql.editor.create" name="New SQL Editor" description="Open New SQL Editor" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.open" name="Edit Object" description="Open object editor" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.create" name="Create Object" description="Create new database object" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.delete" name="Delete Object" description="Delete database object" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -222,7 +223,8 @@
         <image commandId="org.jkiss.dbeaver.core.project.select" icon="icons/project.png"/>
         <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="IMG_TOOL_NEW_WIZARD"/>
 
-        <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.open" icon="icons/sql/sql_script.png"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="icons/sql/sql_script_create.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/tree/edit_item.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.create" icon="IMG_TOOL_NEW_WIZARD"/>
         <image commandId="org.jkiss.dbeaver.core.object.delete" icon="IMG_ETOOL_DELETE"/>
@@ -559,7 +561,8 @@
             </activeWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.sql.editor.open" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.sql.editor.create" class="org.jkiss.dbeaver.ui.editors.sql.handlers.CreateSQLEditorHandler"/>
 
         <!-- SQL editor handlers -->
         
@@ -940,7 +943,8 @@
             <command commandId="org.jkiss.dbeaver.core.invalidate"/>
             <command commandId="org.jkiss.dbeaver.core.disconnect"/>
             <separator name="tools" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
             <command commandId="org.jkiss.dbeaver.core.object.find"/>
             <separator name="session" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.commit"/>
@@ -957,7 +961,8 @@
                 <command commandId="org.jkiss.dbeaver.core.invalidate"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
                 <separator name="tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
                 <command commandId="org.jkiss.dbeaver.core.object.find"/>
             </toolbar>
             <toolbar id="txn" label="Transactions">
@@ -1040,7 +1045,7 @@
                 </visibleWhen>
             </command>
 
-            <command commandId="org.jkiss.dbeaver.core.new.sql.editor">
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -1067,7 +1072,7 @@
             <command commandId="org.jkiss.dbeaver.core.resource.create.folder">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.new.sql.editor" label="Create SQL script">
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.open" label="Create SQL script">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -1273,7 +1278,8 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+X"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+Enter"/>
 
-        <key commandId="org.jkiss.dbeaver.core.new.sql.editor" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+L"/>
+        <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+L"/>
+        <key commandId="org.jkiss.dbeaver.core.sql.editor.create" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+L"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+O"/>
 
         <!-- Text editors -->

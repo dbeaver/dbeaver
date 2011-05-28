@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.model.impl.project;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -24,11 +26,15 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Scripts handler
  */
 public class ScriptsHandlerImpl extends AbstractResourceHandler {
+
+    static final Log log = LogFactory.getLog(ScriptsHandlerImpl.class);
 
     private static final String SCRIPTS_DIR = "Scripts";
 
@@ -38,6 +44,40 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     public static IFolder getScriptsFolder(IProject project)
     {
         return project.getFolder(SCRIPTS_DIR);
+    }
+
+    public static IFile findRecentScript(IProject project, DBSDataSourceContainer container)
+    {
+        List<IFile> scripts = new ArrayList<IFile>();
+        findRecentScripts(ScriptsHandlerImpl.getScriptsFolder(project), container, scripts);
+        long recentTimestamp = 0l;
+        IFile recentFile = null;
+        for (IFile file : scripts) {
+            if (file.getLocalTimeStamp() > recentTimestamp) {
+                recentTimestamp = file.getLocalTimeStamp();
+                recentFile = file;
+            }
+        }
+        return recentFile;
+    }
+
+    public static void findRecentScripts(IFolder folder, DBSDataSourceContainer container, List<IFile> result)
+    {
+        try {
+            for (IResource resource : folder.members()) {
+                if (resource instanceof IFile) {
+                    SQLEditorInput input = new SQLEditorInput((IFile) resource);
+                    if (input.getDataSourceContainer() == container) {
+                        result.add((IFile) resource);
+                    }
+                } else if (resource instanceof IFolder) {
+                    findRecentScripts((IFolder) resource, container, result);
+                }
+
+            }
+        } catch (CoreException e) {
+            log.debug(e);
+        }
     }
 
     public static IFile createNewScript(IProject project, IFolder folder, DBSDataSourceContainer dataSourceContainer) throws CoreException
@@ -139,4 +179,5 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
             throw new DBException("Cannot open folder");
         }
     }
+
 }

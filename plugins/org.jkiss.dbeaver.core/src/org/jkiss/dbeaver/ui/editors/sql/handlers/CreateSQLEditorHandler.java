@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 
-public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
+public class CreateSQLEditorHandler extends BaseSQLEditorHandler {
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -25,10 +25,7 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
         IFolder scriptFolder = getCurrentFolder(event);
         IFile scriptFile;
         try {
-            scriptFile = ScriptsHandlerImpl.findRecentScript(project, dataSourceContainer);
-            if (scriptFile == null) {
-                scriptFile = ScriptsHandlerImpl.createNewScript(project, scriptFolder, dataSourceContainer);
-            }
+            scriptFile = ScriptsHandlerImpl.createNewScript(project, scriptFolder, dataSourceContainer);
         }
         catch (CoreException e) {
             log.error(e);

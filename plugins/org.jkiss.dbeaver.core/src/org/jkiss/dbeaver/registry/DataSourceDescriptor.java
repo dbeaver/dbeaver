@@ -134,7 +134,12 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     public void setDriver(DriverDescriptor driver)
     {
+        if (driver == this.driver) {
+            return;
+        }
+        this.driver.removeUser(this);
         this.driver = driver;
+        this.driver.addUser(this);
     }
 
     public DBPConnectionInfo getConnectionInfo()
