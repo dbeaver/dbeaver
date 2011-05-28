@@ -55,11 +55,6 @@ public class NewConnectionWizard extends ConnectionWizard
         return pageDrivers;
     }
 
-    ConnectionPageFinal getPageFinal()
-    {
-        return pageFinal;
-    }
-
     ConnectionPageSettings getPageSettings(DriverDescriptor driver)
     {
         return this.settingsPages.get(driver.getProviderDescriptor());

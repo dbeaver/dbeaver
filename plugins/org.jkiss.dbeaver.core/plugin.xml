@@ -150,6 +150,7 @@
 
         <command id="org.jkiss.dbeaver.core.driver.manager" name="Driver Manager" description="Driver Manager" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.new.connection" name="New Connection" description="New Connection Wizard" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.migrate.connection" name="Migrate Connection(s)" description="Migrate connection(s) to another driver" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="Link with editor" description="Link with editor" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.set.active" name="Set active object" description="Set active object" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.bookmark.add" name="Add Bookmark" description="Add Bookmark" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -363,7 +364,8 @@
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerDriverManager"/>
-        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerNewConnection"/>
+        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConnectionCreate"/>
+        <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConnectionMigrate"/>
 
         <handler commandId="org.eclipse.ui.navigate.collapseAll" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCollapseAll">
             <enabledWhen>
@@ -932,6 +934,7 @@
             <separator name="driverGroup" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
             <command commandId="org.jkiss.dbeaver.core.new.connection"/>
+            <command commandId="org.jkiss.dbeaver.core.migrate.connection"/>
             <separator name="connection" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.connect"/>
             <command commandId="org.jkiss.dbeaver.core.invalidate"/>
@@ -943,7 +946,7 @@
             <command commandId="org.jkiss.dbeaver.core.commit"/>
             <command commandId="org.jkiss.dbeaver.core.rollback"/>
             <menu label="Transaction mode">
-                <dynamic id="org.jkiss.dbeaver.core.menu.txn.isolation" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
+                <dynamic id="org.jkiss.dbeaver.core.menu.txn" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
             </menu>
         </menuContribution>
 

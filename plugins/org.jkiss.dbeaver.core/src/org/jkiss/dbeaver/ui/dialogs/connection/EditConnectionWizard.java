@@ -41,11 +41,6 @@ public class EditConnectionWizard extends ConnectionWizard
         return dataSource;
     }
 
-    public ConnectionPageFinal getPageFinal()
-    {
-        return pageFinal;
-    }
-
     public DriverDescriptor getSelectedDriver()
     {
         return dataSource.getDriver();

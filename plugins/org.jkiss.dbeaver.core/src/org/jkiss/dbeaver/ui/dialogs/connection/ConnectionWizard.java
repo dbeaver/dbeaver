@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * This is a sample new wizard.
+ * Abstract connection wizard
  */
 
 public abstract class ConnectionWizard extends Wizard implements INewWizard
@@ -48,8 +48,6 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
         }
         return true;
     }
-
-    abstract ConnectionPageFinal getPageFinal();
 
     abstract DriverDescriptor getSelectedDriver();
 

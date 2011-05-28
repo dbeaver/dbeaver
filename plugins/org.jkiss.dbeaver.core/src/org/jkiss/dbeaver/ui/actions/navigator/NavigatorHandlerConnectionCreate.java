@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 
-public class NavigatorHandlerNewConnection extends AbstractHandler {
+public class NavigatorHandlerConnectionCreate extends AbstractHandler {
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
