@@ -45,9 +45,7 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -60,6 +58,7 @@ public class DriverEditDialog extends Dialog
     static final Log log = LogFactory.getLog(DriverEditDialog.class);
 
     private DataSourceProviderDescriptor provider;
+    private String defaultCategory;
     private DriverDescriptor driver;
     private String curFolder = null;
     private TableViewer libTable;
@@ -68,6 +67,7 @@ public class DriverEditDialog extends Dialog
     private Button downButton;
     private Combo classListCombo;
     private Button findClassButton;
+    private Combo driverCategoryCombo;
     private Text driverNameText;
     private Text driverDescText;
     private Text driverClassText;
@@ -87,10 +87,11 @@ public class DriverEditDialog extends Dialog
         this.provider = driver.getProviderDescriptor();
     }
 
-    public DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider)
+    public DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider, String category)
     {
         super(shell);
         this.provider = provider;
+        this.defaultCategory = category;
     }
 
     protected boolean isResizable()
@@ -129,14 +130,37 @@ public class DriverEditDialog extends Dialog
             gd = new GridData(GridData.FILL_HORIZONTAL);
             propsGroup.setLayoutData(gd);
 
-            driverNameText = UIUtils.createLabelText(propsGroup, "Driver Name", CommonUtils.getString(driver.getName()), SWT.BORDER | advStyle);
-            driverNameText.addModifyListener(new ModifyListener()
-            {
+            UIUtils.createControlLabel(propsGroup, "Driver Name");
+            final Composite namePlaceholder = UIUtils.createPlaceholder(propsGroup, 3, 5);
+            namePlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            driverNameText = new Text(namePlaceholder, SWT.BORDER | advStyle);
+            driverNameText.setText(CommonUtils.getString(driver.getName()));
+            driverNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            driverNameText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e)
                 {
                     onChangeProperty();
                 }
             });
+
+            driverCategoryCombo = UIUtils.createLabelCombo(namePlaceholder, "Category", SWT.BORDER | SWT.DROP_DOWN);
+            {
+                Set<String> categories = new HashSet<String>();
+                for (DriverDescriptor drv : driver.getProviderDescriptor().getDrivers()) {
+                    if (!CommonUtils.isEmpty(drv.getCategory())) {
+                        categories.add(drv.getCategory());
+                    }
+                }
+                for (String category : categories) {
+                    driverCategoryCombo.add(category);
+                }
+                if (!CommonUtils.isEmpty(driver.getCategory())) {
+                    driverCategoryCombo.setText(driver.getCategory());
+                } else if (!CommonUtils.isEmpty(defaultCategory)) {
+                    driverCategoryCombo.setText(defaultCategory);
+                }
+            }
 
             driverDescText = UIUtils.createLabelText(propsGroup, "Description", CommonUtils.getString(driver.getDescription()), SWT.BORDER | advStyle);
 
@@ -548,6 +572,11 @@ public class DriverEditDialog extends Dialog
         driverClassText.setText(CommonUtils.getString(driver.getOrigClassName()));
         driverURLText.setText(CommonUtils.getString(driver.getOrigSampleURL()));
         driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort().toString());
+        if (!CommonUtils.isEmpty(driver.getCategory())) {
+            driverCategoryCombo.setText(driver.getCategory());
+        } else if (!CommonUtils.isEmpty(defaultCategory)) {
+            driverCategoryCombo.setText(defaultCategory);
+        }
 //        anonymousCheck.setSelection(driver.isAnonymousAccess());
         libList.clear();
         for (DriverFileDescriptor lib : driver.getOrigFiles()) {
@@ -592,6 +621,7 @@ public class DriverEditDialog extends Dialog
 
         // Set props
         driver.setName(driverNameText.getText());
+        driver.setCategory(driverCategoryCombo.getText());
         driver.setDescription(CommonUtils.getString(driverDescText.getText()));
         driver.setDriverClassName(driverClassText.getText());
         driver.setSampleURL(driverURLText.getText());
@@ -604,7 +634,7 @@ public class DriverEditDialog extends Dialog
             driver.addLibrary(lib);
         }
         for (DriverFileDescriptor lib : CommonUtils.copyList(driver.getFiles())) {
-            if (!libList.contains(lib)) {
+            if (lib.getType() == DriverFileType.jar && !libList.contains(lib)) {
                 driver.removeLibrary(lib);
             }
         }

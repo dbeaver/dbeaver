@@ -33,12 +33,44 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
     private List<DataSourceProviderDescriptor> providers;
     private Font boldFont;
 
-    private static class DriverCategory {
+    public static class DriverCategory {
+        final DataSourceProviderDescriptor provider;
         final String name;
         final List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
-        private DriverCategory(String name)
+
+        public DriverCategory(DataSourceProviderDescriptor provider, String name)
         {
+            this.provider = provider;
             this.name = name;
+        }
+
+        public DataSourceProviderDescriptor getProvider()
+        {
+            return provider;
+        }
+
+        public String getName()
+        {
+            return name;
+        }
+
+        public List<DriverDescriptor> getDrivers()
+        {
+            return drivers;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            return obj instanceof DriverCategory &&
+                ((DriverCategory) obj).provider == provider &&
+                ((DriverCategory) obj).name.equals(name);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return provider.hashCode() + name.hashCode();
         }
     }
 
@@ -140,7 +172,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                     } else {
                         DriverCategory category = categoryMap.get(categoryName);
                         if (category == null) {
-                            category = new DriverCategory(categoryName);
+                            category = new DriverCategory((DataSourceProviderDescriptor) parent, categoryName);
                             categoryMap.put(categoryName, category);
                             children.add(category);
                         }

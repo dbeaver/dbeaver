@@ -254,6 +254,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return category;
     }
 
+    public void setCategory(String category)
+    {
+        this.category = category;
+    }
+
     @Property(name = "Driver Name", viewable = true, order = 1)
     public String getName()
     {
@@ -844,6 +849,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         if (this.isDisabled()) {
             xml.addAttribute(DataSourceConstants.ATTR_DISABLED, true);
         }
+        if (!CommonUtils.isEmpty(this.getCategory())) {
+            xml.addAttribute(DataSourceConstants.ATTR_CATEGORY, this.getCategory());
+        }
         xml.addAttribute(DataSourceConstants.ATTR_CUSTOM, this.isCustom());
         xml.addAttribute(DataSourceConstants.ATTR_NAME, this.getName());
         xml.addAttribute(DataSourceConstants.ATTR_CLASS, this.getDriverClassName());
@@ -858,7 +866,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             if ((export && !lib.isDisabled()) || lib.isCustom() || lib.isDisabled()) {
                 xml.startElement(DataSourceConstants.TAG_LIBRARY);
                 xml.addAttribute(DataSourceConstants.ATTR_PATH, lib.getPath());
-                if (lib.isDisabled()) {
+                if (lib.getType() == DriverFileType.jar && lib.isDisabled()) {
                     xml.addAttribute(DataSourceConstants.ATTR_DISABLED, true);
                 }
                 xml.endElement();
@@ -929,6 +937,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     curDriver = new DriverDescriptor(curProvider, idAttr);
                     curProvider.addDriver(curDriver);
                 }
+                curDriver.setCategory(atts.getValue(DataSourceConstants.ATTR_CATEGORY));
                 curDriver.setName(atts.getValue(DataSourceConstants.ATTR_NAME));
                 curDriver.setDescription(atts.getValue(DataSourceConstants.ATTR_DESCRIPTION));
                 curDriver.setDriverClassName(atts.getValue(DataSourceConstants.ATTR_CLASS));

@@ -32,6 +32,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
 
     private DataSourceProviderDescriptor selectedProvider;
     private DataSourceProviderDescriptor onlyManagableProvider;
+    private String selectedCategory;
     private DriverDescriptor selectedDriver;
 
     private Button newButton;
@@ -192,13 +193,18 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
     {
         this.selectedDriver = null;
         this.selectedProvider = null;
+        this.selectedCategory = null;
         ISelection selection = event.getSelection();
         if (selection instanceof IStructuredSelection) {
             Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
             if (selectedObject instanceof DriverDescriptor) {
-                selectedDriver = (DriverDescriptor) selectedObject;
+                this.selectedDriver = (DriverDescriptor) selectedObject;
+                this.selectedCategory = selectedDriver.getCategory();
             } else if (selectedObject instanceof DataSourceProviderDescriptor) {
-                selectedProvider = (DataSourceProviderDescriptor)selectedObject;
+                this.selectedProvider = (DataSourceProviderDescriptor)selectedObject;
+            } else if (selectedObject instanceof DriverTreeControl.DriverCategory) {
+                this.selectedProvider = ((DriverTreeControl.DriverCategory) selectedObject).getProvider();
+                this.selectedCategory = ((DriverTreeControl.DriverCategory) selectedObject).getName();
             }
         }
         this.updateButtons();
@@ -225,7 +231,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
             if (provider == null || !provider.isDriversManagable()) {
                 provider = onlyManagableProvider;
             }
-            DriverEditDialog dialog = new DriverEditDialog(getShell(), provider);
+            DriverEditDialog dialog = new DriverEditDialog(getShell(), provider, selectedCategory);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 treeControl.refresh(provider);
             }
