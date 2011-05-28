@@ -184,6 +184,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         String providerId = driverElement.getAttribute(DataSourceConstants.ATTR_PROVIDER);
         String driverId = driverElement.getAttribute(DataSourceConstants.ATTR_ID);
         boolean isCustom = "true".equals(driverElement.getAttribute(DataSourceConstants.ATTR_CUSTOM));
+        String driverCategory = driverElement.getAttribute(DataSourceConstants.ATTR_CATEGORY);
         String driverName = driverElement.getAttribute(DataSourceConstants.ATTR_NAME);
         String driverClass = driverElement.getAttribute(DataSourceConstants.ATTR_CLASS);
         String driverURL = driverElement.getAttribute(DataSourceConstants.ATTR_URL);
@@ -233,6 +234,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             // Create new driver
             driver = dataSourceProvider.createDriver();
             driver.setName(driverName);
+            driver.setCategory(driverCategory);
             driver.setDescription(driverDescription);
             driver.setDriverClassName(driverClass);
             if (!CommonUtils.isEmpty(driverDefaultPort)) {
