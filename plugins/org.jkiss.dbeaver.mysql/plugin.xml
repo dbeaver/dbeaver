@@ -195,50 +195,33 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
-            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLUserManager"
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLUserManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
-            label="User manager"/>
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"/>
         <manager
-            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLCatalogManager"
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLCatalogManager"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"
             label="Catalog manager"/>
         <manager
-            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableManager"
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"
-            label="Table manager"/>
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         <manager
-            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableColumnManager"
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableColumnManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn"
-            label="Table column manager"/>
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn"/>
         <manager
-            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLConstraintManager"
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLConstraintManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLConstraint"
-            label="Constraint manager"/>
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLConstraint"/>
         <manager
-            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLForeignKeyManager"
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLForeignKeyManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLForeignKey"
-            label="Foreign key manager"/>
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLForeignKey"/>
         <manager
-            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLIndexManager"
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLIndexManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLIndex"
-            label="Index manager"/>
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLIndex"/>
         <manager
-            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager"
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"
-            label="View manager"/>
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>
         <manager
-            id="org.jkiss.dbeaver.ext.mysql.edit.MySQLProcedureManager"
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLProcedureManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"
-            label="Procedure manager"/>
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
 
         <editor
             id="org.jkiss.dbeaver.ext.mysql.editors.MySQLTriggerEditor"

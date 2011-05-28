@@ -52,6 +52,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     private DataSourceProviderDescriptor providerDescriptor;
     private String id;
+    private String category;
     private String name, origName;
     private String description, origDescription;
     private String driverClassName, origClassName;
@@ -99,6 +100,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         super(providerDescriptor.getContributor());
         this.providerDescriptor = providerDescriptor;
         this.id = CommonUtils.getString(config.getAttribute(DataSourceConstants.ATTR_ID));
+        this.category = CommonUtils.getString(config.getAttribute(DataSourceConstants.ATTR_CATEGORY));
         this.origName = this.name = CommonUtils.getString(config.getAttribute("label"));
         this.origDescription = this.description = config.getAttribute(DataSourceConstants.ATTR_DESCRIPTION);
         this.origClassName = this.driverClassName = config.getAttribute(DataSourceConstants.ATTR_CLASS);
@@ -244,6 +246,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public String getId()
     {
         return id;
+    }
+
+    @Property(name = "Driver Category", viewable = true, order = 2)
+    public String getCategory()
+    {
+        return category;
     }
 
     @Property(name = "Driver Name", viewable = true, order = 1)

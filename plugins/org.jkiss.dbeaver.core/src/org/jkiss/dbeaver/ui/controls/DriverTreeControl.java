@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -19,10 +20,7 @@ import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DriverTreeControl
@@ -34,6 +32,15 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
     private Object site;
     private List<DataSourceProviderDescriptor> providers;
     private Font boldFont;
+
+    private static class DriverCategory {
+        final String name;
+        final List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
+        private DriverCategory(String name)
+        {
+            this.name = name;
+        }
+    }
 
     public DriverTreeControl(Composite parent)
     {
@@ -57,6 +64,9 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
 
         TreeColumn nameColumn = new TreeColumn(getTree(), SWT.LEFT);
         nameColumn.setText("Name");
+
+        TreeColumn usersColumn = new TreeColumn(getTree(), SWT.RIGHT);
+        usersColumn.setText("Connections");
 
         //TreeColumn descColumn = new TreeColumn(getTree(), SWT.RIGHT);
         //descColumn.setText("Description");
@@ -118,15 +128,28 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                 Collections.sort(drivers, new Comparator<DriverDescriptor>() {
                     public int compare(DriverDescriptor o1, DriverDescriptor o2)
                     {
-                        final boolean empty1 = o1.getUsedBy().isEmpty();
-                        final boolean empty2 = o2.getUsedBy().isEmpty();
-                        if ((empty2 && !empty1) || (empty1 && !empty2)) {
-                            return o2.getUsedBy().size() - o1.getUsedBy().size();
-                        }
                         return o1.getName().compareTo(o2.getName());
                     }
                 });
-                return drivers.toArray();
+                final Map<String, DriverCategory> categoryMap = new HashMap<String, DriverCategory>();
+                final List<Object> children = new ArrayList<Object>();
+                for (DriverDescriptor driver : drivers) {
+                    final String categoryName = driver.getCategory();
+                    if (CommonUtils.isEmpty(categoryName)) {
+                        children.add(driver);
+                    } else {
+                        DriverCategory category = categoryMap.get(categoryName);
+                        if (category == null) {
+                            category = new DriverCategory(categoryName);
+                            categoryMap.put(categoryName, category);
+                            children.add(category);
+                        }
+                        category.drivers.add(driver);
+                    }
+                }
+                return children.toArray();
+            } else if (parent instanceof DriverCategory) {
+                return ((DriverCategory) parent).drivers.toArray();
             } else {
                 return new Object[0];
             }
@@ -138,6 +161,8 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                 return !providers.isEmpty();
             } else if (parent instanceof DataSourceProviderDescriptor) {
                 return !((DataSourceProviderDescriptor) parent).getEnabledDrivers().isEmpty();
+            } else if (parent instanceof DriverCategory) {
+                return !((DriverCategory) parent).drivers.isEmpty();
             }
             return false;
         }
@@ -147,23 +172,68 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
     {
 
         public void update(ViewerCell cell) {
-            cell.setText(getText(cell.getElement(), cell.getColumnIndex()));
+            switch (cell.getColumnIndex()) {
+                case 0:
+                    cell.setText(getLabel(cell.getElement()));
+                    break;
+                case 1:
+                    final int count = getConnectionCount(cell.getElement());
+                    cell.setText(count <= 0 ? "" : String.valueOf(count));
+                    break;
+                default:
+                    cell.setText("");
+                    break;
+            }
             cell.setImage(getImage(cell.getElement(), cell.getColumnIndex()));
             if (cell.getElement() instanceof DriverDescriptor && !((DriverDescriptor)cell.getElement()).getUsedBy().isEmpty()) {
-                cell.setFont(boldFont);
+                //cell.setFont(boldFont);
             } else {
                 cell.setFont(null);
             }
         }
 
-        public String getText(Object obj, int index)
+        public String getLabel(Object obj)
         {
             if (obj instanceof DataSourceProviderDescriptor) {
-                return index == 0 ? ((DataSourceProviderDescriptor) obj).getName() : ((DataSourceProviderDescriptor) obj).getDescription();
+                return ((DataSourceProviderDescriptor) obj).getName();
+            } else if (obj instanceof DriverCategory) {
+                return ((DriverCategory) obj).name;
             } else if (obj instanceof DriverDescriptor) {
-                return index == 0 ? ((DriverDescriptor) obj).getName() : ((DriverDescriptor) obj).getDescription();
+                return ((DriverDescriptor) obj).getName();
             } else {
-                return index == 0 ? obj.toString() : "";
+                return obj.toString();
+            }
+        }
+
+        public int getConnectionCount(Object obj)
+        {
+            if (obj instanceof DataSourceProviderDescriptor) {
+                int count = 0;
+                for (DriverDescriptor driver : ((DataSourceProviderDescriptor) obj).getEnabledDrivers()) {
+                    count += driver.getUsedBy().size();
+                }
+                return count;
+            } else if (obj instanceof DriverCategory) {
+                int count = 0;
+                for (DriverDescriptor driver : ((DriverCategory) obj).drivers) {
+                    count += driver.getUsedBy().size();
+                }
+                return count;
+            } else if (obj instanceof DriverDescriptor) {
+                return ((DriverDescriptor) obj).getUsedBy().size();
+            } else {
+                return 0;
+            }
+        }
+
+        public String getDescription(Object obj)
+        {
+            if (obj instanceof DataSourceProviderDescriptor) {
+                return ((DataSourceProviderDescriptor) obj).getDescription();
+            } else if (obj instanceof DriverDescriptor) {
+                return ((DriverDescriptor) obj).getDescription();
+            } else {
+                return "";
             }
         }
 
@@ -179,6 +249,11 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                     return icon;
                 }
 			    defImage = DBIcon.TREE_FOLDER.getImage();
+            } else if (obj instanceof DriverCategory) {
+                Image icon = ((DriverCategory) obj).drivers.get(0).getIcon();
+                if (icon != null) {
+                    return icon;
+                }
             } else if (obj instanceof DriverDescriptor) {
                 Image icon = ((DriverDescriptor) obj).getIcon();
                 if (icon != null) {

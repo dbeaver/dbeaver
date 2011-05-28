@@ -15,7 +15,6 @@ public class EntityManagerDescriptor extends AbstractDescriptor
     private String id;
     private String className;
     private String objectType;
-    private String name;
 
     private Class objectClass;
     private Class managerClass;
@@ -25,10 +24,8 @@ public class EntityManagerDescriptor extends AbstractDescriptor
     {
         super(config.getContributor());
 
-        this.id = config.getAttribute("id");
-        this.className = config.getAttribute("class");
+        this.id = this.className = config.getAttribute("class");
         this.objectType = config.getAttribute("objectType");
-        this.name = config.getAttribute("label");
     }
 
     void dispose()
@@ -55,11 +52,6 @@ public class EntityManagerDescriptor extends AbstractDescriptor
     }
 
 */
-    public String getName()
-    {
-        return name;
-    }
-
     public boolean appliesToType(Class objectType)
     {
         return this.getObjectClass() != null && this.getObjectClass().isAssignableFrom(objectType);

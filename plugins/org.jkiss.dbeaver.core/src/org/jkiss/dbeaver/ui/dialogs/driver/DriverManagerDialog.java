@@ -241,7 +241,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
             if (dialog.open() == IDialogConstants.OK_ID) {
                 // Do nothing
             }
-            treeControl.refresh();
+            treeControl.refresh(selectedDriver);
         }
     }
 

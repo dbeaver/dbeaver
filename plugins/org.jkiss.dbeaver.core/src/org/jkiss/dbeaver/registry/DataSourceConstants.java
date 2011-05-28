@@ -20,6 +20,7 @@ public class DataSourceConstants {
     public static final String TAG_LIBRARY = "library"; // [LEGACY: from DBeaver 1.1.0]
 
     public static final String ATTR_ID = "id";
+    public static final String ATTR_CATEGORY = "category";
     public static final String ATTR_DISABLED = "disabled";
     public static final String ATTR_CUSTOM = "custom";
     public static final String ATTR_NAME = "name";

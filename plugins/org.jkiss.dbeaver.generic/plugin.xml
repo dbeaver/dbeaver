@@ -220,7 +220,8 @@
                 </driver>
                 <driver
                     id="derby"
-                    label="Derby Embedded"
+                    label="Embedded"
+                    category="Derby"
                     class="org.apache.derby.jdbc.EmbeddedDriver"
                     sampleURL="jdbc:derby:{folder}"
                     webURL="http://db.apache.org/"
@@ -234,7 +235,8 @@
                 </driver>
                 <driver
                     id="derby_server"
-                    label="Derby Server"
+                    label="Server"
+                    category="Derby"
                     class="org.apache.derby.jdbc.ClientDriver"
                     sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
                     defaultPort="1527"
@@ -257,7 +259,8 @@
                 </driver>
                 <driver
                     id="hsqldb_server"
-                    label="HSQLDB Server"
+                    label="Server"
+                    category="HSQLDB"
                     class="org.hsqldb.jdbcDriver"
                     sampleURL="jdbc:hsqldb:hsql://{host}[:{port}]/[{database}]"
                     defaultPort="9001"
@@ -271,7 +274,8 @@
                 </driver>
                 <driver
                     id="hsqldb_embedded"
-                    label="HSQLDB Embedded"
+                    label="Embedded"
+                    category="HSQLDB"
                     class="org.hsqldb.jdbc.JDBCDriver"
                     sampleURL="jdbc:hsqldb:file:{folder}"
                     webURL="http://hsqldb.org/"
@@ -308,16 +312,29 @@
                 </driver>
                 <driver
                     id="sqlite_jdbc"
-                    label="SQLite"
+                    label="JDBC Driver by David Crawshaw"
+                    category="SQLite"
                     class="org.sqlite.JDBC"
                     sampleURL="jdbc:sqlite:{file}"
                     defaultPort=""
                     webURL="http://www.zentus.com/sqlitejdbc/"
-                    description="SQLite3 JDBC driver">
+                    description="SQLite3 JDBC driver by David Crawshaw (Windows, Linux and Mac OS)">
                     <file type="jar" path="drivers/sqlite/sqlitejdbc-v056.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/sqlitejdbc-v056.jar"/>
                     <file type="license" path="drivers/sqlite/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/LICENSE.txt"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
+                </driver>
+                <driver
+                    id="sqlite_java"
+                    label="JDBC Driver by Christian Werner"
+                    category="SQLite"
+                    class="SQLite.JDBCDriver"
+                    sampleURL="jdbc:sqlite:/{file}"
+                    defaultPort=""
+                    webURL="http://www.ch-werner.de/javasqlite/"
+                    description="SQLite3 JDBC driver by Christian Werner (Windows only)">
+                    <file type="jar" path="drivers/sqlite3/sqlite.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/sqlite3/sqlite_jni.dll"/>
                 </driver>
             </drivers>
 
@@ -342,30 +359,20 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
-            id="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"
             class="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTable"
-            label="Table manager"/>
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTable"/>
         <manager
-            id="org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager"
             class="org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"
-            label="Table column manager"/>
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"/>
         <manager
-            id="org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager"
             class="org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey"
-            label="Primary key manager"/>
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey"/>
         <manager
-            id="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"
             class="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericForeignKey"
-            label="Foreign key manager"/>
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericForeignKey"/>
         <manager
-            id="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"
             class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericIndex"
-            label="Index manager"/>
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericIndex"/>
     </extension>
 
 </plugin>
