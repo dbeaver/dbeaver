@@ -321,8 +321,8 @@
                     defaultPort=""
                     webURL="http://www.zentus.com/sqlitejdbc/"
                     description="SQLite3 JDBC driver by David Crawshaw (Windows, Linux and Mac OS)">
-                    <file type="jar" path="drivers/sqlite/sqlitejdbc-v056.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/sqlitejdbc-v056.jar"/>
-                    <file type="license" path="drivers/sqlite/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/LICENSE.txt"/>
+                    <file type="jar" path="drivers/sqlite/zentus/sqlitejdbc-v056.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/zentus/sqlitejdbc-v056.jar"/>
+                    <file type="license" path="drivers/sqlite/zentus/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/zentus/LICENSE.txt"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                 </driver>
@@ -335,8 +335,8 @@
                     defaultPort=""
                     webURL="http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC/"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
-                    <file type="jar" path="drivers/sqlite/sqlitejdbc-v056.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/sqlitejdbc-v056.jar"/>
-                    <file type="license" path="drivers/sqlite/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/LICENSE.txt"/>
+                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar"/>
+                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/xerial/LICENSE.txt"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                 </driver>
@@ -349,8 +349,8 @@
                     defaultPort=""
                     webURL="http://www.ch-werner.de/javasqlite/"
                     description="SQLite3 JDBC driver by Christian Werner (Windows only)">
-                    <file type="jar" path="drivers/sqlite3/sqlite.jar"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/sqlite3/sqlite_jni.dll"/>
+                    <file type="jar" path="drivers/sqlite/werner/sqlite.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/werner/sqlite.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/sqlite/werner/sqlite_jni.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/werner/sqlite_jni.dll"/>
                 </driver>
             </drivers>
 
