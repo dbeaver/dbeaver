@@ -133,5 +133,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.5.0",
  org.eclipse.jface.text;bundle-version="3.5.0",
  org.eclipse.help.ui;bundle-version="3.5.0",
  org.eclipse.help.webapp;bundle-version="3.5.0",
- org.mortbay.jetty.server;bundle-version="6.1.23"
+ org.mortbay.jetty.server;bundle-version="6.1.23",
+ org.mortbay.jetty.util;bundle-version="6.1.23",
+ org.eclipse.equinox.http.jetty;bundle-version="2.0.0"
 Bundle-Vendor: Serge Rieder
