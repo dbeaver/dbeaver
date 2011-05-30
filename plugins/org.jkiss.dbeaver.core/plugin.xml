@@ -1763,18 +1763,23 @@
            </description>
         </wizard>
     </extension>
+
     <extension point="org.eclipse.help.toc">
-       <toc
-             file="docs/help/toc.xml"
-             primary="true">
+       <toc file="docs/help/toc.xml" primary="true">
        </toc>
     </extension>
-    <extension
-          point="org.eclipse.help.contexts">
-       <contexts
-             file="docs/help/contexts.xml"
-             plugin="org.jkiss.dbeaver.core">
+
+    <extension point="org.eclipse.help.contexts">
+       <contexts plugin="org.jkiss.dbeaver.core" file="docs/help/contexts.xml">
        </contexts>
+    </extension>
+
+    <extension point="org.eclipse.help.contentExtension">
+    </extension>
+
+    <extension point="org.eclipse.help.contentProducer">
+       <contentProducer producer="org.jkiss.dbeaver.ui.HelpContentProducer">
+       </contentProducer>
     </extension>
 
 </plugin>

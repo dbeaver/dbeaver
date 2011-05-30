@@ -83,7 +83,7 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
     {
-        super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
+        super(shell, IHelpContextIds.CTX_DRIVER_EDITOR + "_" + driver.getId());
         this.driver = driver;
         this.provider = driver.getProviderDescriptor();
     }
