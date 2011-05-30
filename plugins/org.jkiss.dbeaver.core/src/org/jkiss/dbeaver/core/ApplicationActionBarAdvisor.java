@@ -35,6 +35,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     // when fillActionBars is called with FILL_PROXY.
     //private IWorkbenchAction findAction;
     private IActionDelegate aboutAction;
+    private IWorkbenchAction showHelpAction;
+    private IWorkbenchAction searchHelpAction;
+    private IWorkbenchAction dynamicHelpAction;
     private IWorkbenchAction newWindowAction;
     //private IWorkbenchAction viewPropertiesAction;
     private ApplicationToolbarDataSources dataSourceToolbar;
@@ -89,7 +92,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //aboutAction = ActionFactory.ABOUT.create(window);
         //register(aboutAction);
         aboutAction = new AboutBoxAction(window);
-        //register(aboutAction);
+        register(showHelpAction = ActionFactory.HELP_CONTENTS.create(window));
+        register(searchHelpAction = ActionFactory.HELP_SEARCH.create(window));
+        register(dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window));
 
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
         register(newWindowAction);
@@ -170,6 +175,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         // Help
         helpMenu.add(ViewUtils.makeAction(aboutAction, null, null, "About", null, null));
+        helpMenu.add(showHelpAction);
+        helpMenu.add(searchHelpAction);
+        helpMenu.add(dynamicHelpAction);
     }
 
     protected void fillCoolBar(ICoolBarManager coolBar)
