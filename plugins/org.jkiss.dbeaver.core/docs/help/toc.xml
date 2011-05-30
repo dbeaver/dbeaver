@@ -7,13 +7,17 @@
 
 <toc label="DBeaver Help">
 	<topic label="About DBeaver"  href="docs/help/html/about.html"> 
+        <topic href="docs/help/html/techdoc.html" label="Technical description"/>
 	</topic>
-	<topic href="docs/help/html/techdoc.html" label="Technical description"/>
     <topic label="Manage connections">
         <topic href="docs/help/html/dialogs/driver-manager.html" label="Manage drivers"/>
         <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver editr dialog"/>
     </topic>
     <topic label="Work with data">
         <topic href="docs/help/html/editors/sql-editor.html" label="SQL Editor"/>
+        <topic href="docs/help/html/editors/result-set.html" label="Result Set"/>
+    </topic>
+    <topic label="Work with metadata">
+        <topic href="docs/help/html/editors/entity-editor.html" label="Entity Editor"/>
     </topic>
 </toc>
