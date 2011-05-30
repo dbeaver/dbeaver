@@ -1556,10 +1556,8 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
-            id="org.jkiss.dbeaver.registry.DataSourceDescriptorManager"
             class="org.jkiss.dbeaver.registry.DataSourceDescriptorManager"
-            objectType="org.jkiss.dbeaver.registry.DataSourceDescriptor"
-            label="Data source manager">
+            objectType="org.jkiss.dbeaver.registry.DataSourceDescriptor">
         </manager>
         <editor
                 id="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"

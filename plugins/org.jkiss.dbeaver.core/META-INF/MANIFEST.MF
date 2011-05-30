@@ -130,5 +130,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.5.0",
  org.eclipse.ui.views.properties.tabbed;bundle-version="3.5.0",
  org.eclipse.swt,
  org.eclipse.jface,
- org.eclipse.jface.text;bundle-version="3.5.0"
+ org.eclipse.jface.text;bundle-version="3.5.0",
+ org.eclipse.help.ui;bundle-version="3.5.0",
+ org.eclipse.help.webapp;bundle-version="3.5.0",
+ org.mortbay.jetty.server;bundle-version="6.1.23"
 Bundle-Vendor: Serge Rieder
