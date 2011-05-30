@@ -3,4 +3,8 @@
       <description>Driver Manager dialog. Manages all database drivers.</description>
       <topic href="docs/help/html/dialogs/driver-manager.html" label="Driver Manager" />
    </context>
+    <context id="driver-editor">
+       <description>Driver Edit dialog. Edit driver's libraries and properties.</description>
+       <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver Editor" />
+    </context>
 </contexts>

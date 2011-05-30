@@ -173,28 +173,6 @@ public class UIUtils {
         return item;
     }
 
-    public static Button createHelpButton(final TrayDialog dialog, final Composite parent, final String helpContextID)
-    {
-        Button help = new Button(parent, SWT.PUSH);
-        help.setText("Help");
-        Image img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
-        help.setImage(img);
-
-        help.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                //parent.getShell().setData(ECLIPSE_HELP, contextHelpID);
-                if (dialog.getTray() != null) {
-                    dialog.closeTray();
-                } else {
-                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(helpContextID);
-                }
-            }
-        });
-        return help;
-    }
-
     public static TableColumn createTableColumn(Table table, int style, String text)
     {
         table.setRedraw(false);
@@ -855,8 +833,30 @@ public class UIUtils {
         return button;
     }
 
-    public static void setHelp(Composite composite, String helpContextID)
+    public static Button createHelpButton(final TrayDialog dialog, final Composite parent, final String helpContextID)
     {
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(composite, helpContextID);
+        Button help = new Button(parent, SWT.PUSH);
+        help.setText("Help");
+        Image img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
+        help.setImage(img);
+
+        help.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                //parent.getShell().setData(ECLIPSE_HELP, contextHelpID);
+                if (dialog.getTray() != null) {
+                    dialog.closeTray();
+                } else {
+                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(helpContextID);
+                }
+            }
+        });
+        return help;
+    }
+
+    public static void setHelp(Control control, String helpContextID)
+    {
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(control, helpContextID);
     }
 }

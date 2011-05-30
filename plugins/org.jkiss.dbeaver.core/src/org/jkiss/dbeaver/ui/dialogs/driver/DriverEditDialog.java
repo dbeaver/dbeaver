@@ -8,7 +8,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -32,11 +31,13 @@ import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileType;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
-import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,7 @@ import java.util.jar.JarFile;
 /**
  * DriverEditDialog
  */
-public class DriverEditDialog extends Dialog
+public class DriverEditDialog extends HelpEnabledDialog
 {
     static final Log log = LogFactory.getLog(DriverEditDialog.class);
 
@@ -82,14 +83,14 @@ public class DriverEditDialog extends Dialog
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
     {
-        super(shell);
+        super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.driver = driver;
         this.provider = driver.getProviderDescriptor();
     }
 
     public DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider, String category)
     {
-        super(shell);
+        super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.provider = provider;
         this.defaultCategory = category;
     }
@@ -144,8 +145,11 @@ public class DriverEditDialog extends Dialog
                 }
             });
 
-            driverCategoryCombo = UIUtils.createLabelCombo(namePlaceholder, "Category", SWT.BORDER | SWT.DROP_DOWN);
+            driverCategoryCombo = UIUtils.createLabelCombo(namePlaceholder, "Category", SWT.BORDER | SWT.DROP_DOWN | advStyle);
             {
+                if (isReadOnly) {
+                    driverCategoryCombo.setEnabled(false);
+                }
                 Set<String> categories = new HashSet<String>();
                 for (DriverDescriptor drv : driver.getProviderDescriptor().getDrivers()) {
                     if (!CommonUtils.isEmpty(drv.getCategory())) {

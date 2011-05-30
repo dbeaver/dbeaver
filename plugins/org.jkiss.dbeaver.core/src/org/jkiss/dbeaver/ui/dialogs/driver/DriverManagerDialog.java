@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -27,13 +26,14 @@ import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
+import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 
 import java.util.List;
 
 /**
  * EditDriverDialog
  */
-public class DriverManagerDialog extends TrayDialog implements ISelectionChangedListener, IDoubleClickListener {
+public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener {
 
     private DataSourceProviderDescriptor selectedProvider;
     private DataSourceProviderDescriptor onlyManagableProvider;
@@ -48,7 +48,7 @@ public class DriverManagerDialog extends TrayDialog implements ISelectionChanged
 
     public DriverManagerDialog(Shell shell)
     {
-        super(shell);
+        super(shell, IHelpContextIds.CTX_DRIVER_MANAGER);
     }
 
     protected boolean isResizable()
@@ -178,7 +178,7 @@ public class DriverManagerDialog extends TrayDialog implements ISelectionChanged
             text.setLayoutData(gd);
         }
 */
-        UIUtils.setHelp(group, IHelpContextIds.CTX_DRIVER_MANAGER);
+        //UIUtils.setHelp(group, IHelpContextIds.CTX_DRIVER_MANAGER);
 
         return group;
     }
