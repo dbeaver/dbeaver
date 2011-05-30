@@ -1341,6 +1341,7 @@
         <key commandId="org.eclipse.ui.edit.text.upperCase" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+U"/>
         <key commandId="org.eclipse.ui.edit.text.lowerCase" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+L"/>
 
+        <key commandId="org.eclipse.ui.help.displayHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
     </extension>
     <extension point="org.eclipse.ui.contexts">
         <context id="org.jkiss.dbeaver.core.navigationContext" name="Navigation context"/>
@@ -1761,6 +1762,19 @@
                Database connection
            </description>
         </wizard>
+    </extension>
+    <extension point="org.eclipse.help.toc">
+       <toc
+             file="docs/help/toc.xml"
+             primary="true">
+       </toc>
+    </extension>
+    <extension
+          point="org.eclipse.help.contexts">
+       <contexts
+             file="docs/help/contexts.xml"
+             plugin="org.jkiss.dbeaver.core">
+       </contexts>
     </extension>
 
 </plugin>

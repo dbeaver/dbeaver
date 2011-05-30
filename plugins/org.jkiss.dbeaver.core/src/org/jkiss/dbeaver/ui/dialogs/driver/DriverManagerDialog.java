@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -13,13 +13,18 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
 
@@ -28,7 +33,7 @@ import java.util.List;
 /**
  * EditDriverDialog
  */
-public class DriverManagerDialog extends Dialog implements ISelectionChangedListener, IDoubleClickListener {
+public class DriverManagerDialog extends TrayDialog implements ISelectionChangedListener, IDoubleClickListener {
 
     private DataSourceProviderDescriptor selectedProvider;
     private DataSourceProviderDescriptor onlyManagableProvider;
@@ -142,6 +147,10 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
                 }
             });
 
+            UIUtils
+                .createHelpButton(this, buttonBar, DBeaverConstants.PLUGIN_ID + ".driver-manager")
+                .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
             {
                 final Composite legend = UIUtils.createPlaceholder(buttonBar, 2, 5);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -169,6 +178,8 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
             text.setLayoutData(gd);
         }
 */
+        UIUtils.setHelp(group, IHelpContextIds.CTX_DRIVER_MANAGER);
+
         return group;
     }
 

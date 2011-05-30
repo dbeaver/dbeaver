@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<toc label="DBeaver Help">
+	<topic label="About DBeaver"  href="docs/help/html/about.html"> 
+	</topic>
+	<topic href="docs/help/html/techdoc.html" label="Technical description"/>
+</toc>

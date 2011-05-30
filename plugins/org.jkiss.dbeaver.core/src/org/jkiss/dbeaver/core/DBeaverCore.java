@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+import org.eclipse.jface.bindings.Binding;
 import org.eclipse.jface.bindings.Scheme;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
@@ -110,6 +111,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     {
         // Disable all schemas except our own
         final IBindingService bindingService = (IBindingService)plugin.getWorkbench().getService(IBindingService.class);
+//        for (Binding binding : bindingService.getBindings()) {
+//            System.out.println("binding:" + binding);
+//        }
         for (Scheme scheme : bindingService.getDefinedSchemes()) {
             if (!scheme.getId().equals(DBeaverConstants.DBEAVER_SCHEME_NAME)) {
                 scheme.undefine();

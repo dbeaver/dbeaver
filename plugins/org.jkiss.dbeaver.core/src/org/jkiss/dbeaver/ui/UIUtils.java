@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -172,6 +173,28 @@ public class UIUtils {
         return item;
     }
 
+    public static Button createHelpButton(final TrayDialog dialog, final Composite parent, final String helpContextID)
+    {
+        Button help = new Button(parent, SWT.PUSH);
+        help.setText("Help");
+        Image img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
+        help.setImage(img);
+
+        help.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                //parent.getShell().setData(ECLIPSE_HELP, contextHelpID);
+                if (dialog.getTray() != null) {
+                    dialog.closeTray();
+                } else {
+                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(helpContextID);
+                }
+            }
+        });
+        return help;
+    }
+
     public static TableColumn createTableColumn(Table table, int style, String text)
     {
         table.setRedraw(false);
@@ -187,18 +210,18 @@ public class UIUtils {
     public static void packColumn(Item column)
     {
         if (column instanceof TableColumn) {
-            ((TableColumn)column).pack();
+            ((TableColumn) column).pack();
         } else if (column instanceof TreeColumn) {
-            ((TreeColumn)column).pack();
+            ((TreeColumn) column).pack();
         }
     }
 
     public static int getColumnWidth(Item column)
     {
         if (column instanceof TableColumn) {
-            return ((TableColumn)column).getWidth();
+            return ((TableColumn) column).getWidth();
         } else if (column instanceof TreeColumn) {
-            return ((TreeColumn)column).getWidth();
+            return ((TreeColumn) column).getWidth();
         } else {
             return 0;
         }
@@ -229,7 +252,7 @@ public class UIUtils {
             } else if (fit && totalWidth < clientArea.width) {
                 float extraSpace = (clientArea.width - totalWidth) / columns.length;
                 for (TableColumn tc : columns) {
-                    tc.setWidth((int)(tc.getWidth() + extraSpace));
+                    tc.setWidth((int) (tc.getWidth() + extraSpace));
                 }
             }
         } finally {
@@ -276,12 +299,12 @@ public class UIUtils {
                         if (ratios == null || ratios.length < columns.length) {
                             extraSpace /= columns.length;
                             for (TreeColumn tc : columns) {
-                                tc.setWidth((int)(tc.getWidth() + extraSpace));
+                                tc.setWidth((int) (tc.getWidth() + extraSpace));
                             }
                         } else {
                             for (int i = 0; i < columns.length; i++) {
                                 TreeColumn tc = columns[i];
-                                tc.setWidth((int)(tc.getWidth() + extraSpace * ratios[i]));
+                                tc.setWidth((int) (tc.getWidth() + extraSpace * ratios[i]));
                             }
                         }
                     }
@@ -313,8 +336,7 @@ public class UIUtils {
                     }
                 }
             }
-        }
-        finally {
+        } finally {
             table.setRedraw(true);
         }
     }
@@ -558,7 +580,7 @@ public class UIUtils {
     {
         return provider == null ? null : provider.getShell();
     }
-    
+
     public static Shell getShell(IWorkbenchPart part)
     {
         return part == null ? null : getShell(part.getSite());
@@ -581,7 +603,7 @@ public class UIUtils {
 
     public static IHandlerActivation registerKeyBinding(IServiceLocator serviceLocator, IAction action)
     {
-        IHandlerService handlerService = (IHandlerService)serviceLocator.getService(IHandlerService.class);
+        IHandlerService handlerService = (IHandlerService) serviceLocator.getService(IHandlerService.class);
         if (handlerService != null) {
             return handlerService.activateHandler(action.getActionDefinitionId(), new ActionHandler(action));
         } else {
@@ -644,7 +666,7 @@ public class UIUtils {
         }
         Combo encodingCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         encodingCombo.setVisibleItemCount(30);
-        SortedMap<String,Charset> charsetMap = Charset.availableCharsets();
+        SortedMap<String, Charset> charsetMap = Charset.availableCharsets();
         int index = 0;
         int defIndex = -1;
         for (String csName : charsetMap.keySet()) {
@@ -678,11 +700,20 @@ public class UIUtils {
         //sash.setBackground(sashActiveBackground);
 
         final IPartListener partListener = new IPartListener() {
-            public void partBroughtToTop(IWorkbenchPart part) { }
-            public void partOpened(IWorkbenchPart part) { }
-            public void partClosed(IWorkbenchPart part) { }
+            public void partBroughtToTop(IWorkbenchPart part)
+            {
+            }
+
+            public void partOpened(IWorkbenchPart part)
+            {
+            }
+
+            public void partClosed(IWorkbenchPart part)
+            {
+            }
+
             @SuppressWarnings("restriction")
-			public void partActivated(IWorkbenchPart part)
+            public void partActivated(IWorkbenchPart part)
             {
                 if (part == workbenchPart) {
                     Color sashActiveBackground = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(
@@ -693,7 +724,9 @@ public class UIUtils {
                     sash.setBackground(sashActiveBackground);
                 }
             }
-            public void partDeactivated(IWorkbenchPart part) {
+
+            public void partDeactivated(IWorkbenchPart part)
+            {
                 if (part == workbenchPart) {
                     sash.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
                 }
@@ -701,11 +734,17 @@ public class UIUtils {
         };
 
         final IPageListener pageListener = workbenchWindow.getActivePage() != null ? null : new IPageListener() {
-            public void pageActivated(IWorkbenchPage page) { }
-            public void pageOpened(IWorkbenchPage page) {
+            public void pageActivated(IWorkbenchPage page)
+            {
+            }
+
+            public void pageOpened(IWorkbenchPage page)
+            {
                 page.addPartListener(partListener);
             }
-            public void pageClosed(IWorkbenchPage page) {
+
+            public void pageClosed(IWorkbenchPage page)
+            {
                 page.removePartListener(partListener);
             }
         };
@@ -795,11 +834,11 @@ public class UIUtils {
         dialog.open();
     }
 
-    public static String formatMessage(String message, Object ... args)
+    public static String formatMessage(String message, Object... args)
     {
         if (message == null) {
             return "";
-        } else { 
+        } else {
             return MessageFormat.format(message, args);
         }
     }
@@ -816,4 +855,8 @@ public class UIUtils {
         return button;
     }
 
+    public static void setHelp(Composite composite, String helpContextID)
+    {
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(composite, helpContextID);
+    }
 }

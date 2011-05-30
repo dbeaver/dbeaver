@@ -1,0 +1,6 @@
+<contexts>
+   <context id="driver-manager">
+      <description>Driver Manager dialog. Manages all database drivers.</description>
+      <topic href="docs/help/html/dialogs/driver-manager.html" label="Driver Manager" />
+   </context>
+</contexts>
