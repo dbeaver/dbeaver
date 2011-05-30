@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -56,6 +57,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
         // Initialize DBeaver Core
         DBeaverCore.createInstance(DBeaverActivator.getInstance());
+
+        TrayDialog.setDialogHelpAvailable(true);
     }
 
     @Override

@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
@@ -201,6 +202,7 @@ public class SQLEditor extends SQLEditorBase
         setRangeIndicator(new DefaultRangeIndicator());
 
         sashForm = UIUtils.createPartDivider(this, parent, SWT.VERTICAL | SWT.SMOOTH);
+        UIUtils.setHelp(sashForm, IHelpContextIds.CTX_SQL_EDITOR);
 
         super.createPartControl(sashForm);
 

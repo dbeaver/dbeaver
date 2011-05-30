@@ -1,10 +1,27 @@
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <contexts>
-   <context id="driver-manager">
-      <description>Driver Manager dialog. Manages all database drivers.</description>
-      <topic href="docs/help/html/dialogs/driver-manager.html" label="Driver Manager" />
-   </context>
+    <context id="driver-manager">
+        <description>Driver Manager dialog. Manages all database drivers.</description>
+        <topic href="docs/help/html/dialogs/driver-manager.html" label="Driver Manager"/>
+    </context>
     <context id="driver-editor">
-       <description>Driver Edit dialog. Edit driver's libraries and properties.</description>
-       <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver Editor" />
+        <description>Driver Edit dialog. Edit driver's libraries and properties.</description>
+        <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver Editor"/>
+    </context>
+    <context id="sql-editor">
+        <description>SQL Editor. Edit, execute SQL queries and scripts.</description>
+        <topic href="docs/help/html/editors/sql-editor.html" label="SQL Editor"/>
+        <topic href="docs/help/html/editors/result-set.html" label="Result Set Viewer"/>
+    </context>
+    <context id="result-set-viewer">
+        <description>Result Set Viewer.</description>
+        <topic href="docs/help/html/editors/result-set.html" label="Result Set Viewer"/>
+    </context>
+    <context id="entity-editor">
+        <description>Entity Editor. Manages database objects.</description>
+        <topic href="docs/help/html/editors/entity-editor.html" label="Entity Editor"/>
     </context>
 </contexts>

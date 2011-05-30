@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?NLS TYPE="org.eclipse.help.toc"?>
 
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <toc label="DBeaver Help">
 	<topic label="About DBeaver"  href="docs/help/html/about.html"> 
 	</topic>
 	<topic href="docs/help/html/techdoc.html" label="Technical description"/>
+    <topic label="Manage connections">
+        <topic href="docs/help/html/dialogs/driver-manager.html" label="Manage drivers"/>
+        <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver editr dialog"/>
+    </topic>
+    <topic label="Work with data">
+        <topic href="docs/help/html/editors/sql-editor.html" label="SQL Editor"/>
+    </topic>
 </toc>

@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
@@ -400,6 +401,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 ((IFolderedPart)activeEditor).switchFolder(defFolderId);
             }
         }
+
+        UIUtils.setHelp(getContainer(), IHelpContextIds.CTX_ENTITY_EDITOR);
     }
 
     private void addNavigatorTabs()

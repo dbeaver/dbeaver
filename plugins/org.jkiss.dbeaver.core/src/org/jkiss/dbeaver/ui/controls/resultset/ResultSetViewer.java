@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
@@ -147,6 +148,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
+        UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
 
         this.spreadsheet = new Spreadsheet(
             viewerPanel,

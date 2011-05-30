@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
+import org.eclipse.ui.IPlaceholderFolderLayout;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
@@ -16,6 +17,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
 {
 
     public static final String FOLDER_NAVIGATION = "navigation";
+    public static final String FOLDER_HELP = "help";
     public static final String BOTTOM_BOTTOM_LEFT = "bottomLeft";
     public static final String FOLDER_BOTTOM_RIGHT = "bottomRight";
 
@@ -30,9 +32,16 @@ public class DBeaverPerspective implements IPerspectiveFactory
             IPageLayout.LEFT,
             0.60f,
             editorArea);
-        //treeFolder.addPlaceholder(DatabaseNavigatorView.ID + ":*");
         treeFolder.addView(DatabaseNavigatorView.VIEW_ID);
         treeFolder.addView(ProjectNavigatorView.VIEW_ID);
+
+        // Right
+        IPlaceholderFolderLayout right = layout.createPlaceholderFolder(
+            FOLDER_HELP,
+            IPageLayout.RIGHT,
+            IPageLayout.RATIO_MIN,
+            editorArea);
+        right.addPlaceholder("org.eclipse.help.ui.HelpView");
 
         // Bottom left.
         //IPlaceholderFolderLayout bottomLeft = layout.createPlaceholderFolder(
@@ -41,11 +50,10 @@ public class DBeaverPerspective implements IPerspectiveFactory
             IPageLayout.BOTTOM,
             0.8f,
             FOLDER_NAVIGATION);
-        bottomLeft.addPlaceholder(IPageLayout.ID_OUTLINE);
         bottomLeft.addView(ProjectExplorerView.VIEW_ID);
 
         // Bottom right.
-        IFolderLayout bottomRight = layout.createFolder(
+        IPlaceholderFolderLayout bottomRight = layout.createPlaceholderFolder(
             FOLDER_BOTTOM_RIGHT,
             IPageLayout.BOTTOM,
             0.2f,
@@ -54,6 +62,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
         bottomRight.addPlaceholder(QueryManagerView.VIEW_ID);
         bottomRight.addPlaceholder(IPageLayout.ID_PROP_SHEET);
         bottomRight.addPlaceholder(IPageLayout.ID_PROGRESS_VIEW);
+        bottomRight.addPlaceholder(IPageLayout.ID_OUTLINE);
 
         //layout.getViewLayout(DatabaseNavigatorView.VIEW_ID).setCloseable(false);
     }
