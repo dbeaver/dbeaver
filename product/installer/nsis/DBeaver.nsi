@@ -188,7 +188,7 @@ SectionGroupEnd
 
 Section "-Drivers" SecDrivers
   SetOutPath "$INSTDIR"
-  File /r "raw\win32.x86\dbeaver\drivers"
+;  File /r "raw\win32.x86\dbeaver\drivers"
 
 SectionEnd
 
