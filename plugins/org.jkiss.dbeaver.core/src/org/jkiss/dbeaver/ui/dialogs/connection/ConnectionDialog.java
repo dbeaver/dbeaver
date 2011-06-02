@@ -25,12 +25,12 @@ public class ConnectionDialog extends ActiveWizardDialog
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        DataSourceDescriptor ds = ((ConnectionWizard)getWizard()).getDataSourceDescriptor();
-        if (ds != null) {
-            getShell().setImage(ds.getDriver().getIcon());
-        } else {
-            getShell().setImage(DBIcon.GEN_DATABASE.getImage());
-        }
+//        DataSourceDescriptor ds = ((ConnectionWizard)getWizard()).getDataSourceDescriptor();
+//        if (ds != null) {
+//            getShell().setImage(ds.getDriver().getIcon());
+//        } else {
+//            getShell().setImage(DBIcon.GEN_DATABASE.getImage());
+//        }
         return super.createDialogArea(parent);
     }
 }

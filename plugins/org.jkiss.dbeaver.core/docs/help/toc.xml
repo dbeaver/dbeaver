@@ -18,6 +18,7 @@
         <topic href="docs/help/html/editors/result-set.html" label="Result Set"/>
     </topic>
     <topic label="Work with metadata">
+        <topic href="docs/help/html/views/database-navigator.html" label="Database Navigator"/>
         <topic href="docs/help/html/editors/entity-editor.html" label="Entity Editor"/>
     </topic>
 </toc>

@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -41,6 +42,8 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         gd.heightHint = 200;
         control.setLayoutData(gd);
         setControl(placeholder);
+
+        UIUtils.setHelp(placeholder, IHelpContextIds.CTX_CON_WIZARD_DRIVER);
     }
 
     public DriverDescriptor getSelectedDriver()

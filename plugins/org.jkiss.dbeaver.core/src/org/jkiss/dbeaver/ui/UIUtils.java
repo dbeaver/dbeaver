@@ -833,7 +833,11 @@ public class UIUtils {
         return button;
     }
 
-    public static Button createHelpButton(final TrayDialog dialog, final Composite parent, final String helpContextID)
+    public static Button createHelpButton(
+        final TrayDialog dialog,
+        final Composite parent,
+        final String pluginId,
+        final String helpContextID)
     {
         Button help = new Button(parent, SWT.PUSH);
         help.setText("Help");
@@ -848,15 +852,25 @@ public class UIUtils {
                 if (dialog.getTray() != null) {
                     dialog.closeTray();
                 } else {
-                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(helpContextID);
+                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(pluginId + "." + helpContextID);
                 }
             }
         });
         return help;
     }
 
+    public static void setHelp(Control control, String pluginId, String helpContextID)
+    {
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(
+            control,
+            pluginId + "." + helpContextID);
+    }
+
     public static void setHelp(Control control, String helpContextID)
     {
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(control, helpContextID);
+        setHelp(
+            control,
+            DBeaverConstants.PLUGIN_ID,
+            helpContextID);
     }
 }

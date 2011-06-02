@@ -6,7 +6,10 @@ package org.jkiss.dbeaver.ui.views.navigator.project;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
 
 /**
@@ -27,5 +30,10 @@ public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
         return getModel().getRoot();
     }
 
-
+    @Override
+    public void createPartControl(Composite parent)
+    {
+        super.createPartControl(parent);
+        UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_NAVIGATOR);
+    }
 }

@@ -35,19 +35,6 @@ public abstract class HelpEnabledDialog extends TrayDialog {
         return contents;
     }
 
-    @Override
-    protected void buttonPressed(int buttonId)
-    {
-        if (buttonId == IDialogConstants.HELP_ID) {
-            if (getTray() != null) {
-                closeTray();
-            } else {
-                PlatformUI.getWorkbench().getHelpSystem().displayHelp(helpContextID);
-            }
-        }
-        super.buttonPressed(buttonId);
-    }
-
 //    protected Button createHelpButton(Composite parent)
 //    {
 //        final Button button = createButton(parent, IDialogConstants.HELP_ID, IDialogConstants.HELP_LABEL, false);

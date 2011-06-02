@@ -37,24 +37,19 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
     private Text passwordText;
     private ConnectionPropertiesControl connectionProps;
     private Button testButton;
-    private Image logoImage;
     private PropertySourceCustom propertySource;
+
+    private static Image logoImage = Activator.getImageDescriptor("icons/mysql_logo.png").createImage();
+
 
     @Override
     public void dispose()
     {
-        if (logoImage != null) {
-            logoImage.dispose();
-            logoImage = null;
-        }
         super.dispose();
     }
 
     public void createControl(Composite composite)
     {
-        logoImage = Activator.getImageDescriptor("icons/mysql_logo.png").createImage();
-
-
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
 
