@@ -145,6 +145,10 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
                 if (value != null) {
                     return value;
                 }
+                if (lazyValues.containsKey(prop.getId())) {
+                    // Some lazy props has null value
+                    return null;
+                }
                 if (!loadLazyProps) {
                     return null;
                 } else {
