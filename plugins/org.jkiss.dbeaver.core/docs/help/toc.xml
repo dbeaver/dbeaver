@@ -11,7 +11,12 @@
 	</topic>
     <topic label="Manage connections">
         <topic href="docs/help/html/dialogs/driver-manager.html" label="Manage drivers"/>
-        <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver editr dialog"/>
+        <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver editor dialog"/>
+        <topic label="Connection wizard">
+            <topic href="docs/help/html/dialogs/con-wizard-driver.html" label="Driver selection"/>
+            <topic href="docs/help/html/dialogs/con-wizard-settings.html" label="Connection settings"/>
+            <topic href="docs/help/html/dialogs/con-wizard-final.html" label="Additional settings"/>
+        </topic>
     </topic>
     <topic label="Work with data">
         <topic href="docs/help/html/editors/sql-editor.html" label="SQL Editor"/>
