@@ -6,7 +6,7 @@
   -->
 
 <toc label="DBeaver Help">
-	<topic label="About DBeaver"  href="docs/help/html/about.html"> 
+	<topic label="About DBeaver" href="docs/help/html/about.html">
         <topic href="docs/help/html/techdoc.html" label="Technical description"/>
 	</topic>
     <topic label="Manage connections">
@@ -25,5 +25,9 @@
     <topic label="Work with metadata">
         <topic href="docs/help/html/views/database-navigator.html" label="Database Navigator"/>
         <topic href="docs/help/html/editors/entity-editor.html" label="Entity Editor"/>
+    </topic>
+    <topic label="Projects">
+        <topic href="docs/help/html/views/project-navigator.html" label="Project Navigator"/>
+        <topic href="docs/help/html/views/project-explorer.html" label="Project Explorer"/>
     </topic>
 </toc>
