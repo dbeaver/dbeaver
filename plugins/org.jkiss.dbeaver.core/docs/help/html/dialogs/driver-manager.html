@@ -8,6 +8,27 @@
 
 <body>
 <h1>Driver Manager</h1>
-Please enter your text here.
+
+<p>
+    Driver is a third-party library which provides ability to work with certain database engine.
+    Most drivers in DBeaver are JDBC (Java-Database-Connectivity) drivers provided by database vendors.
+    Driver manager dialog allows you to create, delete and edit driver descriptions.
+</p>
+<p>
+    In driver manager dialog you may see drivers "tree".
+    Elements in top level are "Driver providers". Driver provider is a DBeaver plugin.
+    Usually driver providers are designed for some particular database engine, for example MySQL.
+    There is one exception - "Generic" provider which allows to work with any database using it's JDBC driver.
+    Generic providers do not "knows" anything about particular databases, their specific features, metadata structure, etc. It provides very basic interface.
+</p>
+<p>
+    User may edit only "managable" drivers. All drivers under "Generic" provider are managable.
+    Particular database drivers are usually not managable and user can't change their settings.
+</p>
+<p>
+    DBeaver shipped with many predefined drivers.
+    User may create any number of additional drivers.
+</p>
+
 </body>
 </html>

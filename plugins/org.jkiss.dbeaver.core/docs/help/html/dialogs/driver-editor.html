@@ -8,10 +8,71 @@
 
 <body>
 <h1>Driver Editor</h1>
-Please enter your text here.
+This dialog allows user to change any driver settings.
 
-<h2>Driver properties</h2>
-@@driver-properties@@
+<h2>Basic settings</h2>
+<table border="1">
+    <tr valign="top"><td nowrap>Driver name</td><td>Name of driver, it'll be shown in driver manager. Also it could be used by DBeaver to name scripts, show tips, etc</td></tr>
+    <tr valign="top"><td nowrap>Category</td><td>Optional field. Some databases have many different drivers, it is convenient to group these drivers. Category is just a name for this group. Most drivers do not have category.</td></tr>
+    <tr valign="top"><td nowrap>Class name</td><td>Required field. It is a name of Java class which implements driver.
+        You may find class name in driver's documentation or you may click on "Find Class" button in the "Driver Libraries" tab and choose class name from the list.
+    </td></tr>
+    <tr valign="top"><td nowrap>Sample URL</td><td>Optional field. If it's value is left blank then user has to specify full database URL when he/she creates new database connection using this driver.
+        It is much more convenient when sample URL is specified - in this case connection wizard will require only valuable connection properties (such as host name, database name, etc).
+        <p>
+            Sample URL is a JDBC database URL but instead of real database properties it consists from "patterns" which will be replaced with real values by connection wizard.
+        </p>
+        <p>List of supported URL patterns:</p>
+        <ul>
+            <li><code>{host}</code> - database host name</li>
+            <li><code>{port}</code> - database port number</li>
+            <li><code>{database}</code> - database/schema name</li>
+            <li><code>{server}</code> - database server name. Rarely used, usually by complex legacy databases (e.g. Informix)</li>
+            <li><code>{folder}</code> - database folder. Usually used by embedded database engines to specify folder with database files</li>
+            <li><code>{file}</code> - the same as <code>{folder}</code> but specifies single file</li>
+        </ul>
+        <p>Optional patterns may be enclosed in square brackets</p>
+        <p>Typical sample URL: <code>jdbc:db2://{host}[:{port}]/{database}</code></p>
+
+    </td></tr>
+</table>
+
+<h2>Driver Libraries</h2>
+<p>List of external driver libraries. Usually library is a <code>jar</code> or <code>zip</code> archive file which contains implementation of JDBC driver. Also You may specify entire directory as source of driver classes instead of archive file.</p>
+<p>"Find class" button bellow library list searches for all JDBC driver implementations in specified libraries.
+    Then you may choose particular class name (if there are multiple classes found) and it will be placed in "Class Name" field.</p>
+
+<h2>Connection properties</h2>
+<p>Default additional properties for driver. These properties will be used for all connections based on this driver. However these properties could be redefined in particular connection.</p>
+<p>Additional properties are used by drivers to configure drivers for specific environment or for specific requirements. List of available properties is specific for each driver. You may find them in driver's documentation or in <a href="con-wizard-settings.html">connection wizard</a> ("Advanced properties" tab)</p>
+
+<h2>Advanced parameters</h2>
+<p>Advanced parameters are used by some driver provides to configure driver's behaviour.</p>
+<p>List of parameters supported by Generic driver provider:</p>
+<table border="1">
+    <tr valign="top">
+        <td nowrap>Shutdown parameter</td>
+        <td>
+            Some embedded database engines requires additional shutdown parameter in URL when you disconnect from database. Otherwise driver will lock database file until you finish DBeaver process.
+            If specified then shutdown parameter will be appended to database URL on disconnect. Usually shutdown parameter looks like <code>;shutdown=true</code>
+        </td>
+    </tr>
+    <tr valign="top">
+        <td nowrap>Get active database query</td>
+        <td>
+            SQL query which returns name of current database/schema. Used by DBeaver to show active database/schema in UI.
+        </td>
+    </tr>
+    <tr valign="top">
+        <td nowrap>Set active database query</td>
+        <td>
+            SQL query which changes current database/schema.
+        </td>
+    </tr>
+</table>
+
+<h2>License</h2>
+<p>Driver license. If present then user should read and accept this license before use of this driver.</p>
 
 </body>
 </html>
