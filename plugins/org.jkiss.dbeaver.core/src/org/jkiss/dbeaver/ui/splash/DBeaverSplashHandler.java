@@ -101,13 +101,15 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             public void paintControl(PaintEvent e) {
                 String productVersion = "";
                 if (product != null) {
-                    productVersion = product.getDefiningBundle().getVersion().toString();
+                    productVersion = "v" + product.getDefiningBundle().getVersion().toString();
                 }
+                String osVersion = Platform.getOS() + "\n" + Platform.getOSArch();
                 if (boldFont != null) {
                     e.gc.setFont(boldFont);
                 }
                 e.gc.setForeground(getForeground());
                 e.gc.drawText(productVersion, 115, 200, true);
+                e.gc.drawText(osVersion, 30, 70, true);
                 e.gc.setFont(normalFont);
             }
         });

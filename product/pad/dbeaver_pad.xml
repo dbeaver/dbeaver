@@ -51,9 +51,9 @@
   </NewsFeed>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.2.0</Program_Version>
-    <Program_Release_Month>05</Program_Release_Month>
-    <Program_Release_Day>25</Program_Release_Day>
+    <Program_Version>1.2.2</Program_Version>
+    <Program_Release_Month>06</Program_Release_Month>
+    <Program_Release_Day>09</Program_Release_Day>
     <Program_Release_Year>2011</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -62,16 +62,15 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-- Generic database metadata editor (allows create/alter/drop tables, columns, primary/unique/foreign keys, indexes)
-- MySQL driver supports edit of views, tables rename, comments for tables/columns
-- Support of undo/redo in object editors
-- A lot of UI updates and bugfixes
-- UI improvements in Linux (GTK) version
+- Integrated Context Help
+- SQLite driver added
+- MS SQL Single Sign On feature
+- Bug fixes
 	</Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
     <File_Info>
-      <File_Size_Bytes>21565122</File_Size_Bytes>
+      <File_Size_Bytes>23303977</File_Size_Bytes>
       <Filename_Versioned></Filename_Versioned>
       <Filename_Previous></Filename_Previous>
       <Filename_Generic></Filename_Generic>
@@ -105,7 +104,7 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.2.0-setup.exe</Primary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.2.2-x86-setup.exe</Primary_Download_URL>
       <Secondary_Download_URL></Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>

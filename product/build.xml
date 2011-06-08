@@ -90,26 +90,38 @@
 	<!--This target defines the run-order of the targets-->
 	<target name="build" depends="pde-build,driver-pack" />
 
-	<target name="dist-win">
-		<mkdir dir="${buildDirectory}/installer" />
-		<mkdir dir="${buildDirectory}/installer/raw" />
+    <target name="nsis">
 		<unzip 
-			src="${buildDirectory}/${buildId}/${buildId}-win32.win32.x86.zip"
-			dest="${buildDirectory}/installer/raw/win32.x86"
+			src="${buildDirectory}/${buildId}/${buildId}-win32.win32.${arch}.zip"
+			dest="${buildDirectory}/installer/raw/win32.${arch}"
 			overwrite="true"
 			/>
 		<filter filtersfile="build.properties"/>
-		<copy todir="${buildDirectory}/installer" filtering="true">
+        <filter token="arch" value="${arch}"/>
+        <filter token="product.dir" value="..\..\.."/>
+		<copy todir="${buildDirectory}/installer/${arch}" filtering="true">
 			<fileset dir="installer/nsis">
 				<include name="*.ns*" />
 			</fileset>
 		</copy>
 
-		<exec executable="${nsisDirectory}/makensis" dir="${buildDirectory}/installer">
+		<exec executable="${nsisDirectory}/makensis" dir="${buildDirectory}/installer/${arch}">
 			<arg value="DBeaver.nsi"/>
 		</exec>
+    </target>
+    
+	<target name="dist-win">
+		<mkdir dir="${buildDirectory}/installer" />
+		<mkdir dir="${buildDirectory}/installer/raw" />
 
-		<delete dir="${buildDirectory}/installer" />
+        <antcall target="nsis">
+            <param name="arch" value="x86"/>
+        </antcall>
+        <antcall target="nsis">
+            <param name="arch" value="x86_64"/>
+        </antcall>
+
+		<!--delete dir="${buildDirectory}/installer" /-->
 	</target>
 
 	<target name="dist-deb">
