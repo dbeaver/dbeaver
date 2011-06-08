@@ -15,6 +15,7 @@ public final class IHelpContextIds
 
     public static final String CTX_SQL_EDITOR = "sql-editor";
     public static final String CTX_RESULT_SET_VIEWER  = "result-set-viewer";
+    public static final String CTX_DATA_FILTER = "data-filter";
 
     public static final String CTX_ENTITY_EDITOR = "entity-editor";
     public static final String CTX_DATABASE_NAVIGATOR = "view-database-navigator";

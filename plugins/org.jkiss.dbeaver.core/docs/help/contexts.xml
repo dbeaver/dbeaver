@@ -33,6 +33,11 @@
         <description>Result Set Viewer.</description>
         <topic href="docs/help/html/editors/result-set.html" label="Result Set Viewer"/>
     </context>
+    <context id="data-filter">
+        <description>Data Ordering/Filtering dialog.</description>
+        <topic href="docs/help/html/dialogs/data-filter.html" label="Data Order/Filter Dialog"/>
+    </context>
+
     <context id="entity-editor">
         <description>Entity Editor. Manages database objects.</description>
         <topic href="docs/help/html/editors/entity-editor.html" label="Entity Editor"/>

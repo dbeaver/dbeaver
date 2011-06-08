@@ -28,10 +28,12 @@ import org.jkiss.dbeaver.model.data.DBDColumnFilter;
 import org.jkiss.dbeaver.model.data.DBDColumnOrder;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 
-public class ResultSetFilterDialog extends Dialog {
+public class ResultSetFilterDialog extends HelpEnabledDialog {
 
     private final ResultSetViewer resultSetViewer;
 
@@ -43,7 +45,7 @@ public class ResultSetFilterDialog extends Dialog {
 
     public ResultSetFilterDialog(ResultSetViewer resultSetViewer)
     {
-        super(resultSetViewer.getControl().getShell());
+        super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_DATA_FILTER);
         this.resultSetViewer = resultSetViewer;
         this.dataFilter = new DBDDataFilter(resultSetViewer.getDataFilter());
     }
