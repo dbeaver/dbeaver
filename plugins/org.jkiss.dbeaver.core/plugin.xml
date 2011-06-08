@@ -1341,6 +1341,7 @@
         <key commandId="org.eclipse.ui.edit.text.upperCase" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+U"/>
         <key commandId="org.eclipse.ui.edit.text.lowerCase" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+L"/>
 
+        <!--key commandId="org.eclipse.ui.help.displayHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/-->
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
     </extension>
     <extension point="org.eclipse.ui.contexts">

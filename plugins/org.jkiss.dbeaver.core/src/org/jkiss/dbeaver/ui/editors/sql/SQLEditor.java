@@ -238,7 +238,7 @@ public class SQLEditor extends SQLEditorBase
 
             item = new CTabItem(resultTabs, SWT.NONE, 2);
             item.setControl(logViewer);
-            item.setText("Execute Log");
+            item.setText("Execution Log");
             item.setImage(imgLog);
 
             resultTabs.setSelection(0);

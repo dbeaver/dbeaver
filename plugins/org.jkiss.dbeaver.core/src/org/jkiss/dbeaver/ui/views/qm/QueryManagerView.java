@@ -11,6 +11,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 import org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager;
@@ -31,6 +32,7 @@ public class QueryManagerView extends ViewPart
         Composite group = UIUtils.createPlaceholder(parent, 1);
 
         queryLogViewer = new QueryLogViewer(group, getSite(), null);
+        UIUtils.setHelp(group, IHelpContextIds.CTX_QUERY_MANAGER);
     }
 
     public void setFocus()

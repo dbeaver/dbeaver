@@ -30,4 +30,7 @@
         <topic href="docs/help/html/views/project-navigator.html" label="Project Navigator"/>
         <topic href="docs/help/html/views/project-explorer.html" label="Project Explorer"/>
     </topic>
+    <topic label="Miscellaneous">
+        <topic href="docs/help/html/views/query-manager.html" label="Query Manager"/>
+    </topic>
 </toc>

@@ -20,6 +20,7 @@ public final class IHelpContextIds
     public static final String CTX_DATABASE_NAVIGATOR = "view-database-navigator";
     public static final String CTX_PROJECT_NAVIGATOR = "view-project-navigator";
     public static final String CTX_PROJECT_EXPLORER = "view-project-explorer";
+    public static final String CTX_QUERY_MANAGER = "view-query-manager";
 
     public static final String CTX_CON_WIZARD_DRIVER = "con-wizard-driver";
     public static final String CTX_CON_WIZARD_SETTINGS = "con-wizard-settings";

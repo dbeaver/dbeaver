@@ -52,4 +52,9 @@
         <topic href="docs/help/html/views/database-navigator.html" label="Database Navigator"/>
         <topic href="docs/help/html/views/project-explorer.html" label="Project Explorer"/>
     </context>
+    <context id="view-query-manager">
+        <description>Query manager. History of all processed SQL statements and transaction operations.</description>
+        <topic href="docs/help/html/views/query-manager.html" label="Query Manager"/>
+    </context>
+
 </contexts>
