@@ -65,6 +65,8 @@
 - Integrated Context Help
 - SQLite driver added
 - MS SQL Single Sign On feature
+- Driver Manager enhancements
+- Installer for Windows 64 version
 - Bug fixes
 	</Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
