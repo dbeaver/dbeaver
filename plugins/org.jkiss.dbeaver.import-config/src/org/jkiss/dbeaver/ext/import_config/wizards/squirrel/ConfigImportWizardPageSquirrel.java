@@ -110,7 +110,7 @@ public class ConfigImportWizardPageSquirrel extends ConfigImportWizardPage {
                 String url = XMLUtils.getChildElementBody(aliasElement, "url");
                 String userName = XMLUtils.getChildElementBody(aliasElement, "userName");
                 String password = XMLUtils.getChildElementBody(aliasElement, "password");
-                ImportConnectionInfo connectionInfo = new ImportConnectionInfo(driverInfo, null, name, url, null, 0, null, userName, password);
+                ImportConnectionInfo connectionInfo = new ImportConnectionInfo(driverInfo, null, name, url, null, null, null, userName, password);
                 importData.addConnection(connectionInfo);
             }
         } catch (XMLException e) {
@@ -127,7 +127,7 @@ public class ConfigImportWizardPageSquirrel extends ConfigImportWizardPage {
 
     private void adaptSampleUrl(ImportDriverInfo driverInfo)
     {
-        int port = 0;
+        String port = null;
         String sampleURL = driverInfo.getSampleURL();
         int divPos = sampleURL.indexOf("?");
         if (divPos != -1) {
@@ -153,14 +153,14 @@ public class ConfigImportWizardPageSquirrel extends ConfigImportWizardPage {
                     portReplacement = ":" + portReplacement;
                     portString = portString.substring(1);
                 }
-                port = CommonUtils.toInt(portString);
+                port = portString;
             }
         }
         sampleURL = portMatcher.replaceAll(portReplacement);
         sampleURL = PATTERN_DATABASE.matcher(sampleURL).replaceAll("{database}");
 
         driverInfo.setSampleURL(sampleURL);
-        if (port > 0) {
+        if (port != null) {
             driverInfo.setDefaultPort(port);
         }
     }

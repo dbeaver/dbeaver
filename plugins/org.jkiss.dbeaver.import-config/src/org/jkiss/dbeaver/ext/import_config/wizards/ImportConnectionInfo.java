@@ -20,14 +20,14 @@ public class ImportConnectionInfo {
     private String alias;
     private String url;
     private String host;
-    private int port;
+    private String port;
     private String database;
     private String user;
     private String password;
     private Map<Object, Object> properties = new HashMap<Object, Object>();
     private boolean checked = false;
 
-    public ImportConnectionInfo(ImportDriverInfo driverInfo, String id, String alias, String url, String host, int port, String database, String user, String password)
+    public ImportConnectionInfo(ImportDriverInfo driverInfo, String id, String alias, String url, String host, String port, String database, String user, String password)
     {
         this.driverInfo = driverInfo;
         this.id = id;
@@ -75,12 +75,12 @@ public class ImportConnectionInfo {
         return host;
     }
 
-    public int getPort()
+    public String getPort()
     {
         return port;
     }
 
-    public void setPort(int port)
+    public void setPort(String port)
     {
         this.port = port;
     }

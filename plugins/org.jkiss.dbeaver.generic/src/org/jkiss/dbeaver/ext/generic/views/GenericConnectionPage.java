@@ -167,7 +167,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
             gd = new GridData(GridData.CENTER);
             gd.widthHint = 60;
             portText.setLayoutData(gd);
-            portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+            //portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
             portText.addModifyListener(textListener);
 
             addControlToGroup(GROUP_HOST, hostLabel);
@@ -410,10 +410,10 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
                     }
                 }
                 if (portText != null) {
-                    if (connectionInfo.getHostPort() > 0) {
+                    if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                         portText.setText(String.valueOf(connectionInfo.getHostPort()));
                     } else if (site.getDriver().getDefaultPort() != null) {
-                        portText.setText(site.getDriver().getDefaultPort().toString());
+                        portText.setText(site.getDriver().getDefaultPort());
                     } else {
                         portText.setText("");
                     }
@@ -486,7 +486,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
                 connectionInfo.setHostName(hostText.getText());
             }
             if (portText != null && properties.contains(PROP_PORT)) {
-                connectionInfo.setHostPort(CommonUtils.toInt(portText.getText()));
+                connectionInfo.setHostPort(portText.getText());
             }
             if (serverText != null && properties.contains(PROP_SERVER)) {
                 connectionInfo.setServerName(serverText.getText());

@@ -611,25 +611,13 @@ public class DriverEditDialog extends HelpEnabledDialog
             return;
         }
 
-        // Check props
-        Integer portNumber = null;
-        if (!CommonUtils.isEmpty(driverPortText.getText())) {
-            try {
-                portNumber = Integer.valueOf(driverPortText.getText());
-            }
-            catch (NumberFormatException e) {
-                UIUtils.showErrorDialog(getShell(), "Invalid parameters", "Bad driver port specified");
-                return;
-            }
-        }
-
         // Set props
         driver.setName(driverNameText.getText());
         driver.setCategory(driverCategoryCombo.getText());
         driver.setDescription(CommonUtils.getString(driverDescText.getText()));
         driver.setDriverClassName(driverClassText.getText());
         driver.setSampleURL(driverURLText.getText());
-        driver.setDriverDefaultPort(portNumber);
+        driver.setDriverDefaultPort(driverPortText.getText());
 //        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);
 

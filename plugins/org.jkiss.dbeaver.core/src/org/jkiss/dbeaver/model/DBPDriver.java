@@ -29,7 +29,7 @@ public interface DBPDriver extends DBPObject
 
     Object getDriverInstance() throws DBException;
 
-    Integer getDefaultPort();
+    String getDefaultPort();
 
     String getSampleURL();
 

@@ -20,7 +20,7 @@ public class ImportDriverInfo {
     private String driverClass;
     private List<String> libraries = new ArrayList<String>();
     private Map<Object, Object> properties = new HashMap<Object, Object>();
-    private int defaultPort;
+    private String defaultPort;
     private String description;
 
     public ImportDriverInfo(String id, String name, String sampleURL, String driverClass)
@@ -56,12 +56,12 @@ public class ImportDriverInfo {
         return driverClass;
     }
 
-    public int getDefaultPort()
+    public String getDefaultPort()
     {
         return defaultPort;
     }
 
-    public void setDefaultPort(int defaultPort)
+    public void setDefaultPort(String defaultPort)
     {
         this.defaultPort = defaultPort;
     }

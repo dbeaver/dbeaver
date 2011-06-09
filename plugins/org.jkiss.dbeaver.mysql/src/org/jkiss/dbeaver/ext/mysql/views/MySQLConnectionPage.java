@@ -207,7 +207,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
                 hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
             }
             if (portText != null) {
-                if (connectionInfo.getHostPort() > 0) {
+                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                     portText.setText(String.valueOf(connectionInfo.getHostPort()));
                 } else {
                     portText.setText(String.valueOf(MySQLConstants.DEFAULT_PORT));
@@ -255,7 +255,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
                 connectionInfo.setHostName(hostText.getText());
             }
             if (portText != null) {
-                connectionInfo.setHostPort(CommonUtils.toInt(portText.getText()));
+                connectionInfo.setHostPort(portText.getText());
             }
             if (dbText != null) {
                 connectionInfo.setDatabaseName(dbText.getText());

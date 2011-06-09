@@ -103,9 +103,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             driver.setSampleURL(driverInfo.getSampleURL());
             driver.setConnectionProperties(driverInfo.getProperties());
             driver.setDescription(driverInfo.getDescription());
-            if (driverInfo.getDefaultPort() > 0) {
-                driver.setDriverDefaultPort(driverInfo.getDefaultPort());
-            }
+            driver.setDriverDefaultPort(driverInfo.getDefaultPort());
             for (String path : driverInfo.getLibraries()) {
                 driver.addLibrary(path);
             }
@@ -198,7 +196,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
                 if (component.equals("{host}")) {
                     connectionInfo.setHost(propertyValue);
                 } else if (component.equals("{port}")) {
-                    connectionInfo.setPort(CommonUtils.toInt(propertyValue));
+                    connectionInfo.setPort(propertyValue);
                 } else if (component.equals("{database}")) {
                     connectionInfo.setDatabase(propertyValue);
                 } else {

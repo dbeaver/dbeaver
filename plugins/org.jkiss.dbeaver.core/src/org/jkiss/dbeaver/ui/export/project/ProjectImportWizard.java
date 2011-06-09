@@ -238,7 +238,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             driver.setDescription(driverDescription);
             driver.setDriverClassName(driverClass);
             if (!CommonUtils.isEmpty(driverDefaultPort)) {
-                driver.setDriverDefaultPort(CommonUtils.toInt(driverDefaultPort));
+                driver.setDriverDefaultPort(driverDefaultPort);
             }
             driver.setSampleURL(driverURL);
             driver.setModified(true);

@@ -56,7 +56,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private String name, origName;
     private String description, origDescription;
     private String driverClassName, origClassName;
-    private Integer driverDefaultPort, origDefaultPort;
+    private String driverDefaultPort, origDefaultPort;
     private String sampleURL, origSampleURL;
     private String webURL;
     private Image iconPlain;
@@ -106,7 +106,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.origClassName = this.driverClassName = config.getAttribute(DataSourceConstants.ATTR_CLASS);
         if (!CommonUtils.isEmpty(config.getAttribute("defaultPort"))) {
             try {
-                this.origDefaultPort = this.driverDefaultPort = Integer.valueOf(config.getAttribute("defaultPort"));
+                this.origDefaultPort = this.driverDefaultPort = config.getAttribute("defaultPort");
             }
             catch (NumberFormatException ex) {
                 log.warn("Bad default port for driver '" + name + "' specified: " + ex.getMessage());
@@ -383,12 +383,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    public Integer getDefaultPort()
+    public String getDefaultPort()
     {
         return driverDefaultPort;
     }
 
-    public void setDriverDefaultPort(Integer driverDefaultPort)
+    public void setDriverDefaultPort(String driverDefaultPort)
     {
         this.driverDefaultPort = driverDefaultPort;
     }
@@ -818,7 +818,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return origClassName;
     }
 
-    public Integer getOrigDefaultPort()
+    public String getOrigDefaultPort()
     {
         return origDefaultPort;
     }
@@ -942,15 +942,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 curDriver.setDescription(atts.getValue(DataSourceConstants.ATTR_DESCRIPTION));
                 curDriver.setDriverClassName(atts.getValue(DataSourceConstants.ATTR_CLASS));
                 curDriver.setSampleURL(atts.getValue(DataSourceConstants.ATTR_URL));
-                String portStr = atts.getValue(DataSourceConstants.ATTR_PORT);
-                if (portStr != null) {
-                    try {
-                        curDriver.setDriverDefaultPort(Integer.valueOf(portStr));
-                    }
-                    catch (NumberFormatException e) {
-                        log.warn("Bad driver '" + curDriver.getName() + "' port specified: " + portStr);
-                    }
-                }
+                curDriver.setDriverDefaultPort(atts.getValue(DataSourceConstants.ATTR_PORT));
                 curDriver.setModified(true);
                 String disabledAttr = atts.getValue(DataSourceConstants.ATTR_DISABLED);
                 if ("true".equals(disabledAttr)) {

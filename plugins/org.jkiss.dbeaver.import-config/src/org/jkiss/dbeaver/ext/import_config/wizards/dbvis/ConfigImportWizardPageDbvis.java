@@ -103,7 +103,7 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
                                 alias,
                                 url,
                                 null,
-                                -1,
+                                null,
                                 null,
                                 user,
                                 null);
@@ -125,7 +125,7 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
 
     private void adaptSampleUrl(ImportDriverInfo driverInfo)
     {
-        int port = 0;
+        String port = null;
         String sampleURL = driverInfo.getSampleURL();
         sampleURL = PATTERN_PROTOCOL.matcher(sampleURL).replaceAll("{protocol}");
         sampleURL = PATTERN_HOST.matcher(sampleURL).replaceAll("{host}");
@@ -133,14 +133,14 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
         if (portMatcher.find()) {
             final String portString = portMatcher.group(1);
             if (!CommonUtils.isEmpty(portString)) {
-                port = CommonUtils.toInt(portString);
+                port = portString;
             }
         }
         sampleURL = portMatcher.replaceAll("{port}");
         sampleURL = PATTERN_DATABASE.matcher(sampleURL).replaceAll("{database}");
 
         driverInfo.setSampleURL(sampleURL);
-        if (port > 0) {
+        if (port != null) {
             driverInfo.setDefaultPort(port);
         }
     }
