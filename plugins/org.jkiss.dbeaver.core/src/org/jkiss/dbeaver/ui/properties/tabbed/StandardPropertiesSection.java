@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
@@ -109,7 +110,13 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
     {
         if (curPropertySource.getEditableValue() == event.getObject() && !Boolean.FALSE.equals(event.getEnabled()) && !propertyTree.getControl().isDisposed()) {
             //propertyTree.get
-            propertyTree.refresh();
+            Display.getDefault().asyncExec(new Runnable() {
+                public void run() {
+                    if (propertyTree != null && !propertyTree.getControl().isDisposed()) {
+                        propertyTree.refresh();
+                    }
+                }
+            });
         }
     }
 
