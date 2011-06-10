@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.mysql.editors;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.ui.properties.tabbed.SourceEditSection;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
