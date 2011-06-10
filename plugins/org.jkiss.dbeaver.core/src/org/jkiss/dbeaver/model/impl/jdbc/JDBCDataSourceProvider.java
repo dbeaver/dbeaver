@@ -37,12 +37,15 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
         DBPConnectionInfo connectionInfo)
         throws DBException
     {
+        Collection<IPropertyDescriptor> props = null;
         Object driverInstance = driver.getDriverInstance();
         if (driverInstance instanceof Driver) {
-            return readDriverProperties(connectionInfo, (Driver) driverInstance);
-        } else {
-            return Collections.emptyList();
+            props = readDriverProperties(connectionInfo, (Driver) driverInstance);
         }
+        if (props == null) {
+            props = Collections.emptyList();
+        }
+        return props;
     }
 
     private Collection<IPropertyDescriptor> readDriverProperties(

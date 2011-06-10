@@ -144,9 +144,12 @@ public class QMMSessionInfo extends QMMObject {
             if (queryString == null) {
                 queryString = statement.getDescription();
             }
+            final QMMTransactionSavepointInfo savepoint =
+                isTransactional() && getTransaction() != null ?
+                    getTransaction().getCurrentSavepoint() : null;
             return this.executionStack = new QMMStatementExecuteInfo(
                 stat,
-                isTransactional() ? getTransaction().getCurrentSavepoint() : null,
+                savepoint,
                 queryString,
                 this.executionStack);
         } else {

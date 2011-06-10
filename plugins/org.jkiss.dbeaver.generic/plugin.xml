@@ -313,6 +313,18 @@
                     <file type="license" path="drivers/ingres/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/ingres/LICENSE.txt"/>
                 </driver>
                 <driver
+                    id="linter"
+                    label="Linter"
+                    class="com.relx.jdbc.LinterDriver"
+                    sampleURL="jdbc:linter:linapid:{host}:{port}:{database}"
+                    defaultPort="1070"
+                    webURL="http://linter.ru/"
+                    description="Linter (ЛИНТЕР) Database">
+                    <file type="jar" path="drivers/linter/LinJdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/linter/LinJdbc.jar"/>
+                    <file type="jar" path="drivers/linter/linjdbc-1.4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/linter/linjdbc-1.4.jar"/>
+                    <file type="license" path="drivers/linter/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/linter/LICENSE.txt"/>
+                </driver>
+                <driver
                     id="firebird_jaybird"
                     label="Firebird (JayBird)"
                     class="org.firebirdsql.jdbc.FBDriver"
