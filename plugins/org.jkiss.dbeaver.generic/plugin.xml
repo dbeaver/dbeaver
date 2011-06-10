@@ -146,7 +146,7 @@
                     <parameter name="query-set-active-db" value="use ?"/>
                     <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x86/ntlmauth.dll"/>
-                    <file type="lib" os="win32" arch="x64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x64/ntlmauth.dll"/>
+                    <file type="lib" os="win32" arch="x86_x64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x64/ntlmauth.dll"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/LICENSE.txt"/>
                 </driver>
                 <driver
