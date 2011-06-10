@@ -22,7 +22,7 @@ public abstract class AbstractCatalog<DATASOURCE extends DBPDataSource> implemen
     private DATASOURCE dataSource;
     private String catalogName;
 
-    public AbstractCatalog(DATASOURCE dataSource, String catalogName)
+    protected AbstractCatalog(DATASOURCE dataSource, String catalogName)
     {
         this.dataSource = dataSource;
         this.catalogName = catalogName;
