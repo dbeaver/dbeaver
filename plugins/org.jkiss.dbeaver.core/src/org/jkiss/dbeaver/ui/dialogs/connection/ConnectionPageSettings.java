@@ -7,7 +7,9 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
@@ -97,6 +99,10 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
             this.connectionEditor.createControl(parent);
 
             setControl(this.connectionEditor.getControl());
+            final Image editorImage = this.connectionEditor.getImage();
+            if (editorImage != null) {
+                setImageDescriptor(ImageDescriptor.createFromImage(editorImage));
+            }
 
             UIUtils.setHelp(getControl(), IHelpContextIds.CTX_CON_WIZARD_SETTINGS);
         }

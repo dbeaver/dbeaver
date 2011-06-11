@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.mysql.views;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -39,7 +40,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
     private Button testButton;
     private PropertySourceCustom propertySource;
 
-    private static Image logoImage = Activator.getImageDescriptor("icons/mysql_logo.png").createImage();
+    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/mysql_logo.png");
 
 
     @Override
@@ -52,6 +53,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
     {
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
+        setImageDescriptor(logoImage);
 
         TabFolder optionsFolder = new TabFolder(composite, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -98,26 +100,23 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         };
 
         Composite addrGroup = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(3, false);
+        GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 20;
         gl.marginWidth = 20;
         addrGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        Label hostLabel = new Label(addrGroup, SWT.NONE);
-        hostLabel.setText("Server Host:");
+        Label hostLabel = UIUtils.createControlLabel(addrGroup, "Server Host");
         hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         hostText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 2;
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
 
-        Label portLabel = new Label(addrGroup, SWT.NONE);
-        portLabel.setText("Port:");
+        Label portLabel = UIUtils.createControlLabel(addrGroup, "Port");
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END);
         portLabel.setLayoutData(gd);
 
@@ -128,48 +127,40 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
         portText.addModifyListener(textListener);
 
-        Label logoLabel = new Label(addrGroup, SWT.NONE);
-        logoLabel.setImage(logoImage);
-        gd = new GridData();
-        gd.verticalSpan = 4;
-        logoLabel.setLayoutData(gd);
-
-        Label dbLabel = new Label(addrGroup, SWT.NONE);
-        dbLabel.setText("Database:");
+        Label dbLabel = UIUtils.createControlLabel(addrGroup, "Database");
         dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         dbText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        //gd.horizontalSpan = 3;
+        gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
 
-        Label usernameLabel = new Label(addrGroup, SWT.NONE);
-        usernameLabel.setText("Username:");
+        Label usernameLabel = UIUtils.createControlLabel(addrGroup, "User name");
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         usernameText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        //gd.horizontalSpan = 3;
+        gd.horizontalSpan = 3;
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(textListener);
 
-        Label passwordLabel = new Label(addrGroup, SWT.NONE);
-        passwordLabel.setText("Password:");
+        Label passwordLabel = UIUtils.createControlLabel(addrGroup, "Password");
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
+        gd.horizontalSpan = 3;
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
 
         testButton = new Button(addrGroup, SWT.PUSH);
         testButton.setText("Test Connection ... ");
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 3;
+        gd.horizontalSpan = 4;
         testButton.setLayoutData(gd);
         testButton.addSelectionListener(new SelectionListener()
         {
