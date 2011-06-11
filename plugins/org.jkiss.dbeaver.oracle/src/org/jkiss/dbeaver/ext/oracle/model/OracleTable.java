@@ -86,7 +86,7 @@ public class OracleTable extends OracleTableBase
         throws DBException
     {
         if (constraints == null) {
-            getContainer().loadConstraints(monitor, this);
+            getContainer().getConstraintCache().getObjects(monitor, this);
         }
         return constraints;
     }
@@ -95,6 +95,11 @@ public class OracleTable extends OracleTableBase
         throws DBException
     {
         return DBUtils.findObject(getConstraints(monitor), ukName);
+    }
+
+    void setConstraints(List<OracleConstraint> constraints)
+    {
+        this.constraints = constraints;
     }
 
     public List<OracleForeignKey> getReferences(DBRProgressMonitor monitor)
@@ -262,7 +267,7 @@ public class OracleTable extends OracleTableBase
                         String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
-                            pk = new OracleConstraint(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY, true);
+                            pk = new OracleConstraint(pkTable, pkName, DBSConstraintType.PRIMARY_KEY, null, OracleConstants.ObjectStatus.ENABLED, true);
                             pk.addColumn(new OracleConstraintColumn(pk, pkColumn, keySeq));
                             pkMap.put(pkFullName, pk);
                         }

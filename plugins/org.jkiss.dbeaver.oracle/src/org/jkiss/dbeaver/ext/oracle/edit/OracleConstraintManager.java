@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstraint;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstraintColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
@@ -43,8 +44,9 @@ public class OracleConstraintManager extends JDBCConstraintManager<OracleConstra
         final OracleConstraint constraint = new OracleConstraint(
             parent,
             null,
-            null,
             editDialog.getConstraintType(),
+            null,
+            OracleConstants.ObjectStatus.ENABLED,
             false);
         constraint.setName(JDBCObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
         int colIndex = 1;

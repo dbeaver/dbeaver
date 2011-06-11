@@ -93,7 +93,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         try {
             String defaultFolderId = null;
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
-                defaultFolderId = ((DBNDatabaseFolder)selectedNode).getChildrenType();
+                defaultFolderId = selectedNode.getNodeType();
                 selectedNode = (DBNDatabaseNode) selectedNode.getParentNode();
             }
             for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {

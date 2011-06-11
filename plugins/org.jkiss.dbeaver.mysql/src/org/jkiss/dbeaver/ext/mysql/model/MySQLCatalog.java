@@ -227,6 +227,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     {
         super.refreshEntity(monitor);
         tableCache.clearCache();
+        indexCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();
         return true;

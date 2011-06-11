@@ -10,11 +10,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
@@ -29,9 +26,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * OracleSchema
@@ -42,6 +37,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 
     private long id;
     private final TableCache tableCache = new TableCache();
+    private final ConstraintCache constraintCache = new ConstraintCache();
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private final TriggerCache triggerCache = new TriggerCache();
     private final IndexCache indexCache = new IndexCache();
@@ -63,6 +59,11 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     TableCache getTableCache()
     {
         return tableCache;
+    }
+
+    ConstraintCache getConstraintCache()
+    {
+        return constraintCache;
     }
 
     IndexCache getIndexCache()
@@ -185,7 +186,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             tableCache.loadChildren(monitor, null);
         }
         monitor.subTask("Cache table constraints");
-        loadConstraints(monitor, null);
+        constraintCache.getObjects(monitor, null);
     }
 
     @Override
@@ -194,150 +195,11 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     {
         super.refreshEntity(monitor);
         tableCache.clearCache();
+        constraintCache.clearCache();
+        indexCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();
         return true;
-    }
-
-    void loadConstraints(DBRProgressMonitor monitor, OracleTable forTable)
-        throws DBException
-    {
-        if (constraintsCached) {
-            return;
-        }
-        if (forTable == null) {
-            tableCache.getObjects(monitor);
-        } else if (!forTable.isPersisted()) {
-            return;
-        }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load constraints");
-        try {
-            Map<String, String> constrTypeMap = new HashMap<String, String>();
-            Map<String, OracleConstraint> constrMap = new HashMap<String, OracleConstraint>();
-
-            // Read constraints and their types
-            StringBuilder query = new StringBuilder();
-            query.append("SELECT " + OracleConstants.COL_CONSTRAINT_NAME + "," + OracleConstants.COL_TABLE_NAME + "," + OracleConstants.COL_CONSTRAINT_TYPE +
-                " FROM " + OracleConstants.META_TABLE_TABLE_CONSTRAINTS + " WHERE " + OracleConstants.COL_TABLE_SCHEMA + "=?");
-            if (forTable != null) {
-                query.append(" AND " + OracleConstants.COL_TABLE_NAME + "=?");
-            }
-            JDBCPreparedStatement dbStat = context.prepareStatement(query.toString());
-            try {
-                dbStat.setString(1, getName());
-                if (forTable != null) {
-                    dbStat.setString(2, forTable.getName());
-                }
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    while (dbResult.next()) {
-                        String constraintName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME);
-                        String constraintType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_TYPE);
-                        if (OracleConstants.CONSTRAINT_FOREIGN_KEY.equals(constraintType)) {
-                            // Skip foreign keys
-                            continue;
-                        }
-                        String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
-                        OracleTable table = forTable;
-                        if (table == null) {
-                            table = getTable(monitor, tableName);
-                            if (table == null) {
-                                log.warn("Table '" + tableName + "' not found");
-                                continue;
-                            }
-                            if (table.uniqueKeysCached()) {
-                                // Already cached
-                                continue;
-                            }
-                        }
-                        constrTypeMap.put(tableName + "." + constraintName, constraintType);
-                    }
-                }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
-            }
-
-            // Read constraint columns
-            query = new StringBuilder();
-            query.append("SELECT CONSTRAINT_NAME,TABLE_NAME,COLUMN_NAME,ORDINAL_POSITION,REFERENCED_TABLE_SCHEMA,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM ")
-                .append(OracleConstants.META_TABLE_KEY_COLUMN_USAGE)
-                .append(" tc WHERE tc.TABLE_SCHEMA=?");
-            if (forTable != null) {
-                query.append(" AND tc.TABLE_NAME=?");
-            }
-            dbStat = context.prepareStatement(query.toString());
-            try {
-                dbStat.setString(1, getName());
-                if (forTable != null) {
-                    dbStat.setString(2, forTable.getName());
-                }
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    while (dbResult.next()) {
-                        String constraintName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME);
-                        String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
-                        String constId = tableName + "." + constraintName;
-                        String constraintType = constrTypeMap.get(constId);
-                        if (constraintType == null) {
-                            // Skip this one
-                            continue;
-                        }
-                        OracleTable table = forTable;
-                        if (table == null) {
-                            table = getTable(monitor, tableName);
-                            if (table == null) {
-                                log.warn("Table '" + tableName + "' not found");
-                                continue;
-                            }
-                        }
-                        String columnName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COLUMN_NAME);
-                        OracleTableColumn column = table.getColumn(monitor, columnName);
-                        if (column == null) {
-                            log.warn("Column '" + columnName + "' not found in table '" + tableName + "'");
-                            continue;
-                        }
-                        int ordinalPosition = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_ORDINAL_POSITION);
-
-                        OracleConstraint constraint = constrMap.get(constId);
-                        if (constraint == null) {
-                            if (OracleConstants.CONSTRAINT_PRIMARY_KEY.equals(constraintType)) {
-                                constraint = new OracleConstraint(table, constraintName, "", DBSConstraintType.PRIMARY_KEY, true);
-                            } else if (OracleConstants.CONSTRAINT_UNIQUE.equals(constraintType)) {
-                                constraint = new OracleConstraint(table, constraintName, "", DBSConstraintType.UNIQUE_KEY, true);
-                            } else {
-                                log.warn("Constraint type '" + constraintType + "' is not supported");
-                                continue;
-                            }
-                            constrMap.put(constId, constraint);
-                            table.cacheUniqueKey(constraint);
-                        }
-                        constraint.addColumn(
-                            new OracleConstraintColumn(
-                                constraint,
-                                column,
-                                ordinalPosition));
-                    }
-                }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
-            }
-        } catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-        }
-        if (forTable == null) {
-            constraintsCached = true;
-        }
     }
 
     public boolean isSystem()
@@ -409,6 +271,102 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             throws SQLException, DBException
         {
             return new OracleTableColumn(table, dbResult);
+        }
+    }
+
+    /**
+     * Index cache implementation
+     */
+    class ConstraintCache extends JDBCCompositeCache<OracleTable, OracleConstraint, OracleConstraintColumn> {
+        protected ConstraintCache()
+        {
+            super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
+        }
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forTable)
+            throws SQLException, DBException
+        {
+            StringBuilder sql = new StringBuilder();
+            sql
+                .append("SELECT c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS,COLUMN_NAME,POSITION\nFROM ")
+                .append(OracleConstants.META_TABLE_CONSTRAINTS).append(" c\n")
+                .append("JOIN ").append(OracleConstants.META_TABLE_CONSTRAINT_COLUMNS).append(" ссol ON c.OWNER=ссol.OWNER AND c.CONSTRAINT_NAME=ссol.CONSTRAINT_NAME\n")
+                .append("WHERE c.").append(OracleConstants.COL_OWNER).append("=?").append(" AND c.").append(OracleConstants.COL_CONSTRAINT_TYPE).append(" IN ('C','P','U')");
+            if (forTable != null) {
+                sql.append(" AND c.").append(OracleConstants.COL_TABLE_NAME).append("=?");
+            }
+            sql.append(" ORDER BY c.").append(OracleConstants.COL_TABLE_NAME).append(",").append(OracleConstants.COL_POSITION);
+
+            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
+            dbStat.setString(1, OracleSchema.this.getName());
+            if (forTable != null) {
+                dbStat.setString(2, forTable.getName());
+            }
+            return dbStat;
+        }
+
+        protected OracleConstraint fetchObject(JDBCExecutionContext context, ResultSet dbResult, OracleTable parent, String indexName)
+            throws SQLException, DBException
+        {
+            String constraintName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME);
+            String constraintTypeName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_TYPE);
+            DBSConstraintType constraintType;
+            if ("C".equals(constraintTypeName)) {
+                constraintType = DBSConstraintType.CHECK;
+            } else if ("P".equals(constraintTypeName)) {
+                constraintType = DBSConstraintType.PRIMARY_KEY;
+            } else if ("U".equals(constraintTypeName)) {
+                constraintType = DBSConstraintType.UNIQUE_KEY;
+            } else {
+                log.debug("Unknown constraint type: " + constraintTypeName);
+                return null;
+            }
+
+            final String constraintStatus = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_STATUS);
+            return new OracleConstraint(
+                parent,
+                constraintName,
+                constraintType,
+                JDBCUtils.safeGetString(dbResult, OracleConstants.COL_SEARCH_CONDITION),
+                CommonUtils.isEmpty(constraintStatus) ? null : OracleConstants.ObjectStatus.valueOf(constraintStatus),
+                true);
+        }
+
+        protected OracleConstraintColumn fetchObjectRow(
+            JDBCExecutionContext context,
+            ResultSet dbResult,
+            OracleTable parent,
+            OracleConstraint object)
+            throws SQLException, DBException
+        {
+            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_POSITION);
+            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_COLUMN_NAME);
+
+            OracleTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
+            if (tableColumn == null) {
+                log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for constraint '" + object.getName() + "'");
+                return null;
+            }
+
+            return new OracleConstraintColumn(
+                object,
+                tableColumn,
+                ordinalPosition);
+        }
+
+        protected boolean isObjectsCached(OracleTable parent)
+        {
+            return parent.isIndexesCached();
+        }
+
+        protected void cacheObjects(OracleTable parent, List<OracleConstraint> indexes)
+        {
+            parent.setConstraints(indexes);
+        }
+
+        protected void cacheRows(OracleConstraint constraint, List<OracleConstraintColumn> rows)
+        {
+            constraint.setColumns(rows);
         }
     }
 

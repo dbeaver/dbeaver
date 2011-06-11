@@ -48,6 +48,9 @@ public class OracleConstants {
     public static final String META_TABLE_USERS = INFO_SCHEMA_NAME + ".ALL_USERS";
     public static final String META_TABLE_TABLES = INFO_SCHEMA_NAME + ".ALL_TABLES";
     public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".ALL_TAB_COLS";
+    public static final String META_TABLE_CONSTRAINTS = INFO_SCHEMA_NAME + ".ALL_CONSTRAINTS";
+    public static final String META_TABLE_CONSTRAINT_COLUMNS = INFO_SCHEMA_NAME + ".ALL_CONS_COLUMNS";
+
     public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
     public static final String META_TABLE_TRIGGERS = INFO_SCHEMA_NAME + ".TRIGGERS";
     public static final String META_TABLE_TABLE_CONSTRAINTS = INFO_SCHEMA_NAME + ".TABLE_CONSTRAINTS";
@@ -70,6 +73,11 @@ public class OracleConstants {
     public static final String COL_DATA_SCALE = "DATA_SCALE";
     public static final String COL_DATA_DEFAULT = "DATA_DEFAULT";
 
+    public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
+    public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+    public static final String COL_SEARCH_CONDITION = "SEARCH_CONDITION";
+    public static final String COL_POSITION = "POSITION";
+    public static final String COL_STATUS = "STATUS";
 
     public static final String COL_TABLE_SCHEMA = "TABLE_SCHEMA";
     public static final String COL_TABLE_TYPE = "TABLE_TYPE";
@@ -133,9 +141,6 @@ public class OracleConstants {
 	public static final String COL_TRIGGER_COLLATION_CONNECTION = "COLLATION_CONNECTION";
 	public static final String COL_TRIGGER_DATABASE_COLLATION = "DATABASE_COLLATION";
     
-    public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
-    public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
-
     public static final String CONSTRAINT_FOREIGN_KEY = "FOREIGN KEY";
     public static final String CONSTRAINT_PRIMARY_KEY = "PRIMARY KEY";
     public static final String CONSTRAINT_UNIQUE = "UNIQUE";
@@ -202,4 +207,10 @@ public class OracleConstants {
             return title;
         }
     }
+
+    public static enum ObjectStatus {
+        ENABLED,
+        DISABLED,
+    }
+
 }
