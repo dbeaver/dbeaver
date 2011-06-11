@@ -18,11 +18,9 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
@@ -63,16 +61,8 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     @Override
     protected void appendTableModifiers(OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl)
     {
-        try {
-            final OracleTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
-            if ((!table.isPersisted() || tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
-                ddl.append("\nCOMMENT='").append(table.getDescription().replace('\'', '"')).append("'");
-            }
-            if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) {
-                ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement());
-            }
-        } catch (DBCException e) {
-            log.error(e);
+        if ((!table.isPersisted() || tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
+            ddl.append("\nCOMMENT='").append(table.getDescription().replace('\'', '"')).append("'");
         }
     }
 

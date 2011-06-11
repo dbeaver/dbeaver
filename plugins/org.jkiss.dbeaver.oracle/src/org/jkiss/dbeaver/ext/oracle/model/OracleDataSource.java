@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -60,89 +61,23 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return OracleConstants.TABLE_TYPES;
     }
 
-    public List<OracleSchema> getSchemas()
+    public List<OracleSchema> getSchemas(DBRProgressMonitor monitor) throws DBException
     {
+        if (schemas == null) {
+            loadSchemas(monitor);
+        }
         return schemas;
     }
 
-    public OracleSchema getSchema(String name)
+    public OracleSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException
     {
-        return DBUtils.findObject(schemas, name);
+        return DBUtils.findObject(getSchemas(monitor), name);
     }
 
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
         super.initialize(monitor);
-
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load basic oracle metadata");
-        try {
-            {
-                // Read schemas
-                List<OracleSchema> tmpSchemas = new ArrayList<OracleSchema>();
-                StringBuilder schemasQuery = new StringBuilder("SELECT * FROM ");
-                schemasQuery.append(OracleConstants.META_TABLE_USERS);
-                List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
-                if (!schemaFilters.isEmpty()) {
-                    schemasQuery.append(" WHERE ");
-                    for (int i = 0; i < schemaFilters.size(); i++) {
-                        if (i > 0) schemasQuery.append(" OR ");
-                        schemasQuery.append(OracleConstants.COL_USER_NAME).append(" LIKE ?");
-                    }
-                }
-                JDBCPreparedStatement dbStat = context.prepareStatement(schemasQuery.toString());
-                try {
-                    if (!schemaFilters.isEmpty()) {
-                        for (int i = 0; i < schemaFilters.size(); i++) {
-                            dbStat.setString(i + 1, schemaFilters.get(i));
-                        }
-                    }
-                    JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
-                        while (dbResult.next()) {
-                            OracleSchema schema = new OracleSchema(this, dbResult);
-                            if (!getContainer().isShowSystemObjects() && schema.getName().equalsIgnoreCase(OracleConstants.INFO_SCHEMA_NAME)) {
-                                // Skip system schemas
-                                continue;
-                            }
-                            tmpSchemas.add(schema);
-                        }
-                    } finally {
-                        dbResult.close();
-                    }
-                }
-                finally {
-                    dbStat.close();
-                }
-                this.schemas = tmpSchemas;
-            }
-
-            {
-                // Get active schema
-                try {
-                    JDBCPreparedStatement dbStat = context.prepareStatement("SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
-                    try {
-                        JDBCResultSet resultSet = dbStat.executeQuery();
-                        try {
-                            resultSet.next();
-                            activeSchemaName = resultSet.getString(1);
-                        } finally {
-                            resultSet.close();
-                        }
-                    } finally {
-                        dbStat.close();
-                    }
-                } catch (SQLException e) {
-                    log.error(e);
-                }
-            }
-
-        } catch (SQLException ex) {
-            throw new DBException("Error reading metadata", ex);
-        }
-        finally {
-            context.close();
-        }
 
 /*
         // Construct information folders
@@ -186,6 +121,91 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 */
     }
 
+    private void loadSchemas(DBRProgressMonitor monitor) throws DBException
+    {
+        List<OracleSchema> tmpSchemas = new ArrayList<OracleSchema>();
+
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load basic oracle metadata");
+        try {
+            {
+                // Read schemas
+                // Read only non-empty schemas and current user's schema
+                StringBuilder schemasQuery = new StringBuilder("SELECT * FROM ");
+                schemasQuery.append(OracleConstants.META_TABLE_USERS);
+                List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
+                schemasQuery.append(" u\nWHERE (EXISTS (SELECT 1 FROM ALL_OBJECTS WHERE OWNER=U.USERNAME)");
+                final String curUserName = getContainer().getConnectionInfo().getUserName();
+                if (!CommonUtils.isEmpty(curUserName)) {
+                    schemasQuery.append(" OR U.USERNAME='").append(curUserName.toUpperCase()).append("'");
+                }
+                schemasQuery.append(")");
+                if (!schemaFilters.isEmpty()) {
+                    schemasQuery.append(" AND (");
+                    for (int i = 0; i < schemaFilters.size(); i++) {
+                        if (i > 0) schemasQuery.append(" OR ");
+                        schemasQuery.append(OracleConstants.COL_USER_NAME).append(" LIKE ?");
+                    }
+                    schemasQuery.append(")");
+                }
+                JDBCPreparedStatement dbStat = context.prepareStatement(schemasQuery.toString());
+                try {
+                    if (!schemaFilters.isEmpty()) {
+                        for (int i = 0; i < schemaFilters.size(); i++) {
+                            dbStat.setString(i + 1, schemaFilters.get(i));
+                        }
+                    }
+                    JDBCResultSet dbResult = dbStat.executeQuery();
+                    try {
+                        while (dbResult.next()) {
+                            OracleSchema schema = new OracleSchema(this, dbResult);
+                            if (!getContainer().isShowSystemObjects() && schema.getName().equalsIgnoreCase(OracleConstants.INFO_SCHEMA_NAME)) {
+                                // Skip system schemas
+                                continue;
+                            }
+                            tmpSchemas.add(schema);
+                        }
+                    } finally {
+                        dbResult.close();
+                    }
+                }
+                finally {
+                    dbStat.close();
+                }
+            }
+
+            {
+                // Get active schema
+                try {
+                    JDBCPreparedStatement dbStat = context.prepareStatement("SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
+                    try {
+                        JDBCResultSet resultSet = dbStat.executeQuery();
+                        try {
+                            resultSet.next();
+                            activeSchemaName = resultSet.getString(1);
+                        } finally {
+                            resultSet.close();
+                        }
+                    } finally {
+                        dbStat.close();
+                    }
+                } catch (SQLException e) {
+                    log.error(e);
+                }
+            }
+
+        } catch (SQLException ex) {
+            throw new DBException("Error reading schemas", ex);
+        }
+        finally {
+            context.close();
+        }
+
+        Collections.sort(tmpSchemas, DBUtils.<OracleSchema>nameComparator());
+
+
+        this.schemas = tmpSchemas;
+    }
+
     public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -206,7 +226,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         if (CommonUtils.isEmpty(schemaName)) {
             return null;
         }
-        OracleSchema schema = getSchema(schemaName);
+        OracleSchema schema = getSchema(monitor, schemaName);
         if (schema == null) {
             log.error("Schema " + schemaName + " not found");
             return null;
@@ -217,13 +237,13 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getSchemas();
+        return getSchemas(monitor);
     }
 
     public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        return getSchema(childName);
+        return getSchema(monitor, childName);
     }
 
     public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
@@ -245,7 +265,10 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     public DBSEntity getSelectedEntity()
     {
-        return getSchema(activeSchemaName);
+        if (schemas == null) {
+            return null;
+        }
+        return DBUtils.findObject(schemas, activeSchemaName);
     }
 
     public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity)

@@ -250,8 +250,7 @@
 
             <datasource id="oracle"/>
 
-            <type name="ENUM"/>
-            <type name="SET"/>
+            <type name="XMLTYPE"/>
 
         </provider>
     </extension>

@@ -81,14 +81,15 @@ public class OracleView extends OracleTableBase
 
     public OracleView(OracleSchema schema)
     {
-        super(schema);
+        super(schema, false);
     }
 
     public OracleView(
         OracleSchema schema,
         ResultSet dbResult)
     {
-        super(schema, dbResult);
+        super(schema, true);
+        setName("XXX");
     }
 
     @Property(name = "View Name", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 1)

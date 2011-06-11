@@ -354,24 +354,21 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         
         protected TableCache()
         {
-            super(getDataSource(), JDBCConstants.TABLE_NAME);
+            super(getDataSource(), OracleConstants.COL_OWNER);
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
-            return context.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(getDataSource(), getName()));
+            return context.prepareStatement(
+                "SELECT * FROM " + OracleConstants.META_TABLE_TABLES +
+                " WHERE " + OracleConstants.COL_OWNER + "='" + getName() + "'");
         }
 
         protected OracleTableBase fetchObject(JDBCExecutionContext context, ResultSet dbResult)
             throws SQLException, DBException
         {
-            final String tableType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_TYPE);
-            if (tableType.indexOf("VIEW") != -1) {
-                return new OracleView(OracleSchema.this, dbResult);
-            } else {
-                return new OracleTable(OracleSchema.this, dbResult);
-            }
+            return new OracleTable(OracleSchema.this, dbResult);
         }
 
         protected boolean isChildrenCached(OracleTableBase table)
@@ -390,11 +387,15 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             StringBuilder sql = new StringBuilder();
             sql
                 .append("SELECT * FROM ").append(OracleConstants.META_TABLE_COLUMNS)
-                .append(" WHERE ").append(OracleConstants.COL_TABLE_SCHEMA).append("=?");
+                .append(" WHERE ").append(OracleConstants.COL_OWNER).append("=?");
             if (forTable != null) {
                 sql.append(" AND ").append(OracleConstants.COL_TABLE_NAME).append("=?");
             }
-            sql.append(" ORDER BY ").append(OracleConstants.COL_ORDINAL_POSITION);
+            sql.append(" ORDER BY ");
+            if (forTable != null) {
+                sql.append(OracleConstants.COL_TABLE_NAME).append(",");
+            }
+            sql.append(OracleConstants.COL_COLUMN_ID);
 
             JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
             dbStat.setString(1, OracleSchema.this.getName());

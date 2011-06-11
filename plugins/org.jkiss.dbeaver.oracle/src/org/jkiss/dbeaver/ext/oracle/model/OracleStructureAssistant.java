@@ -88,7 +88,7 @@ public class OracleStructureAssistant extends JDBCStructureAssistant
                     }
                     String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_SCHEMA);
                     String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
-                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(schemaName);
+                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                     if (tableSchema == null) {
                         log.debug("Table schema '" + schemaName + "' not found");
                         continue;
@@ -134,7 +134,7 @@ public class OracleStructureAssistant extends JDBCStructureAssistant
                     }
                     String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_ROUTINE_SCHEMA);
                     String procName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_ROUTINE_NAME);
-                    OracleSchema procSchema = schema != null ? schema : dataSource.getSchema(schemaName);
+                    OracleSchema procSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                     if (procSchema == null) {
                         log.debug("Procedure schema '" + schemaName + "' not found");
                         continue;
@@ -182,7 +182,7 @@ public class OracleStructureAssistant extends JDBCStructureAssistant
                     String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
                     String constrName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME);
                     String constrType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_TYPE);
-                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(schemaName);
+                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                     if (tableSchema == null) {
                         log.debug("Constraint schema '" + schemaName + "' not found");
                         continue;
@@ -239,7 +239,7 @@ public class OracleStructureAssistant extends JDBCStructureAssistant
                     String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_SCHEMA);
                     String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
                     String columnName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COLUMN_NAME);
-                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(schemaName);
+                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                     if (tableSchema == null) {
                         log.debug("Column schema '" + schemaName + "' not found");
                         continue;

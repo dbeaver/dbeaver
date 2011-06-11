@@ -8,7 +8,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -16,16 +15,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
-import org.jkiss.dbeaver.model.meta.LazyProperty;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
-import java.io.UnsupportedEncodingException;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -39,66 +32,23 @@ import java.util.Map;
 public class OracleTable extends OracleTableBase
 {
 
-    private static final String INNODB_COMMENT = "InnoDB free";
-
-    public static class AdditionalInfo {
-        private volatile boolean loaded = false;
-        private long rowCount;
-        private long autoIncrement;
-        private String description;
-        private java.util.Date createTime;
-        private long avgRowLength;
-        private long dataLength;
-
-        @Property(name = "Auto Increment", viewable = true, editable = true, updatable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
-        @Property(name = "Description", viewable = true, editable = true, updatable = true, order = 100) public String getDescription() { return description; }
-
-        @Property(name = "Row Count", category = "Statistics", viewable = true, order = 10) public long getRowCount() { return rowCount; }
-        @Property(name = "Avg Row Length", category = "Statistics", viewable = true, order = 11) public long getAvgRowLength() { return avgRowLength; }
-        @Property(name = "Data Length", category = "Statistics", viewable = true, order = 12) public long getDataLength() { return dataLength; }
-        @Property(name = "Create Time", category = "Statistics", viewable = false, order = 13) public java.util.Date getCreateTime() { return createTime; }
-
-        public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
-        public void setDescription(String description) { this.description = description; }
-    }
-
-    public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleTable> {
-        public boolean isPropertyCached(OracleTable object)
-        {
-            return object.additionalInfo.loaded;
-        }
-    }
-
     private List<OracleIndex> indexes;
     private List<OracleConstraint> constraints;
     private List<OracleForeignKey> foreignKeys;
     private List<OracleTrigger> triggers;
     private List<OraclePartition> partitions;
 
-    private final AdditionalInfo additionalInfo = new AdditionalInfo();
-
     public OracleTable(OracleSchema schema)
     {
-        super(schema);
+        super(schema, false);
     }
 
     public OracleTable(
         OracleSchema schema,
         ResultSet dbResult)
     {
-        super(schema, dbResult);
-    }
-
-    @PropertyGroup()
-    @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
-    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
-    {
-        synchronized (additionalInfo) {
-            if (!additionalInfo.loaded) {
-                loadAdditionalInfo(monitor);
-            }
-            return additionalInfo;
-        }
+        super(schema, true);
+        setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME));
     }
 
     public boolean isView()
@@ -207,60 +157,7 @@ public class OracleTable extends OracleTableBase
         constraints = null;
         foreignKeys = null;
         triggers = null;
-        synchronized (additionalInfo) {
-            additionalInfo.loaded = false;
-        }
         return true;
-    }
-
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
-    {
-        if (!isPersisted()) {
-            additionalInfo.loaded = true;
-            return;
-        }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table status");
-        try {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    if (dbResult.next()) {
-                        // filer table description (for INNODB it contains some system information)
-                        String desc = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_COMMENT);
-                        if (desc != null) {
-                            if (desc.startsWith(INNODB_COMMENT)) {
-                                desc = "";
-                            } else if (!CommonUtils.isEmpty(desc)) {
-                                int divPos = desc.indexOf("; " + INNODB_COMMENT);
-                                if (divPos != -1) {
-                                    desc = desc.substring(0, divPos);
-                                } else {
-                                    desc = "";
-                                }
-                            }
-                            additionalInfo.description = desc;
-                        }
-                        additionalInfo.rowCount = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_TABLE_ROWS);
-                        additionalInfo.autoIncrement = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_AUTO_INCREMENT);
-                        additionalInfo.createTime = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COL_CREATE_TIME);
-                        additionalInfo.avgRowLength = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_AVG_ROW_LENGTH);
-                        additionalInfo.dataLength = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_DATA_LENGTH);
-                    }
-                    additionalInfo.loaded = true;
-                } finally {
-                    dbResult.close();
-                }
-            } finally {
-                dbStat.close();
-            }
-        }
-        catch (SQLException e) {
-            throw new DBCException(e);
-        } finally {
-            context.close();
-        }
     }
 
     boolean uniqueKeysCached()
@@ -432,7 +329,7 @@ public class OracleTable extends OracleTableBase
                     while (dbResult.next()) {
                         String ownerSchema = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_SCHEMA);
                         String triggerName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_NAME);
-                        OracleSchema triggerSchema = getDataSource().getSchema(ownerSchema);
+                        OracleSchema triggerSchema = getDataSource().getSchema(monitor, ownerSchema);
                         if (triggerSchema == null) {
                             log.warn("Could not find catalog '" + ownerSchema + "'");
                             continue;
@@ -519,7 +416,7 @@ public class OracleTable extends OracleTableBase
 
     public String getDescription()
     {
-        return additionalInfo.description;
+        return "";
     }
 
 }

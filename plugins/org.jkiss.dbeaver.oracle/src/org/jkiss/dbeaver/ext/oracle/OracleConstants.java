@@ -45,34 +45,33 @@ public class OracleConstants {
     public static final String DRIVER_TYPE_THIN = "THIN";
     public static final String DRIVER_TYPE_OCI = "OCI";
 
-    public static final String COL_USER_ID = "USER_ID";
-    public static final String COL_USER_NAME = "USERNAME";
-
-    public static final String META_TABLE_USERS = INFO_SCHEMA_NAME + ".DBA_USERS";
-    public static final String META_TABLE_TABLES = INFO_SCHEMA_NAME + ".TABLES";
+    public static final String META_TABLE_USERS = INFO_SCHEMA_NAME + ".ALL_USERS";
+    public static final String META_TABLE_TABLES = INFO_SCHEMA_NAME + ".ALL_TABLES";
+    public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".ALL_TAB_COLS";
     public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
     public static final String META_TABLE_TRIGGERS = INFO_SCHEMA_NAME + ".TRIGGERS";
-    public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".COLUMNS";
     public static final String META_TABLE_TABLE_CONSTRAINTS = INFO_SCHEMA_NAME + ".TABLE_CONSTRAINTS";
     public static final String META_TABLE_KEY_COLUMN_USAGE = INFO_SCHEMA_NAME + ".KEY_COLUMN_USAGE";
     public static final String META_TABLE_STATISTICS = INFO_SCHEMA_NAME + ".STATISTICS";
     public static final String META_TABLE_PARTITIONS = INFO_SCHEMA_NAME + ".PARTITIONS";
     public static final String META_TABLE_VIEWS = INFO_SCHEMA_NAME + ".VIEWS";
 
-    public static final String COL_ENGINE_NAME = "ENGINE";
-    public static final String COL_ENGINE_SUPPORT = "SUPPORT";
-    public static final String COL_ENGINE_DESCRIPTION = "COMMENT";
-    public static final String COL_ENGINE_SUPPORT_TXN = "TRANSACTIONS";
-    public static final String COL_ENGINE_SUPPORT_XA = "XA";
-    public static final String COL_ENGINE_SUPPORT_SAVEPOINTS = "SAVEPOINTS";
 
-    public static final String COL_SCHEMA_NAME = "SCHEMA_NAME";
-    public static final String COL_DEFAULT_CHARACTER_SET_NAME = "DEFAULT_CHARACTER_SET_NAME";
-    public static final String COL_DEFAULT_COLLATION_NAME = "DEFAULT_COLLATION_NAME";
-    public static final String COL_SQL_PATH = "SQL_PATH";
+    public static final String COL_USER_ID = "USER_ID";
+    public static final String COL_USER_NAME = "USERNAME";
+    public static final String COL_OWNER = "OWNER";
+    public static final String COL_TABLE_NAME = "TABLE_NAME";
+    public static final String COL_COLUMN_ID = "COLUMN_ID";
+    public static final String COL_COLUMN_NAME = "COLUMN_NAME";
+    public static final String COL_DATA_TYPE = "DATA_TYPE";
+    public static final String COL_DATA_LENGTH = "DATA_LENGTH";
+    public static final String COL_NULLABLE = "NULLABLE";
+    public static final String COL_DATA_PRECISION = "DATA_PRECISION";
+    public static final String COL_DATA_SCALE = "DATA_SCALE";
+    public static final String COL_DATA_DEFAULT = "DATA_DEFAULT";
+
 
     public static final String COL_TABLE_SCHEMA = "TABLE_SCHEMA";
-    public static final String COL_TABLE_NAME = "TABLE_NAME";
     public static final String COL_TABLE_TYPE = "TABLE_TYPE";
     public static final String COL_ENGINE = "ENGINE";
     public static final String COL_VERSION = "VERSION";
@@ -86,23 +85,16 @@ public class OracleConstants {
     public static final String COL_CHECK_TIME = "CHECK_TIME";
     public static final String COL_COLLATION = "COLLATION";
     public static final String COL_COLLATION_NAME = "COLLATION_NAME";
-    public static final String COL_NULLABLE = "NULLABLE";
     public static final String COL_AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
-    public static final String COL_DATA_LENGTH = "DATA_LENGTH";
     public static final String COL_INDEX_NAME = "INDEX_NAME";
     public static final String COL_INDEX_TYPE = "INDEX_TYPE";
     public static final String COL_SEQ_IN_INDEX = "SEQ_IN_INDEX";
     public static final String COL_NON_UNIQUE = "NON_UNIQUE";
     public static final String COL_COMMENT = "COMMENT";
     
-    public static final String COL_COLUMN_NAME = "COLUMN_NAME";
     public static final String COL_COLUMN_KEY = "COLUMN_KEY";
-    public static final String COL_DATA_TYPE = "DATA_TYPE";
     public static final String COL_CHARACTER_MAXIMUM_LENGTH = "CHARACTER_MAXIMUM_LENGTH";
     public static final String COL_CHARACTER_OCTET_LENGTH = "CHARACTER_OCTET_LENGTH";
-    public static final String COL_NUMERIC_PRECISION = "NUMERIC_PRECISION";
-    public static final String COL_NUMERIC_SCALE = "NUMERIC_SCALE";
-    public static final String COL_COLUMN_DEFAULT = "COLUMN_DEFAULT";
     public static final String COL_IS_NULLABLE = "IS_NULLABLE";
     public static final String COL_IS_UPDATABLE = "IS_UPDATABLE";
     public static final String COL_COLUMN_COMMENT = "COLUMN_COMMENT";

@@ -25,17 +25,9 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     private List<OracleTableColumn> columns;
 
-    protected OracleTableBase(OracleSchema schema)
+    protected OracleTableBase(OracleSchema schema, boolean persisted)
     {
-        super(schema, false);
-    }
-
-    protected OracleTableBase(
-        OracleSchema schema,
-        ResultSet dbResult)
-    {
-        super(schema, true);
-        this.loadInfo(dbResult);
+        super(schema, persisted);
     }
 
     public String getFullQualifiedName()
@@ -71,14 +63,6 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     {
         columns = null;
         return true;
-    }
-
-    private void loadInfo(ResultSet dbResult)
-    {
-        this.setName(JDBCUtils.safeGetString(dbResult, 1));
-        this.setTableType(JDBCUtils.safeGetString(dbResult, 2));
-
-        this.columns = null;
     }
 
     public boolean isColumnsCached()
