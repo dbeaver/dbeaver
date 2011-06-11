@@ -170,8 +170,8 @@
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
-                    description="Oracle thin driver">
-                    <file type="jar" path="drivers/oracle/ojdbc6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/ojdbc6.jar"/>
+                    description="Oracle driver">
+                    <!--file type="jar" path="drivers/oracle/ojdbc6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/ojdbc6.jar"/-->
                     <file type="license" path="drivers/oracle/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/LICENSE.txt"/>
                 </driver>
             </drivers>

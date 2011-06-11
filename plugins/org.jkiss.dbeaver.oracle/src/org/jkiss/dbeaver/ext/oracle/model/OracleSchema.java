@@ -372,7 +372,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 
     public boolean isSystem()
     {
-        return OracleConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || OracleConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(getName());
+        return CommonUtils.contains(OracleConstants.SYSTEM_SCHEMAS, getName());
     }
 
     public DBSCatalog getCatalog()

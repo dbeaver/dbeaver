@@ -11,14 +11,40 @@ import org.jkiss.dbeaver.model.struct.DBSIndexType;
  */
 public class OracleConstants {
 
-    public static final int DEFAULT_PORT = 3306;
+    public static final int DEFAULT_PORT = 1521;
 
-    public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "LOCAL TEMPORARY"};
+    public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "TEMPORARY"};
 
-    public static final String INFO_SCHEMA_NAME = "information_schema";
-    public static final String MYSQL_SCHEMA_NAME = "oracle";
+    public static final String INFO_SCHEMA_NAME = "SYS";
 
-    public static final String META_TABLE_ENGINES = INFO_SCHEMA_NAME + ".ENGINES";
+    public static final String[] SYSTEM_SCHEMAS = {
+        "CTXSYS",
+        "DBSNMP",
+        "DMSYS",
+        "EXFSYS",
+        "IX",
+        "MDSYS",
+        "MGMT_VIEW",
+        "OLAPSYS",
+        "ORDPLUGINS",
+        "ORDSYS",
+        "SI_INFORMTN_SCHEMA",
+        "SYS",
+        "SYSMAN",
+        "SYSTEM",
+        "TSMSYS",
+        "WMSYS",
+        "XDB",
+    };
+
+    public static final String PROP_CONNECTION_TYPE = "@dbeaver-connection-type@";
+    public static final String PROP_DRIVER_TYPE = "@dbeaver-driver-type@";
+    public static final String PROP_INTERNAL_LOGON = "internal_logon";
+    public static final String OS_AUTH_USER_NAME = "@OS_AUTH@";
+
+    public static final String DRIVER_TYPE_THIN = "THIN";
+    public static final String DRIVER_TYPE_OCI = "OCI";
+
     public static final String META_TABLE_SCHEMATA = INFO_SCHEMA_NAME + ".SCHEMATA";
     public static final String META_TABLE_TABLES = INFO_SCHEMA_NAME + ".TABLES";
     public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
@@ -156,4 +182,30 @@ public class OracleConstants {
     public static final String COL_CHECKSUM = "CHECKSUM";
     public static final String COL_CHECK_OPTION = "CHECK_OPTION";
     public static final String COL_VIEW_DEFINITION = "VIEW_DEFINITION";
+
+    /**
+     * Connection type
+     */
+    public static enum ConnectionType {
+        BASIC,
+        TNS,
+        CUSTOM
+    }
+
+    public static enum ConnectionRole {
+        NORMAL("Normal"),
+        SYSDBA("SYSDBA"),
+        SYSOPER("SYSOPER");
+        private final String title;
+
+        ConnectionRole(String title)
+        {
+            this.title = title;
+        }
+
+        public String getTitle()
+        {
+            return title;
+        }
+    }
 }

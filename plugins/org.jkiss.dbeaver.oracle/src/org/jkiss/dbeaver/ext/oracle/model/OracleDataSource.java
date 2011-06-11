@@ -78,7 +78,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     {
         super.initialize(monitor);
 
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata");
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load basic oracle metadata");
         try {
             // Read engines
             {
