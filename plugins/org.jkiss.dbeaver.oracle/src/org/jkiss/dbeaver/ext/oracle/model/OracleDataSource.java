@@ -38,12 +38,9 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 {
     static final Log log = LogFactory.getLog(OracleDataSource.class);
 
-    private List<OracleEngine> engines;
     private List<OracleSchema> schemas;
     private List<OraclePrivilege> privileges;
     private List<OracleUser> users;
-    private List<OracleCharset> charsets;
-    private Map<String, OracleCollation> collations;
     private String activeSchemaName;
     //private List<OracleInformationFolder> informationFolders;
 
@@ -80,85 +77,17 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load basic oracle metadata");
         try {
-            // Read engines
-            {
-                engines = new ArrayList<OracleEngine>();
-                JDBCPreparedStatement dbStat = context.prepareStatement("SHOW ENGINES");
-                try {
-                    JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
-                        while (dbResult.next()) {
-                            OracleEngine engine = new OracleEngine(this, dbResult);
-                            engines.add(engine);
-                        }
-                    } finally {
-                        dbResult.close();
-                    }
-                } catch (SQLException ex ) {
-                    // Engines are not supported. Shame on it. Leave this list empty
-                } finally {
-                    dbStat.close();
-                }
-            }
-
-            // Read charsets and collations
-            {
-                charsets = new ArrayList<OracleCharset>();
-                JDBCPreparedStatement dbStat = context.prepareStatement("SHOW CHARSET");
-                try {
-                    JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
-                        while (dbResult.next()) {
-                            OracleCharset charset = new OracleCharset(this, dbResult);
-                            charsets.add(charset);
-                        }
-                    } finally {
-                        dbResult.close();
-                    }
-                } catch (SQLException ex ) {
-                    // Engines are not supported. Shame on it. Leave this list empty
-                } finally {
-                    dbStat.close();
-                }
-                Collections.sort(charsets, DBUtils.<OracleCharset>nameComparator());
-
-
-                collations = new LinkedHashMap<String, OracleCollation>();
-                dbStat = context.prepareStatement("SHOW COLLATION");
-                try {
-                    JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
-                        while (dbResult.next()) {
-                            String charsetName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CHARSET);
-                            OracleCharset charset = getCharset(charsetName);
-                            if (charset == null) {
-                                log.warn("Charset '" + charsetName + "' not found.");
-                                continue;
-                            }
-                            OracleCollation collation = new OracleCollation(charset, dbResult);
-                            collations.put(collation.getName(), collation);
-                            charset.addCollation(collation);
-                        }
-                    } finally {
-                        dbResult.close();
-                    }
-                } catch (SQLException ex ) {
-                    // Engines are not supported. Shame on it. Leave this list empty
-                } finally {
-                    dbStat.close();
-                }
-            }
-
             {
                 // Read schemas
                 List<OracleSchema> tmpSchemas = new ArrayList<OracleSchema>();
-                StringBuilder schemasQuery = new StringBuilder("SELECT * FROM " + OracleConstants.META_TABLE_SCHEMATA);
+                StringBuilder schemasQuery = new StringBuilder("SELECT * FROM ");
+                schemasQuery.append(OracleConstants.META_TABLE_USERS);
                 List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
                 if (!schemaFilters.isEmpty()) {
                     schemasQuery.append(" WHERE ");
                     for (int i = 0; i < schemaFilters.size(); i++) {
                         if (i > 0) schemasQuery.append(" OR ");
-                        schemasQuery.append(OracleConstants.COL_SCHEMA_NAME).append(" LIKE ?");
+                        schemasQuery.append(OracleConstants.COL_USER_NAME).append(" LIKE ?");
                     }
                 }
                 JDBCPreparedStatement dbStat = context.prepareStatement(schemasQuery.toString());
@@ -191,7 +120,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
             {
                 // Get active schema
                 try {
-                    JDBCPreparedStatement dbStat = context.prepareStatement("SELECT DATABASE()");
+                    JDBCPreparedStatement dbStat = context.prepareStatement("SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
                     try {
                         JDBCResultSet resultSet = dbStat.executeQuery();
                         try {
@@ -262,7 +191,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     {
         super.refreshEntity(monitor);
 
-        this.engines = null;
         this.schemas = null;
         this.users = null;
         this.activeSchemaName = null;
@@ -332,7 +260,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         }
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active schema");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("use " + entity.getName());
+            JDBCPreparedStatement dbStat = context.prepareStatement("ALTER SESSION SET CURRENT_SCHEMA=" + entity.getName());
             try {
                 dbStat.execute();
             } finally {
@@ -398,46 +326,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         finally {
             context.close();
         }
-    }
-
-    public List<OracleEngine> getEngines()
-    {
-        return engines;
-    }
-
-    public OracleEngine getEngine(String name)
-    {
-        return DBUtils.findObject(engines, name);
-    }
-
-    public OracleEngine getDefaultEngine()
-    {
-        for (OracleEngine engine : engines) {
-            if (engine.getSupport() == OracleEngine.Support.DEFAULT) {
-                return engine;
-            }
-        }
-        return null;
-    }
-
-    public Collection<OracleCharset> getCharsets()
-    {
-        return charsets;
-    }
-
-    public OracleCharset getCharset(String name)
-    {
-        for (OracleCharset charset : charsets) {
-            if (charset.getName().equals(name)) {
-                return charset;
-            }
-        }
-        return null;
-    }
-
-    public OracleCollation getCollation(String name)
-    {
-        return collations.get(name);
     }
 
     public List<OraclePrivilege> getPrivileges(DBRProgressMonitor monitor)

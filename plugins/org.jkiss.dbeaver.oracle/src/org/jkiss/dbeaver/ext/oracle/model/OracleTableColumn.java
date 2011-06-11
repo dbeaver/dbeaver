@@ -17,7 +17,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -54,7 +53,6 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     private String defaultValue;
     private long charLength;
     private boolean autoIncrement;
-    private OracleCollation collation;
     private KeyType keyType;
 
     private List<String> enumValues;
@@ -103,7 +101,6 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         setScale(JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_NUMERIC_SCALE));
         setPrecision(JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_NUMERIC_PRECISION));
         this.defaultValue = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COLUMN_DEFAULT);
-        this.collation = getDataSource().getCollation(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COLLATION_NAME));
 
         String extra = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COLUMN_EXTRA);
         this.autoIncrement = extra != null && extra.contains(OracleConstants.EXTRA_AUTO_INCREMENT);
@@ -190,28 +187,6 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return enumValues;
     }
 
-    @Property(name = "Charset", viewable = false, editable = true, listProvider = CharsetListProvider.class, order = 81)
-    public OracleCharset getCharset()
-    {
-        return collation == null ? null : collation.getCharset();
-    }
-
-    public void setCharset(OracleCharset charset)
-    {
-        this.collation = charset == null ? null : charset.getDefaultCollation();
-    }
-
-    @Property(name = "Collation", viewable = false, editable = true, listProvider = CollationListProvider.class, order = 82)
-    public OracleCollation getCollation()
-    {
-        return collation;
-    }
-
-    public void setCollation(OracleCollation collation)
-    {
-        this.collation = collation;
-    }
-
     @Property(name = "Comment", viewable = true, editable = true, updatable = true, order = 100)
     public String getComment()
     {
@@ -223,29 +198,4 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         this.comment = comment;
     }
 
-    public static class CharsetListProvider implements IPropertyValueListProvider<OracleTableColumn> {
-        public boolean allowCustomValue()
-        {
-            return false;
-        }
-        public Object[] getPossibleValues(OracleTableColumn object)
-        {
-            return object.getDataSource().getCharsets().toArray();
-        }
-    }
-
-    public static class CollationListProvider implements IPropertyValueListProvider<OracleTableColumn> {
-        public boolean allowCustomValue()
-        {
-            return false;
-        }
-        public Object[] getPossibleValues(OracleTableColumn object)
-        {
-            if (object.getCharset() == null) {
-                return null;
-            } else {
-                return object.getCharset().getCollations().toArray();
-            }
-        }
-    }
 }

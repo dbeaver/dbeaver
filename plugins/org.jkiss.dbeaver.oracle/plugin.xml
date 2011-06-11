@@ -31,8 +31,8 @@
                   icon="icons/oracle_icon.png"
                   label="Oracle data source"
                   path="oracle">
-                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchema" label="Schemas" iconId="#folder_database" description="Database schemas">
-                    <items label="Schema" path="schema" property="schemas" iconId="#database" optional="true">
+                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchema" label="Schemas" iconId="#folder_schema" description="Database schemas">
+                    <items label="Schema" path="schema" property="schemas" iconId="#schema" optional="true">
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTable" label="Tables" iconId="#folder_table" description="Tables">
                             <items label="Table" path="table" property="tables" iconId="#table">
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="Columns" iconId="#columns" description="Table columns">
@@ -125,9 +125,6 @@
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleParameter" label="Global Variables" iconId="#info" description="Global variables">
                         <items label="Variable" path="globalVariables" property="globalVariables" iconId="#info" navigable="false" virtual="true"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleEngine" label="Engines" iconId="#info" description="Database engines">
-                        <items label="Engine" path="engines" property="engines" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
                     <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="User Privileges" iconId="#info" description="User privileges">
                         <items label="Privilege" path="privileges" property="privileges" iconId="#info" navigable="false" virtual="true"/>
                     </folder>
@@ -147,14 +144,6 @@
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleParameter" label="Global Variables" iconId="#info" description="Global variables">
                         <items label="Variable" path="globalVariables" property="globalVariables" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleEngine" label="Engines" iconId="#info" description="Database engines">
-                        <items label="Engine" path="engines" property="engines" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleCharset" label="Charsets" iconId="#info" description="Database charsets">
-                        <items label="Charset" path="charsets" property="charsets" iconId="#info">
-                            <items label="Collation" path="collations" property="collations" iconId="#info" navigable="false"/>
-                        </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="User Privileges" iconId="#info" description="User privileges">
                         <items label="Privilege" path="privileges" property="privileges" iconId="#info" navigable="false" virtual="true"/>

@@ -40,9 +40,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 {
     static final Log log = LogFactory.getLog(OracleSchema.class);
 
-    private OracleCharset defaultCharset;
-    private OracleCollation defaultCollation;
-    private String sqlPath;
+    private long id;
     private final TableCache tableCache = new TableCache();
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private final TriggerCache triggerCache = new TriggerCache();
@@ -54,10 +52,8 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     {
         super(dataSource, null);
         if (dbResult != null) {
-            setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_SCHEMA_NAME));
-            defaultCharset = dataSource.getCharset(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DEFAULT_CHARACTER_SET_NAME));
-            defaultCollation = dataSource.getCollation(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DEFAULT_COLLATION_NAME));
-            sqlPath = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_SQL_PATH);
+            this.id = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_USER_ID);
+            setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_USER_NAME));
             persisted = true;
         } else {
             persisted = false;
@@ -85,7 +81,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     }
 
     @Override
-    @Property(name = "Schema Name", viewable = true, editable = true, order = 1)
+    @Property(name = "Name", viewable = true, editable = true, order = 1)
     public String getName()
     {
         return super.getName();
@@ -106,38 +102,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return null;
     }
 
-    @Property(name = "Default Charset", viewable = true, order = 2)
-    public OracleCharset getDefaultCharset()
+    @Property(name = "User ID", viewable = false, order = 200)
+    public long getId()
     {
-        return defaultCharset;
+        return id;
     }
 
-    void setDefaultCharset(OracleCharset defaultCharset)
-    {
-        this.defaultCharset = defaultCharset;
-    }
-
-    @Property(name = "Default Collation", viewable = true, order = 3)
-    public OracleCollation getDefaultCollation()
-    {
-        return defaultCollation;
-    }
-
-    void setDefaultCollation(OracleCollation defaultCollation)
-    {
-        this.defaultCollation = defaultCollation;
-    }
-
-    @Property(name = "SQL Path", viewable = true, order = 3)
-    public String getSqlPath()
-    {
-        return sqlPath;
-    }
-
-    void setSqlPath(String sqlPath)
-    {
-        this.sqlPath = sqlPath;
-    }
 
     public List<OracleIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException

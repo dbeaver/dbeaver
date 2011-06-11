@@ -45,15 +45,6 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     {
         final OracleTable table = new OracleTable(parent);
         table.setName(JDBCObjectNameCaseTransformer.transformName(parent, "NewTable"));
-        try {
-            final OracleTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
-            additionalInfo.setEngine(parent.getDataSource().getDefaultEngine());
-            additionalInfo.setCharset(parent.getDefaultCharset());
-            additionalInfo.setCollation(parent.getDefaultCollation());
-        } catch (DBCException e) {
-            // Never be here
-            log.error(e);
-        }
 
         return table;
     }
@@ -74,15 +65,6 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     {
         try {
             final OracleTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
-            if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) {
-                ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName());
-            }
-            if ((!table.isPersisted() || tableProps.getProperty("charset") != null) && additionalInfo.getCharset() != null) {
-                ddl.append("\nDEFAULT CHARSET=").append(additionalInfo.getCharset().getName());
-            }
-            if ((!table.isPersisted() || tableProps.getProperty("collation") != null) && additionalInfo.getCollation() != null) {
-                ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName());
-            }
             if ((!table.isPersisted() || tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
                 ddl.append("\nCOMMENT='").append(table.getDescription().replace('\'', '"')).append("'");
             }

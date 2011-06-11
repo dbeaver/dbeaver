@@ -9,16 +9,11 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.io.UnsupportedEncodingException;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -100,51 +95,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public String getDDL(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!isPersisted()) {
-            return "";
-        }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
-        try {
-            PreparedStatement dbStat = context.prepareStatement(
-                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName());
-            try {
-                ResultSet dbResult = dbStat.executeQuery();
-                try {
-                    if (dbResult.next()) {
-                        byte[] ddl;
-                        if (isView()) {
-                            ddl = dbResult.getBytes("Create View");
-                        } else {
-                            ddl = dbResult.getBytes("Create Table");
-                        }
-                        if (ddl == null) {
-                            return null;
-                        } else {
-                            try {
-                                return new String(ddl, getContainer().getDefaultCharset().getName());
-                            } catch (UnsupportedEncodingException e) {
-                                log.debug(e);
-                                return new String(ddl);
-                            }
-                        }
-                    } else {
-                        return "DDL is not available";
-                    }
-                }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-        }
+        return "";
     }
 
 }

@@ -45,7 +45,10 @@ public class OracleConstants {
     public static final String DRIVER_TYPE_THIN = "THIN";
     public static final String DRIVER_TYPE_OCI = "OCI";
 
-    public static final String META_TABLE_SCHEMATA = INFO_SCHEMA_NAME + ".SCHEMATA";
+    public static final String COL_USER_ID = "USER_ID";
+    public static final String COL_USER_NAME = "USERNAME";
+
+    public static final String META_TABLE_USERS = INFO_SCHEMA_NAME + ".DBA_USERS";
     public static final String META_TABLE_TABLES = INFO_SCHEMA_NAME + ".TABLES";
     public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
     public static final String META_TABLE_TRIGGERS = INFO_SCHEMA_NAME + ".TRIGGERS";
@@ -63,7 +66,6 @@ public class OracleConstants {
     public static final String COL_ENGINE_SUPPORT_XA = "XA";
     public static final String COL_ENGINE_SUPPORT_SAVEPOINTS = "SAVEPOINTS";
 
-    public static final String COL_CATALOG_NAME = "CATALOG_NAME";
     public static final String COL_SCHEMA_NAME = "SCHEMA_NAME";
     public static final String COL_DEFAULT_CHARACTER_SET_NAME = "DEFAULT_CHARACTER_SET_NAME";
     public static final String COL_DEFAULT_COLLATION_NAME = "DEFAULT_COLLATION_NAME";

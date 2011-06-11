@@ -23,13 +23,15 @@ import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * OracleTable
@@ -45,16 +47,10 @@ public class OracleTable extends OracleTableBase
         private long autoIncrement;
         private String description;
         private java.util.Date createTime;
-        private OracleCharset charset;
-        private OracleCollation collation;
-        private OracleEngine engine;
         private long avgRowLength;
         private long dataLength;
 
-        @Property(name = "Engine", viewable = true, editable = true, updatable = true, listProvider = EngineListProvider.class, order = 3) public OracleEngine getEngine() { return engine; }
         @Property(name = "Auto Increment", viewable = true, editable = true, updatable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
-        @Property(name = "Charset", viewable = false, editable = true, updatable = true, listProvider = CharsetListProvider.class, order = 5) public OracleCharset getCharset() { return charset; }
-        @Property(name = "Collation", viewable = false, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 6) public OracleCollation getCollation() { return collation; }
         @Property(name = "Description", viewable = true, editable = true, updatable = true, order = 100) public String getDescription() { return description; }
 
         @Property(name = "Row Count", category = "Statistics", viewable = true, order = 10) public long getRowCount() { return rowCount; }
@@ -62,12 +58,8 @@ public class OracleTable extends OracleTableBase
         @Property(name = "Data Length", category = "Statistics", viewable = true, order = 12) public long getDataLength() { return dataLength; }
         @Property(name = "Create Time", category = "Statistics", viewable = false, order = 13) public java.util.Date getCreateTime() { return createTime; }
 
-        public void setEngine(OracleEngine engine) { this.engine = engine; }
         public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
         public void setDescription(String description) { this.description = description; }
-
-        public void setCharset(OracleCharset charset) { this.charset = charset; this.collation = charset == null ? null : charset.getDefaultCollation(); }
-        public void setCollation(OracleCollation collation) { this.collation = collation; }
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleTable> {
@@ -204,51 +196,7 @@ public class OracleTable extends OracleTableBase
     public String getDDL(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!isPersisted()) {
-            return "";
-        }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
-        try {
-            PreparedStatement dbStat = context.prepareStatement(
-                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName());
-            try {
-                ResultSet dbResult = dbStat.executeQuery();
-                try {
-                    if (dbResult.next()) {
-                        byte[] ddl;
-                        if (isView()) {
-                            ddl = dbResult.getBytes("Create View");
-                        } else {
-                            ddl = dbResult.getBytes("Create Table");
-                        }
-                        if (ddl == null) {
-                            return null;
-                        } else {
-                            try {
-                                return new String(ddl, getContainer().getDefaultCharset().getName());
-                            } catch (UnsupportedEncodingException e) {
-                                log.debug(e);
-                                return new String(ddl);
-                            }
-                        }
-                    } else {
-                        return "DDL is not available";
-                    }
-                }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-        }
+        return "";
     }
 
     @Override
@@ -294,14 +242,9 @@ public class OracleTable extends OracleTableBase
                             }
                             additionalInfo.description = desc;
                         }
-                        additionalInfo.engine = getDataSource().getEngine(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_ENGINE));
                         additionalInfo.rowCount = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_TABLE_ROWS);
                         additionalInfo.autoIncrement = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_AUTO_INCREMENT);
                         additionalInfo.createTime = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COL_CREATE_TIME);
-                        additionalInfo.collation = getDataSource().getCollation(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COLLATION));
-                        if (additionalInfo.collation != null) {
-                            additionalInfo.charset = additionalInfo.collation.getCharset();
-                        }
                         additionalInfo.avgRowLength = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_AVG_ROW_LENGTH);
                         additionalInfo.dataLength = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_DATA_LENGTH);
                     }
@@ -577,50 +520,6 @@ public class OracleTable extends OracleTableBase
     public String getDescription()
     {
         return additionalInfo.description;
-    }
-
-    public static class EngineListProvider implements IPropertyValueListProvider<OracleTable> {
-        public boolean allowCustomValue()
-        {
-            return false;
-        }
-        public Object[] getPossibleValues(OracleTable object)
-        {
-            final List<OracleEngine> engines = new ArrayList<OracleEngine>();
-            for (OracleEngine engine : object.getDataSource().getEngines()) {
-                if (engine.getSupport() == OracleEngine.Support.YES || engine.getSupport() == OracleEngine.Support.DEFAULT) {
-                    engines.add(engine);
-                }
-            }
-            Collections.sort(engines, DBUtils.<OracleEngine>nameComparator());
-            return engines.toArray(new OracleEngine[engines.size()]);
-        }
-    }
-
-    public static class CharsetListProvider implements IPropertyValueListProvider<OracleTable> {
-        public boolean allowCustomValue()
-        {
-            return false;
-        }
-        public Object[] getPossibleValues(OracleTable object)
-        {
-            return object.getDataSource().getCharsets().toArray();
-        }
-    }
-
-    public static class CollationListProvider implements IPropertyValueListProvider<OracleTable> {
-        public boolean allowCustomValue()
-        {
-            return false;
-        }
-        public Object[] getPossibleValues(OracleTable object)
-        {
-            if (object.additionalInfo.charset == null) {
-                return null;
-            } else {
-                return object.additionalInfo.charset.getCollations().toArray();
-            }
-        }
     }
 
 }
