@@ -101,8 +101,8 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
 
         Composite addrGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
-        gl.marginHeight = 20;
-        gl.marginWidth = 20;
+        gl.marginHeight = 10;
+        gl.marginWidth = 10;
         addrGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
