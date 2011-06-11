@@ -223,8 +223,10 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             throws SQLException, DBException
         {
             return context.prepareStatement(
-                "SELECT * FROM " + OracleConstants.META_TABLE_TABLES +
-                " WHERE " + OracleConstants.COL_OWNER + "='" + getName() + "'");
+                "SELECT t.*,tc.COMMENTS " +
+                "FROM SYS.ALL_TABLES t\n" +
+                "LEFT OUTER JOIN ALL_TAB_COMMENTS tc ON tc.OWNER=t.OWNER AND tc.TABLE_NAME=t.TABLE_NAME\n" +
+                "WHERE t.OWNER='" + getName() + "'");
         }
 
         protected OracleTableBase fetchObject(JDBCExecutionContext context, ResultSet dbResult)
@@ -322,12 +324,13 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                 return null;
             }
 
+            final String searchCondition = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_SEARCH_CONDITION);
             final String constraintStatus = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_STATUS);
             return new OracleConstraint(
                 parent,
                 constraintName,
                 constraintType,
-                JDBCUtils.safeGetString(dbResult, OracleConstants.COL_SEARCH_CONDITION),
+                searchCondition,
                 CommonUtils.isEmpty(constraintStatus) ? null : OracleConstants.ObjectStatus.valueOf(constraintStatus),
                 true);
         }
@@ -339,8 +342,8 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             OracleConstraint object)
             throws SQLException, DBException
         {
-            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_POSITION);
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_COLUMN_NAME);
+            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_POSITION);
 
             OracleTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
             if (tableColumn == null) {
@@ -422,7 +425,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             } else {
                 indexType = DBSIndexType.OTHER;
             }
-            final String comment = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COMMENT);
+            final String comment = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COMMENTS);
 
             return new OracleIndex(
                 parent,

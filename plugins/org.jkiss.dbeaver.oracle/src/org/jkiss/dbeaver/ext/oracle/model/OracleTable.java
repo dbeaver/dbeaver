@@ -14,7 +14,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
@@ -32,6 +34,7 @@ import java.util.Map;
 public class OracleTable extends OracleTableBase
 {
 
+    private String comment;
     private List<OracleIndex> indexes;
     private List<OracleConstraint> constraints;
     private List<OracleForeignKey> foreignKeys;
@@ -49,6 +52,14 @@ public class OracleTable extends OracleTableBase
     {
         super(schema, true);
         setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME));
+        this.comment = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COMMENTS);
+
+    }
+
+    @Property(name = "Comments", viewable = true, editable = true, order = 100)
+    public String getDescription()
+    {
+        return comment;
     }
 
     public boolean isView()
@@ -419,9 +430,5 @@ public class OracleTable extends OracleTableBase
         }
     }
 
-    public String getDescription()
-    {
-        return "";
-    }
 
 }

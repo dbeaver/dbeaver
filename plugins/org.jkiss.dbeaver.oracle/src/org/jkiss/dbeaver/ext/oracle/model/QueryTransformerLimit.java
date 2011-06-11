@@ -24,13 +24,15 @@ class QueryTransformerLimit implements DBCQueryTransformer {
     }
 
     public String transformQueryString(String query) throws DBCException {
+/*
         String testQuery = query.toUpperCase().trim();
-        if (!testQuery.startsWith("SELECT") || testQuery.indexOf("LIMIT") != -1) {
+        if (!testQuery.startsWith("SELECT")) {
             limitSet = false;
         } else {
-            query = query + SQLUtils.TOKEN_TRANSFORM_START + " LIMIT " + offset + ", " + length + SQLUtils.TOKEN_TRANSFORM_END;
+            query = "SELECT * FROM ( SELECT ROW_.*, ROWNUM ROWNUM_ FROM ( ";
             limitSet = true;
         }
+*/
         return query;
     }
 

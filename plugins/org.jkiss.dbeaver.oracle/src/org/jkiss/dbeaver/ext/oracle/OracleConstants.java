@@ -72,6 +72,7 @@ public class OracleConstants {
     public static final String COL_DATA_PRECISION = "DATA_PRECISION";
     public static final String COL_DATA_SCALE = "DATA_SCALE";
     public static final String COL_DATA_DEFAULT = "DATA_DEFAULT";
+    public static final String COL_COMMENTS = "COMMENTS";
 
     public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
     public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
@@ -98,8 +99,7 @@ public class OracleConstants {
     public static final String COL_INDEX_TYPE = "INDEX_TYPE";
     public static final String COL_SEQ_IN_INDEX = "SEQ_IN_INDEX";
     public static final String COL_NON_UNIQUE = "NON_UNIQUE";
-    public static final String COL_COMMENT = "COMMENT";
-    
+
     public static final String COL_COLUMN_KEY = "COLUMN_KEY";
     public static final String COL_CHARACTER_MAXIMUM_LENGTH = "CHARACTER_MAXIMUM_LENGTH";
     public static final String COL_CHARACTER_OCTET_LENGTH = "CHARACTER_OCTET_LENGTH";
@@ -146,9 +146,6 @@ public class OracleConstants {
     public static final String CONSTRAINT_UNIQUE = "UNIQUE";
 
     public static final String EXTRA_AUTO_INCREMENT = "auto_increment";
-
-    public static final String TYPE_NAME_ENUM = "ENUM";
-    public static final String TYPE_NAME_SET = "SET";
 
     public static final DBSIndexType INDEX_TYPE_BTREE = new DBSIndexType("BTREE", "BTree");
     public static final DBSIndexType INDEX_TYPE_FULLTEXT = new DBSIndexType("FULLTEXT", "Full Text");

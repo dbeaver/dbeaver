@@ -24,39 +24,32 @@ public class OracleUtils {
     public static final String COLUMN_POSTFIX_PRIV = "_priv";
 
     static {
-        typeMap.put("BIT", java.sql.Types.BIT);
-        typeMap.put("TINYINT", java.sql.Types.TINYINT);
-        typeMap.put("SMALLINT", java.sql.Types.SMALLINT);
-        typeMap.put("MEDIUMINT", java.sql.Types.INTEGER);
-        typeMap.put("INT", java.sql.Types.INTEGER);
-        typeMap.put("INTEGER", java.sql.Types.INTEGER);
-        typeMap.put("INT24", java.sql.Types.INTEGER);
-        typeMap.put("BIGINT", java.sql.Types.BIGINT);
-        typeMap.put("REAL", java.sql.Types.DOUBLE);
-        typeMap.put("FLOAT", java.sql.Types.FLOAT);
-        typeMap.put("DECIMAL", java.sql.Types.DECIMAL);
-        typeMap.put("NUMERIC", java.sql.Types.DECIMAL);
-        typeMap.put("DOUBLE", java.sql.Types.DOUBLE);
         typeMap.put("CHAR", java.sql.Types.CHAR);
         typeMap.put("VARCHAR", java.sql.Types.VARCHAR);
+        typeMap.put("VARCHAR2", java.sql.Types.VARCHAR);
+
+        typeMap.put("NCHAR", java.sql.Types.NCHAR);
+        typeMap.put("NVARCHAR", java.sql.Types.NVARCHAR);
+        typeMap.put("NVARCHAR2", java.sql.Types.NVARCHAR);
+
+        typeMap.put("LONG", java.sql.Types.LONGVARBINARY);
+
+        typeMap.put("NUMBER", java.sql.Types.NUMERIC);
+        typeMap.put("BINARY_FLOAT", java.sql.Types.FLOAT);
+        typeMap.put("BINARY_DOUBLE", java.sql.Types.DOUBLE);
+
         typeMap.put("DATE", java.sql.Types.DATE);
-        typeMap.put("TIME", java.sql.Types.TIME);
-        typeMap.put("YEAR", java.sql.Types.DATE);
         typeMap.put("TIMESTAMP", java.sql.Types.TIMESTAMP);
-        typeMap.put("DATETIME", java.sql.Types.TIMESTAMP);
-        typeMap.put("TINYBLOB", java.sql.Types.BINARY);
-        typeMap.put("BLOB", java.sql.Types.LONGVARBINARY);
-        typeMap.put("MEDIUMBLOB", java.sql.Types.LONGVARBINARY);
-        typeMap.put("LONGBLOB", java.sql.Types.LONGVARBINARY);
-        typeMap.put("TINYTEXT", java.sql.Types.VARCHAR);
-        typeMap.put("TEXT", java.sql.Types.LONGVARCHAR);
-        typeMap.put("MEDIUMTEXT", java.sql.Types.LONGVARCHAR);
-        typeMap.put("LONGTEXT", java.sql.Types.LONGVARCHAR);
-        typeMap.put(OracleConstants.TYPE_NAME_ENUM, java.sql.Types.CHAR);
-        typeMap.put(OracleConstants.TYPE_NAME_SET, java.sql.Types.CHAR);
-        typeMap.put("GEOMETRY", java.sql.Types.BINARY);
-        typeMap.put("BINARY", java.sql.Types.BINARY);
-        typeMap.put("VARBINARY", java.sql.Types.VARBINARY);
+        typeMap.put("TIMESTAMP WITH TIME ZONE", java.sql.Types.TIMESTAMP);
+        typeMap.put("TIMESTAMP WITH LOCAL TIME ZONE", java.sql.Types.TIMESTAMP);
+
+        typeMap.put("BLOB", java.sql.Types.BLOB);
+        typeMap.put("CLOB", java.sql.Types.CLOB);
+        typeMap.put("NCLOB", java.sql.Types.NCLOB);
+        typeMap.put("BFILE", java.sql.Types.DATALINK);
+
+        typeMap.put("ROWID", java.sql.Types.ROWID);
+        typeMap.put("UROWID", java.sql.Types.ROWID);
     }
 
     public static int typeNameToValueType(String typeName)
