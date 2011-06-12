@@ -78,6 +78,9 @@ public class OracleConstants {
     public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
     public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
     public static final String COL_SEARCH_CONDITION = "SEARCH_CONDITION";
+    public static final String COL_R_OWNER = "R_OWNER";
+    public static final String COL_R_CONSTRAINT_NAME = "R_CONSTRAINT_NAME";
+    public static final String COL_DELETE_RULE = "DELETE_RULE";
     public static final String COL_POSITION = "POSITION";
     public static final String COL_STATUS = "STATUS";
 

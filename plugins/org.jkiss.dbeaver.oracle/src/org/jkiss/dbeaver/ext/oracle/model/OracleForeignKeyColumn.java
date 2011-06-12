@@ -6,28 +6,26 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 /**
  * GenericConstraintColumn
  */
 public class OracleForeignKeyColumn extends OracleConstraintColumn implements DBSForeignKeyColumn
 {
-    private OracleTableColumn referencedColumn;
 
     public OracleForeignKeyColumn(
         OracleForeignKey constraint,
         OracleTableColumn tableColumn,
-        int ordinalPosition,
-        OracleTableColumn referencedColumn)
+        int ordinalPosition)
     {
         super(constraint, tableColumn, ordinalPosition);
-        this.referencedColumn = referencedColumn;
     }
 
     @Property(id = "reference", name = "Reference Column", viewable = true, order = 4)
     public OracleTableColumn getReferencedColumn()
     {
-        return referencedColumn;
+        return ((OracleForeignKey)getConstraint()).getReferencedKey().getColumns(VoidProgressMonitor.INSTANCE).get(getOrdinalPosition()).getTableColumn();
     }
 
 }

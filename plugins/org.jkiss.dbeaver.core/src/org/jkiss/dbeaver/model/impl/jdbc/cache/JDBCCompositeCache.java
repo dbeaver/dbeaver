@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -67,9 +68,9 @@ public abstract class JDBCCompositeCache<
 
     abstract protected boolean isObjectsCached(PARENT parent);
     
-    abstract protected void cacheObjects(PARENT parent, List<OBJECT> objects);
+    abstract protected void cacheObjects(DBRProgressMonitor monitor, PARENT parent, List<OBJECT> objects);
 
-    abstract protected void cacheRows(OBJECT object, List<ROW_REF> rows);
+    abstract protected void cacheRows(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> rows);
 
     private class ObjectInfo {
         final OBJECT object;
@@ -87,6 +88,12 @@ public abstract class JDBCCompositeCache<
             loadObjects(monitor, forParent);
         }
         return objectList;
+    }
+
+    public OBJECT getObject(DBRProgressMonitor monitor, String objectName)
+        throws DBException
+    {
+        return DBUtils.findObject(getObjects(monitor, null), objectName);
     }
 
     public boolean isCached()
@@ -173,6 +180,16 @@ public abstract class JDBCCompositeCache<
                         objectInfo.rows.add(rowRef);
                     }
                     if (forParent != null || !parentObjectMap.isEmpty()) {
+                        if (forParent == null) {
+                            // Cache global object list
+                            objectList = new ArrayList<OBJECT>();
+                            for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
+                                for (ObjectInfo info : objMap.values()) {
+                                    objectList.add(info.object);
+                                }
+                            }
+                        }
+
                         // Cache data in individual objects only if we have read something or have certain parent object
                         // Otherwise we assume that this function is not supported for mass data reading
 
@@ -185,30 +202,20 @@ public abstract class JDBCCompositeCache<
                             Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
                             ArrayList<OBJECT> objects = new ArrayList<OBJECT>(objectInfos.size());
                             for (ObjectInfo objectInfo : objectInfos) {
-                                cacheRows(objectInfo.object, objectInfo.rows);
+                                cacheRows(monitor, objectInfo.object, objectInfo.rows);
                                 objects.add(objectInfo.object);
                             }
-                            cacheObjects(colEntry.getKey(), objects);
+                            cacheObjects(monitor, colEntry.getKey(), objects);
                         }
                         // Now set empty object list for other parents
                         if (forParent == null) {
                             for (PARENT tmpParent : parentCache.getObjects(monitor, parentType)) {
                                 if (!parentObjectMap.containsKey(tmpParent)) {
-                                    cacheObjects(tmpParent, new ArrayList<OBJECT>());
+                                    cacheObjects(monitor, tmpParent, new ArrayList<OBJECT>());
                                 }
                             }
                         } else if (!parentObjectMap.containsKey(forParent)) {
-                            cacheObjects(forParent, new ArrayList<OBJECT>());
-                        }
-
-                        if (forParent == null) {
-                            // Cache global object list
-                            objectList = new ArrayList<OBJECT>();
-                            for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
-                                for (ObjectInfo info : objMap.values()) {
-                                    objectList.add(info.object);
-                                }
-                            }
+                            cacheObjects(monitor, forParent, new ArrayList<OBJECT>());
                         }
                     }
                 }

@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 /**
  * Generic foreign manager
  */
-public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKey, MySQLConstraint, MySQLTable> {
+public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKey, MySQLTable> {
 
 
     protected MySQLForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLTable table, Object from)

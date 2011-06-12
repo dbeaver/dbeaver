@@ -9,17 +9,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -108,9 +103,19 @@ public class OracleTable extends OracleTableBase
         return DBUtils.findObject(getConstraints(monitor), ukName);
     }
 
-    void setConstraints(List<OracleConstraint> constraints)
+    void setConstraints(DBRProgressMonitor monitor, List<OracleConstraint> constraints)
     {
-        this.constraints = constraints;
+        this.constraints = new ArrayList<OracleConstraint>();
+        this.foreignKeys = new ArrayList<OracleForeignKey>();
+        for (OracleConstraint constraint : constraints) {
+            if (constraint instanceof OracleForeignKey) {
+                if (((OracleForeignKey) constraint).resolveLazyReference(monitor)) {
+                    this.foreignKeys.add((OracleForeignKey) constraint);
+                }
+            } else {
+                this.constraints.add(constraint);
+            }
+        }
     }
 
     boolean isConstraintsCached()
@@ -121,14 +126,14 @@ public class OracleTable extends OracleTableBase
     public List<OracleForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
-        return loadForeignKeys(monitor, true);
+        return null;
     }
 
     public List<OracleForeignKey> getForeignKeys(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {
-            foreignKeys = loadForeignKeys(monitor, false);
+            getContainer().getConstraintCache().getObjects(monitor, this);
         }
         return foreignKeys;
     }
@@ -193,138 +198,6 @@ public class OracleTable extends OracleTableBase
         }
         
         constraints.add(constraint);
-    }
-
-    private List<OracleForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
-        throws DBException
-    {
-        List<OracleForeignKey> fkList = new ArrayList<OracleForeignKey>();
-        if (!isPersisted()) {
-            return fkList;
-        }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
-        try {
-            Map<String, OracleForeignKey> fkMap = new HashMap<String, OracleForeignKey>();
-            Map<String, OracleConstraint> pkMap = new HashMap<String, OracleConstraint>();
-            JDBCDatabaseMetaData metaData = context.getMetaData();
-            // Load indexes
-            JDBCResultSet dbResult;
-            if (references) {
-                dbResult = metaData.getExportedKeys(
-                    getContainer().getName(),
-                    null,
-                    getName());
-            } else {
-                dbResult = metaData.getImportedKeys(
-                    getContainer().getName(),
-                    null,
-                    getName());
-            }
-            try {
-                while (dbResult.next()) {
-                    String pkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_CAT);
-                    String pkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_NAME);
-                    String pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
-                    String fkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_CAT);
-                    String fkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_NAME);
-                    String fkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKCOLUMN_NAME);
-                    int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
-                    int updateRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
-                    int deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
-                    String fkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FK_NAME);
-                    String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
-
-                    DBSConstraintModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
-                    DBSConstraintModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
-
-                    OracleTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
-                    if (pkTable == null) {
-                        log.warn("Can't find PK table " + pkTableName);
-                        continue;
-                    }
-                    OracleTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableName);
-                    if (fkTable == null) {
-                        log.warn("Can't find FK table " + fkTableName);
-                        continue;
-                    }
-                    OracleTableColumn pkColumn = pkTable.getColumn(monitor, pkColumnName);
-                    if (pkColumn == null) {
-                        log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
-                        continue;
-                    }
-                    OracleTableColumn fkColumn = fkTable.getColumn(monitor, fkColumnName);
-                    if (fkColumn == null) {
-                        log.warn("Can't find FK table " + fkTable.getFullQualifiedName() + " column " + fkColumnName);
-                        continue;
-                    }
-
-                    // Find PK
-                    OracleConstraint pk = null;
-                    if (pkName != null) {
-                        pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
-                        if (pk == null) {
-                            log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
-                        }
-                    }
-                    if (pk == null) {
-                        List<OracleConstraint> constraints = pkTable.getConstraints(monitor);
-                        if (constraints != null) {
-                            for (OracleConstraint pkConstraint : constraints) {
-                                if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
-                                    pk = pkConstraint;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (pk == null) {
-                        log.warn("Could not find primary key for table " + pkTable.getFullQualifiedName());
-                        // Too bad. But we have to create new fake PK for this FK
-                        String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
-                        pk = pkMap.get(pkFullName);
-                        if (pk == null) {
-                            pk = new OracleConstraint(pkTable, pkName, DBSConstraintType.PRIMARY_KEY, null, OracleConstants.ObjectStatus.ENABLED, true);
-                            pk.addColumn(new OracleConstraintColumn(pk, pkColumn, keySeq));
-                            pkMap.put(pkFullName, pk);
-                        }
-                    }
-
-                    // Find (or create) FK
-                    OracleForeignKey fk = null;
-                    if (references) {
-                        fk = DBUtils.findObject(fkTable.getForeignKeys(monitor), fkName);
-                        if (fk == null) {
-                            log.warn("Could not find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());
-                            // No choice, we have to create fake foreign key :(
-                        } else {
-                            if (!fkList.contains(fk)) {
-                                fkList.add(fk);
-                            }
-                        }
-                    }
-
-                    if (fk == null) {
-                        fk = fkMap.get(fkName);
-                        if (fk == null) {
-                            fk = new OracleForeignKey(fkTable, fkName, null, pk, deleteRule, updateRule, true);
-                            fkMap.put(fkName, fk);
-                            fkList.add(fk);
-                        }
-                        OracleForeignKeyColumn fkColumnInfo = new OracleForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
-                        fk.addColumn(fkColumnInfo);
-                    }
-                }
-            }
-            finally {
-                dbResult.close();
-            }
-            return fkList;
-        } catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-        }
     }
 
     private List<OracleTrigger> loadTriggers(DBRProgressMonitor monitor)

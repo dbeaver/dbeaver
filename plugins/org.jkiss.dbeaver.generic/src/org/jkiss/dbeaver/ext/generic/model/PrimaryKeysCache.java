@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
 import net.sf.jkiss.utils.CommonUtils;
@@ -7,6 +11,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
 import java.sql.ResultSet;
@@ -83,12 +88,12 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericTable, GenericPrimaryKe
         return parent.isConstraintsCached();
     }
 
-    protected void cacheObjects(GenericTable parent, List<GenericPrimaryKey> primaryKeys)
+    protected void cacheObjects(DBRProgressMonitor monitor, GenericTable parent, List<GenericPrimaryKey> primaryKeys)
     {
         parent.setUniqueKeys(primaryKeys);
     }
 
-    protected void cacheRows(GenericPrimaryKey primaryKey, List<GenericConstraintColumn> rows)
+    protected void cacheRows(DBRProgressMonitor monitor, GenericPrimaryKey primaryKey, List<GenericConstraintColumn> rows)
     {
         primaryKey.setColumns(rows);
     }

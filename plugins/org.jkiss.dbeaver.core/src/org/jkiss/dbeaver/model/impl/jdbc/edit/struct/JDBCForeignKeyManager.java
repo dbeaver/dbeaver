@@ -9,10 +9,10 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
+import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
@@ -21,7 +21,7 @@ import java.util.Collection;
 /**
  * JDBC foreign key manager
  */
-public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<TABLE_TYPE, PRIMARY_KEY>, PRIMARY_KEY extends JDBCConstraint<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
+public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCConstraint<TABLE_TYPE> & DBSForeignKey, TABLE_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
@@ -72,7 +72,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCForeignKey<T
             firstColumn = false;
             decl.append(constraintColumn.getName());
         }
-        decl.append(") REFERENCES ").append(foreignKey.getReferencedTable().getFullQualifiedName()).append("(");
+        decl.append(") REFERENCES ").append(foreignKey.getReferencedKey().getTable().getFullQualifiedName()).append("(");
         firstColumn = true;
         for (DBSConstraintColumn constraintColumn : columns) {
             if (!firstColumn) decl.append(",");

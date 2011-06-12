@@ -19,7 +19,7 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 /**
  * Generic foreign manager
  */
-public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericForeignKey, GenericPrimaryKey, GenericTable> {
+public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericForeignKey, GenericTable> {
 
 
     @Override

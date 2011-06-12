@@ -16,9 +16,9 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 
 /**
- * Generic foreign manager
+ * Oracle foreign key manager
  */
-public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeignKey, OracleConstraint, OracleTable> {
+public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeignKey, OracleTable> {
 
 
     protected OracleForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTable table, Object from)
@@ -43,7 +43,6 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeign
             null,
             (OracleConstraint) editDialog.getUniqueConstraint(),
             editDialog.getOnDeleteRule(),
-            editDialog.getOnUpdateRule(),
             false);
         foreignKey.setName(JDBCObjectNameCaseTransformer.transformName(foreignKey,
             CommonUtils.escapeIdentifier(table.getName()) + "_" +
@@ -54,8 +53,7 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeign
                 new OracleForeignKeyColumn(
                     foreignKey,
                     (OracleTableColumn) tableColumn.getOwnColumn(),
-                    colIndex++,
-                    (OracleTableColumn) tableColumn.getRefColumn()));
+                    colIndex++));
         }
         return foreignKey;
     }

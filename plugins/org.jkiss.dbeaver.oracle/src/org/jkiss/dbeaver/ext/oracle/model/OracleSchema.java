@@ -294,14 +294,21 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         {
             StringBuilder sql = new StringBuilder();
             sql
-                .append("SELECT c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS,COLUMN_NAME,POSITION\nFROM ")
+                .append("SELECT c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS," +
+                    "c.R_OWNER,c.R_CONSTRAINT_NAME,c.DELETE_RULE," +
+                    "COLUMN_NAME,POSITION\nFROM ")
                 .append(OracleConstants.META_TABLE_CONSTRAINTS).append(" c\n")
                 .append("JOIN ").append(OracleConstants.META_TABLE_CONSTRAINT_COLUMNS).append(" ссol ON c.OWNER=ссol.OWNER AND c.CONSTRAINT_NAME=ссol.CONSTRAINT_NAME\n")
-                .append("WHERE c.").append(OracleConstants.COL_OWNER).append("=?").append(" AND c.").append(OracleConstants.COL_CONSTRAINT_TYPE).append(" IN ('C','P','U')");
+                .append("WHERE c.").append(OracleConstants.COL_OWNER).append("=?");
             if (forTable != null) {
                 sql.append(" AND c.").append(OracleConstants.COL_TABLE_NAME).append("=?");
             }
-            sql.append(" ORDER BY c.").append(OracleConstants.COL_TABLE_NAME).append(",").append(OracleConstants.COL_POSITION);
+            sql.append("\nORDER BY");
+            if (forTable == null) {
+                // Fetch foreign keys after all
+                sql.append(" (CASE WHEN c.CONSTRAINT_TYPE='R' THEN 1 ELSE 0 END),");
+            }
+            sql.append(" c.").append(OracleConstants.COL_CONSTRAINT_NAME).append(",").append(OracleConstants.COL_POSITION);
 
             JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
             dbStat.setString(1, OracleSchema.this.getName());
@@ -323,20 +330,36 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                 constraintType = DBSConstraintType.PRIMARY_KEY;
             } else if ("U".equals(constraintTypeName)) {
                 constraintType = DBSConstraintType.UNIQUE_KEY;
+            } else if ("R".equals(constraintTypeName)) {
+                constraintType = DBSConstraintType.FOREIGN_KEY;
             } else {
-                log.debug("Unknown constraint type: " + constraintTypeName);
+                log.debug("Unsupported constraint type: " + constraintTypeName);
                 return null;
             }
-
-            final String searchCondition = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_SEARCH_CONDITION);
             final String constraintStatus = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_STATUS);
-            return new OracleConstraint(
-                parent,
-                constraintName,
-                constraintType,
-                searchCondition,
-                CommonUtils.isEmpty(constraintStatus) ? null : OracleConstants.ObjectStatus.valueOf(constraintStatus),
-                true);
+            if (constraintType == DBSConstraintType.FOREIGN_KEY) {
+                // Foreign key is not a regular constraint
+                String refOwner = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_R_OWNER);
+                String refName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_R_CONSTRAINT_NAME);
+                String deleteRuleName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DELETE_RULE);
+                return new OracleForeignKey(
+                    parent,
+                    constraintName,
+                    CommonUtils.isEmpty(constraintStatus) ? null : OracleConstants.ObjectStatus.valueOf(constraintStatus),
+                    new OracleForeignKey.LazyReference(refOwner, refName),
+                    "CASCADE".equals(deleteRuleName) ? DBSConstraintModifyRule.CASCADE : DBSConstraintModifyRule.NO_ACTION,
+                    true);
+            } else {
+                // Make table constraint
+                final String searchCondition = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_SEARCH_CONDITION);
+                return new OracleConstraint(
+                    parent,
+                    constraintName,
+                    constraintType,
+                    searchCondition,
+                    CommonUtils.isEmpty(constraintStatus) ? null : OracleConstants.ObjectStatus.valueOf(constraintStatus),
+                    true);
+            }
         }
 
         protected OracleConstraintColumn fetchObjectRow(
@@ -355,10 +378,17 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                 return null;
             }
 
-            return new OracleConstraintColumn(
-                object,
-                tableColumn,
-                ordinalPosition);
+            if (object instanceof OracleForeignKey) {
+                return new OracleForeignKeyColumn(
+                    (OracleForeignKey) object,
+                    tableColumn,
+                    ordinalPosition);
+            } else {
+                return new OracleConstraintColumn(
+                    object,
+                    tableColumn,
+                    ordinalPosition);
+            }
         }
 
         protected boolean isObjectsCached(OracleTable parent)
@@ -366,12 +396,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return parent.isConstraintsCached();
         }
 
-        protected void cacheObjects(OracleTable parent, List<OracleConstraint> indexes)
+        protected void cacheObjects(DBRProgressMonitor monitor, OracleTable parent, List<OracleConstraint> constraints)
         {
-            parent.setConstraints(indexes);
+            parent.setConstraints(monitor, constraints);
         }
 
-        protected void cacheRows(OracleConstraint constraint, List<OracleConstraintColumn> rows)
+        protected void cacheRows(DBRProgressMonitor monitor, OracleConstraint constraint, List<OracleConstraintColumn> rows)
         {
             constraint.setColumns(rows);
         }
@@ -465,12 +495,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return parent.isIndexesCached();
         }
 
-        protected void cacheObjects(OracleTable parent, List<OracleIndex> indexes)
+        protected void cacheObjects(DBRProgressMonitor monitor, OracleTable parent, List<OracleIndex> indexes)
         {
             parent.setIndexes(indexes);
         }
 
-        protected void cacheRows(OracleIndex index, List<OracleIndexColumn> rows)
+        protected void cacheRows(DBRProgressMonitor monitor, OracleIndex index, List<OracleIndexColumn> rows)
         {
             index.setColumns(rows);
         }

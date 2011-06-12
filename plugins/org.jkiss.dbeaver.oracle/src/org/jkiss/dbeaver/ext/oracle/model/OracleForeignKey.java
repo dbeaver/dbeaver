@@ -4,44 +4,114 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 /**
- * GenericForeignKey
+ * OracleForeignKey
  */
-public class OracleForeignKey extends JDBCForeignKey<OracleTable, OracleConstraint>
+public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
 {
-    private List<OracleForeignKeyColumn> columns;
+    static final Log log = LogFactory.getLog(OracleForeignKey.class);
+
+    static class LazyReference {
+        final String schemaName;
+        final String constraintName;
+
+        LazyReference(String schemaName, String constraintName)
+        {
+            this.schemaName = schemaName;
+            this.constraintName = constraintName;
+        }
+    }
+
+    private Object referencedKey;
+    private DBSConstraintModifyRule deleteRule;
 
     public OracleForeignKey(
         OracleTable table,
         String name,
-        String remarks,
-        OracleConstraint referencedKey,
+        OracleConstants.ObjectStatus status,
+        Object referencedKey,
         DBSConstraintModifyRule deleteRule,
-        DBSConstraintModifyRule updateRule,
         boolean persisted)
     {
-        super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
+        super(table, name, DBSConstraintType.FOREIGN_KEY, null, status, persisted);
+        this.referencedKey = referencedKey;
+        this.deleteRule = deleteRule;
     }
 
-    public List<OracleForeignKeyColumn> getColumns(DBRProgressMonitor monitor)
+    boolean resolveLazyReference(DBRProgressMonitor monitor)
     {
-        return columns;
-    }
-
-    public void addColumn(OracleForeignKeyColumn column)
-    {
-        if (columns == null) {
-            columns = new ArrayList<OracleForeignKeyColumn>();
+        if (referencedKey instanceof OracleConstraint) {
+            return true;
+        } else if (referencedKey instanceof LazyReference) {
+            try {
+                final LazyReference lazyReference = (LazyReference) referencedKey;
+                OracleSchema refSchema = getTable().getDataSource().getSchema(monitor, lazyReference.schemaName);
+                if (refSchema == null) {
+                    log.warn("Referenced schema '" + lazyReference.schemaName + "' not found for foreign key '" + getName() + "'");
+                    return false;
+                }
+                final OracleConstraint refConstraint = refSchema.getConstraintCache().getObject(monitor, lazyReference.constraintName);
+                if (refConstraint == null) {
+                    log.warn("Referenced constraint '" + lazyReference.constraintName + "' not found in schema '" + lazyReference.schemaName + "'");
+                    return false;
+                }
+                referencedKey = refConstraint;
+                return true;
+            } catch (DBException e) {
+                log.error(e);
+            }
         }
-        columns.add(column);
+        return false;
+    }
+
+    @Property(name = "Ref Table", viewable = true, order = 3)
+    public OracleTable getReferencedTable()
+    {
+        return getReferencedKey().getTable();
+    }
+
+    @Property(id = "reference", name = "Ref Object", viewable = true, order = 4)
+    public OracleConstraint getReferencedKey()
+    {
+        return (OracleConstraint)referencedKey;
+    }
+
+    @Property(name = "On Delete", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
+    public DBSConstraintModifyRule getDeleteRule()
+    {
+        return deleteRule;
+    }
+
+    public void setDeleteRule(DBSConstraintModifyRule deleteRule)
+    {
+        this.deleteRule = deleteRule;
+    }
+
+    // Update rule is not supported by Oracle
+    public DBSConstraintModifyRule getUpdateRule()
+    {
+        return DBSConstraintModifyRule.NO_ACTION;
+    }
+
+    public DBSForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
+    {
+        return (DBSForeignKeyColumn)super.getColumn(monitor, tableColumn);
+    }
+
+    public DBSEntity getAssociatedEntity()
+    {
+        return getReferencedTable();
     }
 
     public String getFullQualifiedName()
@@ -50,5 +120,23 @@ public class OracleForeignKey extends JDBCForeignKey<OracleTable, OracleConstrai
             getTable().getContainer(),
             getTable(),
             this);
+    }
+
+    public static class ConstraintModifyRuleListProvider implements IPropertyValueListProvider<JDBCForeignKey> {
+
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+
+        public Object[] getPossibleValues(JDBCForeignKey foreignKey)
+        {
+            return new DBSConstraintModifyRule[] {
+                DBSConstraintModifyRule.NO_ACTION,
+                DBSConstraintModifyRule.CASCADE,
+                DBSConstraintModifyRule.RESTRICT,
+                DBSConstraintModifyRule.SET_NULL,
+                DBSConstraintModifyRule.SET_DEFAULT };
+        }
     }
 }
