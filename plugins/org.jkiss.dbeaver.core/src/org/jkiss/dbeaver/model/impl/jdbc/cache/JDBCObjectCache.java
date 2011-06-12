@@ -24,7 +24,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
 
     protected final JDBCDataSource dataSource;
     private Map<String, OBJECT> objectMap;
-    private boolean caseSensitive;
+    private boolean caseSensitive = true;
     private Comparator<OBJECT> listOrderComparator;
 
     protected JDBCObjectCache(JDBCDataSource dataSource)
