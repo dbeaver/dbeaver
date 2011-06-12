@@ -147,7 +147,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         return structureContainer.getForeignKeysCache();
     }
 
-    public List<GenericTable> getTables(DBRProgressMonitor monitor)
+    public Collection<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getTables(monitor);

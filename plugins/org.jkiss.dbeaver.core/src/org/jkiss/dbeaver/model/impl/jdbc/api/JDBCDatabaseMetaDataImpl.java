@@ -993,7 +993,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getBestRowIdentifier(catalog, schema, table, scope, nullable),
-            "Find best row identifier", catalog, schema, table, scope, nullable);
+            "Find best row identifier", catalog, schema, table);
     }
 
     public JDBCResultSet getVersionColumns(String catalog, String schema, String table)
@@ -1051,7 +1051,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getIndexInfo(catalog, schema, table, unique, approximate),
-            "Load indexes", catalog, schema, table, unique, approximate);
+            "Load indexes", catalog, schema, table);
     }
 
     public boolean supportsResultSetType(int type)
@@ -1131,7 +1131,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getUDTs(catalog, schemaPattern, typeNamePattern, types),
-            "Load UDTs", catalog, schemaPattern, typeNamePattern, types);
+            "Load UDTs", catalog, schemaPattern, typeNamePattern);
     }
 
 }

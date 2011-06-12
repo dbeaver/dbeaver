@@ -166,7 +166,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         return tableCache.getObjects(monitor, MySQLView.class);
     }
 
-    public List<MySQLProcedure> getProcedures(DBRProgressMonitor monitor)
+    public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         return proceduresCache.getObjects(monitor);
@@ -178,7 +178,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         return proceduresCache.getObject(monitor, procName);
     }
 
-    public List<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
+    public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
         return triggerCache.getObjects(monitor);

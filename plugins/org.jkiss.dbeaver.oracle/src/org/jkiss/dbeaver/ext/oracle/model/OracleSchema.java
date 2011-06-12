@@ -41,7 +41,6 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private final TriggerCache triggerCache = new TriggerCache();
     private final IndexCache indexCache = new IndexCache();
-    private boolean constraintsCached = false;
     private boolean persisted;
 
     public OracleSchema(OracleDataSource dataSource, ResultSet dbResult)
@@ -134,7 +133,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return tableCache.getObjects(monitor, OracleView.class);
     }
 
-    public List<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
+    public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         return proceduresCache.getObjects(monitor);
@@ -146,7 +145,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return proceduresCache.getObject(monitor, procName);
     }
 
-    public List<OracleTrigger> getTriggers(DBRProgressMonitor monitor)
+    public Collection<OracleTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
         return triggerCache.getObjects(monitor);

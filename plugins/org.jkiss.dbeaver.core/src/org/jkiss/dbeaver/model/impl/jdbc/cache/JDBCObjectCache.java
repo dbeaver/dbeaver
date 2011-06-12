@@ -23,7 +23,6 @@ import java.util.*;
 public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
 
     protected final JDBCDataSource dataSource;
-    private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;
     private boolean caseSensitive;
     private Comparator<OBJECT> listOrderComparator;
@@ -54,13 +53,13 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
     abstract protected OBJECT fetchObject(JDBCExecutionContext context, ResultSet resultSet)
         throws SQLException, DBException;
 
-    public List<OBJECT> getObjects(DBRProgressMonitor monitor)
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (objectList == null) {
+        if (objectMap == null) {
             loadObjects(monitor);
         }
-        return objectList;
+        return objectMap.values();
     }
 
     public <SUB_TYPE> List<SUB_TYPE> getObjects(DBRProgressMonitor monitor, Class<SUB_TYPE> type)
@@ -93,19 +92,17 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
 
     public void clearCache()
     {
-        this.objectList = null;
         this.objectMap = null;
     }
 
     public synchronized void loadObjects(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (this.objectList != null) {
+        if (this.objectMap != null) {
             return;
         }
 
         List<OBJECT> tmpObjectList = new ArrayList<OBJECT>();
-        Map<String, OBJECT> tmpObjectMap = new HashMap<String, OBJECT>();
 
         JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Load objects");
         try {
@@ -120,7 +117,6 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
                             continue;
                         }
                         tmpObjectList.add(object);
-                        tmpObjectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
 
                         monitor.subTask(object.getName());
                         if (monitor.isCanceled()) {
@@ -146,8 +142,11 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         if (listOrderComparator != null) {
             Collections.sort(tmpObjectList, listOrderComparator);
         }
-        this.objectList = tmpObjectList;
-        this.objectMap = tmpObjectMap;
+
+        this.objectMap = new LinkedHashMap<String, OBJECT>();
+        for (OBJECT object : tmpObjectList) {
+            this.objectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
+        }
     }
 
 }

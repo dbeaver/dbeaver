@@ -76,7 +76,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
         return true;
     }
 
-    public List<GenericTable> getTables(DBRProgressMonitor monitor)
+    public Collection<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getObjects(monitor);
