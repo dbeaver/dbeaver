@@ -234,7 +234,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     sc = null;
                 }
             } catch (DBException e) {
-                log.error(e.getMessage());
+                log.error(e);
                 return;
             }
         }
@@ -378,7 +378,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             }
         } catch (DBException e) {
-            log.error(e.getMessage());
+            log.error(e);
         }
     }
 
@@ -395,7 +395,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 proposals.add(makeProposalsFromObject(monitor, table));
             }
         } catch (DBException e) {
-            log.error(e.getMessage());
+            log.error(e);
         }
     }
 

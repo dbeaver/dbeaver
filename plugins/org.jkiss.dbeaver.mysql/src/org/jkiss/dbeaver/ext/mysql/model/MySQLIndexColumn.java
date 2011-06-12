@@ -38,6 +38,7 @@ public class MySQLIndexColumn extends AbstractIndexColumn
         this.tableColumn = source.tableColumn;
         this.ordinalPosition = source.ordinalPosition;
         this.ascending = source.ascending;
+        this.nullable = source.nullable;
     }
 
     public MySQLIndex getIndex()

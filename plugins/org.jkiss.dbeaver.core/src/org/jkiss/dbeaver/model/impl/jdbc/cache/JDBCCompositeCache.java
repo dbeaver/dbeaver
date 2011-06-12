@@ -38,14 +38,14 @@ public abstract class JDBCCompositeCache<
 
     private final Map<String, ObjectInfo> PRECACHED_MARK = new HashMap<String, ObjectInfo>();
 
-    private JDBCObjectCache<?> parentCache;
+    private JDBCStructCache<?,?> parentCache;
     private Class<PARENT> parentType;
     private List<OBJECT> objectList;
     private final String parentColumnName;
     private final String objectColumnName;
 
     protected JDBCCompositeCache(
-        JDBCObjectCache<?> parentCache,
+        JDBCStructCache<?,?> parentCache,
         Class<PARENT> parentType,
         String parentColumnName,
         String objectColumnName)
@@ -114,6 +114,7 @@ public abstract class JDBCCompositeCache<
         // Load tables and columns first
         if (forParent == null) {
             parentCache.loadObjects(monitor);
+            parentCache.loadChildren(monitor, null);
         } else if (!forParent.isPersisted() || isObjectsCached(forParent)) {
             return;
         }
@@ -121,7 +122,7 @@ public abstract class JDBCCompositeCache<
         // Load index columns
         JDBCExecutionContext context = parentCache.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load composite objects");
         try {
-            Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new HashMap<PARENT, Map<String, ObjectInfo>>();
+            Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<PARENT, Map<String, ObjectInfo>>();
 
             JDBCPreparedStatement dbStat = prepareObjectsStatement(context, forParent);
             try {

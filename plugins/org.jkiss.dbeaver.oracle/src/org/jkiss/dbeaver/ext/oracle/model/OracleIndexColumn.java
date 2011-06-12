@@ -16,20 +16,17 @@ public class OracleIndexColumn extends AbstractIndexColumn
     private OracleTableColumn tableColumn;
     private int ordinalPosition;
     private boolean ascending;
-    private boolean nullable;
 
     public OracleIndexColumn(
         OracleIndex index,
         OracleTableColumn tableColumn,
         int ordinalPosition,
-        boolean ascending,
-        boolean nullable)
+        boolean ascending)
     {
         this.index = index;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
-        this.nullable = nullable;
     }
 
     OracleIndexColumn(OracleIndex toIndex, OracleIndexColumn source)
@@ -67,12 +64,6 @@ public class OracleIndexColumn extends AbstractIndexColumn
     public boolean isAscending()
     {
         return ascending;
-    }
-
-    @Property(name = "Nullable", viewable = true, order = 4)
-    public boolean isNullable()
-    {
-        return nullable;
     }
 
     public String getDescription()

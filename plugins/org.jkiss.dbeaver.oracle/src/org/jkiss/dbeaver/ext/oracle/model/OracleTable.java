@@ -113,6 +113,11 @@ public class OracleTable extends OracleTableBase
         this.constraints = constraints;
     }
 
+    boolean isConstraintsCached()
+    {
+        return constraints != null;
+    }
+
     public List<OracleForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {

@@ -19,7 +19,6 @@ import java.util.List;
 public class OracleIndex extends JDBCIndex<OracleTable>
 {
     private boolean nonUnique;
-    private String comment;
     private List<OracleIndexColumn> columns;
 
     public OracleIndex(
@@ -33,12 +32,10 @@ public class OracleIndex extends JDBCIndex<OracleTable>
         OracleTable table,
         boolean nonUnique,
         String indexName,
-        DBSIndexType indexType,
-        String comment)
+        DBSIndexType indexType)
     {
         super(table, indexName, indexType, true);
         this.nonUnique = nonUnique;
-        this.comment = comment;
     }
 
     /**
@@ -68,10 +65,9 @@ public class OracleIndex extends JDBCIndex<OracleTable>
         return !nonUnique;
     }
 
-    @Property(name = "Comment", viewable = true, order = 6)
     public String getDescription()
     {
-        return comment;
+        return "";
     }
 
     public List<OracleIndexColumn> getColumns(DBRProgressMonitor monitor)
@@ -102,5 +98,11 @@ public class OracleIndex extends JDBCIndex<OracleTable>
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),
             this);
+    }
+
+    @Override
+    public String toString()
+    {
+        return getFullQualifiedName();
     }
 }

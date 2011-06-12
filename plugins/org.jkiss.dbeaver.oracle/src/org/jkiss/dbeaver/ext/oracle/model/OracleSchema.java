@@ -185,8 +185,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             monitor.subTask("Cache table columns");
             tableCache.loadChildren(monitor, null);
         }
-        monitor.subTask("Cache table constraints");
-        constraintCache.getObjects(monitor, null);
+        if ((scope & STRUCT_ASSOCIATIONS) != 0) {
+            monitor.subTask("Cache table indexes");
+            indexCache.getObjects(monitor, null);
+            monitor.subTask("Cache table constraints");
+            constraintCache.getObjects(monitor, null);
+        }
     }
 
     @Override
@@ -216,7 +220,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         
         protected TableCache()
         {
-            super(getDataSource(), OracleConstants.COL_OWNER);
+            super(getDataSource(), OracleConstants.COL_TABLE_NAME);
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
@@ -226,7 +230,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                 "SELECT t.*,tc.COMMENTS " +
                 "FROM SYS.ALL_TABLES t\n" +
                 "LEFT OUTER JOIN ALL_TAB_COMMENTS tc ON tc.OWNER=t.OWNER AND tc.TABLE_NAME=t.TABLE_NAME\n" +
-                "WHERE t.OWNER='" + getName() + "'");
+                "WHERE t.OWNER='" + getName() + "' ORDER BY t.TABLE_NAME");
         }
 
         protected OracleTableBase fetchObject(JDBCExecutionContext context, ResultSet dbResult)
@@ -359,7 +363,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 
         protected boolean isObjectsCached(OracleTable parent)
         {
-            return parent.isIndexesCached();
+            return parent.isConstraintsCached();
         }
 
         protected void cacheObjects(OracleTable parent, List<OracleConstraint> indexes)
@@ -386,53 +390,50 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder();
-            sql
-                .append("SELECT * FROM ").append(OracleConstants.META_TABLE_STATISTICS)
-                .append(" WHERE ").append(OracleConstants.COL_TABLE_SCHEMA).append("=?");
+            sql.append("SELECT i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
+                "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND\n" +
+                "FROM SYS.ALL_INDEXES i \n" +
+                "JOIN SYS.ALL_IND_COLUMNS ic ON ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME\n" +
+                "WHERE i.OWNER=? AND i.TABLE_OWNER=?\n");
             if (forTable != null) {
-                sql.append(" AND ").append(OracleConstants.COL_TABLE_NAME).append("=?");
+                sql.append(" AND i.TABLE_NAME=?");
             }
-            sql.append(" ORDER BY ").append(OracleConstants.COL_INDEX_NAME).append(",").append(OracleConstants.COL_SEQ_IN_INDEX);
+            sql.append(" ORDER BY i.INDEX_NAME,ic.COLUMN_POSITION");
 
             JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
             dbStat.setString(1, OracleSchema.this.getName());
+            dbStat.setString(2, OracleSchema.this.getName());
             if (forTable != null) {
-                dbStat.setString(2, forTable.getName());
+                dbStat.setString(3, forTable.getName());
             }
             return dbStat;
-//            return context.getMetaData().getIndexInfo(
-//                    getName(),
-//                    null,
-//                    forParent == null ? null : DBUtils.getQuotedIdentifier(getDataSource(), forParent.getName()),
-//                    true,
-//                    true).getSource();
         }
 
         protected OracleIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, OracleTable parent, String indexName)
             throws SQLException, DBException
         {
-            boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_NON_UNIQUE) != 0;
             String indexTypeName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_INDEX_TYPE);
+            boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_UNIQUENESS) != 0;
             DBSIndexType indexType;
-            if (OracleConstants.INDEX_TYPE_BTREE.getId().equals(indexTypeName)) {
-                indexType = OracleConstants.INDEX_TYPE_BTREE;
-            } else if (OracleConstants.INDEX_TYPE_FULLTEXT.getId().equals(indexTypeName)) {
-                indexType = OracleConstants.INDEX_TYPE_FULLTEXT;
-            } else if (OracleConstants.INDEX_TYPE_HASH.getId().equals(indexTypeName)) {
-                indexType = OracleConstants.INDEX_TYPE_HASH;
-            } else if (OracleConstants.INDEX_TYPE_RTREE.getId().equals(indexTypeName)) {
-                indexType = OracleConstants.INDEX_TYPE_RTREE;
+            if (OracleConstants.INDEX_TYPE_NORMAL.getId().equals(indexTypeName)) {
+                indexType = OracleConstants.INDEX_TYPE_NORMAL;
+            } else if (OracleConstants.INDEX_TYPE_BITMAP.getId().equals(indexTypeName)) {
+                indexType = OracleConstants.INDEX_TYPE_BITMAP;
+            } else if (OracleConstants.INDEX_TYPE_FUNCTION_BASED_NORMAL.getId().equals(indexTypeName)) {
+                indexType = OracleConstants.INDEX_TYPE_FUNCTION_BASED_NORMAL;
+            } else if (OracleConstants.INDEX_TYPE_FUNCTION_BASED_BITMAP.getId().equals(indexTypeName)) {
+                indexType = OracleConstants.INDEX_TYPE_FUNCTION_BASED_BITMAP;
+            } else if (OracleConstants.INDEX_TYPE_DOMAIN.getId().equals(indexTypeName)) {
+                indexType = OracleConstants.INDEX_TYPE_DOMAIN;
             } else {
                 indexType = DBSIndexType.OTHER;
             }
-            final String comment = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COMMENTS);
 
             return new OracleIndex(
                 parent,
                 isNonUnique,
                 indexName,
-                indexType,
-                comment);
+                indexType);
         }
 
         protected OracleIndexColumn fetchObjectRow(
@@ -442,10 +443,9 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             OracleIndex object)
             throws SQLException, DBException
         {
-            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_SEQ_IN_INDEX);
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_COLUMN_NAME);
-            String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_COLLATION);
-            boolean nullable = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_NULLABLE));
+            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_COLUMN_POSITION);
+            boolean isAscending = "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_DESCEND));
 
             OracleTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
             if (tableColumn == null) {
@@ -457,8 +457,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                 object,
                 tableColumn,
                 ordinalPosition,
-                "A".equalsIgnoreCase(ascOrDesc),
-                nullable);
+                isAscending);
         }
 
         protected boolean isObjectsCached(OracleTable parent)

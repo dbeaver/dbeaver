@@ -45,8 +45,7 @@ public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTabl
             parent,
             false,
             null,
-            editDialog.getIndexType(),
-            null);
+            editDialog.getIndexType());
         StringBuilder idxName = new StringBuilder(64);
         idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
         int colIndex = 1;
@@ -59,8 +58,7 @@ public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTabl
                     index,
                     (OracleTableColumn) tableColumn,
                     colIndex++,
-                    true,
-                    false));
+                    true));
         }
         idxName.append("_IDX");
         index.setName(JDBCObjectNameCaseTransformer.transformName(index, idxName.toString()));

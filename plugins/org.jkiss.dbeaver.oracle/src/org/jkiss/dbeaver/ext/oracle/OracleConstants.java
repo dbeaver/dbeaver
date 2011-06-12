@@ -66,6 +66,7 @@ public class OracleConstants {
     public static final String COL_TABLE_NAME = "TABLE_NAME";
     public static final String COL_COLUMN_ID = "COLUMN_ID";
     public static final String COL_COLUMN_NAME = "COLUMN_NAME";
+    public static final String COL_COLUMN_POSITION = "COLUMN_POSITION";
     public static final String COL_DATA_TYPE = "DATA_TYPE";
     public static final String COL_DATA_LENGTH = "DATA_LENGTH";
     public static final String COL_NULLABLE = "NULLABLE";
@@ -79,6 +80,11 @@ public class OracleConstants {
     public static final String COL_SEARCH_CONDITION = "SEARCH_CONDITION";
     public static final String COL_POSITION = "POSITION";
     public static final String COL_STATUS = "STATUS";
+
+    public static final String COL_INDEX_NAME = "INDEX_NAME";
+    public static final String COL_INDEX_TYPE = "INDEX_TYPE";
+    public static final String COL_UNIQUENESS = "UNIQUENESS";
+    public static final String COL_DESCEND = "DESCEND";
 
     public static final String COL_TABLE_SCHEMA = "TABLE_SCHEMA";
     public static final String COL_TABLE_TYPE = "TABLE_TYPE";
@@ -95,8 +101,6 @@ public class OracleConstants {
     public static final String COL_COLLATION = "COLLATION";
     public static final String COL_COLLATION_NAME = "COLLATION_NAME";
     public static final String COL_AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
-    public static final String COL_INDEX_NAME = "INDEX_NAME";
-    public static final String COL_INDEX_TYPE = "INDEX_TYPE";
     public static final String COL_SEQ_IN_INDEX = "SEQ_IN_INDEX";
     public static final String COL_NON_UNIQUE = "NON_UNIQUE";
 
@@ -142,23 +146,12 @@ public class OracleConstants {
 	public static final String COL_TRIGGER_DATABASE_COLLATION = "DATABASE_COLLATION";
     
     public static final String CONSTRAINT_FOREIGN_KEY = "FOREIGN KEY";
-    public static final String CONSTRAINT_PRIMARY_KEY = "PRIMARY KEY";
-    public static final String CONSTRAINT_UNIQUE = "UNIQUE";
 
-    public static final String EXTRA_AUTO_INCREMENT = "auto_increment";
-
-    public static final DBSIndexType INDEX_TYPE_BTREE = new DBSIndexType("BTREE", "BTree");
-    public static final DBSIndexType INDEX_TYPE_FULLTEXT = new DBSIndexType("FULLTEXT", "Full Text");
-    public static final DBSIndexType INDEX_TYPE_HASH = new DBSIndexType("HASH", "Hash");
-    public static final DBSIndexType INDEX_TYPE_RTREE = new DBSIndexType("RTREE", "RTree");
-
-    public static final String COL_CHARSET = "CHARSET";
-    public static final String COL_DESCRIPTION = "DESCRIPTION";
-    public static final String COL_MAX_LENGTH = "MAXLENGTH";
-    public static final String COL_ID = "ID";
-    public static final String COL_DEFAULT = "DEFAULT";
-    public static final String COL_COMPILED = "COMPILED";
-    public static final String COL_SORT_LENGTH = "SORTLEN";
+    public static final DBSIndexType INDEX_TYPE_NORMAL = new DBSIndexType("NORMAL", "Normal");
+    public static final DBSIndexType INDEX_TYPE_BITMAP = new DBSIndexType("BITMAP", "Bitmap");
+    public static final DBSIndexType INDEX_TYPE_FUNCTION_BASED_NORMAL = new DBSIndexType("FUNCTION-BASED NORMAL", "Function-based Normal");
+    public static final DBSIndexType INDEX_TYPE_FUNCTION_BASED_BITMAP = new DBSIndexType("FUNCTION-BASED BITMAP", "Function-based Bitmap");
+    public static final DBSIndexType INDEX_TYPE_DOMAIN = new DBSIndexType("DOMAIN", "Domain");
 
     public static final String COL_PARTITION_NAME = "PARTITION_NAME";
     public static final String COL_SUBPARTITION_NAME = "SUBPARTITION_NAME";
