@@ -165,19 +165,19 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         return structureContainer == null ? null : structureContainer.getPackages(monitor);
     }
 
-    public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<GenericIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getIndexes(monitor);
     }
 
-    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getProcedures(monitor);
     }
 
-    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
+    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getProcedures(monitor, name);

@@ -109,13 +109,13 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     }
 
 
-    public List<OracleIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<OracleIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return indexCache.getObjects(monitor, null);
     }
 
-    public List<OracleTable> getTables(DBRProgressMonitor monitor)
+    public Collection<OracleTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getObjects(monitor, OracleTable.class);
@@ -127,7 +127,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return tableCache.getObject(monitor, name, OracleTable.class);
     }
 
-    public List<OracleView> getViews(DBRProgressMonitor monitor)
+    public Collection<OracleView> getViews(DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getObjects(monitor, OracleView.class);

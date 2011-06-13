@@ -88,7 +88,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
         return tableCache.getObject(monitor, name);
     }
 
-    public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<GenericIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         cacheIndexes(monitor, true);
@@ -192,7 +192,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
         return DBUtils.findObject(getPackages(monitor), name);
     }
 
-    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         if (procedures == null) {
@@ -201,7 +201,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
         return procedures;
     }
 
-    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
+    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return DBUtils.findObjects(getProcedures(monitor), name);

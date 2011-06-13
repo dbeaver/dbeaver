@@ -18,10 +18,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * OracleTable
@@ -122,7 +119,7 @@ public class OracleTable extends OracleTableBase
         List<OracleForeignKey> refs = new ArrayList<OracleForeignKey>();
         // This is dummy implementation
         // Get references from this schema only
-        final List<OracleConstraint> allConstraints = getContainer().getConstraintCache().getObjects(monitor, null);
+        final Collection<OracleConstraint> allConstraints = getContainer().getConstraintCache().getObjects(monitor, null);
         for (OracleConstraint constraint : allConstraints) {
             if (constraint instanceof OracleForeignKey && ((OracleForeignKey) constraint).getReferencedTable() == this) {
                 refs.add((OracleForeignKey) constraint);

@@ -82,13 +82,13 @@ public abstract class JDBCCompositeCache<
         }
     }
 
-    public List<OBJECT> getObjects(DBRProgressMonitor monitor)
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor)
         throws DBException
     {
         return getObjects(monitor, null);
     }
 
-    public List<OBJECT> getObjects(DBRProgressMonitor monitor, PARENT forParent)
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, PARENT forParent)
         throws DBException
     {
         if (objectList == null) {
@@ -108,9 +108,9 @@ public abstract class JDBCCompositeCache<
         return objectList != null;
     }
 
-    public void setCache(List<OBJECT> objects)
+    public void setCache(Collection<OBJECT> objects)
     {
-        objectList = objects;
+        objectList = new ArrayList<OBJECT>(objects);
     }
 
     public void clearCache()

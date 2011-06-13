@@ -62,7 +62,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         return objectMap.values();
     }
 
-    public <SUB_TYPE> List<SUB_TYPE> getObjects(DBRProgressMonitor monitor, Class<SUB_TYPE> type)
+    public <SUB_TYPE> Collection<SUB_TYPE> getObjects(DBRProgressMonitor monitor, Class<SUB_TYPE> type)
         throws DBException
     {
         List<SUB_TYPE> result = new ArrayList<SUB_TYPE>();

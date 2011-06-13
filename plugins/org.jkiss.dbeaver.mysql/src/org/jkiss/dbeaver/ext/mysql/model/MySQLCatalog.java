@@ -142,13 +142,13 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         this.sqlPath = sqlPath;
     }
 
-    public List<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return indexCache.getObjects(monitor, null);
     }
 
-    public List<MySQLTable> getTables(DBRProgressMonitor monitor)
+    public Collection<MySQLTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getObjects(monitor, MySQLTable.class);
@@ -160,7 +160,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         return tableCache.getObject(monitor, name, MySQLTable.class);
     }
 
-    public List<MySQLView> getViews(DBRProgressMonitor monitor)
+    public Collection<MySQLView> getViews(DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getObjects(monitor, MySQLView.class);
