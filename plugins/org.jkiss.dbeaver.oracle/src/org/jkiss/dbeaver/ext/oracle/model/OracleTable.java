@@ -29,7 +29,6 @@ import java.util.Map;
 public class OracleTable extends OracleTableBase
 {
 
-    private String comment;
     private List<OracleIndex> indexes;
     private List<OracleConstraint> constraints;
     private List<OracleForeignKey> foreignKeys;
@@ -45,16 +44,7 @@ public class OracleTable extends OracleTableBase
         OracleSchema schema,
         ResultSet dbResult)
     {
-        super(schema, true);
-        setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME));
-        this.comment = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COMMENTS);
-
-    }
-
-    @Property(name = "Comments", viewable = true, editable = true, order = 100)
-    public String getDescription()
-    {
-        return comment;
+        super(schema, dbResult);
     }
 
     public boolean isView()

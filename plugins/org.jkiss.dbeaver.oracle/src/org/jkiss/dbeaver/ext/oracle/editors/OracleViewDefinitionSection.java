@@ -32,12 +32,12 @@ public class OracleViewDefinitionSection extends SourceEditSection {
     @Override
     protected String loadSources(DBRProgressMonitor monitor) throws DBException
     {
-        return view.getAdditionalInfo(monitor).getDefinition();
+        return view.getAdditionalInfo(monitor).getText();
     }
 
     protected void updateSources(String source)
     {
-        getEditor().getEditorInput().getPropertySource().setPropertyValue("definition", source);
+        getEditor().getEditorInput().getPropertySource().setPropertyValue("text", source);
     }
 
 }

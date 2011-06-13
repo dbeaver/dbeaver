@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.SQLUtils;
@@ -32,42 +33,30 @@ import java.util.List;
  */
 public class OracleView extends OracleTableBase
 {
-    public enum CheckOption {
-        NONE(null),
-        CASCADE("CASCADED"),
-        LOCAL("LOCAL");
-        private final String definitionName;
-
-        CheckOption(String definitionName)
-        {
-            this.definitionName = definitionName;
-        }
-
-        public String getDefinitionName()
-        {
-            return definitionName;
-        }
-    }
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
-        private String definition;
-        private CheckOption checkOption;
-        private boolean updatable;
-        private String definer;
+        private String text;
+        private String typeText;
+        private String oidText;
+        private String typeName;
+        private OracleView superView;
 
         public boolean isLoaded() { return loaded; }
 
-        @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1) public String getDefinition() { return definition; }
-        public void setDefinition(String definition) { this.definition = definition; }
+        @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
+        public String getText() { return text; }
+        public void setText(String text) { this.text = text; }
 
-        @Property(name = "Check Option", viewable = true, editable = true, updatable = true, order = 4) public CheckOption getCheckOption() { return checkOption; }
-        public void setCheckOption(CheckOption checkOption) { this.checkOption = checkOption; }
-
-        @Property(name = "Updatable", viewable = true, order = 5) public boolean isUpdatable() { return updatable; }
-        public void setUpdatable(boolean updatable) { this.updatable = updatable; }
-        @Property(name = "Definer", viewable = true, order = 6) public String getDefiner() { return definer; }
-        public void setDefiner(String definer) { this.definer = definer; }
+        public String getTypeText() { return typeText; }
+        public void setTypeText(String typeText) { this.typeText = typeText; }
+        public String getOidText() { return oidText; }
+        public void setOidText(String oidText) { this.oidText = oidText; }
+        public String getTypeName() { return typeName; }
+        public void setTypeName(String typeName) { this.typeName = typeName; }
+        @Property(name = "Super View", viewable = false, editable = true, order = 5)
+        public OracleView getSuperView() { return superView; }
+        public void setSuperView(OracleView superView) { this.superView = superView; }
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleView> {
@@ -88,8 +77,7 @@ public class OracleView extends OracleTableBase
         OracleSchema schema,
         ResultSet dbResult)
     {
-        super(schema, true);
-        setName("XXX");
+        super(schema, dbResult);
     }
 
     @Property(name = "View Name", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 1)
@@ -111,7 +99,7 @@ public class OracleView extends OracleTableBase
 
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
-    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException
     {
         synchronized (additionalInfo) {
             if (!additionalInfo.loaded) {
@@ -155,33 +143,31 @@ public class OracleView extends OracleTableBase
     }
 
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBException
     {
-        if (!isPersisted() || getContainer().isSystem()) {
+        if (!isPersisted()) {
             additionalInfo.loaded = true;
             return;
         }
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT * FROM " + OracleConstants.META_TABLE_VIEWS + " WHERE " + OracleConstants.COL_TABLE_SCHEMA + "=? AND " + OracleConstants.COL_TABLE_NAME + "=?");
+                "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE,SUPERVIEW_NAME FROM " + OracleConstants.META_TABLE_VIEWS + " WHERE " + OracleConstants.COL_OWNER + "=? AND " + OracleConstants.COL_VIEW_NAME + "=?");
             try {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     if (dbResult.next()) {
-                        try {
-                            additionalInfo.setCheckOption(CheckOption.valueOf(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CHECK_OPTION)));
-                        } catch (IllegalArgumentException e) {
-                            log.warn(e);
+                        additionalInfo.setText(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_VIEW_TEXT));
+                        additionalInfo.setTypeText(JDBCUtils.safeGetString(dbResult, "TYPE_TEXT"));
+                        additionalInfo.setOidText(JDBCUtils.safeGetString(dbResult, "OID_TEXT"));
+                        additionalInfo.setTypeName(JDBCUtils.safeGetString(dbResult, "VIEW_TYPE"));
+
+                        String superViewName = JDBCUtils.safeGetString(dbResult, "SUPERVIEW_NAME");
+                        if (!CommonUtils.isEmpty(superViewName)) {
+                            additionalInfo.setSuperView(getContainer().getView(monitor, superViewName));
                         }
-                        additionalInfo.setDefiner(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DEFINER));
-                        additionalInfo.setDefinition(
-                            SQLUtils.formatSQL(
-                                getDataSource(),
-                                JDBCUtils.safeGetString(dbResult, OracleConstants.COL_VIEW_DEFINITION)));
-                        additionalInfo.setUpdatable("YES".equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_IS_UPDATABLE)));
                     }
                     additionalInfo.loaded = true;
                 } finally {

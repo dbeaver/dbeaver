@@ -48,6 +48,7 @@ public class OracleConstants {
 
     public static final String META_TABLE_USERS = INFO_SCHEMA_NAME + ".ALL_USERS";
     public static final String META_TABLE_TABLES = INFO_SCHEMA_NAME + ".ALL_TABLES";
+    public static final String META_TABLE_VIEWS = INFO_SCHEMA_NAME + ".ALL_VIEWS";
     public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".ALL_TAB_COLS";
     public static final String META_TABLE_CONSTRAINTS = INFO_SCHEMA_NAME + ".ALL_CONSTRAINTS";
     public static final String META_TABLE_CONSTRAINT_COLUMNS = INFO_SCHEMA_NAME + ".ALL_CONS_COLUMNS";
@@ -58,13 +59,13 @@ public class OracleConstants {
     public static final String META_TABLE_KEY_COLUMN_USAGE = INFO_SCHEMA_NAME + ".KEY_COLUMN_USAGE";
     public static final String META_TABLE_STATISTICS = INFO_SCHEMA_NAME + ".STATISTICS";
     public static final String META_TABLE_PARTITIONS = INFO_SCHEMA_NAME + ".PARTITIONS";
-    public static final String META_TABLE_VIEWS = INFO_SCHEMA_NAME + ".VIEWS";
 
 
     public static final String COL_USER_ID = "USER_ID";
     public static final String COL_USER_NAME = "USERNAME";
     public static final String COL_OWNER = "OWNER";
     public static final String COL_TABLE_NAME = "TABLE_NAME";
+    public static final String COL_TABLE_TYPE = "TABLE_TYPE";
     public static final String COL_COLUMN_ID = "COLUMN_ID";
     public static final String COL_COLUMN_NAME = "COLUMN_NAME";
     public static final String COL_COLUMN_POSITION = "COLUMN_POSITION";
@@ -75,6 +76,8 @@ public class OracleConstants {
     public static final String COL_DATA_SCALE = "DATA_SCALE";
     public static final String COL_DATA_DEFAULT = "DATA_DEFAULT";
     public static final String COL_COMMENTS = "COMMENTS";
+    public static final String COL_VIEW_NAME = "VIEW_NAME";
+    public static final String COL_VIEW_TEXT = "TEXT";
 
     public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
     public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
@@ -91,31 +94,13 @@ public class OracleConstants {
     public static final String COL_DESCEND = "DESCEND";
 
     public static final String COL_TABLE_SCHEMA = "TABLE_SCHEMA";
-    public static final String COL_TABLE_TYPE = "TABLE_TYPE";
     public static final String COL_ENGINE = "ENGINE";
     public static final String COL_VERSION = "VERSION";
     public static final String COL_TABLE_ROWS = "ROWS";
-    public static final String COL_AUTO_INCREMENT = "AUTO_INCREMENT";
-    public static final String COL_TABLE_COMMENT = "COMMENT";
-    public static final String COL_COLUMNS_NAME = "COLUMNS_NAME";
-    public static final String COL_ORDINAL_POSITION = "ORDINAL_POSITION";
     public static final String COL_CREATE_TIME = "CREATE_TIME";
     public static final String COL_UPDATE_TIME = "UPDATE_TIME";
     public static final String COL_CHECK_TIME = "CHECK_TIME";
-    public static final String COL_COLLATION = "COLLATION";
-    public static final String COL_COLLATION_NAME = "COLLATION_NAME";
     public static final String COL_AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
-    public static final String COL_SEQ_IN_INDEX = "SEQ_IN_INDEX";
-    public static final String COL_NON_UNIQUE = "NON_UNIQUE";
-
-    public static final String COL_COLUMN_KEY = "COLUMN_KEY";
-    public static final String COL_CHARACTER_MAXIMUM_LENGTH = "CHARACTER_MAXIMUM_LENGTH";
-    public static final String COL_CHARACTER_OCTET_LENGTH = "CHARACTER_OCTET_LENGTH";
-    public static final String COL_IS_NULLABLE = "IS_NULLABLE";
-    public static final String COL_IS_UPDATABLE = "IS_UPDATABLE";
-    public static final String COL_COLUMN_COMMENT = "COLUMN_COMMENT";
-    public static final String COL_COLUMN_EXTRA = "EXTRA";
-    public static final String COL_COLUMN_TYPE = "COLUMN_TYPE";
 
     public static final String COL_ROUTINE_SCHEMA = "ROUTINE_SCHEMA";
     public static final String COL_ROUTINE_NAME = "ROUTINE_NAME";
@@ -174,7 +159,6 @@ public class OracleConstants {
     public static final String COL_DATA_FREE = "DATA_FREE";
     public static final String COL_CHECKSUM = "CHECKSUM";
     public static final String COL_CHECK_OPTION = "CHECK_OPTION";
-    public static final String COL_VIEW_DEFINITION = "VIEW_DEFINITION";
 
     /**
      * Connection type

@@ -39,7 +39,7 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty");
         }
-        if (CommonUtils.isEmpty(command.getObject().getAdditionalInfo().getDefinition())) {
+        if (CommonUtils.isEmpty(command.getObject().getAdditionalInfo().getText())) {
             throw new DBException("View definition cannot be empty");
         }
     }
@@ -77,11 +77,7 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = ContentUtils.getDefaultLineSeparator();
         decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator)
-            .append("AS ").append(view.getAdditionalInfo().getDefinition());
-        final OracleView.CheckOption checkOption = view.getAdditionalInfo().getCheckOption();
-        if (checkOption != null && checkOption != OracleView.CheckOption.NONE) {
-            decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION");
-        }
+            .append("AS ").append(view.getAdditionalInfo().getText());
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction("Create view", decl.toString())
         };
@@ -89,9 +85,6 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
 
     public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseNodeEditor activeEditor, final OracleView object)
     {
-        if (object.getContainer().isSystem()) {
-            return null;
-        }
         return new ITabDescriptor[] {
             new PropertyTabDescriptor(
                 PropertiesContributor.CATEGORY_INFO,

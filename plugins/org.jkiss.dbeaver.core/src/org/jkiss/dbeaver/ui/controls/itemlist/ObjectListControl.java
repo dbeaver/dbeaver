@@ -392,7 +392,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             for (Class<?> objectClass : classList) {
                 List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass, propertyFilter);
                 for (ObjectPropertyDescriptor prop : props) {
-                    if (!prop.isViewable()) {
+                    if (!prop.isViewable() || prop.isHidden()) {
                         continue;
                     }
                     if (!listPropertySource.hasProperty(prop)) {

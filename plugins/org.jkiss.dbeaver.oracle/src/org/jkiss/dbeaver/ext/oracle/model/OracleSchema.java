@@ -133,6 +133,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return tableCache.getObjects(monitor, OracleView.class);
     }
 
+    public OracleView getView(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return tableCache.getObject(monitor, name, OracleView.class);
+    }
+
     public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -225,17 +231,27 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
-            return context.prepareStatement(
-                "SELECT t.*,tc.COMMENTS " +
-                "FROM SYS.ALL_TABLES t\n" +
-                "LEFT OUTER JOIN ALL_TAB_COMMENTS tc ON tc.OWNER=t.OWNER AND tc.TABLE_NAME=t.TABLE_NAME\n" +
-                "WHERE t.OWNER='" + getName() + "' ORDER BY t.TABLE_NAME");
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT tab.*,tc.COMMENTS FROM (\n" +
+                    "SELECT t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as TABLE_TYPE FROM SYS.ALL_TABLES t\n" +
+                    "UNION ALL\n" +
+                    "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as TABLE_TYPE FROM SYS.ALL_VIEWS v) tab\n" +
+                "LEFT OUTER JOIN ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME\n" +
+                "WHERE tab.OWNER=?\n" +
+                "ORDER BY tab.TABLE_NAME");
+            dbStat.setString(1, getName());
+            return dbStat;
         }
 
         protected OracleTableBase fetchObject(JDBCExecutionContext context, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleTable(OracleSchema.this, dbResult);
+            final String tableType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_TYPE);
+            if ("TABLE".equals(tableType)) {
+                return new OracleTable(OracleSchema.this, dbResult);
+            } else {
+                return new OracleView(OracleSchema.this, dbResult);
+            }
         }
 
         protected boolean isChildrenCached(OracleTableBase table)
@@ -253,16 +269,18 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         {
             StringBuilder sql = new StringBuilder();
             sql
-                .append("SELECT * FROM ").append(OracleConstants.META_TABLE_COLUMNS)
-                .append(" WHERE ").append(OracleConstants.COL_OWNER).append("=?");
+                .append("SELECT c.*,cc.COMMENTS\n" +
+                    "FROM ALL_TAB_COLS c\n" +
+                    "LEFT OUTER JOIN ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
+                    "WHERE c.OWNER=?");
             if (forTable != null) {
-                sql.append(" AND ").append(OracleConstants.COL_TABLE_NAME).append("=?");
+                sql.append(" AND c.TABLE_NAME=?");
             }
-            sql.append(" ORDER BY ");
+            sql.append("\nORDER BY ");
             if (forTable != null) {
-                sql.append(OracleConstants.COL_TABLE_NAME).append(",");
+                sql.append("c.").append(OracleConstants.COL_TABLE_NAME).append(",");
             }
-            sql.append(OracleConstants.COL_COLUMN_ID);
+            sql.append("c.").append(OracleConstants.COL_COLUMN_ID);
 
             JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
             dbStat.setString(1, OracleSchema.this.getName());

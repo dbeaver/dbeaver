@@ -67,6 +67,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         setScale(JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_DATA_SCALE));
         setPrecision(JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_DATA_PRECISION));
         this.defaultValue = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DATA_DEFAULT);
+        setComment(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COMMENTS));
     }
 
     public DBSObject getParentObject()
