@@ -92,7 +92,10 @@ public class OracleTable extends OracleTableBase
         throws DBException
     {
         if (constraints == null) {
-            getContainer().getConstraintCache().getObjects(monitor, this);
+            // Read constraints for ALL tables in this schema
+            // It is fastest way to obtain constraints because ALL_CONSTRAINTS table doesn't contains reference table name
+            // and extra join will slow query dramatically
+            getContainer().getConstraintCache().getObjects(monitor, null);
         }
         return constraints;
     }
@@ -126,14 +129,24 @@ public class OracleTable extends OracleTableBase
     public List<OracleForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
-        return null;
+        List<OracleForeignKey> refs = new ArrayList<OracleForeignKey>();
+        // This is dummy implementation
+        // Get references from this schema only
+        final List<OracleConstraint> allConstraints = getContainer().getConstraintCache().getObjects(monitor, null);
+        for (OracleConstraint constraint : allConstraints) {
+            if (constraint instanceof OracleForeignKey && ((OracleForeignKey) constraint).getReferencedTable() == this) {
+                refs.add((OracleForeignKey) constraint);
+            }
+        }
+        return refs;
     }
 
     public List<OracleForeignKey> getForeignKeys(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {
-            getContainer().getConstraintCache().getObjects(monitor, this);
+            // Read constraints for ALL tables in this schema
+            getContainer().getConstraintCache().getObjects(monitor, null);
         }
         return foreignKeys;
     }
