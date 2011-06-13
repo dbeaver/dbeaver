@@ -20,7 +20,7 @@ import java.util.*;
 /**
  * Various objects cache
  */
-public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
+public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCAbstractCache<OBJECT> {
 
     protected final JDBCDataSource dataSource;
     private Map<String, OBJECT> objectMap;

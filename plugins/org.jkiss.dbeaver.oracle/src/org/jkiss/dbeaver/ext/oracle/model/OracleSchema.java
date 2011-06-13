@@ -233,7 +233,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT tab.*,tc.COMMENTS FROM (\n" +
-                    "SELECT t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as TABLE_TYPE FROM SYS.ALL_TABLES t\n" +
+                    "SELECT t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as TABLE_TYPE FROM SYS.ALL_ALL_TABLES t\n" +
                     "UNION ALL\n" +
                     "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as TABLE_TYPE FROM SYS.ALL_VIEWS v) tab\n" +
                 "LEFT OUTER JOIN ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME\n" +

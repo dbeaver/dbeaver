@@ -4,27 +4,35 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.OracleUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * OracleStructureAssistant
  */
-public class OracleStructureAssistant extends JDBCStructureAssistant
+public class OracleStructureAssistant implements DBSStructureAssistant
 {
+    static protected final Log log = LogFactory.getLog(OracleStructureAssistant.class);
+
     private final OracleDataSource dataSource;
 
     public OracleStructureAssistant(OracleDataSource dataSource)
@@ -32,176 +40,108 @@ public class OracleStructureAssistant extends JDBCStructureAssistant
         this.dataSource = dataSource;
     }
 
-    @Override
-    protected JDBCDataSource getDataSource()
-    {
-        return dataSource;
-    }
-
     public DBSObjectType[] getSupportedObjectTypes()
     {
         return new DBSObjectType[] {
             RelationalObjectType.TYPE_TABLE,
             RelationalObjectType.TYPE_CONSTRAINT,
+            RelationalObjectType.TYPE_INDEX,
             RelationalObjectType.TYPE_PROCEDURE,
-            RelationalObjectType.TYPE_TABLE_COLUMN,
+            RelationalObjectType.TYPE_TRIGGER,
             };
     }
 
-    @Override
-    protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, int maxResults, List<DBSObject> objects) throws DBException, SQLException
+    public Collection<DBSObject> findObjectsByMask(
+        DBRProgressMonitor monitor,
+        DBSObject parentObject,
+        Collection<DBSObjectType> objectTypes,
+        String objectNameMask,
+        int maxResults)
+        throws DBException
     {
         OracleSchema schema = parentObject instanceof OracleSchema ? (OracleSchema) parentObject : null;
-        if (objectType == RelationalObjectType.TYPE_TABLE) {
-            findTablesByMask(context, schema, objectNameMask, maxResults, objects);
-        } else if (objectType == RelationalObjectType.TYPE_CONSTRAINT) {
-            findConstraintsByMask(context, schema, objectNameMask, maxResults, objects);
-        } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
-            findProceduresByMask(context, schema, objectNameMask, maxResults, objects);
-        } else if (objectType == RelationalObjectType.TYPE_TABLE_COLUMN) {
-            findTableColumnsByMask(context, schema, objectNameMask, maxResults, objects);
+        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Find objects by name");
+        try {
+            List<DBSObject> objects = new ArrayList<DBSObject>();
+
+            StringBuilder objectTypeClause = new StringBuilder();
+            for (DBSObjectType objectType : objectTypes) {
+                String typeName;
+                if (objectType == RelationalObjectType.TYPE_TABLE) {
+                    typeName = "'TABLE','VIEW'";
+                } else if (objectType == RelationalObjectType.TYPE_INDEX) {
+                    typeName = "'INDEX'";
+                } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
+                    typeName = "'PROCEDURE'";
+                } else if (objectType == RelationalObjectType.TYPE_TRIGGER) {
+                    typeName = "'TRIGGER'";
+                } else {
+                    continue;
+                }
+                if (objectTypeClause.length() > 0) { objectTypeClause.append(","); }
+                objectTypeClause.append(typeName);
+            }
+            // Search all objects
+            if (objectTypeClause.length() > 0) {
+                searchAllObjects(context, schema, objectNameMask, objectTypeClause.toString(), maxResults, objects);
+            }
+            // Search constraints
+
+            return objects;
+        }
+        catch (SQLException ex) {
+            throw new DBException(ex);
+        }
+        finally {
+            context.close();
         }
     }
 
-    private void findTablesByMask(JDBCExecutionContext context, OracleSchema schema, String tableNameMask, int maxResults, List<DBSObject> objects)
+    private void searchAllObjects(JDBCExecutionContext context, OracleSchema schema, String objectNameMask, String objectTypeClause, int maxResults, List<DBSObject> objects)
         throws SQLException, DBException
     {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
-
-        // Load tables
+        // Seek for objects
         JDBCPreparedStatement dbStat = context.prepareStatement(
-            "SELECT " + OracleConstants.COL_TABLE_SCHEMA + "," + OracleConstants.COL_TABLE_NAME +
-            " FROM " + OracleConstants.META_TABLE_TABLES + " WHERE " + OracleConstants.COL_TABLE_NAME + " LIKE ? " +
-                (schema == null ? "" : " AND " + OracleConstants.COL_TABLE_SCHEMA + "=?") +
-                " ORDER BY " + OracleConstants.COL_TABLE_NAME);
+            "SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ALL_OBJECTS WHERE " +
+            "OBJECT_TYPE IN (" + objectTypeClause + ") AND OBJECT_NAME LIKE ? " +
+                (schema == null ? "" : " AND OWNER=?") +
+                " ORDER BY OBJECT_NAME");
         try {
-            dbStat.setString(1, tableNameMask.toLowerCase());
+            dbStat.setString(1, objectNameMask.toUpperCase());
             if (schema != null) {
                 dbStat.setString(2, schema.getName());
             }
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
+                while (objects.size() < maxResults && dbResult.next()) {
+                    if (context.getProgressMonitor().isCanceled()) {
                         break;
                     }
-                    String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_SCHEMA);
-                    String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
-                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
+                    String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OWNER);
+                    String objectName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OBJECT_NAME);
+                    String objectType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OBJECT_TYPE);
+                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(context.getProgressMonitor(), schemaName);
                     if (tableSchema == null) {
                         log.debug("Table schema '" + schemaName + "' not found");
                         continue;
                     }
-                    OracleTable table = tableSchema.getTable(monitor, tableName);
-                    if (table == null) {
-                        log.debug("Table '" + tableName + "' not found in schema '" + tableSchema.getName() + "'");
-                        continue;
+                    JDBCAbstractCache<?> objectCache = null;
+                    if ("TABLE".equals(objectType) || "VIEW".equals(objectType)) {
+                        objectCache = tableSchema.getTableCache();
+                    } else if ("INDEX".equals(objectType)) {
+                        objectCache = tableSchema.getIndexCache();
+                    } else if ("PROCEDURE".equals(objectType)) {
+                        objectCache = tableSchema.getProceduresCache();
+                    } else if ("TRIGGER".equals(objectType)) {
+                        objectCache = tableSchema.getTriggerCache();
                     }
-                    objects.add(table);
-                }
-            }
-            finally {
-                dbResult.close();
-            }
-        } finally {
-            dbStat.close();
-        }
-    }
-
-    private void findProceduresByMask(JDBCExecutionContext context, OracleSchema schema, String procNameMask, int maxResults, List<DBSObject> objects)
-        throws SQLException, DBException
-    {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
-
-        // Load tables
-        JDBCPreparedStatement dbStat = context.prepareStatement(
-            "SELECT " + OracleConstants.COL_ROUTINE_SCHEMA + "," + OracleConstants.COL_ROUTINE_NAME +
-            " FROM " + OracleConstants.META_TABLE_ROUTINES + " WHERE " + OracleConstants.COL_ROUTINE_NAME + " LIKE ? " +
-                (schema == null ? "" : " AND " + OracleConstants.COL_ROUTINE_SCHEMA + "=?") +
-                " ORDER BY " + OracleConstants.COL_ROUTINE_NAME);
-        try {
-            dbStat.setString(1, procNameMask.toLowerCase());
-            if (schema != null) {
-                dbStat.setString(2, schema.getName());
-            }
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_ROUTINE_SCHEMA);
-                    String procName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_ROUTINE_NAME);
-                    OracleSchema procSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
-                    if (procSchema == null) {
-                        log.debug("Procedure schema '" + schemaName + "' not found");
-                        continue;
-                    }
-                    OracleProcedure procedure = procSchema.getProcedure(monitor, procName);
-                    if (procedure == null) {
-                        log.debug("Procedure '" + procName + "' not found in schema '" + procSchema.getName() + "'");
-                        continue;
-                    }
-                    objects.add(procedure);
-                }
-            }
-            finally {
-                dbResult.close();
-            }
-        } finally {
-            dbStat.close();
-        }
-    }
-
-    private void findConstraintsByMask(JDBCExecutionContext context, OracleSchema schema, String constrNameMask, int maxResults, List<DBSObject> objects)
-        throws SQLException, DBException
-    {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
-
-        // Load tables
-        JDBCPreparedStatement dbStat = context.prepareStatement(
-            "SELECT " + OracleConstants.COL_TABLE_SCHEMA + "," + OracleConstants.COL_TABLE_NAME + "," + OracleConstants.COL_CONSTRAINT_NAME + "," + OracleConstants.COL_CONSTRAINT_TYPE +
-            " FROM " + OracleConstants.META_TABLE_TABLE_CONSTRAINTS + " WHERE " + OracleConstants.COL_CONSTRAINT_NAME + " LIKE ? " +
-                (schema == null ? "" : " AND " + OracleConstants.COL_TABLE_SCHEMA + "=?") +
-                " ORDER BY " + OracleConstants.COL_CONSTRAINT_NAME);
-        try {
-            dbStat.setString(1, constrNameMask.toLowerCase());
-            if (schema != null) {
-                dbStat.setString(2, schema.getName());
-            }
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_SCHEMA);
-                    String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
-                    String constrName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME);
-                    String constrType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_TYPE);
-                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
-                    if (tableSchema == null) {
-                        log.debug("Constraint schema '" + schemaName + "' not found");
-                        continue;
-                    }
-                    OracleTable table = tableSchema.getTable(monitor, tableName);
-                    if (table == null) {
-                        log.debug("Constraint table '" + tableName + "' not found in schema '" + tableSchema.getName() + "'");
-                        continue;
-                    }
-                    DBSObject constraint;
-                    if (OracleConstants.CONSTRAINT_FOREIGN_KEY.equals(constrType)) {
-                        constraint = table.getForeignKey(monitor, constrName);
-                    } else {
-                        constraint = table.getConstraint(monitor, constrName);
-                    }
-                    if (constraint == null) {
-                        log.debug("Constraint '" + constrName + "' not found in table '" + table.getFullQualifiedName() + "'");
-                    } else {
-                        objects.add(constraint);
+                    if (objectCache != null) {
+                        DBSObject object = objectCache.getObject(context.getProgressMonitor(), objectName);
+                        if (object == null) {
+                            log.debug(objectType + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
+                            continue;
+                        }
+                        objects.add(object);
                     }
                 }
             }
@@ -213,56 +153,5 @@ public class OracleStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findTableColumnsByMask(JDBCExecutionContext context, OracleSchema schema, String constrNameMask, int maxResults, List<DBSObject> objects)
-        throws SQLException, DBException
-    {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
-
-        // Load tables
-        JDBCPreparedStatement dbStat = context.prepareStatement(
-            "SELECT " + OracleConstants.COL_TABLE_SCHEMA + "," + OracleConstants.COL_TABLE_NAME + "," + OracleConstants.COL_COLUMN_NAME +
-            " FROM " + OracleConstants.META_TABLE_COLUMNS + " WHERE " + OracleConstants.COL_COLUMN_NAME + " LIKE ? " +
-                (schema == null ? "" : " AND " + OracleConstants.COL_TABLE_SCHEMA + "=?") +
-                " ORDER BY " + OracleConstants.COL_COLUMN_NAME);
-        try {
-            dbStat.setString(1, constrNameMask.toLowerCase());
-            if (schema != null) {
-                dbStat.setString(2, schema.getName());
-            }
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_SCHEMA);
-                    String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
-                    String columnName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COLUMN_NAME);
-                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
-                    if (tableSchema == null) {
-                        log.debug("Column schema '" + schemaName + "' not found");
-                        continue;
-                    }
-                    OracleTable table = tableSchema.getTable(monitor, tableName);
-                    if (table == null) {
-                        log.debug("Column table '" + tableName + "' not found in schema '" + tableSchema.getName() + "'");
-                        continue;
-                    }
-                    OracleTableColumn column = table.getColumn(monitor, columnName);
-                    if (column == null) {
-                        log.debug("Column '" + columnName + "' not found in table '" + table.getFullQualifiedName() + "'");
-                    } else {
-                        objects.add(column);
-                    }
-                }
-            }
-            finally {
-                dbResult.close();
-            }
-        } finally {
-            dbStat.close();
-        }
-    }
 
 }

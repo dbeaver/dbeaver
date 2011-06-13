@@ -12,14 +12,14 @@ import org.jkiss.dbeaver.ui.DBIcon;
  * Relational database object type.
  * Used by structure assistants
  */
-public enum RelationalObjectType implements DBSObjectType {
+public class RelationalObjectType implements DBSObjectType {
 
-    TYPE_TABLE("Table", "Table or View", DBIcon.TREE_TABLE.getImage(), DBSTable.class),
-    TYPE_TABLE_COLUMN("Table column", "Table column", DBIcon.TREE_COLUMN.getImage(), DBSTableColumn.class),
-    TYPE_INDEX("Index", "Index", DBIcon.TREE_INDEX.getImage(), DBSIndex.class),
-    TYPE_CONSTRAINT("Constraint", "Table constraint (primary key, foreign key, unique, etc)", DBIcon.TREE_CONSTRAINT.getImage(), DBSConstraint.class),
-    TYPE_PROCEDURE("Procedure", "Procedure or function", DBIcon.TREE_PROCEDURE.getImage(), DBSProcedure.class),
-    TYPE_TRIGGER("Trigger", "Trigger", DBIcon.TREE_TRIGGER.getImage(), DBSTrigger.class);
+    public static final DBSObjectType TYPE_TABLE = new RelationalObjectType("Table", "Table or View", DBIcon.TREE_TABLE.getImage(), DBSTable.class);
+    public static final DBSObjectType TYPE_TABLE_COLUMN = new RelationalObjectType("Table column", "Table column", DBIcon.TREE_COLUMN.getImage(), DBSTableColumn.class);
+    public static final DBSObjectType TYPE_INDEX = new RelationalObjectType("Index", "Index", DBIcon.TREE_INDEX.getImage(), DBSIndex.class);
+    public static final DBSObjectType TYPE_CONSTRAINT = new RelationalObjectType("Constraint", "Table constraint (primary key, foreign key, unique, etc)", DBIcon.TREE_CONSTRAINT.getImage(), DBSConstraint.class);
+    public static final DBSObjectType TYPE_PROCEDURE = new RelationalObjectType("Procedure", "Procedure or function", DBIcon.TREE_PROCEDURE.getImage(), DBSProcedure.class);
+    public static final DBSObjectType TYPE_TRIGGER = new RelationalObjectType("Trigger", "Trigger", DBIcon.TREE_TRIGGER.getImage(), DBSTrigger.class);
 
     private final String typeName;
     private final String description;

@@ -34,6 +34,7 @@ public abstract class JDBCCompositeCache<
     PARENT extends DBSObject,
     OBJECT extends DBSObject,
     ROW_REF extends DBSObject>
+    implements JDBCAbstractCache<OBJECT>
 {
     protected static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
 
@@ -79,6 +80,12 @@ public abstract class JDBCCompositeCache<
         {
             this.object = object;
         }
+    }
+
+    public List<OBJECT> getObjects(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return getObjects(monitor, null);
     }
 
     public List<OBJECT> getObjects(DBRProgressMonitor monitor, PARENT forParent)

@@ -87,5 +87,5 @@ public class OracleUtils {
         }
         return privs;
     }
-    
+
 }

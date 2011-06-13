@@ -64,6 +64,8 @@ public class OracleConstants {
     public static final String COL_USER_ID = "USER_ID";
     public static final String COL_USER_NAME = "USERNAME";
     public static final String COL_OWNER = "OWNER";
+    public static final String COL_OBJECT_NAME = "OBJECT_NAME";
+    public static final String COL_OBJECT_TYPE = "OBJECT_TYPE";
     public static final String COL_TABLE_NAME = "TABLE_NAME";
     public static final String COL_TABLE_TYPE = "TABLE_TYPE";
     public static final String COL_COLUMN_ID = "COLUMN_ID";
