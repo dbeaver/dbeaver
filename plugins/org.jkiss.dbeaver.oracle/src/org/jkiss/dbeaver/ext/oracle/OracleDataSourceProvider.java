@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -11,23 +12,21 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OracleDataSourceProvider extends JDBCDataSourceProvider {
 
-    private static Properties connectionsProps;
+    private static Map<String,String> connectionsProps;
 
     static {
-        connectionsProps = new Properties();
+        connectionsProps = new HashMap<String, String>();
 
-        // Prevent stupid errors "Cannot convert value '0000-00-00 00:00:00' from column X to TIMESTAMP"
-        // Widely appears in MyISAM tables (joomla, etc)
-        connectionsProps.setProperty("zeroDateTimeBehavior", "convertToNull");
-        // Set utf-8 as default charset
-        connectionsProps.setProperty("characterEncoding", "utf-8");
+        // Program name
+        connectionsProps.put("v$session.program", "DBeaver " + Platform.getProduct().getDefiningBundle().getVersion());
     }
 
-    public static Properties getConnectionsProps() {
+    public static Map<String,String> getConnectionsProps() {
         return connectionsProps;
     }
 
@@ -37,7 +36,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider {
 
     @Override
     protected String getConnectionPropertyDefaultValue(String name, String value) {
-        String ovrValue = connectionsProps.getProperty(name);
+        String ovrValue = connectionsProps.get(name);
         return ovrValue != null ? ovrValue : super.getConnectionPropertyDefaultValue(name, value);
     }
 

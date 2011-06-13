@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 
 /**
@@ -37,8 +38,8 @@ public class OracleConstants {
         "XDB",
     };
 
-    public static final String PROP_CONNECTION_TYPE = "@dbeaver-connection-type@";
-    public static final String PROP_DRIVER_TYPE = "@dbeaver-driver-type@";
+    public static final String PROP_CONNECTION_TYPE = DBConstants.INTERNAL_PROP_PREFIX + "connection-type@";
+    public static final String PROP_DRIVER_TYPE = DBConstants.INTERNAL_PROP_PREFIX + "driver-type@";
     public static final String PROP_INTERNAL_LOGON = "internal_logon";
     public static final String OS_AUTH_USER_NAME = "@OS_AUTH@";
 

@@ -12,6 +12,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -139,12 +140,16 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
         customProperties = new ArrayList<IPropertyDescriptor>();
         // Find prop values which are not from driver
-        for (Object propName : properties.keySet()) {
-            if (!propNames.contains(propName.toString())) {
+        for (Object propId : properties.keySet()) {
+            final String propName = propId.toString();
+            if (propName.startsWith(DBConstants.INTERNAL_PROP_PREFIX)) {
+                continue;
+            }
+            if (!propNames.contains(propName)) {
                 customProperties.add(new PropertyDescriptorEx(
                     USER_PROPERTIES_CATEGORY,
-                    propName.toString(),
-                    propName.toString(),
+                    propName,
+                    propName,
                     null,
                     String.class,
                     false,

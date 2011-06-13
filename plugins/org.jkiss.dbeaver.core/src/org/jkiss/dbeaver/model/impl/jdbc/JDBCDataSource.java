@@ -79,7 +79,7 @@ public abstract class JDBCDataSource
 
         {
             // Use properties defined by datasource itself
-            Properties internalProps = getInternalConnectionProperties();
+            Map<String,String> internalProps = getInternalConnectionProperties();
             if (internalProps != null) {
                 connectProps.putAll(internalProps);
             }
@@ -140,7 +140,7 @@ public abstract class JDBCDataSource
      * Note: these properties may be overwritten by connection advanced properties.
      * @return predefined connection properties
      */
-    protected Properties getInternalConnectionProperties()
+    protected Map<String, String> getInternalConnectionProperties()
     {
         return null;
     }

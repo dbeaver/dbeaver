@@ -20,4 +20,5 @@ public class DBConstants {
     public static final String PROP_ID_MAX_LENGTH = "maxLength"; //NON-NLS-1
     public static final String PROP_ID_NOT_NULL = "notNull"; //NON-NLS-1
 
+    public static final String INTERNAL_PROP_PREFIX = "@dbeaver-"; //NON-NLS-1
 }

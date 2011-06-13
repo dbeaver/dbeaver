@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -51,7 +50,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         super(container);
     }
 
-    protected Properties getInternalConnectionProperties()
+    protected Map<String, String> getInternalConnectionProperties()
     {
         return OracleDataSourceProvider.getConnectionsProps();
     }
