@@ -87,8 +87,11 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="Types" iconId="#data_types" description="Types">
                             <items label="Type" path="type" property="dataTypes" iconId="#data_type">
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeAttribute" label="Attributes" iconId="#columns" description="Type attributes" visibleIf="object.hasAttributes">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeAttribute" label="Attributes" iconId="#columns" description="Type attributes" visibleIf="object.hasAttributes()">
                                     <items label="Attribute" path="attribute" property="attributes" iconId="#column"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeMethod" label="Methods" iconId="#methods" description="Type methods" visibleIf="object.hasMethods()">
+                                    <items label="Method" path="method" property="methods" iconId="#method"/>
                                 </folder>
                             </items>
                         </folder>

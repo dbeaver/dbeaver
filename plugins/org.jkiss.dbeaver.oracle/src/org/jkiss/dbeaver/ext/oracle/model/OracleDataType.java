@@ -48,6 +48,7 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     private boolean persisted;
 
     private List<OracleDataTypeAttribute> attributes;
+    private List<OracleDataTypeMethod> methods;
 
     public OracleDataType(OracleSchema schema, boolean persisted)
     {
@@ -185,12 +186,12 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         return flagInstantiable;
     }
 
-    public boolean isHasAttributes()
+    public boolean hasAttributes()
     {
         return hasAttributes;
     }
 
-    public boolean isHasMethods()
+    public boolean hasMethods()
     {
         return hasMethods;
     }
@@ -227,6 +228,40 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
             this.attributes = tmpAttrs;
         }
         return attributes;
+    }
+
+    public List<OracleDataTypeMethod> getMethods(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (methods == null && hasMethods) {
+            List<OracleDataTypeMethod> tmpMethods = new ArrayList<OracleDataTypeMethod>();
+            final JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load type methods");
+            try {
+                final JDBCPreparedStatement dbStat = context.prepareStatement(
+                    "SELECT * FROM SYS.ALL_TYPE_METHODS WHERE OWNER=? AND TYPE_NAME=? ORDER BY METHOD_NO");
+                try {
+                    dbStat.setString(1, schema.getName());
+                    dbStat.setString(2, getName());
+                    final JDBCResultSet dbResult = dbStat.executeQuery();
+                    try {
+                        while (dbResult.next()) {
+                            tmpMethods.add(
+                                new OracleDataTypeMethod(monitor, this, dbResult));
+                        }
+                    } finally {
+                        dbResult.close();
+                    }
+                } finally {
+                    dbStat.close();
+                }
+            } catch (SQLException e) {
+                throw new DBException("Can't read type methods", e);
+            } finally {
+                context.close();
+            }
+            this.methods = tmpMethods;
+        }
+        return methods;
     }
 
     public OracleDataType getObject()
