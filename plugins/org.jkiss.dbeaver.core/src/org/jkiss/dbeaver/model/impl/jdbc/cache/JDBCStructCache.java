@@ -157,6 +157,11 @@ public abstract class JDBCStructCache<
     public void clearCache()
     {
         super.clearCache();
+        this.clearChildrenCache();
+    }
+
+    public void clearChildrenCache()
+    {
         this.childrenCached = false;
     }
 

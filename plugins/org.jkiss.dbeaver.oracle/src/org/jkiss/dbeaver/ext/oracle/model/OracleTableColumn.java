@@ -83,7 +83,13 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return charLength;
     }
 
-    @Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
+    @Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20)
+    public DBSDataType getType()
+    {
+        return type;
+    }
+
+    //@Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
     {

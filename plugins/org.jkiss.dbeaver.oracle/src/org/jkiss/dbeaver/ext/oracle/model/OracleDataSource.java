@@ -72,47 +72,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         throws DBException
     {
         super.initialize(monitor);
-
-/*
-        // Construct information folders
-        informationFolders = new ArrayList<OracleInformationFolder>();
-        informationFolders.add(new OracleInformationFolder(this, "Session Status") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getSessionStatus(monitor);
-            }
-        });
-        informationFolders.add(new OracleInformationFolder(this, "Global Status") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getGlobalStatus(monitor);
-            }
-        });
-        informationFolders.add(new OracleInformationFolder(this, "Session Variables") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getSessionVariables(monitor);
-            }
-        });
-        informationFolders.add(new OracleInformationFolder(this, "Global Variables") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getGlobalVariables(monitor);
-            }
-        });
-        informationFolders.add(new OracleInformationFolder(this, "Engines") {
-            public Collection getObjects(DBRProgressMonitor monitor)
-            {
-                return getEngines();
-            }
-        });
-        informationFolders.add(new OracleInformationFolder(this, "User Privileges") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getPrivileges(monitor);
-            }
-        });
-*/
     }
 
     private void loadSchemas(DBRProgressMonitor monitor) throws DBException
