@@ -219,7 +219,7 @@ public abstract class JDBCDataSource
 
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
-        return new JDBCDataSourceInfo(metaData);
+        return new JDBCDataSourceInfo(this, metaData);
     }
 
     public void close(DBRProgressMonitor monitor)

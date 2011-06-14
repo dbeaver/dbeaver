@@ -152,14 +152,15 @@ public class OracleView extends OracleTableBase
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE,SUPERVIEW_NAME FROM " + OracleConstants.META_TABLE_VIEWS + " WHERE " + OracleConstants.COL_OWNER + "=? AND " + OracleConstants.COL_VIEW_NAME + "=?");
+                "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE,SUPERVIEW_NAME\n" +
+                "FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?");
             try {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     if (dbResult.next()) {
-                        additionalInfo.setText(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_VIEW_TEXT));
+                        additionalInfo.setText(JDBCUtils.safeGetString(dbResult, "TEXT"));
                         additionalInfo.setTypeText(JDBCUtils.safeGetString(dbResult, "TYPE_TEXT"));
                         additionalInfo.setOidText(JDBCUtils.safeGetString(dbResult, "OID_TEXT"));
                         additionalInfo.setTypeName(JDBCUtils.safeGetString(dbResult, "VIEW_TYPE"));

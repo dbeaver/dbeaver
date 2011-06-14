@@ -49,7 +49,7 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
         column.setName(JDBCObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBSDataKind.STRING ? 100 : 0);
-        column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeNumber());
+        column.setValueType(columnType == null ? Types.INTEGER : columnType.getValueType());
         column.setOrdinalPosition(-1);
         return column;
     }

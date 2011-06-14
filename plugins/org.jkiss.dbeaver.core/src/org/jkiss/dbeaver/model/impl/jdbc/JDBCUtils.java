@@ -115,6 +115,16 @@ public class JDBCUtils {
         }
     }
 
+    public static boolean safeGetBoolean(ResultSet dbResult, String columnName, String trueValue)
+    {
+        try {
+            return trueValue.equals(dbResult.getString(columnName));
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return false;
+        }
+    }
+
     public static byte[] safeGetBytes(ResultSet dbResult, String columnName)
     {
         try {
@@ -142,6 +152,16 @@ public class JDBCUtils {
         } catch (SQLException e) {
             debugColumnRead(columnIndex, e);
             return null;
+        }
+    }
+
+    public static Object safeGetObject(ResultSet dbResult, String columnName)
+    {
+        try {
+            return dbResult.getObject(columnName);
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return false;
         }
     }
 

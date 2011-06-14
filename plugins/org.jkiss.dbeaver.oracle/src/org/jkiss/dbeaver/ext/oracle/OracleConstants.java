@@ -44,12 +44,9 @@ public class OracleConstants {
     public static final String DRIVER_TYPE_THIN = "THIN";
     public static final String DRIVER_TYPE_OCI = "OCI";
 
+    public static final String YES = "YES";
+
     public static final String META_TABLE_USERS = INFO_SCHEMA_NAME + ".ALL_USERS";
-    public static final String META_TABLE_TABLES = INFO_SCHEMA_NAME + ".ALL_TABLES";
-    public static final String META_TABLE_VIEWS = INFO_SCHEMA_NAME + ".ALL_VIEWS";
-    public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".ALL_TAB_COLS";
-    public static final String META_TABLE_CONSTRAINTS = INFO_SCHEMA_NAME + ".ALL_CONSTRAINTS";
-    public static final String META_TABLE_CONSTRAINT_COLUMNS = INFO_SCHEMA_NAME + ".ALL_CONS_COLUMNS";
 
     public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
     public static final String META_TABLE_TRIGGERS = INFO_SCHEMA_NAME + ".TRIGGERS";
@@ -159,6 +156,7 @@ public class OracleConstants {
     public static final String COL_DATA_FREE = "DATA_FREE";
     public static final String COL_CHECKSUM = "CHECKSUM";
     public static final String COL_CHECK_OPTION = "CHECK_OPTION";
+
 
     /**
      * Connection type

@@ -37,7 +37,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 {
     static final Log log = LogFactory.getLog(OracleDataSource.class);
 
-    private List<OracleSchema> schemas;
+    private Map<String, OracleSchema> schemas;
     private List<OracleUser> users;
     private String activeSchemaName;
 
@@ -52,17 +52,20 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return OracleDataSourceProvider.getConnectionsProps();
     }
 
-    public List<OracleSchema> getSchemas(DBRProgressMonitor monitor) throws DBException
+    public Collection<OracleSchema> getSchemas(DBRProgressMonitor monitor) throws DBException
     {
         if (schemas == null) {
             loadSchemas(monitor);
         }
-        return schemas;
+        return schemas.values();
     }
 
     public OracleSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException
     {
-        return DBUtils.findObject(getSchemas(monitor), name);
+        if (schemas == null) {
+            loadSchemas(monitor);
+        }
+        return schemas.get(name);
     }
 
     public void initialize(DBRProgressMonitor monitor)
@@ -121,10 +124,9 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
             {
                 // Read schemas
                 // Read only non-empty schemas and current user's schema
-                StringBuilder schemasQuery = new StringBuilder("SELECT * FROM ");
-                schemasQuery.append(OracleConstants.META_TABLE_USERS);
+                StringBuilder schemasQuery = new StringBuilder("SELECT * FROM SYS.ALL_USERS u\n");
                 List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
-                schemasQuery.append(" u\nWHERE (EXISTS (SELECT 1 FROM ALL_OBJECTS WHERE OWNER=U.USERNAME)");
+                schemasQuery.append("WHERE (EXISTS (SELECT 1 FROM ALL_OBJECTS WHERE OWNER=U.USERNAME)");
                 final String curUserName = getContainer().getConnectionInfo().getUserName();
                 if (!CommonUtils.isEmpty(curUserName)) {
                     schemasQuery.append(" OR U.USERNAME='").append(curUserName.toUpperCase()).append("'");
@@ -134,7 +136,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
                     schemasQuery.append(" AND (");
                     for (int i = 0; i < schemaFilters.size(); i++) {
                         if (i > 0) schemasQuery.append(" OR ");
-                        schemasQuery.append(OracleConstants.COL_USER_NAME).append(" LIKE ?");
+                        schemasQuery.append("USERNAME LIKE ?");
                     }
                     schemasQuery.append(")");
                 }
@@ -193,8 +195,12 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
         Collections.sort(tmpSchemas, DBUtils.<OracleSchema>nameComparator());
 
-
-        this.schemas = tmpSchemas;
+        // Make map
+        Map<String, OracleSchema> schemas = new LinkedHashMap<String, OracleSchema>(tmpSchemas.size());
+        for (OracleSchema schema : tmpSchemas) {
+            schemas.put(schema.getName(), schema);
+        }
+        this.schemas = schemas;
     }
 
     public boolean refreshEntity(DBRProgressMonitor monitor)
@@ -259,7 +265,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         if (schemas == null) {
             return null;
         }
-        return DBUtils.findObject(schemas, activeSchemaName);
+        return schemas.get(activeSchemaName);
     }
 
     public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity)

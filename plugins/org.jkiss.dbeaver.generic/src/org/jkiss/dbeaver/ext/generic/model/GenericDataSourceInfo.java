@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +26,9 @@ class GenericDataSourceInfo extends JDBCDataSourceInfo {
         //EXEC_KEYWORDS.add("DECLARE");
     }
 
-    public GenericDataSourceInfo(JDBCDatabaseMetaData metaData)
+    public GenericDataSourceInfo(DBSObject owner, JDBCDatabaseMetaData metaData)
     {
-        super(metaData);
+        super(owner, metaData);
     }
 
     @Override

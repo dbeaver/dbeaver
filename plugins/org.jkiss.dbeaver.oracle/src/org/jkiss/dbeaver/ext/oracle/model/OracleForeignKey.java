@@ -22,17 +22,6 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
 {
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 
-    static class LazyReference {
-        final String schemaName;
-        final String constraintName;
-
-        LazyReference(String schemaName, String constraintName)
-        {
-            this.schemaName = schemaName;
-            this.constraintName = constraintName;
-        }
-    }
-
     private Object referencedKey;
     private DBSConstraintModifyRule deleteRule;
 
@@ -53,20 +42,19 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
     {
         if (referencedKey instanceof OracleConstraint) {
             return true;
-        } else if (referencedKey instanceof LazyReference) {
+        } else if (referencedKey instanceof OracleLazyReference) {
             try {
-                final LazyReference lazyReference = (LazyReference) referencedKey;
+                final OracleLazyReference lazyReference = (OracleLazyReference) referencedKey;
                 OracleSchema refSchema = getTable().getDataSource().getSchema(monitor, lazyReference.schemaName);
                 if (refSchema == null) {
                     log.warn("Referenced schema '" + lazyReference.schemaName + "' not found for foreign key '" + getName() + "'");
                     return false;
                 }
-                final OracleConstraint refConstraint = refSchema.getConstraintCache().getObject(monitor, lazyReference.constraintName);
-                if (refConstraint == null) {
-                    log.warn("Referenced constraint '" + lazyReference.constraintName + "' not found in schema '" + lazyReference.schemaName + "'");
+                referencedKey = refSchema.getConstraintCache().getObject(monitor, lazyReference.objectName);
+                if (referencedKey == null) {
+                    log.warn("Referenced constraint '" + lazyReference.objectName + "' not found in schema '" + lazyReference.schemaName + "'");
                     return false;
                 }
-                referencedKey = refConstraint;
                 return true;
             } catch (DBException e) {
                 log.error(e);

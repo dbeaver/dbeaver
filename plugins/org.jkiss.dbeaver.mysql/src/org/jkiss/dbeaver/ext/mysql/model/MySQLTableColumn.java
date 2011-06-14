@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -92,8 +93,8 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName.toUpperCase());
         this.charLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_CHARACTER_MAXIMUM_LENGTH);
         if (this.charLength <= 0) {
-            if (dataType != null) {
-                setMaxLength(dataType.getPrecision());
+            if (dataType instanceof JDBCDataType) {
+                setMaxLength(((JDBCDataType)dataType).getPrecision());
             }
         } else {
             setMaxLength(this.charLength);

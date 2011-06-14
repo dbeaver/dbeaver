@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -31,6 +32,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public static final String TERM_SCHEMA = "Schema";
     public static final String TERM_PROCEDURE = "Procedure";
     public static final String TERM_CATALOG = "Database";
+
     private boolean readOnly;
     private String databaseProductName;
     private String databaseProductVersion;
@@ -65,7 +67,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private boolean supportsReferences = true;
     private boolean supportsIndexes = true;
 
-    public JDBCDataSourceInfo(JDBCDatabaseMetaData metaData)
+    public JDBCDataSourceInfo(DBSObject owner, JDBCDatabaseMetaData metaData)
     {
         try {
             this.readOnly = metaData.isReadOnly();
@@ -300,6 +302,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
                     boolean isSearchable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SEARCHABLE) != 0;
                     boolean isUnsigned = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.UNSIGNED_ATTRIBUTE);
                     JDBCDataType dataType = new JDBCDataType(
+                        owner,
                         type,
                         typeName,
                         remarks,

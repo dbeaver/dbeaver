@@ -142,11 +142,16 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         if (listOrderComparator != null) {
             Collections.sort(tmpObjectList, listOrderComparator);
         }
-
         this.objectMap = new LinkedHashMap<String, OBJECT>();
         for (OBJECT object : tmpObjectList) {
             this.objectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
         }
+        this.invalidateObjects(monitor, objectMap.values());
+    }
+
+    protected void invalidateObjects(DBRProgressMonitor monitor, Collection<OBJECT> objectList)
+    {
+
     }
 
 }

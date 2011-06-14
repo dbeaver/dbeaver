@@ -4,14 +4,17 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * JDBCDataType
  */
 public class JDBCDataType implements DBSDataType
 {
+    private final DBSObject owner;
     private int valueType;
     private String name;
     private String remarks;
@@ -22,6 +25,7 @@ public class JDBCDataType implements DBSDataType
     private int maxScale;
 
     public JDBCDataType(
+        DBSObject owner,
         int valueType,
         String name,
         String remarks,
@@ -31,6 +35,7 @@ public class JDBCDataType implements DBSDataType
         int minScale,
         int maxScale)
     {
+        this.owner = owner;
         this.valueType = valueType;
         this.name = name;
         this.remarks = remarks;
@@ -41,7 +46,7 @@ public class JDBCDataType implements DBSDataType
         this.maxScale = maxScale;
     }
 
-    public int getTypeNumber()
+    public int getValueType()
     {
         return valueType;
     }
@@ -54,6 +59,16 @@ public class JDBCDataType implements DBSDataType
     public String getDescription()
     {
         return remarks;
+    }
+
+    public DBSObject getParentObject()
+    {
+        return owner;
+    }
+
+    public DBPDataSource getDataSource()
+    {
+        return owner.getDataSource();
     }
 
     public DBSDataKind getDataKind()
@@ -121,5 +136,10 @@ public class JDBCDataType implements DBSDataType
     public String toString()
     {
         return name;
+    }
+
+    public boolean isPersisted()
+    {
+        return true;
     }
 }

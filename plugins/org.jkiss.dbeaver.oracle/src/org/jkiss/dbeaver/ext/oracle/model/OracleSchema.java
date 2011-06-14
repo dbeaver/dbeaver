@@ -26,6 +26,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -41,6 +42,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private final TriggerCache triggerCache = new TriggerCache();
     private final IndexCache indexCache = new IndexCache();
+    private final DataTypeCache dataTypeCache = new DataTypeCache();
     private boolean persisted;
 
     public OracleSchema(OracleDataSource dataSource, ResultSet dbResult)
@@ -78,6 +80,11 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     TriggerCache getTriggerCache()
     {
         return triggerCache;
+    }
+
+    DataTypeCache getDataTypeCache()
+    {
+        return dataTypeCache;
     }
 
     @Override
@@ -137,6 +144,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         throws DBException
     {
         return tableCache.getObject(monitor, name, OracleView.class);
+    }
+
+    public Collection<OracleDataType> getDataTypes(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return dataTypeCache.getObjects(monitor);
     }
 
     public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
@@ -236,7 +249,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                     "SELECT t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as TABLE_TYPE FROM SYS.ALL_ALL_TABLES t\n" +
                     "UNION ALL\n" +
                     "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as TABLE_TYPE FROM SYS.ALL_VIEWS v) tab\n" +
-                "LEFT OUTER JOIN ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME\n" +
+                "LEFT OUTER JOIN SYS.ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME\n" +
                 "WHERE tab.OWNER=?\n" +
                 "ORDER BY tab.TABLE_NAME");
             dbStat.setString(1, getName());
@@ -270,17 +283,17 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             StringBuilder sql = new StringBuilder();
             sql
                 .append("SELECT c.*,cc.COMMENTS\n" +
-                    "FROM ALL_TAB_COLS c\n" +
-                    "LEFT OUTER JOIN ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
+                    "FROM SYS.ALL_TAB_COLS c\n" +
+                    "LEFT OUTER JOIN SYS.ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
                     "WHERE c.OWNER=?");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
             }
             sql.append("\nORDER BY ");
             if (forTable != null) {
-                sql.append("c.").append(OracleConstants.COL_TABLE_NAME).append(",");
+                sql.append("c.TABLE_NAME,");
             }
-            sql.append("c.").append(OracleConstants.COL_COLUMN_ID);
+            sql.append("c.COLUMN_ID");
 
             JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
             dbStat.setString(1, OracleSchema.this.getName());
@@ -313,19 +326,19 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             sql
                 .append("SELECT c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS," +
                     "c.R_OWNER,c.R_CONSTRAINT_NAME,c.DELETE_RULE," +
-                    "COLUMN_NAME,POSITION\nFROM ")
-                .append(OracleConstants.META_TABLE_CONSTRAINTS).append(" c\n")
-                .append("JOIN ").append(OracleConstants.META_TABLE_CONSTRAINT_COLUMNS).append(" ссol ON c.OWNER=ссol.OWNER AND c.CONSTRAINT_NAME=ссol.CONSTRAINT_NAME\n")
-                .append("WHERE c.").append(OracleConstants.COL_OWNER).append("=?");
+                    "COLUMN_NAME,POSITION\n" +
+                    "FROM SYS.ALL_TABLE_CONSTRAINTS c\n" +
+                    "JOIN SYS.ALL_CONS_COLUMNS ссol ON c.OWNER=ссol.OWNER AND c.CONSTRAINT_NAME=ссol.CONSTRAINT_NAME\n" +
+                    "WHERE c.OWNER=?");
             if (forTable != null) {
-                sql.append(" AND c.").append(OracleConstants.COL_TABLE_NAME).append("=?");
+                sql.append(" AND c.TABLE_NAME=?");
             }
             sql.append("\nORDER BY");
             if (forTable == null) {
                 // Fetch foreign keys after all
                 sql.append(" (CASE WHEN c.CONSTRAINT_TYPE='R' THEN 1 ELSE 0 END),");
             }
-            sql.append(" c.").append(OracleConstants.COL_CONSTRAINT_NAME).append(",").append(OracleConstants.COL_POSITION);
+            sql.append(" c.CONSTRAINT_NAME,POSITION");
 
             JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
             dbStat.setString(1, OracleSchema.this.getName());
@@ -363,7 +376,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                     parent,
                     constraintName,
                     CommonUtils.isEmpty(constraintStatus) ? null : OracleConstants.ObjectStatus.valueOf(constraintStatus),
-                    new OracleForeignKey.LazyReference(refOwner, refName),
+                    new OracleLazyReference(refOwner, refName),
                     "CASCADE".equals(deleteRuleName) ? DBSConstraintModifyRule.CASCADE : DBSConstraintModifyRule.NO_ACTION,
                     true);
             } else {
@@ -437,11 +450,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
-                "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND\n" +
-                "FROM SYS.ALL_INDEXES i \n" +
-                "JOIN SYS.ALL_IND_COLUMNS ic ON ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME\n" +
-                "WHERE i.OWNER=? AND i.TABLE_OWNER=?\n");
+            sql.append(
+                "SELECT i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
+                    "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND\n" +
+                    "FROM SYS.ALL_INDEXES i \n" +
+                    "JOIN SYS.ALL_IND_COLUMNS ic ON ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME\n" +
+                    "WHERE i.OWNER=? AND i.TABLE_OWNER=?\n");
             if (forTable != null) {
                 sql.append(" AND i.TABLE_NAME=?");
             }
@@ -522,6 +536,44 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             index.setColumns(rows);
         }
     }
+
+    /**
+     * DataType cache implementation
+     */
+    class DataTypeCache extends JDBCObjectCache<OracleDataType> {
+        DataTypeCache()
+        {
+            super(getDataSource());
+        }
+
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.ALL_TYPES WHERE OWNER=? ORDER BY TYPE_NAME");
+            dbStat.setString(1, getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleDataType fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleDataType(OracleSchema.this, resultSet);
+        }
+
+        @Override
+        protected void invalidateObjects(DBRProgressMonitor monitor, Collection<OracleDataType> oracleDataTypes)
+        {
+            // Resolve super types
+            for (Iterator<OracleDataType> iter = oracleDataTypes.iterator(); iter.hasNext(); ) {
+                OracleDataType type = iter.next();
+                if (!type.resolveLazyReference(monitor)) {
+                    iter.remove();
+                }
+            }
+        }
+    }
+
 
     /**
      * Procedures cache implementation
