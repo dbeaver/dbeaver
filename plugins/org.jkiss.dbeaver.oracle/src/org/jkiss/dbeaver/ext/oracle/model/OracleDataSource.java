@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -39,10 +38,8 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     static final Log log = LogFactory.getLog(OracleDataSource.class);
 
     private List<OracleSchema> schemas;
-    private List<OraclePrivilege> privileges;
     private List<OracleUser> users;
     private String activeSchemaName;
-    //private List<OracleInformationFolder> informationFolders;
 
     public OracleDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -53,11 +50,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     protected Map<String, String> getInternalConnectionProperties()
     {
         return OracleDataSourceProvider.getConnectionsProps();
-    }
-
-    public String[] getTableTypes()
-    {
-        return OracleConstants.TABLE_TYPES;
     }
 
     public List<OracleSchema> getSchemas(DBRProgressMonitor monitor) throws DBException
@@ -349,128 +341,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
             context.close();
         }
     }
-
-    public List<OraclePrivilege> getPrivileges(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (privileges == null) {
-            privileges = loadPrivileges(monitor);
-        }
-        return privileges;
-    }
-
-    public List<OraclePrivilege> getPrivilegesByKind(DBRProgressMonitor monitor, OraclePrivilege.Kind kind)
-        throws DBException
-    {
-        List<OraclePrivilege> privs = new ArrayList<OraclePrivilege>();
-        for (OraclePrivilege priv : getPrivileges(monitor)) {
-            if (priv.getKind() == kind) {
-                privs.add(priv);
-            }
-        }
-        return privs;
-    }
-
-    public OraclePrivilege getPrivilege(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
-        return DBUtils.findObject(getPrivileges(monitor), name);
-    }
-
-    private List<OraclePrivilege> loadPrivileges(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load privileges");
-        try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("SHOW PRIVILEGES");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    List<OraclePrivilege> privileges = new ArrayList<OraclePrivilege>();
-                    while (dbResult.next()) {
-                            OraclePrivilege user = new OraclePrivilege(this, dbResult);
-                            privileges.add(user);
-                        }
-                    return privileges;
-                } finally {
-                    dbResult.close();
-                }
-            } finally {
-                dbStat.close();
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-        }
-    }
-
-    public List<OracleParameter> getSessionStatus(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return loadParameters(monitor, true, false);
-    }
-
-    public List<OracleParameter> getGlobalStatus(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return loadParameters(monitor, true, true);
-    }
-
-    public List<OracleParameter> getSessionVariables(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return loadParameters(monitor, false, false);
-    }
-
-    public List<OracleParameter> getGlobalVariables(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return loadParameters(monitor, false, true);
-    }
-
-    public List<OracleDataSource> getInformation()
-    {
-        return Collections.singletonList(this);
-    }
-
-    private List<OracleParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException
-    {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load status");
-        try {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SHOW " + 
-                (global ? "GLOBAL " : "") + 
-                (status ? "STATUS" : "VARIABLES"));
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    List<OracleParameter> parameters = new ArrayList<OracleParameter>();
-                    while (dbResult.next()) {
-                        OracleParameter parameter = new OracleParameter(
-                            this,
-                            JDBCUtils.safeGetString(dbResult, "variable_name"),
-                            JDBCUtils.safeGetString(dbResult, "value"));
-                        parameters.add(parameter);
-                    }
-                    return parameters;
-                } finally {
-                    dbResult.close();
-                }
-            } finally {
-                dbStat.close();
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-        }
-    }
-
 
     @Override
     public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {

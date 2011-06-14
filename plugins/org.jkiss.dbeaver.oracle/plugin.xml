@@ -81,15 +81,28 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" iconId="#indexes" description="Indexes">
-                            <items label="Index" path="index" property="indexes" iconId="#index">
-                                <items label="Index columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
-                                </items>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSequence" label="Sequences" iconId="#sequences" description="Sequences">
+                            <items label="Sequence" path="sequence" property="sequences" iconId="#sequence">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="Types" iconId="#types" description="Types">
+                            <items label="Type" path="type" property="dataTypes" iconId="#type">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePackage" label="Packages" iconId="#packages" description="Packages">
+                            <items label="Package" path="package" property="packages" iconId="#package">
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedure" label="Procedures" iconId="#procedures" description="Procedures">
                             <items label="Procedure" path="procedure" property="procedures" iconId="#procedure">
                                 <items label="Procedure columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
+                                </items>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" iconId="#indexes" description="Indexes">
+                            <items label="Index" path="index" property="indexes" iconId="#index">
+                                <items label="Index columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                 </items>
                             </items>
                         </folder>
@@ -104,50 +117,6 @@
                 </folder>
                 <folder type="" label="Administer" iconId="#folder_admin" description="Maintenance/Settings">
                     <object type="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor" label="Sessions" iconId="#admin" description="Server session manager" editor="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"/>
-                    <!--
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSVariables" label="Variables" iconId="#variables" description="Server variables"/>
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSLogs" label="Server Logs" iconId="#logs" description="Server logs"/>
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSRepl" label="Replication Status" iconId="#repl" description="Replication Status"/>
-                    -->
-                </folder>
-
-<!--
-                <items label="Information" path="information" property="information" iconId="#folder" navigable="true" virtual="false">
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleParameter" label="Session Status" iconId="#info" description="Session status">
-                        <items label="Variable" path="sessionStatus" property="sessionStatus" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleParameter" label="Global Status" iconId="#info" description="Global status">
-                        <items label="Variable" path="globalStatus" property="globalStatus" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleParameter" label="Session Variables" iconId="#info" description="Session variables">
-                        <items label="Variable" path="sessionVariables" property="sessionVariables" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleParameter" label="Global Variables" iconId="#info" description="Global variables">
-                        <items label="Variable" path="globalVariables" property="globalVariables" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="User Privileges" iconId="#info" description="User privileges">
-                        <items label="Privilege" path="privileges" property="privileges" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                </items>
--->
-
-
-                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleInformation" label="System Info" iconId="#folder_info" description="Database system information">
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleParameter" label="Session Status" iconId="#info" description="Session status">
-                        <items label="Variable" path="sessionStatus" property="sessionStatus" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleParameter" label="Global Status" iconId="#info" description="Global status">
-                        <items label="Variable" path="globalStatus" property="globalStatus" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleParameter" label="Session Variables" iconId="#info" description="Session variables">
-                        <items label="Variable" path="sessionVariables" property="sessionVariables" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleParameter" label="Global Variables" iconId="#info" description="Global variables">
-                        <items label="Variable" path="globalVariables" property="globalVariables" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="User Privileges" iconId="#info" description="User privileges">
-                        <items label="Privilege" path="privileges" property="privileges" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
                 </folder>
 
             </tree>

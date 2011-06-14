@@ -216,7 +216,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
     public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        return DBUtils.findObject(getChildren(monitor), childName);
+        return getTable(monitor, childName);
     }
 
     public boolean refreshEntity(DBRProgressMonitor monitor)

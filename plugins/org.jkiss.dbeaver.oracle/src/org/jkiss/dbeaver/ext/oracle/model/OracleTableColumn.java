@@ -10,16 +10,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.OracleUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.sql.ResultSet;
-import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * OracleTableColumn
@@ -51,18 +47,9 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     {
         setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COLUMN_NAME));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_COLUMN_ID));
-        String typeName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DATA_TYPE);
-        setTypeName(typeName);
+        setTypeName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DATA_TYPE));
         setValueType(OracleUtils.typeNameToValueType(typeName));
-        DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName.toUpperCase());
         this.charLength = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_DATA_LENGTH);
-        if (this.charLength <= 0) {
-            if (dataType != null) {
-                setMaxLength(dataType.getPrecision());
-            }
-        } else {
-            setMaxLength(this.charLength);
-        }
         setNotNull(!"Y".equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_NULLABLE)));
         setScale(JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_DATA_SCALE));
         setPrecision(JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_DATA_PRECISION));

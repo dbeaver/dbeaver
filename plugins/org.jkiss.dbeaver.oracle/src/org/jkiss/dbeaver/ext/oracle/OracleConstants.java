@@ -14,8 +14,6 @@ public class OracleConstants {
 
     public static final int DEFAULT_PORT = 1521;
 
-    public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "TEMPORARY"};
-
     public static final String INFO_SCHEMA_NAME = "SYS";
 
     public static final String[] SYSTEM_SCHEMAS = {
