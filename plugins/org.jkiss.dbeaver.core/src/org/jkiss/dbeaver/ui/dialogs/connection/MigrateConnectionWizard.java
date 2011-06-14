@@ -92,7 +92,7 @@ public class MigrateConnectionWizard extends Wizard
 
         for (DataSourceDescriptor conn : connections) {
             conn.setDriver(targetDriver);
-            conn.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, conn));
+            conn.getRegistry().updateDataSource(conn);
         }
 
         return true;
