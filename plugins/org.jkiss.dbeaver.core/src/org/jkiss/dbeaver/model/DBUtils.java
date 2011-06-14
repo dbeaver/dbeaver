@@ -558,7 +558,7 @@ public final class DBUtils {
 */
 
             // Check for EXEC query
-            final List<String> executeKeywords = context.getDataSource().getInfo().getExecuteKeywords();
+            final Collection<String> executeKeywords = context.getDataSource().getInfo().getExecuteKeywords();
             if (!CommonUtils.isEmpty(executeKeywords)) {
                 final String queryStart = SQLUtils.getFirstKeyword(query);
                 for (String keyword : executeKeywords) {

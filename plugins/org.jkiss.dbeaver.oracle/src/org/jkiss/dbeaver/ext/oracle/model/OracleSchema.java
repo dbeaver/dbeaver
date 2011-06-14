@@ -152,6 +152,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return dataTypeCache.getObjects(monitor);
     }
 
+    public OracleDataType getDataType(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return dataTypeCache.getObject(monitor, name);
+    }
+
     public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -306,7 +312,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         protected OracleTableColumn fetchChild(JDBCExecutionContext context, OracleTableBase table, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleTableColumn(table, dbResult);
+            return new OracleTableColumn(context.getProgressMonitor(), table, dbResult);
         }
     }
 
@@ -327,7 +333,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                 .append("SELECT c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS," +
                     "c.R_OWNER,c.R_CONSTRAINT_NAME,c.DELETE_RULE," +
                     "COLUMN_NAME,POSITION\n" +
-                    "FROM SYS.ALL_TABLE_CONSTRAINTS c\n" +
+                    "FROM SYS.ALL_CONSTRAINTS c\n" +
                     "JOIN SYS.ALL_CONS_COLUMNS ссol ON c.OWNER=ссol.OWNER AND c.CONSTRAINT_NAME=ссol.CONSTRAINT_NAME\n" +
                     "WHERE c.OWNER=?");
             if (forTable != null) {

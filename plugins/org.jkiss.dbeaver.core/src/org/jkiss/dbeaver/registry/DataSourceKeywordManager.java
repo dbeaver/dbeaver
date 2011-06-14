@@ -101,13 +101,13 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
 
         {
             // Keywords
-            List<String> sqlKeywords = dataSourceInfo.getSQLKeywords();
+            Collection<String> sqlKeywords = dataSourceInfo.getSQLKeywords();
             if (!CommonUtils.isEmpty(sqlKeywords)) {
                 for (String keyword : sqlKeywords) {
                     reservedWords.add(keyword.toUpperCase());
                 }
             }
-            final List<String> executeKeywords = dataSourceInfo.getExecuteKeywords();
+            final Collection<String> executeKeywords = dataSourceInfo.getExecuteKeywords();
             if (!CommonUtils.isEmpty(executeKeywords)) {
                 for (String keyword : executeKeywords) {
                     reservedWords.add(keyword.toUpperCase());
@@ -139,7 +139,7 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
             functions.addAll(allFunctions);
 
             // Types
-            List<DBSDataType> supportedDataTypes = dataSourceInfo.getSupportedDataTypes();
+            Collection<DBSDataType> supportedDataTypes = dataSourceInfo.getSupportedDataTypes();
             if (supportedDataTypes != null) {
                 for (DBSDataType dataType : dataSourceInfo.getSupportedDataTypes()) {
                     types.add(dataType.getName().toUpperCase());

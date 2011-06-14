@@ -9,6 +9,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -18,6 +22,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Oracle data type
@@ -39,6 +46,8 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     private boolean flagInstantiable;
 
     private boolean persisted;
+
+    private List<OracleDataTypeAttribute> attributes;
 
     public OracleDataType(OracleSchema schema, boolean persisted)
     {
@@ -174,6 +183,50 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     public boolean isInstantiable()
     {
         return flagInstantiable;
+    }
+
+    public boolean isHasAttributes()
+    {
+        return hasAttributes;
+    }
+
+    public boolean isHasMethods()
+    {
+        return hasMethods;
+    }
+
+    public List<OracleDataTypeAttribute> getAttributes(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (attributes == null && hasAttributes) {
+            List<OracleDataTypeAttribute> tmpAttrs = new ArrayList<OracleDataTypeAttribute>();
+            final JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load type attributes");
+            try {
+                final JDBCPreparedStatement dbStat = context.prepareStatement(
+                    "SELECT * FROM SYS.ALL_TYPE_ATTRS WHERE OWNER=? AND TYPE_NAME=? ORDER BY ATTR_NO");
+                try {
+                    dbStat.setString(1, schema.getName());
+                    dbStat.setString(2, getName());
+                    final JDBCResultSet dbResult = dbStat.executeQuery();
+                    try {
+                        while (dbResult.next()) {
+                            tmpAttrs.add(
+                                new OracleDataTypeAttribute(monitor, this, dbResult));
+                        }
+                    } finally {
+                        dbResult.close();
+                    }
+                } finally {
+                    dbStat.close();
+                }
+            } catch (SQLException e) {
+                throw new DBException("Can't read type attributes", e);
+            } finally {
+                context.close();
+            }
+            this.attributes = tmpAttrs;
+        }
+        return attributes;
     }
 
     public OracleDataType getObject()

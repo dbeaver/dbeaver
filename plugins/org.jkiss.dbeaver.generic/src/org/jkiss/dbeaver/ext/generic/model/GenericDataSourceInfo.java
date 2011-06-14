@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -32,7 +33,7 @@ class GenericDataSourceInfo extends JDBCDataSourceInfo {
     }
 
     @Override
-    public List<String> getExecuteKeywords()
+    public Collection<String> getExecuteKeywords()
     {
         return EXEC_KEYWORDS;
     }

@@ -58,7 +58,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private boolean supportsTransactions;
     private List<DBPTransactionIsolation> supportedIsolations;
 
-    private List<DBSDataType> dataTypeList;
     private Map<String, DBSDataType> dataTypeMap;
     private boolean supportsUnquotedMixedCase;
     private boolean supportsQuotedMixedCase;
@@ -286,8 +285,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         }
 
         // Extract datatypes
-        this.dataTypeList = new ArrayList<DBSDataType>();
-        this.dataTypeMap = new HashMap<String, DBSDataType>();
+        this.dataTypeMap = new LinkedHashMap<String, DBSDataType>();
         try {
             // Read data types
             JDBCResultSet dbResult = metaData.getTypeInfo();
@@ -363,32 +361,32 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         return identifierQuoteString;
     }
 
-    public List<String> getSQLKeywords()
+    public Collection<String> getSQLKeywords()
     {
         return sqlKeywords;
     }
 
-    public List<String> getNumericFunctions()
+    public Collection<String> getNumericFunctions()
     {
         return numericFunctions;
     }
 
-    public List<String> getStringFunctions()
+    public Collection<String> getStringFunctions()
     {
         return stringFunctions;
     }
 
-    public List<String> getSystemFunctions()
+    public Collection<String> getSystemFunctions()
     {
         return systemFunctions;
     }
 
-    public List<String> getTimeDateFunctions()
+    public Collection<String> getTimeDateFunctions()
     {
         return timeDateFunctions;
     }
 
-    public List<String> getExecuteKeywords()
+    public Collection<String> getExecuteKeywords()
     {
         return null;
     }
@@ -473,14 +471,14 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         this.supportsIndexes = supportsIndexes;
     }
 
-    public List<DBPTransactionIsolation> getSupportedTransactionIsolations()
+    public Collection<DBPTransactionIsolation> getSupportedTransactionIsolations()
     {
         return supportedIsolations;
     }
 
-    public List<DBSDataType> getSupportedDataTypes()
+    public Collection<DBSDataType> getSupportedDataTypes()
     {
-        return dataTypeList;
+        return dataTypeMap.values();
     }
 
     public DBSDataType getSupportedDataType(String typeName)
@@ -520,7 +518,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
 
     private void addDataType(JDBCDataType dataType)
     {
-        dataTypeList.add(dataType);
         dataTypeMap.put(dataType.getName(), dataType);
     }
 

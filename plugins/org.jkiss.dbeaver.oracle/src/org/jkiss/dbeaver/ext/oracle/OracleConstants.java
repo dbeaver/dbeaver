@@ -45,14 +45,10 @@ public class OracleConstants {
     public static final String DRIVER_TYPE_OCI = "OCI";
 
     public static final String YES = "YES";
-
-    public static final String META_TABLE_USERS = INFO_SCHEMA_NAME + ".ALL_USERS";
+    public static final String TYPE_NUMBER = "NUMBER";
 
     public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
     public static final String META_TABLE_TRIGGERS = INFO_SCHEMA_NAME + ".TRIGGERS";
-    public static final String META_TABLE_TABLE_CONSTRAINTS = INFO_SCHEMA_NAME + ".TABLE_CONSTRAINTS";
-    public static final String META_TABLE_KEY_COLUMN_USAGE = INFO_SCHEMA_NAME + ".KEY_COLUMN_USAGE";
-    public static final String META_TABLE_STATISTICS = INFO_SCHEMA_NAME + ".STATISTICS";
     public static final String META_TABLE_PARTITIONS = INFO_SCHEMA_NAME + ".PARTITIONS";
 
 

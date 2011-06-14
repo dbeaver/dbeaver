@@ -85,6 +85,21 @@ public class JDBCUtils {
         }
     }
 
+    public static Integer safeGetInteger(ResultSet dbResult, String columnName)
+    {
+        try {
+            final int result = dbResult.getInt(columnName);
+            if (dbResult.wasNull()) {
+                return null;
+            } else {
+                return result;
+            }
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return 0;
+        }
+    }
+
     public static long safeGetLong(ResultSet dbResult, String columnName)
     {
         try {

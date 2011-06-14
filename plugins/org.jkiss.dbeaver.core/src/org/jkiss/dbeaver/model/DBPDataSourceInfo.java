@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.dbeaver.model.exec.DBCStateType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * DBPDataSourceInfo
@@ -78,7 +78,7 @@ public interface DBPDataSourceInfo
      * @return the list of this database's keywords that are not also
      *         SQL92 keywords
      */
-    List<String> getSQLKeywords();
+    Collection<String> getSQLKeywords();
 
     /**
      * Retrieves a list of math functions available with
@@ -87,7 +87,7 @@ public interface DBPDataSourceInfo
      *
      * @return the list of math functions supported by this database
      */
-    List<String> getNumericFunctions();
+    Collection<String> getNumericFunctions();
 
     /**
      * Retrieves a list of string functions available with
@@ -96,7 +96,7 @@ public interface DBPDataSourceInfo
      *
      * @return the list of string functions supported by this database
      */
-    List<String> getStringFunctions();
+    Collection<String> getStringFunctions();
 
     /**
      * Retrieves a list of system functions available with
@@ -105,7 +105,7 @@ public interface DBPDataSourceInfo
      *
      * @return a list of system functions supported by this database
      */
-    List<String> getSystemFunctions();
+    Collection<String> getSystemFunctions();
 
     /**
      * Retrieves a list of the time and date functions available
@@ -113,13 +113,13 @@ public interface DBPDataSourceInfo
      *
      * @return the list of time and date functions supported by this database
      */
-    List<String> getTimeDateFunctions();
+    Collection<String> getTimeDateFunctions();
 
     /**
      * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
      * @return the list of execute keywords.
      */
-    List<String> getExecuteKeywords();
+    Collection<String> getExecuteKeywords();
 
     /**
      * Retrieves the string that can be used to escape wildcard characters.
@@ -233,13 +233,13 @@ public interface DBPDataSourceInfo
      * Retrieves list of supported transaction isolation levels
      * @return list of supported transaction isolation levels
      */
-    List<DBPTransactionIsolation> getSupportedTransactionIsolations();
+    Collection<DBPTransactionIsolation> getSupportedTransactionIsolations();
 
     /**
      * Retrieves list of supported datatypes
      * @return list of types
      */
-    List<DBSDataType> getSupportedDataTypes();
+    Collection<DBSDataType> getSupportedDataTypes();
 
     /**
      * Gets data type with specified name

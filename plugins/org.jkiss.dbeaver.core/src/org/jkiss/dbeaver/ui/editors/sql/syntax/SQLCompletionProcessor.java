@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -208,7 +209,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
             // Get next structure container
             try {
-                childObject = sc.getChild(monitor, token);
+                String objectName = JDBCObjectNameCaseTransformer.transformName(dataSource, token);
+                childObject = sc.getChild(monitor, objectName);
                 if (childObject == null) {
                     if (i == 0) {
                         // Assume it's a table alias ?

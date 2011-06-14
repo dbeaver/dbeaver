@@ -17,12 +17,16 @@ public class JDBCObjectNameCaseTransformer implements IPropertyValueTransformer<
 
     public String transform(DBSObject object, String value)
     {
-        return transformName(object, value);
+        return transformName(object.getDataSource(), value);
     }
 
     public static String transformName(DBSObject object, String value)
     {
-        final DBPDataSource dataSource = object.getDataSource();
+        return transformName(object.getDataSource(), value);
+    }
+
+    public static String transformName(DBPDataSource dataSource, String value)
+    {
         final boolean isNameCaseSensitive = dataSource.getContainer().getPreferenceStore().getBoolean(PrefConstants.META_CASE_SENSITIVE);
         if (isNameCaseSensitive) {
             return value;

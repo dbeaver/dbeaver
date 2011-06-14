@@ -44,6 +44,7 @@ public enum DBIcon
     TREE_FOLDER_USER("folder_user", "icons/tree/folder_user.png"),
     TREE_FOLDER_ADMIN("folder_admin", "icons/tree/folder_admin.png"),
     TREE_PACKAGE("package", "icons/tree/package.png"),
+    TREE_DATA_TYPE("data_type", "icons/tree/data_type.png"),
 
     TREE_INFO("info", "/icons/tree/info.png"),
     TREE_FOLDER_INFO("folder_info", "/icons/tree/folder_info.png"),
