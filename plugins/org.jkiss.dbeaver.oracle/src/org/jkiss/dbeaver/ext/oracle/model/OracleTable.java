@@ -188,20 +188,6 @@ public class OracleTable extends OracleTableBase
         return true;
     }
 
-    boolean uniqueKeysCached()
-    {
-        return this.constraints != null;
-    }
-
-    void cacheUniqueKey(OracleConstraint constraint)
-    {
-        if (constraints == null) {
-            constraints = new ArrayList<OracleConstraint>();
-        }
-        
-        constraints.add(constraint);
-    }
-
     private List<OracleTrigger> loadTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
