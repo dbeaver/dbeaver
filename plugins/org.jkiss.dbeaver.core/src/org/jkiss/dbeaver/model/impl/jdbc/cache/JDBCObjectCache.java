@@ -48,7 +48,12 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         if (objectMap == null) {
             loadObjects(monitor, dataSource);
         }
-        return objectMap.values();
+        return getCachedObjects();
+    }
+
+    public Collection<OBJECT> getCachedObjects()
+    {
+        return objectMap == null ? Collections.<OBJECT>emptyList() : objectMap.values();
     }
 
     public <SUB_TYPE> Collection<SUB_TYPE> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, Class<SUB_TYPE> type)
@@ -69,7 +74,12 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         if (objectMap == null) {
             this.loadObjects(monitor, dataSource);
         }
-        return objectMap.get(caseSensitive ? name : name.toUpperCase());
+        return getCachedObject(name);
+    }
+
+    public OBJECT getCachedObject(String name)
+    {
+        return objectMap == null ? null : objectMap.get(caseSensitive ? name : name.toUpperCase());
     }
 
     public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String name, Class<SUB_TYPE> type)

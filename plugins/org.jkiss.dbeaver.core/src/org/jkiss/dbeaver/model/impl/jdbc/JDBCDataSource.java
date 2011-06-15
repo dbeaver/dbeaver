@@ -19,14 +19,12 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
@@ -275,24 +273,12 @@ public abstract class JDBCDataSource
 
     public Collection<DBSDataType> getDataTypes()
     {
-        // Use void progress monitor because we read types in initialization phase
-        try {
-            return dataTypeCache.getObjects(VoidProgressMonitor.INSTANCE, this);
-        } catch (DBException e) {
-            log.error(e);
-            return Collections.emptyList();
-        }
+        return dataTypeCache.getCachedObjects();
     }
 
     public DBSDataType getDataType(String typeName)
     {
-        // Use void progress monitor because we read types in initialization phase
-        try {
-            return dataTypeCache.getObject(VoidProgressMonitor.INSTANCE, this, typeName);
-        } catch (DBException e) {
-            log.error(e);
-            return null;
-        }
+        return dataTypeCache.getCachedObject(typeName);
     }
 
     /////////////////////////////////////////////////

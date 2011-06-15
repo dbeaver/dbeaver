@@ -112,13 +112,13 @@ public abstract class GenericEntityContainer implements GenericStructContainer
                     // Failed
                     if (readFromTables) {
                         // Load indexes for all tables and return copy of them
-                        List<GenericIndex> tmpIndexList = new ArrayList<GenericIndex>();
+                        Map<String, GenericIndex> tmpIndexMap = new LinkedHashMap<String, GenericIndex>();
                         for (GenericTable table : getTables(monitor)) {
                             for (GenericIndex index : table.getIndexes(monitor)) {
-                                tmpIndexList.add(new GenericIndex(index));
+                                tmpIndexMap.put(index.getName(), index);
                             }
                         }
-                        indexCache.setCache(tmpIndexList);
+                        indexCache.setCache(tmpIndexMap);
                     }
                 }
             }
