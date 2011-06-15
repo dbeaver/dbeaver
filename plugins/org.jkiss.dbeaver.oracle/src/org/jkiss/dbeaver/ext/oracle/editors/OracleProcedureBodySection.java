@@ -39,7 +39,7 @@ public class OracleProcedureBodySection extends SourceEditSection {
     @Override
     protected String loadSources(DBRProgressMonitor monitor) throws DBException
     {
-        return procedure.getBody();
+        return "";
     }
 
 }

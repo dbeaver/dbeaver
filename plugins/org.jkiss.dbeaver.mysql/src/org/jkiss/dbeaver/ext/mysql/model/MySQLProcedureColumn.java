@@ -27,7 +27,6 @@ public class MySQLProcedureColumn extends JDBCColumn implements DBSProcedureColu
         long columnSize,
         int scale,
         int precision,
-        int radix,
         boolean notNull,
         DBSProcedureColumnType columnType)
     {
@@ -37,7 +36,6 @@ public class MySQLProcedureColumn extends JDBCColumn implements DBSProcedureColu
             ordinalPosition,
             columnSize,
             scale,
-            radix,
             precision,
             notNull);
         this.procedure = procedure;

@@ -24,9 +24,6 @@ public class OracleProcedureManager extends JDBCObjectManager<OracleProcedure> i
 
     public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseNodeEditor activeEditor, final OracleProcedure object)
     {
-        if (object.getContainer().isSystem()) {
-            return null;
-        }
         return new ITabDescriptor[] {
             new PropertyTabDescriptor(
                 PropertiesContributor.CATEGORY_INFO,

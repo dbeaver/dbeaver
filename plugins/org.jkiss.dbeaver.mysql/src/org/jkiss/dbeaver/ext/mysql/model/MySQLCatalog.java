@@ -608,7 +608,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             boolean notNull = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.procedureNoNulls;
             int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE);
             int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
-            int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
+            //int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
             //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
             DBSProcedureColumnType columnType;
             switch (columnTypeNum) {
@@ -629,7 +629,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
                 valueType,
                 position,
                 columnSize,
-                scale, precision, radix, notNull,
+                scale, precision, notNull,
                 columnType);
         }
     }
