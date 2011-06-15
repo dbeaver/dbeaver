@@ -16,7 +16,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -37,6 +39,7 @@ public class GenericDataSource extends JDBCDataSource
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
     private final TableTypeCache tableTypeCache;
+    private final JDBCDataTypeCache dataTypeCache;
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
 
@@ -52,6 +55,7 @@ public class GenericDataSource extends JDBCDataSource
     {
         super(container);
         final DBPDriver driver = container.getDriver();
+        this.dataTypeCache = new JDBCDataTypeCache(container);
         this.tableTypeCache = new TableTypeCache();
         this.queryGetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
         this.querySetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB));
@@ -382,6 +386,12 @@ public class GenericDataSource extends JDBCDataSource
         this.initialize(monitor);
 
         return true;
+    }
+
+    @Override
+    public JDBCAbstractCache<? extends DBSDataType> getDataTypeCache()
+    {
+        return dataTypeCache;
     }
 
     GenericTable findTable(DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)

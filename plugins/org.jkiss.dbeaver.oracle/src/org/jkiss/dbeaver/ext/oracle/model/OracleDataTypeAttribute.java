@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.ext.oracle.OracleUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -33,12 +32,12 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember {
         super(dataType, dbResult);
         this.name = JDBCUtils.safeGetString(dbResult, "ATTR_NAME");
         this.number = JDBCUtils.safeGetInt(dbResult, "ATTR_NO");
-        this.attrType = OracleUtils.resolveDataType(
+        this.attrType = OracleDataType.resolveDataType(
             monitor,
             getDataSource(),
             JDBCUtils.safeGetString(dbResult, "ATTR_TYPE_OWNER"),
             JDBCUtils.safeGetString(dbResult, "ATTR_TYPE_NAME"));
-        this.attrTypeMod = OracleUtils.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "ATTR_TYPE_MOD"));
+        this.attrTypeMod = OracleDataType.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "ATTR_TYPE_MOD"));
         this.length = JDBCUtils.safeGetInteger(dbResult, "LENGTH");
         this.precision = JDBCUtils.safeGetInteger(dbResult, "PRECISION");
         this.scale = JDBCUtils.safeGetInteger(dbResult, "SCALE");

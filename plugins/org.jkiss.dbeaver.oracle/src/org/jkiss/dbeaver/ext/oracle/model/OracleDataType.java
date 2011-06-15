@@ -9,7 +9,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
-import org.jkiss.dbeaver.ext.oracle.OracleUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -78,9 +77,7 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         PREDEFINED_TYPES.put("RAW", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("REAL", new TypeDesc(java.sql.Types.REAL, 63, 127, -84));
         PREDEFINED_TYPES.put("REF", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER(32)", new TypeDesc(java.sql.Types.INTEGER, 63, 127, -84));
-        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER(16)", new TypeDesc(java.sql.Types.SMALLINT, 63, 127, -84));
-        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER(8)", new TypeDesc(java.sql.Types.TINYINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER", new TypeDesc(java.sql.Types.INTEGER, 63, 127, -84));
         PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(java.sql.Types.SMALLINT, 63, 127, -84));
         PREDEFINED_TYPES.put("TABLE", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("TIME", new TypeDesc(java.sql.Types.TIME, 0, 0, 0));
@@ -88,13 +85,17 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         PREDEFINED_TYPES.put("TIMESTAMP", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TZ", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP WITH TZ", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
-        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER(32)", new TypeDesc(java.sql.Types.BIGINT, 63, 127, -84));
-        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER(16)", new TypeDesc(java.sql.Types.INTEGER, 63, 127, -84));
-        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER(8)", new TypeDesc(java.sql.Types.SMALLINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TIME ZONE", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP WITH TIME ZONE", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
+        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER", new TypeDesc(java.sql.Types.BIGINT, 63, 127, -84));
         PREDEFINED_TYPES.put("UROWID", new TypeDesc(java.sql.Types.ROWID, 0, 0, 0));
         PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(java.sql.Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("VARCHAR2", new TypeDesc(java.sql.Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("VARYING ARRAY", new TypeDesc(java.sql.Types.ARRAY, 0, 0, 0));
+
+        PREDEFINED_TYPES.put("NVARCHAR2", new TypeDesc(java.sql.Types.NVARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("NCHAR", new TypeDesc(java.sql.Types.NCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("NCLOB", new TypeDesc(java.sql.Types.NCLOB, 0, 0, 0));
     }
     
     private DBSObject owner;
@@ -110,15 +111,19 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     private boolean flagFinal;
     private boolean flagInstantiable;
     private TypeDesc typeDesc;
+    private int precision = 0;
 
     private boolean persisted;
 
-    public OracleDataType(DBSObject owner, boolean persisted)
+    public OracleDataType(DBSObject owner, String typeName, boolean persisted)
     {
         this.owner = owner;
+        this.typeName = typeName;
         this.persisted = persisted;
         this.attributeCache = new AttributeCache();
         this.methodCache = new MethodCache();
+
+        findTypeDesc(typeName);
     }
 
     public OracleDataType(DBSObject owner, ResultSet dbResult)
@@ -150,7 +155,29 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         
         if (owner instanceof OracleDataSource && flagPredefined) {
             // Determine value type for predefined types
-            this.typeDesc = PREDEFINED_TYPES.get(typeName);
+            findTypeDesc(typeName);
+        }
+    }
+
+    private void findTypeDesc(String typeName)
+    {
+        if (typeName.startsWith("PL/SQL")) {
+            // Don't care about PL/SQL types
+            return;
+        }
+        final int precBeginPos = typeName.indexOf('(');
+        if (precBeginPos != -1) {
+            int precEndPos = typeName.indexOf(')', precBeginPos);
+            try {
+                precision = Integer.parseInt(typeName.substring(precBeginPos + 1, precEndPos));
+            } catch (NumberFormatException e) {
+                log.error(e);
+            }
+            typeName = typeName.substring(0, precBeginPos) + typeName.substring(precEndPos + 1);
+        }
+        this.typeDesc = PREDEFINED_TYPES.get(typeName);
+        if (this.typeDesc == null) {
+            log.warn("Unknown predefined type: " + typeName);
         }
     }
 
@@ -206,6 +233,9 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
 
     public int getPrecision()
     {
+        if (precision != 0) {
+            return precision;
+        }
         return typeDesc == null ? 0 : typeDesc.precision;
     }
 
@@ -318,6 +348,48 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     public String getTypeSource(DBRProgressMonitor monitor, boolean body) throws DBCException
     {
         return OracleUtils.getSource(monitor, this, false);
+    }
+
+    public static OracleDataType resolveDataType(DBRProgressMonitor monitor, OracleDataSource dataSource, String typeOwner, String typeName)
+    {
+        OracleSchema typeSchema = null;
+        OracleDataType type = null;
+        if (typeOwner != null) {
+            try {
+                typeSchema = dataSource.getSchema(monitor, typeOwner);
+                if (typeSchema == null) {
+                    OracleUtils.log.error("Type attr schema '" + typeOwner + "' not found");
+                } else {
+                    type = typeSchema.getDataType(monitor, typeName);
+                }
+            } catch (DBException e) {
+                log.error(e);
+            }
+        } else {
+            type = (OracleDataType)dataSource.getDataType(typeName);
+        }
+        if (type == null) {
+            log.debug("Data type '" + typeName + "' not found - declare new one");
+            type = new OracleDataType(typeSchema == null ? dataSource : typeSchema, typeName, true);
+            if (typeSchema == null) {
+                dataSource.getDataTypeCache().cacheObject(type);
+            } else {
+                typeSchema.getDataTypeCache().cacheObject(type);
+            }
+        }
+        return type;
+    }
+
+    public static OracleDataTypeModifier resolveTypeModifier(String typeMod)
+    {
+        if (!CommonUtils.isEmpty(typeMod)) {
+            try {
+                return OracleDataTypeModifier.valueOf(typeMod);
+            } catch (IllegalArgumentException e) {
+                log.error(e);
+            }
+        }
+        return null;
     }
 
     private class AttributeCache extends JDBCObjectCache<OracleDataTypeAttribute> {

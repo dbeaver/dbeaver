@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
-import org.jkiss.dbeaver.ext.oracle.OracleUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -56,12 +55,12 @@ public class OracleDataTypeMethod extends OracleDataTypeMember {
 
         String resultTypeName = JDBCUtils.safeGetString(dbResult, "RESULT_TYPE_NAME");
         if (!CommonUtils.isEmpty(resultTypeName)) {
-            this.resultType = OracleUtils.resolveDataType(
+            this.resultType = OracleDataType.resolveDataType(
                 monitor,
                 getDataSource(),
                 JDBCUtils.safeGetString(dbResult, "RESULT_TYPE_OWNER"),
                 resultTypeName);
-            this.resultTypeMod = OracleUtils.resolveTypeModifier(
+            this.resultTypeMod = OracleDataType.resolveTypeModifier(
                 JDBCUtils.safeGetString(dbResult, "RESULT_TYPE_MOD"));
         }
     }

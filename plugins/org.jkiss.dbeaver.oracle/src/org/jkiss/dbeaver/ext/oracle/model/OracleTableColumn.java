@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
-import org.jkiss.dbeaver.ext.oracle.OracleUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -48,12 +47,12 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         this.name = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COLUMN_NAME);
         this.ordinalPosition = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_COLUMN_ID);
         this.typeName = JDBCUtils.safeGetString(dbResult, "DATA_TYPE");
-        this.type = OracleUtils.resolveDataType(
+        this.type = OracleDataType.resolveDataType(
             monitor,
             getDataSource(),
             JDBCUtils.safeGetString(dbResult, "DATA_TYPE_OWNER"),
             this.typeName);
-        this.typeMod = OracleUtils.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "DATA_TYPE_MOD"));
+        this.typeMod = OracleDataType.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "DATA_TYPE_MOD"));
         if (this.type != null) {
             setValueType(type.getValueType());
         }

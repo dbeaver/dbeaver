@@ -36,6 +36,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 {
     static final Log log = LogFactory.getLog(OracleDataSource.class);
 
+    private final DataTypeCache dataTypeCache = new DataTypeCache();
     private Map<String, OracleSchema> schemas;
     private List<OracleUser> users;
     private String activeSchemaName;
@@ -335,10 +336,9 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return this;
     }
 
-    @Override
-    protected DataTypeCache createDataTypeCache()
+    public DataTypeCache getDataTypeCache()
     {
-        return new DataTypeCache();
+        return dataTypeCache;
     }
 
     class DataTypeCache extends JDBCObjectCache<OracleDataType> {
@@ -352,6 +352,12 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         protected OracleDataType fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataType(OracleDataSource.this, resultSet);
+        }
+
+        @Override
+        protected void invalidateObjects(DBRProgressMonitor monitor, Collection<OracleDataType> objectList)
+        {
+
         }
     }
 

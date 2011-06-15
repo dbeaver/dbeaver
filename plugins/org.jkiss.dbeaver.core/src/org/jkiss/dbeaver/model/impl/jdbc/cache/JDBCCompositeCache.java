@@ -128,6 +128,16 @@ public abstract class JDBCCompositeCache<
         }
     }
 
+    public void cacheObject(OBJECT object)
+    {
+        synchronized (this) {
+            if (this.objectList != null) {
+                this.objectList.add(object);
+                this.objectMap.put(object.getName(), object);
+            }
+        }
+    }
+
     public void setCache(Collection<OBJECT> objects)
     {
         synchronized (this) {

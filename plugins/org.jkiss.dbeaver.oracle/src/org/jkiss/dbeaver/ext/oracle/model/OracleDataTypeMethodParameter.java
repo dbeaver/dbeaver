@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.ext.oracle.OracleUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -18,16 +17,10 @@ import java.sql.ResultSet;
  */
 public class OracleDataTypeMethodParameter implements DBSObject {
 
-    public enum ParameterMode {
-        IN,
-        OUT,
-        INOUT
-    }
-
     private final OracleDataTypeMethod method;
     private String name;
     private int number;
-    private ParameterMode mode;
+    private OracleParameterMode mode;
     private OracleDataType type;
     private OracleDataTypeModifier typeMod;
 
@@ -36,20 +29,13 @@ public class OracleDataTypeMethodParameter implements DBSObject {
         this.method = method;
         this.name = JDBCUtils.safeGetString(dbResult, "PARAM_NAME");
         this.number = JDBCUtils.safeGetInt(dbResult, "PARAM_NO");
-        String modeName = JDBCUtils.safeGetString(dbResult, "PARAM_MODE");
-        if ("IN".equals(modeName)) {
-            this.mode = ParameterMode.IN;
-        } else if ("OUT".equals(modeName)) {
-            this.mode = ParameterMode.OUT;
-        } else {
-            this.mode = ParameterMode.INOUT;
-        }
-        this.type = OracleUtils.resolveDataType(
+        this.mode = OracleParameterMode.getMode(JDBCUtils.safeGetString(dbResult, "PARAM_MODE"));
+        this.type = OracleDataType.resolveDataType(
             monitor,
             method.getDataSource(),
             JDBCUtils.safeGetString(dbResult, "PARAM_TYPE_OWNER"),
             JDBCUtils.safeGetString(dbResult, "PARAM_TYPE_NAME"));
-        this.typeMod = OracleUtils.resolveTypeModifier(
+        this.typeMod = OracleDataType.resolveTypeModifier(
             JDBCUtils.safeGetString(dbResult, "PARAM_TYPE_MOD"));
     }
 
@@ -86,7 +72,7 @@ public class OracleDataTypeMethodParameter implements DBSObject {
     }
 
     @Property(name = "Mode", viewable = true, order = 3)
-    public ParameterMode getMode()
+    public OracleParameterMode getMode()
     {
         return mode;
     }

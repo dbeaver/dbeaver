@@ -24,12 +24,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -43,6 +42,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
 {
     static final Log log = LogFactory.getLog(MySQLDataSource.class);
 
+    private final JDBCDataTypeCache dataTypeCache;
     private List<MySQLEngine> engines;
     private List<MySQLCatalog> catalogs;
     private List<MySQLPrivilege> privileges;
@@ -56,6 +56,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         throws DBException
     {
         super(container);
+        dataTypeCache = new JDBCDataTypeCache(container);
     }
 
     protected Map<String, String> getInternalConnectionProperties()
@@ -611,6 +612,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
             return new QueryTransformerFetchAll();
         }
         return super.createQueryTransformer(type);
+    }
+
+    @Override
+    public JDBCAbstractCache<? extends DBSDataType> getDataTypeCache()
+    {
+        return dataTypeCache;
     }
 
     public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException

@@ -46,14 +46,12 @@ public abstract class JDBCDataSource
     private Connection connection;
 
     protected DBPDataSourceInfo dataSourceInfo;
-    private final JDBCAbstractCache<? extends DBSDataType> dataTypeCache;
 
     public JDBCDataSource(DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
         this.connection = openConnection();
-        this.dataTypeCache = createDataTypeCache();
         {
             // Notify QM
             boolean autoCommit = false;
@@ -214,7 +212,7 @@ public abstract class JDBCDataSource
             context.close();
         }
         // Cache data types
-        dataTypeCache.getObjects(monitor, this);
+        getDataTypeCache().getObjects(monitor, this);
 
     }
 
@@ -256,7 +254,7 @@ public abstract class JDBCDataSource
     }
 
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException {
-        this.dataTypeCache.clearCache();
+        this.getDataTypeCache().clearCache();
         this.dataSourceInfo = null;
         return true;
     }
@@ -271,14 +269,16 @@ public abstract class JDBCDataSource
         return null;
     }
 
+    public abstract JDBCAbstractCache<? extends DBSDataType> getDataTypeCache();
+
     public Collection<? extends DBSDataType> getDataTypes()
     {
-        return dataTypeCache.getCachedObjects();
+        return getDataTypeCache().getCachedObjects();
     }
 
     public DBSDataType getDataType(String typeName)
     {
-        return dataTypeCache.getCachedObject(typeName);
+        return getDataTypeCache().getCachedObject(typeName);
     }
 
     /////////////////////////////////////////////////
@@ -287,13 +287,6 @@ public abstract class JDBCDataSource
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
         return new JDBCDataSourceInfo(this, metaData);
-    }
-
-    protected JDBCAbstractCache<? extends DBSDataType> createDataTypeCache()
-    {
-        final JDBCDataTypeCache cache = new JDBCDataTypeCache(getContainer());
-        cache.setCaseSensitive(false);
-        return cache;
     }
 
 }

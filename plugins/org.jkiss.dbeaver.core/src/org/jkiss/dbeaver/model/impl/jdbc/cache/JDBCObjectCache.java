@@ -85,6 +85,16 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         }
     }
 
+    public void cacheObject(OBJECT object)
+    {
+        synchronized (this) {
+            if (this.objectList != null) {
+                this.objectList.add(object);
+                this.objectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
+            }
+        }
+    }
+
     public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String name, Class<SUB_TYPE> type)
         throws DBException
     {

@@ -26,5 +26,8 @@ public interface JDBCAbstractCache<OBJECT extends DBSObject> {
 
     OBJECT getCachedObject(String name);
 
+    void cacheObject(OBJECT object);
+
     void clearCache();
+
 }
