@@ -5,11 +5,12 @@
 package org.jkiss.dbeaver.registry;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPKeywordManager;
-import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -19,6 +20,7 @@ import java.util.*;
  * Support runtime change of datasource (reloads syntax information)
  */
 public class DataSourceKeywordManager implements DBPKeywordManager {
+    static final Log log = LogFactory.getLog(DataSourceKeywordManager.class);
 
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<String, DBPKeywordType>();
 
@@ -30,9 +32,9 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
 
     private String[] singleLineComments = {"--"};
 
-    public DataSourceKeywordManager(DBPDataSourceInfo info)
+    public DataSourceKeywordManager(DBPDataSource dataSource)
     {
-        loadSyntax(info);
+        loadSyntax(dataSource);
     }
 
     public Set<String> getReservedWords()
@@ -85,8 +87,9 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
         return columnQueryWords.contains(word.toUpperCase());
     }
 
-    void loadSyntax(DBPDataSourceInfo dataSourceInfo)
+    void loadSyntax(final DBPDataSource dataSource)
     {
+        DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
         allKeywords.clear();
         reservedWords.clear();
         functions.clear();
@@ -95,11 +98,10 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
         // Add default set of keywords
         Collections.addAll(reservedWords, SQL92_KEYWORDS);
         Collections.addAll(reservedWords, SQL_EX_KEYWORDS);
-        Collections.addAll(types, DEFAULT_TYPES);
         Collections.addAll(tableQueryWords, TABLE_KEYWORDS);
         Collections.addAll(columnQueryWords, COLUMN_KEYWORDS);
 
-        {
+        try {
             // Keywords
             Collection<String> sqlKeywords = dataSourceInfo.getSQLKeywords();
             if (!CommonUtils.isEmpty(sqlKeywords)) {
@@ -139,17 +141,26 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
             functions.addAll(allFunctions);
 
             // Types
-            Collection<DBSDataType> supportedDataTypes = dataSourceInfo.getSupportedDataTypes();
-            if (supportedDataTypes != null) {
-                for (DBSDataType dataType : dataSourceInfo.getSupportedDataTypes()) {
-                    types.add(dataType.getName().toUpperCase());
+            if (dataSource instanceof DBPDataTypeProvider) {
+                Collection<DBSDataType> supportedDataTypes = ((DBPDataTypeProvider)dataSource).getDataTypes();
+                if (supportedDataTypes != null) {
+                    for (DBSDataType dataType : supportedDataTypes) {
+                        types.add(dataType.getName().toUpperCase());
+                    }
                 }
             }
+            if (types.isEmpty()) {
+                // Add default types
+                Collections.addAll(types, DEFAULT_TYPES);
+            }
+
             functions.addAll(allFunctions);
         }
-
-        if (types.isEmpty()) {
-            // Add default types
+        catch (Throwable e) {
+            if (e instanceof InvocationTargetException) {
+                e = ((InvocationTargetException)e).getTargetException();
+            }
+            log.error(e);
         }
 
         // Remove types and functions from reserved words list

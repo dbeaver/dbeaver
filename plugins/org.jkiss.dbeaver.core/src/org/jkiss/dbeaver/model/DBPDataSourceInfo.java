@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.model.exec.DBCStateType;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.util.Collection;
 
@@ -234,19 +233,6 @@ public interface DBPDataSourceInfo
      * @return list of supported transaction isolation levels
      */
     Collection<DBPTransactionIsolation> getSupportedTransactionIsolations();
-
-    /**
-     * Retrieves list of supported datatypes
-     * @return list of types
-     */
-    Collection<DBSDataType> getSupportedDataTypes();
-
-    /**
-     * Gets data type with specified name
-     * @param typeName type name
-     * @return datatype of null
-     */
-    DBSDataType getSupportedDataType(String typeName);
 
     /**
      * Script delimiter character

@@ -8,27 +8,25 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCConnectionImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
@@ -38,6 +36,7 @@ import java.util.Properties;
 public abstract class JDBCDataSource
     implements
         DBPDataSource,
+        DBPDataTypeProvider,
         JDBCConnector,
         DBSEntity,
         DBSEntityContainer,
@@ -49,13 +48,14 @@ public abstract class JDBCDataSource
     private Connection connection;
 
     protected DBPDataSourceInfo dataSourceInfo;
+    private final JDBCAbstractCache<DBSDataType> dataTypeCache;
 
     public JDBCDataSource(DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
         this.connection = openConnection();
-
+        this.dataTypeCache = createDataTypeCache();
         {
             // Notify QM
             boolean autoCommit = false;
@@ -215,11 +215,9 @@ public abstract class JDBCDataSource
         finally {
             context.close();
         }
-    }
+        // Cache data types
+        dataTypeCache.getObjects(monitor, this);
 
-    protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
-    {
-        return new JDBCDataSourceInfo(this, metaData);
     }
 
     public void close(DBRProgressMonitor monitor)
@@ -260,6 +258,7 @@ public abstract class JDBCDataSource
     }
 
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException {
+        this.dataTypeCache.clearCache();
         this.dataSourceInfo = null;
         return true;
     }
@@ -272,6 +271,43 @@ public abstract class JDBCDataSource
 
         }
         return null;
+    }
+
+    public Collection<DBSDataType> getDataTypes()
+    {
+        // Use void progress monitor because we read types in initialization phase
+        try {
+            return dataTypeCache.getObjects(VoidProgressMonitor.INSTANCE, this);
+        } catch (DBException e) {
+            log.error(e);
+            return Collections.emptyList();
+        }
+    }
+
+    public DBSDataType getDataType(String typeName)
+    {
+        // Use void progress monitor because we read types in initialization phase
+        try {
+            return dataTypeCache.getObject(VoidProgressMonitor.INSTANCE, this, typeName);
+        } catch (DBException e) {
+            log.error(e);
+            return null;
+        }
+    }
+
+    /////////////////////////////////////////////////
+    // Overridable functions
+
+    protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
+    {
+        return new JDBCDataSourceInfo(this, metaData);
+    }
+
+    protected JDBCAbstractCache<DBSDataType> createDataTypeCache()
+    {
+        final JDBCDataTypeCache cache = new JDBCDataTypeCache(getContainer());
+        cache.setCaseSensitive(false);
+        return cache;
     }
 
 }

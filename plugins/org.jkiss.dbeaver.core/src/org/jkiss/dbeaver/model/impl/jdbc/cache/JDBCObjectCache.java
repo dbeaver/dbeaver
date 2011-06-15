@@ -26,7 +26,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
     private boolean caseSensitive = true;
     private Comparator<OBJECT> listOrderComparator;
 
-    protected void setCaseSensitive(boolean caseSensitive)
+    public void setCaseSensitive(boolean caseSensitive)
     {
         this.caseSensitive = caseSensitive;
     }

@@ -282,7 +282,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             return EmptyKeywordManager.INSTANCE;
         }
         if (keywordManager == null) {
-            keywordManager = new DataSourceKeywordManager(dataSource.getInfo());
+            keywordManager = new DataSourceKeywordManager(dataSource);
         }
         return keywordManager;
     }

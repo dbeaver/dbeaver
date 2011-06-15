@@ -36,7 +36,7 @@ public class OracleUtils {
                 log.error(e);
             }
         } else {
-            type = dataSource.getInfo().getSupportedDataType(typeName);
+            type = dataSource.getDataType(typeName);
         }
         if (type == null) {
             log.error("Data type '" + typeName + "' not found");

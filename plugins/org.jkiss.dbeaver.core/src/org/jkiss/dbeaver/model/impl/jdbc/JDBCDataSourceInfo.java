@@ -58,7 +58,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private boolean supportsTransactions;
     private List<DBPTransactionIsolation> supportedIsolations;
 
-    private Map<String, DBSDataType> dataTypeMap;
     private boolean supportsUnquotedMixedCase;
     private boolean supportsQuotedMixedCase;
     private DBPIdentifierCase unquotedIdentCase;
@@ -283,42 +282,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         if (!supportedIsolations.contains(JDBCTransactionIsolation.NONE)) {
             supportedIsolations.add(0, JDBCTransactionIsolation.NONE);
         }
-
-        // Extract datatypes
-        this.dataTypeMap = new LinkedHashMap<String, DBSDataType>();
-        try {
-            // Read data types
-            JDBCResultSet dbResult = metaData.getTypeInfo();
-            try {
-                while (dbResult.next()) {
-                    String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.LOCAL_TYPE_NAME);
-                    int type = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-                    int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
-                    int minScale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.MINIMUM_SCALE);
-                    int maxScale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.MAXIMUM_SCALE);
-                    boolean isSearchable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SEARCHABLE) != 0;
-                    boolean isUnsigned = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.UNSIGNED_ATTRIBUTE);
-                    JDBCDataType dataType = new JDBCDataType(
-                        owner,
-                        type,
-                        typeName,
-                        remarks,
-                        isUnsigned,
-                        isSearchable,
-                        precision,
-                        minScale,
-                        maxScale);
-                    addDataType(dataType);
-                }
-            } finally {
-                dbResult.close();
-            }
-        }
-        catch (SQLException ex) {
-            // Error getting datatypes list
-            log.debug(ex.getMessage());
-        }
     }
 
     private String makeTermString(String term, String defTerm)
@@ -476,16 +439,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         return supportedIsolations;
     }
 
-    public Collection<DBSDataType> getSupportedDataTypes()
-    {
-        return dataTypeMap.values();
-    }
-
-    public DBSDataType getSupportedDataType(String typeName)
-    {
-        return dataTypeMap.get(typeName);
-    }
-
     public String getScriptDelimiter()
     {
         return ";";
@@ -514,11 +467,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public DBPIdentifierCase storesQuotedCase()
     {
         return quotedIdentCase;
-    }
-
-    private void addDataType(JDBCDataType dataType)
-    {
-        dataTypeMap.put(dataType.getName(), dataType);
     }
 
     private static List<String> makeStringList(String source)

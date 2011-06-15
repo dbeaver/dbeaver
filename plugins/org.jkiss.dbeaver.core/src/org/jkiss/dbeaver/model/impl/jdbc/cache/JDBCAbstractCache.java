@@ -22,4 +22,5 @@ public interface JDBCAbstractCache<OBJECT extends DBSObject> {
     OBJECT getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String name)
         throws DBException;
 
+    void clearCache();
 }

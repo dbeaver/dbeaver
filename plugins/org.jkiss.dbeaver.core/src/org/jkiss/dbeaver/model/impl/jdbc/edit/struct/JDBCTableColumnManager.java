@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -133,20 +134,19 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
 
     private static DBSDataType findDataType(DBPDataSource dataSource, String typeName)
     {
-        for (DBSDataType type : dataSource.getInfo().getSupportedDataTypes()) {
-            if (type.getName().equalsIgnoreCase(typeName)) {
-                return type;
-            }
+        if (dataSource instanceof DBPDataTypeProvider) {
+            return ((DBPDataTypeProvider) dataSource).getDataType(typeName);
         }
         return null;
     }
 
     protected static DBSDataType findBestDataType(DBPDataSource dataSource, String ... typeNames)
     {
-        for (String testType : typeNames) {
-            for (DBSDataType type : dataSource.getInfo().getSupportedDataTypes()) {
-                if (type.getName().equalsIgnoreCase(testType)) {
-                    return type;
+        if (dataSource instanceof DBPDataTypeProvider) {
+            for (String testType : typeNames) {
+                final DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getDataType(testType);
+                if (dataType != null) {
+                    return dataType;
                 }
             }
         }

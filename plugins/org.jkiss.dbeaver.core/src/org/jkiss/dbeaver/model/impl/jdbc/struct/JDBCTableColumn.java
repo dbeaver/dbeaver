@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -89,9 +90,11 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         public Object[] getPossibleValues(JDBCTableColumn column)
         {
             Set<String> typeNames = new TreeSet<String>();
-            for (DBSDataType type : column.getDataSource().getInfo().getSupportedDataTypes()) {
-                if (type.getDataKind() != DBSDataKind.UNKNOWN && !CommonUtils.isEmpty(type.getName()) && Character.isLetter(type.getName().charAt(0))) {
-                    typeNames.add(type.getName());
+            if (column.getDataSource() instanceof DBPDataTypeProvider) {
+                for (DBSDataType type : ((DBPDataTypeProvider) column.getDataSource()).getDataTypes()) {
+                    if (type.getDataKind() != DBSDataKind.UNKNOWN && !CommonUtils.isEmpty(type.getName()) && Character.isLetter(type.getName().charAt(0))) {
+                        typeNames.add(type.getName());
+                    }
                 }
             }
             return typeNames.toArray(new String[typeNames.size()]);

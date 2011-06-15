@@ -31,7 +31,8 @@ import java.util.List;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSEntitySelector, IDatabaseTermProvider, IAdaptable, GenericStructContainer
+public class GenericDataSource extends JDBCDataSource
+    implements DBPDataSource, JDBCConnector, DBSEntitySelector, IDatabaseTermProvider, IAdaptable, GenericStructContainer
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
@@ -193,9 +194,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         throws DBException
     {
         super.initialize(monitor);
-
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read generic metadata");
         try {
+            // Read metadata
             JDBCDatabaseMetaData metaData = context.getMetaData();
             boolean catalogsFiltered = false;
             {
