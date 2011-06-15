@@ -189,7 +189,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return notNull;
     }
 
-    public long getDisplaySize()
+    public long getMaxLength()
     {
         return displaySize;
     }

@@ -13,4 +13,5 @@ public interface DBSColumnBase extends DBSTypedObject
 
     boolean isNotNull();
 
+    long getMaxLength();
 }

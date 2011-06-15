@@ -86,7 +86,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         propertySource.addProperty(
             "column_size",
             "Column Size",
-            controller.getColumnMetaData().getDisplaySize());
+            controller.getColumnMetaData().getMaxLength());
     }
 
     protected static interface ValueExtractor <T extends Control> {

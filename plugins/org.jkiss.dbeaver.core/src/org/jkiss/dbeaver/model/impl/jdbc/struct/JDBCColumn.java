@@ -25,9 +25,9 @@ public abstract class JDBCColumn extends AbstractColumn implements IObjectImageP
     }
 
     protected JDBCColumn(String name, String typeName, int valueType, int ordinalPosition, long maxLength, int scale,
-                         int radix, int precision, boolean nullable)
+                         int precision, boolean nullable)
     {
-        super(name, typeName, valueType, ordinalPosition, maxLength, scale, radix, precision, nullable);
+        super(name, typeName, valueType, ordinalPosition, maxLength, scale, precision, nullable);
     }
 
     public Image getObjectImage()

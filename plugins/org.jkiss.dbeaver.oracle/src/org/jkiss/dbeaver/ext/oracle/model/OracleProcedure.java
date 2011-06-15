@@ -5,103 +5,56 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * GenericProcedure
  */
-public class OracleProcedure extends AbstractProcedure<OracleDataSource, OracleSchema>
+public class OracleProcedure extends OracleObject implements DBSProcedure
 {
     //static final Log log = LogFactory.getLog(OracleProcedure.class);
 
     private DBSProcedureType procedureType;
-    private String resultType;
-    private String bodyType;
-    private String body;
-    private String charset;
-    private List<OracleProcedureColumn> columns;
+    private List<OracleProcedureArgument> columns;
 
     public OracleProcedure(
         OracleSchema schema,
         ResultSet dbResult)
     {
-        super(schema);
-        loadInfo(dbResult);
+        super(schema, dbResult);
+        this.procedureType = DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE"));
     }
 
-    private void loadInfo(ResultSet dbResult)
+    public DBSEntityContainer getContainer()
     {
-        setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_ROUTINE_NAME));
-        setDescription(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_ROUTINE_COMMENT));
-        this.procedureType = DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_ROUTINE_TYPE).toUpperCase());
-        this.resultType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DTD_IDENTIFIER);
-        this.bodyType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_ROUTINE_BODY);
-        this.body = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_ROUTINE_DEFINITION);
-        this.charset = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CHARACTER_SET_CLIENT);
+        return getSchema();
     }
 
-    @Property(name = "Procedure Type", order = 2)
+    @Property(name = "Procedure Type", order = 3)
     public DBSProcedureType getProcedureType()
     {
         return procedureType ;
     }
 
-    @Property(name = "Result Type", order = 2)
-    public String getResultType()
+    public Collection<? extends DBSProcedureColumn> getColumns(DBRProgressMonitor monitor) throws DBException
     {
-        return resultType;
+        return null;
     }
 
-    @Property(name = "Body Type", order = 3)
-    public String getBodyType()
+    boolean isColumnsCached()
     {
-        return bodyType;
+        return columns != null;
     }
 
-    //@Property(name = "Body", order = 4)
-    public String getBody()
-    {
-        return body;
-    }
-
-    //@Property(name = "Client Charset", order = 4)
-    public String getCharset()
-    {
-        return charset;
-    }
-
-    public List<OracleProcedureColumn> getColumns(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (columns == null) {
-            getContainer().getProceduresCache().loadChildren(monitor, getDataSource(), this);
-        }
-        return columns;
-    }
-
-    public boolean isColumnsCached()
-    {
-        return this.columns != null;
-    }
-
-    public void cacheColumns(List<OracleProcedureColumn> columns)
+    void cacheColumns(List<OracleProcedureArgument> columns)
     {
         this.columns = columns;
-    }
-
-    public String getFullQualifiedName()
-    {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getContainer(),
-            this);
     }
 }

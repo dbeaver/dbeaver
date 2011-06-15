@@ -5,14 +5,21 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 
 /**
 * Parameter/argument mode
 */
 public enum OracleParameterMode {
-    IN,
-    OUT,
-    INOUT;
+    IN(DBSProcedureColumnType.IN),
+    OUT(DBSProcedureColumnType.OUT),
+    INOUT(DBSProcedureColumnType.INOUT);
+    private final DBSProcedureColumnType columnType;
+
+    OracleParameterMode(DBSProcedureColumnType columnType)
+    {
+        this.columnType = columnType;
+    }
 
     public static OracleParameterMode getMode(String modeName)
     {
@@ -25,5 +32,10 @@ public enum OracleParameterMode {
         } else {
             return OracleParameterMode.INOUT;
         }
+    }
+
+    public DBSProcedureColumnType getColumnType()
+    {
+        return columnType;
     }
 }

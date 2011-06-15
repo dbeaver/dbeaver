@@ -212,7 +212,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         propertySource.addProperty(
             "max_length",
             "Max Length",
-            controller.getColumnMetaData().getDisplaySize());
+            controller.getColumnMetaData().getMaxLength());
     }
 
     public boolean editValue(final DBDValueController controller)
@@ -227,7 +227,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
                 editor.setText(value.getData() == null ? "" : value.getData());
                 editor.setEditable(!controller.isReadOnly());
-                long maxLength = controller.getColumnMetaData().getDisplaySize();
+                long maxLength = controller.getColumnMetaData().getMaxLength();
                 if (maxLength <= 0) {
                     maxLength = MAX_STRING_LENGTH;
                 } else {

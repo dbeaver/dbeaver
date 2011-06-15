@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -618,7 +617,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     /**
      * Procedures cache implementation
      */
-    class ProceduresCache extends JDBCStructCache<OracleProcedure, OracleProcedureColumn> {
+    class ProceduresCache extends JDBCStructCache<OracleProcedure, OracleProcedureArgument> {
 
         ProceduresCache()
         {
@@ -648,7 +647,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return parent.isColumnsCached();
         }
 
-        protected void cacheChildren(OracleProcedure parent, List<OracleProcedureColumn> columns)
+        protected void cacheChildren(OracleProcedure parent, List<OracleProcedureArgument> columns)
         {
             parent.cacheColumns(columns);
         }
@@ -667,41 +666,10 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                 null).getSource();
         }
 
-        protected OracleProcedureColumn fetchChild(JDBCExecutionContext context, OracleProcedure parent, ResultSet dbResult)
+        protected OracleProcedureArgument fetchChild(JDBCExecutionContext context, OracleProcedure parent, ResultSet dbResult)
             throws SQLException, DBException
         {
-            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-            int columnTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_TYPE);
-            int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-            String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-            int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-            long columnSize = JDBCUtils.safeGetLong(dbResult, JDBCConstants.LENGTH);
-            boolean notNull = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.procedureNoNulls;
-            int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE);
-            int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
-            int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
-            //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
-            DBSProcedureColumnType columnType;
-            switch (columnTypeNum) {
-                case DatabaseMetaData.procedureColumnIn: columnType = DBSProcedureColumnType.IN; break;
-                case DatabaseMetaData.procedureColumnInOut: columnType = DBSProcedureColumnType.INOUT; break;
-                case DatabaseMetaData.procedureColumnOut: columnType = DBSProcedureColumnType.OUT; break;
-                case DatabaseMetaData.procedureColumnReturn: columnType = DBSProcedureColumnType.RETURN; break;
-                case DatabaseMetaData.procedureColumnResult: columnType = DBSProcedureColumnType.RESULTSET; break;
-                default: columnType = DBSProcedureColumnType.UNKNOWN; break;
-            }
-            if (CommonUtils.isEmpty(columnName) && columnType == DBSProcedureColumnType.RETURN) {
-                columnName = "RETURN";
-            }
-            return new OracleProcedureColumn(
-                parent,
-                columnName,
-                typeName,
-                valueType,
-                position,
-                columnSize,
-                scale, precision, radix, notNull,
-                columnType);
+            return new OracleProcedureArgument(context.getProgressMonitor(), parent, dbResult);
         }
     }
 

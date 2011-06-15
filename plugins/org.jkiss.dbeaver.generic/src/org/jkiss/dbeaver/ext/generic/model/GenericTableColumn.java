@@ -18,6 +18,7 @@ import java.util.List;
  */
 public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements DBSTableColumn, JDBCColumnKeyType
 {
+    private int radix;
     private String remarks;
     private String defaultValue;
     private int sourceType;
@@ -54,7 +55,6 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
             ordinalPosition,
             columnSize,
             scale,
-            radix,
             precision,
             notNull);
         this.sourceType = sourceType;
@@ -62,6 +62,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         this.charLength = charLength;
         this.autoIncrement = autoIncrement;
         this.remarks = remarks;
+        this.radix = radix;
     }
 
     public DBSObject getParentObject()
@@ -98,6 +99,17 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     public JDBCColumnKeyType getKeyType()
     {
         return this;
+    }
+
+    @Property(name = "Radix", viewable = false, order = 62)
+    public int getRadix()
+    {
+        return radix;
+    }
+
+    public void setRadix(int radix)
+    {
+        this.radix = radix;
     }
 
     @Property(name = "Key", viewable = true, order = 80)

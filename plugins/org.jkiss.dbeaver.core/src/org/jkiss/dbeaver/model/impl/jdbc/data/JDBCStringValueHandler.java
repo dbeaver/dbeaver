@@ -89,7 +89,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         propertySource.addProperty(
             "max_length",
             "Max Length",
-            controller.getColumnMetaData().getDisplaySize());
+            controller.getColumnMetaData().getMaxLength());
     }
 
 }

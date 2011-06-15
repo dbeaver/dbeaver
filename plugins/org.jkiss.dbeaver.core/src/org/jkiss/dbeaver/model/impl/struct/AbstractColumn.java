@@ -5,12 +5,12 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSColumnDefinition;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 
 /**
  * AbstractColumn
  */
-public abstract class AbstractColumn implements DBSColumnDefinition
+public abstract class AbstractColumn implements DBSColumnBase
 {
     protected String name;
     protected int valueType;
@@ -18,7 +18,6 @@ public abstract class AbstractColumn implements DBSColumnDefinition
     protected boolean notNull;
     protected int scale;
     protected int precision;
-    protected int radix;
     protected String typeName;
     protected int ordinalPosition;
 
@@ -33,7 +32,6 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         int ordinalPosition,
         long maxLength,
         int scale,
-        int radix,
         int precision,
         boolean notNull)
     {
@@ -41,7 +39,6 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.valueType = valueType;
         this.maxLength = maxLength;
         this.scale = scale;
-        this.radix = radix;
         this.precision = precision;
         this.notNull = notNull;
         this.typeName = typeName;
@@ -133,17 +130,6 @@ public abstract class AbstractColumn implements DBSColumnDefinition
     public void setPrecision(int precision)
     {
         this.precision = precision;
-    }
-
-    @Property(name = "Radix", viewable = false, order = 62)
-    public int getRadix()
-    {
-        return radix;
-    }
-
-    public void setRadix(int radix)
-    {
-        this.radix = radix;
     }
 
     public String getDescription()

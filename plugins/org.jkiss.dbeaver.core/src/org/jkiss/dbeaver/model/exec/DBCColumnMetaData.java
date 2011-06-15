@@ -19,8 +19,6 @@ public interface DBCColumnMetaData extends DBSColumnBase
 {
     int getIndex();
 
-    long getDisplaySize();
-
     String getLabel();
 
     String getTableName();

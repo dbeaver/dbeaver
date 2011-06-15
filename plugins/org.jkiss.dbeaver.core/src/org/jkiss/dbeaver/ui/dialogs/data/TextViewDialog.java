@@ -41,7 +41,7 @@ public class TextViewDialog extends ValueViewDialog {
         textEdit = new Text(dialogGroup, style);
 
         textEdit.setText(value == null ? "" : value.toString());
-        long maxSize = getValueController().getColumnMetaData().getDisplaySize();
+        long maxSize = getValueController().getColumnMetaData().getMaxLength();
         if (maxSize > 0) {
             textEdit.setTextLimit((int) maxSize);
         }
