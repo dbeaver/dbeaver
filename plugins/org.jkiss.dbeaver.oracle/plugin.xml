@@ -218,9 +218,9 @@
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
-            class="org.jkiss.dbeaver.ext.oracle.data.OracleDataTypeProvider"
+            class="org.jkiss.dbeaver.ext.oracle.data.OracleValueHandlerProvider"
             description="Oracle data types provider"
-            id="org.jkiss.dbeaver.ext.oracle.data.OracleDataTypeProvider"
+            id="org.jkiss.dbeaver.ext.oracle.data.OracleValueHandlerProvider"
             label="Oracle data types provider">
 
             <datasource id="oracle"/>

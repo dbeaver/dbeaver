@@ -104,36 +104,7 @@
                 </folder>
                 <folder type="" label="Administer" iconId="#folder_admin" description="Maintenance/Settings">
                     <object type="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor" label="Sessions" iconId="#admin" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"/>
-                    <!--
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSVariables" label="Variables" iconId="#variables" description="Server variables"/>
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSLogs" label="Server Logs" iconId="#logs" description="Server logs"/>
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSRepl" label="Replication Status" iconId="#repl" description="Replication Status"/>
-                    -->
                 </folder>
-
-<!--
-                <items label="Information" path="information" property="information" iconId="#folder" navigable="true" virtual="false">
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="Session Status" iconId="#info" description="Session status">
-                        <items label="Variable" path="sessionStatus" property="sessionStatus" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="Global Status" iconId="#info" description="Global status">
-                        <items label="Variable" path="globalStatus" property="globalStatus" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="Session Variables" iconId="#info" description="Session variables">
-                        <items label="Variable" path="sessionVariables" property="sessionVariables" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="Global Variables" iconId="#info" description="Global variables">
-                        <items label="Variable" path="globalVariables" property="globalVariables" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLEngine" label="Engines" iconId="#info" description="Database engines">
-                        <items label="Engine" path="engines" property="engines" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="User Privileges" iconId="#info" description="User privileges">
-                        <items label="Privilege" path="privileges" property="privileges" iconId="#info" navigable="false" virtual="true"/>
-                    </folder>
-                </items>
--->
-
 
                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLInformation" label="System Info" iconId="#folder_info" description="Database system information">
                     <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="Session Status" iconId="#info" description="Session status">
@@ -257,9 +228,9 @@
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
-            class="org.jkiss.dbeaver.ext.mysql.data.MySQLDataTypeProvider"
+            class="org.jkiss.dbeaver.ext.mysql.data.MySQLValueHandlerProvider"
             description="MySQL data types provider"
-            id="org.jkiss.dbeaver.ext.mysql.data.MySQLDataTypeProvider"
+            id="org.jkiss.dbeaver.ext.mysql.data.MySQLValueHandlerProvider"
             label="MySQL data types provider">
 
             <datasource id="mysql"/>

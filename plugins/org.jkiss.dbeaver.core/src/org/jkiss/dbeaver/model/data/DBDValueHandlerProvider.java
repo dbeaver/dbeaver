@@ -9,9 +9,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
- * DBPDataTypeProvider
+ * DBDValueHandlerProvider
  */
-public interface DBDDataTypeProvider
+public interface DBDValueHandlerProvider
 {
     Image getTypeImage(DBSTypedObject type);
 

@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.model.data.DBDDataTypeProvider;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 /**
  * standard JDBC data types provider
  */
-public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
+public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider {
 
     public Image getTypeImage(DBSTypedObject type)
     {

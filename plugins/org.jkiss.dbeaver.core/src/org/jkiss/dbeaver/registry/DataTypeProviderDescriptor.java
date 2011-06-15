@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.data.DBDDataTypeProvider;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.lang.reflect.Field;
@@ -30,7 +30,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
     private Set<Object> supportedTypes = new HashSet<Object>();
     private Set<DataSourceProviderDescriptor> supportedDataSources = new HashSet<DataSourceProviderDescriptor>();
 
-    private DBDDataTypeProvider instance;
+    private DBDValueHandlerProvider instance;
 
     public DataTypeProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
@@ -49,7 +49,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
                 log.error("Could not find datatype provider class '" + this.className + "'");
             } else {
                 try {
-                    this.instance = (DBDDataTypeProvider) providerClass.newInstance();
+                    this.instance = (DBDValueHandlerProvider) providerClass.newInstance();
                 }
                 catch (Exception e) {
                     log.error("Can't instantiate data type provider '" + this.id + "'", e);
@@ -118,7 +118,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
         return description;
     }
 
-    public DBDDataTypeProvider getInstance()
+    public DBDValueHandlerProvider getInstance()
     {
         return instance;
     }

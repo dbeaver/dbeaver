@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.model.data.DBDDataTypeProvider;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 /**
  * Oracle data types provider
  */
-public class OracleDataTypeProvider implements DBDDataTypeProvider {
+public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
 
     public Image getTypeImage(DBSTypedObject type)
     {
