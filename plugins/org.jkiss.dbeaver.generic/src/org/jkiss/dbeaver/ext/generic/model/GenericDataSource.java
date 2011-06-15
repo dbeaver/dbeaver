@@ -17,10 +17,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.Driver;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +35,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
-    private List<String> tableTypes;
+    private final TableTypeCache tableTypeCache;
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
 
@@ -49,6 +51,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     {
         super(container);
         final DBPDriver driver = container.getDriver();
+        this.tableTypeCache = new TableTypeCache();
         this.queryGetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
         this.querySetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB));
         this.selectedEntityType = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_ACTIVE_ENTITY_TYPE));
@@ -90,9 +93,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         }
     }
 
-    public String[] getTableTypes()
+    public Collection<GenericTableType> getTableTypes(DBRProgressMonitor monitor)
+        throws DBException
     {
-        return tableTypes.toArray(new String[tableTypes.size()]);
+        return tableTypeCache.getObjects(monitor, this);
     }
 
     public List<GenericCatalog> getCatalogs()
@@ -193,25 +197,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read generic metadata");
         try {
             JDBCDatabaseMetaData metaData = context.getMetaData();
-            {
-                // Read table types
-                monitor.subTask("Extract table types");
-                monitor.worked(1);
-                this.tableTypes = new ArrayList<String>();
-                JDBCResultSet dbResult = metaData.getTableTypes();
-                try {
-                    while (dbResult.next()) {
-                        String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
-                        if (!CommonUtils.isEmpty(tableType)) {
-                            if (!tableTypes.contains(tableType)) {
-                                tableTypes.add(tableType);
-                            }
-                        }
-                    }
-                } finally {
-                    dbResult.close();
-                }
-            }
             boolean catalogsFiltered = false;
             {
                 // Read catalogs
@@ -389,7 +374,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         super.refreshEntity(monitor);
 
         this.selectedEntityName = null;
-        this.tableTypes = null;
+        this.tableTypeCache.clearCache();
         this.catalogs = null;
         this.schemas = null;
 
@@ -600,6 +585,21 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             term += "s";
         }
         return term;
+    }
+
+    private class TableTypeCache extends JDBCObjectCache<GenericTableType> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        {
+            return context.getMetaData().getTableTypes().getSource();
+        }
+        @Override
+        protected GenericTableType fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new GenericTableType(
+                GenericDataSource.this,
+                JDBCUtils.safeGetString(resultSet, JDBCConstants.TABLE_TYPE));
+        }
     }
 
     private class DataSourceEntityContainer extends GenericEntityContainer {
