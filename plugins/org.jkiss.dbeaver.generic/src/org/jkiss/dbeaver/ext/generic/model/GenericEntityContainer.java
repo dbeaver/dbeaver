@@ -39,7 +39,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
     protected GenericEntityContainer(GenericDataSource dataSource)
     {
         this.dataSource = dataSource;
-        this.tableCache = new TableCache(this, dataSource);
+        this.tableCache = new TableCache(this);
         this.indexCache = new IndexCache(this);
         this.primaryKeysCache = new PrimaryKeysCache(this);
         this.foreignKeysCache = new ForeignKeysCache(this);
@@ -79,13 +79,13 @@ public abstract class GenericEntityContainer implements GenericStructContainer
     public Collection<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor);
+        return tableCache.getObjects(monitor, getDataSource());
     }
 
     public GenericTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return tableCache.getObject(monitor, name);
+        return tableCache.getObject(monitor, getDataSource(), name);
     }
 
     public Collection<GenericIndex> getIndexes(DBRProgressMonitor monitor)
@@ -131,7 +131,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
         // Cache tables
         if ((scope & STRUCT_ENTITIES) != 0) {
             monitor.subTask("Cache tables");
-            tableCache.getObjects(monitor);
+            tableCache.getObjects(monitor, getDataSource());
         }
 
         // Cache attributes
@@ -141,7 +141,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
             // So error here is not fatal
             try {
                 monitor.subTask("Cache tables' columns");
-                tableCache.loadChildren(monitor, null);
+                tableCache.loadChildren(monitor, getDataSource(), null);
             } catch (Exception e) {
                 log.debug(e);
             }

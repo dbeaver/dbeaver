@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -42,5 +43,10 @@ public class MySQLConstraint extends JDBCConstraint<MySQLTable> {
             getTable().getContainer(),
             getTable(),
             this);
+    }
+
+    public MySQLDataSource getDataSource()
+    {
+        return getTable().getDataSource();
     }
 }

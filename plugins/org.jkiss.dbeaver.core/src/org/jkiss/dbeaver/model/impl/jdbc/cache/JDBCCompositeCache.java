@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -82,25 +83,25 @@ public abstract class JDBCCompositeCache<
         }
     }
 
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor)
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource)
         throws DBException
     {
-        return getObjects(monitor, null);
+        return getObjects(monitor, dataSource, null);
     }
 
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, PARENT forParent)
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, PARENT forParent)
         throws DBException
     {
         if (objectList == null) {
-            loadObjects(monitor, forParent);
+            loadObjects(monitor, dataSource, forParent);
         }
         return objectList;
     }
 
-    public OBJECT getObject(DBRProgressMonitor monitor, String objectName)
+    public OBJECT getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String objectName)
         throws DBException
     {
-        return DBUtils.findObject(getObjects(monitor, null), objectName);
+        return DBUtils.findObject(getObjects(monitor, dataSource, null), objectName);
     }
 
     public boolean isCached()
@@ -118,7 +119,7 @@ public abstract class JDBCCompositeCache<
         this.objectList = null;
     }
 
-    protected synchronized void loadObjects(DBRProgressMonitor monitor, PARENT forParent)
+    protected synchronized void loadObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, PARENT forParent)
         throws DBException
     {
         if (this.objectList != null) {
@@ -127,14 +128,14 @@ public abstract class JDBCCompositeCache<
 
         // Load tables and columns first
         if (forParent == null) {
-            parentCache.loadObjects(monitor);
-            parentCache.loadChildren(monitor, null);
+            parentCache.loadObjects(monitor, dataSource);
+            parentCache.loadChildren(monitor, dataSource, null);
         } else if (!forParent.isPersisted() || isObjectsCached(forParent)) {
             return;
         }
 
         // Load index columns
-        JDBCExecutionContext context = parentCache.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load composite objects");
+        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Load composite objects");
         try {
             Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<PARENT, Map<String, ObjectInfo>>();
 
@@ -152,7 +153,7 @@ public abstract class JDBCCompositeCache<
                         }
                         PARENT parent = forParent;
                         if (parent == null) {
-                            parent = parentCache.getObject(monitor, parentName, parentType);
+                            parent = parentCache.getObject(monitor, dataSource, parentName, parentType);
                             if (parent == null) {
                                 log.debug("Object '" + objectName + "' owner '" + parentName + "' not found");
                                 continue;
@@ -216,7 +217,7 @@ public abstract class JDBCCompositeCache<
                         }
                         // Now set empty object list for other parents
                         if (forParent == null) {
-                            for (PARENT tmpParent : parentCache.getObjects(monitor, parentType)) {
+                            for (PARENT tmpParent : parentCache.getObjects(monitor, dataSource, parentType)) {
                                 if (!parentObjectMap.containsKey(tmpParent)) {
                                     cacheObjects(monitor, tmpParent, new ArrayList<OBJECT>());
                                 }

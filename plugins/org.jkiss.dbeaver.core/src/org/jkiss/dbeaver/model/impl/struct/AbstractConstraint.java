@@ -95,11 +95,6 @@ public abstract class AbstractConstraint<TABLE extends DBSTable> implements DBSC
         return table;
     }
 
-    public DBPDataSource getDataSource()
-    {
-        return table.getDataSource();
-    }
-
     public boolean isPersisted()
     {
         return true;

@@ -22,20 +22,9 @@ import java.util.*;
  */
 public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCAbstractCache<OBJECT> {
 
-    protected final JDBCDataSource dataSource;
     private Map<String, OBJECT> objectMap;
     private boolean caseSensitive = true;
     private Comparator<OBJECT> listOrderComparator;
-
-    protected JDBCObjectCache(JDBCDataSource dataSource)
-    {
-        this.dataSource = dataSource;
-    }
-
-    JDBCDataSource getDataSource()
-    {
-        return dataSource;
-    }
 
     protected void setCaseSensitive(boolean caseSensitive)
     {
@@ -53,20 +42,20 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
     abstract protected OBJECT fetchObject(JDBCExecutionContext context, ResultSet resultSet)
         throws SQLException, DBException;
 
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor)
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource)
         throws DBException
     {
         if (objectMap == null) {
-            loadObjects(monitor);
+            loadObjects(monitor, dataSource);
         }
         return objectMap.values();
     }
 
-    public <SUB_TYPE> Collection<SUB_TYPE> getObjects(DBRProgressMonitor monitor, Class<SUB_TYPE> type)
+    public <SUB_TYPE> Collection<SUB_TYPE> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, Class<SUB_TYPE> type)
         throws DBException
     {
         List<SUB_TYPE> result = new ArrayList<SUB_TYPE>();
-        for (OBJECT object : getObjects(monitor)) {
+        for (OBJECT object : getObjects(monitor, dataSource)) {
             if (type.isInstance(object)) {
                 result.add(type.cast(object));
             }
@@ -74,19 +63,19 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         return result;
     }
 
-    public OBJECT getObject(DBRProgressMonitor monitor, String name)
+    public OBJECT getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String name)
         throws DBException
     {
         if (objectMap == null) {
-            this.loadObjects(monitor);
+            this.loadObjects(monitor, dataSource);
         }
         return objectMap.get(caseSensitive ? name : name.toUpperCase());
     }
 
-    public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, String name, Class<SUB_TYPE> type)
+    public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String name, Class<SUB_TYPE> type)
         throws DBException
     {
-        final OBJECT object = getObject(monitor, name);
+        final OBJECT object = getObject(monitor, dataSource, name);
         return type.isInstance(object) ? type.cast(object) : null;
     }
 
@@ -95,7 +84,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         this.objectMap = null;
     }
 
-    public synchronized void loadObjects(DBRProgressMonitor monitor)
+    public synchronized void loadObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource)
         throws DBException
     {
         if (this.objectMap != null) {

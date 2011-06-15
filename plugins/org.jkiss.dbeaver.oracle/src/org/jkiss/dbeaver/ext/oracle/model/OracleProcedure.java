@@ -83,7 +83,7 @@ public class OracleProcedure extends AbstractProcedure<OracleDataSource, OracleS
         throws DBException
     {
         if (columns == null) {
-            getContainer().getProceduresCache().loadChildren(monitor, this);
+            getContainer().getProceduresCache().loadChildren(monitor, getDataSource(), this);
         }
         return columns;
     }

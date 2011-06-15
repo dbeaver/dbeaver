@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -55,5 +56,10 @@ public class ERDLogicalForeignKey extends AbstractConstraint<DBSTable> implement
     public DBSEntity getAssociatedEntity()
     {
         return pk.getTable();
+    }
+
+    public DBPDataSource getDataSource()
+    {
+        return getTable().getDataSource();
     }
 }

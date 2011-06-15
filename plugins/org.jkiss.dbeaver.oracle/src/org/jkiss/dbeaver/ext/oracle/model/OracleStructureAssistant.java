@@ -135,7 +135,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                         objectCache = tableSchema.getTriggerCache();
                     }
                     if (objectCache != null) {
-                        DBSObject object = objectCache.getObject(context.getProgressMonitor(), objectName);
+                        DBSObject object = objectCache.getObject(context.getProgressMonitor(), dataSource, objectName);
                         if (object == null) {
                             log.debug(objectType + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
                             continue;

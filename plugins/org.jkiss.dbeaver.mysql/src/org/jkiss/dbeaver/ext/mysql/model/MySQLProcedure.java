@@ -83,7 +83,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         throws DBException
     {
         if (columns == null) {
-            getContainer().getProceduresCache().loadChildren(monitor, this);
+            getContainer().getProceduresCache().loadChildren(monitor, getDataSource(), this);
         }
         return columns;
     }

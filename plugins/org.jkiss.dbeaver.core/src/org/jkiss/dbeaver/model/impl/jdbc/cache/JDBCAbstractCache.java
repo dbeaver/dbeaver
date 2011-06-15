@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -15,10 +16,10 @@ import java.util.Collection;
  */
 public interface JDBCAbstractCache<OBJECT extends DBSObject> {
 
-    Collection<OBJECT> getObjects(DBRProgressMonitor monitor)
+    Collection<OBJECT> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource)
         throws DBException;
 
-    OBJECT getObject(DBRProgressMonitor monitor, String name)
+    OBJECT getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String name)
         throws DBException;
 
 }

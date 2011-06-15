@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
@@ -20,11 +21,16 @@ public abstract class GenericConstraint extends JDBCConstraint<GenericTable>
 
     /**
      * Copy constructor
-     * @param constraint
+     * @param constraint source
      */
     protected GenericConstraint(GenericConstraint constraint)
     {
         super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType(), constraint.isPersisted());
+    }
+
+    public GenericDataSource getDataSource()
+    {
+        return getTable().getDataSource();
     }
 
     public String getFullQualifiedName()

@@ -50,7 +50,7 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
                     log.warn("Referenced schema '" + lazyReference.schemaName + "' not found for foreign key '" + getName() + "'");
                     return false;
                 }
-                referencedKey = refSchema.getConstraintCache().getObject(monitor, lazyReference.objectName);
+                referencedKey = refSchema.getConstraintCache().getObject(monitor, getDataSource(), lazyReference.objectName);
                 if (referencedKey == null) {
                     log.warn("Referenced constraint '" + lazyReference.objectName + "' not found in schema '" + lazyReference.schemaName + "'");
                     return false;

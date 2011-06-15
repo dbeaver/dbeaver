@@ -39,9 +39,9 @@ class TableCache extends JDBCStructCache<GenericTable, GenericTableColumn> {
 
     private GenericStructContainer structContainer;
 
-    TableCache(GenericStructContainer structContainer, GenericDataSource dataSource)
+    TableCache(GenericStructContainer structContainer)
     {
-        super(dataSource, JDBCConstants.TABLE_NAME);
+        super(JDBCConstants.TABLE_NAME);
         this.structContainer = structContainer;
         setListOrderComparator(DBUtils.<GenericTable>nameComparator());
     }

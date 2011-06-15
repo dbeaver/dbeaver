@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
@@ -34,5 +35,10 @@ public class ERDLogicalPrimaryKey extends AbstractConstraint<DBSTable> {
     public String getFullQualifiedName()
     {
         return getName();
+    }
+
+    public DBPDataSource getDataSource()
+    {
+        return getTable().getDataSource();
     }
 }

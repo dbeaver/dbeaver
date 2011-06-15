@@ -47,9 +47,8 @@ public abstract class JDBCStructCache<
     abstract protected CHILD fetchChild(JDBCExecutionContext context, OBJECT parent, ResultSet dbResult)
         throws SQLException, DBException;
 
-    protected JDBCStructCache(JDBCDataSource dataSource, String objectNameColumn)
+    protected JDBCStructCache(String objectNameColumn)
     {
-        super(dataSource);
         this.objectNameColumn = objectNameColumn;
     }
 
@@ -59,14 +58,14 @@ public abstract class JDBCStructCache<
      * @param forObject object for which to read children. If null then reads children for all objects in this container.
      * @throws org.jkiss.dbeaver.DBException on error
      */
-    public void loadChildren(DBRProgressMonitor monitor, final OBJECT forObject)
+    public void loadChildren(DBRProgressMonitor monitor, JDBCDataSource dataSource, final OBJECT forObject)
         throws DBException
     {
         if (this.childrenCached) {
             return;
         }
         if (forObject == null) {
-            super.loadObjects(monitor);
+            super.loadObjects(monitor, dataSource);
         } else if (!forObject.isPersisted() || isChildrenCached(forObject)) {
             return;
         }
@@ -85,7 +84,7 @@ public abstract class JDBCStructCache<
 
                         OBJECT table = forObject;
                         if (table == null) {
-                            table = super.getObject(monitor, objectName);
+                            table = super.getObject(monitor, dataSource, objectName);
                             if (table == null) {
                                 log.debug("Object '" + objectName + "' not found");
                                 continue;
@@ -127,7 +126,7 @@ public abstract class JDBCStructCache<
                             // but possibly this feature is not supported [JDBC: SQLite]
                         } else {
                             // Now set empty column list for other tables
-                            for (OBJECT tmpObject : getObjects(monitor)) {
+                            for (OBJECT tmpObject : getObjects(monitor, dataSource)) {
                                 if (!isChildrenCached(tmpObject) && !columnMap.containsKey(tmpObject)) {
                                     cacheChildren(tmpObject, new ArrayList<CHILD>());
                                 }

@@ -53,7 +53,7 @@ public class OracleTable extends OracleTableBase
     {
         if (indexes == null) {
             // Read indexes using cache
-            this.getContainer().getIndexCache().getObjects(monitor, this);
+            this.getContainer().getIndexCache().getObjects(monitor, getDataSource(), this);
         }
         return indexes;
     }

@@ -34,6 +34,11 @@ public class GenericForeignKey extends JDBCForeignKey<GenericTable, GenericPrima
         this.defferability = defferability;
     }
 
+    public GenericDataSource getDataSource()
+    {
+        return getTable().getDataSource();
+    }
+
     @Property(name = "Defferability", viewable = true, order = 7)
     public DBSConstraintDefferability getDefferability()
     {

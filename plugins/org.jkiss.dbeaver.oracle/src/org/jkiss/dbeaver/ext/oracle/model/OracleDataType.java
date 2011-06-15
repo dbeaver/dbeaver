@@ -94,7 +94,7 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
                     log.warn("Referenced schema '" + olr.schemaName + "' not found for super type '" + olr.objectName + "'");
                     return false;
                 }
-                superType = superSchema.getDataTypeCache().getObject(monitor, olr.objectName);
+                superType = superSchema.getDataTypeCache().getObject(monitor, getDataSource(), olr.objectName);
                 if (superType == null) {
                     log.warn("Referenced type '" + olr.objectName + "' not found in schema '" + olr.schemaName + "'");
                     return false;
@@ -202,13 +202,13 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     public Collection<OracleDataTypeAttribute> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return attributeCache != null ? attributeCache.getObjects(monitor) : null;
+        return attributeCache != null ? attributeCache.getObjects(monitor, getDataSource()) : null;
     }
 
     public Collection<OracleDataTypeMethod> getMethods(DBRProgressMonitor monitor)
         throws DBException
     {
-        return methodCache != null ? methodCache.getObjects(monitor) : null;
+        return methodCache != null ? methodCache.getObjects(monitor, getDataSource()) : null;
     }
 
     public OracleDataType getObject()
@@ -217,10 +217,6 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     }
     
     private class AttributeCache extends JDBCObjectCache<OracleDataTypeAttribute> {
-        protected AttributeCache()
-        {
-            super(getDataSource());
-        }
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
         {
@@ -239,10 +235,6 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     }
 
     private class MethodCache extends JDBCObjectCache<OracleDataTypeMethod> {
-        protected MethodCache()
-        {
-            super(getDataSource());
-        }
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
         {

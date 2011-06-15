@@ -51,4 +51,9 @@ public class MySQLForeignKey extends JDBCForeignKey<MySQLTable, MySQLConstraint>
             getTable(),
             this);
     }
+
+    public MySQLDataSource getDataSource()
+    {
+        return getTable().getDataSource();
+    }
 }

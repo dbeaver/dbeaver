@@ -30,6 +30,10 @@ public class OracleConstraint extends JDBCConstraint<OracleTable> {
         this.status = status;
     }
 
+    public OracleDataSource getDataSource()
+    {
+        return getTable().getDataSource();
+    }
 
     @Property(name = "Type", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 3)
     @Override
