@@ -43,6 +43,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     private final TriggerCache triggerCache = new TriggerCache();
     private final IndexCache indexCache = new IndexCache();
     private final DataTypeCache dataTypeCache = new DataTypeCache();
+    private final SequenceCache sequenceCache = new SequenceCache(); 
     private boolean persisted;
 
     public OracleSchema(OracleDataSource dataSource, ResultSet dbResult)
@@ -85,6 +86,11 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     DataTypeCache getDataTypeCache()
     {
         return dataTypeCache;
+    }
+
+    SequenceCache getSequenceCache()
+    {
+        return sequenceCache;
     }
 
     @Override
@@ -158,6 +164,18 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return dataTypeCache.getObject(monitor, getDataSource(), name);
     }
 
+    public Collection<OracleSequence> getSequences(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return sequenceCache.getObjects(monitor, getDataSource());
+    }
+
+    public OracleSequence getSequence(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return sequenceCache.getObject(monitor, getDataSource(), name);
+    }
+
     public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -227,6 +245,8 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         indexCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();
+        dataTypeCache.clearCache();
+        sequenceCache.clearCache();
         return true;
     }
 
@@ -575,6 +595,25 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         }
     }
 
+    /**
+     * Sequence cache implementation
+     */
+    class SequenceCache extends JDBCObjectCache<OracleSequence> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.ALL_SEQUENCES WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
+            dbStat.setString(1, getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleSequence fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleSequence(OracleSchema.this, resultSet);
+        }
+    }
 
     /**
      * Procedures cache implementation
