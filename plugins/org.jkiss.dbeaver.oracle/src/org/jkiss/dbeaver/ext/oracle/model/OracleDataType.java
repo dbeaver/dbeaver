@@ -9,12 +9,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
@@ -23,8 +22,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Oracle data type
@@ -39,7 +37,8 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     private byte[] typeOID;
     private byte[] typeID;
     private OracleLazyObject<OracleDataType> superType;
-    private boolean hasAttributes, hasMethods;
+    private final AttributeCache attributeCache;
+    private final MethodCache methodCache;
     private boolean flagPredefined;
     private boolean flagIncomplete;
     private boolean flagFinal;
@@ -47,18 +46,18 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
 
     private boolean persisted;
 
-    private List<OracleDataTypeAttribute> attributes;
-    private List<OracleDataTypeMethod> methods;
-
     public OracleDataType(OracleSchema schema, boolean persisted)
     {
         this.schema = schema;
         this.persisted = persisted;
+        this.attributeCache = new AttributeCache();
+        this.methodCache = new MethodCache();
     }
 
     public OracleDataType(OracleSchema schema, ResultSet dbResult)
     {
-        this(schema, true);
+        this.schema = schema;
+        this.persisted = true;
         this.typeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
         this.typeCode = JDBCUtils.safeGetString(dbResult, "TYPECODE");
         this.typeOID = JDBCUtils.safeGetBytes(dbResult, "TYPE_OID");
@@ -68,15 +67,19 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         this.flagFinal = JDBCUtils.safeGetBoolean(dbResult, "FINAL", OracleConstants.YES);
         this.flagInstantiable = JDBCUtils.safeGetBoolean(dbResult, "INSTANTIABLE", OracleConstants.YES);
         String superTypeOwner = JDBCUtils.safeGetString(dbResult, "SUPERTYPE_OWNER");
+        boolean hasAttributes;
+        boolean hasMethods;
         if (!CommonUtils.isEmpty(superTypeOwner)) {
             String superTypeName = JDBCUtils.safeGetString(dbResult, "SUPERTYPE_NAME");
             this.superType = new OracleLazyReference<OracleDataType>(superTypeOwner, superTypeName);
-            this.hasAttributes = JDBCUtils.safeGetInt(dbResult, "LOCAL_ATTRIBUTES") > 0;
-            this.hasMethods = JDBCUtils.safeGetInt(dbResult, "LOCAL_METHODS") > 0;
+            hasAttributes = JDBCUtils.safeGetInt(dbResult, "LOCAL_ATTRIBUTES") > 0;
+            hasMethods = JDBCUtils.safeGetInt(dbResult, "LOCAL_METHODS") > 0;
         } else {
-            this.hasAttributes = JDBCUtils.safeGetInt(dbResult, "ATTRIBUTES") > 0;
-            this.hasMethods = JDBCUtils.safeGetInt(dbResult, "METHODS") > 0;
+            hasAttributes = JDBCUtils.safeGetInt(dbResult, "ATTRIBUTES") > 0;
+            hasMethods = JDBCUtils.safeGetInt(dbResult, "METHODS") > 0;
         }
+        attributeCache = hasAttributes ? new AttributeCache() : null;
+        methodCache = hasMethods ? new MethodCache() : null;
     }
 
     boolean resolveLazyReference(DBRProgressMonitor monitor)
@@ -188,84 +191,72 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
 
     public boolean hasAttributes()
     {
-        return hasAttributes;
+        return attributeCache != null;
     }
 
     public boolean hasMethods()
     {
-        return hasMethods;
+        return methodCache != null;
     }
 
-    public List<OracleDataTypeAttribute> getAttributes(DBRProgressMonitor monitor)
+    public Collection<OracleDataTypeAttribute> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (attributes == null && hasAttributes) {
-            List<OracleDataTypeAttribute> tmpAttrs = new ArrayList<OracleDataTypeAttribute>();
-            final JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load type attributes");
-            try {
-                final JDBCPreparedStatement dbStat = context.prepareStatement(
-                    "SELECT * FROM SYS.ALL_TYPE_ATTRS WHERE OWNER=? AND TYPE_NAME=? ORDER BY ATTR_NO");
-                try {
-                    dbStat.setString(1, schema.getName());
-                    dbStat.setString(2, getName());
-                    final JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
-                        while (dbResult.next()) {
-                            tmpAttrs.add(
-                                new OracleDataTypeAttribute(monitor, this, dbResult));
-                        }
-                    } finally {
-                        dbResult.close();
-                    }
-                } finally {
-                    dbStat.close();
-                }
-            } catch (SQLException e) {
-                throw new DBException("Can't read type attributes", e);
-            } finally {
-                context.close();
-            }
-            this.attributes = tmpAttrs;
-        }
-        return attributes;
+        return attributeCache != null ? attributeCache.getObjects(monitor) : null;
     }
 
-    public List<OracleDataTypeMethod> getMethods(DBRProgressMonitor monitor)
+    public Collection<OracleDataTypeMethod> getMethods(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (methods == null && hasMethods) {
-            List<OracleDataTypeMethod> tmpMethods = new ArrayList<OracleDataTypeMethod>();
-            final JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load type methods");
-            try {
-                final JDBCPreparedStatement dbStat = context.prepareStatement(
-                    "SELECT * FROM SYS.ALL_TYPE_METHODS WHERE OWNER=? AND TYPE_NAME=? ORDER BY METHOD_NO");
-                try {
-                    dbStat.setString(1, schema.getName());
-                    dbStat.setString(2, getName());
-                    final JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
-                        while (dbResult.next()) {
-                            tmpMethods.add(
-                                new OracleDataTypeMethod(monitor, this, dbResult));
-                        }
-                    } finally {
-                        dbResult.close();
-                    }
-                } finally {
-                    dbStat.close();
-                }
-            } catch (SQLException e) {
-                throw new DBException("Can't read type methods", e);
-            } finally {
-                context.close();
-            }
-            this.methods = tmpMethods;
-        }
-        return methods;
+        return methodCache != null ? methodCache.getObjects(monitor) : null;
     }
 
     public OracleDataType getObject()
     {
         return this;
+    }
+    
+    private class AttributeCache extends JDBCObjectCache<OracleDataTypeAttribute> {
+        protected AttributeCache()
+        {
+            super(getDataSource());
+        }
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.ALL_TYPE_ATTRS " +
+                "WHERE OWNER=? AND TYPE_NAME=? ORDER BY ATTR_NO");
+            dbStat.setString(1, schema.getName());
+            dbStat.setString(2, getName());
+            return dbStat;
+        }
+        @Override
+        protected OracleDataTypeAttribute fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleDataTypeAttribute(context.getProgressMonitor(), OracleDataType.this, resultSet);
+        }
+    }
+
+    private class MethodCache extends JDBCObjectCache<OracleDataTypeMethod> {
+        protected MethodCache()
+        {
+            super(getDataSource());
+        }
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.ALL_TYPE_METHODS " +
+                "WHERE OWNER=? AND TYPE_NAME=? ORDER BY METHOD_NO");
+            dbStat.setString(1, schema.getName());
+            dbStat.setString(2, getName());
+            return dbStat;
+        }
+        @Override
+        protected OracleDataTypeMethod fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleDataTypeMethod(context.getProgressMonitor(), OracleDataType.this, resultSet);
+        }
     }
 }
