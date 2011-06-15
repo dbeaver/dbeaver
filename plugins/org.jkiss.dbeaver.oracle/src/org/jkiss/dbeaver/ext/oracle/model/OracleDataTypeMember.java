@@ -43,6 +43,11 @@ public abstract class OracleDataTypeMember implements DBSObject {
         this.persisted = true;
     }
 
+    public OracleDataType getDataType()
+    {
+        return dataType;
+    }
+
     public String getDescription()
     {
         return null;

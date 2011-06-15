@@ -318,7 +318,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     public boolean equals(Object obj)
     {
         return obj instanceof ObjectPropertyDescriptor &&
-            propInfo.equals(((ObjectPropertyDescriptor)obj).propInfo);
+            propInfo.equals(((ObjectPropertyDescriptor)obj).propInfo) &&
+            CommonUtils.equalObjects(getGetter(), ((ObjectPropertyDescriptor)obj).getGetter());
     }
 
     private class DefaultLabelProvider extends LabelProvider implements IFontProvider {

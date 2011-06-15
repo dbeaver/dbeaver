@@ -22,6 +22,7 @@ import java.util.*;
  */
 public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCAbstractCache<OBJECT> {
 
+    private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;
     private boolean caseSensitive = true;
     private Comparator<OBJECT> listOrderComparator;
@@ -45,7 +46,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
     public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource)
         throws DBException
     {
-        if (objectMap == null) {
+        if (!isCached()) {
             loadObjects(monitor, dataSource);
         }
         return getCachedObjects();
@@ -53,7 +54,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
 
     public Collection<OBJECT> getCachedObjects()
     {
-        return objectMap == null ? Collections.<OBJECT>emptyList() : objectMap.values();
+        return objectList == null ? Collections.<OBJECT>emptyList() : objectList;
     }
 
     public <SUB_TYPE> Collection<SUB_TYPE> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, Class<SUB_TYPE> type)
@@ -71,7 +72,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
     public OBJECT getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String name)
         throws DBException
     {
-        if (objectMap == null) {
+        if (!isCached()) {
             this.loadObjects(monitor, dataSource);
         }
         return getCachedObject(name);
@@ -79,7 +80,9 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
 
     public OBJECT getCachedObject(String name)
     {
-        return objectMap == null ? null : objectMap.get(caseSensitive ? name : name.toUpperCase());
+        synchronized (this) {
+            return objectMap == null ? null : objectMap.get(caseSensitive ? name : name.toUpperCase());
+        }
     }
 
     public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String name, Class<SUB_TYPE> type)
@@ -89,15 +92,25 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         return type.isInstance(object) ? type.cast(object) : null;
     }
 
-    public void clearCache()
+    public boolean isCached()
     {
-        this.objectMap = null;
+        synchronized (this) {
+            return objectMap != null;
+        }
     }
 
-    public synchronized void loadObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource)
+    public void clearCache()
+    {
+        synchronized (this) {
+            this.objectList = null;
+            this.objectMap = null;
+        }
+    }
+
+    public void loadObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource)
         throws DBException
     {
-        if (this.objectMap != null) {
+        if (isCached()) {
             return;
         }
 
@@ -141,11 +154,14 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         if (listOrderComparator != null) {
             Collections.sort(tmpObjectList, listOrderComparator);
         }
-        this.objectMap = new LinkedHashMap<String, OBJECT>();
-        for (OBJECT object : tmpObjectList) {
-            this.objectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
+        synchronized (this) {
+            this.objectList = tmpObjectList;
+            this.objectMap = new LinkedHashMap<String, OBJECT>();
+            for (OBJECT object : tmpObjectList) {
+                this.objectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
+            }
+            this.invalidateObjects(monitor, objectList);
         }
-        this.invalidateObjects(monitor, objectMap.values());
     }
 
     protected void invalidateObjects(DBRProgressMonitor monitor, Collection<OBJECT> objectList)

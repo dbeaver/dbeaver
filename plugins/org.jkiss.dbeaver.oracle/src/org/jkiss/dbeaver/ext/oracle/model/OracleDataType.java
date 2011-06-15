@@ -177,6 +177,11 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         }
     }
 
+    public OracleSchema getOwner()
+    {
+        return owner instanceof OracleSchema ? (OracleSchema)owner : null;
+    }
+
     public boolean isPersisted()
     {
         return persisted;
@@ -326,12 +331,16 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT * FROM SYS.ALL_TYPE_METHODS " +
-                "WHERE OWNER=? AND TYPE_NAME=? ORDER BY METHOD_NO");
+                "SELECT m.*,r.RESULT_TYPE_OWNER,RESULT_TYPE_NAME,RESULT_TYPE_MOD\n" +
+                "FROM SYS.ALL_TYPE_METHODS m\n" +
+                "LEFT OUTER JOIN SYS.ALL_METHOD_RESULTS r ON r.OWNER=m.OWNER AND r.TYPE_NAME=m.TYPE_NAME AND r.METHOD_NAME=m.METHOD_NAME AND r.METHOD_NO=m.METHOD_NO\n" +
+                "WHERE m.OWNER=? AND m.TYPE_NAME=?\n" +
+                "ORDER BY m.METHOD_NO");
             dbStat.setString(1, owner.getName());
             dbStat.setString(2, getName());
             return dbStat;
         }
+
         @Override
         protected OracleDataTypeMethod fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
         {

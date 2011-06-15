@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeModifier;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -21,9 +22,9 @@ public class OracleUtils {
 
     static final Log log = LogFactory.getLog(OracleUtils.class);
 
-    public static DBSDataType resolveDataType(DBRProgressMonitor monitor, OracleDataSource dataSource, String typeOwner, String typeName)
+    public static OracleDataType resolveDataType(DBRProgressMonitor monitor, OracleDataSource dataSource, String typeOwner, String typeName)
     {
-        DBSDataType type = null;
+        OracleDataType type = null;
         if (typeOwner != null) {
             try {
                 final OracleSchema typeSchema = dataSource.getSchema(monitor, typeOwner);
@@ -36,7 +37,7 @@ public class OracleUtils {
                 log.error(e);
             }
         } else {
-            type = dataSource.getDataType(typeName);
+            type = (OracleDataType)dataSource.getDataType(typeName);
         }
         if (type == null) {
             log.error("Data type '" + typeName + "' not found");
