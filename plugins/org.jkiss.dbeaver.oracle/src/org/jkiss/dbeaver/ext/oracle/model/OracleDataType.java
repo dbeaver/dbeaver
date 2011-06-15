@@ -9,6 +9,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.OracleUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
@@ -29,7 +31,7 @@ import java.util.Map;
 /**
  * Oracle data type
  */
-public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataType> {
+public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataType>, OracleSourceObject {
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 
@@ -177,9 +179,14 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         }
     }
 
-    public OracleSchema getOwner()
+    public OracleSchema getSourceOwner()
     {
         return owner instanceof OracleSchema ? (OracleSchema)owner : null;
+    }
+
+    public String getSourceType()
+    {
+        return "TYPE";
     }
 
     public boolean isPersisted()
@@ -307,7 +314,12 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     {
         return this;
     }
-    
+
+    public String getTypeSource(DBRProgressMonitor monitor, boolean body) throws DBCException
+    {
+        return OracleUtils.getSource(monitor, this, false);
+    }
+
     private class AttributeCache extends JDBCObjectCache<OracleDataTypeAttribute> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
