@@ -347,4 +347,5 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
             return new OracleDataTypeMethod(context.getProgressMonitor(), OracleDataType.this, resultSet);
         }
     }
+
 }
