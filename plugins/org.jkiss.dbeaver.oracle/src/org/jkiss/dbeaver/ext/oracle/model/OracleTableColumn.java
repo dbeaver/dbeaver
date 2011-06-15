@@ -54,10 +54,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             JDBCUtils.safeGetString(dbResult, "DATA_TYPE_OWNER"),
             this.typeName);
         this.typeMod = OracleUtils.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "DATA_TYPE_MOD"));
-        if (OracleConstants.TYPE_NUMBER.equals(typeName)) {
-            // Handle all numbers as decimals
-            setValueType(java.sql.Types.DECIMAL);
-        } else if (type != null) {
+        if (this.type != null) {
             setValueType(type.getValueType());
         }
         this.charLength = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_DATA_LENGTH);
@@ -89,6 +86,12 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return type;
     }
 
+    @Property(name = "Type Mod", viewable = true, order = 30)
+    public OracleDataTypeModifier getTypeMod()
+    {
+        return typeMod;
+    }
+
     //@Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
@@ -101,6 +104,18 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     public long getMaxLength()
     {
         return super.getMaxLength();
+    }
+
+    @Property(name = "Precision", viewable = true, order = 41)
+    public int getPrecision()
+    {
+        return super.getPrecision();
+    }
+
+    @Property(name = "Scale", viewable = true, order = 42)
+    public int getScale()
+    {
+        return super.getScale();
     }
 
     @Property(name = "Not Null", viewable = true, editable = true, updatable = true, order = 50)

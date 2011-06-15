@@ -19,7 +19,7 @@ public interface DBPDataTypeProvider
      * Retrieves list of supported datatypes
      * @return list of types
      */
-    Collection<DBSDataType> getDataTypes();
+    Collection<? extends DBSDataType> getDataTypes();
 
     /**
      * Gets data type with specified name

@@ -13,4 +13,9 @@ public interface DBSDataType extends DBSObject
 
     DBSDataKind getDataKind();
 
+    int getPrecision();
+
+    int getMinScale();
+
+    int getMaxScale();
 }

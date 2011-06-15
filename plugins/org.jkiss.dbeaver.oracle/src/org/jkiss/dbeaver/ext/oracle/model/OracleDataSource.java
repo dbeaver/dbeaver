@@ -21,12 +21,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -332,8 +331,28 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return null;
     }
 
-
     public OracleDataSource getDataSource() {
         return this;
     }
+
+    @Override
+    protected DataTypeCache createDataTypeCache()
+    {
+        return new DataTypeCache();
+    }
+
+    class DataTypeCache extends JDBCObjectCache<OracleDataType> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        {
+            return context.prepareStatement(
+                "SELECT * FROM SYS.ALL_TYPES WHERE OWNER IS NULL ORDER BY TYPE_NAME");
+        }
+        @Override
+        protected OracleDataType fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleDataType(OracleDataSource.this, resultSet);
+        }
+    }
+
 }

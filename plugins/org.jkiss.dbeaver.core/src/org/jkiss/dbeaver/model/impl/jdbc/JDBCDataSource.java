@@ -46,7 +46,7 @@ public abstract class JDBCDataSource
     private Connection connection;
 
     protected DBPDataSourceInfo dataSourceInfo;
-    private final JDBCAbstractCache<DBSDataType> dataTypeCache;
+    private final JDBCAbstractCache<? extends DBSDataType> dataTypeCache;
 
     public JDBCDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -271,7 +271,7 @@ public abstract class JDBCDataSource
         return null;
     }
 
-    public Collection<DBSDataType> getDataTypes()
+    public Collection<? extends DBSDataType> getDataTypes()
     {
         return dataTypeCache.getCachedObjects();
     }
@@ -289,7 +289,7 @@ public abstract class JDBCDataSource
         return new JDBCDataSourceInfo(this, metaData);
     }
 
-    protected JDBCAbstractCache<DBSDataType> createDataTypeCache()
+    protected JDBCAbstractCache<? extends DBSDataType> createDataTypeCache()
     {
         final JDBCDataTypeCache cache = new JDBCDataTypeCache(getContainer());
         cache.setCaseSensitive(false);

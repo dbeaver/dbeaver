@@ -93,8 +93,8 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         DBSDataType dataType = getDataSource().getDataType(typeName.toUpperCase());
         this.charLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_CHARACTER_MAXIMUM_LENGTH);
         if (this.charLength <= 0) {
-            if (dataType instanceof JDBCDataType) {
-                setMaxLength(((JDBCDataType)dataType).getPrecision());
+            if (dataType != null) {
+                setMaxLength(dataType.getPrecision());
             }
         } else {
             setMaxLength(this.charLength);

@@ -81,7 +81,7 @@ public class OracleTable extends OracleTableBase
             // Read constraints for ALL tables in this schema
             // It is fastest way to obtain constraints because ALL_CONSTRAINTS table doesn't contains reference table name
             // and extra join will slow query dramatically
-            getContainer().getConstraintCache().getObjects(monitor, null);
+            getContainer().getConstraintCache().getObjects(monitor, getDataSource(), null);
         }
         return constraints;
     }
@@ -118,7 +118,7 @@ public class OracleTable extends OracleTableBase
         List<OracleForeignKey> refs = new ArrayList<OracleForeignKey>();
         // This is dummy implementation
         // Get references from this schema only
-        final Collection<OracleConstraint> allConstraints = getContainer().getConstraintCache().getObjects(monitor, null);
+        final Collection<OracleConstraint> allConstraints = getContainer().getConstraintCache().getObjects(monitor, getDataSource(), null);
         for (OracleConstraint constraint : allConstraints) {
             if (constraint instanceof OracleForeignKey && ((OracleForeignKey) constraint).getReferencedTable() == this) {
                 refs.add((OracleForeignKey) constraint);
@@ -132,7 +132,7 @@ public class OracleTable extends OracleTableBase
     {
         if (foreignKeys == null) {
             // Read constraints for ALL tables in this schema
-            getContainer().getConstraintCache().getObjects(monitor, null);
+            getContainer().getConstraintCache().getObjects(monitor, getDataSource(), null);
         }
         return foreignKeys;
     }

@@ -142,7 +142,7 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
 
             // Types
             if (dataSource instanceof DBPDataTypeProvider) {
-                Collection<DBSDataType> supportedDataTypes = ((DBPDataTypeProvider)dataSource).getDataTypes();
+                Collection<? extends DBSDataType> supportedDataTypes = ((DBPDataTypeProvider)dataSource).getDataTypes();
                 if (supportedDataTypes != null) {
                     for (DBSDataType dataType : supportedDataTypes) {
                         types.add(dataType.getName().toUpperCase());

@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Oracle data type
@@ -31,7 +33,69 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 
-    private OracleSchema schema;
+    private static class TypeDesc {
+        final int valueType;
+        final int precision;
+        final int minScale;
+        final int maxScale;
+        private TypeDesc(int valueType, int precision, int minScale, int maxScale)
+        {
+            this.valueType = valueType;
+            this.precision = precision;
+            this.minScale = minScale;
+            this.maxScale = maxScale;
+        }
+    }
+
+    private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>();
+    static  {
+        PREDEFINED_TYPES.put("BFILE", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("BINARY ROWID", new TypeDesc(java.sql.Types.ROWID, 0, 0, 0));
+        PREDEFINED_TYPES.put("BINARY_DOUBLE", new TypeDesc(java.sql.Types.DOUBLE, 63, 127, -84));
+        PREDEFINED_TYPES.put("BINARY_FLOAT", new TypeDesc(java.sql.Types.FLOAT, 63, 127, -84));
+        PREDEFINED_TYPES.put("BLOB", new TypeDesc(java.sql.Types.BLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("CANONICAL", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("CFILE", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("CHAR", new TypeDesc(java.sql.Types.CHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("CLOB", new TypeDesc(java.sql.Types.CLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("CONTIGUOUS ARRAY", new TypeDesc(java.sql.Types.ARRAY, 0, 0, 0));
+        PREDEFINED_TYPES.put("DATE", new TypeDesc(java.sql.Types.DATE, 0, 0, 0));
+        PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(java.sql.Types.DECIMAL, 63, 127, -84));
+        PREDEFINED_TYPES.put("DOUBLE PRECISION", new TypeDesc(java.sql.Types.DOUBLE, 63, 127, -84));
+        PREDEFINED_TYPES.put("FLOAT", new TypeDesc(java.sql.Types.FLOAT, 63, 127, -84));
+        PREDEFINED_TYPES.put("INTEGER", new TypeDesc(java.sql.Types.INTEGER, 63, 127, -84));
+        PREDEFINED_TYPES.put("INTERVAL DAY TO SECOND", new TypeDesc(java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("INTERVAL YEAR TO MONTH", new TypeDesc(java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("LOB POINTER", new TypeDesc(java.sql.Types.BLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("NAMED COLLECTION", new TypeDesc(java.sql.Types.ARRAY, 0, 0, 0));
+        PREDEFINED_TYPES.put("NAMED OBJECT", new TypeDesc(java.sql.Types.STRUCT, 0, 0, 0));
+        PREDEFINED_TYPES.put("NUMBER", new TypeDesc(java.sql.Types.NUMERIC, 63, 127, -84));
+        PREDEFINED_TYPES.put("OCTET", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("OID", new TypeDesc(java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("POINTER", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("RAW", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("REAL", new TypeDesc(java.sql.Types.REAL, 63, 127, -84));
+        PREDEFINED_TYPES.put("REF", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER(32)", new TypeDesc(java.sql.Types.INTEGER, 63, 127, -84));
+        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER(16)", new TypeDesc(java.sql.Types.SMALLINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER(8)", new TypeDesc(java.sql.Types.TINYINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(java.sql.Types.SMALLINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("TABLE", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIME", new TypeDesc(java.sql.Types.TIME, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIME WITH TZ", new TypeDesc(java.sql.Types.TIME, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TZ", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP WITH TZ", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
+        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER(32)", new TypeDesc(java.sql.Types.BIGINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER(16)", new TypeDesc(java.sql.Types.INTEGER, 63, 127, -84));
+        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER(8)", new TypeDesc(java.sql.Types.SMALLINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("UROWID", new TypeDesc(java.sql.Types.ROWID, 0, 0, 0));
+        PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("VARCHAR2", new TypeDesc(java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("VARYING ARRAY", new TypeDesc(java.sql.Types.ARRAY, 0, 0, 0));
+    }
+    
+    private DBSObject owner;
     private String typeName;
     private String typeCode;
     private byte[] typeOID;
@@ -43,20 +107,21 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     private boolean flagIncomplete;
     private boolean flagFinal;
     private boolean flagInstantiable;
+    private TypeDesc typeDesc;
 
     private boolean persisted;
 
-    public OracleDataType(OracleSchema schema, boolean persisted)
+    public OracleDataType(DBSObject owner, boolean persisted)
     {
-        this.schema = schema;
+        this.owner = owner;
         this.persisted = persisted;
         this.attributeCache = new AttributeCache();
         this.methodCache = new MethodCache();
     }
 
-    public OracleDataType(OracleSchema schema, ResultSet dbResult)
+    public OracleDataType(DBSObject owner, ResultSet dbResult)
     {
-        this.schema = schema;
+        this.owner = owner;
         this.persisted = true;
         this.typeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
         this.typeCode = JDBCUtils.safeGetString(dbResult, "TYPECODE");
@@ -80,6 +145,11 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         }
         attributeCache = hasAttributes ? new AttributeCache() : null;
         methodCache = hasMethods ? new MethodCache() : null;
+        
+        if (owner instanceof OracleDataSource && flagPredefined) {
+            // Determine value type for predefined types
+            this.typeDesc = PREDEFINED_TYPES.get(typeName);
+        }
     }
 
     boolean resolveLazyReference(DBRProgressMonitor monitor)
@@ -114,12 +184,27 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
 
     public int getValueType()
     {
-        return java.sql.Types.OTHER;
+        return typeDesc == null ? java.sql.Types.OTHER : typeDesc.valueType;
     }
 
     public DBSDataKind getDataKind()
     {
         return DBSDataKind.UNKNOWN;
+    }
+
+    public int getPrecision()
+    {
+        return typeDesc == null ? 0 : typeDesc.precision;
+    }
+
+    public int getMinScale()
+    {
+        return typeDesc == null ? 0 : typeDesc.minScale;
+    }
+
+    public int getMaxScale()
+    {
+        return typeDesc == null ? 0 : typeDesc.maxScale;
     }
 
     public String getDescription()
@@ -129,12 +214,14 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
 
     public DBSObject getParentObject()
     {
-        return schema;
+        return owner;
     }
 
     public OracleDataSource getDataSource()
     {
-        return schema.getDataSource();
+        return owner instanceof OracleSchema ?
+            ((OracleSchema)owner).getDataSource() :
+            owner instanceof OracleDataSource ? (OracleDataSource) owner : null;
     }
 
     @Property(name = "Type Name", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 1)
@@ -223,7 +310,7 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPE_ATTRS " +
                 "WHERE OWNER=? AND TYPE_NAME=? ORDER BY ATTR_NO");
-            dbStat.setString(1, schema.getName());
+            dbStat.setString(1, owner.getName());
             dbStat.setString(2, getName());
             return dbStat;
         }
@@ -241,7 +328,7 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPE_METHODS " +
                 "WHERE OWNER=? AND TYPE_NAME=? ORDER BY METHOD_NO");
-            dbStat.setString(1, schema.getName());
+            dbStat.setString(1, owner.getName());
             dbStat.setString(2, getName());
             return dbStat;
         }

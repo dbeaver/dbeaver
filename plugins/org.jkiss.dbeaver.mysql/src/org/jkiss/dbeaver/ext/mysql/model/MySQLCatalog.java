@@ -145,7 +145,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     public Collection<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return indexCache.getObjects(monitor, null);
+        return indexCache.getObjects(monitor, getDataSource(), null);
     }
 
     public Collection<MySQLTable> getTables(DBRProgressMonitor monitor)

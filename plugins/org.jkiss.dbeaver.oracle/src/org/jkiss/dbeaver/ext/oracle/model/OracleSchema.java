@@ -119,7 +119,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     public Collection<OracleIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return indexCache.getObjects(monitor, null);
+        return indexCache.getObjects(monitor, getDataSource(), null);
     }
 
     public Collection<OracleTable> getTables(DBRProgressMonitor monitor)
@@ -211,9 +211,9 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         }
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache table indexes");
-            indexCache.getObjects(monitor, null);
+            indexCache.getObjects(monitor, getDataSource(), null);
             monitor.subTask("Cache table constraints");
-            constraintCache.getObjects(monitor, null);
+            constraintCache.getObjects(monitor, getDataSource(), null);
         }
     }
 
