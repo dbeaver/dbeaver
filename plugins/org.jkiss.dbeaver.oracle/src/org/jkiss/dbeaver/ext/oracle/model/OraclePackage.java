@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 /**
  * GenericProcedure
  */
-public class OraclePackage extends OracleObject
+public class OraclePackage extends OracleObject implements OracleSourceObject
 {
 
     public OraclePackage(
@@ -19,4 +19,13 @@ public class OraclePackage extends OracleObject
         super(schema, dbResult);
     }
 
+    public OracleSchema getSourceOwner()
+    {
+        return getSchema();
+    }
+
+    public OracleSourceType getSourceType()
+    {
+        return OracleSourceType.PACKAGE;
+    }
 }

@@ -4,10 +4,8 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -26,7 +24,7 @@ public class OracleUtils {
 
     public static String getSource(DBRProgressMonitor monitor, OracleSourceObject sourceObject, boolean body) throws DBCException
     {
-        final String sourceType = sourceObject.getSourceType();
+        final String sourceType = sourceObject.getSourceType().name();
         final JDBCExecutionContext context = sourceObject.getSourceOwner().getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load source code for " + sourceType + " '" + sourceObject.getName() + "'");
         try {
             final JDBCPreparedStatement dbStat = context.prepareStatement(

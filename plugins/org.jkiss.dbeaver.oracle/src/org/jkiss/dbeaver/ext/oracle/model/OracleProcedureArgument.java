@@ -22,6 +22,8 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     private final OracleProcedure procedure;
     private String name;
     private int position;
+    private int dataLevel;
+    private int sequence;
     private OracleParameterMode mode;
     private OracleDataType type;
     private OracleDataType dataType;
@@ -37,6 +39,8 @@ public class OracleProcedureArgument implements DBSProcedureColumn
         this.procedure = procedure;
         this.name = JDBCUtils.safeGetString(dbResult, "ARGUMENT_NAME");
         this.position = JDBCUtils.safeGetInt(dbResult, "POSITION");
+        this.dataLevel = JDBCUtils.safeGetInt(dbResult, "DATA_LEVEL");
+        this.sequence = JDBCUtils.safeGetInt(dbResult, "SEQUENCE");
         this.mode = OracleParameterMode.getMode(JDBCUtils.safeGetString(dbResult, "IN_OUT"));
         this.type = OracleDataType.resolveDataType(
             monitor,
@@ -84,6 +88,11 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     @Property(name = "Name", viewable = true, order = 10)
     public String getName()
     {
+        if (CommonUtils.isEmpty(name)) {
+            if (position == 0) {
+                return "RESULT";
+            }
+        }
         return name;
     }
 
@@ -97,6 +106,12 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     public DBSProcedureColumnType getColumnType()
     {
         return mode == null ? null : mode.getColumnType();
+    }
+
+    @Property(name = "Type", viewable = true, order = 21)
+    public OracleDataType getType()
+    {
+        return dataType == null ? type : dataType;
     }
 
     public boolean isNotNull()

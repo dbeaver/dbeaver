@@ -211,9 +211,9 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         return owner instanceof OracleSchema ? (OracleSchema)owner : null;
     }
 
-    public String getSourceType()
+    public OracleSourceType getSourceType()
     {
-        return "TYPE";
+        return OracleSourceType.TYPE;
     }
 
     public boolean isPersisted()

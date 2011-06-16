@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * GenericProcedure
  */
-public class OracleProcedure extends OracleObject implements DBSProcedure
+public class OracleProcedure extends OracleObject implements DBSProcedure, OracleSourceObject
 {
     //static final Log log = LogFactory.getLog(OracleProcedure.class);
 
@@ -63,5 +63,17 @@ public class OracleProcedure extends OracleObject implements DBSProcedure
         synchronized (this) {
             this.columns = columns;
         }
+    }
+
+    public OracleSchema getSourceOwner()
+    {
+        return getSchema();
+    }
+
+    public OracleSourceType getSourceType()
+    {
+        return procedureType == DBSProcedureType.PROCEDURE ?
+            OracleSourceType.PROCEDURE :
+            OracleSourceType.FUNCTION;
     }
 }

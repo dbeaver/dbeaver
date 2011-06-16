@@ -9,6 +9,6 @@ public interface OracleSourceObject extends DBSObject {
 
     OracleSchema getSourceOwner();
 
-    String getSourceType();
+    OracleSourceType getSourceType();
 
 }

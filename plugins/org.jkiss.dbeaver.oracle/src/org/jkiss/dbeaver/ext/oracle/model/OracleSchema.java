@@ -677,7 +677,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_ARGUMENTS " +
                 "WHERE OWNER=? " + (procedure == null ? "" : "AND OBJECT_ID=? ") +
-                "ORDER BY POSITION");
+                "ORDER BY POSITION,SEQUENCE");
             dbStat.setString(1, getName());
             if (procedure != null) {
                 dbStat.setLong(2, procedure.getId());
