@@ -41,7 +41,7 @@ public class MySQLIndexColumn extends AbstractIndexColumn
         this.nullable = source.nullable;
     }
 
-    public MySQLIndex getIndex()
+    public MySQLIndex getTrigger()
     {
         return index;
     }

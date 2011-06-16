@@ -35,7 +35,7 @@ public class GenericIndexColumn extends AbstractIndexColumn
         this.ascending = source.ascending;
     }
 
-    public GenericIndex getIndex()
+    public GenericIndex getTrigger()
     {
         return index;
     }

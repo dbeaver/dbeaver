@@ -4,42 +4,38 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.model.impl.struct.AbstractIndexColumn;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTriggerColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
 /**
- * GenericIndexColumn
+ * OracleTriggerColumn
  */
-public class OracleIndexColumn extends AbstractIndexColumn
+public class OracleTriggerColumn extends AbstractTriggerColumn
 {
-    private OracleIndex index;
+    private OracleTrigger trigger;
     private OracleTableColumn tableColumn;
     private int ordinalPosition;
-    private boolean ascending;
 
-    public OracleIndexColumn(
-        OracleIndex index,
+    public OracleTriggerColumn(
+        OracleTrigger trigger,
         OracleTableColumn tableColumn,
-        int ordinalPosition,
-        boolean ascending)
+        int ordinalPosition)
     {
-        this.index = index;
+        this.trigger = trigger;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
-        this.ascending = ascending;
     }
 
-    OracleIndexColumn(OracleIndex toIndex, OracleIndexColumn source)
+    OracleTriggerColumn(OracleTrigger toIndex, OracleTriggerColumn source)
     {
-        this.index = toIndex;
+        this.trigger = toIndex;
         this.tableColumn = source.tableColumn;
         this.ordinalPosition = source.ordinalPosition;
-        this.ascending = source.ascending;
     }
 
-    public OracleIndex getTrigger()
+    public OracleTrigger getTrigger()
     {
-        return index;
+        return trigger;
     }
 
     //@Property(name = "Name", viewable = true, order = 1)
@@ -60,25 +56,19 @@ public class OracleIndexColumn extends AbstractIndexColumn
         return ordinalPosition;
     }
 
-    @Property(name = "Ascending", viewable = true, order = 3)
-    public boolean isAscending()
-    {
-        return ascending;
-    }
-
     public String getDescription()
     {
         return tableColumn.getDescription();
     }
 
-    public OracleIndex getParentObject()
+    public OracleTrigger getParentObject()
     {
-        return index;
+        return trigger;
     }
 
     public OracleDataSource getDataSource()
     {
-        return index.getDataSource();
+        return trigger.getDataSource();
     }
 
 }

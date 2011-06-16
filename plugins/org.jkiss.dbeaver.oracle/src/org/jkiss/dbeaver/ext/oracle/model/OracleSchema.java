@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.struct.AbstractSchema;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
@@ -136,12 +137,14 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     }
 
 
+    @Association
     public Collection<OracleIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return getIndexCache().getObjects(monitor, getDataSource(), null);
     }
 
+    @Association
     public Collection<OracleTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -154,6 +157,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return getTableCache().getObject(monitor, getDataSource(), name, OracleTable.class);
     }
 
+    @Association
     public Collection<OracleView> getViews(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -166,6 +170,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return getTableCache().getObject(monitor, getDataSource(), name, OracleView.class);
     }
 
+    @Association
     public Collection<OracleDataType> getDataTypes(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -178,6 +183,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return getDataTypeCache().getObject(monitor, getDataSource(), name);
     }
 
+    @Association
     public Collection<OracleSequence> getSequences(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -190,6 +196,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return getSequenceCache().getObject(monitor, getDataSource(), name);
     }
 
+    @Association
     public Collection<OraclePackage> getPackages(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -202,6 +209,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return getPackageCache().getObject(monitor, getDataSource(), procName);
     }
 
+    @Association
     public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -214,6 +222,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return getProceduresCache().getObject(monitor, getDataSource(), procName);
     }
 
+    @Association
     public Collection<OracleTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -394,7 +403,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                     "col.COLUMN_NAME,col.POSITION\n" +
                     "FROM SYS.ALL_CONSTRAINTS c\n" +
                     "JOIN SYS.ALL_CONS_COLUMNS col ON c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
-                    "WHERE c.OWNER=?");
+                    "WHERE c.CONSTRAINT_TYPE<>'R' AND c.OWNER=?");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
             }
@@ -752,26 +761,40 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 
     }
 
-    class TriggerCache extends JDBCObjectCache<OracleTrigger> {
-
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
-            throws SQLException, DBException
+    class TriggerCache extends JDBCCompositeCache<OracleTable, OracleTrigger, OracleTriggerColumn> {
+        protected TriggerCache()
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(        
-                "SELECT * FROM " + OracleConstants.META_TABLE_TRIGGERS +
-                " WHERE " + OracleConstants.COL_TRIGGER_SCHEMA + "=?" +
-                " ORDER BY " + OracleConstants.COL_TRIGGER_NAME);
-            dbStat.setString(1, getName());
-            return dbStat;
+            super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, "TRIGGER_NAME");
         }
 
-        protected OracleTrigger fetchObject(JDBCExecutionContext context, ResultSet dbResult)
-            throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forParent) throws SQLException, DBException
         {
-            String tableSchema = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_EVENT_OBJECT_SCHEMA);
-            String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_EVENT_OBJECT_TABLE);
-            OracleTable triggerTable = getDataSource().findTable(context.getProgressMonitor(), tableSchema, tableName);
-            return new OracleTrigger(OracleSchema.this, triggerTable, dbResult);
+            return null;
+        }
+
+        protected OracleTrigger fetchObject(JDBCExecutionContext context, ResultSet resultSet, OracleTable oracleTable, String childName) throws SQLException, DBException
+        {
+            return null;
+        }
+
+        protected OracleTriggerColumn fetchObjectRow(JDBCExecutionContext context, ResultSet resultSet, OracleTable oracleTable, OracleTrigger forObject) throws SQLException, DBException
+        {
+            return null;
+        }
+
+        protected boolean isObjectsCached(OracleTable oracleTable)
+        {
+            return false;
+        }
+
+        @Override
+        protected void cacheObjects(OracleTable oracleTable, List<OracleTrigger> oracleTriggers)
+        {
+        }
+
+        @Override
+        protected void cacheChildren(OracleTrigger oracleTrigger, List<OracleTriggerColumn> rows)
+        {
         }
 
     }

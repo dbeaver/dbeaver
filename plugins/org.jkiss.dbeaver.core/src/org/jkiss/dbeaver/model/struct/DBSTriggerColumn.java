@@ -5,15 +5,13 @@
 package org.jkiss.dbeaver.model.struct;
 
 /**
- * DBSIndex
+ * DBSTriggerColumn
  */
-public interface DBSIndexColumn extends DBSEntityAttribute
+public interface DBSTriggerColumn extends DBSEntityAttribute
 {
-    DBSIndex getTrigger();
+    DBSTrigger getTrigger();
 
     int getOrdinalPosition();
-
-    boolean isAscending();
 
     DBSTableColumn getTableColumn();
 
