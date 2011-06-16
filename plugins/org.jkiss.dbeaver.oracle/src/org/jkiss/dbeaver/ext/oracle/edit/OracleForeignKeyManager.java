@@ -42,8 +42,7 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeign
             null,
             null,
             (OracleConstraint) editDialog.getUniqueConstraint(),
-            editDialog.getOnDeleteRule(),
-            false);
+            editDialog.getOnDeleteRule());
         foreignKey.setName(JDBCObjectNameCaseTransformer.transformName(foreignKey,
             CommonUtils.escapeIdentifier(table.getName()) + "_" +
             CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK"));

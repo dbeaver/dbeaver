@@ -46,8 +46,7 @@ public class OracleConstraintManager extends JDBCConstraintManager<OracleConstra
             null,
             editDialog.getConstraintType(),
             null,
-            OracleConstants.ObjectStatus.ENABLED,
-            false);
+            OracleConstants.ObjectStatus.ENABLED);
         constraint.setName(JDBCObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
         int colIndex = 1;
         for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {

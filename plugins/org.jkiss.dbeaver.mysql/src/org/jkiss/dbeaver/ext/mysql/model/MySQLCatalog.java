@@ -533,12 +533,12 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             return parent.isIndexesCached();
         }
 
-        protected void cacheObjects(DBRProgressMonitor monitor, MySQLTable parent, List<MySQLIndex> indexes)
+        protected void cacheObjects(MySQLTable parent, List<MySQLIndex> indexes)
         {
             parent.setIndexes(indexes);
         }
 
-        protected void cacheChildren(DBRProgressMonitor monitor, MySQLIndex index, List<MySQLIndexColumn> rows)
+        protected void cacheChildren(MySQLIndex index, List<MySQLIndexColumn> rows)
         {
             index.setColumns(rows);
         }

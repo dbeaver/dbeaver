@@ -78,10 +78,7 @@ public class OracleTable extends OracleTableBase
         throws DBException
     {
         if (constraints == null) {
-            // Read constraints for ALL tables in this schema
-            // It is fastest way to obtain constraints because ALL_CONSTRAINTS table doesn't contains reference table name
-            // and extra join will slow query dramatically
-            getContainer().getConstraintCache().getObjects(monitor, getDataSource(), null);
+            getContainer().getConstraintCache().getObjects(monitor, getDataSource(), this);
         }
         return constraints;
     }
@@ -92,19 +89,9 @@ public class OracleTable extends OracleTableBase
         return DBUtils.findObject(getConstraints(monitor), ukName);
     }
 
-    void setConstraints(DBRProgressMonitor monitor, List<OracleConstraint> constraints)
+    void setConstraints(List<OracleConstraint> constraints)
     {
-        this.constraints = new ArrayList<OracleConstraint>();
-        this.foreignKeys = new ArrayList<OracleForeignKey>();
-        for (OracleConstraint constraint : constraints) {
-            if (constraint instanceof OracleForeignKey) {
-                if (((OracleForeignKey) constraint).resolveLazyReference(monitor)) {
-                    this.foreignKeys.add((OracleForeignKey) constraint);
-                }
-            } else {
-                this.constraints.add(constraint);
-            }
-        }
+        this.constraints = constraints;
     }
 
     boolean isConstraintsCached()
@@ -118,10 +105,10 @@ public class OracleTable extends OracleTableBase
         List<OracleForeignKey> refs = new ArrayList<OracleForeignKey>();
         // This is dummy implementation
         // Get references from this schema only
-        final Collection<OracleConstraint> allConstraints = getContainer().getConstraintCache().getObjects(monitor, getDataSource(), null);
-        for (OracleConstraint constraint : allConstraints) {
-            if (constraint instanceof OracleForeignKey && ((OracleForeignKey) constraint).getReferencedTable() == this) {
-                refs.add((OracleForeignKey) constraint);
+        final Collection<OracleForeignKey> allForeignKeys = getContainer().getForeignKeyCache().getObjects(monitor, getDataSource(), null);
+        for (OracleForeignKey constraint : allForeignKeys) {
+            if (constraint.getReferencedTable() == this) {
+                refs.add(constraint);
             }
         }
         return refs;
@@ -131,10 +118,19 @@ public class OracleTable extends OracleTableBase
         throws DBException
     {
         if (foreignKeys == null) {
-            // Read constraints for ALL tables in this schema
-            getContainer().getConstraintCache().getObjects(monitor, getDataSource(), null);
+            getContainer().getForeignKeyCache().getObjects(monitor, getDataSource(), this);
         }
         return foreignKeys;
+    }
+
+    void setForeignKeys(List<OracleForeignKey> constraints)
+    {
+        this.foreignKeys = constraints;
+    }
+
+    boolean isForeignKeysCached()
+    {
+        return foreignKeys != null;
     }
 
     public OracleForeignKey getForeignKey(DBRProgressMonitor monitor, String fkName)

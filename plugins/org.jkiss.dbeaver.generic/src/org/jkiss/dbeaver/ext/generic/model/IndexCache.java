@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 
 import java.sql.DatabaseMetaData;
@@ -111,12 +110,12 @@ class IndexCache extends JDBCCompositeCache<GenericTable, GenericIndex, GenericI
         return parent.isIndexesCached();
     }
 
-    protected void cacheObjects(DBRProgressMonitor monitor, GenericTable parent, List<GenericIndex> indexes)
+    protected void cacheObjects(GenericTable parent, List<GenericIndex> indexes)
     {
         parent.setIndexes(indexes);
     }
 
-    protected void cacheChildren(DBRProgressMonitor monitor, GenericIndex index, List<GenericIndexColumn> rows)
+    protected void cacheChildren(GenericIndex index, List<GenericIndexColumn> rows)
     {
         index.setColumns(rows);
     }

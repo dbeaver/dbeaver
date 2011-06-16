@@ -4,86 +4,84 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
+
+import java.sql.ResultSet;
 
 /**
  * OracleForeignKey
  */
 public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
 {
-    static final Log log = LogFactory.getLog(OracleForeignKey.class);
-
-    private Object referencedKey;
+    private OracleConstraint referencedKey;
     private DBSConstraintModifyRule deleteRule;
 
     public OracleForeignKey(
-        OracleTable table,
+        OracleTable oracleTable,
         String name,
         OracleConstants.ObjectStatus status,
-        Object referencedKey,
-        DBSConstraintModifyRule deleteRule,
-        boolean persisted)
+        OracleConstraint referencedKey,
+        DBSConstraintModifyRule deleteRule)
     {
-        super(table, name, DBSConstraintType.FOREIGN_KEY, null, status, persisted);
+        super(oracleTable, name, DBSConstraintType.FOREIGN_KEY, null, status);
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
     }
 
-    boolean resolveLazyReference(DBRProgressMonitor monitor)
+    public OracleForeignKey(
+        DBRProgressMonitor monitor,
+        OracleTable table,
+        ResultSet dbResult)
+        throws DBException
     {
-        if (referencedKey instanceof OracleConstraint) {
-            return true;
-        } else if (referencedKey instanceof OracleLazyReference) {
-            try {
-                final OracleLazyReference lazyReference = (OracleLazyReference) referencedKey;
-                OracleSchema refSchema = getTable().getDataSource().getSchema(monitor, lazyReference.schemaName);
-                if (refSchema == null) {
-                    log.warn("Referenced schema '" + lazyReference.schemaName + "' not found for foreign key '" + getName() + "'");
-                    return false;
-                }
-                referencedKey = refSchema.getConstraintCache().getObject(monitor, getDataSource(), lazyReference.objectName);
+        super(table, dbResult);
+
+        String refOwner = JDBCUtils.safeGetString(dbResult, "R_OWNER");
+        String refTableName = JDBCUtils.safeGetString(dbResult, "R_TABLE_NAME");
+        String refName = JDBCUtils.safeGetString(dbResult, "R_CONSTRAINT_NAME");
+        String deleteRuleName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DELETE_RULE);
+        OracleSchema refSchema = getTable().getDataSource().getSchema(monitor, refOwner);
+        if (refSchema == null) {
+            log.warn("Referenced schema '" + refOwner + "' not found for foreign key '" + getName() + "'");
+        } else {
+            OracleTable refTable = refSchema.getTable(monitor, refTableName);
+            if (refTable == null) {
+                log.warn("Referenced table '" + refTable + "' not found in schema '" + refOwner + "' for foreign key '" + getName() + "'");
+            } else {
+                referencedKey = refTable.getConstraint(monitor, refName);
                 if (referencedKey == null) {
-                    log.warn("Referenced constraint '" + lazyReference.objectName + "' not found in schema '" + lazyReference.schemaName + "'");
-                    return false;
+                    log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullQualifiedName() + "'");
                 }
-                return true;
-            } catch (DBException e) {
-                log.error(e);
             }
         }
-        return false;
+
+        this.deleteRule = "CASCADE".equals(deleteRuleName) ? DBSConstraintModifyRule.CASCADE : DBSConstraintModifyRule.NO_ACTION;
     }
 
     @Property(name = "Ref Table", viewable = true, order = 3)
     public OracleTable getReferencedTable()
     {
-        return getReferencedKey().getTable();
+        return referencedKey.getTable();
     }
 
     @Property(id = "reference", name = "Ref Object", viewable = true, order = 4)
     public OracleConstraint getReferencedKey()
     {
-        return (OracleConstraint)referencedKey;
+        return referencedKey;
     }
 
     @Property(name = "On Delete", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
     public DBSConstraintModifyRule getDeleteRule()
     {
         return deleteRule;
-    }
-
-    public void setDeleteRule(DBSConstraintModifyRule deleteRule)
-    {
-        this.deleteRule = deleteRule;
     }
 
     // Update rule is not supported by Oracle

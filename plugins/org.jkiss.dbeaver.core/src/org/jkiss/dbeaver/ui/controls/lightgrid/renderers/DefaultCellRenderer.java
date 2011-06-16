@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
@@ -89,7 +90,7 @@ public class DefaultCellRenderer extends GridCellRenderer {
 
         String text = TextUtils.getShortString(gc, grid.getCellText(getColumn(), getRow()), width);
         // Replace linefeeds with space
-        text = text.replace('\n', (char)182);
+        text = text.replace('\n', UIUtils.PARAGRAPH_CHAR);
 
         if (getAlignment() == SWT.RIGHT) {
             int len = gc.stringExtent(text).x;

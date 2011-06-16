@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -20,7 +21,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.struct.AbstractSchema;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSIndexType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,6 +41,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     private long id;
     private final TableCache tableCache = new TableCache();
     private final ConstraintCache constraintCache = new ConstraintCache();
+    private final ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
     private final TriggerCache triggerCache = new TriggerCache();
     private final IndexCache indexCache = new IndexCache();
     private final DataTypeCache dataTypeCache = new DataTypeCache();
@@ -66,6 +70,11 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     ConstraintCache getConstraintCache()
     {
         return constraintCache;
+    }
+
+    ForeignKeyCache getForeignKeyCache()
+    {
+        return foreignKeyCache;
     }
 
     IndexCache getIndexCache()
@@ -130,103 +139,103 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     public Collection<OracleIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return indexCache.getObjects(monitor, getDataSource(), null);
+        return getIndexCache().getObjects(monitor, getDataSource(), null);
     }
 
     public Collection<OracleTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, getDataSource(), OracleTable.class);
+        return getTableCache().getObjects(monitor, getDataSource(), OracleTable.class);
     }
 
     public OracleTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return tableCache.getObject(monitor, getDataSource(), name, OracleTable.class);
+        return getTableCache().getObject(monitor, getDataSource(), name, OracleTable.class);
     }
 
     public Collection<OracleView> getViews(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, getDataSource(), OracleView.class);
+        return getTableCache().getObjects(monitor, getDataSource(), OracleView.class);
     }
 
     public OracleView getView(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return tableCache.getObject(monitor, getDataSource(), name, OracleView.class);
+        return getTableCache().getObject(monitor, getDataSource(), name, OracleView.class);
     }
 
     public Collection<OracleDataType> getDataTypes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return dataTypeCache.getObjects(monitor, getDataSource());
+        return getDataTypeCache().getObjects(monitor, getDataSource());
     }
 
     public OracleDataType getDataType(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return dataTypeCache.getObject(monitor, getDataSource(), name);
+        return getDataTypeCache().getObject(monitor, getDataSource(), name);
     }
 
     public Collection<OracleSequence> getSequences(DBRProgressMonitor monitor)
         throws DBException
     {
-        return sequenceCache.getObjects(monitor, getDataSource());
+        return getSequenceCache().getObjects(monitor, getDataSource());
     }
 
     public OracleSequence getSequence(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return sequenceCache.getObject(monitor, getDataSource(), name);
+        return getSequenceCache().getObject(monitor, getDataSource(), name);
     }
 
     public Collection<OraclePackage> getPackages(DBRProgressMonitor monitor)
         throws DBException
     {
-        return packageCache.getObjects(monitor, getDataSource());
+        return getPackageCache().getObjects(monitor, getDataSource());
     }
 
     public OraclePackage getPackage(DBRProgressMonitor monitor, String procName)
         throws DBException
     {
-        return packageCache.getObject(monitor, getDataSource(), procName);
+        return getPackageCache().getObject(monitor, getDataSource(), procName);
     }
 
     public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
-        return proceduresCache.getObjects(monitor, getDataSource());
+        return getProceduresCache().getObjects(monitor, getDataSource());
     }
 
     public OracleProcedure getProcedure(DBRProgressMonitor monitor, String procName)
         throws DBException
     {
-        return proceduresCache.getObject(monitor, getDataSource(), procName);
+        return getProceduresCache().getObject(monitor, getDataSource(), procName);
     }
 
     public Collection<OracleTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
-        return triggerCache.getObjects(monitor, getDataSource());
+        return getTriggerCache().getObjects(monitor, getDataSource());
     }
 
     public OracleTrigger getTrigger(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return triggerCache.getObject(monitor, getDataSource(), name);
+        return getTriggerCache().getObject(monitor, getDataSource(), name);
     }
 
     public Collection<OracleTableBase> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, getDataSource());
+        return getTableCache().getObjects(monitor, getDataSource());
     }
 
     public OracleTableBase getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        return tableCache.getObject(monitor, getDataSource(), childName);
+        return getTableCache().getObject(monitor, getDataSource(), childName);
     }
 
     public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
@@ -249,6 +258,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             indexCache.getObjects(monitor, getDataSource(), null);
             monitor.subTask("Cache table constraints");
             constraintCache.getObjects(monitor, getDataSource(), null);
+            foreignKeyCache.getObjects(monitor, getDataSource(), null);
         }
     }
 
@@ -258,6 +268,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     {
         super.refreshEntity(monitor);
         tableCache.clearCache();
+        foreignKeyCache.clearCache();
         constraintCache.clearCache();
         indexCache.clearCache();
         packageCache.clearCache();
@@ -276,6 +287,16 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     public DBSCatalog getCatalog()
     {
         return null;
+    }
+
+    protected static OracleTableColumn getTableColumn(JDBCExecutionContext context, OracleTable parent, ResultSet dbResult) throws DBException
+    {
+        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_COLUMN_NAME);
+        OracleTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
+        if (tableColumn == null) {
+            log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
+        }
+        return tableColumn;
     }
 
     class TableCache extends JDBCStructCache<OracleTableBase, OracleTableColumn> {
@@ -324,7 +345,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleTableBase forTable)
             throws SQLException, DBException
         {
-            StringBuilder sql = new StringBuilder();
+            StringBuilder sql = new StringBuilder(500);
             sql
                 .append("SELECT c.*,cc.COMMENTS\n" +
                     "FROM SYS.ALL_TAB_COLUMNS c\n" +
@@ -366,23 +387,18 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forTable)
             throws SQLException, DBException
         {
-            StringBuilder sql = new StringBuilder();
+            StringBuilder sql = new StringBuilder(500);
             sql
-                .append("SELECT c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS," +
-                    "c.R_OWNER,c.R_CONSTRAINT_NAME,c.DELETE_RULE," +
-                    "COLUMN_NAME,POSITION\n" +
+                .append("SELECT /*+USE_NL(col) USE_NL(ref)*/\n" +
+                    "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS," +
+                    "col.COLUMN_NAME,col.POSITION\n" +
                     "FROM SYS.ALL_CONSTRAINTS c\n" +
-                    "JOIN SYS.ALL_CONS_COLUMNS ссol ON c.OWNER=ссol.OWNER AND c.CONSTRAINT_NAME=ссol.CONSTRAINT_NAME\n" +
+                    "JOIN SYS.ALL_CONS_COLUMNS col ON c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
                     "WHERE c.OWNER=?");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
             }
-            sql.append("\nORDER BY");
-            if (forTable == null) {
-                // Fetch foreign keys after all
-                sql.append(" (CASE WHEN c.CONSTRAINT_TYPE='R' THEN 1 ELSE 0 END),");
-            }
-            sql.append(" c.CONSTRAINT_NAME,POSITION");
+            sql.append("\nORDER BY c.CONSTRAINT_NAME,col.POSITION");
 
             JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
             dbStat.setString(1, OracleSchema.this.getName());
@@ -395,45 +411,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         protected OracleConstraint fetchObject(JDBCExecutionContext context, ResultSet dbResult, OracleTable parent, String indexName)
             throws SQLException, DBException
         {
-            String constraintName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME);
-            String constraintTypeName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_TYPE);
-            DBSConstraintType constraintType;
-            if ("C".equals(constraintTypeName)) {
-                constraintType = DBSConstraintType.CHECK;
-            } else if ("P".equals(constraintTypeName)) {
-                constraintType = DBSConstraintType.PRIMARY_KEY;
-            } else if ("U".equals(constraintTypeName)) {
-                constraintType = DBSConstraintType.UNIQUE_KEY;
-            } else if ("R".equals(constraintTypeName)) {
-                constraintType = DBSConstraintType.FOREIGN_KEY;
-            } else {
-                log.debug("Unsupported constraint type: " + constraintTypeName);
-                return null;
-            }
-            final String constraintStatus = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_STATUS);
-            if (constraintType == DBSConstraintType.FOREIGN_KEY) {
-                // Foreign key is not a regular constraint
-                String refOwner = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_R_OWNER);
-                String refName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_R_CONSTRAINT_NAME);
-                String deleteRuleName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DELETE_RULE);
-                return new OracleForeignKey(
-                    parent,
-                    constraintName,
-                    CommonUtils.isEmpty(constraintStatus) ? null : OracleConstants.ObjectStatus.valueOf(constraintStatus),
-                    new OracleLazyReference(refOwner, refName),
-                    "CASCADE".equals(deleteRuleName) ? DBSConstraintModifyRule.CASCADE : DBSConstraintModifyRule.NO_ACTION,
-                    true);
-            } else {
-                // Make table constraint
-                final String searchCondition = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_SEARCH_CONDITION);
-                return new OracleConstraint(
-                    parent,
-                    constraintName,
-                    constraintType,
-                    searchCondition,
-                    CommonUtils.isEmpty(constraintStatus) ? null : OracleConstants.ObjectStatus.valueOf(constraintStatus),
-                    true);
-            }
+            return new OracleConstraint(parent, dbResult);
         }
 
         protected OracleConstraintColumn fetchObjectRow(
@@ -443,26 +421,10 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             OracleConstraint object)
             throws SQLException, DBException
         {
-            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_COLUMN_NAME);
-            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_POSITION);
-
-            OracleTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
-            if (tableColumn == null) {
-                log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for constraint '" + object.getName() + "'");
-                return null;
-            }
-
-            if (object instanceof OracleForeignKey) {
-                return new OracleForeignKeyColumn(
-                    (OracleForeignKey) object,
-                    tableColumn,
-                    ordinalPosition);
-            } else {
-                return new OracleConstraintColumn(
-                    object,
-                    tableColumn,
-                    ordinalPosition);
-            }
+            return new OracleConstraintColumn(
+                object,
+                getTableColumn(context, parent, dbResult),
+                JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_POSITION));
         }
 
         protected boolean isObjectsCached(OracleTable parent)
@@ -470,16 +432,94 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return parent.isConstraintsCached();
         }
 
-        protected void cacheObjects(DBRProgressMonitor monitor, OracleTable parent, List<OracleConstraint> constraints)
+        protected void cacheObjects(OracleTable parent, List<OracleConstraint> constraints)
         {
-            parent.setConstraints(monitor, constraints);
+            parent.setConstraints(constraints);
         }
 
-        protected void cacheChildren(DBRProgressMonitor monitor, OracleConstraint constraint, List<OracleConstraintColumn> rows)
+        protected void cacheChildren(OracleConstraint constraint, List<OracleConstraintColumn> rows)
         {
             constraint.setColumns(rows);
         }
     }
+
+    class ForeignKeyCache extends JDBCCompositeCache<OracleTable, OracleForeignKey, OracleForeignKeyColumn> {
+        protected ForeignKeyCache()
+        {
+            super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
+        }
+
+        protected void loadObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, OracleTable forParent)
+            throws DBException
+        {
+            // Cache schema constraints in not table specified
+            if (forParent == null) {
+                getConstraintCache().getObject(monitor, dataSource, null);
+            }
+            super.loadObjects(monitor, dataSource, forParent);
+        }
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forTable)
+            throws SQLException, DBException
+        {
+            StringBuilder sql = new StringBuilder(500);
+            sql.append(
+                "SELECT /*+USE_NL(col) USE_NL(ref)*/ \r\n" +
+                "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,ref.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
+                "col.COLUMN_NAME,col.POSITION\r\n" +
+                "FROM SYS.ALL_CONSTRAINTS c\n" +
+                "JOIN SYS.ALL_CONS_COLUMNS col ON c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
+                "LEFT OUTER JOIN SYS.ALL_CONSTRAINTS ref ON ref.OWNER=c.r_OWNER AND ref.CONSTRAINT_NAME=c.R_CONSTRAINT_NAME \n" +
+                "WHERE c.CONSTRAINT_TYPE='R' AND c.OWNER=?");
+            if (forTable != null) {
+                sql.append(" AND c.TABLE_NAME=?");
+            }
+            sql.append("\nORDER BY c.CONSTRAINT_NAME,col.POSITION");
+
+            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
+            dbStat.setString(1, OracleSchema.this.getName());
+            if (forTable != null) {
+                dbStat.setString(2, forTable.getName());
+            }
+            return dbStat;
+        }
+
+        protected OracleForeignKey fetchObject(JDBCExecutionContext context, ResultSet dbResult, OracleTable parent, String indexName)
+            throws SQLException, DBException
+        {
+            return new OracleForeignKey(context.getProgressMonitor(), parent, dbResult);
+        }
+
+        protected OracleForeignKeyColumn fetchObjectRow(
+            JDBCExecutionContext context,
+            ResultSet dbResult,
+            OracleTable parent,
+            OracleForeignKey object)
+            throws SQLException, DBException
+        {
+            return new OracleForeignKeyColumn(
+                object,
+                getTableColumn(context, parent, dbResult),
+                JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_POSITION));
+        }
+
+        protected boolean isObjectsCached(OracleTable parent)
+        {
+            return parent.isForeignKeysCached();
+        }
+
+        protected void cacheObjects(OracleTable parent, List<OracleForeignKey> constraints)
+        {
+            parent.setForeignKeys(constraints);
+        }
+
+        @Override
+        protected void cacheChildren(OracleForeignKey foreignKey, List<OracleForeignKeyColumn> rows)
+        {
+            foreignKey.setColumns((List)rows);
+        }
+    }
+
 
     /**
      * Index cache implementation
@@ -570,12 +610,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return parent.isIndexesCached();
         }
 
-        protected void cacheObjects(DBRProgressMonitor monitor, OracleTable parent, List<OracleIndex> indexes)
+        protected void cacheObjects(OracleTable parent, List<OracleIndex> indexes)
         {
             parent.setIndexes(indexes);
         }
 
-        protected void cacheChildren(DBRProgressMonitor monitor, OracleIndex index, List<OracleIndexColumn> rows)
+        protected void cacheChildren(OracleIndex index, List<OracleIndexColumn> rows)
         {
             index.setColumns(rows);
         }

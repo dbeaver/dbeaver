@@ -16,7 +16,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -71,9 +70,9 @@ public abstract class JDBCCompositeCache<
 
     abstract protected boolean isObjectsCached(PARENT parent);
     
-    abstract protected void cacheObjects(DBRProgressMonitor monitor, PARENT parent, List<OBJECT> objects);
+    abstract protected void cacheObjects(PARENT parent, List<OBJECT> objects);
 
-    abstract protected void cacheChildren(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> rows);
+    abstract protected void cacheChildren(OBJECT object, List<ROW_REF> rows);
 
     private class ObjectInfo {
         final OBJECT object;
@@ -155,7 +154,7 @@ public abstract class JDBCCompositeCache<
         synchronized (this) {
             if (this.objectList != null) {
                 for (OBJECT object : this.objectList) {
-                    cacheChildren(VoidProgressMonitor.INSTANCE, object, null);
+                    cacheChildren(object, null);
                 }
                 this.objectList = null;
                 this.objectMap = null;
@@ -277,20 +276,20 @@ public abstract class JDBCCompositeCache<
             Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
             ArrayList<OBJECT> objects = new ArrayList<OBJECT>(objectInfos.size());
             for (ObjectInfo objectInfo : objectInfos) {
-                cacheChildren(monitor, objectInfo.object, objectInfo.rows);
+                cacheChildren(objectInfo.object, objectInfo.rows);
                 objects.add(objectInfo.object);
             }
-            cacheObjects(monitor, colEntry.getKey(), objects);
+            cacheObjects(colEntry.getKey(), objects);
         }
         // Now set empty object list for other parents
         if (forParent == null) {
             for (PARENT tmpParent : parentCache.getObjects(monitor, dataSource, parentType)) {
                 if (!parentObjectMap.containsKey(tmpParent)) {
-                    cacheObjects(monitor, tmpParent, new ArrayList<OBJECT>());
+                    cacheObjects(tmpParent, new ArrayList<OBJECT>());
                 }
             }
         } else if (!parentObjectMap.containsKey(forParent)) {
-            cacheObjects(monitor, forParent, new ArrayList<OBJECT>());
+            cacheObjects(forParent, new ArrayList<OBJECT>());
         }
 
     }

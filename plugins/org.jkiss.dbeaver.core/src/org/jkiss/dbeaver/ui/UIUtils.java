@@ -45,6 +45,8 @@ public class UIUtils {
 
     static final Log log = LogFactory.getLog(UIUtils.class);
 
+    public static final char PARAGRAPH_CHAR = (char)182;
+
     public static final VerifyListener INTEGER_VERIFY_LISTENER = new VerifyListener() {
         public void verifyText(VerifyEvent e)
         {

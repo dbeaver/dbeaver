@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
@@ -161,12 +160,12 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericTable, GenericForeignKe
         return parent.isForeignKeysCached();
     }
 
-    protected void cacheObjects(DBRProgressMonitor monitor, GenericTable parent, List<GenericForeignKey> foreignKeys)
+    protected void cacheObjects(GenericTable parent, List<GenericForeignKey> foreignKeys)
     {
         parent.setForeignKeys(foreignKeys);
     }
 
-    protected void cacheChildren(DBRProgressMonitor monitor, GenericForeignKey foreignKey, List<GenericForeignKeyColumn> rows)
+    protected void cacheChildren(GenericForeignKey foreignKey, List<GenericForeignKeyColumn> rows)
     {
         foreignKey.setColumns(rows);
     }
