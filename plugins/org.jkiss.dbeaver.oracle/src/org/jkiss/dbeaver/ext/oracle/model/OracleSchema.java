@@ -242,7 +242,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         tableCache.loadObjects(monitor, getDataSource());
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
-            tableCache.loadChildren(monitor, getDataSource(), null);
+            tableCache.getChildren(monitor, getDataSource(), null);
         }
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache table indexes");
@@ -475,7 +475,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             parent.setConstraints(monitor, constraints);
         }
 
-        protected void cacheRows(DBRProgressMonitor monitor, OracleConstraint constraint, List<OracleConstraintColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, OracleConstraint constraint, List<OracleConstraintColumn> rows)
         {
             constraint.setColumns(rows);
         }
@@ -575,7 +575,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             parent.setIndexes(indexes);
         }
 
-        protected void cacheRows(DBRProgressMonitor monitor, OracleIndex index, List<OracleIndexColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, OracleIndex index, List<OracleIndexColumn> rows)
         {
             index.setColumns(rows);
         }

@@ -93,6 +93,9 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         PREDEFINED_TYPES.put("VARCHAR2", new TypeDesc(java.sql.Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("VARYING ARRAY", new TypeDesc(java.sql.Types.ARRAY, 0, 0, 0));
 
+        PREDEFINED_TYPES.put("ROWID", new TypeDesc(java.sql.Types.ROWID, 0, 0, 0));
+        PREDEFINED_TYPES.put("LONG", new TypeDesc(java.sql.Types.LONGVARBINARY, 0, 0, 0));
+        PREDEFINED_TYPES.put("LONG RAW", new TypeDesc(java.sql.Types.LONGVARBINARY, 0, 0, 0));
         PREDEFINED_TYPES.put("NVARCHAR2", new TypeDesc(java.sql.Types.NVARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("NCHAR", new TypeDesc(java.sql.Types.NCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("NCLOB", new TypeDesc(java.sql.Types.NCLOB, 0, 0, 0));

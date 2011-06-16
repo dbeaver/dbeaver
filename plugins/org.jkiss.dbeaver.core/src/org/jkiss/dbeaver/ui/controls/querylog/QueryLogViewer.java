@@ -33,7 +33,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -113,7 +112,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         String getText(QMMObject object)
         {
             if (object instanceof QMMStatementExecuteInfo) {
-                return SQLUtils.stripTransformations(((QMMStatementExecuteInfo)object).getQueryString());
+                return SQLUtils
+                    .stripTransformations(((QMMStatementExecuteInfo) object).getQueryString());
+                    //.replace('\n', ' ');
             } else if (object instanceof QMMTransactionInfo) {
                 if (((QMMTransactionInfo)object).isCommited()) {
                     return "Commit";

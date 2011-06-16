@@ -46,7 +46,7 @@ public class OracleProcedure extends OracleObject implements DBSProcedure, Oracl
     public Collection<? extends DBSProcedureColumn> getColumns(DBRProgressMonitor monitor) throws DBException
     {
         if (!isColumnsCached()) {
-            getSchema().getProceduresCache().loadChildren(monitor, getDataSource(), this);
+            getSchema().getProceduresCache().getChildren(monitor, getDataSource(), this);
         }
         return columns;
     }

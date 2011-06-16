@@ -63,7 +63,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         throws DBException
     {
         if (columns == null) {
-            getContainer().getTableCache().loadChildren(monitor, getDataSource(), this);
+            getContainer().getTableCache().getChildren(monitor, getDataSource(), this);
         }
         return columns;
     }

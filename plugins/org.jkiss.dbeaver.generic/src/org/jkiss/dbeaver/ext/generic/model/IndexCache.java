@@ -116,7 +116,7 @@ class IndexCache extends JDBCCompositeCache<GenericTable, GenericIndex, GenericI
         parent.setIndexes(indexes);
     }
 
-    protected void cacheRows(DBRProgressMonitor monitor, GenericIndex index, List<GenericIndexColumn> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, GenericIndex index, List<GenericIndexColumn> rows)
     {
         index.setColumns(rows);
     }

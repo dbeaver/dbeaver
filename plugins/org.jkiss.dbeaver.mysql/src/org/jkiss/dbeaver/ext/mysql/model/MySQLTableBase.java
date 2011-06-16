@@ -60,7 +60,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         throws DBException
     {
         if (columns == null) {
-            getContainer().getTableCache().loadChildren(monitor, getDataSource(), this);
+            getContainer().getTableCache().getChildren(monitor, getDataSource(), this);
         }
         return columns;
     }

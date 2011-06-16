@@ -93,7 +93,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericTable, GenericPrimaryKe
         parent.setUniqueKeys(primaryKeys);
     }
 
-    protected void cacheRows(DBRProgressMonitor monitor, GenericPrimaryKey primaryKey, List<GenericConstraintColumn> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, GenericPrimaryKey primaryKey, List<GenericConstraintColumn> rows)
     {
         primaryKey.setColumns(rows);
     }

@@ -18,10 +18,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * JDBC structured objects cache
@@ -33,7 +30,7 @@ public abstract class JDBCStructCache<
 {
     static final Log log = LogFactory.getLog(JDBCStructCache.class);
 
-    private boolean childrenCached = false;
+    private volatile boolean childrenCached = false;
 
     private final String objectNameColumn;
 
@@ -58,7 +55,7 @@ public abstract class JDBCStructCache<
      * @param forObject object for which to read children. If null then reads children for all objects in this container.
      * @throws org.jkiss.dbeaver.DBException on error
      */
-    public void loadChildren(DBRProgressMonitor monitor, JDBCDataSource dataSource, final OBJECT forObject)
+    public void getChildren(DBRProgressMonitor monitor, JDBCDataSource dataSource, final OBJECT forObject)
         throws DBException
     {
         if (this.childrenCached) {
@@ -155,13 +152,21 @@ public abstract class JDBCStructCache<
 
     public void clearCache()
     {
-        super.clearCache();
         this.clearChildrenCache();
+        super.clearCache();
     }
 
     public void clearChildrenCache()
     {
-        this.childrenCached = false;
+        synchronized (this) {
+            final Collection<OBJECT> cachedObjects = getCachedObjects();
+            if (cachedObjects != null) {
+                for (OBJECT object : cachedObjects) {
+                    cacheChildren(object, null);
+                }
+            }
+            this.childrenCached = false;
+        }
     }
 
 }

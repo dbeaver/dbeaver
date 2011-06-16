@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -72,7 +73,7 @@ public abstract class JDBCCompositeCache<
     
     abstract protected void cacheObjects(DBRProgressMonitor monitor, PARENT parent, List<OBJECT> objects);
 
-    abstract protected void cacheRows(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> rows);
+    abstract protected void cacheChildren(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> rows);
 
     private class ObjectInfo {
         final OBJECT object;
@@ -152,8 +153,13 @@ public abstract class JDBCCompositeCache<
     public void clearCache()
     {
         synchronized (this) {
-            this.objectList = null;
-            this.objectMap = null;
+            if (this.objectList != null) {
+                for (OBJECT object : this.objectList) {
+                    cacheChildren(VoidProgressMonitor.INSTANCE, object, null);
+                }
+                this.objectList = null;
+                this.objectMap = null;
+            }
         }
     }
 
@@ -167,7 +173,7 @@ public abstract class JDBCCompositeCache<
         // Load tables and columns first
         if (forParent == null) {
             parentCache.loadObjects(monitor, dataSource);
-            parentCache.loadChildren(monitor, dataSource, null);
+            parentCache.getChildren(monitor, dataSource, null);
         } else if (!forParent.isPersisted() || isObjectsCached(forParent)) {
             return;
         }
@@ -271,7 +277,7 @@ public abstract class JDBCCompositeCache<
             Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
             ArrayList<OBJECT> objects = new ArrayList<OBJECT>(objectInfos.size());
             for (ObjectInfo objectInfo : objectInfos) {
-                cacheRows(monitor, objectInfo.object, objectInfo.rows);
+                cacheChildren(monitor, objectInfo.object, objectInfo.rows);
                 objects.add(objectInfo.object);
             }
             cacheObjects(monitor, colEntry.getKey(), objects);

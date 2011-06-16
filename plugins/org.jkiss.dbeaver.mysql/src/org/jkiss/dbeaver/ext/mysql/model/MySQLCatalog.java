@@ -215,7 +215,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         tableCache.loadObjects(monitor, getDataSource());
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
-            tableCache.loadChildren(monitor, getDataSource(), null);
+            tableCache.getChildren(monitor, getDataSource(), null);
         }
         monitor.subTask("Cache table constraints");
         loadConstraints(monitor, null);
@@ -538,7 +538,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             parent.setIndexes(indexes);
         }
 
-        protected void cacheRows(DBRProgressMonitor monitor, MySQLIndex index, List<MySQLIndexColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, MySQLIndex index, List<MySQLIndexColumn> rows)
         {
             index.setColumns(rows);
         }
