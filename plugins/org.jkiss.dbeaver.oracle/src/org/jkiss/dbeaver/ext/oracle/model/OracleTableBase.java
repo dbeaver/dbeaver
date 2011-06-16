@@ -77,7 +77,6 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     @Override
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().getTableCache().clearChildrenCache();
         columns = null;
         return true;
     }

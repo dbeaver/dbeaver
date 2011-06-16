@@ -58,13 +58,13 @@ public abstract class JDBCStructCache<
     public void getChildren(DBRProgressMonitor monitor, JDBCDataSource dataSource, final OBJECT forObject)
         throws DBException
     {
-        if (this.childrenCached) {
+        if ((forObject == null && this.childrenCached) ||
+            (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject))))
+        {
             return;
         }
         if (forObject == null) {
             super.loadObjects(monitor, dataSource);
-        } else if (!forObject.isPersisted() || isChildrenCached(forObject)) {
-            return;
         }
 
         JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Load child objects");

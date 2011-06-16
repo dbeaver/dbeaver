@@ -165,7 +165,9 @@ public abstract class JDBCCompositeCache<
     protected void loadObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, PARENT forParent)
         throws DBException
     {
-        if (isCached()) {
+        if ((forParent == null && isCached()) ||
+            (forParent != null && (!forParent.isPersisted() || isObjectsCached(forParent))))
+        {
             return;
         }
 
@@ -173,8 +175,6 @@ public abstract class JDBCCompositeCache<
         if (forParent == null) {
             parentCache.loadObjects(monitor, dataSource);
             parentCache.getChildren(monitor, dataSource, null);
-        } else if (!forParent.isPersisted() || isObjectsCached(forParent)) {
-            return;
         }
 
         Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<PARENT, Map<String, ObjectInfo>>();

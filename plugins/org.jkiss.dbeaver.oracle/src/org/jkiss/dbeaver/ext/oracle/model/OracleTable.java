@@ -170,10 +170,6 @@ public class OracleTable extends OracleTableBase
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
         super.refreshEntity(monitor);
-        getContainer().getIndexCache().clearCache();
-        getContainer().getConstraintCache().clearCache();
-        getContainer().getForeignKeyCache().clearCache();
-        getContainer().getTriggerCache().clearCache();
 
         indexes = null;
         constraints = null;
