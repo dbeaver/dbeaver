@@ -247,7 +247,6 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load constraints");
         try {
             Map<String, String> constrTypeMap = new HashMap<String, String>();
-            Map<String, MySQLConstraint> constrMap = new HashMap<String, MySQLConstraint>();
 
             // Read constraints and their types
             StringBuilder query = new StringBuilder();
@@ -295,73 +294,76 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
                 dbStat.close();
             }
 
-            // Read constraint columns
-            query = new StringBuilder();
-            query.append("SELECT CONSTRAINT_NAME,TABLE_NAME,COLUMN_NAME,ORDINAL_POSITION,REFERENCED_TABLE_SCHEMA,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM ")
-                .append(MySQLConstants.META_TABLE_KEY_COLUMN_USAGE)
-                .append(" tc WHERE tc.TABLE_SCHEMA=?");
-            if (forTable != null) {
-                query.append(" AND tc.TABLE_NAME=?");
-            }
-            dbStat = context.prepareStatement(query.toString());
-            try {
-                dbStat.setString(1, getName());
+            if (!constrTypeMap.isEmpty()) {
+                // Read constraint columns
+                Map<String, MySQLConstraint> constrMap = new HashMap<String, MySQLConstraint>();
+                query = new StringBuilder();
+                query.append("SELECT CONSTRAINT_NAME,TABLE_NAME,COLUMN_NAME,ORDINAL_POSITION,REFERENCED_TABLE_SCHEMA,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM ")
+                    .append(MySQLConstants.META_TABLE_KEY_COLUMN_USAGE)
+                    .append(" tc WHERE tc.TABLE_SCHEMA=?");
                 if (forTable != null) {
-                    dbStat.setString(2, forTable.getName());
+                    query.append(" AND tc.TABLE_NAME=?");
                 }
-                JDBCResultSet dbResult = dbStat.executeQuery();
+                dbStat = context.prepareStatement(query.toString());
                 try {
-                    while (dbResult.next()) {
-                        String constraintName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
-                        String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
-                        String constId = tableName + "." + constraintName;
-                        String constraintType = constrTypeMap.get(constId);
-                        if (constraintType == null) {
-                            // Skip this one
-                            continue;
-                        }
-                        MySQLTable table = forTable;
-                        if (table == null) {
-                            table = getTable(monitor, tableName);
+                    dbStat.setString(1, getName());
+                    if (forTable != null) {
+                        dbStat.setString(2, forTable.getName());
+                    }
+                    JDBCResultSet dbResult = dbStat.executeQuery();
+                    try {
+                        while (dbResult.next()) {
+                            String constraintName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
+                            String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
+                            String constId = tableName + "." + constraintName;
+                            String constraintType = constrTypeMap.get(constId);
+                            if (constraintType == null) {
+                                // Skip this one
+                                continue;
+                            }
+                            MySQLTable table = forTable;
                             if (table == null) {
-                                log.warn("Table '" + tableName + "' not found");
+                                table = getTable(monitor, tableName);
+                                if (table == null) {
+                                    log.warn("Table '" + tableName + "' not found");
+                                    continue;
+                                }
+                            }
+                            String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
+                            MySQLTableColumn column = table.getColumn(monitor, columnName);
+                            if (column == null) {
+                                log.warn("Column '" + columnName + "' not found in table '" + tableName + "'");
                                 continue;
                             }
-                        }
-                        String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
-                        MySQLTableColumn column = table.getColumn(monitor, columnName);
-                        if (column == null) {
-                            log.warn("Column '" + columnName + "' not found in table '" + tableName + "'");
-                            continue;
-                        }
-                        int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION);
+                            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION);
 
-                        MySQLConstraint constraint = constrMap.get(constId);
-                        if (constraint == null) {
-                            if (MySQLConstants.CONSTRAINT_PRIMARY_KEY.equals(constraintType)) {
-                                constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.PRIMARY_KEY, true);
-                            } else if (MySQLConstants.CONSTRAINT_UNIQUE.equals(constraintType)) {
-                                constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.UNIQUE_KEY, true);
-                            } else {
-                                log.warn("Constraint type '" + constraintType + "' is not supported");
-                                continue;
+                            MySQLConstraint constraint = constrMap.get(constId);
+                            if (constraint == null) {
+                                if (MySQLConstants.CONSTRAINT_PRIMARY_KEY.equals(constraintType)) {
+                                    constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.PRIMARY_KEY, true);
+                                } else if (MySQLConstants.CONSTRAINT_UNIQUE.equals(constraintType)) {
+                                    constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.UNIQUE_KEY, true);
+                                } else {
+                                    log.warn("Constraint type '" + constraintType + "' is not supported");
+                                    continue;
+                                }
+                                constrMap.put(constId, constraint);
+                                table.cacheUniqueKey(constraint);
                             }
-                            constrMap.put(constId, constraint);
-                            table.cacheUniqueKey(constraint);
+                            constraint.addColumn(
+                                new MySQLConstraintColumn(
+                                    constraint,
+                                    column,
+                                    ordinalPosition));
                         }
-                        constraint.addColumn(
-                            new MySQLConstraintColumn(
-                                constraint,
-                                column,
-                                ordinalPosition));
+                    }
+                    finally {
+                        dbResult.close();
                     }
                 }
                 finally {
-                    dbResult.close();
+                    dbStat.close();
                 }
-            }
-            finally {
-                dbStat.close();
             }
         } catch (SQLException ex) {
             throw new DBException(ex);

@@ -168,8 +168,11 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
             // Don't care about PL/SQL types
             return;
         }
-        final int precBeginPos = typeName.indexOf('(');
-        if (precBeginPos != -1) {
+        for (;;) {
+            final int precBeginPos = typeName.indexOf('(');
+            if (precBeginPos == -1) {
+                break;
+            }
             int precEndPos = typeName.indexOf(')', precBeginPos);
             try {
                 precision = Integer.parseInt(typeName.substring(precBeginPos + 1, precEndPos));
