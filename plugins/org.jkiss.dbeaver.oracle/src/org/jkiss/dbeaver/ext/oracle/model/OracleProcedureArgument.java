@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -20,6 +21,7 @@ public class OracleProcedureArgument implements DBSProcedureColumn
 {
     private final OracleProcedure procedure;
     private String name;
+    private int position;
     private OracleParameterMode mode;
     private OracleDataType type;
     private OracleDataType dataType;
@@ -34,17 +36,21 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     {
         this.procedure = procedure;
         this.name = JDBCUtils.safeGetString(dbResult, "ARGUMENT_NAME");
+        this.position = JDBCUtils.safeGetInt(dbResult, "POSITION");
         this.mode = OracleParameterMode.getMode(JDBCUtils.safeGetString(dbResult, "IN_OUT"));
         this.type = OracleDataType.resolveDataType(
             monitor,
             procedure.getDataSource(),
             null,
             JDBCUtils.safeGetString(dbResult, "DATA_TYPE"));
-        this.dataType = OracleDataType.resolveDataType(
-            monitor,
-            procedure.getDataSource(),
-            JDBCUtils.safeGetString(dbResult, "TYPE_OWNER"),
-            JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+        final String dataTypeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
+        if (!CommonUtils.isEmpty(dataTypeName)) {
+            this.dataType = OracleDataType.resolveDataType(
+                monitor,
+                procedure.getDataSource(),
+                JDBCUtils.safeGetString(dbResult, "TYPE_OWNER"),
+                dataTypeName);
+        }
         this.dataLength = JDBCUtils.safeGetInt(dbResult, "DATA_LENGTH");
         this.dataScale = JDBCUtils.safeGetInt(dbResult, "DATA_SCALE");
         this.dataPrecision = JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION");
@@ -79,6 +85,12 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     public String getName()
     {
         return name;
+    }
+
+    @Property(name = "Position", viewable = true, order = 11)
+    public int getPosition()
+    {
+        return position;
     }
 
     @Property(name = "In/Out", viewable = true, order = 20)

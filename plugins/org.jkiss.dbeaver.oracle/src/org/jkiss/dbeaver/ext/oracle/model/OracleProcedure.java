@@ -37,7 +37,7 @@ public class OracleProcedure extends OracleObject implements DBSProcedure
         return getSchema();
     }
 
-    @Property(name = "Procedure Type", order = 3)
+    @Property(name = "Procedure Type", viewable = true, editable = true, order = 3)
     public DBSProcedureType getProcedureType()
     {
         return procedureType ;
@@ -45,16 +45,23 @@ public class OracleProcedure extends OracleObject implements DBSProcedure
 
     public Collection<? extends DBSProcedureColumn> getColumns(DBRProgressMonitor monitor) throws DBException
     {
-        return null;
+        if (!isColumnsCached()) {
+            getSchema().getProceduresCache().loadChildren(monitor, getDataSource(), this);
+        }
+        return columns;
     }
 
     boolean isColumnsCached()
     {
-        return columns != null;
+        synchronized (this) {
+            return columns != null;
+        }
     }
 
     void cacheColumns(List<OracleProcedureArgument> columns)
     {
-        this.columns = columns;
+        synchronized (this) {
+            this.columns = columns;
+        }
     }
 }

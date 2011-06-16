@@ -104,7 +104,7 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedure" label="Procedures" iconId="#procedures" description="Procedures">
                             <items label="Procedure" path="procedure" property="procedures" iconId="#procedure">
-                                <items label="Procedure columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
+                                <items label="Procedure columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="false">
                                 </items>
                             </items>
                         </folder>

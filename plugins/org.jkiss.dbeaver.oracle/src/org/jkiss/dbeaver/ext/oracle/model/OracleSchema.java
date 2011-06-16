@@ -38,11 +38,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     private long id;
     private final TableCache tableCache = new TableCache();
     private final ConstraintCache constraintCache = new ConstraintCache();
-    private final ProceduresCache proceduresCache = new ProceduresCache();
     private final TriggerCache triggerCache = new TriggerCache();
     private final IndexCache indexCache = new IndexCache();
     private final DataTypeCache dataTypeCache = new DataTypeCache();
     private final SequenceCache sequenceCache = new SequenceCache(); 
+    private final PackageCache packageCache = new PackageCache();
+    private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean persisted;
 
     public OracleSchema(OracleDataSource dataSource, ResultSet dbResult)
@@ -70,6 +71,11 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     IndexCache getIndexCache()
     {
         return indexCache;
+    }
+
+    PackageCache getPackageCache()
+    {
+        return packageCache;
     }
 
     ProceduresCache getProceduresCache()
@@ -175,6 +181,18 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return sequenceCache.getObject(monitor, getDataSource(), name);
     }
 
+    public Collection<OraclePackage> getPackages(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return packageCache.getObjects(monitor, getDataSource());
+    }
+
+    public OraclePackage getPackage(DBRProgressMonitor monitor, String procName)
+        throws DBException
+    {
+        return packageCache.getObject(monitor, getDataSource(), procName);
+    }
+
     public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -242,6 +260,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         tableCache.clearCache();
         constraintCache.clearCache();
         indexCache.clearCache();
+        packageCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();
         dataTypeCache.clearCache();
@@ -628,10 +647,10 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             throws SQLException, DBException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT * FROM " + OracleConstants.META_TABLE_ROUTINES +
-                " WHERE " + OracleConstants.COL_ROUTINE_SCHEMA + "=?" +
-                " ORDER BY " + OracleConstants.COL_ROUTINE_NAME
-            );
+                "SELECT * FROM SYS.ALL_OBJECTS " +
+                "WHERE OBJECT_TYPE IN ('PROCEDURE','FUNCTION') " +
+                "AND OWNER=? " +
+                "ORDER BY OBJECT_NAME");
             dbStat.setString(1, getName());
             return dbStat;
         }
@@ -655,15 +674,15 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleProcedure procedure)
             throws SQLException, DBException
         {
-            // Load procedure columns thru Oracle metadata
-            // There is no metadata table about proc/func columns -
-            // it should be parsed from SHOW CREATE PROCEDURE/FUNCTION query
-            // Lets driver do it instead of me
-            return context.getMetaData().getProcedureColumns(
-                getName(),
-                null,
-                procedure.getName(),
-                null).getSource();
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.ALL_ARGUMENTS " +
+                "WHERE OWNER=? " + (procedure == null ? "" : "AND OBJECT_ID=? ") +
+                "ORDER BY POSITION");
+            dbStat.setString(1, getName());
+            if (procedure != null) {
+                dbStat.setLong(2, procedure.getId());
+            }
+            return dbStat;
         }
 
         protected OracleProcedureArgument fetchChild(JDBCExecutionContext context, OracleProcedure parent, ResultSet dbResult)
@@ -671,6 +690,26 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         {
             return new OracleProcedureArgument(context.getProgressMonitor(), parent, dbResult);
         }
+    }
+
+    class PackageCache extends JDBCObjectCache<OraclePackage> {
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
+            throws SQLException, DBException
+        {
+            JDBCPreparedStatement dbStat = context.prepareStatement(        
+                "SELECT * FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " + 
+                " ORDER BY OBJECT_NAME");
+            dbStat.setString(1, getName());
+            return dbStat;
+        }
+
+        protected OraclePackage fetchObject(JDBCExecutionContext context, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new OraclePackage(OracleSchema.this, dbResult);
+        }
+
     }
 
     class TriggerCache extends JDBCObjectCache<OracleTrigger> {
