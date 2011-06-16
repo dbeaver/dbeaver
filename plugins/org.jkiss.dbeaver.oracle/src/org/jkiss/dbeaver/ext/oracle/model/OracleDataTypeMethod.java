@@ -60,7 +60,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember {
                 getDataSource(),
                 JDBCUtils.safeGetString(dbResult, "RESULT_TYPE_OWNER"),
                 resultTypeName);
-            this.resultTypeMod = OracleDataType.resolveTypeModifier(
+            this.resultTypeMod = OracleDataTypeModifier.resolveTypeModifier(
                 JDBCUtils.safeGetString(dbResult, "RESULT_TYPE_MOD"));
         }
     }

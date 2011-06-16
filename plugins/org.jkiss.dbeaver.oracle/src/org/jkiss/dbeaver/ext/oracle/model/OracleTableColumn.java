@@ -52,9 +52,10 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             getDataSource(),
             JDBCUtils.safeGetString(dbResult, "DATA_TYPE_OWNER"),
             this.typeName);
-        this.typeMod = OracleDataType.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "DATA_TYPE_MOD"));
+        this.typeMod = OracleDataTypeModifier.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "DATA_TYPE_MOD"));
         if (this.type != null) {
-            setValueType(type.getValueType());
+            this.typeName = type.getName();
+            this.valueType = type.getValueType();
         }
         this.charLength = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_DATA_LENGTH);
         this.notNull = !"Y".equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_NULLABLE));

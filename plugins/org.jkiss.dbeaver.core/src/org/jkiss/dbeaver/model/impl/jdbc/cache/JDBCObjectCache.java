@@ -80,9 +80,9 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
 
     public OBJECT getCachedObject(String name)
     {
-        synchronized (this) {
+        //synchronized (this) {
             return objectMap == null ? null : objectMap.get(caseSensitive ? name : name.toUpperCase());
-        }
+        //}
     }
 
     public void cacheObject(OBJECT object)
@@ -130,6 +130,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         try {
             JDBCPreparedStatement dbStat = prepareObjectsStatement(context);
             try {
+                dbStat.setFetchSize(1000);
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {

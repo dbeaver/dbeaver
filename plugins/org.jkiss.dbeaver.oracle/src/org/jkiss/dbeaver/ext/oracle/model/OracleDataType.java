@@ -386,18 +386,6 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         return type;
     }
 
-    public static OracleDataTypeModifier resolveTypeModifier(String typeMod)
-    {
-        if (!CommonUtils.isEmpty(typeMod)) {
-            try {
-                return OracleDataTypeModifier.valueOf(typeMod);
-            } catch (IllegalArgumentException e) {
-                log.error(e);
-            }
-        }
-        return null;
-    }
-
     private class AttributeCache extends JDBCObjectCache<OracleDataTypeAttribute> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException

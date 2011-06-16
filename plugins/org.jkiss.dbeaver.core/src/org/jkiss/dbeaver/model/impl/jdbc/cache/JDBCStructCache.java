@@ -69,40 +69,41 @@ public abstract class JDBCStructCache<
 
         JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Load child objects");
         try {
-            Map<OBJECT, List<CHILD>> columnMap = new HashMap<OBJECT, List<CHILD>>();
+            Map<OBJECT, List<CHILD>> objectMap = new HashMap<OBJECT, List<CHILD>>();
 
             // Load columns
             JDBCPreparedStatement dbStat = prepareChildrenStatement(context, forObject);
             try {
+                dbStat.setFetchSize(1000);
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
                         String objectName = JDBCUtils.safeGetString(dbResult, objectNameColumn);
 
-                        OBJECT table = forObject;
-                        if (table == null) {
-                            table = super.getObject(monitor, dataSource, objectName);
-                            if (table == null) {
+                        OBJECT object = forObject;
+                        if (object == null) {
+                            object = super.getCachedObject(objectName);
+                            if (object == null) {
                                 log.debug("Object '" + objectName + "' not found");
                                 continue;
                             }
                         }
-                        if (isChildrenCached(table)) {
+                        if (isChildrenCached(object)) {
                             // Already read
                             continue;
                         }
-                        CHILD tableColumn = fetchChild(context, table, dbResult);
-                        if (tableColumn == null) {
+                        CHILD child = fetchChild(context, object, dbResult);
+                        if (child == null) {
                             continue;
                         }
 
                         // Add to map
-                        List<CHILD> columns = columnMap.get(table);
-                        if (columns == null) {
-                            columns = new ArrayList<CHILD>();
-                            columnMap.put(table, columns);
+                        List<CHILD> children = objectMap.get(object);
+                        if (children == null) {
+                            children = new ArrayList<CHILD>();
+                            objectMap.put(object, children);
                         }
-                        columns.add(tableColumn);
+                        children.add(child);
 
                         if (monitor.isCanceled()) {
                             break;
@@ -114,23 +115,23 @@ public abstract class JDBCStructCache<
                     }
 
                     // All children are read. Now assign them to parents
-                    for (Map.Entry<OBJECT, List<CHILD>> colEntry : columnMap.entrySet()) {
+                    for (Map.Entry<OBJECT, List<CHILD>> colEntry : objectMap.entrySet()) {
                         cacheChildren(colEntry.getKey(), colEntry.getValue());
                     }
                     if (forObject == null) {
-                        if (columnMap.isEmpty()) {
+                        if (objectMap.isEmpty()) {
                             // Nothing was read. May be it means empty list of children
                             // but possibly this feature is not supported [JDBC: SQLite]
                         } else {
                             // Now set empty column list for other tables
                             for (OBJECT tmpObject : getObjects(monitor, dataSource)) {
-                                if (!isChildrenCached(tmpObject) && !columnMap.containsKey(tmpObject)) {
+                                if (!isChildrenCached(tmpObject) && !objectMap.containsKey(tmpObject)) {
                                     cacheChildren(tmpObject, new ArrayList<CHILD>());
                                 }
                             }
                             this.childrenCached = true;
                         }
-                    } else if (!columnMap.containsKey(forObject)) {
+                    } else if (!objectMap.containsKey(forObject)) {
                         cacheChildren(forObject, new ArrayList<CHILD>());
                     }
                 }

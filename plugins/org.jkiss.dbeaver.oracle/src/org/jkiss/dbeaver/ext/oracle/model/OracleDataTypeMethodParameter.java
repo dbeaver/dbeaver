@@ -35,7 +35,7 @@ public class OracleDataTypeMethodParameter implements DBSObject {
             method.getDataSource(),
             JDBCUtils.safeGetString(dbResult, "PARAM_TYPE_OWNER"),
             JDBCUtils.safeGetString(dbResult, "PARAM_TYPE_NAME"));
-        this.typeMod = OracleDataType.resolveTypeModifier(
+        this.typeMod = OracleDataTypeModifier.resolveTypeModifier(
             JDBCUtils.safeGetString(dbResult, "PARAM_TYPE_MOD"));
     }
 

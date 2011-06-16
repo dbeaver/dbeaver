@@ -37,7 +37,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember {
             getDataSource(),
             JDBCUtils.safeGetString(dbResult, "ATTR_TYPE_OWNER"),
             JDBCUtils.safeGetString(dbResult, "ATTR_TYPE_NAME"));
-        this.attrTypeMod = OracleDataType.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "ATTR_TYPE_MOD"));
+        this.attrTypeMod = OracleDataTypeModifier.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "ATTR_TYPE_MOD"));
         this.length = JDBCUtils.safeGetInteger(dbResult, "LENGTH");
         this.precision = JDBCUtils.safeGetInteger(dbResult, "PRECISION");
         this.scale = JDBCUtils.safeGetInteger(dbResult, "SCALE");
