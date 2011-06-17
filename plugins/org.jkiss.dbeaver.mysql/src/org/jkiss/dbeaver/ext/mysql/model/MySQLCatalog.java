@@ -145,61 +145,61 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     public Collection<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return indexCache.getObjects(monitor, getDataSource(), null);
+        return indexCache.getObjects(monitor, this, null);
     }
 
     public Collection<MySQLTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, getDataSource(), MySQLTable.class);
+        return tableCache.getObjects(monitor, this, MySQLTable.class);
     }
 
     public MySQLTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return tableCache.getObject(monitor, getDataSource(), name, MySQLTable.class);
+        return tableCache.getObject(monitor, this, name, MySQLTable.class);
     }
 
     public Collection<MySQLView> getViews(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, getDataSource(), MySQLView.class);
+        return tableCache.getObjects(monitor, this, MySQLView.class);
     }
 
     public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
-        return proceduresCache.getObjects(monitor, getDataSource());
+        return proceduresCache.getObjects(monitor, this);
     }
 
     public MySQLProcedure getProcedure(DBRProgressMonitor monitor, String procName)
         throws DBException
     {
-        return proceduresCache.getObject(monitor, getDataSource(), procName);
+        return proceduresCache.getObject(monitor, this, procName);
     }
 
     public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
-        return triggerCache.getObjects(monitor, getDataSource());
+        return triggerCache.getObjects(monitor, this);
     }
 
     public MySQLTrigger getTrigger(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return triggerCache.getObject(monitor, getDataSource(), name);
+        return triggerCache.getObject(monitor, this, name);
     }
 
     public Collection<MySQLTableBase> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, getDataSource());
+        return tableCache.getObjects(monitor, this);
     }
 
     public MySQLTableBase getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        return tableCache.getObject(monitor, getDataSource(), childName);
+        return tableCache.getObject(monitor, this, childName);
     }
 
     public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
@@ -212,10 +212,10 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         throws DBException
     {
         monitor.subTask("Cache tables");
-        tableCache.loadObjects(monitor, getDataSource());
+        tableCache.loadObjects(monitor, this);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
-            tableCache.getChildren(monitor, getDataSource(), null);
+            tableCache.getChildren(monitor, this, null);
         }
         monitor.subTask("Cache table constraints");
         loadConstraints(monitor, null);
@@ -240,7 +240,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             return;
         }
         if (forTable == null) {
-            tableCache.getObjects(monitor, getDataSource());
+            tableCache.getObjects(monitor, this);
         } else if (!forTable.isPersisted()) {
             return;
         }
@@ -381,7 +381,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || MySQLConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(getName());
     }
 
-    class TableCache extends JDBCStructCache<MySQLTableBase, MySQLTableColumn> {
+    class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> {
         
         protected TableCache()
         {
@@ -445,7 +445,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     /**
      * Index cache implementation
      */
-    class IndexCache extends JDBCCompositeCache<MySQLTable, MySQLIndex, MySQLIndexColumn> {
+    class IndexCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLIndex, MySQLIndexColumn> {
         protected IndexCache()
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
@@ -549,7 +549,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     /**
      * Procedures cache implementation
      */
-    class ProceduresCache extends JDBCStructCache<MySQLProcedure, MySQLProcedureColumn> {
+    class ProceduresCache extends JDBCStructCache<MySQLCatalog, MySQLProcedure, MySQLProcedureColumn> {
 
         ProceduresCache()
         {
@@ -636,7 +636,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
     }
 
-    class TriggerCache extends JDBCObjectCache<MySQLTrigger> {
+    class TriggerCache extends JDBCObjectCache<MySQLCatalog, MySQLTrigger> {
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {

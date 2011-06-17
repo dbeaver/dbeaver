@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class JDBCDataTypeCache extends JDBCObjectCache<DBSDataType> {
+public class JDBCDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSDataType> {
     private final DBSObject owner;
 
     public JDBCDataTypeCache(DBSObject owner)

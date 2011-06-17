@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Index cache implementation
  */
-class PrimaryKeysCache extends JDBCCompositeCache<GenericTable, GenericPrimaryKey, GenericConstraintColumn> {
+class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericPrimaryKey, GenericConstraintColumn> {
     private GenericStructContainer structContainer;
 
     PrimaryKeysCache(GenericStructContainer structContainer)

@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -24,9 +23,10 @@ import java.util.*;
  * JDBC structured objects cache
  */
 public abstract class JDBCStructCache<
+    OWNER extends DBSObject,
     OBJECT extends DBSObject,
     CHILD extends DBSObject>
-    extends JDBCObjectCache<OBJECT>
+    extends JDBCObjectCache<OWNER, OBJECT>
 {
     static final Log log = LogFactory.getLog(JDBCStructCache.class);
 
@@ -55,7 +55,7 @@ public abstract class JDBCStructCache<
      * @param forObject object for which to read children. If null then reads children for all objects in this container.
      * @throws org.jkiss.dbeaver.DBException on error
      */
-    public void getChildren(DBRProgressMonitor monitor, JDBCDataSource dataSource, final OBJECT forObject)
+    public void getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject)
         throws DBException
     {
         if ((forObject == null && this.childrenCached) ||
@@ -64,10 +64,10 @@ public abstract class JDBCStructCache<
             return;
         }
         if (forObject == null) {
-            super.loadObjects(monitor, dataSource);
+            super.loadObjects(monitor, owner);
         }
 
-        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Load child objects");
+        JDBCExecutionContext context = (JDBCExecutionContext) owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load child objects");
         try {
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<OBJECT, List<CHILD>>();
 
@@ -124,7 +124,7 @@ public abstract class JDBCStructCache<
                             // but possibly this feature is not supported [JDBC: SQLite]
                         } else {
                             // Now set empty column list for other tables
-                            for (OBJECT tmpObject : getObjects(monitor, dataSource)) {
+                            for (OBJECT tmpObject : getObjects(monitor, owner)) {
                                 if (!isChildrenCached(tmpObject) && !objectMap.containsKey(tmpObject)) {
                                     cacheChildren(tmpObject, new ArrayList<CHILD>());
                                 }

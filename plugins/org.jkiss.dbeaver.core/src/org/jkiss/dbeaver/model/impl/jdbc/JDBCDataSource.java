@@ -14,17 +14,18 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCConnectionImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
@@ -211,9 +212,6 @@ public abstract class JDBCDataSource
         finally {
             context.close();
         }
-        // Cache data types
-        getDataTypeCache().getObjects(monitor, this);
-
     }
 
     public void close(DBRProgressMonitor monitor)
@@ -254,7 +252,6 @@ public abstract class JDBCDataSource
     }
 
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException {
-        this.getDataTypeCache().clearCache();
         this.dataSourceInfo = null;
         return true;
     }
@@ -267,18 +264,6 @@ public abstract class JDBCDataSource
 
         }
         return null;
-    }
-
-    public abstract JDBCAbstractCache<? extends DBSDataType> getDataTypeCache();
-
-    public Collection<? extends DBSDataType> getDataTypes()
-    {
-        return getDataTypeCache().getCachedObjects();
-    }
-
-    public DBSDataType getDataType(String typeName)
-    {
-        return getDataTypeCache().getCachedObject(typeName);
     }
 
     /////////////////////////////////////////////////

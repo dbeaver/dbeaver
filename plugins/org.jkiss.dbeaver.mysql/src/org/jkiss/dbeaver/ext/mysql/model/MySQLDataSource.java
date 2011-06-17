@@ -84,6 +84,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
     {
         super.initialize(monitor);
 
+        dataTypeCache.getObjects(monitor, this);
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata");
         try {
             // Read engines
@@ -614,12 +615,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         return super.createQueryTransformer(type);
     }
 
-    @Override
-    public JDBCAbstractCache<? extends DBSDataType> getDataTypeCache()
-    {
-        return dataTypeCache;
-    }
-
     public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
     {
         MySQLPlanAnalyser plan = new MySQLPlanAnalyser(this, query);
@@ -638,5 +633,15 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
 
     public MySQLDataSource getDataSource() {
         return this;
+    }
+
+    public Collection<? extends DBSDataType> getDataTypes()
+    {
+        return dataTypeCache.getCachedObjects();
+    }
+
+    public DBSDataType getDataType(String typeName)
+    {
+        return dataTypeCache.getCachedObject(typeName);
     }
 }

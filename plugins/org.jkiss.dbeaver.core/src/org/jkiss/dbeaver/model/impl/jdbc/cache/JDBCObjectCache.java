@@ -9,7 +9,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -20,7 +19,7 @@ import java.util.*;
 /**
  * Various objects cache
  */
-public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCAbstractCache<OBJECT> {
+public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> implements JDBCAbstractCache<OWNER, OBJECT> {
 
     private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;
@@ -43,11 +42,11 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
     abstract protected OBJECT fetchObject(JDBCExecutionContext context, ResultSet resultSet)
         throws SQLException, DBException;
 
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource)
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
         if (!isCached()) {
-            loadObjects(monitor, dataSource);
+            loadObjects(monitor, owner);
         }
         return getCachedObjects();
     }
@@ -59,11 +58,11 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         }
     }
 
-    public <SUB_TYPE> Collection<SUB_TYPE> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, Class<SUB_TYPE> type)
+    public <SUB_TYPE> Collection<SUB_TYPE> getObjects(DBRProgressMonitor monitor, OWNER owner, Class<SUB_TYPE> type)
         throws DBException
     {
         List<SUB_TYPE> result = new ArrayList<SUB_TYPE>();
-        for (OBJECT object : getObjects(monitor, dataSource)) {
+        for (OBJECT object : getObjects(monitor, owner)) {
             if (type.isInstance(object)) {
                 result.add(type.cast(object));
             }
@@ -71,11 +70,11 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         return result;
     }
 
-    public OBJECT getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String name)
+    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name)
         throws DBException
     {
         if (!isCached()) {
-            this.loadObjects(monitor, dataSource);
+            this.loadObjects(monitor, owner);
         }
         return getCachedObject(name);
     }
@@ -97,10 +96,10 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         }
     }
 
-    public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String name, Class<SUB_TYPE> type)
+    public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, OWNER owner, String name, Class<SUB_TYPE> type)
         throws DBException
     {
-        final OBJECT object = getObject(monitor, dataSource, name);
+        final OBJECT object = getObject(monitor, owner, name);
         return type.isInstance(object) ? type.cast(object) : null;
     }
 
@@ -119,7 +118,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
         }
     }
 
-    public void loadObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource)
+    public void loadObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
         if (isCached()) {
@@ -128,7 +127,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
 
         List<OBJECT> tmpObjectList = new ArrayList<OBJECT>();
 
-        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Load objects");
+        JDBCExecutionContext context = (JDBCExecutionContext)owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load objects");
         try {
             JDBCPreparedStatement dbStat = prepareObjectsStatement(context);
             try {

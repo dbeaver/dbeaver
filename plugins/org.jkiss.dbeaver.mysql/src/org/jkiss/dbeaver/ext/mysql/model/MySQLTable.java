@@ -119,7 +119,7 @@ public class MySQLTable extends MySQLTableBase
     {
         if (indexes == null) {
             // Read indexes using cache
-            this.getContainer().getIndexCache().getObjects(monitor, getDataSource(), this);
+            this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
         }
         return indexes;
     }

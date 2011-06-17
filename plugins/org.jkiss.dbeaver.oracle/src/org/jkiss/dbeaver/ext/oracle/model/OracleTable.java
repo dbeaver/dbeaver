@@ -48,7 +48,7 @@ public class OracleTable extends OracleTableBase
     {
         if (indexes == null) {
             // Read indexes using cache
-            this.getContainer().getIndexCache().getObjects(monitor, getDataSource(), this);
+            this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
         }
         return indexes;
     }
@@ -74,7 +74,7 @@ public class OracleTable extends OracleTableBase
         throws DBException
     {
         if (constraints == null) {
-            getContainer().getConstraintCache().getObjects(monitor, getDataSource(), this);
+            getContainer().getConstraintCache().getObjects(monitor, getContainer(), this);
         }
         return constraints;
     }
@@ -101,7 +101,8 @@ public class OracleTable extends OracleTableBase
         List<OracleForeignKey> refs = new ArrayList<OracleForeignKey>();
         // This is dummy implementation
         // Get references from this schema only
-        final Collection<OracleForeignKey> allForeignKeys = getContainer().getForeignKeyCache().getObjects(monitor, getDataSource(), null);
+        final Collection<OracleForeignKey> allForeignKeys =
+            getContainer().getForeignKeyCache().getObjects(monitor, getContainer(), null);
         for (OracleForeignKey constraint : allForeignKeys) {
             if (constraint.getReferencedTable() == this) {
                 refs.add(constraint);
@@ -115,7 +116,7 @@ public class OracleTable extends OracleTableBase
         throws DBException
     {
         if (foreignKeys == null) {
-            getContainer().getForeignKeyCache().getObjects(monitor, getDataSource(), this);
+            getContainer().getForeignKeyCache().getObjects(monitor, getContainer(), this);
         }
         return foreignKeys;
     }
@@ -141,7 +142,7 @@ public class OracleTable extends OracleTableBase
         throws DBException
     {
         if (triggers == null) {
-            return getContainer().getTriggerCache().getObjects(monitor, getDataSource(), this);
+            return getContainer().getTriggerCache().getObjects(monitor, getContainer(), this);
         }
         return triggers;
     }

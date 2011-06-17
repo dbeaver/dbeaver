@@ -18,7 +18,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -198,6 +197,7 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException
     {
         super.initialize(monitor);
+        dataTypeCache.getObjects(monitor, this);
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read generic metadata");
         try {
             // Read metadata
@@ -386,12 +386,6 @@ public class GenericDataSource extends JDBCDataSource
         this.initialize(monitor);
 
         return true;
-    }
-
-    @Override
-    public JDBCAbstractCache<? extends DBSDataType> getDataTypeCache()
-    {
-        return dataTypeCache;
     }
 
     GenericTable findTable(DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
@@ -598,7 +592,17 @@ public class GenericDataSource extends JDBCDataSource
         return term;
     }
 
-    private class TableTypeCache extends JDBCObjectCache<GenericTableType> {
+    public Collection<? extends DBSDataType> getDataTypes()
+    {
+        return dataTypeCache.getCachedObjects();
+    }
+
+    public DBSDataType getDataType(String typeName)
+    {
+        return dataTypeCache.getCachedObject(typeName);
+    }
+
+    private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
         {

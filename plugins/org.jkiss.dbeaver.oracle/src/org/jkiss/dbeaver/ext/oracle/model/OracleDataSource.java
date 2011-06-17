@@ -45,6 +45,11 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         super(container);
     }
 
+    DataTypeCache getDataTypeCache()
+    {
+        return dataTypeCache;
+    }
+
     protected Map<String, String> getInternalConnectionProperties()
     {
         return OracleDataSourceProvider.getConnectionsProps();
@@ -65,6 +70,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     {
         super.initialize(monitor);
 
+        dataTypeCache.getObjects(monitor, this);
         {
             final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
             try {
@@ -203,12 +209,17 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return this;
     }
 
-    public DataTypeCache getDataTypeCache()
+    public Collection<? extends DBSDataType> getDataTypes()
     {
-        return dataTypeCache;
+        return dataTypeCache.getCachedObjects();
     }
 
-    class SchemaCache extends JDBCObjectCache<OracleSchema> {
+    public DBSDataType getDataType(String typeName)
+    {
+        return dataTypeCache.getCachedObject(typeName);
+    }
+
+    class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
         {
@@ -246,7 +257,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         }
     }
 
-    class DataTypeCache extends JDBCObjectCache<OracleDataType> {
+    class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
         {

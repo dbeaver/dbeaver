@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Tables cache implementation
  */
-class TableCache extends JDBCStructCache<GenericTable, GenericTableColumn> {
+class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> {
 
     // Tables types which are not actually a table
     // This is needed for some strange JDBC drivers which returns not a table objects

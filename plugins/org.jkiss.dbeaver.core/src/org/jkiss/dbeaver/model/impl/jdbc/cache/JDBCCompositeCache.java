@@ -12,7 +12,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -31,16 +30,17 @@ import java.util.*;
  * Examples: table index, constraint.
  */
 public abstract class JDBCCompositeCache<
+    OWNER extends DBSObject,
     PARENT extends DBSObject,
     OBJECT extends DBSObject,
     ROW_REF extends DBSObject>
-    implements JDBCAbstractCache<OBJECT>
+    implements JDBCAbstractCache<OWNER, OBJECT>
 {
     protected static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
 
     private final Map<String, ObjectInfo> PRECACHED_MARK = new HashMap<String, ObjectInfo>();
 
-    private JDBCStructCache<?,?> parentCache;
+    private JDBCStructCache<OWNER,?,?> parentCache;
     private Class<PARENT> parentType;
     private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;
@@ -48,7 +48,7 @@ public abstract class JDBCCompositeCache<
     private final String objectColumnName;
 
     protected JDBCCompositeCache(
-        JDBCStructCache<?,?> parentCache,
+        JDBCStructCache<OWNER,?,?> parentCache,
         Class<PARENT> parentType,
         String parentColumnName,
         String objectColumnName)
@@ -83,10 +83,10 @@ public abstract class JDBCCompositeCache<
         }
     }
 
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource)
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
-        return getObjects(monitor, dataSource, null);
+        return getObjects(monitor, owner, null);
     }
 
     public Collection<OBJECT> getCachedObjects()
@@ -96,20 +96,20 @@ public abstract class JDBCCompositeCache<
         }
     }
 
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, PARENT forParent)
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
         if (!isCached()) {
-            loadObjects(monitor, dataSource, forParent);
+            loadObjects(monitor, owner, forParent);
         }
         return getCachedObjects();
     }
 
-    public OBJECT getObject(DBRProgressMonitor monitor, JDBCDataSource dataSource, String objectName)
+    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String objectName)
         throws DBException
     {
         if (!isCached()) {
-            loadObjects(monitor, dataSource, null);
+            loadObjects(monitor, owner, null);
         }
         return getCachedObject(objectName);
     }
@@ -162,7 +162,7 @@ public abstract class JDBCCompositeCache<
         }
     }
 
-    protected void loadObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, PARENT forParent)
+    protected void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
         if ((forParent == null && isCached()) ||
@@ -173,14 +173,14 @@ public abstract class JDBCCompositeCache<
 
         // Load tables and columns first
         if (forParent == null) {
-            parentCache.loadObjects(monitor, dataSource);
-            parentCache.getChildren(monitor, dataSource, null);
+            parentCache.loadObjects(monitor, owner);
+            parentCache.getChildren(monitor, owner, null);
         }
 
         Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<PARENT, Map<String, ObjectInfo>>();
 
         // Load index columns
-        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Load composite objects");
+        JDBCExecutionContext context = (JDBCExecutionContext) owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load composite objects");
         try {
 
             JDBCPreparedStatement dbStat = prepareObjectsStatement(context, forParent);
@@ -197,7 +197,7 @@ public abstract class JDBCCompositeCache<
                         }
                         PARENT parent = forParent;
                         if (parent == null) {
-                            parent = parentCache.getObject(monitor, dataSource, parentName, parentType);
+                            parent = parentCache.getObject(monitor, owner, parentName, parentType);
                             if (parent == null) {
                                 log.debug("Object '" + objectName + "' owner '" + parentName + "' not found");
                                 continue;
@@ -283,7 +283,7 @@ public abstract class JDBCCompositeCache<
         }
         // Now set empty object list for other parents
         if (forParent == null) {
-            for (PARENT tmpParent : parentCache.getObjects(monitor, dataSource, parentType)) {
+            for (PARENT tmpParent : parentCache.getObjects(monitor, owner, parentType)) {
                 if (!parentObjectMap.containsKey(tmpParent)) {
                     cacheObjects(tmpParent, new ArrayList<OBJECT>());
                 }

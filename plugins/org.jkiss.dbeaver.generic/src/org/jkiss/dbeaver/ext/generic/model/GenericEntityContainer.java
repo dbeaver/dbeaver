@@ -92,7 +92,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
         throws DBException
     {
         cacheIndexes(monitor, true);
-        return indexCache.getObjects(monitor, getDataSource(), null);
+        return indexCache.getObjects(monitor, this, null);
     }
 
     private void cacheIndexes(DBRProgressMonitor monitor, boolean readFromTables)
@@ -150,7 +150,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
             // Try to read all FKs
             try {
                 monitor.subTask("Cache primary keys");
-                primaryKeysCache.getObjects(monitor, getDataSource(), null);
+                primaryKeysCache.getObjects(monitor, this, null);
             } catch (Exception e) {
                 // Failed - seems to be unsupported feature
                 log.debug(e);

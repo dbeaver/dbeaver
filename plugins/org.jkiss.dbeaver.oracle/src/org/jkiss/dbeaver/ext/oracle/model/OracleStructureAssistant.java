@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -125,7 +124,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                         log.debug("Table schema '" + schemaName + "' not found");
                         continue;
                     }
-                    JDBCAbstractCache<?> objectCache = null;
+                    JDBCAbstractCache<OracleSchema,?> objectCache = null;
                     if ("TABLE".equals(objectType) || "VIEW".equals(objectType)) {
                         objectCache = tableSchema.getTableCache();
                     } else if ("INDEX".equals(objectType)) {
@@ -136,7 +135,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                         objectCache = tableSchema.getTriggerCache();
                     }
                     if (objectCache != null) {
-                        DBSObject object = objectCache.getObject(context.getProgressMonitor(), dataSource, objectName);
+                        DBSObject object = objectCache.getObject(context.getProgressMonitor(), tableSchema, objectName);
                         if (object == null) {
                             log.debug(objectType + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
                             continue;

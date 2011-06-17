@@ -104,10 +104,10 @@ public class OracleDataTypeMethod extends OracleDataTypeMember {
     public Collection<OracleDataTypeMethodParameter> getParameters(DBRProgressMonitor monitor)
         throws DBException
     {
-        return parameterCache.getObjects(monitor, getDataSource());
+        return parameterCache.getObjects(monitor, this);
     }
 
-    private class ParameterCache extends JDBCObjectCache<OracleDataTypeMethodParameter> {
+    private class ParameterCache extends JDBCObjectCache<OracleDataTypeMethod, OracleDataTypeMethodParameter> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
         {

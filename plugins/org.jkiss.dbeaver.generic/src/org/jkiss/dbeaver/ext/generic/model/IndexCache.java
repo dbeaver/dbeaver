@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Index cache implementation
  */
-class IndexCache extends JDBCCompositeCache<GenericTable, GenericIndex, GenericIndexColumn> {
+class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericIndex, GenericIndexColumn> {
     private GenericStructContainer structContainer;
 
     IndexCache(GenericStructContainer structContainer)
