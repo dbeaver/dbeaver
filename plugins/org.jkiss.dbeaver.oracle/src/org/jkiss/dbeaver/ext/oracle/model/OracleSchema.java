@@ -355,7 +355,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         {
             StringBuilder sql = new StringBuilder(500);
             sql
-                .append("SELECT c.*,cc.COMMENTS\n" +
+                .append("SELECT /*+ USE_NL(cc)*/ c.*,cc.COMMENTS\n" +
                     "FROM SYS.ALL_TAB_COLUMNS c\n" +
                     "LEFT OUTER JOIN SYS.ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
                     "WHERE c.OWNER=?");

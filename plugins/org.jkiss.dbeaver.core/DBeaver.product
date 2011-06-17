@@ -131,6 +131,7 @@ This software is provided “as is” without express or implied warranty.
       <plugin id="org.jkiss.dbeaver.ext.import_config"/>
       <plugin id="org.jkiss.dbeaver.ext.mysql"/>
       <plugin id="org.jkiss.dbeaver.ext.oracle"/>
+      <plugin id="org.jkiss.dbeaver.ext.test"/>
       <plugin id="org.mortbay.jetty.server"/>
       <plugin id="org.mortbay.jetty.util"/>
    </plugins>
