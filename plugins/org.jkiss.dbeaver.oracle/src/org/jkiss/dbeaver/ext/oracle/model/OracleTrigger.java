@@ -6,74 +6,58 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.struct.AbstractTrigger;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSActionTiming;
-import org.jkiss.dbeaver.model.struct.DBSManipulationType;
-import org.jkiss.dbeaver.model.struct.DBSSchema;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTrigger;
 
 import java.sql.ResultSet;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * GenericProcedure
  */
-public class OracleTrigger extends AbstractTrigger
+public class OracleTrigger implements DBSTrigger
 {
     static final Log log = LogFactory.getLog(OracleTrigger.class);
 
     private OracleSchema schema;
-    private OracleTable table;
-    private String body;
-    private String charsetClient;
-    private String sqlMode;
+    private OracleTableBase table;
+    private String name;
+    private List<OracleTriggerColumn> columns;
 
     public OracleTrigger(
         OracleSchema schema,
-        OracleTable table,
+        OracleTableBase table,
         ResultSet dbResult)
     {
         this.schema = schema;
         this.table = table;
-        loadInfo(dbResult);
+
+        this.name = JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME");
     }
 
-    private void loadInfo(ResultSet dbResult)
+    @Property(name = "Name", viewable = true, editable = true, order = 1)
+    public String getName()
     {
-        setName(JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME"));
-        setManipulationType(DBSManipulationType.getByName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_EVENT_MANIPULATION)));
-        setActionTiming(DBSActionTiming.getByName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_ACTION_TIMING)));
-        setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_TRIGGER_ACTION_ORDER));
-        this.body = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_ACTION_STATEMENT);
-        this.charsetClient = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_CHARACTER_SET_CLIENT);
-        this.sqlMode = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_SQL_MODE);
-    }
-
-    public String getBody()
-    {
-        return body;
+        return name;
     }
 
     @Property(name = "Table", viewable = true, order = 4)
-    public OracleTable getTable()
+    public OracleTableBase getTable()
     {
         return table;
     }
 
-    @Property(name = "Client Charset", order = 5)
-    public String getCharsetClient()
+    public String getDescription()
     {
-        return charsetClient;
+        return null;
     }
 
-    @Property(name = "SQL Mode", order = 6)
-    public String getSqlMode()
-    {
-        return sqlMode;
-    }
-
-    public DBSSchema getParentObject()
+    public OracleSchema getParentObject()
     {
         return schema;
     }
@@ -81,6 +65,35 @@ public class OracleTrigger extends AbstractTrigger
     public OracleDataSource getDataSource()
     {
         return schema.getDataSource();
+    }
+
+    @Association
+    public Collection<OracleTriggerColumn> getColumns(DBRProgressMonitor monitor) throws DBException
+    {
+        if (columns == null) {
+            schema.getTriggerCache().loadChildren(monitor, schema, this);
+        }
+        return columns;
+    }
+
+    boolean isColumnsCached()
+    {
+        return columns != null;
+    }
+
+    void setColumns(List<OracleTriggerColumn> columns)
+    {
+        this.columns = columns;
+    }
+
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    {
+        return false;
+    }
+
+    public boolean isPersisted()
+    {
+        return true;
     }
 
 }

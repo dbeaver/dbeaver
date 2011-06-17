@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -28,10 +27,10 @@ public class OracleConstraint extends JDBCConstraint<OracleTable> {
     static final Log log = LogFactory.getLog(OracleConstraint.class);
 
     private String searchCondition;
-    private OracleConstants.ObjectStatus status;
+    private OracleObjectStatus status;
     private List<OracleConstraintColumn> columns;
 
-    public OracleConstraint(OracleTable oracleTable, String name, DBSConstraintType constraintType, String searchCondition, OracleConstants.ObjectStatus status)
+    public OracleConstraint(OracleTable oracleTable, String name, DBSConstraintType constraintType, String searchCondition, OracleObjectStatus status)
     {
         super(oracleTable, name, null, constraintType, false);
         this.searchCondition = searchCondition;
@@ -50,7 +49,7 @@ public class OracleConstraint extends JDBCConstraint<OracleTable> {
         final String constraintStatus = JDBCUtils.safeGetString(dbResult, "STATUS");
         this.status = CommonUtils.isEmpty(constraintStatus) ?
             null :
-            OracleConstants.ObjectStatus.valueOf(constraintStatus);
+            OracleObjectStatus.valueOf(constraintStatus);
     }
 
     public OracleDataSource getDataSource()
@@ -72,7 +71,7 @@ public class OracleConstraint extends JDBCConstraint<OracleTable> {
     }
 
     @Property(name = "Status", viewable = true, editable = false, order = 5)
-    public OracleConstants.ObjectStatus getStatus()
+    public OracleObjectStatus getStatus()
     {
         return status;
     }

@@ -47,7 +47,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
     }
 
-    protected GenericPrimaryKey fetchObject(JDBCExecutionContext context, GenericTable parent, String pkName, ResultSet dbResult)
+    protected GenericPrimaryKey fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String pkName, ResultSet dbResult)
         throws SQLException, DBException
     {
         return new GenericPrimaryKey(

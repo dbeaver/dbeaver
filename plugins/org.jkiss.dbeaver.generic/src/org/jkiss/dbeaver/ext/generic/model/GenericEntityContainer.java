@@ -139,7 +139,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
             // So error here is not fatal
             try {
                 monitor.subTask("Cache tables' columns");
-                tableCache.getChildren(monitor, this, null);
+                tableCache.loadChildren(monitor, this, null);
             } catch (Exception e) {
                 log.debug(e);
             }

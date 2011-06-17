@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.model.struct.DBSTrigger;
  */
 public abstract class AbstractTrigger implements DBSTrigger
 {
-    private String name;
+    protected String name;
     private DBSActionTiming actionTiming;
     private DBSManipulationType manipulationType;
     private int ordinalPosition;

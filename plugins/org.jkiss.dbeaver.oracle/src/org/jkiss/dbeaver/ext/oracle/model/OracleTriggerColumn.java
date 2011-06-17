@@ -4,33 +4,45 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTriggerColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.ResultSet;
 
 /**
  * OracleTriggerColumn
  */
 public class OracleTriggerColumn extends AbstractTriggerColumn
 {
+    static final Log log = LogFactory.getLog(OracleTriggerColumn.class);
+
     private OracleTrigger trigger;
+    private String name;
     private OracleTableColumn tableColumn;
-    private int ordinalPosition;
+    private boolean columnList;
 
     public OracleTriggerColumn(
+        DBRProgressMonitor monitor,
         OracleTrigger trigger,
         OracleTableColumn tableColumn,
-        int ordinalPosition)
+        ResultSet dbResult) throws DBException
     {
         this.trigger = trigger;
         this.tableColumn = tableColumn;
-        this.ordinalPosition = ordinalPosition;
+        this.name = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
+        this.columnList = JDBCUtils.safeGetBoolean(dbResult, "COLUMN_LIST", "YES");
     }
 
-    OracleTriggerColumn(OracleTrigger toIndex, OracleTriggerColumn source)
+    OracleTriggerColumn(OracleTrigger trigger, OracleTriggerColumn source)
     {
-        this.trigger = toIndex;
+        this.trigger = trigger;
         this.tableColumn = source.tableColumn;
-        this.ordinalPosition = source.ordinalPosition;
+        this.columnList = source.columnList;
     }
 
     public OracleTrigger getTrigger()
@@ -38,22 +50,21 @@ public class OracleTriggerColumn extends AbstractTriggerColumn
         return trigger;
     }
 
-    //@Property(name = "Name", viewable = true, order = 1)
+    @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
-        return tableColumn.getName();
+        return name;
     }
 
-    @Property(id = "name", name = "Column", viewable = true, order = 1)
+    @Property(name = "Column", viewable = true, order = 2)
     public OracleTableColumn getTableColumn()
     {
         return tableColumn;
     }
 
-    @Property(name = "Position", viewable = false, order = 2)
     public int getOrdinalPosition()
     {
-        return ordinalPosition;
+        return 0;
     }
 
     public String getDescription()

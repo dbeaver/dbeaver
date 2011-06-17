@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSHiddenObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
@@ -21,7 +22,7 @@ import java.sql.ResultSet;
 /**
  * OracleTableColumn
  */
-public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements DBSTableColumn
+public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements DBSTableColumn, DBSHiddenObject
 {
     static final Log log = LogFactory.getLog(OracleTableColumn.class);
 
@@ -30,6 +31,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     private String comment;
     private String defaultValue;
     private long charLength;
+    private boolean hidden;
 
     public OracleTableColumn(OracleTableBase table)
     {
@@ -63,6 +65,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         this.precision = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_DATA_PRECISION);
         this.defaultValue = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DATA_DEFAULT);
         this.comment = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COMMENTS);
+        this.hidden = JDBCUtils.safeGetBoolean(dbResult, "HIDDEN_COLUMN", OracleConstants.YES);
     }
 
     public DBSObject getParentObject()
@@ -152,4 +155,8 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         this.comment = comment;
     }
 
+    public boolean isHidden()
+    {
+        return hidden;
+    }
 }

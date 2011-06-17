@@ -27,9 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSIndexType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * OracleSchema
@@ -259,7 +257,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         tableCache.loadObjects(monitor, this);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
-            tableCache.getChildren(monitor, this, null);
+            tableCache.loadChildren(monitor, this, null);
         }
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache table indexes");
@@ -356,7 +354,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             StringBuilder sql = new StringBuilder(500);
             sql
                 .append("SELECT /*+ USE_NL(cc)*/ c.*,cc.COMMENTS\n" +
-                    "FROM SYS.ALL_TAB_COLUMNS c\n" +
+                    "FROM SYS.ALL_TAB_COLS c\n" +
                     "LEFT OUTER JOIN SYS.ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
                     "WHERE c.OWNER=?");
             if (forTable != null) {
@@ -416,7 +414,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return dbStat;
         }
 
-        protected OracleConstraint fetchObject(JDBCExecutionContext context, OracleTable parent, String indexName, ResultSet dbResult)
+        protected OracleConstraint fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleConstraint(parent, dbResult);
@@ -490,7 +488,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return dbStat;
         }
 
-        protected OracleForeignKey fetchObject(JDBCExecutionContext context, OracleTable parent, String indexName, ResultSet dbResult)
+        protected OracleForeignKey fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleForeignKey(context.getProgressMonitor(), parent, dbResult);
@@ -558,7 +556,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return dbStat;
         }
 
-        protected OracleIndex fetchObject(JDBCExecutionContext context, OracleTable parent, String indexName, ResultSet dbResult)
+        protected OracleIndex fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             String indexTypeName = JDBCUtils.safeGetString(dbResult, "INDEX_TYPE");
@@ -754,44 +752,97 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 
     }
 
-    class TriggerCache extends JDBCCompositeCache<OracleSchema, OracleTable, OracleTrigger, OracleTriggerColumn> {
+    static class TriggerCache extends JDBCStructCache<OracleSchema, OracleTrigger, OracleTriggerColumn> {
         protected TriggerCache()
         {
-            super(tableCache, OracleTable.class, "TABLE_NAME", "TRIGGER_NAME");
+            super("TRIGGER_NAME");
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTable forParent) throws SQLException, DBException
+        public Collection<OracleTrigger> getObjects(DBRProgressMonitor monitor, OracleSchema oracleSchema, OracleTable table) throws DBException
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT * FROM SYS.ALL_TRIGGERS WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " +
-                " ORDER BY OBJECT_NAME");
-            dbStat.setString(1, getName());
-            return dbStat;
-        }
-
-        protected OracleTrigger fetchObject(JDBCExecutionContext context, OracleTable oracleTable, String childName, ResultSet resultSet) throws SQLException, DBException
-        {
-            return null;
-        }
-
-        protected OracleTriggerColumn fetchObjectRow(JDBCExecutionContext context, OracleTable oracleTable, OracleTrigger forObject, ResultSet resultSet) throws SQLException, DBException
-        {
-            return null;
-        }
-
-        protected boolean isObjectsCached(OracleTable oracleTable)
-        {
-            return false;
+            final Collection<OracleTrigger> allTriggers = super.getObjects(monitor, oracleSchema);
+            if (CommonUtils.isEmpty(allTriggers)) {
+                return Collections.emptyList();
+            }
+            List<OracleTrigger> tableTriggers = new ArrayList<OracleTrigger>();
+            for (OracleTrigger trigger : allTriggers) {
+                if (trigger.getTable() == table) {
+                    tableTriggers.add(trigger);
+                }
+            }
+            return tableTriggers;
         }
 
         @Override
-        protected void cacheObjects(OracleTable oracleTable, List<OracleTrigger> oracleTriggers)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema oracleSchema) throws SQLException, DBException
         {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT TRIGGER_NAME,TRIGGER_TYPE,TRIGGERING_EVENT,BASE_OBJECT_TYPE,TABLE_OWNER,TABLE_NAME,WHEN_CLAUSE,STATUS,DESCRIPTION\n" +
+                "FROM SYS.ALL_TRIGGERS WHERE OWNER=?\n" +
+                "ORDER BY TRIGGER_NAME");
+            dbStat.setString(1, oracleSchema.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleTrigger fetchObject(JDBCExecutionContext context, OracleSchema oracleSchema, ResultSet resultSet) throws SQLException, DBException
+        {
+            OracleTableBase table = null;
+            String tableName = JDBCUtils.safeGetString(resultSet, "TABLE_NAME");
+            if (!CommonUtils.isEmpty(tableName)) {
+                table = OracleTableBase.findTable(
+                    context.getProgressMonitor(),
+                    oracleSchema.getDataSource(),
+                    JDBCUtils.safeGetString(resultSet, "TABLE_OWNER"),
+                    tableName);
+            }
+            return new OracleTrigger(oracleSchema, table, resultSet);
+        }
+
+        @Override
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleSchema oracleSchema, OracleTrigger forObject) throws SQLException, DBException
+        {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT TRIGGER_NAME,TABLE_OWNER,TABLE_NAME,COLUMN_NAME,COLUMN_LIST,COLUMN_USAGE\n" +
+                "FROM SYS.ALL_TRIGGER_COLS WHERE TRIGGER_OWNER=?" +
+                (forObject == null ? "" : " AND TRIGGER_NAME=?") +
+                "\nORDER BY TRIGGER_NAME");
+            dbStat.setString(1, oracleSchema.getName());
+            if (forObject != null) {
+                dbStat.setString(2, forObject.getName());
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected OracleTriggerColumn fetchChild(JDBCExecutionContext context, OracleSchema oracleSchema, OracleTrigger parent, ResultSet dbResult) throws SQLException, DBException
+        {
+            OracleTableBase refTable = OracleTableBase.findTable(
+                context.getProgressMonitor(),
+                oracleSchema.getDataSource(),
+                JDBCUtils.safeGetString(dbResult, "TABLE_OWNER"),
+                JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
+            if (refTable != null) {
+                final String columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
+                OracleTableColumn tableColumn = refTable.getColumn(context.getProgressMonitor(), columnName);
+                if (tableColumn == null) {
+                    log.debug("Column '" + columnName + "' not found in table '" + refTable.getFullQualifiedName() + "' for trigger '" + parent.getName() + "'");
+                }
+                return new OracleTriggerColumn(context.getProgressMonitor(), parent, tableColumn, dbResult);
+            }
+            return null;
+        }
+
+        @Override
+        protected boolean isChildrenCached(OracleTrigger parent)
+        {
+            return parent.isColumnsCached();
         }
 
         @Override
         protected void cacheChildren(OracleTrigger oracleTrigger, List<OracleTriggerColumn> rows)
         {
+            oracleTrigger.setColumns(rows);
         }
 
     }

@@ -215,7 +215,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         tableCache.loadObjects(monitor, this);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
-            tableCache.getChildren(monitor, this, null);
+            tableCache.loadChildren(monitor, this, null);
         }
         monitor.subTask("Cache table constraints");
         loadConstraints(monitor, null);
@@ -477,7 +477,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
 //                    true).getSource();
         }
 
-        protected MySQLIndex fetchObject(JDBCExecutionContext context, MySQLTable parent, String indexName, ResultSet dbResult)
+        protected MySQLIndex fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NON_UNIQUE) != 0;

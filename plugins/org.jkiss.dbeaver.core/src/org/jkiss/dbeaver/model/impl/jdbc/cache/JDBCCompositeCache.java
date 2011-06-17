@@ -62,7 +62,7 @@ public abstract class JDBCCompositeCache<
     abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner, PARENT forParent)
         throws SQLException, DBException;
 
-    abstract protected OBJECT fetchObject(JDBCExecutionContext context, PARENT parent, String childName, ResultSet resultSet)
+    abstract protected OBJECT fetchObject(JDBCExecutionContext context, OWNER owner, PARENT parent, String childName, ResultSet resultSet)
         throws SQLException, DBException;
 
     abstract protected ROW_REF fetchObjectRow(JDBCExecutionContext context, PARENT parent, OBJECT forObject, ResultSet resultSet)
@@ -174,7 +174,7 @@ public abstract class JDBCCompositeCache<
         // Load tables and columns first
         if (forParent == null) {
             parentCache.loadObjects(monitor, owner);
-            parentCache.getChildren(monitor, owner, null);
+            parentCache.loadChildren(monitor, owner, null);
         }
 
         Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<PARENT, Map<String, ObjectInfo>>();
@@ -217,7 +217,7 @@ public abstract class JDBCCompositeCache<
 
                         ObjectInfo objectInfo = objectMap.get(objectName);
                         if (objectInfo == null) {
-                            OBJECT object = fetchObject(context, parent, objectName, dbResult);
+                            OBJECT object = fetchObject(context, owner, parent, objectName, dbResult);
                             if (object == null) {
                                 // Could not fetch object
                                 continue;

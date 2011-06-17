@@ -51,7 +51,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             .getSource();
     }
 
-    protected GenericForeignKey fetchObject(JDBCExecutionContext context, GenericTable parent, String fkName, ResultSet dbResult)
+    protected GenericForeignKey fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String fkName, ResultSet dbResult)
         throws SQLException, DBException
     {
         String pkTableCatalog = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKTABLE_CAT);

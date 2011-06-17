@@ -52,7 +52,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         }
     }
 
-    protected GenericIndex fetchObject(JDBCExecutionContext context, GenericTable parent, String indexName, ResultSet dbResult)
+    protected GenericIndex fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String indexName, ResultSet dbResult)
         throws SQLException, DBException
     {
         boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);

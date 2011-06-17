@@ -11,10 +11,10 @@ public interface DBSTrigger extends DBSEntity
 {
     DBSTable getTable();
 
-    DBSActionTiming getActionTiming();
-
-    DBSManipulationType getManipulationType();
-
-    int getOrdinalPosition();
+//    DBSActionTiming getActionTiming();
+//
+//    DBSManipulationType getManipulationType();
+//
+//    int getOrdinalPosition();
 
 }

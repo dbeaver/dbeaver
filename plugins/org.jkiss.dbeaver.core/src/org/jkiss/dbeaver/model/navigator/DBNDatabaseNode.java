@@ -12,10 +12,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -380,6 +377,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             }
             if (!(childItem instanceof DBSObject)) {
                 log.warn("Bad item type: " + childItem.getClass().getName());
+                continue;
+            }
+            if (childItem instanceof DBSHiddenObject && ((DBSHiddenObject) childItem).isHidden()) {
+                // Skip hidden objects
                 continue;
             }
             DBSObject object = (DBSObject)childItem;

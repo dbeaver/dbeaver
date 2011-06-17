@@ -59,6 +59,8 @@
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger" label="Triggers" iconId="#triggers" description="Triggers">
                                     <items label="Trigger" path="trigger" property="triggers" iconId="#trigger">
+                                        <items label="Columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="false">
+                                        </items>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleIndex" label="Indexes" iconId="#indexes" description="Table indexes">
@@ -114,11 +116,13 @@
                                 <items label="Index columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="true">
                                 </items>
                             </items>
-                        </folder>
+                        </folder!-->
                         <folder type="org.jkiss.dbeaver.model.struct.DBSTrigger" label="Triggers" iconId="#triggers" description="Triggers">
                             <items label="Trigger" path="trigger" property="triggers" iconId="#trigger">
+                                <items label="Columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="false">
+                                </items>
                             </items>
-                        </folder-->
+                        </folder>
                     </items>
                 </folder>
                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="Users" iconId="#folder_user" description="Users">
@@ -186,17 +190,6 @@
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleProcedureManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleProcedure"/>
-
-        <editor
-            id="org.jkiss.dbeaver.ext.oracle.editors.OracleTriggerEditor"
-            class="org.jkiss.dbeaver.ext.oracle.editors.OracleTriggerEditor"
-            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger"
-            main="false"
-            label="Statement"
-            description="Trigger statement"
-            position="additions_end"
-            icon="#sources">
-        </editor>
 
         <editor
             id="org.jkiss.dbeaver.ext.oracle.editors.OracleUserEditorGeneral"

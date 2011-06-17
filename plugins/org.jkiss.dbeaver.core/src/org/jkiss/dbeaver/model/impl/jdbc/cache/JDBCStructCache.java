@@ -55,7 +55,7 @@ public abstract class JDBCStructCache<
      * @param forObject object for which to read children. If null then reads children for all objects in this container.
      * @throws org.jkiss.dbeaver.DBException on error
      */
-    public void getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject)
+    public void loadChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject)
         throws DBException
     {
         if ((forObject == null && this.childrenCached) ||

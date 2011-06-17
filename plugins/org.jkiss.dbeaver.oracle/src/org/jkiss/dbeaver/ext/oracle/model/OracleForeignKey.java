@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -27,7 +26,7 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
     public OracleForeignKey(
         OracleTable oracleTable,
         String name,
-        OracleConstants.ObjectStatus status,
+        OracleObjectStatus status,
         OracleConstraint referencedKey,
         DBSConstraintModifyRule deleteRule)
     {
@@ -44,25 +43,20 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
     {
         super(table, dbResult);
 
-        String refOwner = JDBCUtils.safeGetString(dbResult, "R_OWNER");
-        String refTableName = JDBCUtils.safeGetString(dbResult, "R_TABLE_NAME");
         String refName = JDBCUtils.safeGetString(dbResult, "R_CONSTRAINT_NAME");
-        String deleteRuleName = JDBCUtils.safeGetString(dbResult, "DELETE_RULE");
-        OracleSchema refSchema = getTable().getDataSource().getSchema(monitor, refOwner);
-        if (refSchema == null) {
-            log.warn("Referenced schema '" + refOwner + "' not found for foreign key '" + getName() + "'");
-        } else {
-            OracleTable refTable = refSchema.getTable(monitor, refTableName);
-            if (refTable == null) {
-                log.warn("Referenced table '" + refTable + "' not found in schema '" + refOwner + "' for foreign key '" + getName() + "'");
-            } else {
-                referencedKey = refTable.getConstraint(monitor, refName);
-                if (referencedKey == null) {
-                    log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullQualifiedName() + "'");
-                }
+        OracleTableBase refTable = OracleTableBase.findTable(
+            monitor,
+            table.getDataSource(),
+            JDBCUtils.safeGetString(dbResult, "R_OWNER"),
+            JDBCUtils.safeGetString(dbResult, "R_TABLE_NAME"));
+        if (refTable instanceof OracleTable) {
+            referencedKey = ((OracleTable)refTable).getConstraint(monitor, refName);
+            if (referencedKey == null) {
+                log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullQualifiedName() + "'");
             }
         }
 
+        String deleteRuleName = JDBCUtils.safeGetString(dbResult, "DELETE_RULE");
         this.deleteRule = "CASCADE".equals(deleteRuleName) ? DBSConstraintModifyRule.CASCADE : DBSConstraintModifyRule.NO_ACTION;
     }
 

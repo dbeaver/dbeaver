@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -63,7 +62,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         throws DBException
     {
         if (columns == null) {
-            getContainer().getTableCache().getChildren(monitor, getContainer(), this);
+            getContainer().getTableCache().loadChildren(monitor, getContainer(), this);
         }
         return columns;
     }
@@ -96,6 +95,21 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         throws DBException
     {
         return "";
+    }
+
+    public static OracleTableBase findTable(DBRProgressMonitor monitor, OracleDataSource dataSource, String ownerName, String tableName) throws DBException
+    {
+        OracleSchema refSchema = dataSource.getSchema(monitor, ownerName);
+        if (refSchema == null) {
+            log.warn("Referenced schema '" + ownerName + "' not found");
+            return null;
+        } else {
+            OracleTableBase refTable = refSchema.getTableCache().getObject(monitor, refSchema, tableName);
+            if (refTable == null) {
+                log.warn("Referenced table '" + tableName + "' not found in schema '" + ownerName + "'");
+            }
+            return refTable;
+        }
     }
 
 }

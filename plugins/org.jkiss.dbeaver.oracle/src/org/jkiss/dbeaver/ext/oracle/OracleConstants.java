@@ -126,9 +126,4 @@ public class OracleConstants {
         }
     }
 
-    public static enum ObjectStatus {
-        ENABLED,
-        DISABLED,
-    }
-
 }
