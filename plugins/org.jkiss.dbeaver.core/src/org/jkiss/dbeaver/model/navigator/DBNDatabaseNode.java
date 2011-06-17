@@ -31,7 +31,7 @@ import java.util.List;
  */
 public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, DBSWrapper {
 
-    private boolean locked;
+    private volatile boolean locked;
     protected List<DBNDatabaseNode> childNodes;
 
     protected DBNDatabaseNode(DBNNode parentNode)
@@ -39,7 +39,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         super(parentNode);
     }
 
-    void dispose(boolean reflect)
+    synchronized void dispose(boolean reflect)
     {
         if (childNodes != null) {
             clearChildren(reflect);
@@ -135,7 +135,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return false;
     }
 
-    public List<DBNDatabaseNode> getChildren(DBRProgressMonitor monitor)
+    public synchronized List<DBNDatabaseNode> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.allowsChildren() && childNodes == null) {
@@ -148,12 +148,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return childNodes;
     }
 
-    List<DBNDatabaseNode> getChildNodes()
+    synchronized List<DBNDatabaseNode> getChildNodes()
     {
         return childNodes;
     }
 
-    void addChildItem(DBSObject object)
+    synchronized void addChildItem(DBSObject object)
     {
         final List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
         if (!CommonUtils.isEmpty(metaChildren) && metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
@@ -165,7 +165,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
     }
 
-    void removeChildItem(DBSObject object)
+    synchronized void removeChildItem(DBSObject object)
     {
         if (!CommonUtils.isEmpty(childNodes)) {
             for (Iterator<DBNDatabaseNode> iter = childNodes.iterator(); iter.hasNext(); ) {
@@ -183,7 +183,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         clearChildren(reflect);
     }
 
-    public boolean isLazyNode()
+    synchronized public boolean isLazyNode()
     {
         return childNodes == null && allowsChildren();
     }
@@ -258,7 +258,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         //new RefreshJob("Refresh node " + getNodeName()).schedule();
     }
 
-    protected void clearChildren(boolean reflect)
+    protected synchronized void clearChildren(boolean reflect)
     {
         if (childNodes != null) {
             for (DBNNode child : childNodes) {
@@ -341,7 +341,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
      * @return true on success
      * @throws DBException on any DB error
      */
-    private boolean loadTreeItems(
+    private synchronized boolean loadTreeItems(
         DBRProgressMonitor monitor,
         DBXTreeItem meta,
         final List<DBNDatabaseNode> oldList,
@@ -429,7 +429,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return true;
     }
 
-    protected void reloadChildren(DBRProgressMonitor monitor)
+    protected synchronized void reloadChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (childNodes == null) {

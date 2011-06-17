@@ -39,7 +39,7 @@ public class DBNModel implements IResourceChangeListener {
     private DBNRoot root;
     private final List<IDBNListener> listeners = new ArrayList<IDBNListener>();
     private transient IDBNListener[] listenersCopy = null;
-    private Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
+    private final Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
     private DBNAdapterFactory nodesAdapter;
 
     public DBNModel()
@@ -70,7 +70,9 @@ public class DBNModel implements IResourceChangeListener {
         Platform.getAdapterManager().unregisterAdapters(nodesAdapter);
         DBeaverCore.getInstance().getWorkspace().removeResourceChangeListener(this);
         this.root.dispose(false);
-        this.nodeMap.clear();
+        synchronized (nodeMap) {
+            this.nodeMap.clear();
+        }
         if (!listeners.isEmpty()) {
             for (IDBNListener listener : listeners) {
                 log.warn("Listener '" + listener + "' is not unregistered from DBM model");
@@ -104,7 +106,10 @@ public class DBNModel implements IResourceChangeListener {
         if (object instanceof DBNDatabaseNode) {
             return (DBNDatabaseNode)object;
         }
-        Object obj = nodeMap.get(object);
+        Object obj;
+        synchronized (nodeMap) {
+            obj = nodeMap.get(object);
+        }
         if (obj == null) {
             return null;
         } else if (obj instanceof DBNDatabaseNode) {
@@ -230,21 +235,23 @@ public class DBNModel implements IResourceChangeListener {
 
     void addNode(DBNDatabaseNode node, boolean reflect)
     {
-        Object obj = nodeMap.get(node.getObject());
-        if (obj == null) {
-            // New node
-            nodeMap.put(node.getObject(), node);
-        } else if (obj instanceof DBNNode) {
-            // Second node - make a list
-            List<DBNNode> nodeList = new ArrayList<DBNNode>(2);
-            nodeList.add((DBNNode)obj);
-            nodeList.add(node);
-            nodeMap.put(node.getObject(), nodeList);
-        } else if (obj instanceof List) {
-            // Multiple nodes
-            @SuppressWarnings("unchecked")
-            List<DBNNode> nodeList = (List<DBNNode>) obj;
-            nodeList.add(node);
+        synchronized (nodeMap) {
+            Object obj = nodeMap.get(node.getObject());
+            if (obj == null) {
+                // New node
+                nodeMap.put(node.getObject(), node);
+            } else if (obj instanceof DBNNode) {
+                // Second node - make a list
+                List<DBNNode> nodeList = new ArrayList<DBNNode>(2);
+                nodeList.add((DBNNode)obj);
+                nodeList.add(node);
+                nodeMap.put(node.getObject(), nodeList);
+            } else if (obj instanceof List) {
+                // Multiple nodes
+                @SuppressWarnings("unchecked")
+                List<DBNNode> nodeList = (List<DBNNode>) obj;
+                nodeList.add(node);
+            }
         }
         if (reflect) {
             this.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, DBNEvent.NodeChange.LOAD, node));
@@ -258,25 +265,27 @@ public class DBNModel implements IResourceChangeListener {
 
     void removeNode(DBNDatabaseNode node, boolean reflect)
     {
-        Object obj = nodeMap.get(node.getObject());
         boolean badNode = false;
-        if (obj == null) {
-            // No found
-            badNode = true;
-        } else if (obj instanceof DBNNode) {
-            // Just remove it
-            if (nodeMap.remove(node.getObject()) != node) {
+        synchronized (nodeMap) {
+            Object obj = nodeMap.get(node.getObject());
+            if (obj == null) {
+                // No found
                 badNode = true;
-            }
-        } else if (obj instanceof List) {
-            // Multiple nodes
-            @SuppressWarnings("unchecked")
-            List<DBNNode> nodeList = (List<DBNNode>) obj;
-            if (!nodeList.remove(node)) {
-                badNode = true;
-            }
-            if (nodeList.isEmpty()) {
-                nodeMap.remove(node.getObject());
+            } else if (obj instanceof DBNNode) {
+                // Just remove it
+                if (nodeMap.remove(node.getObject()) != node) {
+                    badNode = true;
+                }
+            } else if (obj instanceof List) {
+                // Multiple nodes
+                @SuppressWarnings("unchecked")
+                List<DBNNode> nodeList = (List<DBNNode>) obj;
+                if (!nodeList.remove(node)) {
+                    badNode = true;
+                }
+                if (nodeList.isEmpty()) {
+                    nodeMap.remove(node.getObject());
+                }
             }
         }
         if (badNode) {
