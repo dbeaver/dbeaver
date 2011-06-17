@@ -758,7 +758,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             super("TRIGGER_NAME");
         }
 
-        public Collection<OracleTrigger> getObjects(DBRProgressMonitor monitor, OracleSchema oracleSchema, OracleTable table) throws DBException
+        public Collection<OracleTrigger> getObjects(DBRProgressMonitor monitor, OracleSchema oracleSchema, OracleTableBase table) throws DBException
         {
             final Collection<OracleTrigger> allTriggers = super.getObjects(monitor, oracleSchema);
             if (CommonUtils.isEmpty(allTriggers)) {

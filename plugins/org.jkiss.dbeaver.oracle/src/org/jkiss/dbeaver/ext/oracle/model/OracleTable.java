@@ -23,7 +23,6 @@ public class OracleTable extends OracleTableBase
     private List<OracleIndex> indexes;
     private List<OracleConstraint> constraints;
     private List<OracleForeignKey> foreignKeys;
-    private List<OracleTrigger> triggers;
 
     public OracleTable(OracleSchema schema)
     {
@@ -137,16 +136,6 @@ public class OracleTable extends OracleTableBase
 //        return DBUtils.findObject(getForeignKeys(monitor), fkName);
 //    }
 
-    @Association
-    public Collection<OracleTrigger> getTriggers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (triggers == null) {
-            return getContainer().getTriggerCache().getObjects(monitor, getContainer(), this);
-        }
-        return triggers;
-    }
-
 //    public OracleTrigger getTrigger(DBRProgressMonitor monitor, String triggerName)
 //        throws DBException
 //    {
@@ -175,7 +164,6 @@ public class OracleTable extends OracleTableBase
         indexes = null;
         constraints = null;
         foreignKeys = null;
-        triggers = null;
         return true;
     }
 

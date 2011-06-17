@@ -79,8 +79,16 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleView" label="Views" iconId="#folder_view" description="Views">
                             <items label="View" path="view" property="views" iconId="#view">
-                                <items label="Columns" itemLabel="Column" path="column" property="columns" iconId="#column">
-                                </items>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="Columns" iconId="#columns" description="View columns">
+                                    <items label="Columns" itemLabel="Column" path="column" property="columns" iconId="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger" label="Triggers" iconId="#triggers" description="Triggers">
+                                    <items label="Trigger" path="trigger" property="triggers" iconId="#trigger">
+                                        <items label="Columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="false">
+                                        </items>
+                                    </items>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSequence" label="Sequences" iconId="#sequences" description="Sequences">

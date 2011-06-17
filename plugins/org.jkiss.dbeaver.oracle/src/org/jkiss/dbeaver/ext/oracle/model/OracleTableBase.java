@@ -11,10 +11,12 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -90,6 +92,12 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         this.columns = columns;
     }
 
+    @Association
+    public Collection<OracleTrigger> getTriggers(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return getContainer().getTriggerCache().getObjects(monitor, getContainer(), this);
+    }
 
     public String getDDL(DBRProgressMonitor monitor)
         throws DBException
