@@ -55,8 +55,8 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     {
         super(dataSource, null);
         if (dbResult != null) {
-            this.id = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_USER_ID);
-            setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_USER_NAME));
+            this.id = JDBCUtils.safeGetLong(dbResult, "USER_ID");
+            setName(JDBCUtils.safeGetString(dbResult, "USERNAME"));
             persisted = true;
         } else {
             persisted = false;
@@ -300,7 +300,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 
     protected static OracleTableColumn getTableColumn(JDBCExecutionContext context, OracleTable parent, ResultSet dbResult) throws DBException
     {
-        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_COLUMN_NAME);
+        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
         OracleTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
         if (tableColumn == null) {
             log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
@@ -312,14 +312,14 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         
         protected TableCache()
         {
-            super(OracleConstants.COL_TABLE_NAME);
+            super("TABLE_NAME");
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT tab.*,tc.COMMENTS FROM (\n" +
+                "SELECT /*+ USE_NL(tc)*/ tab.*,tc.COMMENTS FROM (\n" +
                     "SELECT t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as TABLE_TYPE FROM SYS.ALL_ALL_TABLES t\n" +
                     "UNION ALL\n" +
                     "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as TABLE_TYPE FROM SYS.ALL_VIEWS v) tab\n" +
@@ -333,7 +333,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         protected OracleTableBase fetchObject(JDBCExecutionContext context, ResultSet dbResult)
             throws SQLException, DBException
         {
-            final String tableType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_TYPE);
+            final String tableType = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE");
             if ("TABLE".equals(tableType)) {
                 return new OracleTable(OracleSchema.this, dbResult);
             } else {
@@ -390,7 +390,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     class ConstraintCache extends JDBCCompositeCache<OracleTable, OracleConstraint, OracleConstraintColumn> {
         protected ConstraintCache()
         {
-            super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
+            super(tableCache, OracleTable.class, "TABLE_NAME", "CONSTRAINT_NAME");
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forTable)
@@ -433,7 +433,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return new OracleConstraintColumn(
                 object,
                 getTableColumn(context, parent, dbResult),
-                JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_POSITION));
+                JDBCUtils.safeGetInt(dbResult, "POSITION"));
         }
 
         protected boolean isObjectsCached(OracleTable parent)
@@ -455,7 +455,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     class ForeignKeyCache extends JDBCCompositeCache<OracleTable, OracleForeignKey, OracleForeignKeyColumn> {
         protected ForeignKeyCache()
         {
-            super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
+            super(tableCache, OracleTable.class, "TABLE_NAME", "CONSTRAINT_NAME");
         }
 
         protected void loadObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, OracleTable forParent)
@@ -509,7 +509,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return new OracleForeignKeyColumn(
                 object,
                 getTableColumn(context, parent, dbResult),
-                JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_POSITION));
+                JDBCUtils.safeGetInt(dbResult, "POSITION"));
         }
 
         protected boolean isObjectsCached(OracleTable parent)
@@ -536,7 +536,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     class IndexCache extends JDBCCompositeCache<OracleTable, OracleIndex, OracleIndexColumn> {
         protected IndexCache()
         {
-            super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_INDEX_NAME);
+            super(tableCache, OracleTable.class, "TABLE_NAME", "INDEX_NAME");
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forTable)
@@ -566,8 +566,8 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         protected OracleIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, OracleTable parent, String indexName)
             throws SQLException, DBException
         {
-            String indexTypeName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_INDEX_TYPE);
-            boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_UNIQUENESS) != 0;
+            String indexTypeName = JDBCUtils.safeGetString(dbResult, "INDEX_TYPE");
+            boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, "UNIQUENESS") != 0;
             DBSIndexType indexType;
             if (OracleConstants.INDEX_TYPE_NORMAL.getId().equals(indexTypeName)) {
                 indexType = OracleConstants.INDEX_TYPE_NORMAL;
@@ -597,9 +597,9 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             OracleIndex object)
             throws SQLException, DBException
         {
-            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_COLUMN_NAME);
-            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_COLUMN_POSITION);
-            boolean isAscending = "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COL_DESCEND));
+            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
+            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, "COLUMN_POSITION");
+            boolean isAscending = "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "DESCEND"));
 
             OracleTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
             if (tableColumn == null) {
@@ -764,7 +764,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     class TriggerCache extends JDBCCompositeCache<OracleTable, OracleTrigger, OracleTriggerColumn> {
         protected TriggerCache()
         {
-            super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, "TRIGGER_NAME");
+            super(tableCache, OracleTable.class, "TABLE_NAME", "TRIGGER_NAME");
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forParent) throws SQLException, DBException

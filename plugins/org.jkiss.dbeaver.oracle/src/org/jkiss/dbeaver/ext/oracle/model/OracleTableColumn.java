@@ -44,8 +44,8 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     {
         super(table, true);
 
-        this.name = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COLUMN_NAME);
-        this.ordinalPosition = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_COLUMN_ID);
+        this.name = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
+        this.ordinalPosition = JDBCUtils.safeGetInt(dbResult, "COLUMN_ID");
         this.typeName = JDBCUtils.safeGetString(dbResult, "DATA_TYPE");
         this.type = OracleDataType.resolveDataType(
             monitor,

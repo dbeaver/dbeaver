@@ -47,7 +47,7 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
         String refOwner = JDBCUtils.safeGetString(dbResult, "R_OWNER");
         String refTableName = JDBCUtils.safeGetString(dbResult, "R_TABLE_NAME");
         String refName = JDBCUtils.safeGetString(dbResult, "R_CONSTRAINT_NAME");
-        String deleteRuleName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DELETE_RULE);
+        String deleteRuleName = JDBCUtils.safeGetString(dbResult, "DELETE_RULE");
         OracleSchema refSchema = getTable().getDataSource().getSchema(monitor, refOwner);
         if (refSchema == null) {
             log.warn("Referenced schema '" + refOwner + "' not found for foreign key '" + getName() + "'");

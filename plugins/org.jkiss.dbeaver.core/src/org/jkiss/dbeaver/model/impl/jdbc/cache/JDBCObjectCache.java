@@ -54,7 +54,9 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> implements JDBCA
 
     public Collection<OBJECT> getCachedObjects()
     {
-        return objectList == null ? Collections.<OBJECT>emptyList() : objectList;
+        synchronized (this) {
+            return objectList == null ? Collections.<OBJECT>emptyList() : objectList;
+        }
     }
 
     public <SUB_TYPE> Collection<SUB_TYPE> getObjects(DBRProgressMonitor monitor, JDBCDataSource dataSource, Class<SUB_TYPE> type)

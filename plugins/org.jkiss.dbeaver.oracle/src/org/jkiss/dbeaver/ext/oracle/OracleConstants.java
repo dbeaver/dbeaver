@@ -45,75 +45,21 @@ public class OracleConstants {
     public static final String DRIVER_TYPE_OCI = "OCI";
 
     public static final String YES = "YES";
-    public static final String TYPE_NUMBER = "NUMBER";
 
-    public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
-    public static final String META_TABLE_TRIGGERS = INFO_SCHEMA_NAME + ".TRIGGERS";
-    public static final String META_TABLE_PARTITIONS = INFO_SCHEMA_NAME + ".PARTITIONS";
-
-
-    public static final String COL_USER_ID = "USER_ID";
-    public static final String COL_USER_NAME = "USERNAME";
-    public static final String COL_OWNER = "OWNER";
-    public static final String COL_OBJECT_NAME = "OBJECT_NAME";
-    public static final String COL_OBJECT_TYPE = "OBJECT_TYPE";
-    public static final String COL_TABLE_NAME = "TABLE_NAME";
-    public static final String COL_TABLE_TYPE = "TABLE_TYPE";
-    public static final String COL_COLUMN_ID = "COLUMN_ID";
-    public static final String COL_COLUMN_NAME = "COLUMN_NAME";
-    public static final String COL_COLUMN_POSITION = "COLUMN_POSITION";
-    public static final String COL_DATA_TYPE = "DATA_TYPE";
     public static final String COL_DATA_LENGTH = "DATA_LENGTH";
     public static final String COL_NULLABLE = "NULLABLE";
     public static final String COL_DATA_PRECISION = "DATA_PRECISION";
     public static final String COL_DATA_SCALE = "DATA_SCALE";
     public static final String COL_DATA_DEFAULT = "DATA_DEFAULT";
     public static final String COL_COMMENTS = "COMMENTS";
-    public static final String COL_VIEW_NAME = "VIEW_NAME";
-    public static final String COL_VIEW_TEXT = "TEXT";
 
-    public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
-    public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
-    public static final String COL_SEARCH_CONDITION = "SEARCH_CONDITION";
-    public static final String COL_R_OWNER = "R_OWNER";
-    public static final String COL_R_CONSTRAINT_NAME = "R_CONSTRAINT_NAME";
-    public static final String COL_DELETE_RULE = "DELETE_RULE";
-    public static final String COL_POSITION = "POSITION";
-    public static final String COL_STATUS = "STATUS";
-
-    public static final String COL_INDEX_NAME = "INDEX_NAME";
-    public static final String COL_INDEX_TYPE = "INDEX_TYPE";
-    public static final String COL_UNIQUENESS = "UNIQUENESS";
-    public static final String COL_DESCEND = "DESCEND";
-
-    public static final String COL_TABLE_SCHEMA = "TABLE_SCHEMA";
-    public static final String COL_ENGINE = "ENGINE";
-    public static final String COL_VERSION = "VERSION";
     public static final String COL_TABLE_ROWS = "ROWS";
     public static final String COL_CREATE_TIME = "CREATE_TIME";
     public static final String COL_UPDATE_TIME = "UPDATE_TIME";
     public static final String COL_CHECK_TIME = "CHECK_TIME";
     public static final String COL_AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
 
-    public static final String COL_ROUTINE_SCHEMA = "ROUTINE_SCHEMA";
-    public static final String COL_ROUTINE_NAME = "ROUTINE_NAME";
-    public static final String COL_ROUTINE_TYPE = "ROUTINE_TYPE";
-    public static final String COL_DTD_IDENTIFIER = "DTD_IDENTIFIER";
-    public static final String COL_ROUTINE_BODY = "ROUTINE_BODY";
-    public static final String COL_ROUTINE_DEFINITION = "ROUTINE_DEFINITION";
-    public static final String COL_EXTERNAL_NAME = "EXTERNAL_NAME";
-    public static final String COL_EXTERNAL_LANGUAGE = "EXTERNAL_LANGUAGE";
-    public static final String COL_PARAMETER_STYLE = "PARAMETER_STYLE";
-    public static final String COL_IS_DETERMINISTIC = "IS_DETERMINISTIC";
-    public static final String COL_SQL_DATA_ACCESS = "SQL_DATA_ACCESS";
-    public static final String COL_SECURITY_TYPE = "SECURITY_TYPE";
-    public static final String COL_ROUTINE_COMMENT = "ROUTINE_COMMENT";
-    public static final String COL_DEFINER = "DEFINER";
-    public static final String COL_CHARACTER_SET_CLIENT = "CHARACTER_SET_CLIENT";
-
-    public static final String COL_TRIGGER_SCHEMA = "TRIGGER_SCHEMA";
-	public static final String COL_TRIGGER_NAME = "TRIGGER_NAME";
-	public static final String COL_TRIGGER_EVENT_MANIPULATION = "EVENT_MANIPULATION"; 	 
+	public static final String COL_TRIGGER_EVENT_MANIPULATION = "EVENT_MANIPULATION";
 	public static final String COL_TRIGGER_EVENT_OBJECT_SCHEMA = "EVENT_OBJECT_SCHEMA";
 	public static final String COL_TRIGGER_EVENT_OBJECT_TABLE = "EVENT_OBJECT_TABLE"; 	 
 	public static final String COL_TRIGGER_ACTION_ORDER = "ACTION_ORDER";

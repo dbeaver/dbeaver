@@ -36,8 +36,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     protected OracleTableBase(OracleSchema oracleSchema, ResultSet dbResult)
     {
         super(oracleSchema, true);
-        setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME));
-        this.comment = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COMMENTS);
+        setName(JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
+        this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 
     @Property(name = "Comments", viewable = true, editable = true, order = 100)

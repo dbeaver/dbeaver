@@ -21,6 +21,7 @@ public class JDBCDataTypeCache extends JDBCObjectCache<DBSDataType> {
     public JDBCDataTypeCache(DBSObject owner)
     {
         this.owner = owner;
+        setCaseSensitive(false);
     }
 
     @Override

@@ -67,7 +67,7 @@ public class OracleIndex extends JDBCIndex<OracleTable>
 
     public String getDescription()
     {
-        return "";
+        return null;
     }
 
     public List<OracleIndexColumn> getColumns(DBRProgressMonitor monitor)

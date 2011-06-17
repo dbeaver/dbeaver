@@ -59,7 +59,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         throws DBException
     {
         OracleSchema schema = parentObject instanceof OracleSchema ? (OracleSchema) parentObject : null;
-        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Find objects by name");
+        JDBCExecutionContext context = dataSource.openContext(
+            monitor, DBCExecutionPurpose.META, "Find objects by name");
         try {
             List<DBSObject> objects = new ArrayList<DBSObject>();
 
@@ -116,9 +117,9 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     if (context.getProgressMonitor().isCanceled()) {
                         break;
                     }
-                    String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OWNER);
-                    String objectName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OBJECT_NAME);
-                    String objectType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OBJECT_TYPE);
+                    String schemaName = JDBCUtils.safeGetString(dbResult, "OWNER");
+                    String objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
+                    String objectType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
                     OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(context.getProgressMonitor(), schemaName);
                     if (tableSchema == null) {
                         log.debug("Table schema '" + schemaName + "' not found");

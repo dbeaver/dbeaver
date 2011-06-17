@@ -41,7 +41,7 @@ public class OracleTrigger extends AbstractTrigger
 
     private void loadInfo(ResultSet dbResult)
     {
-        setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_NAME));
+        setName(JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME"));
         setManipulationType(DBSManipulationType.getByName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_EVENT_MANIPULATION)));
         setActionTiming(DBSActionTiming.getByName(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TRIGGER_ACTION_TIMING)));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_TRIGGER_ACTION_ORDER));

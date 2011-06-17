@@ -9,7 +9,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -37,8 +36,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     static final Log log = LogFactory.getLog(OracleDataSource.class);
 
     private final DataTypeCache dataTypeCache = new DataTypeCache();
-    private Map<String, OracleSchema> schemas;
-    private List<OracleUser> users;
+    private SchemaCache schemaCache = new SchemaCache();
     private String activeSchemaName;
 
     public OracleDataSource(DBSDataSourceContainer container)
@@ -54,112 +52,43 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     public Collection<OracleSchema> getSchemas(DBRProgressMonitor monitor) throws DBException
     {
-        if (schemas == null) {
-            loadSchemas(monitor);
-        }
-        return schemas.values();
+        return schemaCache.getObjects(monitor, this);
     }
 
     public OracleSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException
     {
-        if (schemas == null) {
-            loadSchemas(monitor);
-        }
-        return schemas.get(name);
+        return schemaCache.getObject(monitor, this, name);
     }
 
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
         super.initialize(monitor);
-    }
 
-    private void loadSchemas(DBRProgressMonitor monitor) throws DBException
-    {
-        List<OracleSchema> tmpSchemas = new ArrayList<OracleSchema>();
-
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load basic oracle metadata");
-        try {
-            {
-                // Read schemas
-                // Read only non-empty schemas and current user's schema
-                StringBuilder schemasQuery = new StringBuilder("SELECT * FROM SYS.ALL_USERS u\n");
-                List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
-                schemasQuery.append("WHERE (EXISTS (SELECT 1 FROM ALL_OBJECTS WHERE OWNER=U.USERNAME)");
-                final String curUserName = getContainer().getConnectionInfo().getUserName();
-                if (!CommonUtils.isEmpty(curUserName)) {
-                    schemasQuery.append(" OR U.USERNAME='").append(curUserName.toUpperCase()).append("'");
-                }
-                schemasQuery.append(")");
-                if (!schemaFilters.isEmpty()) {
-                    schemasQuery.append(" AND (");
-                    for (int i = 0; i < schemaFilters.size(); i++) {
-                        if (i > 0) schemasQuery.append(" OR ");
-                        schemasQuery.append("USERNAME LIKE ?");
-                    }
-                    schemasQuery.append(")");
-                }
-                JDBCPreparedStatement dbStat = context.prepareStatement(schemasQuery.toString());
+        {
+            final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
+            try {
+                // Get active schema
+                JDBCPreparedStatement dbStat = context.prepareStatement(
+                    "SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
                 try {
-                    if (!schemaFilters.isEmpty()) {
-                        for (int i = 0; i < schemaFilters.size(); i++) {
-                            dbStat.setString(i + 1, schemaFilters.get(i));
-                        }
-                    }
-                    JDBCResultSet dbResult = dbStat.executeQuery();
+                    JDBCResultSet resultSet = dbStat.executeQuery();
                     try {
-                        while (dbResult.next()) {
-                            OracleSchema schema = new OracleSchema(this, dbResult);
-                            if (!getContainer().isShowSystemObjects() && schema.getName().equalsIgnoreCase(OracleConstants.INFO_SCHEMA_NAME)) {
-                                // Skip system schemas
-                                continue;
-                            }
-                            tmpSchemas.add(schema);
-                        }
+                        resultSet.next();
+                        activeSchemaName = resultSet.getString(1);
                     } finally {
-                        dbResult.close();
+                        resultSet.close();
                     }
-                }
-                finally {
+                } finally {
                     dbStat.close();
                 }
+            } catch (SQLException e) {
+                log.error(e);
             }
-
-            {
-                // Get active schema
-                try {
-                    JDBCPreparedStatement dbStat = context.prepareStatement("SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
-                    try {
-                        JDBCResultSet resultSet = dbStat.executeQuery();
-                        try {
-                            resultSet.next();
-                            activeSchemaName = resultSet.getString(1);
-                        } finally {
-                            resultSet.close();
-                        }
-                    } finally {
-                        dbStat.close();
-                    }
-                } catch (SQLException e) {
-                    log.error(e);
-                }
+            finally {
+                context.close();
             }
-
-        } catch (SQLException ex) {
-            throw new DBException("Error reading schemas", ex);
         }
-        finally {
-            context.close();
-        }
-
-        Collections.sort(tmpSchemas, DBUtils.<OracleSchema>nameComparator());
-
-        // Make map
-        Map<String, OracleSchema> schemas = new LinkedHashMap<String, OracleSchema>(tmpSchemas.size());
-        for (OracleSchema schema : tmpSchemas) {
-            schemas.put(schema.getName(), schema);
-        }
-        this.schemas = schemas;
     }
 
     public boolean refreshEntity(DBRProgressMonitor monitor)
@@ -167,27 +96,13 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     {
         super.refreshEntity(monitor);
 
-        this.schemas = null;
-        this.users = null;
+        this.schemaCache.clearCache();
+        this.dataTypeCache.clearCache();
         this.activeSchemaName = null;
 
         this.initialize(monitor);
 
         return true;
-    }
-
-    OracleTable findTable(DBRProgressMonitor monitor, String schemaName, String tableName)
-        throws DBException
-    {
-        if (CommonUtils.isEmpty(schemaName)) {
-            return null;
-        }
-        OracleSchema schema = getSchema(monitor, schemaName);
-        if (schema == null) {
-            log.error("Schema " + schemaName + " not found");
-            return null;
-        }
-        return schema.getTable(monitor, tableName);
     }
 
     public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
@@ -221,10 +136,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     public DBSEntity getSelectedEntity()
     {
-        if (schemas == null) {
-            return null;
-        }
-        return schemas.get(activeSchemaName);
+        return schemaCache.getCachedObject(activeSchemaName);
     }
 
     public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity)
@@ -262,51 +174,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         }
     }
 
-    public List<OracleUser> getUsers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (users == null) {
-            users = loadUsers(monitor);
-        }
-        return users;
-    }
-
-    public OracleUser getUser(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
-        return DBUtils.findObject(getUsers(monitor), name);
-    }
-
-    private List<OracleUser> loadUsers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load users");
-        try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM oracle.user ORDER BY user");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    List<OracleUser> userList = new ArrayList<OracleUser>();
-                    while (dbResult.next()) {
-                            OracleUser user = new OracleUser(this, dbResult);
-                            userList.add(user);
-                        }
-                    return userList;
-                } finally {
-                    dbResult.close();
-                }
-            } finally {
-                dbStat.close();
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-        }
-    }
-
     @Override
     public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
@@ -341,6 +208,44 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return dataTypeCache;
     }
 
+    class SchemaCache extends JDBCObjectCache<OracleSchema> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        {
+            StringBuilder schemasQuery = new StringBuilder("SELECT * FROM SYS.ALL_USERS u\n");
+            List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
+            schemasQuery.append("WHERE (EXISTS (SELECT 1 FROM ALL_OBJECTS WHERE OWNER=U.USERNAME)");
+            final String curUserName = getContainer().getConnectionInfo().getUserName();
+            if (!CommonUtils.isEmpty(curUserName)) {
+                schemasQuery.append(" OR U.USERNAME='").append(curUserName.toUpperCase()).append("'");
+            }
+            schemasQuery.append(")");
+            if (!schemaFilters.isEmpty()) {
+                schemasQuery.append(" AND (");
+                for (int i = 0; i < schemaFilters.size(); i++) {
+                    if (i > 0) schemasQuery.append(" OR ");
+                    schemasQuery.append("USERNAME LIKE ?");
+                }
+                schemasQuery.append(")");
+            }
+            schemasQuery.append("\nORDER BY U.USERNAME");
+            JDBCPreparedStatement dbStat = context.prepareStatement(schemasQuery.toString());
+
+            if (!schemaFilters.isEmpty()) {
+                for (int i = 0; i < schemaFilters.size(); i++) {
+                    dbStat.setString(i + 1, schemaFilters.get(i));
+                }
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected OracleSchema fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleSchema(OracleDataSource.this, resultSet);
+        }
+    }
+
     class DataTypeCache extends JDBCObjectCache<OracleDataType> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
@@ -352,12 +257,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         protected OracleDataType fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataType(OracleDataSource.this, resultSet);
-        }
-
-        @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor, Collection<OracleDataType> objectList)
-        {
-
         }
     }
 
