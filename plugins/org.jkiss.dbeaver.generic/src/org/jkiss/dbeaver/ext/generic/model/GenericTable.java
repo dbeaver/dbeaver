@@ -124,7 +124,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     {
         if (columns == null) {
             // Read columns using container
-            this.getContainer().getTableCache().getChildren(monitor, getDataSource(), this);
+            this.getContainer().getTableCache().getChildren(monitor, getContainer(), this);
             if (columns != null && uniqueKeys == null) {
                 // Cache unique keys (they are used by columns to detect key flag)
                 getConstraints(monitor);
@@ -159,7 +159,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     {
         if (indexes == null && getDataSource().getInfo().supportsIndexes()) {
             // Read indexes using cache
-            this.getContainer().getIndexCache().getObjects(monitor, getDataSource(), this);
+            this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
         }
         return indexes;
     }
@@ -188,7 +188,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 // ensure all columns are already cached
                 getColumns(monitor);
             }
-            getContainer().getPrimaryKeysCache().getObjects(monitor, getDataSource(), this);
+            getContainer().getPrimaryKeysCache().getObjects(monitor, getContainer(), this);
         }
         return uniqueKeys;
     }
@@ -219,7 +219,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         throws DBException
     {
         if (foreignKeys == null && getDataSource().getInfo().supportsReferentialIntegrity()) {
-            getContainer().getForeignKeysCache().getObjects(monitor, getDataSource(), this);
+            getContainer().getForeignKeysCache().getObjects(monitor, getContainer(), this);
         }
         return foreignKeys;
     }

@@ -79,13 +79,13 @@ public abstract class GenericEntityContainer implements GenericStructContainer
     public Collection<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, getDataSource());
+        return tableCache.getObjects(monitor, this);
     }
 
     public GenericTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return tableCache.getObject(monitor, getDataSource(), name);
+        return tableCache.getObject(monitor, this, name);
     }
 
     public Collection<GenericIndex> getIndexes(DBRProgressMonitor monitor)
@@ -107,7 +107,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
 
                 try {
                     // Try to load all indexes with one query
-                    indexCache.getObjects(monitor, getDataSource(), null);
+                    indexCache.getObjects(monitor, this, null);
                 } catch (Exception e) {
                     // Failed
                     if (readFromTables) {
@@ -129,7 +129,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
         // Cache tables
         if ((scope & STRUCT_ENTITIES) != 0) {
             monitor.subTask("Cache tables");
-            tableCache.getObjects(monitor, getDataSource());
+            tableCache.getObjects(monitor, this);
         }
 
         // Cache attributes
@@ -139,7 +139,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
             // So error here is not fatal
             try {
                 monitor.subTask("Cache tables' columns");
-                tableCache.getChildren(monitor, getDataSource(), null);
+                tableCache.getChildren(monitor, this, null);
             } catch (Exception e) {
                 log.debug(e);
             }
@@ -166,7 +166,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
                 // Try to read all FKs
                 try {
                     monitor.subTask("Cache foreign keys");
-                    foreignKeysCache.getObjects(monitor, getDataSource(), null);
+                    foreignKeysCache.getObjects(monitor, this, null);
                 } catch (Exception e) {
                     // Failed - seems to be unsupported feature
                     log.debug(e);
