@@ -25,16 +25,16 @@ public class JDBCDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSDataTy
     }
 
     @Override
-    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, JDBCDataSource owner) throws SQLException, DBException
     {
         return context.getMetaData().getTypeInfo().getSource();
     }
 
     @Override
-    protected JDBCDataType fetchObject(JDBCExecutionContext context, ResultSet dbResult) throws SQLException, DBException
+    protected JDBCDataType fetchObject(JDBCExecutionContext context, JDBCDataSource owner, ResultSet dbResult) throws SQLException, DBException
     {
         return new JDBCDataType(
-            owner,
+            this.owner,
             JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE),
             JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME),
             JDBCUtils.safeGetString(dbResult, JDBCConstants.LOCAL_TYPE_NAME),

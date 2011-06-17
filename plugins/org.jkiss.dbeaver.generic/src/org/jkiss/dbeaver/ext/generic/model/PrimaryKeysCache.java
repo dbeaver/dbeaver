@@ -21,21 +21,19 @@ import java.util.List;
  * Index cache implementation
  */
 class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericPrimaryKey, GenericConstraintColumn> {
-    private GenericStructContainer structContainer;
 
-    PrimaryKeysCache(GenericStructContainer structContainer)
+    PrimaryKeysCache(TableCache tableCache)
     {
-        super(structContainer.getTableCache(), GenericTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.PK_NAME);
-        this.structContainer = structContainer;
+        super(tableCache, GenericTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.PK_NAME);
     }
 
-    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericTable forParent)
+    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
         throws SQLException, DBException
     {
         try {
             return context.getMetaData().getPrimaryKeys(
-                    structContainer.getCatalog() == null ? null : structContainer.getCatalog().getName(),
-                    structContainer.getSchema() == null ? null : structContainer.getSchema().getName(),
+                    owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+                    owner.getSchema() == null ? null : owner.getSchema().getName(),
                     forParent == null ? null : forParent.getName())
                 .getSource();
         } catch (SQLException e) {
@@ -49,7 +47,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
     }
 
-    protected GenericPrimaryKey fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String pkName)
+    protected GenericPrimaryKey fetchObject(JDBCExecutionContext context, GenericTable parent, String pkName, ResultSet dbResult)
         throws SQLException, DBException
     {
         return new GenericPrimaryKey(
@@ -62,9 +60,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     protected GenericConstraintColumn fetchObjectRow(
         JDBCExecutionContext context,
-        ResultSet dbResult,
-        GenericTable parent,
-        GenericPrimaryKey object)
+        GenericTable parent, GenericPrimaryKey object, ResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);

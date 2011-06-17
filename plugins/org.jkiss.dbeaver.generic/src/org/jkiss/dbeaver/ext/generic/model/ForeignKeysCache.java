@@ -28,12 +28,10 @@ import java.util.Map;
 class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericForeignKey, GenericForeignKeyColumn> {
 
     Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
-    private GenericStructContainer structContainer;
 
-    ForeignKeysCache(GenericStructContainer structContainer)
+    ForeignKeysCache(TableCache tableCache)
     {
-        super(structContainer.getTableCache(), GenericTable.class, JDBCConstants.FKTABLE_NAME, JDBCConstants.FK_NAME);
-        this.structContainer = structContainer;
+        super(tableCache, GenericTable.class, JDBCConstants.FKTABLE_NAME, JDBCConstants.FK_NAME);
     }
 
     @Override
@@ -43,17 +41,17 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         super.clearCache();
     }
 
-    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericTable forParent)
+    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
         throws SQLException, DBException
     {
         return context.getMetaData().getImportedKeys(
-            structContainer.getCatalog() == null ? null : structContainer.getCatalog().getName(),
-            structContainer.getSchema() == null ? null : structContainer.getSchema().getName(),
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null ? null : owner.getSchema().getName(),
             forParent == null ? null : forParent.getName())
             .getSource();
     }
 
-    protected GenericForeignKey fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String fkName)
+    protected GenericForeignKey fetchObject(JDBCExecutionContext context, GenericTable parent, String fkName, ResultSet dbResult)
         throws SQLException, DBException
     {
         String pkTableCatalog = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKTABLE_CAT);
@@ -81,7 +79,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             return null;
         }
         //String pkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
-        GenericTable pkTable = structContainer.getDataSource().findTable(context.getProgressMonitor(), pkTableCatalog, pkTableSchema, pkTableName);
+        GenericTable pkTable = parent.getDataSource().findTable(context.getProgressMonitor(), pkTableCatalog, pkTableSchema, pkTableName);
         if (pkTable == null) {
             log.warn("Can't find PK table " + pkTableName);
             return null;
@@ -132,9 +130,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     protected GenericForeignKeyColumn fetchObjectRow(
         JDBCExecutionContext context,
-        ResultSet dbResult,
-        GenericTable parent,
-        GenericForeignKey foreignKey)
+        GenericTable parent, GenericForeignKey foreignKey, ResultSet dbResult)
         throws SQLException, DBException
     {
         String pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);

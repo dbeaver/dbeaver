@@ -307,14 +307,14 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return tableColumn;
     }
 
-    class TableCache extends JDBCStructCache<OracleSchema, OracleTableBase, OracleTableColumn> {
+    static class TableCache extends JDBCStructCache<OracleSchema, OracleTableBase, OracleTableColumn> {
         
         protected TableCache()
         {
             super("TABLE_NAME");
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException, DBException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -325,18 +325,18 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                 "LEFT OUTER JOIN SYS.ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME\n" +
                 "WHERE tab.OWNER=?\n" +
                 "ORDER BY tab.TABLE_NAME");
-            dbStat.setString(1, getName());
+            dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
-        protected OracleTableBase fetchObject(JDBCExecutionContext context, ResultSet dbResult)
+        protected OracleTableBase fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE");
             if ("TABLE".equals(tableType)) {
-                return new OracleTable(OracleSchema.this, dbResult);
+                return new OracleTable(owner, dbResult);
             } else {
-                return new OracleView(OracleSchema.this, dbResult);
+                return new OracleView(owner, dbResult);
             }
         }
 
@@ -350,7 +350,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             table.setColumns(columns);
         }
 
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleTableBase forTable)
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleSchema owner, OracleTableBase forTable)
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -369,14 +369,14 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             sql.append("c.COLUMN_ID");
 
             JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
-            dbStat.setString(1, OracleSchema.this.getName());
+            dbStat.setString(1, owner.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
             }
             return dbStat;
         }
 
-        protected OracleTableColumn fetchChild(JDBCExecutionContext context, OracleTableBase table, ResultSet dbResult)
+        protected OracleTableColumn fetchChild(JDBCExecutionContext context, OracleSchema owner, OracleTableBase table, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableColumn(context.getProgressMonitor(), table, dbResult);
@@ -392,7 +392,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             super(tableCache, OracleTable.class, "TABLE_NAME", "CONSTRAINT_NAME");
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forTable)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTable forTable)
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -416,7 +416,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return dbStat;
         }
 
-        protected OracleConstraint fetchObject(JDBCExecutionContext context, ResultSet dbResult, OracleTable parent, String indexName)
+        protected OracleConstraint fetchObject(JDBCExecutionContext context, OracleTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleConstraint(parent, dbResult);
@@ -424,9 +424,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 
         protected OracleConstraintColumn fetchObjectRow(
             JDBCExecutionContext context,
-            ResultSet dbResult,
-            OracleTable parent,
-            OracleConstraint object)
+            OracleTable parent, OracleConstraint object, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleConstraintColumn(
@@ -467,7 +465,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             super.loadObjects(monitor, schema, forParent);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forTable)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTable forTable)
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -492,7 +490,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return dbStat;
         }
 
-        protected OracleForeignKey fetchObject(JDBCExecutionContext context, ResultSet dbResult, OracleTable parent, String indexName)
+        protected OracleForeignKey fetchObject(JDBCExecutionContext context, OracleTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleForeignKey(context.getProgressMonitor(), parent, dbResult);
@@ -500,9 +498,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 
         protected OracleForeignKeyColumn fetchObjectRow(
             JDBCExecutionContext context,
-            ResultSet dbResult,
-            OracleTable parent,
-            OracleForeignKey object)
+            OracleTable parent, OracleForeignKey object, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleForeignKeyColumn(
@@ -538,7 +534,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             super(tableCache, OracleTable.class, "TABLE_NAME", "INDEX_NAME");
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forTable)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTable forTable)
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder();
@@ -562,7 +558,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return dbStat;
         }
 
-        protected OracleIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, OracleTable parent, String indexName)
+        protected OracleIndex fetchObject(JDBCExecutionContext context, OracleTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             String indexTypeName = JDBCUtils.safeGetString(dbResult, "INDEX_TYPE");
@@ -591,9 +587,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 
         protected OracleIndexColumn fetchObjectRow(
             JDBCExecutionContext context,
-            ResultSet dbResult,
-            OracleTable parent,
-            OracleIndex object)
+            OracleTable parent, OracleIndex object, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
@@ -632,20 +626,20 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     /**
      * DataType cache implementation
      */
-    class DataTypeCache extends JDBCObjectCache<OracleSchema, OracleDataType> {
+    static class DataTypeCache extends JDBCObjectCache<OracleSchema, OracleDataType> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner) throws SQLException, DBException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPES WHERE OWNER=? ORDER BY TYPE_NAME");
-            dbStat.setString(1, getName());
+            dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
         @Override
-        protected OracleDataType fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataType fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleDataType(OracleSchema.this, resultSet);
+            return new OracleDataType(owner, resultSet);
         }
 
         @Override
@@ -664,34 +658,34 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     /**
      * Sequence cache implementation
      */
-    class SequenceCache extends JDBCObjectCache<OracleSchema, OracleSequence> {
+    static class SequenceCache extends JDBCObjectCache<OracleSchema, OracleSequence> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner) throws SQLException, DBException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_SEQUENCES WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
-            dbStat.setString(1, getName());
+            dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
         @Override
-        protected OracleSequence fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        protected OracleSequence fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleSequence(OracleSchema.this, resultSet);
+            return new OracleSequence(owner, resultSet);
         }
     }
 
     /**
      * Procedures cache implementation
      */
-    class ProceduresCache extends JDBCStructCache<OracleSchema, OracleProcedure, OracleProcedureArgument> {
+    static class ProceduresCache extends JDBCStructCache<OracleSchema, OracleProcedure, OracleProcedureArgument> {
 
         ProceduresCache()
         {
             super(JDBCConstants.PROCEDURE_NAME);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException, DBException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -699,14 +693,14 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                 "WHERE OBJECT_TYPE IN ('PROCEDURE','FUNCTION') " +
                 "AND OWNER=? " +
                 "ORDER BY OBJECT_NAME");
-            dbStat.setString(1, getName());
+            dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
-        protected OracleProcedure fetchObject(JDBCExecutionContext context, ResultSet dbResult)
+        protected OracleProcedure fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleProcedure(OracleSchema.this, dbResult);
+            return new OracleProcedure(owner, dbResult);
         }
 
         protected boolean isChildrenCached(OracleProcedure parent)
@@ -719,43 +713,43 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             parent.cacheColumns(columns);
         }
 
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleProcedure procedure)
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleSchema owner, OracleProcedure procedure)
             throws SQLException, DBException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_ARGUMENTS " +
                 "WHERE OWNER=? " + (procedure == null ? "" : "AND OBJECT_ID=? ") +
                 "ORDER BY POSITION,SEQUENCE");
-            dbStat.setString(1, getName());
+            dbStat.setString(1, owner.getName());
             if (procedure != null) {
                 dbStat.setLong(2, procedure.getId());
             }
             return dbStat;
         }
 
-        protected OracleProcedureArgument fetchChild(JDBCExecutionContext context, OracleProcedure parent, ResultSet dbResult)
+        protected OracleProcedureArgument fetchChild(JDBCExecutionContext context, OracleSchema owner, OracleProcedure parent, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleProcedureArgument(context.getProgressMonitor(), parent, dbResult);
         }
     }
 
-    class PackageCache extends JDBCObjectCache<OracleSchema, OraclePackage> {
+    static class PackageCache extends JDBCObjectCache<OracleSchema, OraclePackage> {
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException, DBException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(        
                 "SELECT * FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " + 
                 " ORDER BY OBJECT_NAME");
-            dbStat.setString(1, getName());
+            dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
-        protected OraclePackage fetchObject(JDBCExecutionContext context, ResultSet dbResult)
+        protected OraclePackage fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OraclePackage(OracleSchema.this, dbResult);
+            return new OraclePackage(owner, dbResult);
         }
 
     }
@@ -766,7 +760,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             super(tableCache, OracleTable.class, "TABLE_NAME", "TRIGGER_NAME");
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTable forParent) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTable forParent) throws SQLException, DBException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TRIGGERS WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " +
@@ -775,12 +769,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return dbStat;
         }
 
-        protected OracleTrigger fetchObject(JDBCExecutionContext context, ResultSet resultSet, OracleTable oracleTable, String childName) throws SQLException, DBException
+        protected OracleTrigger fetchObject(JDBCExecutionContext context, OracleTable oracleTable, String childName, ResultSet resultSet) throws SQLException, DBException
         {
             return null;
         }
 
-        protected OracleTriggerColumn fetchObjectRow(JDBCExecutionContext context, ResultSet resultSet, OracleTable oracleTable, OracleTrigger forObject) throws SQLException, DBException
+        protected OracleTriggerColumn fetchObjectRow(JDBCExecutionContext context, OracleTable oracleTable, OracleTrigger forObject, ResultSet resultSet) throws SQLException, DBException
         {
             return null;
         }

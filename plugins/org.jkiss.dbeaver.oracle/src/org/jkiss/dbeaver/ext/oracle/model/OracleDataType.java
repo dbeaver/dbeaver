@@ -388,17 +388,17 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
 
     private class AttributeCache extends JDBCObjectCache<OracleDataType, OracleDataTypeAttribute> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataType owner) throws SQLException, DBException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPE_ATTRS " +
                 "WHERE OWNER=? AND TYPE_NAME=? ORDER BY ATTR_NO");
-            dbStat.setString(1, owner.getName());
+            dbStat.setString(1, OracleDataType.this.owner.getName());
             dbStat.setString(2, getName());
             return dbStat;
         }
         @Override
-        protected OracleDataTypeAttribute fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeAttribute fetchObject(JDBCExecutionContext context, OracleDataType owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataTypeAttribute(context.getProgressMonitor(), OracleDataType.this, resultSet);
         }
@@ -406,7 +406,7 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
 
     private class MethodCache extends JDBCObjectCache<OracleDataType, OracleDataTypeMethod> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataType owner) throws SQLException, DBException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT m.*,r.RESULT_TYPE_OWNER,RESULT_TYPE_NAME,RESULT_TYPE_MOD\n" +
@@ -414,13 +414,13 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
                 "LEFT OUTER JOIN SYS.ALL_METHOD_RESULTS r ON r.OWNER=m.OWNER AND r.TYPE_NAME=m.TYPE_NAME AND r.METHOD_NAME=m.METHOD_NAME AND r.METHOD_NO=m.METHOD_NO\n" +
                 "WHERE m.OWNER=? AND m.TYPE_NAME=?\n" +
                 "ORDER BY m.METHOD_NO");
-            dbStat.setString(1, owner.getName());
+            dbStat.setString(1, OracleDataType.this.owner.getName());
             dbStat.setString(2, getName());
             return dbStat;
         }
 
         @Override
-        protected OracleDataTypeMethod fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeMethod fetchObject(JDBCExecutionContext context, OracleDataType owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataTypeMethod(context.getProgressMonitor(), OracleDataType.this, resultSet);
         }

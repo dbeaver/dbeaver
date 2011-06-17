@@ -59,13 +59,13 @@ public abstract class JDBCCompositeCache<
         this.objectColumnName = objectColumnName;
     }
 
-    abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, PARENT forParent)
+    abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner, PARENT forParent)
         throws SQLException, DBException;
 
-    abstract protected OBJECT fetchObject(JDBCExecutionContext context, ResultSet resultSet, PARENT parent, String childName)
+    abstract protected OBJECT fetchObject(JDBCExecutionContext context, PARENT parent, String childName, ResultSet resultSet)
         throws SQLException, DBException;
 
-    abstract protected ROW_REF fetchObjectRow(JDBCExecutionContext context, ResultSet resultSet, PARENT parent, OBJECT forObject)
+    abstract protected ROW_REF fetchObjectRow(JDBCExecutionContext context, PARENT parent, OBJECT forObject, ResultSet resultSet)
         throws SQLException, DBException;
 
     abstract protected boolean isObjectsCached(PARENT parent);
@@ -183,7 +183,7 @@ public abstract class JDBCCompositeCache<
         JDBCExecutionContext context = (JDBCExecutionContext) owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load composite objects");
         try {
 
-            JDBCPreparedStatement dbStat = prepareObjectsStatement(context, forParent);
+            JDBCPreparedStatement dbStat = prepareObjectsStatement(context, owner, forParent);
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -217,7 +217,7 @@ public abstract class JDBCCompositeCache<
 
                         ObjectInfo objectInfo = objectMap.get(objectName);
                         if (objectInfo == null) {
-                            OBJECT object = fetchObject(context, dbResult, parent, objectName);
+                            OBJECT object = fetchObject(context, parent, objectName, dbResult);
                             if (object == null) {
                                 // Could not fetch object
                                 continue;
@@ -225,7 +225,7 @@ public abstract class JDBCCompositeCache<
                             objectInfo = new ObjectInfo(object);
                             objectMap.put(objectName, objectInfo);
                         }
-                        ROW_REF rowRef = fetchObjectRow(context, dbResult, parent, objectInfo.object);
+                        ROW_REF rowRef = fetchObjectRow(context, parent, objectInfo.object, dbResult);
                         if (rowRef == null) {
                             continue;
                         }

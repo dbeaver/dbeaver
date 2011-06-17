@@ -38,10 +38,10 @@ public abstract class JDBCStructCache<
 
     abstract protected void cacheChildren(OBJECT parent, List<CHILD> children);
 
-    abstract protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OBJECT forObject)
+    abstract protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OWNER owner, OBJECT forObject)
         throws SQLException, DBException;
 
-    abstract protected CHILD fetchChild(JDBCExecutionContext context, OBJECT parent, ResultSet dbResult)
+    abstract protected CHILD fetchChild(JDBCExecutionContext context, OWNER owner, OBJECT parent, ResultSet dbResult)
         throws SQLException, DBException;
 
     protected JDBCStructCache(String objectNameColumn)
@@ -72,7 +72,7 @@ public abstract class JDBCStructCache<
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<OBJECT, List<CHILD>>();
 
             // Load columns
-            JDBCPreparedStatement dbStat = prepareChildrenStatement(context, forObject);
+            JDBCPreparedStatement dbStat = prepareChildrenStatement(context, owner, forObject);
             try {
                 dbStat.setFetchSize(1000);
                 JDBCResultSet dbResult = dbStat.executeQuery();
@@ -92,7 +92,7 @@ public abstract class JDBCStructCache<
                             // Already read
                             continue;
                         }
-                        CHILD child = fetchChild(context, object, dbResult);
+                        CHILD child = fetchChild(context, owner, object, dbResult);
                         if (child == null) {
                             continue;
                         }

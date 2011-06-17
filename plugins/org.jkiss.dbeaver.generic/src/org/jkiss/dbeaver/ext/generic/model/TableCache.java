@@ -37,26 +37,23 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
         INVALID_TABLE_TYPES.add("TRIGGER");
     }
 
-    private GenericStructContainer structContainer;
-
-    TableCache(GenericStructContainer structContainer)
+    TableCache()
     {
         super(JDBCConstants.TABLE_NAME);
-        this.structContainer = structContainer;
         setListOrderComparator(DBUtils.<GenericTable>nameComparator());
     }
 
-    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
+    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner)
         throws SQLException, DBException
     {
         return context.getMetaData().getTables(
-            structContainer.getCatalog() == null ? null : structContainer.getCatalog().getName(),
-            structContainer.getSchema() == null ? null : structContainer.getSchema().getName(),
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null ? null : owner.getSchema().getName(),
             null,
             null).getSource();
     }
 
-    protected GenericTable fetchObject(JDBCExecutionContext context, ResultSet dbResult)
+    protected GenericTable fetchObject(JDBCExecutionContext context, GenericStructContainer owner, ResultSet dbResult)
         throws SQLException, DBException
     {
         String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_NAME);
@@ -69,7 +66,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
         }
 
         boolean isSystemTable = tableType != null && tableType.toUpperCase().indexOf("SYSTEM") != -1;
-        if (isSystemTable && !structContainer.getDataSource().getContainer().isShowSystemObjects()) {
+        if (isSystemTable && !owner.getDataSource().getContainer().isShowSystemObjects()) {
             return null;
         }
 
@@ -94,7 +91,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
                 typeCatalog.getSchema(typeSchemaName);
 */
         return new GenericTable(
-                structContainer,
+            owner,
             tableName,
             tableType,
             remarks,
@@ -111,17 +108,17 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
         table.setColumns(columns);
     }
 
-    protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, GenericTable forTable)
+    protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forTable)
         throws SQLException, DBException
     {
         return context.getMetaData().getColumns(
-            structContainer.getCatalog() == null ? null : structContainer.getCatalog().getName(),
-            structContainer.getSchema() == null ? null : structContainer.getSchema().getName(),
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null ? null : owner.getSchema().getName(),
             forTable == null ? null : forTable.getName(),
             null).getSource();
     }
 
-    protected GenericTableColumn fetchChild(JDBCExecutionContext context, GenericTable table, ResultSet dbResult)
+    protected GenericTableColumn fetchChild(JDBCExecutionContext context, GenericStructContainer owner, GenericTable table, ResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);

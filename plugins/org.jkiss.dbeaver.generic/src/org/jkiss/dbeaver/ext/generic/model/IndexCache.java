@@ -22,25 +22,23 @@ import java.util.List;
  * Index cache implementation
  */
 class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericIndex, GenericIndexColumn> {
-    private GenericStructContainer structContainer;
 
-    IndexCache(GenericStructContainer structContainer)
+    IndexCache(TableCache tableCache)
     {
-        super(structContainer.getTableCache(), GenericTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
-        this.structContainer = structContainer;
+        super(tableCache, GenericTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
     }
 
-    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericTable forParent)
+    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
         throws SQLException, DBException
     {
         try {
             return context.getMetaData().getIndexInfo(
-                    structContainer.getCatalog() == null ? null : structContainer.getCatalog().getName(),
-                    structContainer.getSchema() == null ? null : structContainer.getSchema().getName(),
+                    owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+                    owner.getSchema() == null ? null : owner.getSchema().getName(),
                     // oracle fails if unquoted complex identifier specified
                     // but other DBs (and logically it's correct) do not want quote chars in this query
                     // so let's fix it in oracle plugin
-                    forParent == null ? null : DBUtils.getQuotedIdentifier(structContainer.getDataSource(), forParent.getName()),
+                    forParent == null ? null : DBUtils.getQuotedIdentifier(owner.getDataSource(), forParent.getName()),
                     false,
                     true).getSource();
         } catch (SQLException e) {
@@ -54,7 +52,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         }
     }
 
-    protected GenericIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String indexName)
+    protected GenericIndex fetchObject(JDBCExecutionContext context, GenericTable parent, String indexName, ResultSet dbResult)
         throws SQLException, DBException
     {
         boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
@@ -83,9 +81,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
 
     protected GenericIndexColumn fetchObjectRow(
         JDBCExecutionContext context,
-        ResultSet dbResult,
-        GenericTable parent,
-        GenericIndex object)
+        GenericTable parent, GenericIndex object, ResultSet dbResult)
         throws SQLException, DBException
     {
         int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);

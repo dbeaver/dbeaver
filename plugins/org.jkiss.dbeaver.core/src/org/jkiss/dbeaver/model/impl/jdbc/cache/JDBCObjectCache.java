@@ -36,10 +36,10 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         this.listOrderComparator = listOrderComparator;
     }
 
-    abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
+    abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner)
         throws SQLException, DBException;
 
-    abstract protected OBJECT fetchObject(JDBCExecutionContext context, ResultSet resultSet)
+    abstract protected OBJECT fetchObject(JDBCExecutionContext context, OWNER owner, ResultSet resultSet)
         throws SQLException, DBException;
 
     public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
@@ -129,14 +129,14 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
 
         JDBCExecutionContext context = (JDBCExecutionContext)owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load objects");
         try {
-            JDBCPreparedStatement dbStat = prepareObjectsStatement(context);
+            JDBCPreparedStatement dbStat = prepareObjectsStatement(context, owner);
             try {
                 dbStat.setFetchSize(1000);
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
 
-                        OBJECT object = fetchObject(context, dbResult);
+                        OBJECT object = fetchObject(context, owner, dbResult);
                         if (object == null) {
                             continue;
                         }

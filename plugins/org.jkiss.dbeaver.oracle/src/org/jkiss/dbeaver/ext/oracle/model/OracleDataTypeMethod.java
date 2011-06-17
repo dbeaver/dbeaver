@@ -109,7 +109,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember {
 
     private class ParameterCache extends JDBCObjectCache<OracleDataTypeMethod, OracleDataTypeMethodParameter> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataTypeMethod owner) throws SQLException, DBException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT PARAM_NAME,PARAM_NO,PARAM_MODE,PARAM_TYPE_OWNER,PARAM_TYPE_NAME,PARAM_TYPE_MOD " +
@@ -123,7 +123,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember {
         }
 
         @Override
-        protected OracleDataTypeMethodParameter fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeMethodParameter fetchObject(JDBCExecutionContext context, OracleDataTypeMethod owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataTypeMethodParameter(
                 context.getProgressMonitor(),

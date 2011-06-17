@@ -39,10 +39,10 @@ public abstract class GenericEntityContainer implements GenericStructContainer
     protected GenericEntityContainer(GenericDataSource dataSource)
     {
         this.dataSource = dataSource;
-        this.tableCache = new TableCache(this);
-        this.indexCache = new IndexCache(this);
-        this.primaryKeysCache = new PrimaryKeysCache(this);
-        this.foreignKeysCache = new ForeignKeysCache(this);
+        this.tableCache = new TableCache();
+        this.indexCache = new IndexCache(tableCache);
+        this.primaryKeysCache = new PrimaryKeysCache(tableCache);
+        this.foreignKeysCache = new ForeignKeysCache(tableCache);
     }
 
     public final TableCache getTableCache()

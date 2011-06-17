@@ -221,7 +221,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException, DBException
         {
             StringBuilder schemasQuery = new StringBuilder("SELECT * FROM SYS.ALL_USERS u\n");
             List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
@@ -251,7 +251,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         }
 
         @Override
-        protected OracleSchema fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        protected OracleSchema fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSchema(OracleDataSource.this, resultSet);
         }
@@ -259,13 +259,13 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException, DBException
         {
             return context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPES WHERE OWNER IS NULL ORDER BY TYPE_NAME");
         }
         @Override
-        protected OracleDataType fetchObject(JDBCExecutionContext context, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataType fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataType(OracleDataSource.this, resultSet);
         }

@@ -388,13 +388,13 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             super(JDBCConstants.TABLE_NAME);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException, DBException
         {
             return context.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(getDataSource(), getName()));
         }
 
-        protected MySQLTableBase fetchObject(JDBCExecutionContext context, ResultSet dbResult)
+        protected MySQLTableBase fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE);
@@ -415,7 +415,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             table.setColumns(columns);
         }
 
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLTableBase forTable)
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTableBase forTable)
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder();
@@ -435,7 +435,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             return dbStat;
         }
 
-        protected MySQLTableColumn fetchChild(JDBCExecutionContext context, MySQLTableBase table, ResultSet dbResult)
+        protected MySQLTableColumn fetchChild(JDBCExecutionContext context, MySQLCatalog owner, MySQLTableBase table, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLTableColumn(table, dbResult);
@@ -451,7 +451,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable forTable)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder();
@@ -477,7 +477,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
 //                    true).getSource();
         }
 
-        protected MySQLIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, MySQLTable parent, String indexName)
+        protected MySQLIndex fetchObject(JDBCExecutionContext context, MySQLTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NON_UNIQUE) != 0;
@@ -506,9 +506,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
 
         protected MySQLIndexColumn fetchObjectRow(
             JDBCExecutionContext context,
-            ResultSet dbResult,
-            MySQLTable parent,
-            MySQLIndex object)
+            MySQLTable parent, MySQLIndex object, ResultSet dbResult)
             throws SQLException, DBException
         {
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_SEQ_IN_INDEX);
@@ -556,7 +554,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             super(JDBCConstants.PROCEDURE_NAME);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException, DBException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -568,7 +566,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             return dbStat;
         }
 
-        protected MySQLProcedure fetchObject(JDBCExecutionContext context, ResultSet dbResult)
+        protected MySQLProcedure fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLProcedure(MySQLCatalog.this, dbResult);
@@ -584,7 +582,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             parent.cacheColumns(columns);
         }
 
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLProcedure procedure)
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLProcedure procedure)
             throws SQLException, DBException
         {
             // Load procedure columns thru MySQL metadata
@@ -598,7 +596,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
                 null).getSource();
         }
 
-        protected MySQLProcedureColumn fetchChild(JDBCExecutionContext context, MySQLProcedure parent, ResultSet dbResult)
+        protected MySQLProcedureColumn fetchChild(JDBCExecutionContext context, MySQLCatalog owner, MySQLProcedure parent, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
@@ -637,7 +635,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     }
 
     class TriggerCache extends JDBCObjectCache<MySQLCatalog, MySQLTrigger> {
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException, DBException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(        
@@ -648,7 +646,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             return dbStat;
         }
 
-        protected MySQLTrigger fetchObject(JDBCExecutionContext context, ResultSet dbResult)
+        protected MySQLTrigger fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             String tableSchema = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_EVENT_OBJECT_SCHEMA);
