@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 /**
 * Lazy object reference
 */
-class OracleLazyReference<OBJECT_TYPE> implements OracleLazyObject<OBJECT_TYPE> {
+class OracleLazyReference {
     final String schemaName;
     final String objectName;
 
@@ -15,11 +15,6 @@ class OracleLazyReference<OBJECT_TYPE> implements OracleLazyObject<OBJECT_TYPE> 
     {
         this.schemaName = schemaName;
         this.objectName = objectName;
-    }
-
-    public OBJECT_TYPE getObject()
-    {
-        throw new IllegalStateException("Lazy reference '" + schemaName + "." + objectName + "' wasn't resolved!");
     }
 
 }

@@ -23,7 +23,12 @@ public enum OracleObjectType implements DBSObjectType {
 	CONTEXT("CONTEXT", null, DBSObject.class, null),
 	DIRECTORY("DIRECTORY", null, DBSObject.class, null),
 	EVALUATION_CONTEXT("EVALUATION CONTEXT", null, DBSObject.class, null),
-	FUNCTION("FUNCTION", null, DBSObject.class, null),
+	FUNCTION("FUNCTION", DBIcon.TREE_PROCEDURE.getImage(), OracleProcedure.class, new ObjectFinder() {
+        public OracleProcedure findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
+        {
+            return schema.proceduresCache.getObject(monitor, schema, objectName);
+        }
+    }),
 	INDEX("INDEX", null, DBSObject.class, null),
 	INDEX_PARTITION("INDEX PARTITION", null, DBSObject.class, null),
 	INDEXTYPE("INDEXTYPE", null, DBSObject.class, null),

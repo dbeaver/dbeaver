@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * Oracle data type
  */
-public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataType>, OracleSourceObject {
+public class OracleDataType implements DBSDataType, OracleSourceObject {
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 
@@ -107,7 +107,7 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     private String typeCode;
     private byte[] typeOID;
     private byte[] typeID;
-    private OracleLazyObject<OracleDataType> superType;
+    private Object superType;
     private final AttributeCache attributeCache;
     private final MethodCache methodCache;
     private boolean flagPredefined;
@@ -146,8 +146,9 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         boolean hasAttributes;
         boolean hasMethods;
         if (!CommonUtils.isEmpty(superTypeOwner)) {
-            String superTypeName = JDBCUtils.safeGetString(dbResult, "SUPERTYPE_NAME");
-            this.superType = new OracleLazyReference<OracleDataType>(superTypeOwner, superTypeName);
+            this.superType = new OracleLazyReference(
+                superTypeOwner,
+                JDBCUtils.safeGetString(dbResult, "SUPERTYPE_NAME"));
             hasAttributes = JDBCUtils.safeGetInt(dbResult, "LOCAL_ATTRIBUTES") > 0;
             hasMethods = JDBCUtils.safeGetInt(dbResult, "LOCAL_METHODS") > 0;
         } else {
@@ -185,31 +186,6 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
         this.typeDesc = PREDEFINED_TYPES.get(typeName);
         if (this.typeDesc == null) {
             log.warn("Unknown predefined type: " + typeName);
-        }
-    }
-
-    boolean resolveLazyReference(DBRProgressMonitor monitor)
-    {
-        if (superType  == null || superType instanceof OracleDataType) {
-            return true;
-        } else {
-            try {
-                OracleLazyReference olr = (OracleLazyReference) superType;
-                final OracleSchema superSchema = getDataSource().getSchema(monitor, olr.schemaName);
-                if (superSchema == null) {
-                    log.warn("Referenced schema '" + olr.schemaName + "' not found for super type '" + olr.objectName + "'");
-                    return false;
-                }
-                superType = superSchema.dataTypeCache.getObject(monitor, superSchema, olr.objectName);
-                if (superType == null) {
-                    log.warn("Referenced type '" + olr.objectName + "' not found in schema '" + olr.schemaName + "'");
-                    return false;
-                }
-                return true;
-            } catch (DBException e) {
-                log.error(e);
-                return false;
-            }
         }
     }
 
@@ -296,9 +272,32 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
     }
 
     @Property(name = "Super Type", viewable = true, editable = true, order = 3)
-    public OracleDataType getSuperType()
+    public OracleDataType getSuperType(DBRProgressMonitor monitor)
     {
-        return superType == null ? null : superType.getObject();
+        if (superType  == null) {
+            return null;
+        } else if (superType instanceof OracleDataType) {
+            return (OracleDataType)superType;
+        } else {
+            try {
+                OracleLazyReference olr = (OracleLazyReference) superType;
+                final OracleSchema superSchema = getDataSource().getSchema(monitor, olr.schemaName);
+                if (superSchema == null) {
+                    log.warn("Referenced schema '" + olr.schemaName + "' not found for super type '" + olr.objectName + "'");
+                } else {
+                    superType = superSchema.dataTypeCache.getObject(monitor, superSchema, olr.objectName);
+                    if (superType == null) {
+                        log.warn("Referenced type '" + olr.objectName + "' not found in schema '" + olr.schemaName + "'");
+                    } else {
+                        return (OracleDataType)superType;
+                    }
+                }
+            } catch (DBException e) {
+                log.error(e);
+            }
+            superType = null;
+            return null;
+        }
     }
 
     @Property(name = "Predefined", viewable = true, order = 4)

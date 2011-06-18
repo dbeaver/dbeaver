@@ -145,12 +145,6 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return sequenceCache.getObjects(monitor, this);
     }
 
-    public OracleSequence getSequence(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
-        return sequenceCache.getObject(monitor, this, name);
-    }
-
     @Association
     public Collection<OraclePackage> getPackages(DBRProgressMonitor monitor)
         throws DBException
@@ -158,23 +152,11 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         return packageCache.getObjects(monitor, this);
     }
 
-    public OraclePackage getPackage(DBRProgressMonitor monitor, String procName)
-        throws DBException
-    {
-        return packageCache.getObject(monitor, this, procName);
-    }
-
     @Association
     public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         return proceduresCache.getObjects(monitor, this);
-    }
-
-    public OracleProcedure getProcedure(DBRProgressMonitor monitor, String procName)
-        throws DBException
-    {
-        return proceduresCache.getObject(monitor, this, procName);
     }
 
     @Association
@@ -189,12 +171,6 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         throws DBException
     {
         return triggerCache.getObjects(monitor, this);
-    }
-
-    public OracleTrigger getTrigger(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
-        return triggerCache.getObject(monitor, this, name);
     }
 
     public Collection<OracleTableBase> getChildren(DBRProgressMonitor monitor)
@@ -606,17 +582,6 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return new OracleDataType(owner, resultSet);
         }
 
-        @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor, Collection<OracleDataType> oracleDataTypes)
-        {
-            // Resolve super types
-            for (Iterator<OracleDataType> iter = oracleDataTypes.iterator(); iter.hasNext(); ) {
-                OracleDataType type = iter.next();
-                if (!type.resolveLazyReference(monitor)) {
-                    iter.remove();
-                }
-            }
-        }
     }
 
     /**
