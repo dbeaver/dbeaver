@@ -16,20 +16,20 @@ import java.util.List;
 /**
  * OracleIndex
  */
-public class OracleIndex extends JDBCIndex<OracleTable>
+public class OracleIndex extends JDBCIndex<OracleTablePhysical>
 {
     private boolean nonUnique;
     private List<OracleIndexColumn> columns;
 
     public OracleIndex(
-        OracleTable table,
+        OracleTablePhysical table,
         DBSIndexType indexType)
     {
         super(table, null, indexType, false);
     }
 
     public OracleIndex(
-        OracleTable table,
+        OracleTablePhysical table,
         boolean nonUnique,
         String indexName,
         DBSIndexType indexType)

@@ -4,14 +4,11 @@
 
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.ext.oracle.model.OracleIndex;
-import org.jkiss.dbeaver.ext.oracle.model.OracleIndexColumn;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
@@ -24,12 +21,12 @@ import java.util.Collections;
 /**
  * Oracle index manager
  */
-public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTable> {
+public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTablePhysical> {
 
     protected OracleIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor,
-        DBECommandContext context, OracleTable parent,
+        DBECommandContext context, OracleTablePhysical parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(

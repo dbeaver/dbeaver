@@ -14,6 +14,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSConstraint;
+import org.jkiss.dbeaver.model.struct.DBSForeignKey;
+import org.jkiss.dbeaver.model.struct.DBSIndex;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -99,11 +102,26 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return getContainer().triggerCache.getObjects(monitor, getContainer(), this);
     }
 
-    public String getDDL(DBRProgressMonitor monitor)
-        throws DBException
+    public List<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
-        return "";
+        return null;
     }
+
+    public List<? extends DBSConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
+    public List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
+    public List<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
 
     public static OracleTableBase findTable(DBRProgressMonitor monitor, OracleDataSource dataSource, String ownerName, String tableName) throws DBException
     {

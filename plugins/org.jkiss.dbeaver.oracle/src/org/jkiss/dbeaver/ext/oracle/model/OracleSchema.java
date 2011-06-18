@@ -126,6 +126,13 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     }
 
     @Association
+    public Collection<OracleMaterializedView> getMaterializedViews(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return tableCache.getObjects(monitor, this, OracleMaterializedView.class);
+    }
+
+    @Association
     public Collection<OracleDataType> getDataTypes(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -259,13 +266,19 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT /*+ USE_NL(tc)*/ tab.*,tc.COMMENTS FROM (\n" +
-                    "SELECT t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as TABLE_TYPE FROM SYS.ALL_ALL_TABLES t\n" +
-                    "UNION ALL\n" +
-                    "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as TABLE_TYPE FROM SYS.ALL_VIEWS v) tab\n" +
+                "SELECT /*+ USE_NL(mv)*/ t.OWNER,\n" +
+                "CASE WHEN mv.MVIEW_NAME IS NULL THEN t.TABLE_NAME ELSE mv.MVIEW_NAME END as TABLE_NAME,\n" +
+                "CASE WHEN mv.MVIEW_NAME IS NULL THEN 'TABLE' ELSE 'MVIEW' END as TABLE_TYPE \n" +
+                "FROM SYS.ALL_ALL_TABLES t\n" +
+                "LEFT OUTER JOIN SYS.ALL_MVIEWS mv ON mv.OWNER=t.OWNER AND mv.CONTAINER_NAME=t.TABLE_NAME \n" +
+                "WHERE t.OWNER=?\n" +
+                "UNION ALL\n" +
+                "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as TABLE_TYPE FROM SYS.ALL_VIEWS v WHERE v.OWNER=?\n" +
+                ") tab\n" +
                 "LEFT OUTER JOIN SYS.ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME\n" +
-                "WHERE tab.OWNER=?\n" +
                 "ORDER BY tab.TABLE_NAME");
             dbStat.setString(1, owner.getName());
+            dbStat.setString(2, owner.getName());
             return dbStat;
         }
 
@@ -273,7 +286,9 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE");
-            if ("TABLE".equals(tableType)) {
+            if ("MVIEW".equals(tableType)) {
+                return new OracleMaterializedView(owner, dbResult);
+            } else if ("TABLE".equals(tableType)) {
                 return new OracleTable(owner, dbResult);
             } else {
                 return new OracleView(owner, dbResult);
@@ -468,13 +483,13 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     /**
      * Index cache implementation
      */
-    class IndexCache extends JDBCCompositeCache<OracleSchema, OracleTable, OracleIndex, OracleIndexColumn> {
+    class IndexCache extends JDBCCompositeCache<OracleSchema, OracleTablePhysical, OracleIndex, OracleIndexColumn> {
         protected IndexCache()
         {
-            super(tableCache, OracleTable.class, "TABLE_NAME", "INDEX_NAME");
+            super(tableCache, OracleTablePhysical.class, "TABLE_NAME", "INDEX_NAME");
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTable forTable)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTablePhysical forTable)
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder();
@@ -498,7 +513,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return dbStat;
         }
 
-        protected OracleIndex fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTable parent, String indexName, ResultSet dbResult)
+        protected OracleIndex fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTablePhysical parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             String indexTypeName = JDBCUtils.safeGetString(dbResult, "INDEX_TYPE");
@@ -527,7 +542,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 
         protected OracleIndexColumn fetchObjectRow(
             JDBCExecutionContext context,
-            OracleTable parent, OracleIndex object, ResultSet dbResult)
+            OracleTablePhysical parent, OracleIndex object, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
@@ -547,12 +562,12 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
                 isAscending);
         }
 
-        protected boolean isObjectsCached(OracleTable parent)
+        protected boolean isObjectsCached(OracleTablePhysical parent)
         {
             return parent.isIndexesCached();
         }
 
-        protected void cacheObjects(OracleTable parent, List<OracleIndex> indexes)
+        protected void cacheObjects(OracleTablePhysical parent, List<OracleIndex> indexes)
         {
             parent.setIndexes(indexes);
         }

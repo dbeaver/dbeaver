@@ -17,16 +17,15 @@ import java.util.List;
 /**
  * OracleTable
  */
-public class OracleTable extends OracleTableBase
+public class OracleTable extends OracleTablePhysical
 {
 
-    private List<OracleIndex> indexes;
     private List<OracleConstraint> constraints;
     private List<OracleForeignKey> foreignKeys;
 
     public OracleTable(OracleSchema schema)
     {
-        super(schema, false);
+        super(schema);
     }
 
     public OracleTable(
@@ -39,33 +38,6 @@ public class OracleTable extends OracleTableBase
     public boolean isView()
     {
         return false;
-    }
-
-    @Association
-    public List<OracleIndex> getIndexes(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (indexes == null) {
-            // Read indexes using cache
-            this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
-        }
-        return indexes;
-    }
-
-//    public OracleIndex getIndex(DBRProgressMonitor monitor, String indexName)
-//        throws DBException
-//    {
-//        return DBUtils.findObject(getIndexes(monitor), indexName);
-//    }
-
-    boolean isIndexesCached()
-    {
-        return indexes != null;
-    }
-
-    void setIndexes(List<OracleIndex> indexes)
-    {
-        this.indexes = indexes;
     }
 
     @Association
@@ -161,7 +133,6 @@ public class OracleTable extends OracleTableBase
     {
         super.refreshEntity(monitor);
 
-        indexes = null;
         constraints = null;
         foreignKeys = null;
         return true;

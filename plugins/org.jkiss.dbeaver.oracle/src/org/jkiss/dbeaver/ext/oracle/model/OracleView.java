@@ -107,26 +107,6 @@ public class OracleView extends OracleTableBase
         }
     }
 
-    public List<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
-    public List<? extends DBSConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
-    public List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
-    public List<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
     @Override
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
