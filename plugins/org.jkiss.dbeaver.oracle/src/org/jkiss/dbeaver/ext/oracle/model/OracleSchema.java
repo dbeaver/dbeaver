@@ -36,16 +36,19 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
 {
     static final Log log = LogFactory.getLog(OracleSchema.class);
 
+    final TableCache tableCache = new TableCache();
+    final ConstraintCache constraintCache = new ConstraintCache();
+    final ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
+    final TriggerCache triggerCache = new TriggerCache();
+    final IndexCache indexCache = new IndexCache();
+    final DataTypeCache dataTypeCache = new DataTypeCache();
+    final SequenceCache sequenceCache = new SequenceCache();
+    final PackageCache packageCache = new PackageCache();
+    final SynonymCache synonymCache = new SynonymCache();
+    final OracleDBLinkCache dbLinkCache = new OracleDBLinkCache();
+    final ProceduresCache proceduresCache = new ProceduresCache();
+
     private long id;
-    private final TableCache tableCache = new TableCache();
-    private final ConstraintCache constraintCache = new ConstraintCache();
-    private final ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
-    private final TriggerCache triggerCache = new TriggerCache();
-    private final IndexCache indexCache = new IndexCache();
-    private final DataTypeCache dataTypeCache = new DataTypeCache();
-    private final SequenceCache sequenceCache = new SequenceCache(); 
-    private final PackageCache packageCache = new PackageCache();
-    private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean persisted;
 
     public OracleSchema(OracleDataSource dataSource, ResultSet dbResult)
@@ -58,51 +61,6 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         } else {
             persisted = false;
         }
-    }
-
-    TableCache getTableCache()
-    {
-        return tableCache;
-    }
-
-    ConstraintCache getConstraintCache()
-    {
-        return constraintCache;
-    }
-
-    ForeignKeyCache getForeignKeyCache()
-    {
-        return foreignKeyCache;
-    }
-
-    IndexCache getIndexCache()
-    {
-        return indexCache;
-    }
-
-    PackageCache getPackageCache()
-    {
-        return packageCache;
-    }
-
-    ProceduresCache getProceduresCache()
-    {
-        return proceduresCache;
-    }
-
-    TriggerCache getTriggerCache()
-    {
-        return triggerCache;
-    }
-
-    DataTypeCache getDataTypeCache()
-    {
-        return dataTypeCache;
-    }
-
-    SequenceCache getSequenceCache()
-    {
-        return sequenceCache;
     }
 
     @Override
@@ -138,110 +96,117 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     public Collection<OracleIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getIndexCache().getObjects(monitor, this, null);
+        return indexCache.getObjects(monitor, this, null);
     }
 
     @Association
     public Collection<OracleTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getTableCache().getObjects(monitor, this, OracleTable.class);
+        return tableCache.getObjects(monitor, this, OracleTable.class);
     }
 
     public OracleTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return getTableCache().getObject(monitor, this, name, OracleTable.class);
+        return tableCache.getObject(monitor, this, name, OracleTable.class);
     }
 
     @Association
     public Collection<OracleView> getViews(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getTableCache().getObjects(monitor, this, OracleView.class);
+        return tableCache.getObjects(monitor, this, OracleView.class);
     }
 
     public OracleView getView(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return getTableCache().getObject(monitor, this, name, OracleView.class);
+        return tableCache.getObject(monitor, this, name, OracleView.class);
     }
 
     @Association
     public Collection<OracleDataType> getDataTypes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getDataTypeCache().getObjects(monitor, this);
+        return dataTypeCache.getObjects(monitor, this);
     }
 
     public OracleDataType getDataType(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return getDataTypeCache().getObject(monitor, this, name);
+        return dataTypeCache.getObject(monitor, this, name);
     }
 
     @Association
     public Collection<OracleSequence> getSequences(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getSequenceCache().getObjects(monitor, this);
+        return sequenceCache.getObjects(monitor, this);
     }
 
     public OracleSequence getSequence(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return getSequenceCache().getObject(monitor, this, name);
+        return sequenceCache.getObject(monitor, this, name);
     }
 
     @Association
     public Collection<OraclePackage> getPackages(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getPackageCache().getObjects(monitor, this);
+        return packageCache.getObjects(monitor, this);
     }
 
     public OraclePackage getPackage(DBRProgressMonitor monitor, String procName)
         throws DBException
     {
-        return getPackageCache().getObject(monitor, this, procName);
+        return packageCache.getObject(monitor, this, procName);
     }
 
     @Association
     public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getProceduresCache().getObjects(monitor, this);
+        return proceduresCache.getObjects(monitor, this);
     }
 
     public OracleProcedure getProcedure(DBRProgressMonitor monitor, String procName)
         throws DBException
     {
-        return getProceduresCache().getObject(monitor, this, procName);
+        return proceduresCache.getObject(monitor, this, procName);
+    }
+
+    @Association
+    public Collection<OracleSynonym> getSynonyms(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return synonymCache.getObjects(monitor, this);
     }
 
     @Association
     public Collection<OracleTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getTriggerCache().getObjects(monitor, this);
+        return triggerCache.getObjects(monitor, this);
     }
 
     public OracleTrigger getTrigger(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return getTriggerCache().getObject(monitor, this, name);
+        return triggerCache.getObject(monitor, this, name);
     }
 
     public Collection<OracleTableBase> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getTableCache().getObjects(monitor, this);
+        return tableCache.getObjects(monitor, this);
     }
 
     public OracleTableBase getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        return getTableCache().getObject(monitor, this, childName);
+        return tableCache.getObject(monitor, this, childName);
     }
 
     public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
@@ -282,6 +247,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         triggerCache.clearCache();
         dataTypeCache.clearCache();
         sequenceCache.clearCache();
+        synonymCache.clearCache();
         return true;
     }
 
@@ -458,7 +424,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         {
             // Cache schema constraints in not table specified
             if (forParent == null) {
-                getConstraintCache().getObject(monitor, schema, null);
+                constraintCache.getObject(monitor, schema, null);
             }
             super.loadObjects(monitor, schema, forParent);
         }
@@ -748,6 +714,49 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             throws SQLException, DBException
         {
             return new OraclePackage(owner, dbResult);
+        }
+
+    }
+
+    static class SynonymCache extends JDBCObjectCache<OracleSchema, OracleSynonym> {
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+            throws SQLException, DBException
+        {
+            JDBCPreparedStatement dbStat = context.prepareStatement(        
+                "SELECT /*+ USE_NL(O)*/ s.*,O.OBJECT_TYPE \n" +
+                "FROM ALL_SYNONYMS S\n" +
+                "JOIN ALL_OBJECTS O ON  O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
+                "WHERE S.OWNER=? " +
+                "ORDER BY S.SYNONYM_NAME");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        protected OracleSynonym fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new OracleSynonym(context.getProgressMonitor(), owner, dbResult);
+        }
+
+    }
+
+    static class OracleDBLinkCache extends JDBCObjectCache<OracleSchema, OracleDBLink> {
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+            throws SQLException, DBException
+        {
+            JDBCPreparedStatement dbStat = context.prepareStatement(        
+                "SELECT * FROM SYS.ALL_DB_LINKS WHERE OWNER=? " +
+                " ORDER BY DB_LINK");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        protected OracleDBLink fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new OracleDBLink(context.getProgressMonitor(), owner, dbResult);
         }
 
     }

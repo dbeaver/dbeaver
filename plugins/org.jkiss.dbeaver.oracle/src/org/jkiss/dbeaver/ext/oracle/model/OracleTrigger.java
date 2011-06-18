@@ -20,13 +20,11 @@ import java.util.List;
 /**
  * GenericProcedure
  */
-public class OracleTrigger implements DBSTrigger
+public class OracleTrigger extends OracleSchemaObject implements DBSTrigger
 {
     static final Log log = LogFactory.getLog(OracleTrigger.class);
 
-    private OracleSchema schema;
     private OracleTableBase table;
-    private String name;
     private List<OracleTriggerColumn> columns;
 
     public OracleTrigger(
@@ -34,16 +32,14 @@ public class OracleTrigger implements DBSTrigger
         OracleTableBase table,
         ResultSet dbResult)
     {
-        this.schema = schema;
+        super(schema, JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME"), true);
         this.table = table;
-
-        this.name = JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME");
     }
 
     @Property(name = "Name", viewable = true, editable = true, order = 1)
     public String getName()
     {
-        return name;
+        return super.getName();
     }
 
     @Property(name = "Table", viewable = true, order = 4)
@@ -52,26 +48,11 @@ public class OracleTrigger implements DBSTrigger
         return table;
     }
 
-    public String getDescription()
-    {
-        return null;
-    }
-
-    public OracleSchema getParentObject()
-    {
-        return schema;
-    }
-
-    public OracleDataSource getDataSource()
-    {
-        return schema.getDataSource();
-    }
-
     @Association
     public Collection<OracleTriggerColumn> getColumns(DBRProgressMonitor monitor) throws DBException
     {
         if (columns == null) {
-            schema.getTriggerCache().loadChildren(monitor, schema, this);
+            getSchema().triggerCache.loadChildren(monitor, getSchema(), this);
         }
         return columns;
     }
@@ -84,16 +65,6 @@ public class OracleTrigger implements DBSTrigger
     void setColumns(List<OracleTriggerColumn> columns)
     {
         this.columns = columns;
-    }
-
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        return false;
-    }
-
-    public boolean isPersisted()
-    {
-        return true;
     }
 
 }

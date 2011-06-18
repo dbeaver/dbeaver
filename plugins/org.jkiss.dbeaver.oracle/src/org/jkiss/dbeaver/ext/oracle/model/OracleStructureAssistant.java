@@ -126,13 +126,13 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     }
                     JDBCAbstractCache<OracleSchema,?> objectCache = null;
                     if ("TABLE".equals(objectType) || "VIEW".equals(objectType)) {
-                        objectCache = tableSchema.getTableCache();
+                        objectCache = tableSchema.tableCache;
                     } else if ("INDEX".equals(objectType)) {
-                        objectCache = tableSchema.getIndexCache();
+                        objectCache = tableSchema.indexCache;
                     } else if ("PROCEDURE".equals(objectType)) {
-                        objectCache = tableSchema.getProceduresCache();
+                        objectCache = tableSchema.proceduresCache;
                     } else if ("TRIGGER".equals(objectType)) {
-                        objectCache = tableSchema.getTriggerCache();
+                        objectCache = tableSchema.triggerCache;
                     }
                     if (objectCache != null) {
                         DBSObject object = objectCache.getObject(context.getProgressMonitor(), tableSchema, objectName);

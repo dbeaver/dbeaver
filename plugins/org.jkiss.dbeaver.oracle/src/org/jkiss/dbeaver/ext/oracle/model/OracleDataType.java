@@ -200,7 +200,7 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
                     log.warn("Referenced schema '" + olr.schemaName + "' not found for super type '" + olr.objectName + "'");
                     return false;
                 }
-                superType = superSchema.getDataTypeCache().getObject(monitor, superSchema, olr.objectName);
+                superType = superSchema.dataTypeCache.getObject(monitor, superSchema, olr.objectName);
                 if (superType == null) {
                     log.warn("Referenced type '" + olr.objectName + "' not found in schema '" + olr.schemaName + "'");
                     return false;
@@ -381,7 +381,7 @@ public class OracleDataType implements DBSDataType, OracleLazyObject<OracleDataT
             if (typeSchema == null) {
                 dataSource.getDataTypeCache().cacheObject(type);
             } else {
-                typeSchema.getDataTypeCache().cacheObject(type);
+                typeSchema.dataTypeCache.cacheObject(type);
             }
         }
         return type;

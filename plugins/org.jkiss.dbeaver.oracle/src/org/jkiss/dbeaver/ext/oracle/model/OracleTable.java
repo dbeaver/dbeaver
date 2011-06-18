@@ -47,7 +47,7 @@ public class OracleTable extends OracleTableBase
     {
         if (indexes == null) {
             // Read indexes using cache
-            this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
+            this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
         }
         return indexes;
     }
@@ -73,7 +73,7 @@ public class OracleTable extends OracleTableBase
         throws DBException
     {
         if (constraints == null) {
-            getContainer().getConstraintCache().getObjects(monitor, getContainer(), this);
+            getContainer().constraintCache.getObjects(monitor, getContainer(), this);
         }
         return constraints;
     }
@@ -101,7 +101,7 @@ public class OracleTable extends OracleTableBase
         // This is dummy implementation
         // Get references from this schema only
         final Collection<OracleForeignKey> allForeignKeys =
-            getContainer().getForeignKeyCache().getObjects(monitor, getContainer(), null);
+            getContainer().foreignKeyCache.getObjects(monitor, getContainer(), null);
         for (OracleForeignKey constraint : allForeignKeys) {
             if (constraint.getReferencedTable() == this) {
                 refs.add(constraint);
@@ -115,7 +115,7 @@ public class OracleTable extends OracleTableBase
         throws DBException
     {
         if (foreignKeys == null) {
-            getContainer().getForeignKeyCache().getObjects(monitor, getContainer(), this);
+            getContainer().foreignKeyCache.getObjects(monitor, getContainer(), this);
         }
         return foreignKeys;
     }

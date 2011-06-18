@@ -64,7 +64,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         throws DBException
     {
         if (columns == null) {
-            getContainer().getTableCache().loadChildren(monitor, getContainer(), this);
+            getContainer().tableCache.loadChildren(monitor, getContainer(), this);
         }
         return columns;
     }
@@ -96,7 +96,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public Collection<OracleTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().getTriggerCache().getObjects(monitor, getContainer(), this);
+        return getContainer().triggerCache.getObjects(monitor, getContainer(), this);
     }
 
     public String getDDL(DBRProgressMonitor monitor)
@@ -112,7 +112,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             log.warn("Referenced schema '" + ownerName + "' not found");
             return null;
         } else {
-            OracleTableBase refTable = refSchema.getTableCache().getObject(monitor, refSchema, tableName);
+            OracleTableBase refTable = refSchema.tableCache.getObject(monitor, refSchema, tableName);
             if (refTable == null) {
                 log.warn("Referenced table '" + tableName + "' not found in schema '" + ownerName + "'");
             }

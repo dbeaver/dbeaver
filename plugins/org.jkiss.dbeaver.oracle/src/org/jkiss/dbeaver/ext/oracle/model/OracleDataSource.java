@@ -35,8 +35,9 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 {
     static final Log log = LogFactory.getLog(OracleDataSource.class);
 
-    private final DataTypeCache dataTypeCache = new DataTypeCache();
-    private SchemaCache schemaCache = new SchemaCache();
+    final SchemaCache schemaCache = new SchemaCache();
+    final DataTypeCache dataTypeCache = new DataTypeCache();
+
     private String activeSchemaName;
 
     public OracleDataSource(DBSDataSourceContainer container)

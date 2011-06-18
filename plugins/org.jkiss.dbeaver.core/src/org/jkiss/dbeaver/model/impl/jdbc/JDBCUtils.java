@@ -96,7 +96,7 @@ public class JDBCUtils {
             }
         } catch (SQLException e) {
             debugColumnRead(columnName, e);
-            return 0;
+            return null;
         }
     }
 
@@ -107,6 +107,17 @@ public class JDBCUtils {
         } catch (SQLException e) {
             debugColumnRead(columnName, e);
             return 0;
+        }
+    }
+
+    public static Long safeGetLongNullable(ResultSet dbResult, String columnName)
+    {
+        try {
+            final long result = dbResult.getLong(columnName);
+            return dbResult.wasNull() ? null : result;
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return null;
         }
     }
 
