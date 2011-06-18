@@ -115,12 +115,6 @@ public class OracleView extends OracleTableBase
         return true;
     }
 
-    public String getDescription()
-    {
-        return null;
-    }
-
-
     private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBException
     {
         if (!isPersisted()) {

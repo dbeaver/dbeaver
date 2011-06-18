@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -42,6 +43,12 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         super(oracleSchema, true);
         setName(JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
         this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
+    }
+
+    @Property(name = "Name", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 1)
+    public String getName()
+    {
+        return super.getName();
     }
 
     @Property(name = "Comments", viewable = true, editable = true, order = 100)

@@ -267,13 +267,13 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT /*+ USE_NL(tc)*/ tab.*,tc.COMMENTS FROM (\n" +
                 "SELECT /*+ USE_NL(mv)*/ t.OWNER,\n" +
-                "CASE WHEN mv.MVIEW_NAME IS NULL THEN t.TABLE_NAME ELSE mv.MVIEW_NAME END as TABLE_NAME,\n" +
-                "CASE WHEN mv.MVIEW_NAME IS NULL THEN 'TABLE' ELSE 'MVIEW' END as TABLE_TYPE \n" +
+                "NVL(mv.MVIEW_NAME,t.TABLE_NAME) as TABLE_NAME,\n" +
+                "CASE WHEN mv.MVIEW_NAME IS NULL THEN 'TABLE' ELSE 'MVIEW' END as TABLE_TYPE,t.STATUS,t.NUM_ROWS \n" +
                 "FROM SYS.ALL_ALL_TABLES t\n" +
                 "LEFT OUTER JOIN SYS.ALL_MVIEWS mv ON mv.OWNER=t.OWNER AND mv.CONTAINER_NAME=t.TABLE_NAME \n" +
                 "WHERE t.OWNER=?\n" +
                 "UNION ALL\n" +
-                "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as TABLE_TYPE FROM SYS.ALL_VIEWS v WHERE v.OWNER=?\n" +
+                "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as TABLE_TYPE,NULL,NULL FROM SYS.ALL_VIEWS v WHERE v.OWNER=?\n" +
                 ") tab\n" +
                 "LEFT OUTER JOIN SYS.ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME\n" +
                 "ORDER BY tab.TABLE_NAME");

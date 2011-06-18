@@ -6,7 +6,9 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
@@ -20,6 +22,8 @@ import java.util.List;
 public abstract class OracleTablePhysical extends OracleTableBase
 {
 
+    private boolean valid;
+    private long rowCount;
     private List<OracleIndex> indexes;
 
     public OracleTablePhysical(OracleSchema schema)
@@ -32,11 +36,20 @@ public abstract class OracleTablePhysical extends OracleTableBase
         ResultSet dbResult)
     {
         super(schema, dbResult);
+        this.rowCount = JDBCUtils.safeGetLong(dbResult, "NUM_ROWS");
+        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
     }
 
-    public boolean isView()
+    @Property(name = "Row Count", viewable = true, order = 20)
+    public long getRowCount()
     {
-        return false;
+        return rowCount;
+    }
+
+    @Property(name = "Valid", viewable = true, order = 21)
+    public boolean isValid()
+    {
+        return valid;
     }
 
     @Association

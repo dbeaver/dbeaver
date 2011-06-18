@@ -46,10 +46,7 @@ public class OracleConstraint extends JDBCConstraint<OracleTable> {
             getConstraintType(JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE")),
             true);
         this.searchCondition = JDBCUtils.safeGetString(dbResult, "SEARCH_CONDITION");
-        final String constraintStatus = JDBCUtils.safeGetString(dbResult, "STATUS");
-        this.status = CommonUtils.isEmpty(constraintStatus) ?
-            null :
-            OracleObjectStatus.valueOf(constraintStatus);
+        this.status = OracleObjectStatus.getByName(JDBCUtils.safeGetString(dbResult, "STATUS"));
     }
 
     public OracleDataSource getDataSource()

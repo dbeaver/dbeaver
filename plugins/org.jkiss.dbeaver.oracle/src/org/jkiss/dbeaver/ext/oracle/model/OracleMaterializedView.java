@@ -29,7 +29,7 @@ public class OracleMaterializedView extends OracleTablePhysical
 
     public boolean isView()
     {
-        return false;
+        return true;
     }
 
     public String getDDL(DBRProgressMonitor monitor)
