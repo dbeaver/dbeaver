@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ui.export.project;
 
-import net.sf.jkiss.utils.CommonUtils;
-import net.sf.jkiss.utils.xml.XMLUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.wizard.WizardPage;

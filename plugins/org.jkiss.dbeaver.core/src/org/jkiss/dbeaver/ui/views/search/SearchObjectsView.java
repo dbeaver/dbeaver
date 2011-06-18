@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.search;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;

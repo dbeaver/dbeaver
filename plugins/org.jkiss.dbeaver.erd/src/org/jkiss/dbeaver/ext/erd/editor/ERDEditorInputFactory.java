@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;

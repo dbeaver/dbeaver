@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export.data.wizard;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;

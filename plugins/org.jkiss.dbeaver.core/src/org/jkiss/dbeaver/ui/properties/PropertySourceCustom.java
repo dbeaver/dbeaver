@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.properties;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
 import java.util.*;

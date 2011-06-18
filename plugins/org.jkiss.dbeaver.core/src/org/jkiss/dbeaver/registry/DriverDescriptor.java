@@ -4,11 +4,11 @@
 
 package org.jkiss.dbeaver.registry;
 
-import net.sf.jkiss.utils.CommonUtils;
-import net.sf.jkiss.utils.xml.SAXListener;
-import net.sf.jkiss.utils.xml.SAXReader;
-import net.sf.jkiss.utils.xml.XMLBuilder;
-import net.sf.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.SAXListener;
+import org.jkiss.utils.xml.SAXReader;
+import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;

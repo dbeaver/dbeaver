@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;

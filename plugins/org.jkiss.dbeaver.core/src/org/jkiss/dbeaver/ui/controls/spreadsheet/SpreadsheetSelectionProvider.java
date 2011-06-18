@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.ISelection;

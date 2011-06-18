@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
 
 import java.sql.SQLException;

@@ -4,10 +4,8 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
-import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;

@@ -4,9 +4,9 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards.dbvis;
 
-import net.sf.jkiss.utils.CommonUtils;
-import net.sf.jkiss.utils.xml.XMLException;
-import net.sf.jkiss.utils.xml.XMLUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.Activator;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;

@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCTableIdentifier;

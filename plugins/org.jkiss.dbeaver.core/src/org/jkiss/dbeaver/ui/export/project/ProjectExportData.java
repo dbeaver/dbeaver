@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export.project;
 
-import net.sf.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLBuilder;
 import org.eclipse.core.resources.IProject;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;

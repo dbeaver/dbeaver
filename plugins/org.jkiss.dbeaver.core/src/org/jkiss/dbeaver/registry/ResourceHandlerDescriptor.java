@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 

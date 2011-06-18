@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 
 /**

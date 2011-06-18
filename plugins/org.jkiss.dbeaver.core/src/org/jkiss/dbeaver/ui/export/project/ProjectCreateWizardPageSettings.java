@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export.project;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;

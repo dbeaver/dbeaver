@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;

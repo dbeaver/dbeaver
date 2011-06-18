@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import net.sf.jkiss.utils.BeanUtils;
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;

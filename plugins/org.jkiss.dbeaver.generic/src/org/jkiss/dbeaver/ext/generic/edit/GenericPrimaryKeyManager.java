@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ext.generic.edit;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;

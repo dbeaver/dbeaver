@@ -4,10 +4,10 @@
 
 package org.jkiss.dbeaver.ui.export.project;
 
-import net.sf.jkiss.utils.CommonUtils;
-import net.sf.jkiss.utils.IOUtils;
-import net.sf.jkiss.utils.xml.XMLException;
-import net.sf.jkiss.utils.xml.XMLUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;

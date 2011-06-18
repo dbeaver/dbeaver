@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;

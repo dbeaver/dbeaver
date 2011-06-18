@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.properties;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;

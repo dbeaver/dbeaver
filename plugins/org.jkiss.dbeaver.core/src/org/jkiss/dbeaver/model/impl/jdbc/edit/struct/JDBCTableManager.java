@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;

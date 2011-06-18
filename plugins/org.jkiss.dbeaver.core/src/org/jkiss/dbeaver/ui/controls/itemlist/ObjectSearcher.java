@@ -1,6 +1,10 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.ui.ISearchExecutor;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 

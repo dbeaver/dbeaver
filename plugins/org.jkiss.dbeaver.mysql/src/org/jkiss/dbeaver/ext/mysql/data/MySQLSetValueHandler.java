@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.data;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;

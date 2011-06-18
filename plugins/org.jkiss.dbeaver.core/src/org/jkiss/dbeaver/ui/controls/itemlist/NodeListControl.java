@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.*;

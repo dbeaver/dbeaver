@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ui.controls.querylog;
 
-import net.sf.jkiss.utils.CommonUtils;
-import net.sf.jkiss.utils.LongKeyMap;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.LongKeyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;

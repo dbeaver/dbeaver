@@ -7,7 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;

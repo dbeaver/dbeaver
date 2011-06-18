@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.runtime.load;
 
-import net.sf.jkiss.utils.BeanUtils;
+import org.jkiss.utils.BeanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;

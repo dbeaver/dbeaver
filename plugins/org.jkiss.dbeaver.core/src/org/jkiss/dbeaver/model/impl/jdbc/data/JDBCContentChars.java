@@ -4,10 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import net.sf.jkiss.utils.CommonUtils;
-import net.sf.jkiss.utils.streams.MimeTypes;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -29,7 +26,7 @@ import java.sql.SQLException;
  */
 public class JDBCContentChars extends JDBCContentAbstract implements DBDContent, DBDValueClonable, DBDContentStorage {
 
-    static final Log log = LogFactory.getLog(JDBCContentChars.class);
+    //static final Log log = LogFactory.getLog(JDBCContentChars.class);
 
     private String originalData;
     private String data;

@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.SWT;

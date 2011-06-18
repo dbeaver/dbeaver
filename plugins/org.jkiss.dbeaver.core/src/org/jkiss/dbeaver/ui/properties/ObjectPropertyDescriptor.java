@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ui.properties;
 
-import net.sf.jkiss.utils.BeanUtils;
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;

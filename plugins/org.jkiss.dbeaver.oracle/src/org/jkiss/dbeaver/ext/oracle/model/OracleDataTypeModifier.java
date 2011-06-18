@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import net.sf.jkiss.utils.CommonUtils;
-
 /**
 * Data type modifier
 */

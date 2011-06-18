@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.binary.pref;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.graphics.FontData;

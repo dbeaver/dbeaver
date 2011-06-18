@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.registry.encode;
 
-import net.sf.jkiss.utils.Base64;
+import org.jkiss.utils.Base64;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;

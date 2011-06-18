@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.plan;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;

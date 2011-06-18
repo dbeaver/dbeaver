@@ -4,10 +4,10 @@
 
 package org.jkiss.dbeaver.model.impl.project;
 
-import net.sf.jkiss.utils.Base64;
-import net.sf.jkiss.utils.xml.XMLBuilder;
-import net.sf.jkiss.utils.xml.XMLException;
-import net.sf.jkiss.utils.xml.XMLUtils;
+import org.jkiss.utils.Base64;
+import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.SWT;

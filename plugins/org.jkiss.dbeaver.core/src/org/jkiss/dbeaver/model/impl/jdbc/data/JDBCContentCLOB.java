@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import net.sf.jkiss.utils.streams.MimeTypes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;

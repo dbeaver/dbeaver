@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;

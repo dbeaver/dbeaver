@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;

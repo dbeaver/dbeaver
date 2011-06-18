@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.data;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 
 import java.text.DateFormat;

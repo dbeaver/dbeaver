@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;

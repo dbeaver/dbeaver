@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.navigator;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.wizard.WizardPage;

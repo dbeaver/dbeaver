@@ -7,10 +7,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import net.sf.jkiss.utils.CommonUtils;
-import net.sf.jkiss.utils.xml.XMLBuilder;
-import net.sf.jkiss.utils.xml.XMLException;
-import net.sf.jkiss.utils.xml.XMLUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;

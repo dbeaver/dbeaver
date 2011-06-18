@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;

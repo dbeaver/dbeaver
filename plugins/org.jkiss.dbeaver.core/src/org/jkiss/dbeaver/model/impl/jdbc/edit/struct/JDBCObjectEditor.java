@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;

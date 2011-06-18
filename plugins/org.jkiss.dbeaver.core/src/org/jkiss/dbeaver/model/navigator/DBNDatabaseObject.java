@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;

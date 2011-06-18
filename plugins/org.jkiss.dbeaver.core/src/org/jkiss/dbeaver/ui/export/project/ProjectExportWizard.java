@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ui.export.project;
 
-import net.sf.jkiss.utils.IOUtils;
-import net.sf.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.xml.XMLBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;

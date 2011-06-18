@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ui.export.data.wizard;
 
-import net.sf.jkiss.utils.Base64;
-import net.sf.jkiss.utils.IOUtils;
+import org.jkiss.utils.Base64;
+import org.jkiss.utils.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;

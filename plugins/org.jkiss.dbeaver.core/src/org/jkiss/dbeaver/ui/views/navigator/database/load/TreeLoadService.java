@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database.load;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;

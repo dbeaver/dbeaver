@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export.scripts;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.WizardPage;

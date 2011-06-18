@@ -5,8 +5,8 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
-import net.sf.jkiss.utils.CommonUtils;
-import net.sf.jkiss.utils.IOUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;

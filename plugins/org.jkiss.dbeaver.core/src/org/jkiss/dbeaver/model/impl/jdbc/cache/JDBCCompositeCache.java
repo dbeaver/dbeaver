@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;

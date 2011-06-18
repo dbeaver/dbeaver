@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.widgets.Text;
