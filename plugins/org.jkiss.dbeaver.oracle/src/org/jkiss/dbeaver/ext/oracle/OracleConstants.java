@@ -98,6 +98,8 @@ public class OracleConstants {
     public static final String COL_DATA_FREE = "DATA_FREE";
     public static final String COL_CHECKSUM = "CHECKSUM";
     public static final String COL_CHECK_OPTION = "CHECK_OPTION";
+    public static final String PROP_SOURCE_DEFINITION = "sourceDefinition";
+    public static final String PROP_SOURCE_DECLARATION = "sourceDeclaration";
 
 
     /**

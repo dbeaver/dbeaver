@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBUtils;

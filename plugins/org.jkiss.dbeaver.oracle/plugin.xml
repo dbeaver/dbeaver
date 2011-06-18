@@ -191,6 +191,10 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
+            class="org.jkiss.dbeaver.ext.oracle.edit.OracleDataTypeManager"
+            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleDataType"
+            label="Data type manager"/>
+        <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleSchemaManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"
             label="Catalog manager"/>
