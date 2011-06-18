@@ -31,15 +31,23 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
 
     public DBSObjectType[] getSupportedObjectTypes()
     {
-        return new DBSObjectType[] {
-            RelationalObjectType.TYPE_TABLE
-            };
+        return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
+    }
+
+    public DBSObjectType[] getHyperlinkObjectTypes()
+    {
+        return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
+    }
+
+    public DBSObjectType[] getAutoCompleteObjectTypes()
+    {
+        return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
     }
 
     public Collection<DBSObject> findObjectsByMask(
         DBRProgressMonitor monitor,
         DBSObject parentObject,
-        Collection<DBSObjectType> objectTypes,
+        DBSObjectType[] objectTypes,
         String objectNameMask,
         int maxResults)
         throws DBException

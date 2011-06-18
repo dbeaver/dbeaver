@@ -18,7 +18,7 @@ public class SQLWordDetector implements IWordDetector
     }
 
     public boolean isWordPart(char c) {
-        return Character.isUnicodeIdentifierPart(c);
+        return Character.isUnicodeIdentifierPart(c) || c == '$';
     }
 
 }

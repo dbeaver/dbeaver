@@ -17,10 +17,14 @@ public interface DBSStructureAssistant
 
     DBSObjectType[] getSupportedObjectTypes();
 
+    DBSObjectType[] getHyperlinkObjectTypes();
+
+    DBSObjectType[] getAutoCompleteObjectTypes();
+
     Collection<DBSObject> findObjectsByMask(
         DBRProgressMonitor monitor,
         DBSObject parentObject,
-        Collection<DBSObjectType> objectTypes,
+        DBSObjectType[] objectTypes,
         String objectNameMask,
         int maxResults) throws DBException;
 

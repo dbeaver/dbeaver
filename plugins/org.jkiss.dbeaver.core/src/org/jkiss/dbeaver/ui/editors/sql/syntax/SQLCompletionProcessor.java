@@ -18,7 +18,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -43,11 +42,6 @@ import java.util.regex.PatternSyntaxException;
 public class SQLCompletionProcessor implements IContentAssistProcessor
 {
     static final Log log = LogFactory.getLog(SQLCompletionProcessor.class);
-
-    private static List<DBSObjectType> TABLE_OBJECT_TYPES = new ArrayList<DBSObjectType>();
-    static {
-        TABLE_OBJECT_TYPES.add(RelationalObjectType.TYPE_TABLE);
-    }
 
     private static enum QueryType {
         TABLE,
@@ -218,7 +212,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         if (childObject == null) {
                             DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                             if (structureAssistant != null) {
-                                Collection<DBSObject> tables = structureAssistant.findObjectsByMask(monitor, null, TABLE_OBJECT_TYPES, token, 2);
+                                Collection<DBSObject> tables = structureAssistant.findObjectsByMask(
+                                    monitor,
+                                    null,
+                                    structureAssistant.getAutoCompleteObjectTypes(),
+                                    token,
+                                    2);
                                 if (!tables.isEmpty()) {
                                     childObject = tables.iterator().next();
                                 }
@@ -340,7 +339,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 // No such object found - may be it's start of table name
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                 if (structureAssistant != null) {
-                    Collection<DBSObject> tables = structureAssistant.findObjectsByMask(monitor, sc, TABLE_OBJECT_TYPES, nameList.get(0), 2);
+                    Collection<DBSObject> tables = structureAssistant.findObjectsByMask(
+                        monitor,
+                        sc,
+                        structureAssistant.getAutoCompleteObjectTypes(),
+                        nameList.get(0),
+                        2);
                     if (!tables.isEmpty()) {
                         return tables.iterator().next();
                     }
@@ -392,7 +396,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         List<ICompletionProposal> proposals)
     {
         try {
-            Collection<DBSObject> tables = assistant.findObjectsByMask(monitor, rootSC, TABLE_OBJECT_TYPES, tableName + "%", 100);
+            Collection<DBSObject> tables = assistant.findObjectsByMask(
+                monitor,
+                rootSC,
+                assistant.getAutoCompleteObjectTypes(),
+                tableName + "%",
+                100);
             for (DBSObject table : tables) {
                 proposals.add(makeProposalsFromObject(monitor, table));
             }

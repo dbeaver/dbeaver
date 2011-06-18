@@ -181,16 +181,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         }
     }
 
-    @Override
-    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
-        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
-            return new QueryTransformerLimit();
-        } else if (type == DBCQueryTransformType.FETCH_ALL_TABLE) {
-            return new QueryTransformerFetchAll();
-        }
-        return super.createQueryTransformer(type);
-    }
-
     public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
     {
         OraclePlanAnalyser plan = new OraclePlanAnalyser(this, query);
@@ -224,7 +214,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException, DBException
         {
-            StringBuilder schemasQuery = new StringBuilder("SELECT * FROM SYS.ALL_USERS u\n");
+            StringBuilder schemasQuery = new StringBuilder("SELECT U.USERNAME,U.USER_ID FROM SYS.ALL_USERS u\n");
             List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
             schemasQuery.append("WHERE (EXISTS (SELECT 1 FROM ALL_OBJECTS WHERE OWNER=U.USERNAME)");
             final String curUserName = getContainer().getConnectionInfo().getUserName();
@@ -240,7 +230,8 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
                 }
                 schemasQuery.append(")");
             }
-            schemasQuery.append("\nORDER BY U.USERNAME");
+            //schemasQuery.append("\nUNION ALL SELECT 'PUBLIC' as USERNAME,1 as USER_ID FROM DUAL");
+            schemasQuery.append("\nORDER BY USERNAME");
             JDBCPreparedStatement dbStat = context.prepareStatement(schemasQuery.toString());
 
             if (!schemaFilters.isEmpty()) {

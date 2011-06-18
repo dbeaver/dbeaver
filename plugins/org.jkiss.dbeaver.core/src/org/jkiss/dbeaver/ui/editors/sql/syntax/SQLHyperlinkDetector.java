@@ -200,8 +200,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             cache.nodes = new ArrayList<DBNDatabaseNode>();
             try {
                 DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-                List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();//Arrays.asList(structureAssistant.getSupportedObjectTypes());
-                objectTypes.add(RelationalObjectType.TYPE_TABLE);
+                DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
                 Collection<DBSObject> objects = structureAssistant.findObjectsByMask(monitor, null, objectTypes, word, 10);
                 if (!objects.isEmpty()) {
                     for (DBSObject object : objects) {

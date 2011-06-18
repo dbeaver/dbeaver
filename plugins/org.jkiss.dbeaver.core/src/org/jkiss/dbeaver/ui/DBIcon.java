@@ -22,6 +22,7 @@ public enum DBIcon
     TREE_SCHEMA("schema", "icons/tree/schema.png"),
     TREE_TABLES("tables", "icons/tree/tables.png"),
     TREE_TABLE("table", "icons/tree/table.png"),
+    TREE_TABLE_ALIAS("table_alias", "icons/tree/table_alias.png"),
     TREE_TABLE_SORT("table_sort", "icons/tree/table_sort.png"),
     TREE_VIEW("view", "icons/tree/view.png"),
     TREE_PROCEDURE("procedure", "icons/tree/procedure.png"),
@@ -45,6 +46,8 @@ public enum DBIcon
     TREE_FOLDER_ADMIN("folder_admin", "icons/tree/folder_admin.png"),
     TREE_PACKAGE("package", "icons/tree/package.png"),
     TREE_DATA_TYPE("data_type", "icons/tree/data_type.png"),
+    TREE_SEQUENCE("sequence", "icons/tree/sequence.png"),
+    TREE_SYNONYM("synonym", "icons/tree/synonym.png"),
 
     TREE_INFO("info", "/icons/tree/info.png"),
     TREE_FOLDER_INFO("folder_info", "/icons/tree/folder_info.png"),

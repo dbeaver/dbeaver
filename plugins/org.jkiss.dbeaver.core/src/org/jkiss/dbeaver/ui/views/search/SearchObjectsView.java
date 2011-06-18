@@ -529,7 +529,12 @@ public class SearchObjectsView extends ViewPart {
             try {
                 DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                 java.util.List<DBNNode> nodes = new ArrayList<DBNNode>();
-                Collection<DBSObject> objects = structureAssistant.findObjectsByMask(getProgressMonitor(), parentObject, objectTypes, objectNameMask, maxResults);
+                Collection<DBSObject> objects = structureAssistant.findObjectsByMask(
+                    getProgressMonitor(),
+                    parentObject,
+                    objectTypes.toArray(new DBSObjectType[objectTypes.size()]),
+                    objectNameMask,
+                    maxResults);
                 for (DBSObject object : objects) {
                     DBNNode node = navigatorModel.getNodeByObject(getProgressMonitor(), object, true);
                     if (node != null) {

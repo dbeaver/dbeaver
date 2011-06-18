@@ -37,6 +37,12 @@ public class OracleSynonym extends OracleSchemaObject {
         }
     }
 
+    public OracleObjectType getObjectType()
+    {
+        return OracleObjectType.getByType(objectTypeName);
+    }
+
+
     @Property(name = "Name", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
@@ -44,7 +50,7 @@ public class OracleSynonym extends OracleSchemaObject {
     }
 
     @Property(name = "Object Type", viewable = true, order = 2)
-    public String getObjectType()
+    public String getObjectTypeName()
     {
         return objectTypeName;
     }
@@ -55,10 +61,10 @@ public class OracleSynonym extends OracleSchemaObject {
         return objectOwner;
     }
 
-    @Property(name = "Object", viewable = true, order = 4)
+    @Property(name = "Object Reference", viewable = true, order = 4)
     public DBSObject getObject(DBRProgressMonitor monitor) throws DBException
     {
-        OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
+        OracleObjectType objectType = getObjectType();
         if (objectType == null) {
             log.warn("Unrecognized object type: " + objectTypeName);
             return null;

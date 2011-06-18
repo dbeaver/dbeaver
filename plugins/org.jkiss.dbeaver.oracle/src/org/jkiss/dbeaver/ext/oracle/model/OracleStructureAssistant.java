@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
@@ -12,8 +13,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
-import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -41,18 +40,33 @@ public class OracleStructureAssistant implements DBSStructureAssistant
     public DBSObjectType[] getSupportedObjectTypes()
     {
         return new DBSObjectType[] {
-            RelationalObjectType.TYPE_TABLE,
-            RelationalObjectType.TYPE_CONSTRAINT,
-            RelationalObjectType.TYPE_INDEX,
-            RelationalObjectType.TYPE_PROCEDURE,
-            RelationalObjectType.TYPE_TRIGGER,
+            OracleObjectType.TABLE,
+            OracleObjectType.INDEX,
+            OracleObjectType.PROCEDURE,
+            OracleObjectType.TRIGGER,
+            };
+    }
+
+    public DBSObjectType[] getHyperlinkObjectTypes()
+    {
+        return new DBSObjectType[] {
+            OracleObjectType.TABLE,
+            OracleObjectType.VIEW,
+            };
+    }
+
+    public DBSObjectType[] getAutoCompleteObjectTypes()
+    {
+        return new DBSObjectType[] {
+            OracleObjectType.TABLE,
+            OracleObjectType.VIEW,
             };
     }
 
     public Collection<DBSObject> findObjectsByMask(
         DBRProgressMonitor monitor,
         DBSObject parentObject,
-        Collection<DBSObjectType> objectTypes,
+        DBSObjectType[] objectTypes,
         String objectNameMask,
         int maxResults)
         throws DBException
@@ -63,27 +77,9 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         try {
             List<DBSObject> objects = new ArrayList<DBSObject>();
 
-            StringBuilder objectTypeClause = new StringBuilder();
-            for (DBSObjectType objectType : objectTypes) {
-                String typeName;
-                if (objectType == RelationalObjectType.TYPE_TABLE) {
-                    typeName = "'TABLE','VIEW'";
-                } else if (objectType == RelationalObjectType.TYPE_INDEX) {
-                    typeName = "'INDEX'";
-                } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
-                    typeName = "'PROCEDURE'";
-                } else if (objectType == RelationalObjectType.TYPE_TRIGGER) {
-                    typeName = "'TRIGGER'";
-                } else {
-                    continue;
-                }
-                if (objectTypeClause.length() > 0) { objectTypeClause.append(","); }
-                objectTypeClause.append(typeName);
-            }
             // Search all objects
-            if (objectTypeClause.length() > 0) {
-                searchAllObjects(context, schema, objectNameMask, objectTypeClause.toString(), maxResults, objects);
-            }
+            searchAllObjects(context, schema, objectNameMask, objectTypes, maxResults, objects);
+
             // Search constraints
 
             return objects;
@@ -96,20 +92,38 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         }
     }
 
-    private void searchAllObjects(JDBCExecutionContext context, OracleSchema schema, String objectNameMask, String objectTypeClause, int maxResults, List<DBSObject> objects)
+    private void searchAllObjects(JDBCExecutionContext context, OracleSchema schema, String objectNameMask, DBSObjectType[] objectTypes, int maxResults, List<DBSObject> objects)
         throws SQLException, DBException
     {
-        // Seek for objects
+        StringBuilder objectTypeClause = new StringBuilder(100);
+        for (DBSObjectType objectType : objectTypes) {
+            if (objectType instanceof OracleObjectType) {
+                if (objectTypeClause.length() > 0) objectTypeClause.append(",");
+                objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
+            }
+        }
+        if (objectTypeClause.length() == 0) {
+            return;
+        }
+        // Always search for synonyms
+        objectTypeClause.append(",'").append(OracleObjectType.SYNONYM.getTypeName()).append("'");
+        // Seek for objects (join with public synonyms)
         JDBCPreparedStatement dbStat = context.prepareStatement(
             "SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ALL_OBJECTS WHERE " +
             "OBJECT_TYPE IN (" + objectTypeClause + ") AND OBJECT_NAME LIKE ? " +
-                (schema == null ? "" : " AND OWNER=?") +
-                " ORDER BY OBJECT_NAME");
+            (schema == null ? "" : " AND OWNER=?") +
+            "UNION ALL\n" +
+            "SELECT O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
+            "FROM ALL_SYNONYMS S,ALL_OBJECTS O\n" +
+            "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?" +
+            "\nORDER BY OBJECT_NAME");
         try {
-            dbStat.setString(1, objectNameMask.toUpperCase());
+            objectNameMask = objectNameMask.toUpperCase();
+            dbStat.setString(1, objectNameMask);
             if (schema != null) {
                 dbStat.setString(2, schema.getName());
             }
+            dbStat.setString(schema != null ? 3 : 2, objectNameMask);
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
                 while (objects.size() < maxResults && dbResult.next()) {
@@ -118,26 +132,21 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     }
                     String schemaName = JDBCUtils.safeGetString(dbResult, "OWNER");
                     String objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
-                    String objectType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
+                    String objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
                     OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(context.getProgressMonitor(), schemaName);
                     if (tableSchema == null) {
                         log.debug("Table schema '" + schemaName + "' not found");
                         continue;
                     }
-                    JDBCAbstractCache<OracleSchema,?> objectCache = null;
-                    if ("TABLE".equals(objectType) || "VIEW".equals(objectType)) {
-                        objectCache = tableSchema.tableCache;
-                    } else if ("INDEX".equals(objectType)) {
-                        objectCache = tableSchema.indexCache;
-                    } else if ("PROCEDURE".equals(objectType)) {
-                        objectCache = tableSchema.proceduresCache;
-                    } else if ("TRIGGER".equals(objectType)) {
-                        objectCache = tableSchema.triggerCache;
-                    }
-                    if (objectCache != null) {
-                        DBSObject object = objectCache.getObject(context.getProgressMonitor(), tableSchema, objectName);
+                    OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
+                    if (objectType != null && objectType.isBrowsable()) {
+                        DBSObject object = objectType.findObject(context.getProgressMonitor(), tableSchema, objectName);
                         if (object == null) {
-                            log.debug(objectType + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
+                            log.debug(objectTypeName + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
+                            continue;
+                        }
+                        if (objectType == OracleObjectType.SYNONYM && !CommonUtils.contains(objectTypes, ((OracleSynonym)object).getObjectType())) {
+                            // Synonym on wrong object type
                             continue;
                         }
                         objects.add(object);
