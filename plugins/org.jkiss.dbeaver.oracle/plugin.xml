@@ -150,8 +150,20 @@
                         </folder>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="Users" iconId="#folder_user" description="Users">
-                    <items label="User" path="users" property="users" iconId="#user"/>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="Global metadata" iconId="#logical" description="Global metadata objects">
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="Types" iconId="#data_types" description="Types">
+                        <items label="Data Type" path="type" property="dataTypes" iconId="#data_type"/>
+                    </folder>
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="Storage" iconId="#storage" description="Storage management">
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTablespace" label="Tablespaces" iconId="#tablespace" description="Tablespaces">
+                        <items label="Tablespace" path="tablespace" property="tablespaces" iconId="#tablespace"/>
+                    </folder>
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="Security" iconId="#security" description="Security management">
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="Users" iconId="#folder_user" description="Users">
+                        <items label="User" path="users" property="users" iconId="#user"/>
+                    </folder>
                 </folder>
                 <folder type="" label="Administer" iconId="#folder_admin" description="Maintenance/Settings">
                     <object type="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor" label="Sessions" iconId="#admin" description="Server session manager" editor="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"/>

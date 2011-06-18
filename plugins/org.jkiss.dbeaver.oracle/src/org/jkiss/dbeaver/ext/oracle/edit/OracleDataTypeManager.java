@@ -28,18 +28,20 @@ public class OracleDataTypeManager extends JDBCObjectManager<OracleDataType> imp
     public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseNodeEditor activeEditor, final OracleDataType object)
     {
         List<ITabDescriptor> tabs = new ArrayList<ITabDescriptor>();
-        tabs.add(
-            new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "type.declaration",
-                "Declaration",
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "Declaration") {
-                    public ISection getSectionClass()
-                    {
-                        return new OracleSourceViewSection(activeEditor, false);
-                    }
-                }));
+        if (!object.isPredefined() || object.hasAttributes() || object.hasMethods()) {
+            tabs.add(
+                new PropertyTabDescriptor(
+                    PropertiesContributor.CATEGORY_INFO,
+                    "type.declaration",
+                    "Declaration",
+                    DBIcon.SOURCES.getImage(),
+                    new SectionDescriptor("default", "Declaration") {
+                        public ISection getSectionClass()
+                        {
+                            return new OracleSourceViewSection(activeEditor, false);
+                        }
+                    }));
+        }
 
         if (object.hasMethods()) {
             tabs.add(new PropertyTabDescriptor(
