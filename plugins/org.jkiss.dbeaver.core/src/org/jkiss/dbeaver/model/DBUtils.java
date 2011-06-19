@@ -639,6 +639,15 @@ public final class DBUtils {
         return dataSource.getContainer();
     }
 
+    public static String getObjectUniqueName(DBSObject object)
+    {
+        if (object instanceof DBSObjectUnique) {
+            return ((DBSObjectUnique) object).getUniqueName();
+        } else {
+            return object.getName();
+        }
+    }
+
     public static <T extends DBPNamedObject> void orderObjects(List<T> objects)
     {
         Collections.sort(objects, new Comparator<T>() {

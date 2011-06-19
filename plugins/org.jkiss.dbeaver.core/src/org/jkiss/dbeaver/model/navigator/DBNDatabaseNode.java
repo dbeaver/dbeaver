@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.graphics.Image;
@@ -457,7 +458,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     private static boolean equalObjects(DBSObject object1, DBSObject object2) {
         while (object1 != null && object2 != null) {
-            if (object1.getClass() != object2.getClass() || !CommonUtils.equalObjects(object1.getName(), object2.getName())) {
+            if (object1.getClass() != object2.getClass() ||
+                !CommonUtils.equalObjects(DBUtils.getObjectUniqueName(object1), DBUtils.getObjectUniqueName(object2)))
+            {
                 return false;
             }
             object1 = object1.getParentObject();

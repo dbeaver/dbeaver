@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 
 import java.sql.ResultSet;
@@ -15,7 +16,7 @@ import java.sql.ResultSet;
 /**
  * GenericProcedure
  */
-public class OracleProcedurePackaged extends OracleProcedureBase
+public class OracleProcedurePackaged extends OracleProcedureBase implements DBSObjectUnique
 {
     private OraclePackage ownerPackage;
     private int overload = 1;
@@ -68,4 +69,10 @@ public class OracleProcedurePackaged extends OracleProcedureBase
     {
         this.overload = overload;
     }
+
+    public String getUniqueName()
+    {
+        return overload <= 1 ? getName() : getName() + "#" + overload;
+    }
+
 }

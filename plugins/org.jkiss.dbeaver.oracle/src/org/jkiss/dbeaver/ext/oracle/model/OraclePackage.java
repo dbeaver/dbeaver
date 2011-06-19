@@ -69,6 +69,12 @@ public class OraclePackage extends OracleObject implements OracleSourceObject,DB
         proceduresCache.getObjects(monitor, this);
     }
 
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    {
+        proceduresCache.clearCache();
+        return true;
+    }
+
     static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackaged> {
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OraclePackage owner)

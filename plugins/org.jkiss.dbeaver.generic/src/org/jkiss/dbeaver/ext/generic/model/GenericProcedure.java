@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -30,11 +31,11 @@ import java.util.regex.Pattern;
 /**
  * GenericProcedure
  */
-public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericStructContainer> implements GenericStoredCode
+public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericStructContainer> implements GenericStoredCode, DBSObjectUnique
 {
     private static final Pattern PATTERN_COL_NAME_NUMERIC = Pattern.compile("\\$?([0-9]+)");
 
-    private String plainName;
+    private String specificName;
     private DBSProcedureType procedureType;
     private List<GenericProcedureColumn> columns;
 
@@ -45,16 +46,16 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         String description,
         DBSProcedureType procedureType)
     {
-        super(container, CommonUtils.isEmpty(specificName) ? procedureName : specificName, description);
+        super(container, procedureName, description);
         this.procedureType = procedureType;
-        this.plainName = procedureName;
+        this.specificName = specificName;
     }
 
 /*
     @Property(name = "Plain Name", viewable = true, order = 2)
     public String getPlainName()
     {
-        return plainName;
+        return specificName;
     }
 */
 
@@ -188,4 +189,10 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
             getSchema(),
             this);
     }
+
+    public String getUniqueName()
+    {
+        return CommonUtils.isEmpty(specificName) ? getName() : specificName;
+    }
+
 }
