@@ -4,12 +4,11 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
@@ -19,7 +18,9 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -30,7 +31,7 @@ import java.util.Map;
 /**
  * Oracle data type
  */
-public class OracleDataType implements DBSDataType, OracleSourceObject {
+public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSourceObject {
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 
@@ -239,7 +240,9 @@ public class OracleDataType implements DBSDataType, OracleSourceObject {
 
     public DBSObject getParentObject()
     {
-        return owner;
+        return owner instanceof OracleSchema ?
+            owner :
+            owner instanceof OracleDataSource ? ((OracleDataSource) owner).getContainer() : null;
     }
 
     public OracleDataSource getDataSource()
@@ -346,14 +349,22 @@ public class OracleDataType implements DBSDataType, OracleSourceObject {
         return methodCache != null ? methodCache.getObjects(monitor, this) : null;
     }
 
-    public OracleDataType getObject()
+    public String getFullQualifiedName()
     {
-        return this;
+        return owner instanceof OracleSchema ?
+            DBUtils.getFullQualifiedName(getDataSource(), owner, this) :
+            typeName;
     }
 
-    public String getTypeSource(DBRProgressMonitor monitor, boolean body) throws DBCException
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
-        return OracleUtils.getSource(monitor, this, false);
+        return false;
+    }
+
+    @Override
+    public String toString()
+    {
+        return getFullQualifiedName();
     }
 
     public static OracleDataType resolveDataType(DBRProgressMonitor monitor, OracleDataSource dataSource, String typeOwner, String typeName)
@@ -377,6 +388,7 @@ public class OracleDataType implements DBSDataType, OracleSourceObject {
         if (type == null) {
             log.debug("Data type '" + typeName + "' not found - declare new one");
             type = new OracleDataType(typeSchema == null ? dataSource : typeSchema, typeName, true);
+            type.flagPredefined = true;
             if (typeSchema == null) {
                 dataSource.getDataTypeCache().cacheObject(type);
             } else {

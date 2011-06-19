@@ -19,7 +19,7 @@ import java.sql.ResultSet;
  */
 public class OracleProcedureArgument implements DBSProcedureColumn
 {
-    private final OracleProcedure procedure;
+    private final OracleProcedureBase procedure;
     private String name;
     private int position;
     private int dataLevel;
@@ -33,7 +33,7 @@ public class OracleProcedureArgument implements DBSProcedureColumn
 
     public OracleProcedureArgument(
         DBRProgressMonitor monitor,
-        OracleProcedure procedure,
+        OracleProcedureBase procedure,
         ResultSet dbResult)
     {
         this.procedure = procedure;
@@ -75,7 +75,7 @@ public class OracleProcedureArgument implements DBSProcedureColumn
         return procedure.getDataSource();
     }
 
-    public OracleProcedure getProcedure()
+    public OracleProcedureBase getProcedure()
     {
         return procedure;
     }

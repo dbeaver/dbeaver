@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
@@ -12,7 +11,6 @@ import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -24,10 +22,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * OracleSchema
@@ -622,12 +624,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     /**
      * Procedures cache implementation
      */
-    static class ProceduresCache extends JDBCStructCache<OracleSchema, OracleProcedure, OracleProcedureArgument> {
-
-        ProceduresCache()
-        {
-            super(JDBCConstants.PROCEDURE_NAME);
-        }
+    static class ProceduresCache extends JDBCObjectCache<OracleSchema, OracleProcedure> {
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException, DBException
@@ -645,36 +642,6 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             throws SQLException, DBException
         {
             return new OracleProcedure(owner, dbResult);
-        }
-
-        protected boolean isChildrenCached(OracleProcedure parent)
-        {
-            return parent.isColumnsCached();
-        }
-
-        protected void cacheChildren(OracleProcedure parent, List<OracleProcedureArgument> columns)
-        {
-            parent.cacheColumns(columns);
-        }
-
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleSchema owner, OracleProcedure procedure)
-            throws SQLException, DBException
-        {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT * FROM SYS.ALL_ARGUMENTS " +
-                "WHERE OWNER=? " + (procedure == null ? "" : "AND OBJECT_ID=? ") +
-                "ORDER BY POSITION,SEQUENCE");
-            dbStat.setString(1, owner.getName());
-            if (procedure != null) {
-                dbStat.setLong(2, procedure.getId());
-            }
-            return dbStat;
-        }
-
-        protected OracleProcedureArgument fetchChild(JDBCExecutionContext context, OracleSchema owner, OracleProcedure parent, ResultSet dbResult)
-            throws SQLException, DBException
-        {
-            return new OracleProcedureArgument(context.getProgressMonitor(), parent, dbResult);
         }
     }
 

@@ -25,7 +25,12 @@ public class OracleUtils {
     public static String getSource(DBRProgressMonitor monitor, OracleSourceObject sourceObject, boolean body) throws DBCException
     {
         final String sourceType = sourceObject.getSourceType().name();
-        final JDBCExecutionContext context = sourceObject.getSourceOwner().getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load source code for " + sourceType + " '" + sourceObject.getName() + "'");
+        final OracleSchema sourceOwner = sourceObject.getSourceOwner();
+        if (sourceOwner == null) {
+            log.warn("No source owner for object '" + sourceObject.getName() + "'");
+            return null;
+        }
+        final JDBCExecutionContext context = sourceOwner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load source code for " + sourceType + " '" + sourceObject.getName() + "'");
         try {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT TEXT FROM SYS.ALL_SOURCE " +
@@ -33,7 +38,7 @@ public class OracleUtils {
                     "ORDER BY LINE");
             try {
                 dbStat.setString(1, body ? sourceType + " BODY" : sourceType);
-                dbStat.setString(2, sourceObject.getSourceOwner().getName());
+                dbStat.setString(2, sourceOwner.getName());
                 dbStat.setString(3, sourceObject.getName());
                 final JDBCResultSet dbResult = dbStat.executeQuery();
                 try {

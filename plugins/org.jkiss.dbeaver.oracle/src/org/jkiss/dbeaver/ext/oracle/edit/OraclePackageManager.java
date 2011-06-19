@@ -45,9 +45,9 @@ public class OraclePackageManager extends JDBCObjectManager<OraclePackage> imple
         tabs.add(new PropertyTabDescriptor(
             PropertiesContributor.CATEGORY_INFO,
             "type.definition",
-            "Definition",
+            "Body",
             DBIcon.SOURCES.getImage(),
-            new SectionDescriptor("default", "Definition") {
+            new SectionDescriptor("default", "Body") {
                 public ISection getSectionClass()
                 {
                     return new OracleSourceViewSection(activeEditor, true);
