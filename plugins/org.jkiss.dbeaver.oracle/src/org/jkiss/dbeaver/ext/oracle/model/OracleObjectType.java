@@ -23,8 +23,8 @@ public enum OracleObjectType implements DBSObjectType {
 	CONTEXT("CONTEXT", null, DBSObject.class, null),
 	DIRECTORY("DIRECTORY", null, DBSObject.class, null),
 	EVALUATION_CONTEXT("EVALUATION CONTEXT", null, DBSObject.class, null),
-	FUNCTION("FUNCTION", DBIcon.TREE_PROCEDURE.getImage(), OracleProcedure.class, new ObjectFinder() {
-        public OracleProcedure findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
+	FUNCTION("FUNCTION", DBIcon.TREE_PROCEDURE.getImage(), OracleProcedureStandalone.class, new ObjectFinder() {
+        public OracleProcedureStandalone findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.proceduresCache.getObject(monitor, schema, objectName);
         }
@@ -53,8 +53,8 @@ public enum OracleObjectType implements DBSObjectType {
             return schema.packageCache.getObject(monitor, schema, objectName);
         }
     }),
-	PROCEDURE("PROCEDURE", DBIcon.TREE_PROCEDURE.getImage(), OracleProcedure.class, new ObjectFinder() {
-        public OracleProcedure findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
+	PROCEDURE("PROCEDURE", DBIcon.TREE_PROCEDURE.getImage(), OracleProcedureStandalone.class, new ObjectFinder() {
+        public OracleProcedureStandalone findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.proceduresCache.getObject(monitor, schema, objectName);
         }

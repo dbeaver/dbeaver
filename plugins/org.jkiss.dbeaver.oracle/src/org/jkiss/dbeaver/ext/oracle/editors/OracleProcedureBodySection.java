@@ -6,8 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.oracle.model.OracleProcedure;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
+import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.properties.tabbed.SourceEditSection;
 
@@ -16,12 +15,12 @@ import org.jkiss.dbeaver.ui.properties.tabbed.SourceEditSection;
  */
 public class OracleProcedureBodySection extends SourceEditSection {
 
-    private OracleProcedure procedure;
+    private OracleProcedureStandalone procedure;
 
     public OracleProcedureBodySection(IDatabaseNodeEditor editor)
     {
         super(editor);
-        this.procedure = (OracleProcedure) editor.getEditorInput().getDatabaseObject();
+        this.procedure = (OracleProcedureStandalone) editor.getEditorInput().getDatabaseObject();
     }
 
     @Override

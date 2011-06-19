@@ -162,7 +162,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     }
 
     @Association
-    public Collection<OracleProcedure> getProcedures(DBRProgressMonitor monitor)
+    public Collection<OracleProcedureStandalone> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         return proceduresCache.getObjects(monitor, this);
@@ -624,7 +624,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     /**
      * Procedures cache implementation
      */
-    static class ProceduresCache extends JDBCObjectCache<OracleSchema, OracleProcedure> {
+    static class ProceduresCache extends JDBCObjectCache<OracleSchema, OracleProcedureStandalone> {
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException, DBException
@@ -638,10 +638,10 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return dbStat;
         }
 
-        protected OracleProcedure fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
+        protected OracleProcedureStandalone fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleProcedure(owner, dbResult);
+            return new OracleProcedureStandalone(owner, dbResult);
         }
     }
 

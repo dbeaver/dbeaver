@@ -38,11 +38,6 @@ public abstract class OracleProcedureBase extends OracleObject implements DBSPro
         this.procedureType = procedureType;
     }
 
-    public DBSEntityContainer getContainer()
-    {
-        return getSchema();
-    }
-
     @Property(name = "Procedure Type", viewable = true, editable = true, order = 3)
     public DBSProcedureType getProcedureType()
     {
