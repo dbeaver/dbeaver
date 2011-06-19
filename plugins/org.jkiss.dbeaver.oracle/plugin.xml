@@ -204,12 +204,10 @@
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleDataTypeManager"
-            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleDataType"
-            label="Data type manager"/>
+            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleDataType"/>
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleSchemaManager"
-            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"
-            label="Catalog manager"/>
+            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleTableManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
@@ -231,6 +229,9 @@
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleProcedureManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleProcedure"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.oracle.edit.OraclePackageManager"
+            objectType="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
 
         <editor
             id="org.jkiss.dbeaver.ext.oracle.editors.OracleUserEditorGeneral"
