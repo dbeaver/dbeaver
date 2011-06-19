@@ -10,7 +10,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumn;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
@@ -22,7 +21,7 @@ import java.util.Collection;
 /**
  * GenericProcedure
  */
-public abstract class OracleProcedureBase extends OracleObject implements DBSProcedure, OracleSourceObject
+public abstract class OracleProcedureBase extends OracleSchemaObject implements DBSProcedure, OracleSourceObject
 {
     //static final Log log = LogFactory.getLog(OracleProcedure.class);
 
@@ -31,10 +30,10 @@ public abstract class OracleProcedureBase extends OracleObject implements DBSPro
 
     public OracleProcedureBase(
         OracleSchema schema,
-        DBSProcedureType procedureType,
-        ResultSet dbResult)
+        String name,
+        DBSProcedureType procedureType)
     {
-        super(schema, dbResult);
+        super(schema, name, true);
         this.procedureType = procedureType;
     }
 
@@ -43,6 +42,8 @@ public abstract class OracleProcedureBase extends OracleObject implements DBSPro
     {
         return procedureType ;
     }
+
+    public abstract int getOverloadNumber();
 
     public Collection<? extends DBSProcedureColumn> getColumns(DBRProgressMonitor monitor) throws DBException
     {
@@ -61,10 +62,15 @@ public abstract class OracleProcedureBase extends OracleObject implements DBSPro
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_ARGUMENTS " +
-                "WHERE OWNER=? AND OBJECT_ID=? " +
-                "ORDER BY POSITION,SEQUENCE");
+                "WHERE OWNER=? AND OBJECT_NAME=? " +
+                (procedure.getContainer() instanceof OraclePackage ? "AND PACKAGE_NAME=? AND OVERLOAD=? " : "AND PACKAGE_NAME IS NULL ") +
+                "\nORDER BY POSITION,SEQUENCE");
             dbStat.setString(1, procedure.getSchema().getName());
-            dbStat.setLong(2, procedure.getId());
+            dbStat.setString(2, procedure.getName());
+            if (procedure.getContainer() instanceof OraclePackage) {
+                dbStat.setString(3, procedure.getContainer().getName());
+                dbStat.setInt(4, procedure.getOverloadNumber());
+            }
             return dbStat;
         }
 

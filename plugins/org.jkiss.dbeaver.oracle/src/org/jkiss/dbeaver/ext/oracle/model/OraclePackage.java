@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
@@ -15,6 +16,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * GenericProcedure
@@ -38,6 +41,12 @@ public class OraclePackage extends OracleObject implements OracleSourceObject,DB
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.PACKAGE;
+    }
+
+    @Association
+    public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException
+    {
+        return proceduresCache.getObjects(monitor, this);
     }
 
     public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException
@@ -79,6 +88,21 @@ public class OraclePackage extends OracleObject implements OracleSourceObject,DB
             throws SQLException, DBException
         {
             return new OracleProcedurePackaged(owner, dbResult);
+        }
+
+        @Override
+        protected void invalidateObjects(DBRProgressMonitor monitor, Collection<OracleProcedurePackaged> objectList)
+        {
+            Map<String, Integer> overloads = new HashMap<String, Integer>();
+            for (final OracleProcedurePackaged proc : objectList) {
+                final Integer overload = overloads.get(proc.getName());
+                if (overload == null) {
+                    overloads.put(proc.getName(), 1);
+                } else {
+                    proc.setOverload(overload + 1);
+                    overloads.put(proc.getName(), overload + 1);
+                }
+            }
         }
     }
 

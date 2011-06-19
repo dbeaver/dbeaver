@@ -124,6 +124,10 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePackage" label="Packages" iconId="#packages" description="Packages">
                             <items label="Package" path="package" property="packages" iconId="#package">
+                                <items label="Procedure" path="procedure" property="procedures" iconId="#procedure">
+                                    <items label="Procedure columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="false">
+                                    </items>
+                                </items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="Procedures" iconId="#procedures" description="Procedures">

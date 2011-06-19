@@ -18,11 +18,15 @@ import java.sql.ResultSet;
 public class OracleProcedurePackaged extends OracleProcedureBase
 {
     private OraclePackage ownerPackage;
+    private int overload = 1;
+
     public OracleProcedurePackaged(
         OraclePackage ownerPackage,
         ResultSet dbResult)
     {
-        super(ownerPackage.getSchema(), DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "PROCEDURE_TYPE")), dbResult);
+        super(ownerPackage.getSchema(),
+            JDBCUtils.safeGetString(dbResult, "PROCEDURE_NAME"),
+            DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "PROCEDURE_TYPE")));
         this.ownerPackage = ownerPackage;
     }
 
@@ -52,5 +56,16 @@ public class OracleProcedurePackaged extends OracleProcedureBase
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.PACKAGE;
+    }
+
+    @Override
+    public int getOverloadNumber()
+    {
+        return overload;
+    }
+
+    public void setOverload(int overload)
+    {
+        this.overload = overload;
     }
 }
