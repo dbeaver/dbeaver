@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * GenericProcedure
  */
-public class OracleTrigger extends OracleSchemaObject implements DBSTrigger
+public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, OracleSourceObject
 {
     static final Log log = LogFactory.getLog(OracleTrigger.class);
 
@@ -162,6 +162,16 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger
     void setColumns(List<OracleTriggerColumn> columns)
     {
         this.columns = columns;
+    }
+
+    public OracleSchema getSourceOwner()
+    {
+        return getSchema();
+    }
+
+    public OracleSourceType getSourceType()
+    {
+        return OracleSourceType.TRIGGER;
     }
 
 }

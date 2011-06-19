@@ -239,6 +239,9 @@
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OraclePackageManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.oracle.edit.OracleTriggerManager"
+            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger"/>
 
         <editor
             id="org.jkiss.dbeaver.ext.oracle.editors.OracleUserEditorGeneral"
