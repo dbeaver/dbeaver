@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
@@ -29,6 +30,21 @@ import java.util.List;
 public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema> implements DBPNamedObject2
 {
     static final Log log = LogFactory.getLog(OracleTableBase.class);
+
+    public static class TableAdditionalInfo {
+        volatile boolean loaded = false;
+
+        public boolean isLoaded() { return loaded; }
+    }
+
+    public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleTableBase> {
+        public boolean isPropertyCached(OracleTableBase object)
+        {
+            return object.getAdditionalInfo().isLoaded();
+        }
+    }
+
+    public abstract TableAdditionalInfo getAdditionalInfo();
 
     private String comment;
     private List<OracleTableColumn> columns;

@@ -99,5 +99,6 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
                 })
         };
     }
+
 }
 

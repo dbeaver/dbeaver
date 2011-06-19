@@ -231,6 +231,9 @@
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleViewManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
         <manager
+            class="org.jkiss.dbeaver.ext.oracle.edit.OracleMaterializedViewManager"
+            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
+        <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleProcedureManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
         <manager

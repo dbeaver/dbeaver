@@ -12,7 +12,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
@@ -28,15 +27,12 @@ import java.sql.SQLException;
 public class OracleView extends OracleTableBase
 {
 
-    public static class AdditionalInfo {
-        private volatile boolean loaded = false;
+    public static class AdditionalInfo extends TableAdditionalInfo {
         private String text;
         private String typeText;
         private String oidText;
         private String typeName;
         private OracleView superView;
-
-        public boolean isLoaded() { return loaded; }
 
         @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
         public String getText() { return text; }
@@ -51,13 +47,6 @@ public class OracleView extends OracleTableBase
         @Property(name = "Super View", viewable = false, editable = true, order = 5)
         public OracleView getSuperView() { return superView; }
         public void setSuperView(OracleView superView) { this.superView = superView; }
-    }
-
-    public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleView> {
-        public boolean isPropertyCached(OracleView object)
-        {
-            return object.additionalInfo.loaded;
-        }
     }
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();

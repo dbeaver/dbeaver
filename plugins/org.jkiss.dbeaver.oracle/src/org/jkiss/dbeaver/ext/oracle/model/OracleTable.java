@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
@@ -20,12 +21,23 @@ import java.util.List;
 public class OracleTable extends OracleTablePhysical
 {
 
+    public static class AdditionalInfo extends TableAdditionalInfo {
+    }
+
+    private final AdditionalInfo additionalInfo = new AdditionalInfo();
+
     private List<OracleConstraint> constraints;
     private List<OracleForeignKey> foreignKeys;
 
     public OracleTable(OracleSchema schema)
     {
         super(schema);
+    }
+
+    @Override
+    public TableAdditionalInfo getAdditionalInfo()
+    {
+        return additionalInfo;
     }
 
     public OracleTable(
