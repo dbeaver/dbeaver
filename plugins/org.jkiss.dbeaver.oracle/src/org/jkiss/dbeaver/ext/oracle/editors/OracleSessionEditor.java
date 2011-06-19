@@ -47,24 +47,27 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
     static final Log log = LogFactory.getLog(OracleSessionEditor.class);
 
     private static class SessionInfo {
-        String pid;
+        String sid;
         String user;
-        String host;
-        String db;
-        String command;
-        String time;
+        String schema;
         String state;
-        String info;
+        String sql;
+        String event;
+        String remoteHost;
+        String remoteUser;
+        String remoteProgram;
 
-        private SessionInfo(String pid, String user, String host, String db, String command, String time, String state, String info) {
-            this.pid = pid;
+        private SessionInfo(String sid, String user, String schema, String state, String sql, String event, String remoteHost, String remoteUser, String remoteProgram)
+        {
+            this.sid = sid;
             this.user = user;
-            this.host = host;
-            this.db = db;
-            this.command = command;
-            this.time = time;
+            this.schema = schema;
             this.state = state;
-            this.info = info;
+            this.sql = sql;
+            this.event = event;
+            this.remoteHost = remoteHost;
+            this.remoteUser = remoteUser;
+            this.remoteProgram = remoteProgram;
         }
     }
 
@@ -120,13 +123,13 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
                 }
                 SessionInfo session = getSelectedSession();
                 if (session != null) {
-                    if (session.info == null) {
+                    if (session.event == null) {
                         sessionInfo.setText("");
                     } else {
-                        sessionInfo.setText(session.info);
+                        sessionInfo.setText(session.event);
                     }
-                    pageControl.killSessionButton.setEnabled(true);
-                    pageControl.killQueryButton.setEnabled(!CommonUtils.isEmpty(session.info));
+                    pageControl.killSessionButton.setEnabled(false);
+                    pageControl.killQueryButton.setEnabled(false);
                 } else {
                     sessionInfo.setText("");
                     pageControl.killSessionButton.setEnabled(false);
@@ -135,13 +138,15 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
             }
         });
 
-        UIUtils.createTableColumn(table, SWT.LEFT, "PID");
+        UIUtils.createTableColumn(table, SWT.LEFT, "SID");
         UIUtils.createTableColumn(table, SWT.LEFT, "User");
-        UIUtils.createTableColumn(table, SWT.LEFT, "Host");
-        UIUtils.createTableColumn(table, SWT.LEFT, "DB");
-        UIUtils.createTableColumn(table, SWT.LEFT, "Command");
-        UIUtils.createTableColumn(table, SWT.LEFT, "Time");
+        UIUtils.createTableColumn(table, SWT.LEFT, "Schema");
         UIUtils.createTableColumn(table, SWT.LEFT, "State");
+        UIUtils.createTableColumn(table, SWT.LEFT, "SQL");
+        UIUtils.createTableColumn(table, SWT.LEFT, "Event");
+        UIUtils.createTableColumn(table, SWT.LEFT, "Remote Host");
+        UIUtils.createTableColumn(table, SWT.LEFT, "Remote User");
+        UIUtils.createTableColumn(table, SWT.LEFT, "Remote Program");
         UIUtils.packColumns(table);
     }
 
@@ -167,21 +172,25 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
                     }
                     JDBCExecutionContext context = getDataSource().openContext(this.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Retrieve process list");
                     try {
-                        JDBCPreparedStatement dbStat = context.prepareStatement("SHOW FULL PROCESSLIST");
+                        JDBCPreparedStatement dbStat = context.prepareStatement(
+                            "SELECT s.*,sq.SQL_TEXT FROM V$SESSION s\n" +
+                            "LEFT OUTER JOIN V$SQL sq ON sq.SQL_ID=s.SQL_ID\n" +
+                            "WHERE s.TYPE='USER'");
                         try {
                             JDBCResultSet dbResult = dbStat.executeQuery();
                             try {
                                 List<SessionInfo> sessions = new ArrayList<SessionInfo>();
                                 while (dbResult.next()) {
                                     SessionInfo session = new SessionInfo(
-                                        JDBCUtils.safeGetString(dbResult, "id"),
-                                        JDBCUtils.safeGetString(dbResult, "user"),
-                                        JDBCUtils.safeGetString(dbResult, "host"),
-                                        JDBCUtils.safeGetString(dbResult, "db"),
-                                        JDBCUtils.safeGetString(dbResult, "command"),
-                                        JDBCUtils.safeGetString(dbResult, "time"),
-                                        JDBCUtils.safeGetString(dbResult, "state"),
-                                        JDBCUtils.safeGetString(dbResult, "info")
+                                        JDBCUtils.safeGetString(dbResult, "SID"),
+                                        JDBCUtils.safeGetString(dbResult, "USERNAME"),
+                                        JDBCUtils.safeGetString(dbResult, "SCHEMANAME"),
+                                        JDBCUtils.safeGetString(dbResult, "STATE"),
+                                        JDBCUtils.safeGetString(dbResult, "SQL_TEXT"),
+                                        JDBCUtils.safeGetString(dbResult, "EVENT"),
+                                        JDBCUtils.safeGetString(dbResult, "MACHINE"),
+                                        JDBCUtils.safeGetString(dbResult, "OSUSER"),
+                                        JDBCUtils.safeGetString(dbResult, "PROGRAM")
                                     );
                                     sessions.add(session);
                                 }
@@ -215,7 +224,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
         }
 
         LoadingUtils.createService(
-            new DatabaseLoadService<SessionInfo>("Kill " + (killConnection ? ("session " + session.pid) : ("query " + session.info)), getDataSource()) {
+            new DatabaseLoadService<SessionInfo>("Kill " + (killConnection ? ("session " + session.sid) : ("query " + session.event)), getDataSource()) {
                 public SessionInfo evaluate()
                     throws InvocationTargetException, InterruptedException
                 {
@@ -226,8 +235,8 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
                     try {
                         JDBCPreparedStatement dbStat = context.prepareStatement(
                             killConnection ?
-                                "KILL CONNECTION " + session.pid :
-                                "KILL QUERY " + session.pid);
+                                "KILL CONNECTION " + session.sid :
+                                "KILL QUERY " + session.sid);
                         dbStat.execute();
                         return session;
                     }
@@ -274,24 +283,21 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
         {
             SessionInfo session = (SessionInfo) element;
             switch (columnIndex) {
-                case 0: return session.pid;
+                case 0: return session.sid;
                 case 1: return session.user;
-                case 2: return session.host;
-                case 3: return session.db;
-                case 4: return session.command;
-                case 5: return session.time;
-                case 6: return session.state;
-                case 7: return session.info;
+                case 2: return session.schema;
+                case 3: return session.state;
+                case 4: return session.sql;
+                case 5: return session.event;
+                case 6: return session.remoteHost;
+                case 7: return session.remoteUser;
+                case 8: return session.remoteProgram;
                 default: return null;
             }
         }
 
         public Font getFont(Object element, int columnIndex)
         {
-            SessionInfo session = (SessionInfo) element;
-            if (!CommonUtils.isEmpty(session.info)) {
-                return boldFont;
-            }
             return null;
         }
     }
@@ -380,7 +386,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
             public void completeLoading(SessionInfo sessionInfo) {
                 super.completeLoading(sessionInfo);
                 if (sessionInfo != null) {
-                    setInfo("Done (" + sessionInfo.pid + ")");
+                    setInfo("Done (" + sessionInfo.sid + ")");
                 }
             }
         }
