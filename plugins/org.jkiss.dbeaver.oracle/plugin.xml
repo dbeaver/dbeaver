@@ -111,12 +111,12 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="Types" iconId="#data_types" description="Types">
                             <items label="Type" path="type" property="dataTypes" iconId="#data_type">
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeAttribute" label="Attributes" iconId="#columns" description="Type attributes" visibleIf="object.hasAttributes()">
-                                    <items label="Attribute" path="attribute" property="attributes" iconId="#column"/>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeAttribute" label="Attributes" iconId="#attributes" description="Type attributes" visibleIf="object.hasAttributes()">
+                                    <items label="Attribute" path="attribute" property="attributes" iconId="#attribute"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeMethod" label="Methods" iconId="#methods" description="Type methods" visibleIf="object.hasMethods()">
-                                    <items label="Method" path="method" property="methods" iconId="#method">
-                                        <items label="Parameters" itemLabel="Parameter" path="parameter" property="parameters" navigable="false" inline="false">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeMethod" label="Methods" iconId="#procedures" description="Type methods" visibleIf="object.hasMethods()">
+                                    <items label="Method" path="method" property="methods" iconId="#procedure">
+                                        <items label="Arguments" itemLabel="Argument" path="parameter" property="parameters" iconId="#argument" navigable="false" inline="false">
                                         </items>
                                     </items>
                                 </folder>
@@ -124,17 +124,17 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePackage" label="Packages" iconId="#packages" description="Packages">
                             <items label="Package" path="package" property="packages" iconId="#package">
-                                <items label="Procedure" path="procedure" property="procedures" iconId="#procedure">
-                                    <items label="Procedure columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="false">
+                                <items label="Procedure" path="procedure" property="procedures" iconId="#procedure" id="Procedure">
+                                    <items label="Arguments" itemLabel="Argument" path="argument" property="columns" iconId="#argument" navigable="false" inline="false">
+                                        <items label="Attributes" itemLabel="Attribute" path="attribute" property="attributes" iconId="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
+                                            <items ref="ProcedureArgumentAttributes"/>
+                                        </items>
                                     </items>
                                 </items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="Procedures" iconId="#procedures" description="Procedures">
-                            <items label="Procedure" path="procedure" property="procedures" iconId="#procedure">
-                                <items label="Procedure columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="false">
-                                </items>
-                            </items>
+                            <items ref="Procedure"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSynonym" label="Synonyms" iconId="#synonyms" description="Synonyms">
                             <items label="Synonym" path="synonym" property="synonyms" iconId="#synonym"/>

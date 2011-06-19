@@ -19,7 +19,9 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DataSourceProviderDescriptor
@@ -34,6 +36,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     public static final String TREE_NODE_TYPE_ITEMS = "items";
     public static final String TREE_NODE_TYPE_OBJECT = "object";
 
+    public static final String TREE_ATTR_ID = "id";
+    public static final String TREE_ATTR_REF = "ref";
     public static final String TREE_ATTR_PATH = "path";
     public static final String TREE_ATTR_VISIBLE_IF = "visibleIf";
     public static final String TREE_ATTR_TYPE = "type";
@@ -59,6 +63,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private Image icon;
     private DBPDataSourceProvider instance;
     private DBXTreeNode treeDescriptor;
+    private Map<String, DBXTreeNode> treeNodeMap = new HashMap<String, DBXTreeNode>();
     private boolean driversManagable;
     private List<IPropertyDescriptor> driverProperties = new ArrayList<IPropertyDescriptor>();
     private List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
@@ -277,6 +282,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         DBXTreeItem treeRoot = new DBXTreeItem(
             this,
             null,
+            config.getAttribute(TREE_ATTR_ID),
             "Connection",
             "Connection",
             config.getAttribute(TREE_ATTR_PATH),
@@ -304,44 +310,62 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private void loadTreeNode(DBXTreeNode parent, IConfigurationElement config)
     {
         DBXTreeNode child = null;
-        String nodeType = config.getName();
-        if (nodeType.equals(TREE_NODE_TYPE_FOLDER)) {
-            DBXTreeFolder folder = new DBXTreeFolder(
-                this,
-                parent,
-                config.getAttribute(TREE_ATTR_TYPE),
-                config.getAttribute(TREE_ATTR_LABEL),
-                !"false".equals(config.getAttribute(TREE_ATTR_NAVIGABLE)),
-                config.getAttribute(TREE_ATTR_VISIBLE_IF));
-            folder.setDescription(config.getAttribute(TREE_ATTR_DESCRIPTION));
-            child = folder;
-        } else if (nodeType.equals(TREE_NODE_TYPE_ITEMS)) {
-            child = new DBXTreeItem(
-                this,
-                parent,
-                config.getAttribute(TREE_ATTR_LABEL),
-                config.getAttribute(TREE_ATTR_ITEM_LABEL),
-                config.getAttribute(TREE_ATTR_PATH),
-                config.getAttribute(TREE_ATTR_PROPERTY),
-                "true".equals(config.getAttribute(TREE_ATTR_OPTIONAL)),
-                "true".equals(config.getAttribute(TREE_ATTR_VIRTUAL)),
-                !"false".equals(config.getAttribute(TREE_ATTR_NAVIGABLE)),
-                "true".equals(config.getAttribute(TREE_ATTR_INLINE)),
-                config.getAttribute(TREE_ATTR_VISIBLE_IF));
-        } else if (nodeType.equals(TREE_NODE_TYPE_OBJECT)) {
-            child = new DBXTreeObject(
-                this,
-                parent,
-                config.getAttribute(TREE_ATTR_VISIBLE_IF),
-                config.getAttribute(TREE_ATTR_LABEL),
-                config.getAttribute(TREE_ATTR_DESCRIPTION),
-                config.getAttribute(TREE_ATTR_EDITOR));
+        final String refId = config.getAttribute(TREE_ATTR_REF);
+        if (!CommonUtils.isEmpty(refId)) {
+            child = treeNodeMap.get(refId);
+            if (child != null) {
+                parent.addChild(child);
+            } else {
+                log.warn("Bad node reference: " + refId);
+            }
         } else {
-            // Unknown node type
-        }
-        if (child != null) {
-            loadTreeIcon(child, config);
-            loadTreeChildren(config, child);
+            String nodeType = config.getName();
+            if (nodeType.equals(TREE_NODE_TYPE_FOLDER)) {
+                DBXTreeFolder folder = new DBXTreeFolder(
+                    this,
+                    parent,
+                    config.getAttribute(TREE_ATTR_ID),
+                    config.getAttribute(TREE_ATTR_TYPE),
+                    config.getAttribute(TREE_ATTR_LABEL),
+                    !"false".equals(config.getAttribute(TREE_ATTR_NAVIGABLE)),
+                    config.getAttribute(TREE_ATTR_VISIBLE_IF));
+                folder.setDescription(config.getAttribute(TREE_ATTR_DESCRIPTION));
+                child = folder;
+            } else if (nodeType.equals(TREE_NODE_TYPE_ITEMS)) {
+                child = new DBXTreeItem(
+                    this,
+                    parent,
+                    config.getAttribute(TREE_ATTR_ID),
+                    config.getAttribute(TREE_ATTR_LABEL),
+                    config.getAttribute(TREE_ATTR_ITEM_LABEL),
+                    config.getAttribute(TREE_ATTR_PATH),
+                    config.getAttribute(TREE_ATTR_PROPERTY),
+                    "true".equals(config.getAttribute(TREE_ATTR_OPTIONAL)),
+                    "true".equals(config.getAttribute(TREE_ATTR_VIRTUAL)),
+                    !"false".equals(config.getAttribute(TREE_ATTR_NAVIGABLE)),
+                    "true".equals(config.getAttribute(TREE_ATTR_INLINE)),
+                    config.getAttribute(TREE_ATTR_VISIBLE_IF));
+            } else if (nodeType.equals(TREE_NODE_TYPE_OBJECT)) {
+                child = new DBXTreeObject(
+                    this,
+                    parent,
+                    config.getAttribute(TREE_ATTR_ID),
+                    config.getAttribute(TREE_ATTR_VISIBLE_IF),
+                    config.getAttribute(TREE_ATTR_LABEL),
+                    config.getAttribute(TREE_ATTR_DESCRIPTION),
+                    config.getAttribute(TREE_ATTR_EDITOR));
+            } else {
+                // Unknown node type
+                log.warn("Unknown node type: " + nodeType);
+            }
+
+            if (child != null) {
+                if (!CommonUtils.isEmpty(child.getId())) {
+                    treeNodeMap.put(child.getId(), child);
+                }
+                loadTreeIcon(child, config);
+                loadTreeChildren(config, child);
+            }
         }
     }
 

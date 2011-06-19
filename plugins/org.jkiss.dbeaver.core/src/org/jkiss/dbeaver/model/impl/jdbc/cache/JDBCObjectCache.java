@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
+import org.eclipse.core.internal.utils.ArrayIterator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -172,13 +173,36 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             for (OBJECT object : tmpObjectList) {
                 this.objectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
             }
-            this.invalidateObjects(monitor, objectList);
+            this.invalidateObjects(monitor, new CacheIterator());
         }
     }
 
-    protected void invalidateObjects(DBRProgressMonitor monitor, Collection<OBJECT> objectList)
+    protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<OBJECT> objectIter)
     {
 
     }
 
+    private class CacheIterator implements Iterator<OBJECT> {
+        private Iterator<OBJECT> listIterator = objectList.iterator();
+        private OBJECT curObject;
+        private CacheIterator()
+        {
+        }
+
+        public boolean hasNext()
+        {
+            return listIterator.hasNext();
+        }
+
+        public OBJECT next()
+        {
+            return (curObject = listIterator.next());
+        }
+
+        public void remove()
+        {
+            listIterator.remove();
+            objectMap.remove(caseSensitive ? curObject.getName() : curObject.getName().toUpperCase());
+        }
+    }
 }

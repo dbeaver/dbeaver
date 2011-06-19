@@ -23,6 +23,7 @@ public class DBXTreeItem extends DBXTreeNode
     public DBXTreeItem(
         AbstractDescriptor source,
         DBXTreeNode parent,
+        String id,
         String label,
         String itemLabel,
         String path,
@@ -33,7 +34,7 @@ public class DBXTreeItem extends DBXTreeNode
         boolean inline,
         String visibleIf)
     {
-        super(source, parent, navigable, inline, visibleIf);
+        super(source, parent, id, navigable, inline, visibleIf);
         this.label = label;
         this.itemLabel = itemLabel == null ? label : itemLabel;
         this.path = path;

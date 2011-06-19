@@ -30,21 +30,22 @@ public abstract class DBXTreeNode
 
     private final AbstractDescriptor source;
     private final DBXTreeNode parent;
+    private final String id;
     private List<DBXTreeNode> children;
-    //private DBXTreeNode recursiveLink;
     private Image defaultIcon;
     private List<DBXTreeIcon> icons;
     private final boolean navigable;
     private final boolean inline;
     private Expression visibleIf;
 
-    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, boolean navigable, boolean inline, String visibleIf)
+    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, String visibleIf)
     {
         this.source = source;
         this.parent = parent;
         if (parent != null) {
             parent.addChild(this);
         }
+        this.id = id;
         this.navigable = navigable;
         this.inline = inline;
         if (!CommonUtils.isEmpty(visibleIf)) {
@@ -78,6 +79,11 @@ public abstract class DBXTreeNode
     public DBXTreeNode getParent()
     {
         return parent;
+    }
+
+    public String getId()
+    {
+        return id;
     }
 
     public boolean hasChildren(DBNNode context)
@@ -124,7 +130,7 @@ public abstract class DBXTreeNode
         return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(makeContext(context)));
     }
 
-    private void addChild(DBXTreeNode child)
+    public void addChild(DBXTreeNode child)
     {
         if (this.children == null) {
             this.children = new ArrayList<DBXTreeNode>();

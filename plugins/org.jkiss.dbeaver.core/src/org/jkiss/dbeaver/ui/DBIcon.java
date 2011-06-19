@@ -48,6 +48,8 @@ public enum DBIcon
     TREE_DATA_TYPE("data_type", "icons/tree/data_type.png"),
     TREE_SEQUENCE("sequence", "icons/tree/sequence.png"),
     TREE_SYNONYM("synonym", "icons/tree/synonym.png"),
+    TREE_ATTRIBUTE("attribute", "icons/tree/attribute.png"),
+    TREE_ARGUMENT("argument", "icons/tree/argument.png"),
 
     TREE_INFO("info", "/icons/tree/info.png"),
     TREE_FOLDER_INFO("folder_info", "/icons/tree/folder_info.png"),

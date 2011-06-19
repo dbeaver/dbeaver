@@ -13,10 +13,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumn;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.utils.IntKeyMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * GenericProcedure
@@ -64,7 +65,7 @@ public abstract class OracleProcedureBase extends OracleSchemaObject implements 
                 "SELECT * FROM SYS.ALL_ARGUMENTS " +
                 "WHERE OWNER=? AND OBJECT_NAME=? " +
                 (procedure.getContainer() instanceof OraclePackage ? "AND PACKAGE_NAME=? AND OVERLOAD=? " : "AND PACKAGE_NAME IS NULL ") +
-                "\nORDER BY POSITION,SEQUENCE");
+                "\nORDER BY SEQUENCE");
             dbStat.setString(1, procedure.getSchema().getName());
             dbStat.setString(2, procedure.getName());
             if (procedure.getContainer() instanceof OraclePackage) {
@@ -79,6 +80,27 @@ public abstract class OracleProcedureBase extends OracleSchemaObject implements 
         {
             return new OracleProcedureArgument(context.getProgressMonitor(), procedure, resultSet);
         }
+
+        @Override
+        protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<OracleProcedureArgument> objectIter)
+        {
+            IntKeyMap<OracleProcedureArgument> argStack = new IntKeyMap<OracleProcedureArgument>();
+            while (objectIter.hasNext()) {
+                OracleProcedureArgument argument = objectIter.next();
+                final int curDataLevel = argument.getDataLevel();
+                argStack.put(curDataLevel, argument);
+                if (curDataLevel > 0) {
+                    objectIter.remove();
+                    OracleProcedureArgument parentArgument = argStack.get(curDataLevel - 1);
+                    if (parentArgument == null) {
+                        log.error("Broken arguments structure for '" + argument.getProcedure().getFullQualifiedName() + "' - no parent argument for argument " + argument.getSequence());
+                    } else {
+                        parentArgument.addAttribute(argument);
+                    }
+                }
+            }
+        }
+
     }
 
 }

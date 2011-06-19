@@ -16,9 +16,9 @@ public class DBXTreeObject extends DBXTreeNode
     private String description;
     private String editorId;
 
-    public DBXTreeObject(AbstractDescriptor source, DBXTreeNode parent, String visibleIf, String label, String description, String editorId)
+    public DBXTreeObject(AbstractDescriptor source, DBXTreeNode parent, String id, String visibleIf, String label, String description, String editorId)
     {
-        super(source, parent, true, false, visibleIf);
+        super(source, parent, id, true, false, visibleIf);
         this.label = label;
         this.description = description;
         this.editorId = editorId;

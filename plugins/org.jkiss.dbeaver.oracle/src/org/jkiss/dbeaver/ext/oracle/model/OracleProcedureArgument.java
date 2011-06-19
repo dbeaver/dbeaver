@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -13,6 +14,8 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureColumn;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * OracleProcedureArgument
@@ -30,6 +33,7 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     private int dataLength;
     private int dataScale;
     private int dataPrecision;
+    private List<OracleProcedureArgument> attributes;
 
     public OracleProcedureArgument(
         DBRProgressMonitor monitor,
@@ -89,8 +93,12 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     public String getName()
     {
         if (CommonUtils.isEmpty(name)) {
-            if (position == 0) {
+            if (dataLevel == 0) {
+                // Function result
                 return "RESULT";
+            } else {
+                // Collection element
+                return "ELEMENT";
             }
         }
         return name;
@@ -145,5 +153,34 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     public int getPrecision()
     {
         return dataPrecision;
+    }
+
+    public int getDataLevel()
+    {
+        return dataLevel;
+    }
+
+    public int getSequence()
+    {
+        return sequence;
+    }
+
+    @Association
+    public List<OracleProcedureArgument> getAttributes()
+    {
+        return attributes;
+    }
+
+    void addAttribute(OracleProcedureArgument attribute)
+    {
+        if (attributes == null) {
+            attributes = new ArrayList<OracleProcedureArgument>();
+        }
+        attributes.add(attribute);
+    }
+
+    public boolean hasAttributes()
+    {
+        return !CommonUtils.isEmpty(attributes);
     }
 }
