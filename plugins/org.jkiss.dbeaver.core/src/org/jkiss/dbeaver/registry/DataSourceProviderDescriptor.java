@@ -356,7 +356,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                     config.getAttribute(TREE_ATTR_EDITOR));
             } else {
                 // Unknown node type
-                log.warn("Unknown node type: " + nodeType);
+                //log.warn("Unknown node type: " + nodeType);
             }
 
             if (child != null) {

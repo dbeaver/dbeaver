@@ -733,7 +733,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema oracleSchema) throws SQLException, DBException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT TRIGGER_NAME,TRIGGER_TYPE,TRIGGERING_EVENT,BASE_OBJECT_TYPE,TABLE_OWNER,TABLE_NAME,WHEN_CLAUSE,STATUS,DESCRIPTION\n" +
+                "SELECT *\n" +
                 "FROM SYS.ALL_TRIGGERS WHERE OWNER=?\n" +
                 "ORDER BY TRIGGER_NAME");
             dbStat.setString(1, oracleSchema.getName());
