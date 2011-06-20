@@ -35,7 +35,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 
-    private static class TypeDesc {
+    static class TypeDesc {
         final int valueType;
         final int precision;
         final int minScale;
@@ -49,7 +49,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         }
     }
 
-    private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>();
+    static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>();
     static  {
         PREDEFINED_TYPES.put("BFILE", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("BINARY ROWID", new TypeDesc(java.sql.Types.ROWID, 0, 0, 0));

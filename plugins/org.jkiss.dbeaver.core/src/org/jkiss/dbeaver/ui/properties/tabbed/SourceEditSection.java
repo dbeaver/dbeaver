@@ -54,7 +54,6 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
     private SQLEditorBase sqlViewer;
     private SQLEditorContributor actionContributor;
     private final ISelectionProvider selectionProvider = new CustomSelectionProvider();
-    //private final IAction actionDelete = new ActionDelete();
     private boolean sourcesModified = false;
     private IEditorSite nestedEditorSite;
 
@@ -208,13 +207,11 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
 
         selectionProvider.setSelection(new StructuredSelection());
 
-        final IActionBars actionBars = editor.getEditorSite().getActionBars();
-        //actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, actionDelete);
         if (nestedEditorSite instanceof INestable) {
             ((INestable) nestedEditorSite).activate();
         }
         actionContributor.setActiveEditor(sqlViewer);
-        sqlViewer.handleActivate();
+        //sqlViewer.handleActivate();
     }
 
     @Override
@@ -227,8 +224,6 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
         if (sqlViewer != null) {
             sqlViewer.enableUndoManager(false);
         }
-        //final IActionBars actionBars = editor.getEditorSite().getActionBars();
-        //actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, null);
     }
 
     public void refreshPart(Object source)
@@ -251,21 +246,6 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
                 if (source == null) {
                     source = "";
                 }
-            }
-        }
-    }
-
-    private class ActionDelete extends Action {
-        private ActionDelete()
-        {
-            setActionDefinitionId(IWorkbenchCommandConstants.EDIT_DELETE);
-        }
-
-        @Override
-        public void run()
-        {
-            if (sqlViewer != null && !sqlViewer.isDisposed()) {
-                sqlViewer.doOperation(ITextOperationTarget.DELETE);
             }
         }
     }

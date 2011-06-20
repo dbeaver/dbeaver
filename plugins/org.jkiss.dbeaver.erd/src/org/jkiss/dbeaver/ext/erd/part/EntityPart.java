@@ -167,7 +167,7 @@ public class EntityPart extends NodePart
 	 */
 	public String toString()
 	{
-		return getTable().getObject().getTableType() + " " + getTable().getObject().getFullQualifiedName();
+		return getTable().getObject().getFullQualifiedName();
 	}
 
 	//******************* Listener related methods *********************/

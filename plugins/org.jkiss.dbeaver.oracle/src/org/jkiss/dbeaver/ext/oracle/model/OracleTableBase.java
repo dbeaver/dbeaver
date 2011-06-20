@@ -80,12 +80,6 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             this);
     }
 
-    @Override
-    public String getTableType()
-    {
-        return super.getTableType();
-    }
-
     public List<OracleTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {

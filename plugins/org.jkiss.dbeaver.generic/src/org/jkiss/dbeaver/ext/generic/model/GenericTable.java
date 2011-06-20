@@ -35,6 +35,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 {
     static final Log log = LogFactory.getLog(GenericTable.class);
 
+    private String tableType;
     private boolean isView;
     private boolean isSystem;
     private String description;
@@ -64,8 +65,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         String remarks,
         boolean persisted)
     {
-        super(container, persisted, tableName, tableType);
-
+        super(container, persisted, tableName);
+        this.tableType = tableType;
         this.description = remarks;
         if (!CommonUtils.isEmpty(this.getTableType())) {
             this.isView = (this.getTableType().toUpperCase().indexOf("VIEW") != -1);
@@ -106,6 +107,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     {
         return this.isSystem;
     }
+
+    @Property(name = "Table Type", viewable = true, order = 2)
+    private String getTableType()
+    {
+        return tableType;
+    }
+
 
     @Property(name = "Catalog", viewable = true, order = 3)
     public GenericCatalog getCatalog()

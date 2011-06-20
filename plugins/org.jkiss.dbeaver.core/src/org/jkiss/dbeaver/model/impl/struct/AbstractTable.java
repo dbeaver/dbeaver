@@ -22,18 +22,16 @@ public abstract class AbstractTable<
 {
     private CONTAINER container;
     private String tableName;
-    private String tableType;
 
     protected AbstractTable(CONTAINER container)
     {
         this.container = container;
     }
 
-    protected AbstractTable(CONTAINER container, String tableName, String tableType)
+    protected AbstractTable(CONTAINER container, String tableName)
     {
         this(container);
         this.tableName = tableName;
-        this.tableType = tableType;
     }
 
     public CONTAINER getContainer()
@@ -50,17 +48,6 @@ public abstract class AbstractTable<
     public void setName(String tableName)
     {
         this.tableName = tableName;
-    }
-
-    @Property(name = "Table Type", viewable = true, order = 2)
-    public String getTableType()
-    {
-        return tableType;
-    }
-
-    protected void setTableType(String tableType)
-    {
-        this.tableType = tableType;
     }
 
     @SuppressWarnings("unchecked")

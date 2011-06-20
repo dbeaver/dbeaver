@@ -50,7 +50,7 @@ public class EntityFigure extends Figure {
         add(nameLabel);
         add(attributeFigure);
 
-        Label toolTip = new Label(table.getObject().getFullQualifiedName() + " [" + table.getObject().getTableType() + "]");
+        Label toolTip = new Label(table.getObject().getFullQualifiedName());
         toolTip.setIcon(tableImage);
         setToolTip(toolTip);
     }

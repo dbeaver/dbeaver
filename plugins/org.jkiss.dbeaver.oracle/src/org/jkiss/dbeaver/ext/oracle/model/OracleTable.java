@@ -6,9 +6,11 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -20,6 +22,10 @@ import java.util.List;
  */
 public class OracleTable extends OracleTablePhysical
 {
+    private OracleDataType tableType;
+    private boolean temporary;
+    private boolean secondary;
+    private boolean nested;
 
     public static class AdditionalInfo extends TableAdditionalInfo {
     }
@@ -34,22 +40,58 @@ public class OracleTable extends OracleTablePhysical
         super(schema);
     }
 
+    public OracleTable(
+        DBRProgressMonitor monitor,
+        OracleSchema schema,
+        ResultSet dbResult)
+    {
+        super(schema, dbResult);
+        String typeOwner = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE_OWNER");
+        if (!CommonUtils.isEmpty(typeOwner)) {
+            tableType = OracleDataType.resolveDataType(
+                monitor,
+                schema.getDataSource(),
+                typeOwner,
+                JDBCUtils.safeGetString(dbResult, "TABLE_TYPE"));
+        }
+        this.temporary = JDBCUtils.safeGetBoolean(dbResult, "TEMPORARY", "Y");
+        this.secondary = JDBCUtils.safeGetBoolean(dbResult, "SECONDARY", "Y");
+        this.nested = JDBCUtils.safeGetBoolean(dbResult, "NESTED", "Y");
+    }
+
     @Override
     public TableAdditionalInfo getAdditionalInfo()
     {
         return additionalInfo;
     }
 
-    public OracleTable(
-        OracleSchema schema,
-        ResultSet dbResult)
-    {
-        super(schema, dbResult);
-    }
-
     public boolean isView()
     {
         return false;
+    }
+
+    @Property(name = "Table Type", viewable = false, order = 5)
+    public OracleDataType getTableType()
+    {
+        return tableType;
+    }
+
+    @Property(name = "Temporary", viewable = false, order = 6)
+    public boolean isTemporary()
+    {
+        return temporary;
+    }
+
+    @Property(name = "Secondary", viewable = false, order = 6)
+    public boolean isSecondary()
+    {
+        return secondary;
+    }
+
+    @Property(name = "Nested", viewable = false, order = 7)
+    public boolean isNested()
+    {
+        return nested;
     }
 
     @Association

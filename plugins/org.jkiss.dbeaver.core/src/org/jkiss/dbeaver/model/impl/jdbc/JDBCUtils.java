@@ -144,7 +144,8 @@ public class JDBCUtils {
     public static boolean safeGetBoolean(ResultSet dbResult, String columnName, String trueValue)
     {
         try {
-            return trueValue.equals(dbResult.getString(columnName));
+            final String strValue = dbResult.getString(columnName);
+            return strValue != null && strValue.startsWith(trueValue);
         } catch (SQLException e) {
             debugColumnRead(columnName, e);
             return false;

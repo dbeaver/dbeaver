@@ -15,7 +15,6 @@ import java.util.List;
  */
 public interface DBSTable extends DBSEntityQualified
 {
-    String getTableType();
 
     boolean isView();
 

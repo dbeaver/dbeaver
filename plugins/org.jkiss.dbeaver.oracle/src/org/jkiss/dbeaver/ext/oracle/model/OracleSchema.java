@@ -26,10 +26,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * OracleSchema
@@ -268,14 +265,16 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT /*+ USE_NL(tc)*/ tab.*,tc.COMMENTS FROM (\n" +
-                "SELECT /*+ USE_NL(mv)*/ t.OWNER,\n" +
-                "NVL(mv.MVIEW_NAME,t.TABLE_NAME) as TABLE_NAME,\n" +
-                "CASE WHEN mv.MVIEW_NAME IS NULL THEN 'TABLE' ELSE 'MVIEW' END as TABLE_TYPE,t.STATUS,t.NUM_ROWS \n" +
-                "FROM SYS.ALL_ALL_TABLES t\n" +
-                "LEFT OUTER JOIN SYS.ALL_MVIEWS mv ON mv.OWNER=t.OWNER AND mv.CONTAINER_NAME=t.TABLE_NAME \n" +
-                "WHERE t.OWNER=?\n" +
+                    "SELECT /*+ USE_NL(mv)*/ t.OWNER,\n" +
+                    "NVL(mv.MVIEW_NAME,t.TABLE_NAME) as TABLE_NAME,\n" +
+                    "CASE WHEN mv.MVIEW_NAME IS NULL THEN 'TABLE' ELSE 'MVIEW' END as OBJECT_TYPE," +
+                    "t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TEMPORARY,t.SECONDARY,t.NESTED,t.STATUS,t.NUM_ROWS \n" +
+                    "FROM SYS.ALL_ALL_TABLES t\n" +
+                    "LEFT OUTER JOIN SYS.ALL_MVIEWS mv ON mv.OWNER=t.OWNER AND mv.CONTAINER_NAME=t.TABLE_NAME \n" +
+                    "WHERE t.OWNER=?\n" +
                 "UNION ALL\n" +
-                "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as TABLE_TYPE,NULL,NULL FROM SYS.ALL_VIEWS v WHERE v.OWNER=?\n" +
+                    "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,NULL,NULL,NULL,NULL,NULL,NULL,NULL " +
+                    "FROM SYS.ALL_VIEWS v WHERE v.OWNER=?\n" +
                 ") tab\n" +
                 "LEFT OUTER JOIN SYS.ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME\n" +
                 "ORDER BY tab.TABLE_NAME");
@@ -287,11 +286,11 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         protected OracleTableBase fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
             throws SQLException, DBException
         {
-            final String tableType = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE");
+            final String tableType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
             if ("MVIEW".equals(tableType)) {
                 return new OracleMaterializedView(owner, dbResult);
             } else if ("TABLE".equals(tableType)) {
-                return new OracleTable(owner, dbResult);
+                return new OracleTable(context.getProgressMonitor(), owner, dbResult);
             } else {
                 return new OracleView(owner, dbResult);
             }
@@ -384,9 +383,10 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             OracleTable parent, OracleConstraint object, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleConstraintColumn(
+            final OracleTableColumn tableColumn = getTableColumn(context, parent, dbResult);
+            return tableColumn == null ? null : new OracleConstraintColumn(
                 object,
-                getTableColumn(context, parent, dbResult),
+                tableColumn,
                 JDBCUtils.safeGetInt(dbResult, "POSITION"));
         }
 
@@ -599,6 +599,17 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
             return new OracleDataType(owner, resultSet);
         }
 
+        @Override
+        protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<OracleDataType> objectIter)
+        {
+            // Add predefined types
+            for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
+                if (getCachedObject(predefinedType.getKey()) == null) {
+                    cacheObject(
+                        new OracleDataType(null, predefinedType.getKey(), true));
+                }
+            }
+        }
     }
 
     /**

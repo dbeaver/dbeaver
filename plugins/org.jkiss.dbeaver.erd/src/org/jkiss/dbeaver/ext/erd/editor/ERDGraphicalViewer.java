@@ -336,7 +336,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         {
             super(table.getName(), table.getDescription(), DBIcon.TREE_TABLE.getImageDescriptor(), null);
             this.setUserModificationPermission(PERMISSION_NO_MODIFICATION);
-            setDescription(table.getTableType() + " " + table.getFullQualifiedName());
+            setDescription(table.getFullQualifiedName());
             this.table = table;
         }
         public Tool createTool()

@@ -39,8 +39,9 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         MySQLCatalog catalog,
         ResultSet dbResult)
     {
-        super(catalog, true);
-        this.loadInfo(dbResult);
+        super(catalog, true, JDBCUtils.safeGetString(dbResult, 1));
+
+        this.columns = null;
     }
 
     public String getFullQualifiedName()
@@ -48,12 +49,6 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
             this);
-    }
-
-    @Override
-    public String getTableType()
-    {
-        return super.getTableType();
     }
 
     public List<MySQLTableColumn> getColumns(DBRProgressMonitor monitor)
@@ -76,14 +71,6 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     {
         columns = null;
         return true;
-    }
-
-    private void loadInfo(ResultSet dbResult)
-    {
-        this.setName(JDBCUtils.safeGetString(dbResult, 1));
-        this.setTableType(JDBCUtils.safeGetString(dbResult, 2));
-
-        this.columns = null;
     }
 
     public boolean isColumnsCached()
