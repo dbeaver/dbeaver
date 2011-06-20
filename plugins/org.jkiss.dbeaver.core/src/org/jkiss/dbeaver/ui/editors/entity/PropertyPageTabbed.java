@@ -2,15 +2,16 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.properties.tabbed;
+package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.ui.views.properties.tabbed.ITabbedPropertySheetPageContributor;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
 
 /**
  * PropertyPageTabbed
  */
-public class PropertyPageTabbed extends TabbedPropertySheetPage {
+class PropertyPageTabbed extends TabbedPropertySheetPage {
 
     private boolean allowContentScroll = false;
 

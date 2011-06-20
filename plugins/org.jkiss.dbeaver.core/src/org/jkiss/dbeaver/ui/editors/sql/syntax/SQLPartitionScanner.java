@@ -140,7 +140,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         rules.add(wordRule);
 
         // Add rules for multi-line comments
-        rules.add(new NestedMultiLineRule(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END, multilineCommentToken, (char) 0, true));
+        rules.add(new MultiLineRule(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END, multilineCommentToken, (char) 0, true));
     }
 
     public SQLPartitionScanner(SQLSyntaxManager sqlSyntax)

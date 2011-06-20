@@ -168,7 +168,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         }
 
         // Add rules for multi-line comments
-        rules.add(new NestedMultiLineRule(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END, commentToken, (char) 0, true));
+        rules.add(new MultiLineRule(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END, commentToken, (char) 0, true));
 
         // Add generic whitespace rule.
         rules.add(new WhitespaceRule(new SQLWhiteSpaceDetector()));

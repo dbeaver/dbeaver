@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.ui.editors.entity.ObjectPropertiesEditor;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
@@ -46,7 +47,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
             }
         });
         this.id = "default.object.editor";
-        this.className = org.jkiss.dbeaver.ui.editors.entity.DefaultObjectEditor.class.getName();
+        this.className = ObjectPropertiesEditor.class.getName();
         this.objectTypes = new ArrayList<String>();
         this.main = true;
         this.name = "Properties";

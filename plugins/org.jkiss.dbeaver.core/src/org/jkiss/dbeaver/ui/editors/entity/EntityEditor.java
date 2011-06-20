@@ -359,7 +359,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         if (!mainAdded) {
             try {
                 DBNNode node = getEditorInput().getTreeNode();
-                int index = addPage(new DefaultObjectEditor(node), getEditorInput());
+                int index = addPage(new ObjectPropertiesEditor(node), getEditorInput());
                 setPageText(index, "Properties");
                 if (node instanceof DBNDatabaseNode) {
                     setPageToolTip(index, ((DBNDatabaseNode)node).getMeta().getChildrenType() + " Properties");

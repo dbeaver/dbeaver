@@ -36,17 +36,17 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertyPageTabbed;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DefaultObjectEditor
+ * ObjectPropertiesEditor
  */
-public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements IRefreshablePart, IProgressControlProvider, IFolderedPart, ISearchContextProvider, IRefreshableContainer
+public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
+    implements IRefreshablePart, IProgressControlProvider, IFolderedPart, ISearchContextProvider, IRefreshableContainer
 {
-    //static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
+    //static final Log log = LogFactory.getLog(ObjectPropertiesEditor.class);
 
     private PropertyPageTabbed properties;
     private ObjectEditorPageControl pageControl;
@@ -57,7 +57,7 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
     //private Text nameText;
     //private Text descriptionText;
 
-    public DefaultObjectEditor()
+    public ObjectPropertiesEditor()
     {
     }
 
@@ -98,26 +98,6 @@ public class DefaultObjectEditor extends AbstractDatabaseObjectEditor implements
         infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         infoGroup.setLayout(new RowLayout());
 
-/*
-            if (node instanceof DBNDatabaseNode) {
-                DBNDatabaseNode dbNode = (DBNDatabaseNode)node;
-                if (dbNode.getObject() != null && dbNode.getObject().getDataSource() != null) {
-                    final DBSDataSourceContainer dsContainer = dbNode.getObject().getDataSource().getContainer();
-                    createPathRow(
-                        infoGroup,
-                        dsContainer.getDriver().getIcon(),
-                        "Driver",
-                        dsContainer.getDriver().getName(),
-                        new SelectionAdapter() {
-                            public void widgetSelected(SelectionEvent e)
-                            {
-                                DriverEditDialog dialog = new DriverEditDialog(getSite().getShell(), (DriverDescriptor) dsContainer.getDriver());
-                                dialog.open();
-                            }
-                        });
-                }
-            }
-*/
         List<DBNDatabaseNode> nodeList = new ArrayList<DBNDatabaseNode>();
         for (DBNNode n = node; n != null; n = n.getParentNode()) {
             if (n instanceof DBNDatabaseNode) {
