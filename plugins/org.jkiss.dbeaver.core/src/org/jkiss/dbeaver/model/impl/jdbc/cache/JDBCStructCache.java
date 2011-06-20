@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -74,7 +75,7 @@ public abstract class JDBCStructCache<
             // Load columns
             JDBCPreparedStatement dbStat = prepareChildrenStatement(context, owner, forObject);
             try {
-                dbStat.setFetchSize(1000);
+                dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {

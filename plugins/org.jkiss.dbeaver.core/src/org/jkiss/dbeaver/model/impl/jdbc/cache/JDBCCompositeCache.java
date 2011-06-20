@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -184,6 +185,7 @@ public abstract class JDBCCompositeCache<
         try {
 
             JDBCPreparedStatement dbStat = prepareObjectsStatement(context, owner, forParent);
+            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {

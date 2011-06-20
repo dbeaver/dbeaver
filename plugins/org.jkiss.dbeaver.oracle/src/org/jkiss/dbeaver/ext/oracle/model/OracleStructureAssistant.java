@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -124,6 +125,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                 dbStat.setString(2, schema.getName());
             }
             dbStat.setString(schema != null ? 3 : 2, objectNameMask);
+            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
                 while (objects.size() < maxResults && dbResult.next()) {

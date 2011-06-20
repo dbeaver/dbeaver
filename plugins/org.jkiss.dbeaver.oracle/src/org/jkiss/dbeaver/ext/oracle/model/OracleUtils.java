@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -41,6 +42,7 @@ public class OracleUtils {
                 dbStat.setString(1, body ? sourceType + " BODY" : sourceType);
                 dbStat.setString(2, sourceOwner.getName());
                 dbStat.setString(3, sourceObject.getName());
+                dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 final JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     StringBuilder source = null;

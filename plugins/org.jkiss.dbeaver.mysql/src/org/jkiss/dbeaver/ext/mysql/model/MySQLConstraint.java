@@ -37,6 +37,11 @@ public class MySQLConstraint extends JDBCConstraint<MySQLTable> {
         this.columns.add(column);
     }
 
+    void setColumns(List<MySQLConstraintColumn> columns)
+    {
+        this.columns = columns;
+    }
+
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -49,4 +54,5 @@ public class MySQLConstraint extends JDBCConstraint<MySQLTable> {
     {
         return getTable().getDataSource();
     }
+
 }

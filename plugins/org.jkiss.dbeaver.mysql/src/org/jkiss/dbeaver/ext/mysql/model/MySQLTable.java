@@ -119,7 +119,7 @@ public class MySQLTable extends MySQLTableBase
     {
         if (indexes == null) {
             // Read indexes using cache
-            this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
+            this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
         }
         return indexes;
     }
@@ -144,7 +144,7 @@ public class MySQLTable extends MySQLTableBase
         throws DBException
     {
         if (constraints == null) {
-            getContainer().loadConstraints(monitor, this);
+            getContainer().constraintCache.getObjects(monitor, getContainer(), this);
         }
         return constraints;
     }
@@ -325,13 +325,9 @@ public class MySQLTable extends MySQLTableBase
         return this.constraints != null;
     }
 
-    void cacheUniqueKey(MySQLConstraint constraint)
+    void cacheUniqueKeys(List<MySQLConstraint> constraints)
     {
-        if (constraints == null) {
-            constraints = new ArrayList<MySQLConstraint>();
-        }
-        
-        constraints.add(constraint);
+        this.constraints = constraints;
     }
 
     private List<MySQLForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)

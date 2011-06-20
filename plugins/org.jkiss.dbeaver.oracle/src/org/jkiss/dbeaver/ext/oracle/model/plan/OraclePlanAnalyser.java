@@ -53,7 +53,7 @@ public class OraclePlanAnalyser implements DBCPlan {
         }
         JDBCExecutionContext connection = (JDBCExecutionContext)context;
         try {
-            JDBCPreparedStatement dbStat = connection.prepareStatement("EXPLAIN EXTENDED " + query);
+            JDBCPreparedStatement dbStat = connection.prepareStatement("EXPLAIN PLAN FOR " + query);
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -72,4 +72,5 @@ public class OraclePlanAnalyser implements DBCPlan {
             throw new DBCException(e);
         }
     }
+
 }

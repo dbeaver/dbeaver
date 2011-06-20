@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.eclipse.core.internal.utils.ArrayIterator;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -132,7 +133,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         try {
             JDBCPreparedStatement dbStat = prepareObjectsStatement(context, owner);
             try {
-                dbStat.setFetchSize(1000);
+                dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {

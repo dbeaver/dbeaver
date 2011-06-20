@@ -9,6 +9,8 @@ package org.jkiss.dbeaver.model;
  */
 public class DBConstants {
 
+    public static final int METADATA_FETCH_SIZE = 1000;
+
     public static final String DATA_SOURCE_PROPERTY_USER = "user"; //NON-NLS-1
     public static final String DATA_SOURCE_PROPERTY_PASSWORD = "password"; //NON-NLS-1
 

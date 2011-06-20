@@ -4,17 +4,14 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
@@ -27,14 +24,13 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * GenericCatalog
@@ -43,14 +39,15 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
 {
     static final Log log = LogFactory.getLog(MySQLCatalog.class);
 
+    final TableCache tableCache = new TableCache();
+    final ProceduresCache proceduresCache = new ProceduresCache();
+    final TriggerCache triggerCache = new TriggerCache();
+    final ConstraintCache constraintCache = new ConstraintCache();
+    final IndexCache indexCache = new IndexCache();
+
     private MySQLCharset defaultCharset;
     private MySQLCollation defaultCollation;
     private String sqlPath;
-    private final TableCache tableCache = new TableCache();
-    private final ProceduresCache proceduresCache = new ProceduresCache();
-    private final TriggerCache triggerCache = new TriggerCache();
-    private final IndexCache indexCache = new IndexCache();
-    private boolean constraintsCached = false;
     private boolean persisted;
 
     public MySQLCatalog(MySQLDataSource dataSource, ResultSet dbResult)
@@ -65,26 +62,6 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         } else {
             persisted = false;
         }
-    }
-
-    TableCache getTableCache()
-    {
-        return tableCache;
-    }
-
-    IndexCache getIndexCache()
-    {
-        return indexCache;
-    }
-
-    ProceduresCache getProceduresCache()
-    {
-        return proceduresCache;
-    }
-
-    TriggerCache getTriggerCache()
-    {
-        return triggerCache;
     }
 
     @Override
@@ -217,8 +194,10 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             monitor.subTask("Cache table columns");
             tableCache.loadChildren(monitor, this, null);
         }
-        monitor.subTask("Cache table constraints");
-        loadConstraints(monitor, null);
+        if ((scope & STRUCT_ASSOCIATIONS) != 0) {
+            monitor.subTask("Cache table constraints");
+            constraintCache.getObjects(monitor, this);
+        }
     }
 
     @Override
@@ -228,152 +207,10 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         super.refreshEntity(monitor);
         tableCache.clearCache();
         indexCache.clearCache();
+        constraintCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();
         return true;
-    }
-
-    void loadConstraints(DBRProgressMonitor monitor, MySQLTable forTable)
-        throws DBException
-    {
-        if (constraintsCached) {
-            return;
-        }
-        if (forTable == null) {
-            tableCache.getObjects(monitor, this);
-        } else if (!forTable.isPersisted()) {
-            return;
-        }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load constraints");
-        try {
-            Map<String, String> constrTypeMap = new HashMap<String, String>();
-
-            // Read constraints and their types
-            StringBuilder query = new StringBuilder();
-            query.append("SELECT " + MySQLConstants.COL_CONSTRAINT_NAME + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_CONSTRAINT_TYPE +
-                " FROM " + MySQLConstants.META_TABLE_TABLE_CONSTRAINTS + " WHERE " + MySQLConstants.COL_TABLE_SCHEMA + "=?");
-            if (forTable != null) {
-                query.append(" AND " + MySQLConstants.COL_TABLE_NAME + "=?");
-            }
-            JDBCPreparedStatement dbStat = context.prepareStatement(query.toString());
-            try {
-                dbStat.setString(1, getName());
-                if (forTable != null) {
-                    dbStat.setString(2, forTable.getName());
-                }
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    while (dbResult.next()) {
-                        String constraintName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
-                        String constraintType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
-                        if (MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constraintType)) {
-                            // Skip foreign keys
-                            continue;
-                        }
-                        String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
-                        MySQLTable table = forTable;
-                        if (table == null) {
-                            table = getTable(monitor, tableName);
-                            if (table == null) {
-                                log.warn("Table '" + tableName + "' not found");
-                                continue;
-                            }
-                            if (table.uniqueKeysCached()) {
-                                // Already cached
-                                continue;
-                            }
-                        }
-                        constrTypeMap.put(tableName + "." + constraintName, constraintType);
-                    }
-                }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
-            }
-
-            if (!constrTypeMap.isEmpty()) {
-                // Read constraint columns
-                Map<String, MySQLConstraint> constrMap = new HashMap<String, MySQLConstraint>();
-                query = new StringBuilder();
-                query.append("SELECT CONSTRAINT_NAME,TABLE_NAME,COLUMN_NAME,ORDINAL_POSITION,REFERENCED_TABLE_SCHEMA,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM ")
-                    .append(MySQLConstants.META_TABLE_KEY_COLUMN_USAGE)
-                    .append(" tc WHERE tc.TABLE_SCHEMA=?");
-                if (forTable != null) {
-                    query.append(" AND tc.TABLE_NAME=?");
-                }
-                dbStat = context.prepareStatement(query.toString());
-                try {
-                    dbStat.setString(1, getName());
-                    if (forTable != null) {
-                        dbStat.setString(2, forTable.getName());
-                    }
-                    JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
-                        while (dbResult.next()) {
-                            String constraintName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
-                            String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
-                            String constId = tableName + "." + constraintName;
-                            String constraintType = constrTypeMap.get(constId);
-                            if (constraintType == null) {
-                                // Skip this one
-                                continue;
-                            }
-                            MySQLTable table = forTable;
-                            if (table == null) {
-                                table = getTable(monitor, tableName);
-                                if (table == null) {
-                                    log.warn("Table '" + tableName + "' not found");
-                                    continue;
-                                }
-                            }
-                            String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
-                            MySQLTableColumn column = table.getColumn(monitor, columnName);
-                            if (column == null) {
-                                log.warn("Column '" + columnName + "' not found in table '" + tableName + "'");
-                                continue;
-                            }
-                            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION);
-
-                            MySQLConstraint constraint = constrMap.get(constId);
-                            if (constraint == null) {
-                                if (MySQLConstants.CONSTRAINT_PRIMARY_KEY.equals(constraintType)) {
-                                    constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.PRIMARY_KEY, true);
-                                } else if (MySQLConstants.CONSTRAINT_UNIQUE.equals(constraintType)) {
-                                    constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.UNIQUE_KEY, true);
-                                } else {
-                                    log.warn("Constraint type '" + constraintType + "' is not supported");
-                                    continue;
-                                }
-                                constrMap.put(constId, constraint);
-                                table.cacheUniqueKey(constraint);
-                            }
-                            constraint.addColumn(
-                                new MySQLConstraintColumn(
-                                    constraint,
-                                    column,
-                                    ordinalPosition));
-                        }
-                    }
-                    finally {
-                        dbResult.close();
-                    }
-                }
-                finally {
-                    dbStat.close();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-        }
-        if (forTable == null) {
-            constraintsCached = true;
-        }
     }
 
     public boolean isSystem()
@@ -469,12 +306,6 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
                 dbStat.setString(2, forTable.getName());
             }
             return dbStat;
-//            return context.getMetaData().getIndexInfo(
-//                    getName(),
-//                    null,
-//                    forParent == null ? null : DBUtils.getQuotedIdentifier(getDataSource(), forParent.getName()),
-//                    true,
-//                    true).getSource();
         }
 
         protected MySQLIndex fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String indexName, ResultSet dbResult)
@@ -541,6 +372,94 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         protected void cacheChildren(MySQLIndex index, List<MySQLIndexColumn> rows)
         {
             index.setColumns(rows);
+        }
+    }
+
+    /**
+     * Constraint cache implementation
+     */
+    class ConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLConstraint, MySQLConstraintColumn> {
+        protected ConstraintCache()
+        {
+            super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
+        }
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
+            throws SQLException, DBException
+        {
+            StringBuilder sql = new StringBuilder(500);
+            sql.append(
+                "SELECT c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.TABLE_NAME ,\n" +
+                    "kc.COLUMN_NAME,kc.ORDINAL_POSITION,kc.REFERENCED_TABLE_SCHEMA,kc.REFERENCED_TABLE_NAME,kc.REFERENCED_COLUMN_NAME\n" +
+                    "FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS C\n" +
+                    "JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KC ON \n" +
+                    "\tkc.CONSTRAINT_SCHEMA=c.CONSTRAINT_SCHEMA AND kc.CONSTRAINT_NAME=c.CONSTRAINT_NAME AND kc.TABLE_NAME=c.TABLE_NAME\n" +
+                    "WHERE c.CONSTRAINT_SCHEMA=?");
+            if (forTable != null) {
+                sql.append(" AND c.TABLE_NAME=?");
+            }
+            sql.append("\nORDER BY c.CONSTRAINT_NAME,kc.ORDINAL_POSITION");
+
+            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
+            dbStat.setString(1, MySQLCatalog.this.getName());
+            if (forTable != null) {
+                dbStat.setString(2, forTable.getName());
+            }
+            return dbStat;
+        }
+
+        protected MySQLConstraint fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String constraintName, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            String constraintType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
+            if (MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constraintType)) {
+                // Skip foreign keys
+                return null;
+            }
+            if (MySQLConstants.CONSTRAINT_PRIMARY_KEY.equals(constraintType)) {
+                return new MySQLConstraint(
+                    parent, constraintName, null, DBSConstraintType.PRIMARY_KEY, true);
+            } else if (MySQLConstants.CONSTRAINT_UNIQUE.equals(constraintType)) {
+                return new MySQLConstraint(
+                    parent, constraintName, null, DBSConstraintType.UNIQUE_KEY, true);
+            } else {
+                log.warn("Constraint type '" + constraintType + "' is not supported");
+                return null;
+            }
+        }
+
+        protected MySQLConstraintColumn fetchObjectRow(
+            JDBCExecutionContext context,
+            MySQLTable parent, MySQLConstraint object, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
+            MySQLTableColumn column = parent.getColumn(context.getProgressMonitor(), columnName);
+            if (column == null) {
+                log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "'");
+                return null;
+            }
+            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION);
+
+            return new MySQLConstraintColumn(
+                object,
+                column,
+                ordinalPosition);
+        }
+
+        protected boolean isObjectsCached(MySQLTable parent)
+        {
+            return parent.uniqueKeysCached();
+        }
+
+        protected void cacheObjects(MySQLTable parent, List<MySQLConstraint> constraints)
+        {
+            parent.cacheUniqueKeys(constraints);
+        }
+
+        protected void cacheChildren(MySQLConstraint constraint, List<MySQLConstraintColumn> rows)
+        {
+            constraint.setColumns(rows);
         }
     }
 
