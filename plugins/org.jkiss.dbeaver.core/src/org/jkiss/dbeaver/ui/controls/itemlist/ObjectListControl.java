@@ -124,7 +124,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         itemsViewer.getControl().setCursor(arrowCursor);
         itemsViewer.setContentProvider(contentProvider);
-        itemsViewer.setLabelProvider(new ItemLabelProvider());
+        //itemsViewer.setLabelProvider(new ItemLabelProvider());
         itemsViewer.addDoubleClickListener(new IDoubleClickListener() {
             public void doubleClick(DoubleClickEvent event)
             {
@@ -854,38 +854,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             });
         }
-    }
-
-    /**
-     * ItemLabelProvider
-     */
-    class ItemLabelProvider extends ColumnLabelProvider implements ITableLabelProvider
-    {
-        public Image getColumnImage(Object element, int columnIndex)
-        {
-            if (columnIndex == 0) {
-                return getObjectImage((OBJECT_TYPE) element);
-            }
-/*
-            ItemCell cell = getCellByIndex(row, columnIndex);
-            if (cell.value instanceof ILoadService) {
-                return rotateImages[loadCount % 4];
-            }
-*/
-            //ObjectPropertyDescriptor property = columns.get(columnIndex).getProperty(element);
-            //return property == null ? null : property.getLabelProvider().getImage(element);
-            return null;
-        }
-
-        public String getColumnText(Object element, int columnIndex)
-        {
-            Object cellValue = getCellValue(element, columnIndex);
-            if (!sampleItems && isHyperlink(cellValue)) {
-                return "";
-            }
-            return getCellString(cellValue);
-        }
-
     }
 
     protected class ObjectColumnLabelProvider extends ColumnLabelProvider
