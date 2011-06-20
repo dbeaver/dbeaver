@@ -563,9 +563,8 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException, DBException
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(        
+            return context.prepareStatement(
                 "SHOW FULL TRIGGERS FROM " + getName());
-            return dbStat;
         }
 
         protected MySQLTrigger fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)

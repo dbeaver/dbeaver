@@ -6,10 +6,8 @@ package org.jkiss.dbeaver.ui.properties.tabbed;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
-import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.events.DisposeEvent;
@@ -97,6 +95,45 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
         super.dispose();
     }
 
+    protected IEditorInput makeSourcesInput()
+    {
+        final SourceLoader sourceLoader = new SourceLoader();
+        try {
+            if (!isSourceRead()) {
+                DBeaverCore.getInstance().runInProgressService(sourceLoader);
+            } else {
+                sourceLoader.run(VoidProgressMonitor.INSTANCE);
+            }
+        } catch (InvocationTargetException e) {
+            log.error("Can't load source", e.getTargetException());
+        } catch (InterruptedException e) {
+            // Skip
+        }
+        return new StringEditorInput("Source", sourceLoader.source, isReadOnly());
+    }
+
+    protected boolean isSourceRead()
+    {
+        return false;
+    }
+
+    protected boolean isReadOnly()
+    {
+        return false;
+    }
+
+    protected abstract String loadSources(DBRProgressMonitor monitor) throws DBException;
+
+    protected void updateSources(String source)
+    {
+        throw new IllegalStateException("Update is not supported in " + getClass().getName());
+    }
+
+    public boolean shouldUseExtraSpace()
+    {
+		return true;
+	}
+
     private void createEditor()
     {
         sqlViewer = new SQLEditorBase() {
@@ -156,45 +193,6 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
         });
     }
 
-    protected IEditorInput makeSourcesInput()
-    {
-        final SourceLoader sourceLoader = new SourceLoader();
-        try {
-            if (!isSourceRead()) {
-                DBeaverCore.getInstance().runInProgressService(sourceLoader);
-            } else {
-                sourceLoader.run(VoidProgressMonitor.INSTANCE);
-            }
-        } catch (InvocationTargetException e) {
-            log.error("Can't load source", e.getTargetException());
-        } catch (InterruptedException e) {
-            // Skip
-        }
-        return new StringEditorInput("Source", sourceLoader.source, isReadOnly());
-    }
-
-    protected boolean isSourceRead()
-    {
-        return false;
-    }
-
-    protected boolean isReadOnly()
-    {
-        return false;
-    }
-
-    protected abstract String loadSources(DBRProgressMonitor monitor) throws DBException;
-
-    protected void updateSources(String source)
-    {
-        throw new IllegalStateException("Update is not supported in " + getClass().getName());
-    }
-
-    public boolean shouldUseExtraSpace()
-    {
-		return true;
-	}
-
     @Override
     public void aboutToBeShown()
     {
@@ -207,22 +205,37 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
 
         selectionProvider.setSelection(new StructuredSelection());
 
-        if (nestedEditorSite instanceof INestable) {
-            ((INestable) nestedEditorSite).activate();
-        }
         actionContributor.setActiveEditor(sqlViewer);
+        activateSectionSite(true);
         //sqlViewer.handleActivate();
     }
 
     @Override
     public void aboutToBeHidden()
     {
+        activateSectionSite(false);
         actionContributor.setActiveEditor(null);
-        if (nestedEditorSite instanceof INestable) {
-            ((INestable) nestedEditorSite).deactivate();
-        }
         if (sqlViewer != null) {
             sqlViewer.enableUndoManager(false);
+        }
+    }
+
+    @SuppressWarnings("deprecated")
+    private void activateSectionSite(boolean activate)
+    {
+        if (nestedEditorSite instanceof INestable) {
+            if (activate) {
+                ((INestable) nestedEditorSite).activate();
+            } else {
+                ((INestable) nestedEditorSite).deactivate();
+            }
+        }
+        if (nestedEditorSite instanceof MultiPageEditorSite) {
+            final IKeyBindingService keyBindingService = ((MultiPageEditorSite) nestedEditorSite).getMultiPageEditor().getEditorSite()
+					.getKeyBindingService();
+            if (keyBindingService instanceof INestableKeyBindingService) {
+                ((INestableKeyBindingService) keyBindingService).activateKeyBindingService(activate ? nestedEditorSite : null);
+            }
         }
     }
 
