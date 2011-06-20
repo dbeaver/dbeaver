@@ -30,6 +30,7 @@ public class OracleUtils {
             log.warn("No source owner for object '" + sourceObject.getName() + "'");
             return null;
         }
+        monitor.beginTask("Load sources for '" + sourceObject.getName() + "'...", 1);
         final JDBCExecutionContext context = sourceOwner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load source code for " + sourceType + " '" + sourceObject.getName() + "'");
         try {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -43,6 +44,7 @@ public class OracleUtils {
                 final JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     StringBuilder source = null;
+                    int lineCount = 0;
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {
                             break;
@@ -52,6 +54,8 @@ public class OracleUtils {
                             source = new StringBuilder(200);
                         }
                         source.append(line);
+                        lineCount++;
+                        monitor.subTask(lineCount + " lines");
                     }
                     return source == null ? null : source.toString();
                 }
@@ -66,6 +70,7 @@ public class OracleUtils {
             throw new DBCException(e);
         } finally {
             context.close();
+            monitor.done();
         }
     }
 
