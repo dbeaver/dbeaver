@@ -118,7 +118,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
                 IAction copyAction = new Action("Copy") {
                     public void run()
                     {
-                        String text = getSelectedText();
+                        String text = getRenderer().getSelectedText();
                         if (text != null) {
                             TextTransfer textTransfer = TextTransfer.getInstance();
                             Clipboard clipboard = new Clipboard(getDisplay());

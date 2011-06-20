@@ -44,6 +44,9 @@ public class OracleUtils {
                 try {
                     StringBuilder source = null;
                     while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
                         final String line = dbResult.getString(1);
                         if (source == null) {
                             source = new StringBuilder(200);

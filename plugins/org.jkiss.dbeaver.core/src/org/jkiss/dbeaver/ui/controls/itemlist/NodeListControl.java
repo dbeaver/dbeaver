@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
+import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -230,26 +231,6 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     @Override
-    protected boolean isHyperlink(Object cellValue)
-    {
-        Object ownerObject = null;
-        if (rootNode instanceof DBNDatabaseNode) {
-            ownerObject = ((DBNDatabaseNode) rootNode).getValueObject();
-        }
-        return cellValue instanceof DBSObject && cellValue != ownerObject;
-    }
-
-    protected void navigateHyperlink(Object cellValue)
-    {
-        if (cellValue instanceof DBSObject) {
-            DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
-            if (node != null) {
-                NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverCore.getActiveWorkbenchWindow());
-            }
-        }
-    }
-
-    @Override
     protected PropertySourceAbstract createListPropertySource()
     {
         if (workbenchPart instanceof IDatabaseNodeEditor) {
@@ -282,6 +263,34 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     public void menuAboutToShow(IMenuManager manager)
     {
         // Hook context menu
+    }
+
+    @Override
+    protected ObjectViewerRenderer createRenderer()
+    {
+        return new NodeRenderer();
+    }
+
+    private class NodeRenderer extends ViewerRenderer {
+        public boolean isHyperlink(Object cellValue)
+        {
+            Object ownerObject = null;
+            if (rootNode instanceof DBNDatabaseNode) {
+                ownerObject = ((DBNDatabaseNode) rootNode).getValueObject();
+            }
+            return cellValue instanceof DBSObject && cellValue != ownerObject;
+        }
+
+        public void navigateHyperlink(Object cellValue)
+        {
+            if (cellValue instanceof DBSObject) {
+                DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
+                if (node != null) {
+                    NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverCore.getActiveWorkbenchWindow());
+                }
+            }
+        }
+
     }
 
     private class NodeListPropertySource extends PropertySourceEditable {

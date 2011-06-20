@@ -23,7 +23,7 @@ import java.text.Collator;
 /**
  * ObjectListControl
  */
-public abstract class ObjectViewerRenderer<OBJECT_TYPE> {
+public abstract class ObjectViewerRenderer {
     static final Log log = LogFactory.getLog(ObjectViewerRenderer.class);
 
     private boolean isTree;
@@ -65,6 +65,11 @@ public abstract class ObjectViewerRenderer<OBJECT_TYPE> {
         sortListener = new SortListener();
     }
 
+    public boolean isTree()
+    {
+        return isTree;
+    }
+
     public SortListener getSortListener()
     {
         return sortListener;
@@ -94,7 +99,7 @@ public abstract class ObjectViewerRenderer<OBJECT_TYPE> {
         return item;
     }
 
-    protected String getSelectedText()
+    public String getSelectedText()
     {
         if (selectedItem == -1 || selectedColumn == -1) {
             return null;
@@ -123,16 +128,6 @@ public abstract class ObjectViewerRenderer<OBJECT_TYPE> {
         return (Composite) itemsViewer.getControl();
     }
 
-    protected boolean isHyperlink(Object cellValue)
-    {
-        return false;
-    }
-
-    protected void navigateHyperlink(Object cellValue)
-    {
-        // do nothing. by default all cells are not navigable
-    }
-
     public void dispose()
     {
         UIUtils.dispose(linkLayout);
@@ -147,8 +142,6 @@ public abstract class ObjectViewerRenderer<OBJECT_TYPE> {
     {
         return ((TableViewer)itemsViewer).getTable();
     }
-
-    protected abstract Object getCellValue(Object element, int columnIndex);
 
     private Rectangle getCellLinkBounds(Item item, int column, Object cellValue) {
         prepareLinkStyle(cellValue, linkColor);
@@ -357,5 +350,17 @@ public abstract class ObjectViewerRenderer<OBJECT_TYPE> {
             }
         }
     }
+
+    public boolean isHyperlink(Object cellValue)
+    {
+        return false;
+    }
+
+    public void navigateHyperlink(Object cellValue)
+    {
+        // do nothing. by default all cells are not navigable
+    }
+
+    protected abstract Object getCellValue(Object element, int columnIndex);
 
 }
