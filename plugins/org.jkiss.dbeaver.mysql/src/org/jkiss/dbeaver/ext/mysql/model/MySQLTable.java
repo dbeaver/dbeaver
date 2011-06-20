@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -16,10 +17,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
-import org.jkiss.dbeaver.model.meta.LazyProperty;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
@@ -114,6 +111,7 @@ public class MySQLTable extends MySQLTableBase
         return false;
     }
 
+    @Association
     public List<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -122,12 +120,6 @@ public class MySQLTable extends MySQLTableBase
             this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
         }
         return indexes;
-    }
-
-    public MySQLIndex getIndex(DBRProgressMonitor monitor, String indexName)
-        throws DBException
-    {
-        return DBUtils.findObject(getIndexes(monitor), indexName);
     }
 
     boolean isIndexesCached()
@@ -140,6 +132,7 @@ public class MySQLTable extends MySQLTableBase
         this.indexes = indexes;
     }
 
+    @Association
     public List<MySQLConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -155,6 +148,7 @@ public class MySQLTable extends MySQLTableBase
         return DBUtils.findObject(getConstraints(monitor), ukName);
     }
 
+    @Association
     public List<MySQLForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -176,6 +170,7 @@ public class MySQLTable extends MySQLTableBase
         return DBUtils.findObject(getForeignKeys(monitor), fkName);
     }
 
+    @Association
     public List<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -191,6 +186,7 @@ public class MySQLTable extends MySQLTableBase
         return DBUtils.findObject(getTriggers(monitor), triggerName);
     }
 
+    @Association
     public List<MySQLPartition> getPartitions(DBRProgressMonitor monitor)
         throws DBException
     {

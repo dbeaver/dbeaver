@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.struct.AbstractCatalog;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
@@ -119,12 +120,14 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         this.sqlPath = sqlPath;
     }
 
+    @Association
     public Collection<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return indexCache.getObjects(monitor, this, null);
     }
 
+    @Association
     public Collection<MySQLTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -137,12 +140,14 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         return tableCache.getObject(monitor, this, name, MySQLTable.class);
     }
 
+    @Association
     public Collection<MySQLView> getViews(DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getObjects(monitor, this, MySQLView.class);
     }
 
+    @Association
     public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -155,6 +160,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         return proceduresCache.getObject(monitor, this, procName);
     }
 
+    @Association
     public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
