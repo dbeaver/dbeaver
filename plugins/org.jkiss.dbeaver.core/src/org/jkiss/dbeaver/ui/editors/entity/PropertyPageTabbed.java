@@ -4,9 +4,11 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.eclipse.ui.views.properties.tabbed.ITabbedPropertySheetPageContributor;
-import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.eclipse.ui.views.properties.tabbed.*;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * PropertyPageTabbed
@@ -14,6 +16,7 @@ import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
 class PropertyPageTabbed extends TabbedPropertySheetPage {
 
     private boolean allowContentScroll = false;
+    private Map<ITabDescriptor, TabContents> tabContentsMap = new HashMap<ITabDescriptor, TabContents>();
 
     public PropertyPageTabbed()
     {
@@ -44,6 +47,26 @@ class PropertyPageTabbed extends TabbedPropertySheetPage {
         if (allowContentScroll) {
             super.resizeScrolledComposite();
         }
+    }
+
+    public ISection[] getTabSections(ITabDescriptor tabDescriptor)
+    {
+        final TabContents tabContents = tabContentsMap.get(tabDescriptor);
+        return tabContents == null ? null : tabContents.getSections();
+    }
+
+    @Override
+    protected TabContents createTab(ITabDescriptor tabDescriptor)
+    {
+        final TabContents tabContents = super.createTab(tabDescriptor);
+        tabContentsMap.put(tabDescriptor, tabContents);
+        return tabContents;
+    }
+
+    @Override
+    protected void updateTabs(ITabDescriptor[] descriptors)
+    {
+        super.updateTabs(descriptors);
     }
 
     private static ITabbedPropertySheetPageContributor DEFAULT_PROP_SHEET_CONTRIBUTOR = new ITabbedPropertySheetPageContributor() {

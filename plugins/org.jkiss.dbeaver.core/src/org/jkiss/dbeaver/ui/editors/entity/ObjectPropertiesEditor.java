@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.eclipse.ui.*;
+import org.jkiss.dbeaver.ui.properties.tabbed.ISectionEditorContributor;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -18,10 +20,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
@@ -135,7 +133,26 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         properties.init(new ProxyPageSite(getSite()));
         properties.createControl(propsPlaceholder);
 
+        // Load properties
         loadObjectProperties();
+
+        // Collect section contributors
+        List<IEditorActionBarContributor> sectionContributors = new ArrayList<IEditorActionBarContributor>();
+        for (ITabDescriptor tab : properties.getActiveTabs()) {
+            final ISection[] tabSections = properties.getTabSections(tab);
+            if (!CommonUtils.isEmpty(tabSections)) {
+                for (ISection section : tabSections) {
+                    if (section instanceof ISectionEditorContributor) {
+                        ((ISectionEditorContributor) section).addContributions(sectionContributors);
+                    }
+                }
+            }
+        }
+
+        // Init contributors
+        for (IEditorActionBarContributor contributor : sectionContributors) {
+            contributor.init(this.getEditorSite().getActionBars(), this.getSite().getPage());
+        }
 
         final String folderId = getEditorInput().getDefaultFolderId();
         if (folderId != null) {

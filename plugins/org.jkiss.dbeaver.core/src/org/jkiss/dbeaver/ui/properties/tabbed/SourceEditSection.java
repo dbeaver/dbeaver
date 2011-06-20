@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ui.properties.tabbed;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.ITextOperationTarget;
@@ -37,13 +36,15 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * SourceEditSection
  */
-public abstract class SourceEditSection extends AbstractPropertySection implements IRefreshablePart {
+public abstract class SourceEditSection extends AbstractPropertySection implements ISectionEditorContributor, IRefreshablePart {
 
     static final Log log = LogFactory.getLog(SourceEditSection.class);
 
@@ -51,8 +52,9 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
 
     private Composite parent;
     private SQLEditorBase sqlViewer;
+    private SQLEditorContributor actionContributor;
     private final ISelectionProvider selectionProvider = new CustomSelectionProvider();
-    private final IAction actionDelete = new ActionDelete();
+    //private final IAction actionDelete = new ActionDelete();
     private boolean sourcesModified = false;
     private IEditorSite nestedEditorSite;
 
@@ -71,6 +73,20 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
 		super.createControls(parent, tabbedPropertySheetPage);
         this.parent = parent;
 	}
+
+    public void addContributions(List<IEditorActionBarContributor> contributions)
+    {
+        for (IEditorActionBarContributor contributor : contributions) {
+            if (contributor instanceof SQLEditorContributor) {
+                this.actionContributor = (SQLEditorContributor) contributor;
+                return;
+            }
+        }
+        this.actionContributor = new SQLEditorContributor();
+        this.actionContributor.setNestedEditor(true);
+        //this.actionContributor.init(editor.getEditorSite().getActionBars(), editor.getSite().getPage());
+        contributions.add(this.actionContributor);
+    }
 
     @Override
     public void dispose()
@@ -187,19 +203,24 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
             createEditor();
         }
         sqlViewer.enableUndoManager(true);
+
         editor.getSite().setSelectionProvider(selectionProvider);
+
         selectionProvider.setSelection(new StructuredSelection());
 
-        //final IActionBars actionBars = editor.getEditorSite().getActionBars();
+        final IActionBars actionBars = editor.getEditorSite().getActionBars();
         //actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, actionDelete);
         if (nestedEditorSite instanceof INestable) {
             ((INestable) nestedEditorSite).activate();
         }
+        actionContributor.setActiveEditor(sqlViewer);
+        sqlViewer.handleActivate();
     }
 
     @Override
     public void aboutToBeHidden()
     {
+        actionContributor.setActiveEditor(null);
         if (nestedEditorSite instanceof INestable) {
             ((INestable) nestedEditorSite).deactivate();
         }

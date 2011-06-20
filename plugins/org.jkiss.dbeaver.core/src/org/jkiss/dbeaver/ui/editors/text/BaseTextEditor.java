@@ -58,4 +58,9 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         }
     }
 
+    public void handleActivate()
+    {
+        safelySanityCheckState(getEditorInput());
+    }
+
 }

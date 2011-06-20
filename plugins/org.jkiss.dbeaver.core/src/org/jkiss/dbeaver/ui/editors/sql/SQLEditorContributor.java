@@ -33,7 +33,8 @@ import java.util.ResourceBundle;
  */
 public class SQLEditorContributor extends BasicTextEditorActionContributor
 {
-    private SQLEditor activeEditorPart;
+    private boolean isNestedEditor = false;
+    private SQLEditorBase activeEditorPart;
 
     private RetargetTextEditorAction contentAssistProposal;
     private RetargetTextEditorAction contentAssistTip;
@@ -44,6 +45,11 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         super();
 
         createActions();
+    }
+
+    public void setNestedEditor(boolean nestedEditor)
+    {
+        isNestedEditor = nestedEditor;
     }
 
     private void createActions()
@@ -72,7 +78,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         if (activeEditorPart == targetEditor) {
             return;
         }
-        activeEditorPart = (SQLEditor)targetEditor;
+        activeEditorPart = (SQLEditorBase)targetEditor;
 
         if (activeEditorPart != null) {
             // Update editor actions
@@ -112,12 +118,14 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     public void contributeToToolBar(IToolBarManager manager)
     {
         super.contributeToToolBar(manager);
-        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_STATEMENT));
-        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_SCRIPT));
-        manager.add(new Separator());
-        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXPLAIN_PLAN));
-        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_ANALYSE_STATEMENT));
-        manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_VALIDATE_STATEMENT));
+        if (!isNestedEditor) {
+            manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_STATEMENT));
+            manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_SCRIPT));
+            manager.add(new Separator());
+            manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXPLAIN_PLAN));
+            manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_ANALYSE_STATEMENT));
+            manager.add(ViewUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_VALIDATE_STATEMENT));
+        }
     }
 
     public void contributeToStatusLine(IStatusLineManager statusLineManager)
