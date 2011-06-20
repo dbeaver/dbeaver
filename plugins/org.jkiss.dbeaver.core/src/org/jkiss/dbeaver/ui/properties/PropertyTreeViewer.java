@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.properties;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
@@ -14,16 +13,21 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySource2;
-import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ImageUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
+import org.jkiss.utils.CommonUtils;
 
 import java.text.Collator;
 import java.util.*;
@@ -48,6 +52,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
     private String[] customCategories;
     private IBaseLabelProvider extraLabelProvider;
+    private ObjectViewerRenderer renderer;
 
     public PropertyTreeViewer(Composite parent, int style)
     {
@@ -120,6 +125,35 @@ public class PropertyTreeViewer extends TreeViewer {
         */
         registerEditor();
         registerContextMenu();
+
+        renderer = new ObjectViewerRenderer(this) {
+            @Override
+            protected Object getCellValue(Object element, int columnIndex)
+            {
+                final TreeNode node = (TreeNode) element;
+                if (columnIndex == 0) {
+                    return node.category != null ?
+                        node.category :
+                        node.property.getDisplayName();
+                }
+
+                return getPropertyValue(node);
+            }
+            public boolean isHyperlink(Object cellValue)
+            {
+                return cellValue instanceof DBSObject;
+            }
+
+            public void navigateHyperlink(Object cellValue)
+            {
+                if (cellValue instanceof DBSObject) {
+                    DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
+                    if (node != null) {
+                        NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverCore.getActiveWorkbenchWindow());
+                    }
+                }
+            }
+        };
     }
 
     public void loadProperties(IPropertySource propertySource)
@@ -429,9 +463,6 @@ public class PropertyTreeViewer extends TreeViewer {
             return prop.category;
         } else {
             final Object propertyValue = prop.propertySource.getPropertyValue(prop.property.getId());
-            if (propertyValue instanceof DBPNamedObject) {
-                return ((DBPNamedObject) propertyValue).getName();
-            }
             return UIUtils.makeStringForUI(propertyValue);
         }
     }
@@ -572,7 +603,7 @@ public class PropertyTreeViewer extends TreeViewer {
             } else {
                 if (node.property != null) {
                     final Object propertyValue = getPropertyValue(node);
-                    if (propertyValue instanceof Boolean) {
+                    if (propertyValue instanceof Boolean || renderer.isHyperlink(propertyValue)) {
                         return "";
                     }
                     return CommonUtils.toString(propertyValue);
@@ -702,19 +733,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     if (event.index == 1) {
                         final TreeNode node = (TreeNode)event.item.getData();
                         if (node != null && node.property != null) {
-                            final Object propertyValue = getPropertyValue(node);
-                            if (propertyValue instanceof Boolean) {
-                                GC gc = event.gc;
-                                final Tree tree = getTree();
-                                int columnWidth = tree.getColumn(1).getWidth();
-                                int columnHeight = getTree().getItemHeight();
-                                Image image = node.isEditable() ?
-                                    ((Boolean)propertyValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
-                                    ((Boolean)propertyValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
-                                final Rectangle imageBounds = image.getBounds();
-                                gc.drawImage(image, event.x + 4, event.y + (columnHeight - imageBounds.height) / 2);
-                                event.doit = false;
-                            }
+                            renderer.paintCell(event, node, event.index, node.isEditable());
                         }
                     }
                     break;

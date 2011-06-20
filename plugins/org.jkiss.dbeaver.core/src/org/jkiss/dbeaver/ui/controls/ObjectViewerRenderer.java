@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -24,7 +22,7 @@ import java.text.Collator;
  * ObjectListControl
  */
 public abstract class ObjectViewerRenderer {
-    static final Log log = LogFactory.getLog(ObjectViewerRenderer.class);
+    //static final Log log = LogFactory.getLog(ObjectViewerRenderer.class);
 
     private boolean isTree;
     // Current selection coordinates
@@ -39,10 +37,6 @@ public abstract class ObjectViewerRenderer {
     private final Color linkColor;
     private final Cursor linkCursor;
     private final Cursor arrowCursor;
-
-    // Sample flag. True only when initial content is packed. Used to provide actual cell data to Tree/Table pack() methods
-    // After content is loaded is always false (and all hyperlink cells have empty text)
-    private transient boolean sampleItems = false;
 
     public ObjectViewerRenderer(
         ColumnViewer viewer)
