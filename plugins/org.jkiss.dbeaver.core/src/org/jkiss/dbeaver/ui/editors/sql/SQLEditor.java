@@ -91,11 +91,6 @@ public class SQLEditor extends SQLEditorBase
     static final int PAGE_INDEX_PLAN = 1;
     static final int PAGE_INDEX_LOG = 2;
 
-    static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
-    static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip";
-    static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal";
-    //private static final String ACTION_DEFINE_FOLDING_REGION = "DefineFoldingRegion";
-
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
     private SashForm sashForm;
@@ -249,45 +244,6 @@ public class SQLEditor extends SQLEditorBase
 
         // Update controls
         onDataSourceChange();
-    }
-
-    protected void createActions()
-    {
-        super.createActions();
-
-        ResourceBundle bundle = DBeaverActivator.getInstance().getResourceBundle();
-
-        IAction a = new TextOperationAction(bundle, "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS);
-        a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
-        setAction(ACTION_CONTENT_ASSIST_PROPOSAL, a);
-
-        a = new TextOperationAction(bundle, "ContentAssistTip.", this, ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION);
-        a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
-        setAction(ACTION_CONTENT_ASSIST_TIP, a);
-
-        a = new TextOperationAction(bundle, "ContentFormatProposal.", this, ISourceViewer.FORMAT);
-        a.setActionDefinitionId(ICommandIds.CMD_CONTENT_FORMAT);
-        setAction(ACTION_CONTENT_FORMAT_PROPOSAL, a);
-
-/*
-        // Add the task action to the Edit pulldown menu (bookmark action is  'free')
-        ResourceAction ra = new AddTaskAction(bundle, "AddTask.", this);
-        ra.setHelpContextId(ITextEditorHelpContextIds.ADD_TASK_ACTION);
-        ra.setActionDefinitionId(ITextEditorActionDefinitionIds.ADD_TASK);
-        setAction(IDEActionFactory.ADD_TASK.getId(), ra);
-*/
-    }
-
-    public void editorContextMenuAboutToShow(IMenuManager menu)
-    {
-        super.editorContextMenuAboutToShow(menu);
-
-        menu.add(new Separator("content"));
-        addAction(menu, ACTION_CONTENT_ASSIST_PROPOSAL);
-        addAction(menu, ACTION_CONTENT_ASSIST_TIP);
-        addAction(menu, ACTION_CONTENT_FORMAT_PROPOSAL);
-        //addAction(menu, ACTION_DEFINE_FOLDING_REGION);
-        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
     }
 
     public SQLEditorInput getEditorInput()

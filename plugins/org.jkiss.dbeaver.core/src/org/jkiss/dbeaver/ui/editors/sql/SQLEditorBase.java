@@ -8,6 +8,9 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
@@ -20,20 +23,22 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.TextOperationAction;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * SQL Executor
@@ -41,6 +46,11 @@ import java.util.Map;
 public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider
 {
     static final Log log = LogFactory.getLog(SQLEditorBase.class);
+
+    static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
+    static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip";
+    static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal";
+    //private static final String ACTION_DEFINE_FOLDING_REGION = "DefineFoldingRegion";
 
     private SQLSyntaxManager syntaxManager;
 
@@ -211,6 +221,45 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         }
 
         super.dispose();
+    }
+
+    protected void createActions()
+    {
+        super.createActions();
+
+        ResourceBundle bundle = DBeaverActivator.getInstance().getResourceBundle();
+
+        IAction a = new TextOperationAction(bundle, "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS);
+        a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
+        setAction(ACTION_CONTENT_ASSIST_PROPOSAL, a);
+
+        a = new TextOperationAction(bundle, "ContentAssistTip.", this, ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION);
+        a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
+        setAction(ACTION_CONTENT_ASSIST_TIP, a);
+
+        a = new TextOperationAction(bundle, "ContentFormatProposal.", this, ISourceViewer.FORMAT);
+        a.setActionDefinitionId(ICommandIds.CMD_CONTENT_FORMAT);
+        setAction(ACTION_CONTENT_FORMAT_PROPOSAL, a);
+
+/*
+        // Add the task action to the Edit pulldown menu (bookmark action is  'free')
+        ResourceAction ra = new AddTaskAction(bundle, "AddTask.", this);
+        ra.setHelpContextId(ITextEditorHelpContextIds.ADD_TASK_ACTION);
+        ra.setActionDefinitionId(ITextEditorActionDefinitionIds.ADD_TASK);
+        setAction(IDEActionFactory.ADD_TASK.getId(), ra);
+*/
+    }
+
+    public void editorContextMenuAboutToShow(IMenuManager menu)
+    {
+        super.editorContextMenuAboutToShow(menu);
+
+        menu.add(new Separator("content"));
+        addAction(menu, ACTION_CONTENT_ASSIST_PROPOSAL);
+        addAction(menu, ACTION_CONTENT_ASSIST_TIP);
+        addAction(menu, ACTION_CONTENT_FORMAT_PROPOSAL);
+        //addAction(menu, ACTION_DEFINE_FOLDING_REGION);
+        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
     }
 
     public void reloadSyntaxRules()
