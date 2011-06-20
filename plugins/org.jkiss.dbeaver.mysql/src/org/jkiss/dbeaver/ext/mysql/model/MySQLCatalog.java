@@ -564,19 +564,15 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             throws SQLException, DBException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(        
-                "SELECT * FROM " + MySQLConstants.META_TABLE_TRIGGERS +
-                " WHERE TRIGGER_SCHEMA=?" +
-                " ORDER BY TRIGGER_NAME");
-            dbStat.setString(1, getName());
+                "SHOW FULL TRIGGERS FROM " + getName());
             return dbStat;
         }
 
         protected MySQLTrigger fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
-            String tableSchema = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_EVENT_OBJECT_SCHEMA);
-            String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_EVENT_OBJECT_TABLE);
-            MySQLTable triggerTable = getDataSource().findTable(context.getProgressMonitor(), tableSchema, tableName);
+            String tableName = JDBCUtils.safeGetString(dbResult, "TABLE");
+            MySQLTable triggerTable = CommonUtils.isEmpty(tableName) ? null : getTable(context.getProgressMonitor(), tableName);
             return new MySQLTrigger(MySQLCatalog.this, triggerTable, dbResult);
         }
 

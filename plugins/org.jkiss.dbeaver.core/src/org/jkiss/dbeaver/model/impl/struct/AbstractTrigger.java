@@ -19,7 +19,6 @@ public abstract class AbstractTrigger implements DBSTrigger
     protected String name;
     private DBSActionTiming actionTiming;
     private DBSManipulationType manipulationType;
-    private int ordinalPosition;
     private String description;
 
     protected AbstractTrigger()
@@ -63,17 +62,6 @@ public abstract class AbstractTrigger implements DBSTrigger
     public void setManipulationType(DBSManipulationType manipulationType)
     {
         this.manipulationType = manipulationType;
-    }
-
-    @Property(name = "Ordinal Position", viewable = true, order = 99)
-    public int getOrdinalPosition()
-    {
-        return ordinalPosition;
-    }
-
-    public void setOrdinalPosition(int ordinalPosition)
-    {
-        this.ordinalPosition = ordinalPosition;
     }
 
     @Property(name = "Trigger Description", viewable = true, order = 100)

@@ -36,16 +36,11 @@ public class MySQLTrigger extends AbstractTrigger
     {
         this.catalog = catalog;
         this.table = table;
-        loadInfo(dbResult);
-    }
 
-    private void loadInfo(ResultSet dbResult)
-    {
-        setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_NAME));
-        setManipulationType(DBSManipulationType.getByName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_EVENT_MANIPULATION)));
-        setActionTiming(DBSActionTiming.getByName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_ACTION_TIMING)));
-        setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_TRIGGER_ACTION_ORDER));
-        this.body = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_ACTION_STATEMENT);
+        setName(JDBCUtils.safeGetString(dbResult, "Trigger"));
+        setManipulationType(DBSManipulationType.getByName(JDBCUtils.safeGetString(dbResult, "Event")));
+        setActionTiming(DBSActionTiming.getByName(JDBCUtils.safeGetString(dbResult, "Timing")));
+        this.body = JDBCUtils.safeGetString(dbResult, "Statement");
         this.charsetClient = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_CHARACTER_SET_CLIENT);
         this.sqlMode = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_SQL_MODE);
     }

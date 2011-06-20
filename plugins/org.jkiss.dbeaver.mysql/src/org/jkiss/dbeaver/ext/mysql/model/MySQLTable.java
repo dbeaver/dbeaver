@@ -79,7 +79,6 @@ public class MySQLTable extends MySQLTableBase
     private List<MySQLConstraint> constraints;
     private List<MySQLForeignKey> foreignKeys;
     private final PartitionCache partitionCache = new PartitionCache();
-    private final TriggerCache triggerCache = new TriggerCache();
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
@@ -175,7 +174,13 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
-        return triggerCache.getObjects(monitor, this);
+        List<MySQLTrigger> triggers = new ArrayList<MySQLTrigger>();
+        for (MySQLTrigger trigger : getContainer().triggerCache.getObjects(monitor, getContainer())) {
+            if (trigger.getTable() == this) {
+                triggers.add(trigger);
+            }
+        }
+        return triggers;
     }
 
     @Association
@@ -243,7 +248,6 @@ public class MySQLTable extends MySQLTableBase
         indexes = null;
         constraints = null;
         foreignKeys = null;
-        triggerCache.clearCache();
         partitionCache.clearCache();
         synchronized (additionalInfo) {
             additionalInfo.loaded = false;
@@ -446,27 +450,6 @@ public class MySQLTable extends MySQLTableBase
         finally {
             context.close();
         }
-    }
-
-    class TriggerCache extends JDBCObjectCache<MySQLTable, MySQLTrigger> {
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable owner)
-            throws SQLException, DBException
-        {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT * FROM " + MySQLConstants.META_TABLE_TRIGGERS + "\n" +
-                "WHERE EVENT_OBJECT_SCHEMA=? AND EVENT_OBJECT_TABLE=?\n" +
-                "ORDER BY TRIGGER_NAME");
-            dbStat.setString(1, owner.getContainer().getName());
-            dbStat.setString(2, owner.getName());
-            return dbStat;
-        }
-
-        protected MySQLTrigger fetchObject(JDBCExecutionContext context, MySQLTable owner, ResultSet dbResult)
-            throws SQLException, DBException
-        {
-            return new MySQLTrigger(owner.getContainer(), owner, dbResult);
-        }
-
     }
 
     class PartitionCache extends JDBCObjectCache<MySQLTable, MySQLPartition> {
