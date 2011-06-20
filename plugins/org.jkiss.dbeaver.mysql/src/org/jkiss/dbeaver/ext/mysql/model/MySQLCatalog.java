@@ -397,8 +397,8 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             sql.append(
                 "SELECT c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.TABLE_NAME ,\n" +
                     "kc.COLUMN_NAME,kc.ORDINAL_POSITION,kc.REFERENCED_TABLE_SCHEMA,kc.REFERENCED_TABLE_NAME,kc.REFERENCED_COLUMN_NAME\n" +
-                    "FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS C\n" +
-                    "JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KC ON \n" +
+                    "FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS c\n" +
+                    "JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc ON \n" +
                     "\tkc.CONSTRAINT_SCHEMA=c.CONSTRAINT_SCHEMA AND kc.CONSTRAINT_NAME=c.CONSTRAINT_NAME AND kc.TABLE_NAME=c.TABLE_NAME\n" +
                     "WHERE c.CONSTRAINT_SCHEMA=?");
             if (forTable != null) {
@@ -565,8 +565,8 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(        
                 "SELECT * FROM " + MySQLConstants.META_TABLE_TRIGGERS +
-                " WHERE " + MySQLConstants.COL_TRIGGER_SCHEMA + "=?" +
-                " ORDER BY " + MySQLConstants.COL_TRIGGER_NAME);
+                " WHERE TRIGGER_SCHEMA=?" +
+                " ORDER BY TRIGGER_NAME");
             dbStat.setString(1, getName());
             return dbStat;
         }

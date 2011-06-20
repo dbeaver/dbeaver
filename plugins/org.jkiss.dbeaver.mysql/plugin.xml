@@ -191,19 +191,11 @@
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>
         <manager
+            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTriggerManager"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"/>
+        <manager
             class="org.jkiss.dbeaver.ext.mysql.edit.MySQLProcedureManager"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
-
-        <editor
-            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLTriggerEditor"
-            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLTriggerEditor"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"
-            main="false"
-            label="Statement"
-            description="Trigger statement"
-            position="additions_end"
-            icon="#sources">
-        </editor>
 
         <editor
             id="org.jkiss.dbeaver.ext.mysql.editors.MySQLUserEditorGeneral"

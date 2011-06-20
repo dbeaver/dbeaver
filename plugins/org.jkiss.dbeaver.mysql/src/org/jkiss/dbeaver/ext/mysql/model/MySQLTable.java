@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
@@ -77,8 +78,8 @@ public class MySQLTable extends MySQLTableBase
     private List<MySQLIndex> indexes;
     private List<MySQLConstraint> constraints;
     private List<MySQLForeignKey> foreignKeys;
-    private List<MySQLTrigger> triggers;
-    private List<MySQLPartition> partitions;
+    private final PartitionCache partitionCache = new PartitionCache();
+    private final TriggerCache triggerCache = new TriggerCache();
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
@@ -171,29 +172,17 @@ public class MySQLTable extends MySQLTableBase
     }
 
     @Association
-    public List<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
+    public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (triggers == null) {
-            triggers = loadTriggers(monitor);
-        }
-        return triggers;
-    }
-
-    public MySQLTrigger getTrigger(DBRProgressMonitor monitor, String triggerName)
-        throws DBException
-    {
-        return DBUtils.findObject(getTriggers(monitor), triggerName);
+        return triggerCache.getObjects(monitor, this);
     }
 
     @Association
-    public List<MySQLPartition> getPartitions(DBRProgressMonitor monitor)
+    public Collection<MySQLPartition> getPartitions(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (partitions == null) {
-            partitions = loadPartitions(monitor);
-        }
-        return partitions;
+        return partitionCache.getObjects(monitor, this);
     }
 
 
@@ -254,7 +243,8 @@ public class MySQLTable extends MySQLTableBase
         indexes = null;
         constraints = null;
         foreignKeys = null;
-        triggers = null;
+        triggerCache.clearCache();
+        partitionCache.clearCache();
         synchronized (additionalInfo) {
             additionalInfo.loaded = false;
         }
@@ -458,111 +448,63 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
-    private List<MySQLTrigger> loadTriggers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        List<MySQLTrigger> tmpTriggers = new ArrayList<MySQLTrigger>();
-        if (!isPersisted()) {
-            return tmpTriggers;
-        }
-        // Load only trigger's owner catalog and trigger name
-        // Actual triggers are stored in catalog - we just get em from cache
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table '" + getName() + "' triggers");
-        try {
+    class TriggerCache extends JDBCObjectCache<MySQLTable, MySQLTrigger> {
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable owner)
+            throws SQLException, DBException
+        {
             JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT " + MySQLConstants.COL_TRIGGER_SCHEMA + "," + MySQLConstants.COL_TRIGGER_NAME + " FROM " + MySQLConstants.META_TABLE_TRIGGERS +
-                " WHERE " + MySQLConstants.COL_TRIGGER_EVENT_OBJECT_SCHEMA + "=? AND " + MySQLConstants.COL_TRIGGER_EVENT_OBJECT_TABLE + "=? " +
-                " ORDER BY " + MySQLConstants.COL_TRIGGER_NAME);
-            try {
-                dbStat.setString(1, getContainer().getName());
-                dbStat.setString(2, getName());
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    while (dbResult.next()) {
-                        String ownerSchema = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_SCHEMA);
-                        String triggerName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_NAME);
-                        MySQLCatalog triggerCatalog = getDataSource().getCatalog(ownerSchema);
-                        if (triggerCatalog == null) {
-                            log.warn("Could not find catalog '" + ownerSchema + "'");
-                            continue;
-                        }
-                        MySQLTrigger trigger = triggerCatalog.getTrigger(monitor, triggerName);
-                        if (trigger == null) {
-                            log.warn("Could not find trigger '" + triggerName + "' catalog '" + ownerSchema + "'");
-                            continue;
-                        }
-                        tmpTriggers.add(trigger);
-                    }
-                    return tmpTriggers;
-                }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
-            }
+                "SELECT * FROM " + MySQLConstants.META_TABLE_TRIGGERS + "\n" +
+                "WHERE EVENT_OBJECT_SCHEMA=? AND EVENT_OBJECT_TABLE=?\n" +
+                "ORDER BY TRIGGER_NAME");
+            dbStat.setString(1, owner.getContainer().getName());
+            dbStat.setString(2, owner.getName());
+            return dbStat;
         }
-        catch (SQLException e) {
-            throw new DBException(e);
+
+        protected MySQLTrigger fetchObject(JDBCExecutionContext context, MySQLTable owner, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new MySQLTrigger(owner.getContainer(), owner, dbResult);
         }
-        finally {
-            context.close();
-        }
+
     }
 
-    private List<MySQLPartition> loadPartitions(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        List<MySQLPartition> tmpPartitions = new ArrayList<MySQLPartition>();
-        if (!isPersisted()) {
-            return tmpPartitions;
-        }
+    class PartitionCache extends JDBCObjectCache<MySQLTable, MySQLPartition> {
         Map<String, MySQLPartition> partitionMap = new HashMap<String, MySQLPartition>();
-        // Load only partition's owner catalog and partition name
-        // Actual partitions are stored in catalog - we just get em from cache
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table '" + getName() + "' partitions");
-        try {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable mySQLTable) throws SQLException, DBException
+        {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_PARTITIONS +
-                " WHERE " + MySQLConstants.COL_TABLE_SCHEMA + "=? AND " + MySQLConstants.COL_TABLE_NAME + "=? " +
-                " ORDER BY " + MySQLConstants.COL_PARTITION_ORDINAL_POSITION + "," + MySQLConstants.COL_SUBPARTITION_ORDINAL_POSITION);
-            try {
-                dbStat.setString(1, getContainer().getName());
-                dbStat.setString(2, getName());
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    while (dbResult.next()) {
-                        String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
-                        String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
-                        if (CommonUtils.isEmpty(subPartitionName)) {
-                            MySQLPartition partition = new MySQLPartition(this, null, partitionName, dbResult);
-                            tmpPartitions.add(partition);
-                        } else {
-                            MySQLPartition parentPartition = partitionMap.get(partitionName);
-                            if (parentPartition == null) {
-                                parentPartition = new MySQLPartition(this, null, partitionName, dbResult);
-                                tmpPartitions.add(parentPartition);
-                                partitionMap.put(partitionName, parentPartition);
-                            }
-                            new MySQLPartition(this, parentPartition, subPartitionName, dbResult);
-                        }
-                    }
-                    return tmpPartitions;
+                " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? " +
+                " ORDER BY PARTITION_ORDINAL_POSITION,SUBPARTITION_ORDINAL_POSITION");
+            dbStat.setString(1, getContainer().getName());
+            dbStat.setString(2, getName());
+            return dbStat;
+        }
+
+        @Override
+        protected MySQLPartition fetchObject(JDBCExecutionContext context, MySQLTable table, ResultSet dbResult) throws SQLException, DBException
+        {
+            String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
+            String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
+            if (CommonUtils.isEmpty(subPartitionName)) {
+                return new MySQLPartition(table, null, partitionName, dbResult);
+            } else {
+                MySQLPartition parentPartition = partitionMap.get(partitionName);
+                if (parentPartition == null) {
+                    parentPartition = new MySQLPartition(table, null, partitionName, dbResult);
+                    partitionMap.put(partitionName, parentPartition);
                 }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
+                new MySQLPartition(table, parentPartition, subPartitionName, dbResult);
+                return null;
             }
         }
-        catch (SQLException e) {
-            throw new DBException(e);
-        }
-        finally {
-            context.close();
+
+        @Override
+        protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<MySQLPartition> objectIter)
+        {
+            partitionMap = null;
         }
     }
 

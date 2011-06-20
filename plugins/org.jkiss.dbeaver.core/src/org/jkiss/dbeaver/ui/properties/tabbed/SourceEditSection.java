@@ -18,10 +18,10 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
+import org.eclipse.ui.internal.services.INestable;
+import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.CustomSelectionProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 import java.lang.reflect.InvocationTargetException;
@@ -47,11 +48,13 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
     static final Log log = LogFactory.getLog(SourceEditSection.class);
 
     private final IDatabaseNodeEditor editor;
+
     private Composite parent;
     private SQLEditorBase sqlViewer;
     private final ISelectionProvider selectionProvider = new CustomSelectionProvider();
     private final IAction actionDelete = new ActionDelete();
     private boolean sourcesModified = false;
+    private IEditorSite nestedEditorSite;
 
     protected SourceEditSection(IDatabaseNodeEditor editor)
     {
@@ -72,6 +75,10 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
     @Override
     public void dispose()
     {
+        if (nestedEditorSite instanceof MultiPageEditorSite) {
+            ((MultiPageEditorSite) nestedEditorSite).dispose();
+            nestedEditorSite = null;
+        }
         super.dispose();
     }
 
@@ -84,8 +91,17 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
             }
         };
         sqlViewer.setHasVerticalRuler(false);
+
+        final IWorkbenchPartSite ownerSite = this.editor.getSite();
+        if (ownerSite instanceof MultiPageEditorSite) {
+            MultiPageEditorPart ownerMultiPageEditor = ((MultiPageEditorSite) ownerSite).getMultiPageEditor();
+            nestedEditorSite = new MultiPageEditorSite(ownerMultiPageEditor, sqlViewer);
+        } else {
+            nestedEditorSite = new SubEditorSite(editor.getEditorSite());
+        }
+
         try {
-            sqlViewer.init(editor.getEditorSite(), makeSourcesInput());
+            sqlViewer.init(nestedEditorSite, makeSourcesInput());
         } catch (PartInitException e) {
             UIUtils.showErrorDialog(parent.getShell(), "Create SQL viewer", null, e);
         }
@@ -174,18 +190,24 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
         editor.getSite().setSelectionProvider(selectionProvider);
         selectionProvider.setSelection(new StructuredSelection());
 
-        final IActionBars actionBars = editor.getEditorSite().getActionBars();
-        actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, actionDelete);
+        //final IActionBars actionBars = editor.getEditorSite().getActionBars();
+        //actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, actionDelete);
+        if (nestedEditorSite instanceof INestable) {
+            ((INestable) nestedEditorSite).activate();
+        }
     }
 
     @Override
     public void aboutToBeHidden()
     {
+        if (nestedEditorSite instanceof INestable) {
+            ((INestable) nestedEditorSite).deactivate();
+        }
         if (sqlViewer != null) {
             sqlViewer.enableUndoManager(false);
         }
-        final IActionBars actionBars = editor.getEditorSite().getActionBars();
-        actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, null);
+        //final IActionBars actionBars = editor.getEditorSite().getActionBars();
+        //actionBars.setGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE, null);
     }
 
     public void refreshPart(Object source)

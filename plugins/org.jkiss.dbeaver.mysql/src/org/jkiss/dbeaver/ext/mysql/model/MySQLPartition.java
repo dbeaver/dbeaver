@@ -5,11 +5,11 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +38,7 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
     private String comment;
     private String nodegroup;
 
-    protected MySQLPartition(MySQLTable mySQLTable, MySQLPartition parent, String name, JDBCResultSet dbResult)
+    protected MySQLPartition(MySQLTable mySQLTable, MySQLPartition parent, String name, ResultSet dbResult)
     {
         super(mySQLTable, name, true);
         this.parent = parent;
