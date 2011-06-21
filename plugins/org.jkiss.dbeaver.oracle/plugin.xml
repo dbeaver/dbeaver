@@ -124,7 +124,7 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePackage" label="Packages" iconId="#packages" description="Packages">
                             <items label="Package" path="package" property="packages" iconId="#package">
-                                <items label="Procedure" path="procedure" property="procedures" iconId="#procedure" id="Procedure">
+                                <items label="Procedures" itemLabel="Procedure" path="procedure" property="procedures" iconId="#procedure" id="Procedure">
                                     <items label="Arguments" itemLabel="Argument" path="argument" property="columns" iconId="#argument" navigable="false" inline="false">
                                         <items label="Attributes" itemLabel="Attribute" path="attribute" property="attributes" iconId="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
                                             <items ref="ProcedureArgumentAttributes"/>
