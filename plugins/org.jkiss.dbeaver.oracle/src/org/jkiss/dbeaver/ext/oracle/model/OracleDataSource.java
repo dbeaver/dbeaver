@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +38,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     final SchemaCache schemaCache = new SchemaCache();
     final DataTypeCache dataTypeCache = new DataTypeCache();
+    final TablespaceCache tablespaceCache = new TablespaceCache();
 
     private String activeSchemaName;
 
@@ -46,16 +48,12 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         super(container);
     }
 
-    DataTypeCache getDataTypeCache()
-    {
-        return dataTypeCache;
-    }
-
     protected Map<String, String> getInternalConnectionProperties()
     {
         return OracleDataSourceProvider.getConnectionsProps();
     }
 
+    @Association
     public Collection<OracleSchema> getSchemas(DBRProgressMonitor monitor) throws DBException
     {
         return schemaCache.getObjects(monitor, this);
@@ -64,6 +62,12 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     public OracleSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException
     {
         return schemaCache.getObject(monitor, this, name);
+    }
+
+    @Association
+    public Collection<OracleTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException
+    {
+        return tablespaceCache.getObjects(monitor, this);
     }
 
     public void initialize(DBRProgressMonitor monitor)
@@ -260,6 +264,20 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         protected OracleDataType fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataType(OracleDataSource.this, resultSet);
+        }
+    }
+
+    class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException, DBException
+        {
+            return context.prepareStatement(
+                "SELECT * FROM SYS.DBA_TABLESPACES ORDER BY TABLESPACE_NAME");
+        }
+        @Override
+        protected OracleTablespace fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleTablespace(OracleDataSource.this, resultSet);
         }
     }
 

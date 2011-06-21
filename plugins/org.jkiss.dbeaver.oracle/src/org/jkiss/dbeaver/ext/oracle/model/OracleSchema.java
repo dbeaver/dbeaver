@@ -8,20 +8,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.OracleConstants;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.struct.AbstractSchema;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -31,7 +30,7 @@ import java.util.*;
 /**
  * OracleSchema
  */
-public class OracleSchema extends AbstractSchema<OracleDataSource> implements DBPSaveableObject
+public class OracleSchema extends OracleGlobalObject implements DBSSchema
 {
     static final Log log = LogFactory.getLog(OracleSchema.class);
 
@@ -48,35 +47,26 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
     final ProceduresCache proceduresCache = new ProceduresCache();
 
     private long id;
-    private boolean persisted;
+    private String name;
 
     public OracleSchema(OracleDataSource dataSource, ResultSet dbResult)
     {
-        super(dataSource, null);
+        super(dataSource, dbResult != null);
         if (dbResult != null) {
             this.id = JDBCUtils.safeGetLong(dbResult, "USER_ID");
-            setName(JDBCUtils.safeGetString(dbResult, "USERNAME"));
-            persisted = true;
-        } else {
-            persisted = false;
+            this.name = JDBCUtils.safeGetString(dbResult, "USERNAME");
         }
     }
 
-    @Override
     @Property(name = "Name", viewable = true, editable = true, order = 1)
     public String getName()
     {
-        return super.getName();
+        return name;
     }
 
-    public boolean isPersisted()
+    public void setName(String name)
     {
-        return persisted;
-    }
-
-    public void setPersisted(boolean persisted)
-    {
-        this.persisted = persisted;
+        this.name = name;
     }
 
     public String getDescription()
@@ -215,11 +205,9 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         }
     }
 
-    @Override
     public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
-        super.refreshEntity(monitor);
         tableCache.clearCache();
         foreignKeyCache.clearCache();
         constraintCache.clearCache();

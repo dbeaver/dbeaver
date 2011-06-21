@@ -390,7 +390,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
             type = new OracleDataType(typeSchema == null ? dataSource : typeSchema, typeName, true);
             type.flagPredefined = true;
             if (typeSchema == null) {
-                dataSource.getDataTypeCache().cacheObject(type);
+                dataSource.dataTypeCache.cacheObject(type);
             } else {
                 typeSchema.dataTypeCache.cacheObject(type);
             }
