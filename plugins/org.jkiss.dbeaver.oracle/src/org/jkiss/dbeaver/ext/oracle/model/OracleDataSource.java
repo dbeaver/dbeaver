@@ -41,6 +41,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     final TablespaceCache tablespaceCache = new TablespaceCache();
 
     private String activeSchemaName;
+    private boolean isAdmin;
 
     public OracleDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -51,6 +52,11 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     protected Map<String, String> getInternalConnectionProperties()
     {
         return OracleDataSourceProvider.getConnectionsProps();
+    }
+
+    public boolean isAdmin()
+    {
+        return isAdmin;
     }
 
     @Association
@@ -79,8 +85,28 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         {
             final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
             try {
-                // Get active schema
+                // Get user roles
+                this.isAdmin = false;
                 JDBCPreparedStatement dbStat = context.prepareStatement(
+                    "SELECT GRANTED_ROLE FROM USER_ROLE_PRIVS");
+                try {
+                    JDBCResultSet resultSet = dbStat.executeQuery();
+                    try {
+                        while (resultSet.next()) {
+                            final String role = resultSet.getString(1);
+                            if (role.equals("DBA")) {
+                                isAdmin = true;
+                            }
+                        }
+                    } finally {
+                        resultSet.close();
+                    }
+                } finally {
+                    dbStat.close();
+                }
+
+                // Get active schema
+                dbStat = context.prepareStatement(
                     "SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
                 try {
                     JDBCResultSet resultSet = dbStat.executeQuery();

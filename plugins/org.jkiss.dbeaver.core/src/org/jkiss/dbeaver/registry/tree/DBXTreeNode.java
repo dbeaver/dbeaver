@@ -88,6 +88,11 @@ public abstract class DBXTreeNode
 
     public boolean hasChildren(DBNNode context)
     {
+        return hasChildren(context, false);
+    }
+
+    public boolean hasChildren(DBNNode context, boolean navigable)
+    {
         if (CommonUtils.isEmpty(children)) {
             return false;
         }
@@ -95,7 +100,7 @@ public abstract class DBXTreeNode
             return true;
         }
         for (DBXTreeNode child : children) {
-            if (child.isVisible(context)) {
+            if ((!navigable || child.isNavigable()) && child.isVisible(context)) {
                 return true;
             }
         }

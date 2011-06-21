@@ -79,11 +79,26 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             value = resultSet.getByte(columnIndex);
             break;
         default:
-            if (column.getScale() > 0) {
-                value = resultSet.getDouble(columnIndex);
-            } else {
-                value = resultSet.getLong(columnIndex);
+            // Here may be any numeric value. BigDecimal or BigInteger for example
+            boolean gotValue = false;
+            value = null;
+            try {
+                Object objectValue = resultSet.getObject(columnIndex);
+                if (objectValue == null || objectValue instanceof Number) {
+                    value = (Number) objectValue;
+                    gotValue = true;
+                }
+            } catch (SQLException e) {
+                log.debug(e);
             }
+            if (value == null && !gotValue) {
+                if (column.getScale() > 0) {
+                    value = resultSet.getDouble(columnIndex);
+                } else {
+                    value = resultSet.getLong(columnIndex);
+                }
+            }
+
             break;
         }
         if (resultSet.wasNull()) {

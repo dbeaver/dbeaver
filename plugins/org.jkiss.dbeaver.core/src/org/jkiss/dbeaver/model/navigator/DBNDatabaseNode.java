@@ -102,21 +102,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public boolean allowsNavigableChildren()
     {
-        if (isDisposed()) {
-            return false;
-        }
-        final List<DBXTreeNode> metaChildren = this.getMeta().getChildren(this);
-
-        if (CommonUtils.isEmpty(metaChildren)) {
-            return false;
-        } else {
-            for (DBXTreeNode child : metaChildren) {
-                if (child.isNavigable()) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        return !isDisposed() && this.getMeta().hasChildren(this, true);
     }
 
     public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)

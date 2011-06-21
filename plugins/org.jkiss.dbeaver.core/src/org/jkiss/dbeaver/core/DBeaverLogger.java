@@ -172,13 +172,14 @@ public class DBeaverLogger implements Log, Serializable
                 severity,
                 DBeaverCore.getInstance().getPluginID(),
                 message == null ? null : message.toString()));
+        } else {
+            DBeaverCore.getInstance().getPluginLog().log(new MultiStatus(
+                DBeaverCore.getInstance().getPluginID(),
+                0,
+                new IStatus[]{ RuntimeUtils.makeExceptionStatus(severity, t) },
+                message == null ? null : message.toString(),
+                t));
         }
-        DBeaverCore.getInstance().getPluginLog().log(new MultiStatus(
-            DBeaverCore.getInstance().getPluginID(),
-            0,
-            new IStatus[]{ RuntimeUtils.makeExceptionStatus(severity, t) },
-            message == null ? null : message.toString(),
-            t));
     }
 
 }
