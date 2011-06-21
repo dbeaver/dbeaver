@@ -40,8 +40,8 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     final SchemaCache schemaCache = new SchemaCache();
     final DataTypeCache dataTypeCache = new DataTypeCache();
     final TablespaceCache tablespaceCache = new TablespaceCache();
-    final SynonymCache synonymCache = new SynonymCache();
 
+    private OracleSchema publicSchema;
     private String activeSchemaName;
     private boolean isAdmin;
 
@@ -81,7 +81,13 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     @Association
     public Collection<OracleSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException
     {
-        return synonymCache.getObjects(monitor, this);
+        return publicSchema.getSynonyms(monitor);
+    }
+
+    @Association
+    public Collection<OracleDBLink> getPublicDatabaseLinks(DBRProgressMonitor monitor) throws DBException
+    {
+        return publicSchema.getDatabaseLinks(monitor);
     }
 
     public void initialize(DBRProgressMonitor monitor)
@@ -89,7 +95,8 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     {
         super.initialize(monitor);
 
-        dataTypeCache.getObjects(monitor, this);
+        this.dataTypeCache.getObjects(monitor, this);
+        this.publicSchema = new OracleSchema(this, 1, OracleConstants.USER_PUBLIC);
         {
             final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
             try {
@@ -120,7 +127,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
                     JDBCResultSet resultSet = dbStat.executeQuery();
                     try {
                         resultSet.next();
-                        activeSchemaName = resultSet.getString(1);
+                        this.activeSchemaName = resultSet.getString(1);
                     } finally {
                         resultSet.close();
                     }
@@ -310,38 +317,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
                         new OracleDataType(null, predefinedType.getKey(), true));
                 }
             }
-        }
-    }
-
-    /**
-     * Sequence cache implementation
-     */
-    static class SynonymCache extends JDBCObjectCache<DBSObject, OracleSynonym> {
-        @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, DBSObject owner) throws SQLException, DBException
-        {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT /*+ USE_NL(O)*/ s.*,O.OBJECT_TYPE \n" +
-                "FROM ALL_SYNONYMS S\n" +
-                "JOIN ALL_OBJECTS O ON  O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
-                "WHERE S.OWNER=? " +
-                "ORDER BY S.SYNONYM_NAME");
-            if (owner instanceof OracleSchema) {
-                dbStat.setString(1, owner.getName());
-            } else {
-                dbStat.setString(1, OracleConstants.USER_PUBLIC);
-            }
-            return dbStat;
-        }
-
-        @Override
-        protected OracleSynonym fetchObject(JDBCExecutionContext context, DBSObject owner, ResultSet resultSet) throws SQLException, DBException
-        {
-            return new OracleSynonym(
-                context.getProgressMonitor(),
-                (OracleDataSource) owner.getDataSource(),
-                owner instanceof OracleSchema ? (OracleSchema) owner : null,
-                resultSet);
         }
     }
 

@@ -17,10 +17,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.DBSSchema;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -42,12 +39,19 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
     final DataTypeCache dataTypeCache = new DataTypeCache();
     final SequenceCache sequenceCache = new SequenceCache();
     final PackageCache packageCache = new PackageCache();
-    final OracleDataSource.SynonymCache synonymCache = new OracleDataSource.SynonymCache();
-    final OracleDBLinkCache dbLinkCache = new OracleDBLinkCache();
+    final SynonymCache synonymCache = new SynonymCache();
+    final DBLinkCache dbLinkCache = new DBLinkCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
 
     private long id;
     private String name;
+
+    OracleSchema(OracleDataSource dataSource, long id, String name)
+    {
+        super(dataSource, true);
+        this.id = id;
+        this.name = name;
+    }
 
     public OracleSchema(OracleDataSource dataSource, ResultSet dbResult)
     {
@@ -661,7 +665,34 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
 
     }
 
-    static class OracleDBLinkCache extends JDBCObjectCache<OracleSchema, OracleDBLink> {
+    /**
+     * Sequence cache implementation
+     */
+    static class SynonymCache extends JDBCObjectCache<OracleSchema, OracleSynonym> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner) throws SQLException, DBException
+        {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT /*+ USE_NL(O)*/ s.*,O.OBJECT_TYPE \n" +
+                "FROM ALL_SYNONYMS S\n" +
+                "JOIN ALL_OBJECTS O ON  O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
+                "WHERE S.OWNER=? " +
+                "ORDER BY S.SYNONYM_NAME");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleSynonym fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleSynonym(
+                context.getProgressMonitor(),
+                owner,
+                resultSet);
+        }
+    }
+
+    static class DBLinkCache extends JDBCObjectCache<OracleSchema, OracleDBLink> {
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException, DBException
