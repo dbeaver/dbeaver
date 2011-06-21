@@ -57,7 +57,7 @@ public class OracleUtils {
                         }
                         source.append(line);
                         lineCount++;
-                        monitor.subTask(lineCount + " lines");
+                        monitor.subTask("Line " + lineCount);
                     }
                     return source == null ? null : source.toString();
                 }
