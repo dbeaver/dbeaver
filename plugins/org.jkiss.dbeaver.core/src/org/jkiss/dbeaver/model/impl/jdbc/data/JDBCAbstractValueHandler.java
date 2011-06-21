@@ -10,8 +10,11 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -100,23 +103,24 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     {
         control.setLayoutData(new GridData(GridData.FILL_BOTH));
         control.setFont(controller.getInlinePlaceholder().getFont());
-        control.addKeyListener(new KeyListener() {
-            public void keyPressed(KeyEvent e)
+        control.addTraverseListener(new TraverseListener() {
+            public void keyTraversed(TraverseEvent e)
             {
-                if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
+                if (e.detail == SWT.TRAVERSE_RETURN) {
                     controller.updateValue(extractor.getValueFromControl(control));
                     controller.closeInlineEditor();
-                } else if (e.keyCode == SWT.ARROW_RIGHT || e.keyCode == SWT.ARROW_LEFT) {
-                    if ((e.stateMask & SWT.ALT) != 0) {
-                        controller.updateValue(extractor.getValueFromControl(control));
-                        controller.nextInlineEditor(e.keyCode == SWT.ARROW_RIGHT);
-                    }
-                } else if (e.keyCode == SWT.ESC) {
+                    e.doit = false;
+                    e.detail = SWT.TRAVERSE_NONE;
+                } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
                     controller.closeInlineEditor();
+                    e.doit = false;
+                    e.detail = SWT.TRAVERSE_NONE;
+                } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                    controller.updateValue(extractor.getValueFromControl(control));
+                    controller.nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
+                    e.doit = false;
+                    e.detail = SWT.TRAVERSE_NONE;
                 }
-            }
-            public void keyReleased(KeyEvent e)
-            {
             }
         });
     }
