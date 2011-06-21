@@ -1,27 +1,31 @@
-/*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
- */
+package org.jkiss.dbeaver.ui;
 
-package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
-
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.graphics.GC;
 
 /**
- * Utility class to provide common operations on strings not supported by the
- * base java API.
- * 
- * @author chris.gross@us.ibm.com
- * @since 2.0.0
+ * Text utils
  */
-public class TextUtils
-{
+public class TextUtils {
+    public static boolean isEmptyLine(IDocument document, int line)
+        throws BadLocationException
+    {
+        IRegion region = document.getLineInformation(line);
+        if (region == null || region.getLength() == 0) {
+            return true;
+        }
+        String str = document.get(region.getOffset(), region.getLength());
+        return str.trim().length() == 0;
+    }
 
     /**
      * Shortens a supplied string so that it fits within the area specified by
      * the width argument. Strings that have been shorted have an "..." attached
      * to the end of the string. The width is computed using the
-     * {@link GC#textExtent(String)}.
-     * 
+     * {@link org.eclipse.swt.graphics.GC#textExtent(String)}.
+     *
      * @param gc GC used to perform calculation.
      * @param t text to modify.
      * @param width Pixels to display.
@@ -78,11 +82,11 @@ public class TextUtils
      * Shortens a supplied string so that it fits within the area specified by
      * the width argument. Strings that have been shorted have an "..." attached
      * to the end of the string. The width is computed using the
-     * {@link GC#stringExtent(String)}.
+     * {@link org.eclipse.swt.graphics.GC#stringExtent(String)}.
      *
      * Text shorten removed due to awfull aglorythm (it works really slow on long strings).
      * TODO: make something better
-     * 
+     *
      * @param gc GC used to perform calculation.
      * @param t text to modify.
      * @param width Pixels to display.
@@ -155,12 +159,5 @@ public class TextUtils
 
         return text;
 */
-    }
-
-    /**
-     * Protected constructor to prevent instantiation.
-     */
-    protected TextUtils()
-    {
     }
 }

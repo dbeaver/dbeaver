@@ -475,6 +475,7 @@ public class OracleSchema extends AbstractSchema<OracleDataSource> implements DB
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         protected void cacheChildren(OracleForeignKey foreignKey, List<OracleForeignKeyColumn> rows)
         {
             foreignKey.setColumns((List)rows);

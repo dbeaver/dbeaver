@@ -15,6 +15,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.rules.FastPartitioner;
+import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.source.*;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
@@ -31,12 +32,13 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -77,7 +79,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     protected IContentAssistProcessor getCompletionProcessor()
     {
-        return null;
+        return new SQLCompletionProcessor(this);
     }
 
     public SQLSyntaxManager getSyntaxManager()
@@ -295,6 +297,128 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         // Update configuration
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
             ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
+        }
+    }
+
+    protected SQLStatementInfo extractActiveQuery()
+    {
+        SQLStatementInfo sqlQuery;
+        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+        String selText = selection.getText().trim();
+        selText = selText.trim();
+        if (selText.endsWith(getSyntaxManager().getStatementDelimiter())) {
+            selText = selText.substring(0, selText.length() - getSyntaxManager().getStatementDelimiter().length());
+        }
+        if (!CommonUtils.isEmpty(selText)) {
+            sqlQuery = new SQLStatementInfo(selText);
+            sqlQuery.setOffset(selection.getOffset());
+            sqlQuery.setLength(selection.getLength());
+        } else {
+            sqlQuery = extractQueryAtPos(selection.getOffset());
+        }
+        // Check query do not ends with delimiter
+        // (this may occur if user selected statement including delimiter)
+        if (sqlQuery == null || CommonUtils.isEmpty(sqlQuery.getQuery())) {
+            return null;
+        }
+        return sqlQuery;
+    }
+
+    public SQLStatementInfo extractQueryAtPos(int currentPos)
+    {
+        IDocument document = getDocument();
+        if (document.getLength() == 0) {
+            return null;
+        }
+        // Extract part of document between empty lines
+        int startPos = 0;
+        int endPos = document.getLength();
+        try {
+            int currentLine = document.getLineOfOffset(currentPos);
+            int lineOffset = document.getLineOffset(currentLine);
+            int linesCount = document.getNumberOfLines();
+            int firstLine = currentLine, lastLine = currentLine;
+            while (firstLine > 0) {
+                if (TextUtils.isEmptyLine(document, firstLine)) {
+                    break;
+                }
+                firstLine--;
+            }
+            while (lastLine < linesCount) {
+                if (TextUtils.isEmptyLine(document, lastLine)) {
+                    break;
+                }
+                lastLine++;
+            }
+            if (lastLine >= linesCount) {
+                lastLine = linesCount - 1;
+            }
+            startPos = document.getLineOffset(firstLine);
+            endPos = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
+            //String lastDelimiter = document.getLineDelimiter(lastLine);
+            //if (lastDelimiter != null) {
+            //    endPos += lastDelimiter.length();
+            //}
+
+            // Move currentPos at line begin
+            currentPos = lineOffset;
+        }
+        catch (BadLocationException e) {
+            log.warn(e);
+        }
+
+        // Parse range
+        SQLSyntaxManager syntaxManager = getSyntaxManager();
+        syntaxManager.setRange(document, startPos, endPos - startPos);
+        int statementStart = startPos;
+        for (;;) {
+            IToken token = syntaxManager.nextToken();
+            int tokenOffset = syntaxManager.getTokenOffset();
+            if (token.isEOF() ||
+                (token instanceof SQLDelimiterToken && tokenOffset >= currentPos)||
+                tokenOffset > endPos)
+            {
+                // get position before last token start
+                if (tokenOffset > endPos) {
+                    tokenOffset = endPos;
+                }
+
+                if (tokenOffset >= document.getLength()) {
+                    // Sometimes (e.g. when comment finishing script text)
+                    // last token offset is beyon document range
+                    tokenOffset = document.getLength();
+                }
+                assert (tokenOffset >= currentPos);
+                try {
+                    // remove leading spaces
+                    while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
+                        statementStart++;
+                    }
+                    // remove trailing spaces
+                    while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(tokenOffset - 1))) {
+                        tokenOffset--;
+                    }
+                    String queryText = document.get(statementStart, tokenOffset - statementStart);
+                    queryText = queryText.trim();
+                    if (queryText.endsWith(syntaxManager.getStatementDelimiter())) {
+                        queryText = queryText.substring(0, queryText.length() - syntaxManager.getStatementDelimiter().length());
+                    }
+                    // make script line
+                    SQLStatementInfo statementInfo = new SQLStatementInfo(queryText.trim());
+                    statementInfo.setOffset(statementStart);
+                    statementInfo.setLength(tokenOffset - statementStart);
+                    return statementInfo;
+                } catch (BadLocationException ex) {
+                    log.warn("Can't extract query", ex);
+                    return null;
+                }
+            }
+            if (token instanceof SQLDelimiterToken) {
+                statementStart = tokenOffset + syntaxManager.getTokenLength();
+            }
+            if (token.isEOF()) {
+                return null;
+            }
         }
     }
 

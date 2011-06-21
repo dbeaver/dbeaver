@@ -88,7 +88,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
 
         String text = getColumnText();
 
-        text = TextUtils.getShortString(gc, text, width);
+        text = org.jkiss.dbeaver.ui.TextUtils.getShortString(gc, text, width);
 
         if (col.getAlignment() == SWT.RIGHT) {
             int len = gc.stringExtent(text).x;

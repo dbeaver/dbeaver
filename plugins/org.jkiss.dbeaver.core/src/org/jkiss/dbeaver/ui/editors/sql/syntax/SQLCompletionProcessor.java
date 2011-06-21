@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,13 +49,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         COLUMN
     }
 
-    private SQLEditor editor;
+    private SQLEditorBase editor;
     private IContextInformationValidator validator = new Validator();
     private int documentOffset;
     private String activeQuery = null;
     private SQLWordPartDetector wordDetector;
 
-    public SQLCompletionProcessor(SQLEditor editor)
+    public SQLCompletionProcessor(SQLEditorBase editor)
     {
         this.editor = editor;
     }
@@ -96,7 +97,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (queryType != null || wordDetector.containsSeparator(wordPart)) {
             // It's a table query
             // Use database information (only we are connected, of course)
-            if (editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected()) {
+            if (editor.getDataSource() != null) {
                 try {
                     final QueryType qt = queryType;
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
@@ -150,9 +151,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         String wordPart,
         QueryType queryType)
     {
-        DBSDataSourceContainer dsContainer = editor.getDataSourceContainer();
-        DBPDataSource dataSource = dsContainer.isConnected() ? dsContainer.getDataSource() : null;
-        if (queryType != null) {
+        DBPDataSource dataSource = editor.getDataSource();
+        if (queryType != null && dataSource != null) {
             // Try to determine which object is queried (if wordPart is not empty)
             // or get list of root database objects
             if (wordPart.length() == 0) {

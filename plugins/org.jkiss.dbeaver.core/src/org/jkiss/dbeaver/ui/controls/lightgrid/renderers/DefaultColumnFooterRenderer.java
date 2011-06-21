@@ -71,7 +71,7 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer {
 
         int y = getBounds().y + getBounds().height - bottomMargin - gc.getFontMetrics().getHeight();
 
-        String text = TextUtils.getShortString(gc, getColumnText(), width);
+        String text = org.jkiss.dbeaver.ui.TextUtils.getShortString(gc, getColumnText(), width);
 
         if (col.getAlignment() == SWT.RIGHT) {
             int len = gc.stringExtent(text).x;

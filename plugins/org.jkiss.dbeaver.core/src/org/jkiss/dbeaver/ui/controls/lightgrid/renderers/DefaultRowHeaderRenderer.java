@@ -86,7 +86,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
         int selectionOffset = 0;
 
         y += (getBounds().height - gc.stringExtent(text).y) / 2;
-        gc.drawString(TextUtils.getShortString(gc, text, width), getBounds().x + x + selectionOffset, y + selectionOffset, true);
+        gc.drawString(org.jkiss.dbeaver.ui.TextUtils.getShortString(gc, text, width), getBounds().x + x + selectionOffset, y + selectionOffset, true);
     }
 
     private Image getHeaderImage() {

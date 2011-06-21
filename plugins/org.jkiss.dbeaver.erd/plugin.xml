@@ -33,7 +33,8 @@
             description="ERD Diagram"
             position="additions_end"
             icon="icons/erd.png">
-            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityContainer"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSCatalog"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSSchema"/>
             <objectType name="org.jkiss.dbeaver.model.struct.DBSTable"/>
         </editor>
     </extension>

@@ -5,21 +5,13 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -34,8 +26,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.eclipse.ui.texteditor.TextOperationAction;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -59,7 +49,6 @@ import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
@@ -68,17 +57,17 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCommentToken;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ResourceBundle;
 
 /**
  * SQL Executor
@@ -162,11 +151,6 @@ public class SQLEditor extends SQLEditorBase
             container.acquire(this);
         }
         return true;
-    }
-
-    protected IContentAssistProcessor getCompletionProcessor()
-    {
-        return new SQLCompletionProcessor(this);
     }
 
     public ResultSetViewer getResultsView()
@@ -333,139 +317,6 @@ public class SQLEditor extends SQLEditorBase
                 setStatus("Empty query string", true);
             } else {
                 processQuery(Collections.singletonList(sqlQuery));
-            }
-        }
-    }
-
-    private SQLStatementInfo extractActiveQuery()
-    {
-        SQLStatementInfo sqlQuery;
-        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
-        String selText = selection.getText().trim();
-        selText = selText.trim();
-        if (selText.endsWith(getSyntaxManager().getStatementDelimiter())) {
-            selText = selText.substring(0, selText.length() - getSyntaxManager().getStatementDelimiter().length());
-        }
-        if (!CommonUtils.isEmpty(selText)) {
-            sqlQuery = new SQLStatementInfo(selText);
-            sqlQuery.setOffset(selection.getOffset());
-            sqlQuery.setLength(selection.getLength());
-        } else {
-            sqlQuery = extractQueryAtPos(selection.getOffset());
-        }
-        // Check query do not ends with delimiter
-        // (this may occur if user selected statement including delimiter)
-        if (sqlQuery == null || CommonUtils.isEmpty(sqlQuery.getQuery())) {
-            return null;
-        }
-        return sqlQuery;
-    }
-
-    private static boolean isEmptyLine(IDocument document, int line)
-        throws BadLocationException
-    {
-        IRegion region = document.getLineInformation(line);
-        if (region == null || region.getLength() == 0) {
-            return true;
-        }
-        String str = document.get(region.getOffset(), region.getLength());
-        return str.trim().length() == 0;
-    }
-
-    public SQLStatementInfo extractQueryAtPos(int currentPos)
-    {
-        IDocument document = getDocument();
-        if (document.getLength() == 0) {
-            return null;
-        }
-        // Extract part of document between empty lines
-        int startPos = 0;
-        int endPos = document.getLength();
-        try {
-            int currentLine = document.getLineOfOffset(currentPos);
-            int lineOffset = document.getLineOffset(currentLine);
-            int linesCount = document.getNumberOfLines();
-            int firstLine = currentLine, lastLine = currentLine;
-            while (firstLine > 0) {
-                if (isEmptyLine(document, firstLine)) {
-                    break;
-                }
-                firstLine--;
-            }
-            while (lastLine < linesCount) {
-                if (isEmptyLine(document, lastLine)) {
-                    break;
-                }
-                lastLine++;
-            }
-            if (lastLine >= linesCount) {
-                lastLine = linesCount - 1;
-            }
-            startPos = document.getLineOffset(firstLine);
-            endPos = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
-            //String lastDelimiter = document.getLineDelimiter(lastLine);
-            //if (lastDelimiter != null) {
-            //    endPos += lastDelimiter.length();
-            //}
-
-            // Move currentPos at line begin
-            currentPos = lineOffset;
-        }
-        catch (BadLocationException e) {
-            log.warn(e);
-        }
-
-        // Parse range
-        SQLSyntaxManager syntaxManager = getSyntaxManager();
-        syntaxManager.setRange(document, startPos, endPos - startPos);
-        int statementStart = startPos;
-        for (;;) {
-            IToken token = syntaxManager.nextToken();
-            int tokenOffset = syntaxManager.getTokenOffset();
-            if (token.isEOF() ||
-                (token instanceof SQLDelimiterToken && tokenOffset >= currentPos)||
-                tokenOffset > endPos) 
-            {
-                // get position before last token start
-                if (tokenOffset > endPos) {
-                    tokenOffset = endPos;
-                }
-
-                if (tokenOffset >= document.getLength()) {
-                    // Sometimes (e.g. when comment finishing script text)
-                    // last token offset is beyon document range
-                    tokenOffset = document.getLength();
-                }
-                assert (tokenOffset >= currentPos);
-                try {
-                    // remove leading spaces
-                    while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
-                        statementStart++;
-                    }
-                    // remove trailing spaces
-                    while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(tokenOffset - 1))) {
-                        tokenOffset--;
-                    }
-                    String queryText = document.get(statementStart, tokenOffset - statementStart);
-                    queryText = queryText.trim();
-                    if (queryText.endsWith(syntaxManager.getStatementDelimiter())) {
-                        queryText = queryText.substring(0, queryText.length() - syntaxManager.getStatementDelimiter().length());
-                    }
-                    // make script line
-                    SQLStatementInfo statementInfo = new SQLStatementInfo(queryText.trim());
-                    statementInfo.setOffset(statementStart);
-                    statementInfo.setLength(tokenOffset - statementStart);
-                    return statementInfo;
-                } catch (BadLocationException ex) {
-                    log.warn("Can't extract query", ex);
-                    return null;
-                }
-            }
-            if (token instanceof SQLDelimiterToken) {
-                statementStart = tokenOffset + syntaxManager.getTokenLength();
-            }
-            if (token.isEOF()) {
-                return null;
             }
         }
     }
