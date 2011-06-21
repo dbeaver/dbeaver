@@ -152,11 +152,20 @@
                                 </items>
                             </items>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="Database Links" iconId="#procedures" description="Database Links (DBLinks)">
+                            <items label="Database Link" path="databaseLink" property="databaseLinks" iconId="#dblink"/>
+                        </folder>
                     </items>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="Global metadata" iconId="#logical" description="Global metadata objects">
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="Types" iconId="#data_types" description="Types">
                         <items label="Data Type" path="type" property="dataTypes" iconId="#data_type"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSynonym" label="Public Synonyms" iconId="#synonyms" description="Public synonyms">
+                        <items label="Synonym" path="synonym" property="publicSynonyms" iconId="#synonym"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="Public Database Links" iconId="#dblinks" description="Public database links">
+                        <items label="Database Link" path="databaseLink" property="publicDatabaseLinks" iconId="#dblink"/>
                     </folder>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="Storage" iconId="#storage" description="Storage management" visibleIf="object.dataSource.admin">

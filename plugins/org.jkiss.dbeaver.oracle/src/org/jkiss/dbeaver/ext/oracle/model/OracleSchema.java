@@ -42,7 +42,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
     final DataTypeCache dataTypeCache = new DataTypeCache();
     final SequenceCache sequenceCache = new SequenceCache();
     final PackageCache packageCache = new PackageCache();
-    final SynonymCache synonymCache = new SynonymCache();
+    final OracleDataSource.SynonymCache synonymCache = new OracleDataSource.SynonymCache();
     final OracleDBLinkCache dbLinkCache = new OracleDBLinkCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
 
@@ -167,6 +167,14 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         throws DBException
     {
         return triggerCache.getObjects(monitor, this);
+    }
+
+
+    @Association
+    public Collection<OracleDBLink> getDatabaseLinks(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return dbLinkCache.getObjects(monitor, this);
     }
 
     public Collection<OracleTableBase> getChildren(DBRProgressMonitor monitor)
@@ -587,18 +595,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         {
             return new OracleDataType(owner, resultSet);
         }
-
-        @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<OracleDataType> objectIter)
-        {
-            // Add predefined types
-            for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
-                if (getCachedObject(predefinedType.getKey()) == null) {
-                    cacheObject(
-                        new OracleDataType(null, predefinedType.getKey(), true));
-                }
-            }
-        }
     }
 
     /**
@@ -661,29 +657,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
             throws SQLException, DBException
         {
             return new OraclePackage(owner, dbResult);
-        }
-
-    }
-
-    static class SynonymCache extends JDBCObjectCache<OracleSchema, OracleSynonym> {
-
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
-            throws SQLException, DBException
-        {
-            JDBCPreparedStatement dbStat = context.prepareStatement(        
-                "SELECT /*+ USE_NL(O)*/ s.*,O.OBJECT_TYPE \n" +
-                "FROM ALL_SYNONYMS S\n" +
-                "JOIN ALL_OBJECTS O ON  O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
-                "WHERE S.OWNER=? " +
-                "ORDER BY S.SYNONYM_NAME");
-            dbStat.setString(1, owner.getName());
-            return dbStat;
-        }
-
-        protected OracleSynonym fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
-            throws SQLException, DBException
-        {
-            return new OracleSynonym(context.getProgressMonitor(), owner, dbResult);
         }
 
     }

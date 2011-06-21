@@ -4,6 +4,9 @@
 
 package org.jkiss.utils;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,7 +18,7 @@ import java.util.ArrayList;
  * Common utils
  */
 public class CommonUtils {
-
+    static final Log log = LogFactory.getLog(CommonUtils.class);
 
 	public static boolean isJavaIdentifier(CharSequence str)
 	{
@@ -381,6 +384,27 @@ public class CommonUtils {
     public static boolean isEmptyTrimmed(String str)
     {
         return str == null || str.length() == 0 || str.trim().length() == 0;
+    }
+
+    public static <T extends Enum> T valueOf(Class<T> type, String name)
+    {
+        return valueOf(type, name, false);
+    }
+
+    public static <T extends Enum> T valueOf(Class<T> type, String name, boolean underscoreSpaces)
+    {
+        if (isEmpty(name)) {
+            return null;
+        }
+        if (underscoreSpaces) {
+            name = name.replace(' ', '_');
+        }
+        try {
+            return (T) Enum.valueOf(type, name);
+        } catch (Exception e) {
+            log.warn(e);
+            return null;
+        }
     }
 
 }

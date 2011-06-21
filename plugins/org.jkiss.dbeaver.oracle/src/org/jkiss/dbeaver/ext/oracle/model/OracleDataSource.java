@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -39,6 +40,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     final SchemaCache schemaCache = new SchemaCache();
     final DataTypeCache dataTypeCache = new DataTypeCache();
     final TablespaceCache tablespaceCache = new TablespaceCache();
+    final SynonymCache synonymCache = new SynonymCache();
 
     private String activeSchemaName;
     private boolean isAdmin;
@@ -74,6 +76,12 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     public Collection<OracleTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException
     {
         return tablespaceCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<OracleSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException
+    {
+        return synonymCache.getObjects(monitor, this);
     }
 
     public void initialize(DBRProgressMonitor monitor)
@@ -279,7 +287,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         }
     }
 
-    class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
+    static class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException, DBException
         {
@@ -289,7 +297,51 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         @Override
         protected OracleDataType fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleDataType(OracleDataSource.this, resultSet);
+            return new OracleDataType(owner, resultSet);
+        }
+
+        @Override
+        protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<OracleDataType> objectIter)
+        {
+            // Add predefined types
+            for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
+                if (getCachedObject(predefinedType.getKey()) == null) {
+                    cacheObject(
+                        new OracleDataType(null, predefinedType.getKey(), true));
+                }
+            }
+        }
+    }
+
+    /**
+     * Sequence cache implementation
+     */
+    static class SynonymCache extends JDBCObjectCache<DBSObject, OracleSynonym> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, DBSObject owner) throws SQLException, DBException
+        {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT /*+ USE_NL(O)*/ s.*,O.OBJECT_TYPE \n" +
+                "FROM ALL_SYNONYMS S\n" +
+                "JOIN ALL_OBJECTS O ON  O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
+                "WHERE S.OWNER=? " +
+                "ORDER BY S.SYNONYM_NAME");
+            if (owner instanceof OracleSchema) {
+                dbStat.setString(1, owner.getName());
+            } else {
+                dbStat.setString(1, OracleConstants.USER_PUBLIC);
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected OracleSynonym fetchObject(JDBCExecutionContext context, DBSObject owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleSynonym(
+                context.getProgressMonitor(),
+                (OracleDataSource) owner.getDataSource(),
+                owner instanceof OracleSchema ? (OracleSchema) owner : null,
+                resultSet);
         }
     }
 

@@ -19,21 +19,25 @@ import java.sql.ResultSet;
  */
 public class OracleSynonym extends OracleSchemaObject {
 
+    private OracleDataSource dataSource;
     private OracleSchema objectOwner;
     private String objectTypeName;
     private String objectName;
     private OracleDBLink dbLink;
 
-    public OracleSynonym(DBRProgressMonitor monitor, OracleSchema schema, ResultSet dbResult) throws DBException
+    public OracleSynonym(DBRProgressMonitor monitor, OracleDataSource dataSource, OracleSchema schema, ResultSet dbResult) throws DBException
     {
         super(schema, JDBCUtils.safeGetString(dbResult, "SYNONYM_NAME"), true);
+        this.dataSource = dataSource;
         this.objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
-        this.objectOwner = schema.getDataSource().schemaCache.getCachedObject(
+        this.objectOwner = dataSource.schemaCache.getCachedObject(
             JDBCUtils.safeGetString(dbResult, "TABLE_OWNER"));
         this.objectName = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
         final String dbLinkName = JDBCUtils.safeGetString(dbResult, "DB_LINK");
         if (!CommonUtils.isEmpty(dbLinkName)) {
-            this.dbLink = schema.dbLinkCache.getObject(monitor, schema, dbLinkName);
+            if (schema != null) {
+                this.dbLink = schema.dbLinkCache.getObject(monitor, schema, dbLinkName);
+            }
         }
     }
 
@@ -42,6 +46,23 @@ public class OracleSynonym extends OracleSchemaObject {
         return OracleObjectType.getByType(objectTypeName);
     }
 
+    @Override
+    public String getFullQualifiedName()
+    {
+        return getSchema() != null ? super.getFullQualifiedName() : getName();
+    }
+
+    @Override
+    public DBSObject getParentObject()
+    {
+        return getSchema() != null ? getSchema() : getDataSource();
+    }
+
+    @Override
+    public OracleDataSource getDataSource()
+    {
+        return dataSource;
+    }
 
     @Property(name = "Name", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 1)
     public String getName()

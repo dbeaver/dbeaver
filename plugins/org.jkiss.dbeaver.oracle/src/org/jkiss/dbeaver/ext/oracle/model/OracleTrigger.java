@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTrigger;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -67,13 +68,13 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         ResultSet dbResult)
     {
         super(schema, JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME"), true);
-        this.objectType = BaseObjectType.valueOf(JDBCUtils.safeGetStringTrimmed(dbResult, "BASE_OBJECT_TYPE"));
+        this.objectType = CommonUtils.valueOf(BaseObjectType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "BASE_OBJECT_TYPE"));
         this.triggerType = JDBCUtils.safeGetString(dbResult, "TRIGGER_TYPE");
         this.triggeringEvent = JDBCUtils.safeGetString(dbResult, "TRIGGERING_EVENT");
         this.columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
         this.refNames = JDBCUtils.safeGetString(dbResult, "REFERENCING_NAMES");
         this.whenClause = JDBCUtils.safeGetString(dbResult, "WHEN_CLAUSE");
-        this.status = OracleObjectStatus.getByName(JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
+        this.status = CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
         this.description = JDBCUtils.safeGetString(dbResult, "DESCRIPTION");
         this.actionType = "CALL".equals(JDBCUtils.safeGetString(dbResult, "ACTION_TYPE")) ? ActionType.CALL : ActionType.PLSQL;
         this.table = table;

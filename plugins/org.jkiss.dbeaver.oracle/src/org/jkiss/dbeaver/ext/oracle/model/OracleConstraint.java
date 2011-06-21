@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class OracleConstraint extends JDBCConstraint<OracleTable> {
             getConstraintType(JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE")),
             true);
         this.searchCondition = JDBCUtils.safeGetString(dbResult, "SEARCH_CONDITION");
-        this.status = OracleObjectStatus.getByName(JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
+        this.status = CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
     }
 
     public OracleDataSource getDataSource()

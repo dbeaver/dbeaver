@@ -44,6 +44,8 @@ public class OracleConstants {
     public static final String DRIVER_TYPE_THIN = "THIN";
     public static final String DRIVER_TYPE_OCI = "OCI";
 
+    public static final String USER_PUBLIC = "PUBLIC";
+
     public static final String YES = "YES";
 
     public static final String COL_DATA_LENGTH = "DATA_LENGTH";

@@ -13,12 +13,4 @@ public enum OracleObjectStatus {
     ENABLED,
     DISABLED;
 
-    public static OracleObjectStatus getByName(String name)
-    {
-        if (CommonUtils.isEmpty(name)) {
-            return null;
-        } else {
-            return OracleObjectStatus.valueOf(name);
-        }
-    }
 }
