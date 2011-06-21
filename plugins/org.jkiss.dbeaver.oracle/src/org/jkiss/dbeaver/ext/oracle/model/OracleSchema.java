@@ -42,6 +42,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
     final SynonymCache synonymCache = new SynonymCache();
     final DBLinkCache dbLinkCache = new DBLinkCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
+    final JavaCache javaCache = new JavaCache();
 
     private long id;
     private String name;
@@ -173,12 +174,18 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         return triggerCache.getObjects(monitor, this);
     }
 
-
     @Association
     public Collection<OracleDBLink> getDatabaseLinks(DBRProgressMonitor monitor)
         throws DBException
     {
         return dbLinkCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<OracleJavaClass> getJavaClasses(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return javaCache.getObjects(monitor, this);
     }
 
     public Collection<OracleTableBase> getChildren(DBRProgressMonitor monitor)
@@ -803,6 +810,25 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         protected void cacheChildren(OracleTrigger oracleTrigger, List<OracleTriggerColumn> rows)
         {
             oracleTrigger.setColumns(rows);
+        }
+
+    }
+
+    static class JavaCache extends JDBCObjectCache<OracleSchema, OracleJavaClass> {
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+            throws SQLException, DBException
+        {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.ALL_JAVA_CLASSES WHERE OWNER=? ");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        protected OracleJavaClass fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new OracleJavaClass(owner, dbResult);
         }
 
     }

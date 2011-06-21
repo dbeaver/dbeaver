@@ -32,7 +32,12 @@ public enum OracleObjectType implements DBSObjectType {
 	INDEX("INDEX", null, DBSObject.class, null),
 	INDEX_PARTITION("INDEX PARTITION", null, DBSObject.class, null),
 	INDEXTYPE("INDEXTYPE", null, DBSObject.class, null),
-	JAVA_CLASS("JAVA CLASS", null, DBSObject.class, null),
+	JAVA_CLASS("JAVA CLASS", DBIcon.TREE_JAVA_CLASS.getImage(), OracleJavaClass.class, new ObjectFinder() {
+        public OracleJavaClass findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
+        {
+            return schema.javaCache.getObject(monitor, schema, objectName);
+        }
+    }),
 	JAVA_DATA("JAVA DATA", null, DBSObject.class, null),
 	JAVA_RESOURCE("JAVA RESOURCE", null, DBSObject.class, null),
 	JOB("JOB", null, DBSObject.class, null),
