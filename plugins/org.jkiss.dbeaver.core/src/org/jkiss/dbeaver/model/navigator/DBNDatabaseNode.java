@@ -33,19 +33,16 @@ import java.util.List;
 public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, DBSWrapper {
 
     private volatile boolean locked;
-    protected List<DBNDatabaseNode> childNodes;
+    protected volatile List<DBNDatabaseNode> childNodes;
 
     protected DBNDatabaseNode(DBNNode parentNode)
     {
         super(parentNode);
     }
 
-    synchronized void dispose(boolean reflect)
+    void dispose(boolean reflect)
     {
-        if (childNodes != null) {
-            clearChildren(reflect);
-            childNodes = null;
-        }
+        clearChildren(reflect);
         super.dispose(reflect);
     }
 
@@ -122,10 +119,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return false;
     }
 
-    public synchronized List<DBNDatabaseNode> getChildren(DBRProgressMonitor monitor)
+    public List<DBNDatabaseNode> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (this.allowsChildren() && childNodes == null) {
+        if (childNodes == null && allowsChildren()) {
             if (this.initializeNode(null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<DBNDatabaseNode>();
                 loadChildren(monitor, getMeta(), null, tmpList);
@@ -135,33 +132,42 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return childNodes;
     }
 
-    synchronized List<DBNDatabaseNode> getChildNodes()
+    List<DBNDatabaseNode> getChildNodes()
     {
         return childNodes;
     }
 
-    synchronized void addChildItem(DBSObject object)
+    void addChildItem(DBSObject object)
     {
         final List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
         if (!CommonUtils.isEmpty(metaChildren) && metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
             final DBNDatabaseItem newChild = new DBNDatabaseItem(this, (DBXTreeItem) metaChildren.get(0), object, false);
-            childNodes.add(newChild);
+            synchronized (this) {
+                childNodes.add(newChild);
+            }
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, DBNEvent.NodeChange.LOAD, newChild));
         } else {
             log.error("Cannot add child item to " + getNodeName() + ". Conditions doesn't met");
         }
     }
 
-    synchronized void removeChildItem(DBSObject object)
+    void removeChildItem(DBSObject object)
     {
-        if (!CommonUtils.isEmpty(childNodes)) {
-            for (Iterator<DBNDatabaseNode> iter = childNodes.iterator(); iter.hasNext(); ) {
-                final DBNDatabaseNode child = iter.next();
-                if (child.getObject() == object) {
-                    iter.remove();
-                    child.dispose(true);
+        DBNNode childNode = null;
+        synchronized (this) {
+            if (!CommonUtils.isEmpty(childNodes)) {
+                for (Iterator<DBNDatabaseNode> iter = childNodes.iterator(); iter.hasNext(); ) {
+                    final DBNDatabaseNode child = iter.next();
+                    if (child.getObject() == object) {
+                        childNode = child;
+                        iter.remove();
+                        break;
+                    }
                 }
             }
+        }
+        if (childNode != null) {
+            childNode.dispose(true);
         }
     }
 
@@ -170,7 +176,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         clearChildren(reflect);
     }
 
-    synchronized public boolean isLazyNode()
+    public boolean isLazyNode()
     {
         return childNodes == null && allowsChildren();
     }
@@ -245,14 +251,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         //new RefreshJob("Refresh node " + getNodeName()).schedule();
     }
 
-    protected synchronized void clearChildren(boolean reflect)
+    protected void clearChildren(boolean reflect)
     {
-        if (childNodes != null) {
-            for (DBNNode child : childNodes) {
+        List<DBNDatabaseNode> childrenCopy;
+        synchronized (this) {
+            childrenCopy = childNodes;
+            childNodes = null;
+        }
+        if (childrenCopy != null) {
+            for (DBNNode child : childrenCopy) {
                 child.dispose(reflect);
             }
-            childNodes.clear();
-            childNodes = null;
+            childrenCopy.clear();
         }
     }
 
@@ -328,7 +338,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
      * @return true on success
      * @throws DBException on any DB error
      */
-    private synchronized boolean loadTreeItems(
+    private boolean loadTreeItems(
         DBRProgressMonitor monitor,
         DBXTreeItem meta,
         final List<DBNDatabaseNode> oldList,
@@ -416,16 +426,22 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return true;
     }
 
-    protected synchronized void reloadChildren(DBRProgressMonitor monitor)
+    protected void reloadChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (childNodes == null) {
-            // Nothing to reload
-            return;
+        List<DBNDatabaseNode> oldChildren;
+        synchronized (this) {
+            if (childNodes == null || childNodes.isEmpty()) {
+                // Nothing to reload
+                return;
+            }
+            oldChildren = new ArrayList<DBNDatabaseNode>(childNodes);
         }
         List<DBNDatabaseNode> newChildren = new ArrayList<DBNDatabaseNode>();
-        loadChildren(monitor, getMeta(), childNodes, newChildren);
-        childNodes = newChildren;
+        loadChildren(monitor, getMeta(), oldChildren, newChildren);
+        synchronized (this) {
+            childNodes = newChildren;
+        }
     }
 
     public boolean testAttribute(Object target, String name, String value) {
