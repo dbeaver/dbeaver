@@ -15,22 +15,22 @@ import java.sql.ResultSet;
  */
 public class OracleSequence extends OracleSchemaObject {
 
-    private Long minValue;
-    private Long maxValue;
+    private Number minValue;
+    private Number maxValue;
     private long incrementBy;
     private long cacheSize;
-    private long lastNumber;
+    private Number lastNumber;
     private boolean flagCycle;
     private boolean flagOrder;
 
     public OracleSequence(OracleSchema schema, ResultSet dbResult)
     {
         super(schema, JDBCUtils.safeGetString(dbResult, "SEQUENCE_NAME"), true);
-        this.minValue = JDBCUtils.safeGetLongNullable(dbResult, "MIN_VALUE");
-        this.maxValue = JDBCUtils.safeGetLongNullable(dbResult, "MAX_VALUE");
+        this.minValue = (Number) JDBCUtils.safeGetObject(dbResult, "MIN_VALUE");
+        this.maxValue = (Number) JDBCUtils.safeGetObject(dbResult, "MAX_VALUE");
         this.incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT_BY");
         this.cacheSize = JDBCUtils.safeGetLong(dbResult, "CACHE_SIZE");
-        this.lastNumber = JDBCUtils.safeGetLong(dbResult, "LAST_NUMBER");
+        this.lastNumber = (Number) JDBCUtils.safeGetObject(dbResult, "LAST_NUMBER");
         this.flagCycle = JDBCUtils.safeGetBoolean(dbResult, "CYCLE_FLAG", "Y");
         this.flagOrder = JDBCUtils.safeGetBoolean(dbResult, "ORDER_FLAG", "Y");
     }
@@ -42,19 +42,19 @@ public class OracleSequence extends OracleSchemaObject {
     }
 
     @Property(name = "Value", viewable = true, editable = true, order = 2)
-    public long getLastNumber()
+    public Number getLastNumber()
     {
         return lastNumber;
     }
 
     @Property(name = "Min Value", viewable = true, editable = true, order = 3)
-    public Long getMinValue()
+    public Number getMinValue()
     {
         return minValue;
     }
 
     @Property(name = "Max Value", viewable = true, editable = true, order = 4)
-    public Long getMaxValue()
+    public Number getMaxValue()
     {
         return maxValue;
     }
