@@ -1521,7 +1521,19 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public void nextInlineEditor(boolean next) {
             spreadsheet.cancelInlineEditor();
-            spreadsheet.shiftCursor(next ? 1 : -1, 0, false);
+            int colOffset = next ? 1 : -1;
+            int rowOffset = 0;
+            final int rowCount = spreadsheet.getGrid().getItemCount();
+            final int colCount = spreadsheet.getGrid().getColumnCount();
+            final GridPos curPosition = spreadsheet.getCursorPosition();
+            if (colOffset > 0 && curPosition.col + colOffset >= colCount) {
+                colOffset = -colCount;
+                rowOffset = 1;
+            } else if (colOffset < 0 && curPosition.col + colOffset < 0) {
+                colOffset = colCount;
+                rowOffset = -1;
+            }
+            spreadsheet.shiftCursor(colOffset, rowOffset, false);
             spreadsheet.openCellViewer(true);
         }
 

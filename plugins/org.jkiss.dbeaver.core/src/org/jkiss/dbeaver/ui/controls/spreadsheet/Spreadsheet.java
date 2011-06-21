@@ -195,14 +195,14 @@ public class Spreadsheet extends Composite implements Listener {
         grid.setItemHeaderWidth(width);
     }
 
-    public void shiftCursor(int xOffset, int yOffset, boolean keepSelection)
+    public boolean shiftCursor(int xOffset, int yOffset, boolean keepSelection)
     {
         if (xOffset == 0 && yOffset == 0) {
-            return;
+            return false;
         }
         GridPos curPos = getCursorPosition();
         if (curPos == null) {
-            return;
+            return false;
         }
         GridPos newPos = new GridPos(curPos.col, curPos.row);
         // Move row
@@ -229,6 +229,7 @@ public class Spreadsheet extends Composite implements Listener {
         }
 
         setCursor(newPos, keepSelection);
+        return true;
     }
 
     public void setCursor(GridPos newPos, boolean keepSelection)
