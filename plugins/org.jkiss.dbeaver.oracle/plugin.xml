@@ -152,8 +152,8 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="Database Links" iconId="#procedures" description="Database Links (DBLinks)">
-                            <items label="Database Link" path="databaseLink" property="databaseLinks" iconId="#dblink"/>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="Database Links" iconId="#links" description="Database Links (DBLinks)">
+                            <items label="Database Link" path="databaseLink" property="databaseLinks" iconId="#link"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" iconId="#java" description="Java Classes">
                             <items label="Java Class" path="class" property="javaClasses" iconId="#javaClass"/>
@@ -167,8 +167,8 @@
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSynonym" label="Public Synonyms" iconId="#synonyms" description="Public synonyms">
                         <items label="Synonym" path="synonym" property="publicSynonyms" iconId="#synonym"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="Public Database Links" iconId="#dblinks" description="Public database links">
-                        <items label="Database Link" path="databaseLink" property="publicDatabaseLinks" iconId="#dblink"/>
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="Public Database Links" iconId="#links" description="Public database links">
+                        <items label="Database Link" path="databaseLink" property="publicDatabaseLinks" iconId="#link"/>
                     </folder>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="Storage" iconId="#storage" description="Storage management" visibleIf="object.dataSource.admin">
