@@ -56,6 +56,7 @@ public enum DBIcon
 
     TREE_INFO("info", "/icons/tree/info.png"),
     TREE_FOLDER_INFO("folder_info", "/icons/tree/folder_info.png"),
+    TREE_RECYCLE_BIN("recycle_bin", "/icons/tree/recycle_bin.png"),
 
     PROJECT("project", "icons/project.png"),
     PROJECTS("projects", "icons/projects.png"),

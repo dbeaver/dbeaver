@@ -158,6 +158,9 @@
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" iconId="#java" description="Java Classes">
                             <items label="Java Class" path="class" property="javaClasses" iconId="#javaClass"/>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="Recycle Bin" iconId="#recycle_bin" description="Recycle Bin">
+                            <items label="Recycled Object" path="object" property="recycleBin" iconId="#recycle_bin"/>
+                        </folder>
                     </items>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="Global metadata" iconId="#logical" description="Global metadata objects">
