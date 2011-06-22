@@ -4,19 +4,19 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.dbeaver.model.data.DBDValueCloneable;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
@@ -24,7 +24,7 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCContentChars extends JDBCContentAbstract implements DBDContent, DBDValueClonable, DBDContentStorage {
+public class JDBCContentChars extends JDBCContentAbstract implements DBDContent, DBDValueCloneable, DBDContentStorage {
 
     //static final Log log = LogFactory.getLog(JDBCContentChars.class);
 
@@ -115,7 +115,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         return cloneValue(monitor);
     }
 
-    public void bindParameter(DBCExecutionContext context, PreparedStatement preparedStatement,
+    public void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement preparedStatement,
                               DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {

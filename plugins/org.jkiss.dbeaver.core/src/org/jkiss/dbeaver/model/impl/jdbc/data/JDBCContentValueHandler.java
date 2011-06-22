@@ -17,6 +17,9 @@ import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -51,7 +54,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     private static final int MAX_STRING_LENGTH = 0xfffff;
 
     protected DBDContent getColumnValue(
-        DBCExecutionContext context, ResultSet resultSet, DBSTypedObject column,
+        DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column,
         int columnIndex)
         throws DBCException, SQLException
     {
@@ -100,8 +103,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     protected void bindParameter(
-        DBCExecutionContext context,
-        PreparedStatement statement,
+        JDBCExecutionContext context,
+        JDBCPreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,
         Object value)
@@ -122,8 +125,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
-        if (value instanceof DBDValueClonable) {
-            return ((DBDValueClonable)value).cloneValue(context.getProgressMonitor());
+        if (value instanceof DBDValueCloneable) {
+            return ((DBDValueCloneable)value).cloneValue(context.getProgressMonitor());
         }
         // Copy not supported
         if (value instanceof DBDValue) {

@@ -29,7 +29,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         super(connection, original, query);
     }
 
-    protected CallableStatement getOriginal()
+    public CallableStatement getOriginal()
     {
         return (CallableStatement)original;
     }

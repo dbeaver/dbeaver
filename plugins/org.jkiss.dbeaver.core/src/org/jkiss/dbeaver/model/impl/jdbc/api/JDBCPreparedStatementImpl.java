@@ -35,7 +35,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl implements JDBC
         setQueryString(query);
     }
 
-    protected PreparedStatement getOriginal()
+    public PreparedStatement getOriginal()
     {
         return original;
     }

@@ -4,6 +4,9 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
@@ -21,8 +24,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -56,7 +57,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         return value == null ? DBConstants.NULL_VALUE_LABEL : formatter.formatValue(value);
     }
 
-    protected Object getColumnValue(DBCExecutionContext context, ResultSet resultSet, DBSTypedObject column,
+    protected Object getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column,
                                     int columnIndex)
         throws DBCException, SQLException
     {
@@ -108,7 +109,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    protected void bindParameter(DBCExecutionContext context, PreparedStatement statement, DBSTypedObject paramType,
+    protected void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement statement, DBSTypedObject paramType,
                                  int paramIndex, Object value) throws SQLException
     {
         if (value == null) {

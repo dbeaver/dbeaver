@@ -12,6 +12,8 @@ import java.sql.SQLException;
  */
 public interface JDBCPreparedStatement extends PreparedStatement, JDBCStatement {
 
+    PreparedStatement getOriginal();
+
     JDBCResultSet executeQuery()
         throws SQLException;
 

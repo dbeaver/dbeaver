@@ -16,6 +16,8 @@ import java.sql.SQLException;
  */
 public interface JDBCExecutionContext extends DBCExecutionContext, Connection {
 
+    Connection getOriginal();
+
     JDBCStatement prepareStatement(
         DBCStatementType type,
         String query,

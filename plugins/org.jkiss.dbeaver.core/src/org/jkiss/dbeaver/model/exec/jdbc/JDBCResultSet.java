@@ -15,5 +15,7 @@ public interface JDBCResultSet extends ResultSet, DBCResultSet {
 
     JDBCPreparedStatement getSource();
 
+    ResultSet getOriginal();
+
     void close();
 }

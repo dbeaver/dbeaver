@@ -13,12 +13,13 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
 
     protected Object getColumnValue(
         DBCExecutionContext context,
-        ResultSet resultSet,
+        JDBCResultSet resultSet,
         DBSTypedObject column,
         int columnIndex)
         throws SQLException
@@ -68,7 +69,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void bindParameter(DBCExecutionContext context, PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
+    public void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
         throws SQLException
     {
         MySQLTypeEnum e = (MySQLTypeEnum)value;

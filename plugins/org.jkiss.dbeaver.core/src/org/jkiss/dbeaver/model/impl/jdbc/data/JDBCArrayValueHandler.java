@@ -14,12 +14,12 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.Array;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -36,7 +36,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
 
     protected Object getColumnValue(
         DBCExecutionContext context,
-        ResultSet resultSet,
+        JDBCResultSet resultSet,
         DBSTypedObject column,
         int columnIndex)
         throws DBCException, SQLException
@@ -53,8 +53,8 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
     }
 
     protected void bindParameter(
-        DBCExecutionContext context,
-        PreparedStatement statement,
+        JDBCExecutionContext context,
+        JDBCPreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,
         Object value)

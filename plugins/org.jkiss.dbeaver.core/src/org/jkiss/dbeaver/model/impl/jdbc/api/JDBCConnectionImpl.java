@@ -55,6 +55,15 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
         QMUtils.getDefaultHandler().handleContextOpen(this);
     }
 
+    public Connection getOriginal()
+    {
+        if (isolatedConnection != null) {
+            return isolatedConnection;
+        } else {
+            return connector.getConnection();
+        }
+    }
+
     private Connection getConnection()
         throws SQLException
     {

@@ -9,15 +9,15 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDValueClonable;
+import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
@@ -25,7 +25,7 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent, DBDValueClonable, DBDContentStorage  {
+public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent, DBDValueCloneable, DBDContentStorage  {
 
     static final Log log = LogFactory.getLog(JDBCContentBytes.class);
 
@@ -111,8 +111,8 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
     }
 
     public void bindParameter(
-        DBCExecutionContext context,
-        PreparedStatement preparedStatement,
+        JDBCExecutionContext context,
+        JDBCPreparedStatement preparedStatement,
         DBSTypedObject columnType,
         int paramIndex)
         throws DBCException

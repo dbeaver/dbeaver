@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDArray;
 import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.data.DBDValueClonable;
+import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Array holder
  */
-public class JDBCArray implements DBDArray, DBDValueClonable {
+public class JDBCArray implements DBDArray, DBDValueCloneable {
 
     static final Log log = LogFactory.getLog(JDBCArray.class);
 
@@ -122,7 +122,7 @@ public class JDBCArray implements DBDArray, DBDValueClonable {
         return getContents();
     }
 
-    public DBDValueClonable cloneValue(DBRProgressMonitor monitor)
+    public DBDValueCloneable cloneValue(DBRProgressMonitor monitor)
     {
         return new JDBCArray(contents, type);
     }

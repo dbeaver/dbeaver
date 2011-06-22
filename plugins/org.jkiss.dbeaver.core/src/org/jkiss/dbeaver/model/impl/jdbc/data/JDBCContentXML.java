@@ -6,12 +6,10 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -19,7 +17,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 
@@ -28,25 +25,18 @@ import java.sql.SQLXML;
  *
  * @author Serge Rider
  */
-public class JDBCContentXML extends JDBCContentAbstract implements DBDContent {
+public class JDBCContentXML extends JDBCContentLOB {
 
     static final Log log = LogFactory.getLog(JDBCContentXML.class);
 
     private SQLXML xml;
-    private DBDContentStorage storage;
     private Reader tmpReader;
 
     public JDBCContentXML(SQLXML xml) {
         this.xml = xml;
     }
 
-    public long getContentLength() throws DBCException {
-        if (storage != null) {
-            return storage.getContentLength();
-        }
-        if (xml == null) {
-            return 0;
-        }
+    public long getLOBLength() throws DBCException {
         return -1;
     }
 
@@ -65,18 +55,16 @@ public class JDBCContentXML extends JDBCContentAbstract implements DBDContent {
             catch (Exception e) {
                 throw new DBCException(e);
             }
+            // Free blob - we don't need it anymore
+            try {
+                xml.free();
+            } catch (Exception e) {
+                log.warn(e);
+            } finally {
+                xml = null;
+            }
         }
         return storage;
-    }
-
-    public boolean updateContents(
-        DBRProgressMonitor monitor,
-        DBDContentStorage storage)
-        throws DBException
-    {
-        release();
-        this.storage = storage;
-        return true;
     }
 
     public void release()
@@ -84,10 +72,6 @@ public class JDBCContentXML extends JDBCContentAbstract implements DBDContent {
         if (tmpReader != null) {
             ContentUtils.close(tmpReader);
             tmpReader = null;
-        }
-        if (storage != null) {
-            storage.release();
-            storage = null;
         }
 //        if (xml != null) {
 //            try {
@@ -97,11 +81,12 @@ public class JDBCContentXML extends JDBCContentAbstract implements DBDContent {
 //            }
 //            xml = null;
 //        }
+        super.release();
     }
 
     public void bindParameter(
-        DBCExecutionContext context,
-        PreparedStatement preparedStatement,
+        JDBCExecutionContext context,
+        JDBCPreparedStatement preparedStatement,
         DBSTypedObject columnType,
         int paramIndex)
         throws DBCException
@@ -157,7 +142,8 @@ public class JDBCContentXML extends JDBCContentAbstract implements DBDContent {
         return xml == null && storage == null;
     }
 
-    public JDBCContentXML makeNull()
+    @Override
+    protected JDBCContentLOB createNewContent()
     {
         return new JDBCContentXML(null);
     }
@@ -167,17 +153,4 @@ public class JDBCContentXML extends JDBCContentAbstract implements DBDContent {
         return xml == null && storage == null ? null : "[XML]";
     }
 
-    public DBDValueClonable cloneValue(DBRProgressMonitor monitor)
-        throws DBCException
-    {
-        JDBCContentXML copy = new JDBCContentXML(null);
-        DBDContentStorage storage = getContents(monitor);
-        try {
-            copy.updateContents(monitor, storage.cloneStorage(monitor));
-        }
-        catch (Exception e) {
-            throw new DBCException(e);
-        }
-        return copy;
-    }
 }

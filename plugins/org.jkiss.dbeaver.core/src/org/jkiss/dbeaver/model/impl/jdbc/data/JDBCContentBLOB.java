@@ -7,13 +7,11 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -24,7 +22,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
@@ -32,22 +29,18 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
+public class JDBCContentBLOB extends JDBCContentLOB {
 
     static final Log log = LogFactory.getLog(JDBCContentBLOB.class);
 
     private Blob blob;
-    private DBDContentStorage storage;
     private InputStream tmpStream;
 
     public JDBCContentBLOB(Blob blob) {
         this.blob = blob;
     }
 
-    public long getContentLength() throws DBCException {
-        if (storage != null) {
-            return storage.getContentLength();
-        }
+    public long getLOBLength() throws DBCException {
         if (blob != null) {
             try {
                 return blob.length();
@@ -92,18 +85,16 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
                 }
                 this.storage = new TemporaryContentStorage(tempFile);
             }
+            // Free blob - we don't need it anymore
+            try {
+                blob.free();
+            } catch (Exception e) {
+                log.warn(e);
+            } finally {
+                blob = null;
+            }
         }
         return storage;
-    }
-
-    public boolean updateContents(
-        DBRProgressMonitor monitor,
-        DBDContentStorage storage)
-        throws DBException
-    {
-        this.release();
-        this.storage = storage;
-        return true;
     }
 
     public void release()
@@ -111,10 +102,6 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
         if (tmpStream != null) {
             ContentUtils.close(tmpStream);
             tmpStream = null;
-        }
-        if (storage != null) {
-            storage.release();
-            storage = null;
         }
 //        if (blob != null) {
 //            try {
@@ -124,9 +111,10 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
 //            }
 //            blob = null;
 //        }
+        super.release();
     }
 
-    public void bindParameter(DBCExecutionContext context, PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
+    public void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {
         try {
@@ -169,7 +157,8 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
         return blob == null && storage == null;
     }
 
-    public JDBCContentBLOB makeNull()
+    @Override
+    protected JDBCContentLOB createNewContent()
     {
         return new JDBCContentBLOB(null);
     }
@@ -179,17 +168,4 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
         return blob == null && storage == null ? null : "[BLOB]";
     }
 
-    public DBDValueClonable cloneValue(DBRProgressMonitor monitor)
-        throws DBCException
-    {
-        JDBCContentBLOB copy = new JDBCContentBLOB(null);
-        DBDContentStorage storage = getContents(monitor);
-        try {
-            copy.updateContents(monitor, storage.cloneStorage(monitor));
-        }
-        catch (Exception e) {
-            throw new DBCException(e);
-        }
-        return copy;
-    }
 }

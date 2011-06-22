@@ -8,25 +8,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -50,7 +46,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     public final void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject columnMetaData,
                                       int paramIndex, Object value) throws DBCException {
         try {
-            this.bindParameter(context, (JDBCPreparedStatement) statement, columnMetaData, paramIndex + 1, value);
+            this.bindParameter((JDBCExecutionContext) context, (JDBCPreparedStatement) statement, columnMetaData, paramIndex + 1, value);
         }
         catch (SQLException e) {
             throw new DBCException("Could not bind statement parameter", e);
@@ -125,12 +121,12 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         });
     }
 
-    protected abstract Object getColumnValue(DBCExecutionContext context, ResultSet resultSet, DBSTypedObject column, int columnIndex)
+    protected abstract Object getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column, int columnIndex)
         throws DBCException, SQLException;
 
     protected abstract void bindParameter(
-        DBCExecutionContext context,
-        PreparedStatement statement,
+        JDBCExecutionContext context,
+        JDBCPreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,
         Object value)

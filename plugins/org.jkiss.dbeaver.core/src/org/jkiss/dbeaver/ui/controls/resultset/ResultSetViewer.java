@@ -1358,6 +1358,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
+    private void resetValue(Object value)
+    {
+        if (value instanceof DBDContent) {
+            ((DBDContent)value).resetContents();
+        }
+    }
+
     private Image getColumnImage(DBDColumnBinding column)
     {
         if (column.getColumn() instanceof IObjectImageProvider) {
@@ -1831,7 +1838,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (editedValues != null) {
                 for (CellInfo cell : editedValues.keySet()) {
                     Object[] row = ResultSetViewer.this.curRows.get(cell.row);
-                    releaseValue(row[cell.col]);
+                    resetValue(row[cell.col]);
                     row[cell.col] = editedValues.get(cell);
                 }
                 editedValues.clear();

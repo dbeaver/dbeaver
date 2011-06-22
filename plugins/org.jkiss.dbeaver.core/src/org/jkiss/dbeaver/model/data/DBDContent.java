@@ -33,4 +33,9 @@ public interface DBDContent extends DBDValue {
         DBDContentStorage storage)
         throws DBException;
 
+    /**
+     * Resets contents changes back to original
+     */
+    void resetContents();
+
 }
