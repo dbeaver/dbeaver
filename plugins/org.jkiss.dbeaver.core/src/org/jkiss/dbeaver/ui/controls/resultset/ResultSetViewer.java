@@ -1861,7 +1861,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         }
                     }
                 }
-                editedValues.clear();
+                //editedValues.clear();
             }
             if (addedRows != null) {
                 for (Iterator<RowInfo> iter = addedRows.iterator(); iter.hasNext(); ) {

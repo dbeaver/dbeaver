@@ -116,14 +116,14 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContent {
             storage.release();
             storage = null;
         }
-        if (clob != null) {
-            try {
-                clob.free();
-            } catch (Exception e) {
-                log.warn(e);
-            }
-            clob = null;
-        }
+//        if (clob != null) {
+//            try {
+//                clob.free();
+//            } catch (Exception e) {
+//                log.warn(e);
+//            }
+//            clob = null;
+//        }
     }
 
     public void bindParameter(DBCExecutionContext context, PreparedStatement preparedStatement,

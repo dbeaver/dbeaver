@@ -89,14 +89,14 @@ public class JDBCContentXML extends JDBCContentAbstract implements DBDContent {
             storage.release();
             storage = null;
         }
-        if (xml != null) {
-            try {
-                xml.free();
-            } catch (Exception e) {
-                log.warn(e);
-            }
-            xml = null;
-        }
+//        if (xml != null) {
+//            try {
+//                xml.free();
+//            } catch (Exception e) {
+//                log.warn(e);
+//            }
+//            xml = null;
+//        }
     }
 
     public void bindParameter(

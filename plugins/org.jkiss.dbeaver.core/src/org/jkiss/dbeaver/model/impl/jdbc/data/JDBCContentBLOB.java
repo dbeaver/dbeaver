@@ -116,14 +116,14 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
             storage.release();
             storage = null;
         }
-        if (blob != null) {
-            try {
-                blob.free();
-            } catch (Exception e) {
-                log.warn(e);
-            }
-            blob = null;
-        }
+//        if (blob != null) {
+//            try {
+//                blob.free();
+//            } catch (Exception e) {
+//                log.warn(e);
+//            }
+//            blob = null;
+//        }
     }
 
     public void bindParameter(DBCExecutionContext context, PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
