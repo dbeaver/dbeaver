@@ -90,6 +90,12 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return publicSchema.getDatabaseLinks(monitor);
     }
 
+    @Association
+    public Collection<OracleRecycledObject> getUserRecycledObjects(DBRProgressMonitor monitor) throws DBException
+    {
+        return publicSchema.getRecycledObjects(monitor);
+    }
+
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {

@@ -43,6 +43,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
     final DBLinkCache dbLinkCache = new DBLinkCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
     final JavaCache javaCache = new JavaCache();
+    final RecycleBin recycleBin = new RecycleBin();
 
     private long id;
     private String name;
@@ -61,6 +62,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
             this.id = JDBCUtils.safeGetLong(dbResult, "USER_ID");
             this.name = JDBCUtils.safeGetString(dbResult, "USERNAME");
         }
+    }
+
+    public boolean isPublic()
+    {
+        return OracleConstants.USER_PUBLIC.equals(this.name);
     }
 
     @Property(name = "Name", viewable = true, editable = true, order = 1)
@@ -188,6 +194,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         return javaCache.getObjects(monitor, this);
     }
 
+    @Association
+    public Collection<OracleRecycledObject> getRecycledObjects(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return recycleBin.getObjects(monitor, this);
+    }
+
     public Collection<OracleTableBase> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -237,6 +250,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         dataTypeCache.clearCache();
         sequenceCache.clearCache();
         synonymCache.clearCache();
+        javaCache.clearCache();
+        recycleBin.clearCache();
         return true;
     }
 
@@ -829,6 +844,30 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
             throws SQLException, DBException
         {
             return new OracleJavaClass(owner, dbResult);
+        }
+
+    }
+
+    static class RecycleBin extends JDBCObjectCache<OracleSchema, OracleRecycledObject> {
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+            throws SQLException, DBException
+        {
+            final boolean isPublic = owner.isPublic();
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                isPublic ?
+                    "SELECT * FROM SYS.USER_RECYCLEBIN" :
+                    "SELECT * FROM SYS.DBA_RECYCLEBIN WHERE OWNER=?");
+            if (!isPublic) {
+                dbStat.setString(1, owner.getName());
+            }
+            return dbStat;
+        }
+
+        protected OracleRecycledObject fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new OracleRecycledObject(owner, dbResult);
         }
 
     }
