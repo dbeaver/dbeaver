@@ -89,8 +89,8 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
             // Free blob - we don't need it anymore
             try {
                 clob.free();
-            } catch (Exception e) {
-                log.warn(e);
+            } catch (Throwable e) {
+                log.debug(e);
             } finally {
                 clob = null;
             }
@@ -122,11 +122,11 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         try {
             if (storage != null) {
                 // Try 3 jdbc methods to set character stream
-                Reader streamReader = storage.getContentReader();
+                tmpReader = storage.getContentReader();
                 try {
                     preparedStatement.setCharacterStream(
                         paramIndex,
-                        streamReader);
+                        tmpReader);
                 }
                 catch (Throwable e) {
                     if (e instanceof SQLException) {
@@ -136,7 +136,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                         try {
                             preparedStatement.setCharacterStream(
                                 paramIndex,
-                                streamReader,
+                                tmpReader,
                                 streamLength);
                         }
                         catch (Throwable e1) {
@@ -145,7 +145,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                             } else {
                                 preparedStatement.setCharacterStream(
                                     paramIndex,
-                                    streamReader,
+                                    tmpReader,
                                     (int)streamLength);
                             }
                         }

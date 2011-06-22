@@ -88,8 +88,8 @@ public class JDBCContentBLOB extends JDBCContentLOB {
             // Free blob - we don't need it anymore
             try {
                 blob.free();
-            } catch (Exception e) {
-                log.warn(e);
+            } catch (Throwable e) {
+                log.debug(e);
             } finally {
                 blob = null;
             }
