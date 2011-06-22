@@ -76,4 +76,19 @@ public class StringContentStorage implements DBDContentStorage {
         }
         return new StringContentStorage(String.valueOf(data));
     }
+
+    public static StringContentStorage createFromReader(Reader stream)
+        throws IOException
+    {
+        StringBuilder buffer = new StringBuilder(1000);
+        for (;;) {
+            char[] charBuffer = new char[10000];
+            int count = stream.read(charBuffer);
+            if (count <= 0) {
+                break;
+            }
+            buffer.append(charBuffer, 0, count);
+        }
+        return new StringContentStorage(buffer.toString());
+    }
 }

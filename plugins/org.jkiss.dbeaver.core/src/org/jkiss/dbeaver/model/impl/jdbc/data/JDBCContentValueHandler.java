@@ -50,8 +50,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
     private static final int MAX_STRING_LENGTH = 0xfffff;
 
-    protected DBDContent getColumnValue(DBCExecutionContext context, ResultSet resultSet, DBSTypedObject column,
-                                        int columnIndex)
+    protected DBDContent getColumnValue(
+        DBCExecutionContext context, ResultSet resultSet, DBSTypedObject column,
+        int columnIndex)
         throws DBCException, SQLException
     {
         Object value = resultSet.getObject(columnIndex);
@@ -73,6 +74,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 case java.sql.Types.BLOB:
                     value = resultSet.getBytes(columnIndex);
                     break;
+                case java.sql.Types.SQLXML:
+                    value = resultSet.getSQLXML(columnIndex);
+                    break;
                 default:
                     value = resultSet.getObject(columnIndex);
                     break;
@@ -88,6 +92,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             return new JDBCContentBLOB((Blob) value);
         } else if (value instanceof Clob) {
             return new JDBCContentCLOB((Clob) value);
+        } else if (value instanceof SQLXML) {
+            return new JDBCContentXML((SQLXML) value);
         } else {
             throw new DBCException("Unsupported value type: " + value.getClass().getName());
         }
@@ -145,6 +151,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 return new JDBCContentBytes(null);
             case java.sql.Types.BLOB:
                 return new JDBCContentBLOB(null);
+            case java.sql.Types.SQLXML:
+                return new JDBCContentXML(null);
             default:
                 throw new DBCException("Unsupported column type: " + column.getTypeName());
         }
@@ -200,10 +208,13 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     "content_type",
                     "Content Type",
                     ((DBDContent)value).getContentType());
-                propertySource.addProperty(
-                    "content_length",
-                    "Content Length",
-                    ((DBDContent)value).getContentLength());
+                final long contentLength = ((DBDContent) value).getContentLength();
+                if (contentLength >= 0) {
+                    propertySource.addProperty(
+                        "content_length",
+                        "Content Length",
+                        contentLength);
+                }
             }
         }
         catch (Exception e) {

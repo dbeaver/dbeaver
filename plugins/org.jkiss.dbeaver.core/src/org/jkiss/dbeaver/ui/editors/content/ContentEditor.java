@@ -25,13 +25,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
-import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -285,7 +282,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         try {
             contentLength = content.getContentLength();
         } catch (Exception e) {
-            log.error("Could not determine value content length", e);
+            log.warn("Could not determine value content length", e);
             // Get file length
             contentLength = getEditorInput().getFile().getFullPath().toFile().length();
         }
