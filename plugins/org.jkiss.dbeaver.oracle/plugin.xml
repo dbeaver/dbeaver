@@ -295,6 +295,7 @@
             <datasource id="oracle"/>
 
             <type name="XMLTYPE"/>
+            <type name="SYS.XMLTYPE"/>
 
         </provider>
     </extension>

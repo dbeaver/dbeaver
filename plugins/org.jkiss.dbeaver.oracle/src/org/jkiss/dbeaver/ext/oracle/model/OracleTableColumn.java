@@ -59,12 +59,12 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             this.typeName = type.getName();
             this.valueType = type.getValueType();
         }
-        this.charLength = JDBCUtils.safeGetLong(dbResult, OracleConstants.COL_DATA_LENGTH);
-        this.notNull = !"Y".equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COL_NULLABLE));
-        this.scale = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_DATA_SCALE);
-        this.precision = JDBCUtils.safeGetInt(dbResult, OracleConstants.COL_DATA_PRECISION);
-        this.defaultValue = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_DATA_DEFAULT);
-        this.comment = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_COMMENTS);
+        this.charLength = JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH");
+        this.notNull = !"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE"));
+        this.scale = JDBCUtils.safeGetInt(dbResult, "DATA_SCALE");
+        this.precision = JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION");
+        this.defaultValue = JDBCUtils.safeGetString(dbResult, "DATA_DEFAULT");
+        this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
         this.hidden = JDBCUtils.safeGetBoolean(dbResult, "HIDDEN_COLUMN", OracleConstants.YES);
     }
 

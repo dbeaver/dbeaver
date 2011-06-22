@@ -17,4 +17,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Serge Rieder
 Bundle-ClassPath: lib/ojdbc6.jar,
  lib/orai18n.jar,
+ lib/xdb.jar,
+ lib/xmlparserv2.jar,
  .

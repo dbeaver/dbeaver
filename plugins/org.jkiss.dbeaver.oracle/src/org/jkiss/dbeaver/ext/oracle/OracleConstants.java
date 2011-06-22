@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle;
 
+import com.sun.xml.internal.bind.v2.schemagen.Util;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 
@@ -48,6 +49,9 @@ public class OracleConstants {
 
     public static final String YES = "YES";
 
+    public static final String TYPE_NAME_XML = "XMLTYPE";
+    public static final String TYPE_FQ_XML = "SYS.XMLTYPE";
+
     public static final String COL_DATA_LENGTH = "DATA_LENGTH";
     public static final String COL_NULLABLE = "NULLABLE";
     public static final String COL_DATA_PRECISION = "DATA_PRECISION";
@@ -61,30 +65,12 @@ public class OracleConstants {
     public static final String COL_CHECK_TIME = "CHECK_TIME";
     public static final String COL_AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
 
-	public static final String COL_TRIGGER_EVENT_MANIPULATION = "EVENT_MANIPULATION";
-	public static final String COL_TRIGGER_EVENT_OBJECT_SCHEMA = "EVENT_OBJECT_SCHEMA";
-	public static final String COL_TRIGGER_EVENT_OBJECT_TABLE = "EVENT_OBJECT_TABLE"; 	 
-	public static final String COL_TRIGGER_ACTION_ORDER = "ACTION_ORDER";
-	public static final String COL_TRIGGER_ACTION_CONDITION = "ACTION_CONDITION";
-	public static final String COL_TRIGGER_ACTION_STATEMENT = "ACTION_STATEMENT"; 	 
-	public static final String COL_TRIGGER_ACTION_ORIENTATION = "ACTION_ORIENTATION";
-	public static final String COL_TRIGGER_ACTION_TIMING = "ACTION_TIMING"; 	 
-	public static final String COL_TRIGGER_SQL_MODE = "SQL_MODE";
-	public static final String COL_TRIGGER_DEFINER = "DEFINER";
-	public static final String COL_TRIGGER_CHARACTER_SET_CLIENT = "CHARACTER_SET_CLIENT";
-	public static final String COL_TRIGGER_COLLATION_CONNECTION = "COLLATION_CONNECTION";
-	public static final String COL_TRIGGER_DATABASE_COLLATION = "DATABASE_COLLATION";
-    
-    public static final String CONSTRAINT_FOREIGN_KEY = "FOREIGN KEY";
-
     public static final DBSIndexType INDEX_TYPE_NORMAL = new DBSIndexType("NORMAL", "Normal");
     public static final DBSIndexType INDEX_TYPE_BITMAP = new DBSIndexType("BITMAP", "Bitmap");
     public static final DBSIndexType INDEX_TYPE_FUNCTION_BASED_NORMAL = new DBSIndexType("FUNCTION-BASED NORMAL", "Function-based Normal");
     public static final DBSIndexType INDEX_TYPE_FUNCTION_BASED_BITMAP = new DBSIndexType("FUNCTION-BASED BITMAP", "Function-based Bitmap");
     public static final DBSIndexType INDEX_TYPE_DOMAIN = new DBSIndexType("DOMAIN", "Domain");
 
-    public static final String COL_PARTITION_NAME = "PARTITION_NAME";
-    public static final String COL_SUBPARTITION_NAME = "SUBPARTITION_NAME";
     public static final String COL_PARTITION_ORDINAL_POSITION = "PARTITION_ORDINAL_POSITION";
     public static final String COL_SUBPARTITION_ORDINAL_POSITION = "SUBPARTITION_ORDINAL_POSITION";
     public static final String COL_PARTITION_METHOD = "PARTITION_METHOD";

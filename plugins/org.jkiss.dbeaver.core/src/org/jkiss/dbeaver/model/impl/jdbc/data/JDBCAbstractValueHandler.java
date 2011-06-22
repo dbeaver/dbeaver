@@ -42,7 +42,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         try {
             return getColumnValue(context, (JDBCResultSet) resultSet, column, columnIndex + 1);
         }
-        catch (SQLException e) {
+        catch (Throwable e) {
             throw new DBCException("Could not get result set value", e);
         }
     }

@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -23,11 +24,10 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
 
     public DBDValueHandler getHandler(DBCExecutionContext context, DBSTypedObject type)
     {
-/*
         String typeName = type.getTypeName();
-        if (OracleConstants.TYPE_NAME_ENUM.equalsIgnoreCase(typeName)) {
-            return OracleEnumValueHandler.INSTANCE;
-        } else if (OracleConstants.TYPE_NAME_SET.equalsIgnoreCase(typeName)) {
+        if (OracleConstants.TYPE_NAME_XML.equals(typeName) || OracleConstants.TYPE_FQ_XML.equals(typeName)) {
+            return OracleXMLValueHandler.INSTANCE;
+        }/* else if (OracleConstants.TYPE_NAME_SET.equalsIgnoreCase(typeName)) {
             return OracleSetValueHandler.INSTANCE;
         } else {
             return null;
