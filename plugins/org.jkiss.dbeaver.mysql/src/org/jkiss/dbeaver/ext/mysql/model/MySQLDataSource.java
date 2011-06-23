@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
@@ -27,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -55,11 +55,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
     {
         super(container);
         dataTypeCache = new JDBCDataTypeCache(container);
-        try {
-            Class.forName("com.mysql.jdbc.ConnectionImpl", true, container.getDriver().getClassLoader());
-        } catch (ClassNotFoundException e) {
-            log.error(e);
-        }
     }
 
     protected Map<String, String> getInternalConnectionProperties()

@@ -137,22 +137,37 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         final Group securityGroup = UIUtils.createControlGroup(addrGroup, "Security", 4, GridData.FILL_HORIZONTAL, 0);
         createSecurityGroup(securityGroup);
 
-        testButton = new Button(addrGroup, SWT.PUSH);
-        testButton.setText("Test Connection ... ");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        testButton.setLayoutData(gd);
-        testButton.addSelectionListener(new SelectionListener()
+        final Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 5);
+        bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
-            public void widgetSelected(SelectionEvent e)
+            UIUtils.createControlLabel(bottomControls, "Oracle Home");
+            final Combo oraHomeCombo = new Combo(bottomControls, SWT.DROP_DOWN);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = 100;
+            oraHomeCombo.setLayoutData(gd);
+            Button oraHomeButton = new Button(bottomControls, SWT.PUSH);
+            oraHomeButton.setText("...");
+            Label phLabel = new Label(bottomControls, SWT.NONE);
+            phLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+        {
+            testButton = new Button(bottomControls, SWT.PUSH);
+            testButton.setText("Test Connection ... ");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            testButton.setLayoutData(gd);
+            testButton.addSelectionListener(new SelectionListener()
             {
-                site.testConnection();
-            }
+                public void widgetSelected(SelectionEvent e)
+                {
+                    site.testConnection();
+                }
 
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        });
-        testButton.setEnabled(false);
+                public void widgetDefaultSelected(SelectionEvent e)
+                {
+                }
+            });
+            testButton.setEnabled(false);
+        }
         return addrGroup;
     }
 
