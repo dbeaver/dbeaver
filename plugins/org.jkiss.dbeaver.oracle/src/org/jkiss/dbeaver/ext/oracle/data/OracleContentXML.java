@@ -4,41 +4,76 @@
 
 package org.jkiss.dbeaver.ext.oracle.data;
 
-import oracle.xdb.XMLType;
-import org.eclipse.core.resources.IFile;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.StringContentStorage;
-import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentXML;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLXML;
 
 /**
  * XML content
  */
-public class OracleContentXML extends OracleContentOpaque<XMLType> {
-    public OracleContentXML(XMLType opaque)
+public class OracleContentXML extends JDBCContentXML {
+    public OracleContentXML(SQLXML xml)
     {
-        super(opaque);
+        super(xml);
     }
 
     @Override
-    protected String getOpaqueType()
-    {
-        return "XML";
-    }
-
-    @Override
-    protected OracleContentOpaque createNewContent()
+    protected OracleContentXML createNewContent()
     {
         return new OracleContentXML(null);
     }
 
+    public void bindParameter(
+        JDBCExecutionContext context,
+        JDBCPreparedStatement preparedStatement,
+        DBSTypedObject columnType,
+        int paramIndex)
+        throws DBCException
+    {
+        try {
+            if (storage != null) {
+                InputStream streamReader = storage.getContentStream();
+                try {
+                    final Object xmlObject = createXmlObject(context, streamReader);
+
+                    preparedStatement.setObject(
+                        paramIndex,
+                        xmlObject);
+                } finally {
+                    ContentUtils.close(streamReader);
+                }
+            } else {
+                preparedStatement.setNull(paramIndex + 1, java.sql.Types.SQLXML);
+            }
+        }
+        catch (SQLException e) {
+            throw new DBCException(e);
+        }
+        catch (IOException e) {
+            throw new DBCException(e);
+        }
+    }
+
+    private Object createXmlObject(JDBCExecutionContext context, InputStream stream) throws DBCException
+    {
+        try {
+            final Class<?> xmlTypeClass = context.getOriginal().getClass().getClassLoader().loadClass("oracle.xdb.XMLType");
+            return xmlTypeClass.getMethod("createXML", Connection.class, InputStream.class).invoke(null, context.getOriginal(), stream);
+        } catch (Exception e) {
+            throw new DBCException(e);
+        }
+    }
+
+/*
     @Override
     protected XMLType createNewOracleObject(Connection connection) throws DBCException, IOException, SQLException
     {
@@ -78,4 +113,5 @@ public class OracleContentXML extends OracleContentOpaque<XMLType> {
             return new TemporaryContentStorage(tempFile);
         }
     }
+*/
 }

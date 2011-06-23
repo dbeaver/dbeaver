@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.osgi.framework.internal.core.BundleHost;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -181,7 +182,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             this,
             new URL[0],
             //getClass().getClassLoader());
-            providerDescriptor.getContributorBundle().getBundleContext().getClass().getClassLoader());
+            ((BundleHost)providerDescriptor.getContributorBundle()).getClassLoader());
     }
 
     private void makeIconExtensions()
@@ -225,6 +226,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     void removeUser(DataSourceDescriptor dataSourceDescriptor)
     {
         usedBy.remove(dataSourceDescriptor);
+    }
+
+    public DriverClassLoader getClassLoader()
+    {
+        return classLoader;
     }
 
     public List<DataSourceDescriptor> getUsedBy()
@@ -604,23 +610,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         isLoaded = false;
 
-        if (isManagable()) {
-            loadLibraries();
-        }
+        loadLibraries();
 
         try {
             try {
-                if (!isManagable()) {
-                    // Use plugin's classloader to load driver
-                    driverClass = super.getObjectClass(driverClassName);
+                if (this.isInternalDriver()) {
+                    // Use system classloader
+                    driverClass = Class.forName(driverClassName);
                 } else {
-                    if (this.isInternalDriver()) {
-                        // Use system classloader
-                        driverClass = Class.forName(driverClassName);
-                    } else {
-                        // Load driver classes into core module using plugin class loader
-                        driverClass = Class.forName(driverClassName, true, classLoader);
-                    }
+                    // Load driver classes into core module using plugin class loader
+                    driverClass = Class.forName(driverClassName, true, classLoader);
                 }
             }
             catch (Throwable ex) {
@@ -665,7 +664,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.classLoader = new DriverClassLoader(
             this,
             libraryURLs.toArray(new URL[libraryURLs.size()]),
-            ClassLoader.getSystemClassLoader());
+            ((BundleHost)providerDescriptor.getContributorBundle()).getClassLoader());
     }
 
     public void validateFilesPresence()

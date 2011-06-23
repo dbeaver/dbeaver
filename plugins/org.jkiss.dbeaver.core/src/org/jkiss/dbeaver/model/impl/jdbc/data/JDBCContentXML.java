@@ -30,7 +30,7 @@ public class JDBCContentXML extends JDBCContentLOB {
     static final Log log = LogFactory.getLog(JDBCContentXML.class);
 
     private SQLXML xml;
-    private Reader tmpReader;
+    protected Reader tmpReader;
 
     public JDBCContentXML(SQLXML xml) {
         this.xml = xml;

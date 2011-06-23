@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.data;
 
-import oracle.xdb.XMLType;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -13,6 +12,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.sql.SQLXML;
 
 /**
  * XML type support
@@ -24,7 +24,7 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
     protected DBDContent getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column, int columnIndex) throws DBCException, SQLException
     {
         //final Object object = resultSet.getObject(columnIndex);
-        XMLType xml = (XMLType)resultSet.getObject(columnIndex);
+        SQLXML xml = resultSet.getSQLXML(columnIndex);
         if (xml == null) {
             return createValueObject(context, column);
         } else {

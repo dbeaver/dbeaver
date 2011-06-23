@@ -49,6 +49,8 @@ public interface DBPDriver extends DBPObject
 
     Object getDriverParameter(String name);
 
+    ClassLoader getClassLoader();
+
     void loadDriver()
         throws DBException;
 

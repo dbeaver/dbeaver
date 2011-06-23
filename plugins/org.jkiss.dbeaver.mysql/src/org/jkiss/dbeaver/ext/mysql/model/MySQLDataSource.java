@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import com.mysql.jdbc.ConnectionImpl;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,6 +55,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
     {
         super(container);
         dataTypeCache = new JDBCDataTypeCache(container);
+        try {
+            Class.forName("com.mysql.jdbc.ConnectionImpl", true, container.getDriver().getClassLoader());
+        } catch (ClassNotFoundException e) {
+            log.error(e);
+        }
     }
 
     protected Map<String, String> getInternalConnectionProperties()
@@ -363,13 +367,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
 
     @Override
     protected Connection openConnection() throws DBException {
-        ConnectionImpl mysqlConnection = (ConnectionImpl)super.openConnection();
+        Connection mysqlConnection = super.openConnection();
 
         // Fix "errorMessageEncoding" error. Dirty hack.
         // characterSetMetadata -> errorMessageEncoding
         try {
-            Field characterSetMetadataField = ConnectionImpl.class.getDeclaredField("characterSetMetadata");
-            Field errorMessageEncodingField = ConnectionImpl.class.getDeclaredField("errorMessageEncoding");
+            Field characterSetMetadataField = mysqlConnection.getClass().getDeclaredField("characterSetMetadata");
+            Field errorMessageEncodingField = mysqlConnection.getClass().getDeclaredField("errorMessageEncoding");
             characterSetMetadataField.setAccessible(true);
             errorMessageEncodingField.setAccessible(true);
             errorMessageEncodingField.set(

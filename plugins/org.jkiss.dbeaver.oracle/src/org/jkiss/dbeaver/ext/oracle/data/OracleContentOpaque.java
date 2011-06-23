@@ -4,23 +4,17 @@
 
 package org.jkiss.dbeaver.ext.oracle.data;
 
-import oracle.jdbc.OraclePreparedStatement;
 import oracle.sql.OPAQUE;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IFile;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.impl.BytesContentStorage;
-import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentLOB;
 import org.jkiss.dbeaver.model.impl.jdbc.data.MimeTypes;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
@@ -83,8 +77,7 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends OPAQUE> extends JD
             if (storage != null) {
                 preparedStatement.setObject(paramIndex, createNewOracleObject(context.getOriginal()));
             } else if (opaque != null) {
-                OraclePreparedStatement oraclePreparedStatement = (OraclePreparedStatement) preparedStatement.getOriginal();
-                oraclePreparedStatement.setOPAQUE(paramIndex, opaque);
+                preparedStatement.setObject(paramIndex, opaque);
             } else {
                 preparedStatement.setNull(paramIndex + 1, java.sql.Types.SQLXML);
             }
