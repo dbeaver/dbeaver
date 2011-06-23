@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 /**
- * PrefPageSQL
+ * PrefPageCommon
  */
 public class PrefPageCommon extends TargetPrefPage
 {
