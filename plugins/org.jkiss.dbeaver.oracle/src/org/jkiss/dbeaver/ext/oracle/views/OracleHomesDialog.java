@@ -7,15 +7,13 @@ package org.jkiss.dbeaver.ext.oracle.views;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.TrayDialog;
-import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverPathDescriptor;
@@ -34,6 +32,7 @@ public class OracleHomesDialog extends TrayDialog
     private DriverDescriptor driver;
     private TableViewer pathTable;
     private Button deleteButton;
+    private Button toggleButton;
     private Button upButton;
     private Button downButton;
 
@@ -73,7 +72,7 @@ public class OracleHomesDialog extends TrayDialog
             //gd = new GridData(GridData.FILL_HORIZONTAL);
 
             // Additional libraries list
-            pathTable = new TableViewer(libsListGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
+            pathTable = new TableViewer(libsListGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
 
             {
                 final Table table = pathTable.getTable();
@@ -111,6 +110,13 @@ public class OracleHomesDialog extends TrayDialog
             pathTable.setInput(this.homeDirs);
 
             UIUtils.packColumns(pathTable.getTable(), true);
+
+            pathTable.addSelectionChangedListener(new ISelectionChangedListener() {
+                public void selectionChanged(SelectionChangedEvent event)
+                {
+                    updateButtons();
+                }
+            });
         }
 
         Composite libsControlGroup = new Composite(libsGroup, SWT.TOP);
@@ -130,6 +136,7 @@ public class OracleHomesDialog extends TrayDialog
                 String selected = fd.open();
                 if (selected != null) {
                     curFolder = selected;
+                    addOracleHome(selected);
                 }
             }
         });
@@ -141,9 +148,28 @@ public class OracleHomesDialog extends TrayDialog
         {
             public void handleEvent(Event event)
             {
+                final DriverPathDescriptor path = getSelectedPath();
+                if (path != null) {
+                    removeOracleHome(path);
+                }
             }
         });
         deleteButton.setEnabled(false);
+
+        toggleButton = new Button(libsControlGroup, SWT.PUSH);
+        toggleButton.setText("Toggle");
+        toggleButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        toggleButton.addListener(SWT.Selection, new Listener()
+        {
+            public void handleEvent(Event event)
+            {
+                final DriverPathDescriptor path = getSelectedPath();
+                if (path != null) {
+                    toggleOracleHome(path);
+                }
+            }
+        });
+        toggleButton.setEnabled(false);
 
         upButton = new Button(libsControlGroup, SWT.PUSH);
         upButton.setText("&Up");
@@ -153,6 +179,10 @@ public class OracleHomesDialog extends TrayDialog
         {
             public void handleEvent(Event event)
             {
+                final DriverPathDescriptor path = getSelectedPath();
+                if (path != null) {
+                    moveOracleHome(path, false);
+                }
             }
         });
 
@@ -164,15 +194,83 @@ public class OracleHomesDialog extends TrayDialog
         {
             public void handleEvent(Event event)
             {
+                final DriverPathDescriptor path = getSelectedPath();
+                if (path != null) {
+                    moveOracleHome(path, true);
+                }
             }
         });
 
+        updateButtons();
+
         return libsGroup;
+    }
+
+    private void updateButtons()
+    {
+        final DriverPathDescriptor path = getSelectedPath();
+        if (path == null) {
+            deleteButton.setEnabled(false);
+            toggleButton.setEnabled(false);
+            upButton.setEnabled(false);
+            downButton.setEnabled(false);
+        } else {
+            deleteButton.setEnabled(true);
+            toggleButton.setEnabled(true);
+            if (path == homeDirs.get(0)) {
+                upButton.setEnabled(false);
+            } else {
+                upButton.setEnabled(true);
+            }
+            if (path == homeDirs.get(homeDirs.size() - 1)) {
+                downButton.setEnabled(false);
+            } else {
+                downButton.setEnabled(true);
+            }
+        }
+    }
+
+    DriverPathDescriptor getSelectedPath()
+    {
+        final ISelection selection = pathTable.getSelection();
+        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+            return (DriverPathDescriptor) ((IStructuredSelection) selection).getFirstElement();
+        }
+        return null;
+    }
+
+    private void addOracleHome(String path)
+    {
+        DriverPathDescriptor driverPath = new DriverPathDescriptor();
+        driverPath.setPath(path);
+        driverPath.setComment("ORAHOME");
+        driverPath.setEnabled(true);
+        homeDirs.add(driverPath);
+        pathTable.refresh();
+    }
+
+    private void moveOracleHome(DriverPathDescriptor path, boolean down)
+    {
+
+    }
+
+    private void removeOracleHome(DriverPathDescriptor path)
+    {
+        homeDirs.remove(path);
+        pathTable.refresh();
+    }
+
+    private void toggleOracleHome(DriverPathDescriptor path)
+    {
+        path.setEnabled(!path.isEnabled());
+        pathTable.update(path, null);
     }
 
     protected void okPressed()
     {
         driver.setPathList(homeDirs);
+        driver.setModified(true);
+        DBeaverCore.getInstance().getDataSourceProviderRegistry().saveDrivers();
         super.okPressed();
     }
 

@@ -8,6 +8,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public interface DBPDriver extends DBPObject
 
     boolean isAnonymousAccess();
 
-    List<IPropertyDescriptor> getConnectionPropertyDescriptors();
+    Collection<IPropertyDescriptor> getConnectionPropertyDescriptors();
 
     Map<Object, Object> getDefaultConnectionProperties();
 
@@ -48,6 +49,8 @@ public interface DBPDriver extends DBPObject
     Map<Object, Object> getDriverParameters();
 
     Object getDriverParameter(String name);
+
+    Collection<? extends DBPDriverLocalPath> getPathList();
 
     ClassLoader getClassLoader();
 
