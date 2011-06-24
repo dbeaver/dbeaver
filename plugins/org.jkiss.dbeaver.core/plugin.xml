@@ -1399,7 +1399,6 @@
 
     <extension point="org.eclipse.ui.preferencePages">
         <page id="org.jkiss.dbeaver.preferences.main" class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon" name="Database Management"/>
-        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.drivers" class="org.jkiss.dbeaver.ui.preferences.PrefPageDrivers" name="Drivers"/>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="Data Formats"/>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.misc.qm" class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" name="Query Manager"/>
 
@@ -1435,11 +1434,6 @@
                   <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
               </or>
            </enabledWhen>
-        </page>
-        <page id="org.jkiss.dbeaver.preferences.main.drivers" class="org.jkiss.dbeaver.ui.preferences.PrefPageDrivers" name="Drivers">
-            <enabledWhen>
-                <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-            </enabledWhen>
         </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" id="org.jkiss.dbeaver.preferences.main.sqleditor" name="SQL Editor">
             <enabledWhen>

@@ -4,9 +4,12 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.utils.CommonUtils;
+
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collection;
 
 /**
  * DriverClassLoader
@@ -24,18 +27,28 @@ public class DriverClassLoader extends URLClassLoader
     @Override
     protected String findLibrary(String libname)
     {
+        String nativeName = System.mapLibraryName(libname);
         for (DriverFileDescriptor driverFile : driver.getFiles()) {
             if (driverFile.getType() == DriverFileType.lib && driverFile.matchesCurrentPlatform()) {
                 final File localFile = driverFile.getLocalFile();
                 if (localFile.exists()) {
-                    final String libName = localFile.getName();
-                    if (libName.equalsIgnoreCase(libname)) {
+                    final String fileName = localFile.getName();
+                    if (fileName.equalsIgnoreCase(nativeName)) {
                         return localFile.getAbsolutePath();
                     }
-                    int dotPos = libName.lastIndexOf('.');
-                    if (dotPos != -1 && libName.substring(0, dotPos).equalsIgnoreCase(libname)) {
-                        return localFile.getAbsolutePath();
-                    }
+//                    int dotPos = fileName.lastIndexOf('.');
+//                    if (dotPos != -1 && fileName.substring(0, dotPos).equalsIgnoreCase(libname)) {
+//                        return localFile.getAbsolutePath();
+//                    }
+                }
+            }
+        }
+        final Collection<String> pathList = driver.getOrderedPathList();
+        if (!CommonUtils.isEmpty(pathList)) {
+            for (String path : pathList) {
+                File localFile = new File(path, nativeName);
+                if (localFile.exists()) {
+                    return localFile.getAbsolutePath();
                 }
             }
         }

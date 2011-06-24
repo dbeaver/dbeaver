@@ -69,6 +69,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean modified;
     private boolean disabled;
     private List<DriverFileDescriptor> files = new ArrayList<DriverFileDescriptor>(), origFiles;
+    private List<DriverPathDescriptor> pathList = new ArrayList<DriverPathDescriptor>();
     private List<IPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<IPropertyDescriptor>();
 
     private Map<Object, Object> defaultParameters = new HashMap<Object, Object>();
@@ -503,6 +504,42 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
+    public Collection<String> getOrderedPathList()
+    {
+        if (pathList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<DriverPathDescriptor> pathCopy = new ArrayList<DriverPathDescriptor>(pathList);
+        List<String> result = new ArrayList<String>(pathCopy.size());
+        Collections.sort(pathCopy, new Comparator<DriverPathDescriptor>() {
+            public int compare(DriverPathDescriptor o1, DriverPathDescriptor o2)
+            {
+                return o1.getOrder() - o2.getOrder();
+            }
+        });
+        for (DriverPathDescriptor path : pathCopy) {
+            if (path.isEnabled()) {
+                result.add(path.getPath());
+            }
+        }
+        return result;
+    }
+
+    public List<DriverPathDescriptor> getPathList()
+    {
+        return pathList;
+    }
+
+    void addPath(DriverPathDescriptor path)
+    {
+        pathList.add(path);
+    }
+    
+    public void setPathList(List<DriverPathDescriptor> pathList)
+    {
+        this.pathList = pathList;
+    }
+
     public List<IPropertyDescriptor> getConnectionPropertyDescriptors()
     {
         return connectionPropertyDescriptors;
@@ -872,6 +909,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
+        // Path list
+        for (DriverPathDescriptor path : this.getPathList()) {
+            xml.startElement(DataSourceConstants.TAG_PATH);
+            xml.addAttribute(DataSourceConstants.ATTR_PATH, path.getPath());
+            if (!CommonUtils.isEmpty(path.getComment())) {
+                xml.addAttribute(DataSourceConstants.ATTR_COMMENT, path.getComment());
+            }
+            xml.addAttribute(DataSourceConstants.ATTR_ORDER, path.getOrder());
+            xml.addAttribute(DataSourceConstants.ATTR_ENABLED, path.isEnabled());
+            xml.endElement();
+        }
+        
         // Parameters
         for (Map.Entry<Object, Object> paramEntry : customParameters.entrySet()) {
             if (!CommonUtils.equalObjects(paramEntry.getValue(), defaultParameters.get(paramEntry.getKey()))) {
@@ -960,6 +1009,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 } else if (lib == null) {
                     curDriver.addLibrary(path);
                 }
+            } else if (localName.equals(DataSourceConstants.TAG_PATH)) {
+                DriverPathDescriptor path = new DriverPathDescriptor();
+                path.setPath(atts.getValue(DataSourceConstants.ATTR_PATH));
+                path.setComment(atts.getValue(DataSourceConstants.ATTR_COMMENT));
+                path.setOrder(CommonUtils.toInt(atts.getValue(DataSourceConstants.ATTR_ORDER)));
+                path.setEnabled("true".equals(atts.getValue(DataSourceConstants.ATTR_ENABLED)));
+                curDriver.addPath(path);
             } else if (localName.equals(DataSourceConstants.TAG_PARAMETER)) {
                 if (curDriver == null) {
                     log.warn("Parameter outside of driver");

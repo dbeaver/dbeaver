@@ -138,36 +138,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         createSecurityGroup(securityGroup);
 
         final Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 5);
-        bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        {
-            UIUtils.createControlLabel(bottomControls, "Oracle Home");
-            final Combo oraHomeCombo = new Combo(bottomControls, SWT.DROP_DOWN);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.widthHint = 100;
-            oraHomeCombo.setLayoutData(gd);
-            Button oraHomeButton = new Button(bottomControls, SWT.PUSH);
-            oraHomeButton.setText("...");
-            Label phLabel = new Label(bottomControls, SWT.NONE);
-            phLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        }
-        {
-            testButton = new Button(bottomControls, SWT.PUSH);
-            testButton.setText("Test Connection ... ");
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            testButton.setLayoutData(gd);
-            testButton.addSelectionListener(new SelectionListener()
-            {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    site.testConnection();
-                }
-
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
-                }
-            });
-            testButton.setEnabled(false);
-        }
+        createBottomGroup(bottomControls);
         return addrGroup;
     }
 
@@ -287,6 +258,51 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 passwordText.setEnabled(!osAuth);
             }
         });
+
+        parent.setTabList(new Control[] {userNameText, passwordText, userRoleCombo, osAuthCheck});
+    }
+
+    private void createBottomGroup(Composite bottomControls)
+    {
+        GridData gd;
+        bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        {
+            UIUtils.createControlLabel(bottomControls, "Oracle Home");
+            final Combo oraHomeCombo = new Combo(bottomControls, SWT.DROP_DOWN | SWT.READ_ONLY);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = 100;
+            oraHomeCombo.setLayoutData(gd);
+            Button oraHomeButton = new Button(bottomControls, SWT.PUSH);
+            oraHomeButton.setText("...");
+            oraHomeButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    OracleHomesDialog homesDialog = new OracleHomesDialog(getShell(), site.getConnectionInfo());
+                    homesDialog.open();
+                }
+            });
+            Label phLabel = new Label(bottomControls, SWT.NONE);
+            phLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+        {
+            testButton = new Button(bottomControls, SWT.PUSH);
+            testButton.setText("Test Connection ... ");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            testButton.setLayoutData(gd);
+            testButton.addSelectionListener(new SelectionListener()
+            {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    site.testConnection();
+                }
+
+                public void widgetDefaultSelected(SelectionEvent e)
+                {
+                }
+            });
+            testButton.setEnabled(false);
+        }
     }
 
     public void setSite(IDataSourceConnectionEditorSite site)
