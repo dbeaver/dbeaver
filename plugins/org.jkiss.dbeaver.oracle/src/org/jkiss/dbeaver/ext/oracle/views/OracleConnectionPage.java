@@ -278,7 +278,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    OracleHomesDialog homesDialog = new OracleHomesDialog(getShell(), site.getConnectionInfo());
+                    OracleHomesDialog homesDialog = new OracleHomesDialog(getShell(), site.getDriver());
                     homesDialog.open();
                 }
             });

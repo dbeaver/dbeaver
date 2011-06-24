@@ -12,6 +12,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -185,6 +187,13 @@ public class UIUtils {
         } finally {
             table.setRedraw(true);
         }
+    }
+
+    public static TableViewerColumn createTableViewerColumn(TableViewer viewer, int style, String text)
+    {
+        TableViewerColumn column = new TableViewerColumn(viewer, style);
+        column.getColumn().setText(text);
+        return column;
     }
 
     public static void packColumn(Item column)

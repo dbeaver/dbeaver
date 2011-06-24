@@ -509,15 +509,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         if (pathList.isEmpty()) {
             return Collections.emptyList();
         }
-        List<DriverPathDescriptor> pathCopy = new ArrayList<DriverPathDescriptor>(pathList);
-        List<String> result = new ArrayList<String>(pathCopy.size());
-        Collections.sort(pathCopy, new Comparator<DriverPathDescriptor>() {
-            public int compare(DriverPathDescriptor o1, DriverPathDescriptor o2)
-            {
-                return o1.getOrder() - o2.getOrder();
-            }
-        });
-        for (DriverPathDescriptor path : pathCopy) {
+        List<String> result = new ArrayList<String>(pathList.size());
+        for (DriverPathDescriptor path : pathList) {
             if (path.isEnabled()) {
                 result.add(path.getPath());
             }
@@ -916,7 +909,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             if (!CommonUtils.isEmpty(path.getComment())) {
                 xml.addAttribute(DataSourceConstants.ATTR_COMMENT, path.getComment());
             }
-            xml.addAttribute(DataSourceConstants.ATTR_ORDER, path.getOrder());
             xml.addAttribute(DataSourceConstants.ATTR_ENABLED, path.isEnabled());
             xml.endElement();
         }
@@ -1013,7 +1005,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 DriverPathDescriptor path = new DriverPathDescriptor();
                 path.setPath(atts.getValue(DataSourceConstants.ATTR_PATH));
                 path.setComment(atts.getValue(DataSourceConstants.ATTR_COMMENT));
-                path.setOrder(CommonUtils.toInt(atts.getValue(DataSourceConstants.ATTR_ORDER)));
                 path.setEnabled("true".equals(atts.getValue(DataSourceConstants.ATTR_ENABLED)));
                 curDriver.addPath(path);
             } else if (localName.equals(DataSourceConstants.TAG_PARAMETER)) {

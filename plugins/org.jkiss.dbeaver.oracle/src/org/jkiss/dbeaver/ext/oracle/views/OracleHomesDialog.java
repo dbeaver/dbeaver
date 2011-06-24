@@ -9,18 +9,20 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.registry.DriverFileDescriptor;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.DriverPathDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
-import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
 
 /**
  * DriverEditDialog
@@ -29,18 +31,21 @@ public class OracleHomesDialog extends TrayDialog
 {
     static final Log log = LogFactory.getLog(OracleHomesDialog.class);
 
-    private DBPConnectionInfo connectionInfo;
+    private DriverDescriptor driver;
     private TableViewer pathTable;
     private Button deleteButton;
     private Button upButton;
     private Button downButton;
 
+    private java.util.List<DriverPathDescriptor> homeDirs = new ArrayList<DriverPathDescriptor>();
+
     private String curFolder = null;
 
-    public OracleHomesDialog(Shell shell, DBPConnectionInfo connectionInfo)
+    public OracleHomesDialog(Shell shell, DBPDriver driver)
     {
         super(shell);
-        this.connectionInfo = connectionInfo;
+        this.driver = (DriverDescriptor) driver;
+        this.homeDirs = new ArrayList<DriverPathDescriptor>(((DriverDescriptor) driver).getPathList());
     }
 
     protected boolean isResizable()
@@ -61,58 +66,51 @@ public class OracleHomesDialog extends TrayDialog
         {
             Composite libsListGroup = new Composite(libsGroup, SWT.NONE);
             gd = new GridData(GridData.FILL_BOTH);
+            gd.widthHint = 300;
             gd.heightHint = 200;
             libsListGroup.setLayoutData(gd);
-            GridLayout layout = new GridLayout(1, false);
-            layout.marginHeight = 0;
-            layout.marginWidth = 0;
-            libsListGroup.setLayout(layout);
+            libsListGroup.setLayout(new FillLayout());
             //gd = new GridData(GridData.FILL_HORIZONTAL);
 
             // Additional libraries list
             pathTable = new TableViewer(libsListGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
-            final Table table = pathTable.getTable();
-            table.setLayoutData(new GridData(GridData.FILL_BOTH));
-            //libsTable.setLinesVisible (true);
-            //libsTable.setHeaderVisible (true);
-            pathTable.setContentProvider(new ListContentProvider());
-            pathTable.setLabelProvider(new CellLabelProvider() {
+
+            {
+                final Table table = pathTable.getTable();
+                table.setLinesVisible(true);
+                table.setHeaderVisible(true);
+            }
+
+            final TableViewerColumn pathColumn = UIUtils.createTableViewerColumn(pathTable, SWT.NONE, "Path");
+            pathColumn.setLabelProvider(new PathLabelProvider() {
                 @Override
                 public void update(ViewerCell cell)
                 {
-                    DriverFileDescriptor lib = (DriverFileDescriptor) cell.getElement();
-                    cell.setText(lib.getPath());
-                    if (lib.getFile().exists()) {
-                        cell.setForeground(null);
-                    } else {
-                        cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
-                    }
-                    cell.setImage(
-                        !lib.getFile().exists() ?
-                            PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE) :
-                            lib.getFile().isDirectory() ?
-                                DBIcon.TREE_FOLDER.getImage() :
-                                DBIcon.JAR.getImage());
+                    DriverPathDescriptor path = (DriverPathDescriptor) cell.getElement();
+                    cell.setText(path.getPath());
                 }
             });
+            final TableViewerColumn versionColumn = UIUtils.createTableViewerColumn(pathTable, SWT.NONE, "Version");
+            versionColumn.setLabelProvider(new PathLabelProvider() {
+                @Override
+                public void update(ViewerCell cell)
+                {
+                    DriverPathDescriptor path = (DriverPathDescriptor) cell.getElement();
+                    cell.setText(path.getComment());
+                }
+            });
+
+            pathTable.setContentProvider(new ListContentProvider());
             pathTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-            pathTable.getControl().addListener(SWT.Selection, new Listener()
-            {
+            pathTable.getControl().addListener(SWT.Selection, new Listener() {
                 public void handleEvent(Event event)
                 {
 
                 }
             });
+            pathTable.setInput(this.homeDirs);
 
-//            libList = new ArrayList<DriverFileDescriptor>();
-//            for (DriverFileDescriptor lib : driver.getFiles()) {
-//                if (lib.isDisabled() || lib.getType() != DriverFileType.jar) {
-//                    continue;
-//                }
-//                libList.add(lib);
-//            }
-//            pathTable.setInput(libList);
-
+            UIUtils.packColumns(pathTable.getTable(), true);
         }
 
         Composite libsControlGroup = new Composite(libsGroup, SWT.TOP);
@@ -126,25 +124,18 @@ public class OracleHomesDialog extends TrayDialog
         {
             public void handleEvent(Event event)
             {
-                FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
+                DirectoryDialog fd = new DirectoryDialog(getShell(), SWT.OPEN | SWT.MULTI);
                 fd.setText("Choose Oracle Home");
                 fd.setFilterPath(curFolder);
-                String[] filterExt = {"*.jar", "*.*"};
-                fd.setFilterExtensions(filterExt);
                 String selected = fd.open();
                 if (selected != null) {
-                    curFolder = fd.getFilterPath();
-                    String[] fileNames = fd.getFileNames();
-                    if (!CommonUtils.isEmpty(fileNames)) {
-//                        File folderFile = new File(curFolder);
-//                        changeLibContent();
-                    }
+                    curFolder = selected;
                 }
             }
         });
 
         deleteButton = new Button(libsControlGroup, SWT.PUSH);
-        deleteButton.setText("&Remove PAth");
+        deleteButton.setText("&Remove Path");
         deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         deleteButton.addListener(SWT.Selection, new Listener()
         {
@@ -181,7 +172,21 @@ public class OracleHomesDialog extends TrayDialog
 
     protected void okPressed()
     {
+        driver.setPathList(homeDirs);
         super.okPressed();
     }
 
+    private class PathLabelProvider extends CellLabelProvider {
+        @Override
+        public void update(ViewerCell cell)
+        {
+            DriverPathDescriptor path = (DriverPathDescriptor) cell.getElement();
+            cell.setText(path.getPath());
+            if (!path.isEnabled()) {
+                cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_GRAY));
+            } else {
+                cell.setForeground(null);
+            }
+        }
+    }
 }

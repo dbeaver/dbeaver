@@ -6,14 +6,6 @@ package org.jkiss.dbeaver.registry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.core.DBeaverCore;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 
 /**
  * DriverPathDescriptor
@@ -24,7 +16,6 @@ public class DriverPathDescriptor
 
     private String path;
     private String comment;
-    private int order;
     private boolean enabled;
 
     public String getPath()
@@ -45,16 +36,6 @@ public class DriverPathDescriptor
     public void setComment(String comment)
     {
         this.comment = comment;
-    }
-
-    public int getOrder()
-    {
-        return order;
-    }
-
-    public void setOrder(int order)
-    {
-        this.order = order;
     }
 
     public boolean isEnabled()
