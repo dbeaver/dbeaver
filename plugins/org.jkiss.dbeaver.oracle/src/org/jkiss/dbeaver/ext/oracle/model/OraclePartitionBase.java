@@ -12,7 +12,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
-import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
@@ -30,35 +29,35 @@ public abstract class OraclePartitionBase<PARENT extends DBSObject> extends Orac
     }
 
     public static class PartitionInfoBase {
-        private PartitionType type;
-        private PartitionType subType;
-        private Object tablespace;
+        private PartitionType partitionType;
+        private PartitionType subpartitionType;
+        private Object partitionTablespace;
 
         @Property(category = "Partitioning", name = "Partition Type", order = 120)
-        public PartitionType getType()
+        public PartitionType getPartitionType()
         {
-            return type;
+            return partitionType;
         }
 
         @Property(category = "Partitioning", name = "Subpartition Type", order = 121)
-        public PartitionType getSubType()
+        public PartitionType getSubpartitionType()
         {
-            return subType;
+            return subpartitionType;
         }
 
         @Property(category = "Partitioning", name = "Tablespace", order = 122)
-        public Object getTablespace()
+        public Object getPartitionTablespace()
         {
-            return tablespace;
+            return partitionTablespace;
         }
 
         public PartitionInfoBase(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult) throws DBException
         {
-            this.type = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "PARTITIONING_TYPE"));
-            this.subType = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "SUBPARTITIONING_TYPE"));
-            this.tablespace = JDBCUtils.safeGetStringTrimmed(dbResult, "DEF_TABLESPACE_NAME");
+            this.partitionType = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "PARTITIONING_TYPE"));
+            this.subpartitionType = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "SUBPARTITIONING_TYPE"));
+            this.partitionTablespace = JDBCUtils.safeGetStringTrimmed(dbResult, "DEF_TABLESPACE_NAME");
             if (dataSource.isAdmin()) {
-                this.tablespace = dataSource.tablespaceCache.getObject(monitor, dataSource, (String) tablespace);
+                this.partitionTablespace = dataSource.tablespaceCache.getObject(monitor, dataSource, (String) partitionTablespace);
             }
         }
     }
