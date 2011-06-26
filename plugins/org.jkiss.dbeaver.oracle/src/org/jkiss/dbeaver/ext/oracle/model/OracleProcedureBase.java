@@ -10,9 +10,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.DBSProcedureColumn;
-import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.IntKeyMap;
 
 import java.sql.ResultSet;
@@ -22,7 +20,7 @@ import java.util.*;
 /**
  * GenericProcedure
  */
-public abstract class OracleProcedureBase extends OracleSchemaObject implements DBSProcedure, OracleSourceObject
+public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> extends OracleObject<PARENT> implements DBSProcedure, OracleSourceObject
 {
     //static final Log log = LogFactory.getLog(OracleProcedure.class);
 
@@ -30,11 +28,11 @@ public abstract class OracleProcedureBase extends OracleSchemaObject implements 
     private final ArgumentsCache argumentsCache = new ArgumentsCache();
 
     public OracleProcedureBase(
-        OracleSchema schema,
+        PARENT parent,
         String name,
         DBSProcedureType procedureType)
     {
-        super(schema, name, true);
+        super(parent, name, true);
         this.procedureType = procedureType;
     }
 
@@ -44,6 +42,11 @@ public abstract class OracleProcedureBase extends OracleSchemaObject implements 
         return procedureType ;
     }
 
+    public DBSEntityContainer getContainer()
+    {
+        return getParentObject();
+    }
+
     public abstract Integer getOverloadNumber();
 
     public Collection<? extends DBSProcedureColumn> getColumns(DBRProgressMonitor monitor) throws DBException
@@ -51,9 +54,10 @@ public abstract class OracleProcedureBase extends OracleSchemaObject implements 
         return argumentsCache.getObjects(monitor, this);
     }
 
-    public OracleSchema getSourceOwner()
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
-        return getSchema();
+        argumentsCache.clearCache();
+        return true;
     }
 
     static class ArgumentsCache extends JDBCObjectCache<OracleProcedureBase, OracleProcedureArgument> {
@@ -68,7 +72,7 @@ public abstract class OracleProcedureBase extends OracleSchemaObject implements 
                 (procedure.getOverloadNumber() != null ? "AND OVERLOAD=? " : "AND OVERLOAD IS NULL ") +
                 "\nORDER BY SEQUENCE");
             int paramNum = 1;
-            dbStat.setString(paramNum++, procedure.getSchema().getName());
+            dbStat.setString(paramNum++, procedure.getSourceOwner().getName());
             dbStat.setString(paramNum++, procedure.getName());
             if (procedure.getContainer() instanceof OraclePackage) {
                 dbStat.setString(paramNum++, procedure.getContainer().getName());

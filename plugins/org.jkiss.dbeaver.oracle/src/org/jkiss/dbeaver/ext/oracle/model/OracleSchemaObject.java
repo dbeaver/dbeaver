@@ -8,40 +8,26 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.sql.ResultSet;
 
 /**
  * Abstract oracle schema object
  */
-public abstract class OracleSchemaObject implements DBSObject, DBSEntityQualified
+public abstract class OracleSchemaObject extends OracleObject<OracleSchema> implements DBSEntityQualified
 {
-    static final Log log = LogFactory.getLog(OracleSchemaObject.class);
-
-    private final OracleSchema schema;
-    private String name;
-    private boolean persisted;
-
     protected OracleSchemaObject(
         OracleSchema schema,
         String name,
         boolean persisted)
     {
-        this.schema = schema;
-        this.name = name;
-
-        this.persisted = persisted;
+        super(schema, name, persisted);
     }
 
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            schema,
+            getParentObject(),
             this);
     }
 
@@ -50,34 +36,9 @@ public abstract class OracleSchemaObject implements DBSObject, DBSEntityQualifie
         return false;
     }
 
-    public String getDescription()
-    {
-        return null;
-    }
-
-    public DBSObject getParentObject()
-    {
-        return schema;
-    }
-
-    public OracleDataSource getDataSource()
-    {
-        return schema.getDataSource();
-    }
-
     public OracleSchema getSchema()
     {
-        return schema;
+        return getParentObject();
     }
 
-    @Property(name = "Name", viewable = true, editable = true, order = 1)
-    public String getName()
-    {
-        return name;
-    }
-
-    public boolean isPersisted()
-    {
-        return persisted;
-    }
 }

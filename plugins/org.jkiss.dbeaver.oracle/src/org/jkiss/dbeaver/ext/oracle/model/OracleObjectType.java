@@ -82,9 +82,9 @@ public enum OracleObjectType implements DBSObjectType {
         }
     }),
 	TABLE("TABLE", DBIcon.TREE_TABLE.getImage(), OracleTable.class, new ObjectFinder() {
-        public OracleTable findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
+        public OracleTableBase findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
-            return schema.tableCache.getObject(monitor, schema, objectName, OracleTable.class);
+            return schema.tableCache.getObject(monitor, schema, objectName);
         }
     }),
 	TABLE_PARTITION("TABLE PARTITION", null, DBSObject.class, null),

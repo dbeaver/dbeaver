@@ -331,8 +331,9 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException, DBException
         {
             return context.prepareStatement(
-                "SELECT * FROM SYS.DBA_TABLESPACES ORDER BY TABLESPACE_NAME");
+                "SELECT * FROM " + OracleUtils.getAdminViewPrefix(OracleDataSource.this) + "TABLESPACES ORDER BY TABLESPACE_NAME");
         }
+
         @Override
         protected OracleTablespace fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {

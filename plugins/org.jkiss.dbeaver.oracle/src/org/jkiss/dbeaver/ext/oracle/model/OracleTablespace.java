@@ -4,11 +4,19 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
 
 /**
  * Oracle tablespace
@@ -73,6 +81,8 @@ public class OracleTablespace extends OracleGlobalObject {
     private boolean defTableCompression;
     private Retention retention;
     private boolean bigFile;
+
+    final FileCache fileCache = new FileCache();
 
     protected OracleTablespace(OracleDataSource dataSource, ResultSet dbResult)
     {
@@ -211,4 +221,30 @@ public class OracleTablespace extends OracleGlobalObject {
     {
         return bigFile;
     }
+
+    @Association
+    public Collection<OracleDataFile> getFiles(DBRProgressMonitor monitor) throws DBException
+    {
+        return fileCache.getObjects(monitor, this);
+    }
+
+    class FileCache extends JDBCObjectCache<OracleTablespace, OracleDataFile> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException, DBException
+        {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.DBA_" +
+                    (getContents() == Contents.TEMPORARY ? "TEMP" : "DATA") +
+                    "_FILES WHERE TABLESPACE_NAME=? ORDER BY FILE_NAME");
+            dbStat.setString(1, getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleDataFile fetchObject(JDBCExecutionContext context, OracleTablespace owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleDataFile(owner, resultSet, getContents() == Contents.TEMPORARY);
+        }
+    }
+
 }

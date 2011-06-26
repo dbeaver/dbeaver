@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 
+import java.math.BigDecimal;
 import java.sql.*;
 
 /**
@@ -128,6 +129,16 @@ public class JDBCUtils {
         } catch (SQLException e) {
             debugColumnRead(columnName, e);
             return 0.0;
+        }
+    }
+
+    public static BigDecimal safeGetBigDecimal(ResultSet dbResult, String columnName)
+    {
+        try {
+            return dbResult.getBigDecimal(columnName);
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return null;
         }
     }
 

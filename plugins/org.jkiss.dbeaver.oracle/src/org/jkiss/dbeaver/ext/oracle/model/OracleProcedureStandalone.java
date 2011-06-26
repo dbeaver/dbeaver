@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
@@ -14,7 +15,7 @@ import java.sql.ResultSet;
 /**
  * GenericProcedure
  */
-public class OracleProcedureStandalone extends OracleProcedureBase
+public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
 {
 
     private boolean valid;
@@ -36,9 +37,9 @@ public class OracleProcedureStandalone extends OracleProcedureBase
         return valid;
     }
 
-    public DBSEntityContainer getContainer()
+    public OracleSchema getSourceOwner()
     {
-        return getSchema();
+        return getParentObject();
     }
 
     public OracleSourceType getSourceType()
@@ -53,4 +54,12 @@ public class OracleProcedureStandalone extends OracleProcedureBase
     {
         return null;
     }
+
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getSourceOwner(),
+            this);
+    }
+
 }

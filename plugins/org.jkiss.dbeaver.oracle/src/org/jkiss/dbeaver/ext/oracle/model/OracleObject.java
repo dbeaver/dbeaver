@@ -4,38 +4,57 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.meta.Property;
-
-import java.sql.ResultSet;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Abstract oracle object
  */
-public abstract class OracleObject extends OracleSchemaObject
+public abstract class OracleObject<PARENT extends DBSObject> implements DBSObject
 {
-    private long id;
-    private boolean valid;
+    static final Log log = LogFactory.getLog(OracleObject.class);
+
+
+    protected final PARENT parent;
+    private String name;
+    private boolean persisted;
 
     protected OracleObject(
-        OracleSchema schema,
-        ResultSet dbResult)
+        PARENT parent,
+        String name,
+        boolean persisted)
     {
-        super(schema, JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"), true);
-        this.id = JDBCUtils.safeGetLong(dbResult, "OBJECT_ID");
-        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
+        this.parent = parent;
+        this.name = name;
+
+        this.persisted = persisted;
     }
 
-    @Property(name = "ID", order = 2)
-    public long getId()
+    public String getDescription()
     {
-        return id;
+        return null;
     }
 
-    @Property(name = "Valid", viewable = true, order = 3)
-    public boolean isValid()
+    public PARENT getParentObject()
     {
-        return valid;
+        return parent;
     }
 
+    public OracleDataSource getDataSource()
+    {
+        return (OracleDataSource) parent.getDataSource();
+    }
+
+    @Property(name = "Name", viewable = true, editable = true, order = 1)
+    public String getName()
+    {
+        return name;
+    }
+
+    public boolean isPersisted()
+    {
+        return persisted;
+    }
 }

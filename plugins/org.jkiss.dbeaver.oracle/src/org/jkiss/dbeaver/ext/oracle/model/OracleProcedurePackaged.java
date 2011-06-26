@@ -16,42 +16,30 @@ import java.sql.ResultSet;
 /**
  * GenericProcedure
  */
-public class OracleProcedurePackaged extends OracleProcedureBase implements DBSObjectUnique
+public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> implements DBSObjectUnique
 {
-    private OraclePackage ownerPackage;
     private Integer overload;
 
     public OracleProcedurePackaged(
         OraclePackage ownerPackage,
         ResultSet dbResult)
     {
-        super(ownerPackage.getSchema(),
+        super(ownerPackage,
             JDBCUtils.safeGetString(dbResult, "PROCEDURE_NAME"),
             DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "PROCEDURE_TYPE")));
-        this.ownerPackage = ownerPackage;
-    }
-
-    public OraclePackage getOwnerPackage()
-    {
-        return ownerPackage;
-    }
-
-    public DBSEntityContainer getContainer()
-    {
-        return getOwnerPackage();
-    }
-
-    public DBSObject getParentObject()
-    {
-        return getOwnerPackage();
     }
 
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            ownerPackage.getSchema(),
-            ownerPackage,
+            getSourceOwner(),
+            getParentObject(),
             this);
+    }
+
+    public OracleSchema getSourceOwner()
+    {
+        return getParentObject().getSchema();
     }
 
     public OracleSourceType getSourceType()

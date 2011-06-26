@@ -7,8 +7,10 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
@@ -23,15 +25,23 @@ import java.util.Map;
 /**
  * GenericProcedure
  */
-public class OraclePackage extends OracleObject implements OracleSourceObject,DBSEntityContainer
+public class OraclePackage extends OracleSchemaObject implements OracleSourceObject,DBSEntityContainer
 {
     private final ProceduresCache proceduresCache = new ProceduresCache();
+    private boolean valid;
 
     public OraclePackage(
         OracleSchema schema,
         ResultSet dbResult)
     {
-        super(schema, dbResult);
+        super(schema, JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"), true);
+        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
+    }
+
+    @Property(name = "Valid", viewable = true, order = 3)
+    public boolean isValid()
+    {
+        return valid;
     }
 
     public OracleSchema getSourceOwner()

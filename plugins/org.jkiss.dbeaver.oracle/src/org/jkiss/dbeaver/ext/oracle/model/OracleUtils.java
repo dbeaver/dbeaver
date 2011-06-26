@@ -76,4 +76,9 @@ public class OracleUtils {
         }
     }
 
+    public static String getAdminViewPrefix(OracleDataSource dataSource)
+    {
+        return dataSource.isAdmin() ? "SYS.DBA_" : "SYS.USER_";
+    }
+
 }
