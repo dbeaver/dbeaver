@@ -10,10 +10,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,13 +22,12 @@ import java.util.List;
 /**
  * Oracle physical table
  */
-public abstract class OracleTablePhysical extends OracleTableBase
+public abstract class OracleTablePhysical extends OracleTableBase implements OracleTablespace.TablespaceReferrer
 {
 
     private boolean valid;
     private long rowCount;
-    private volatile String tablespaceName;
-    private volatile OracleTablespace tablespace;
+    private Object tablespace;
     private List<OracleIndex> indexes;
     private boolean partitioned;
     private PartitionInfo partitionInfo;
@@ -47,7 +45,7 @@ public abstract class OracleTablePhysical extends OracleTableBase
         super(schema, dbResult);
         this.rowCount = JDBCUtils.safeGetLong(dbResult, "NUM_ROWS");
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
-        this.tablespaceName = JDBCUtils.safeGetString(dbResult, "TABLESPACE_NAME");
+        this.tablespace = JDBCUtils.safeGetString(dbResult, "TABLESPACE_NAME");
 
         this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", "Y");
         this.partitionCache = partitioned ? new PartitionCache() : null;
@@ -65,22 +63,16 @@ public abstract class OracleTablePhysical extends OracleTableBase
         return valid;
     }
 
+    public Object getTablespaceReference()
+    {
+        return tablespace;
+    }
+
     @Property(name = "Tablespace", viewable = true, order = 22)
-    @LazyProperty(cacheValidator = TablespaceRetrieveValidator.class)
+    @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getTablespace(DBRProgressMonitor monitor) throws DBException
     {
-        final OracleDataSource dataSource = getDataSource();
-        if (!dataSource.isAdmin()) {
-            return tablespaceName;
-        } else if (tablespace == null && !CommonUtils.isEmpty(tablespaceName)) {
-            tablespace = dataSource.tablespaceCache.getObject(monitor, dataSource, tablespaceName);
-            if (tablespace != null) {
-                tablespaceName = null;
-            } else {
-                log.warn("Tablespace '" + tablespaceName + "' not found");
-            }
-        }
-        return tablespace;
+        return OracleTablespace.resolveTablespaceReference(monitor, this);
     }
 
     @Association
@@ -118,7 +110,7 @@ public abstract class OracleTablePhysical extends OracleTableBase
                     final JDBCResultSet dbResult = dbStat.executeQuery();
                     try {
                         if (dbResult.next()) {
-                            partitionInfo = new PartitionInfo(dbResult);
+                            partitionInfo = new PartitionInfo(monitor, this.getDataSource(), dbResult);
                         }
                     } finally {
                         dbResult.close();
@@ -139,7 +131,13 @@ public abstract class OracleTablePhysical extends OracleTableBase
     public Collection<OracleTablePartition> getPartitions(DBRProgressMonitor monitor)
         throws DBException
     {
-        return partitionCache == null ? null : this.partitionCache.getObjects(monitor, this);
+        if (partitionCache == null) {
+            return null;
+        } else {
+            this.partitionCache.loadObjects(monitor, this);
+            this.partitionCache.loadChildren(monitor, this, null);
+            return this.partitionCache.getObjects(monitor, this);
+        }
     }
 
     @Override
@@ -148,30 +146,80 @@ public abstract class OracleTablePhysical extends OracleTableBase
         super.refreshEntity(monitor);
 
         indexes = null;
+        partitionInfo = null;
+        if (partitionCache != null) {
+            partitionCache.clearCache();
+        }
         return true;
     }
 
-    private static class PartitionCache extends JDBCObjectCache<OracleTablePhysical, OracleTablePartition> {
+    private static class PartitionCache extends JDBCStructCache<OracleTablePhysical, OracleTablePartition, OracleTablePartition> {
+
+        protected PartitionCache()
+        {
+            super("PARTITION_NAME");
+        }
 
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablePhysical oracleTablePhysical) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablePhysical table) throws SQLException, DBException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
-                "");
+                "SELECT * FROM SYS.ALL_TAB_PARTITIONS " +
+                "WHERE TABLE_OWNER=? AND TABLE_NAME=? " +
+                "ORDER BY PARTITION_POSITION");
+            dbStat.setString(1, table.getContainer().getName());
+            dbStat.setString(2, table.getName());
             return dbStat;
         }
 
         @Override
-        protected OracleTablePartition fetchObject(JDBCExecutionContext context, OracleTablePhysical oracleTablePhysical, ResultSet resultSet) throws SQLException, DBException
+        protected OracleTablePartition fetchObject(JDBCExecutionContext context, OracleTablePhysical table, ResultSet resultSet) throws SQLException, DBException
         {
-            return null;
+            return new OracleTablePartition(table, false, resultSet);
         }
+
+        @Override
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleTablePhysical table, OracleTablePartition forObject) throws SQLException, DBException
+        {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.ALL_TAB_SUBPARTITIONS " +
+                "WHERE TABLE_OWNER=? AND TABLE_NAME=? " +
+                (forObject == null ? "" : "AND PARTITION_NAME=?") +
+                "ORDER BY SUBPARTITION_POSITION");
+            dbStat.setString(1, table.getContainer().getName());
+            dbStat.setString(2, table.getName());
+            if (forObject != null) {
+                dbStat.setString(2, forObject.getName());
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected OracleTablePartition fetchChild(JDBCExecutionContext context, OracleTablePhysical table, OracleTablePartition parent, ResultSet dbResult) throws SQLException, DBException
+        {
+            return new OracleTablePartition(table, true, dbResult);
+        }
+
+        @Override
+        protected boolean isChildrenCached(OracleTablePartition parent)
+        {
+            return parent.getSubPartitions() != null;
+        }
+
+        @Override
+        protected void cacheChildren(OracleTablePartition parent, List<OracleTablePartition> subpartitions)
+        {
+            parent.setSubPartitions(subpartitions);
+        }
+
     }
 
     public static class PartitionInfo extends OraclePartitionBase.PartitionInfoBase {
-        public PartitionInfo(ResultSet dbResult)
+
+        public PartitionInfo(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult)
+            throws DBException
         {
-            super(dbResult);
+            super(monitor, dataSource, dbResult);
         }
     }
 
@@ -179,17 +227,6 @@ public abstract class OracleTablePhysical extends OracleTableBase
         public boolean isPropertyCached(OracleTablePhysical object)
         {
             return object.partitioned && object.partitionInfo != null;
-        }
-    }
-
-    public static class TablespaceRetrieveValidator implements IPropertyCacheValidator<OracleTablePhysical> {
-        public boolean isPropertyCached(OracleTablePhysical object)
-        {
-            return
-                object.tablespace instanceof OracleTablespace ||
-                CommonUtils.isEmpty(object.tablespaceName) ||
-                object.getDataSource().tablespaceCache.isCached() ||
-                !object.getDataSource().isAdmin();
         }
     }
 

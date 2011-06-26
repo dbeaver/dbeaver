@@ -4,17 +4,22 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.math.BigInteger;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 /**
  * Oracle abstract partition
  */
-public abstract class OraclePartitionBase<PARENT extends DBSObject> extends OracleObject<PARENT>
+public abstract class OraclePartitionBase<PARENT extends DBSObject> extends OracleObject<PARENT> implements OracleTablespace.TablespaceReferrer
 {
     public enum PartitionType {
         NONE,
@@ -27,7 +32,7 @@ public abstract class OraclePartitionBase<PARENT extends DBSObject> extends Orac
     public static class PartitionInfoBase {
         private PartitionType type;
         private PartitionType subType;
-        private String tablespaceName;
+        private Object tablespace;
 
         @Property(category = "Partitioning", name = "Partition Type", order = 120)
         public PartitionType getType()
@@ -41,23 +46,96 @@ public abstract class OraclePartitionBase<PARENT extends DBSObject> extends Orac
             return subType;
         }
 
-        @Property(category = "Partitioning", name = "Tablespace Name", order = 122)
-        public String getTablespaceName()
+        @Property(category = "Partitioning", name = "Tablespace", order = 122)
+        public Object getTablespace()
         {
-            return tablespaceName;
+            return tablespace;
         }
 
-        public PartitionInfoBase(ResultSet dbResult)
+        public PartitionInfoBase(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult) throws DBException
         {
             this.type = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "PARTITIONING_TYPE"));
             this.subType = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "SUBPARTITIONING_TYPE"));
-            this.tablespaceName = JDBCUtils.safeGetStringTrimmed(dbResult, "DEF_TABLESPACE_NAME");
+            this.tablespace = JDBCUtils.safeGetStringTrimmed(dbResult, "DEF_TABLESPACE_NAME");
+            if (dataSource.isAdmin()) {
+                this.tablespace = dataSource.tablespaceCache.getObject(monitor, dataSource, (String) tablespace);
+            }
         }
     }
 
-    protected OraclePartitionBase(PARENT parent, String name, boolean persisted)
+    private int position;
+    private String highValue;
+    private boolean usable;
+    private Object tablespace;
+    private long numRows;
+    private long sampleSize;
+    private Timestamp lastAnalyzed;
+
+    protected OraclePartitionBase(PARENT parent, boolean subpartition, ResultSet dbResult)
     {
-        super(parent, name, persisted);
+        super(
+            parent,
+            subpartition ?
+                JDBCUtils.safeGetString(dbResult, "SUBPARTITION_NAME") :
+                JDBCUtils.safeGetString(dbResult, "PARTITION_NAME"),
+            true);
+        this.highValue = JDBCUtils.safeGetString(dbResult, "HIGH_VALUE");
+        this.position = subpartition ?
+            JDBCUtils.safeGetInt(dbResult, "SUBPARTITION_POSITION") :
+            JDBCUtils.safeGetInt(dbResult, "PARTITION_POSITION");
+        this.usable = "USABLE".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
+        this.tablespace = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLESPACE_NAME");
+
+        this.numRows = JDBCUtils.safeGetLong(dbResult, "NUM_ROWS");
+        this.sampleSize = JDBCUtils.safeGetLong(dbResult, "SAMPLE_SIZE");
+        this.lastAnalyzed = JDBCUtils.safeGetTimestamp(dbResult, "LAST_ANALYZED");
     }
 
+    public Object getTablespaceReference()
+    {
+        return tablespace;
+    }
+
+    @Property(name = "Position", viewable = true, order = 10)
+    public int getPosition()
+    {
+        return position;
+    }
+
+    @Property(name = "Usable", viewable = true, order = 11)
+    public boolean isUsable()
+    {
+        return usable;
+    }
+
+    @Property(name = "Tablespace", viewable = true, order = 12)
+    @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
+    public Object getTablespace(DBRProgressMonitor monitor) throws DBException
+    {
+        return OracleTablespace.resolveTablespaceReference(monitor, this);
+    }
+
+    @Property(name = "High Value", viewable = true, order = 30)
+    public String getHighValue()
+    {
+        return highValue;
+    }
+
+    @Property(name = "Rows", viewable = true, order = 40)
+    public long getNumRows()
+    {
+        return numRows;
+    }
+
+    @Property(name = "Sample Size", viewable = true, order = 41)
+    public long getSampleSize()
+    {
+        return sampleSize;
+    }
+
+    @Property(name = "Last Analyzed", viewable = true, order = 42)
+    public Timestamp getLastAnalyzed()
+    {
+        return lastAnalyzed;
+    }
 }

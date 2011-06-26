@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -244,6 +245,43 @@ public class OracleTablespace extends OracleGlobalObject {
         protected OracleDataFile fetchObject(JDBCExecutionContext context, OracleTablespace owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataFile(owner, resultSet, getContents() == Contents.TEMPORARY);
+        }
+    }
+
+    interface TablespaceReferrer {
+        OracleDataSource getDataSource();
+        Object getTablespaceReference();
+    }
+
+    static Object resolveTablespaceReference(DBRProgressMonitor monitor, TablespaceReferrer referrer) throws DBException
+    {
+        final OracleDataSource dataSource = referrer.getDataSource();
+        if (!dataSource.isAdmin()) {
+            return referrer;
+        } else {
+            final Object reference = referrer.getTablespaceReference();
+            if (reference instanceof String) {
+                OracleTablespace tablespace = dataSource.tablespaceCache.getObject(monitor, dataSource, (String) reference);
+                if (tablespace != null) {
+                    return tablespace;
+                } else {
+                    log.warn("Tablespace '" + reference + "' not found");
+                    return reference;
+                }
+            } else {
+                return reference;
+            }
+        }
+    }
+
+    public static class TablespaceReferenceValidator implements IPropertyCacheValidator<TablespaceReferrer> {
+        public boolean isPropertyCached(TablespaceReferrer object)
+        {
+            return
+                object.getTablespaceReference() instanceof OracleTablespace ||
+                object.getTablespaceReference() == null ||
+                object.getDataSource().tablespaceCache.isCached() ||
+                !object.getDataSource().isAdmin();
         }
     }
 

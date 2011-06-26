@@ -199,7 +199,7 @@ public class JDBCUtils {
             return dbResult.getObject(columnName);
         } catch (SQLException e) {
             debugColumnRead(columnName, e);
-            return false;
+            return null;
         }
     }
 

@@ -49,6 +49,7 @@ public enum DBIcon
     TREE_SEQUENCE("sequence", "icons/tree/sequence.png"),
     TREE_SYNONYM("synonym", "icons/tree/synonym.png"),
     TREE_TABLESPACE("tablespace", "icons/tree/tablespace.png"),
+    TREE_PARTITION("partition", "icons/tree/partition.png"),
     TREE_ATTRIBUTE("attribute", "icons/tree/attribute.png"),
     TREE_ARGUMENT("argument", "icons/tree/argument.png"),
     TREE_JAVA_CLASS("javaClass", "icons/tree/java_class.png"),
