@@ -21,6 +21,7 @@ public class NumberViewDialog extends ValueViewDialog {
     private Text textEdit;
     private Combo bitEdit;
     private boolean isBoolean = false;
+    private Object value;
 
     public NumberViewDialog(DBDValueController valueController) {
         super(valueController);
@@ -30,7 +31,7 @@ public class NumberViewDialog extends ValueViewDialog {
     protected Control createDialogArea(Composite parent)
     {
         DBDValueController valueController = getValueController();
-        Object value = valueController.getValue();
+        value = valueController.getValue();
 
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
@@ -110,6 +111,7 @@ public class NumberViewDialog extends ValueViewDialog {
         if (textEdit != null) {
             return JDBCNumberValueHandler.convertStringToNumber(
                 textEdit.getText(),
+                value,
                 getValueController().getColumnMetaData());
         } else if (bitEdit != null) {
             if (isBoolean) {

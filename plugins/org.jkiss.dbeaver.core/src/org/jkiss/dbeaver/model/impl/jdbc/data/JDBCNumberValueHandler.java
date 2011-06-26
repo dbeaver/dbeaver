@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.SQLException;
 
 /**
@@ -156,7 +158,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         throws DBException
     {
         if (controller.isInlineEdit()) {
-            Object value = controller.getValue();
+            final Object value = controller.getValue();
 
             if (controller.getColumnMetaData().getValueType() == java.sql.Types.BIT) {
                 CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
@@ -201,7 +203,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                         if (CommonUtils.isEmpty(text)) {
                             return null;
                         }
-                        return convertStringToNumber(text, controller.getColumnMetaData());
+                        return convertStringToNumber(text, value, controller.getColumnMetaData());
                     }
                 });
             }
@@ -238,33 +240,50 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     }
 
 
-    public static Number convertStringToNumber(String text, DBSTypedObject type)
+    public static Number convertStringToNumber(String text, Object originalValue, DBSTypedObject type)
     {
         if (text == null || text.length() == 0) {
             return null;
         }
         try {
-            switch (type.getValueType()) {
-            case java.sql.Types.BIGINT:
+            if (originalValue instanceof Long) {
                 return Long.valueOf(text);
-            case java.sql.Types.DECIMAL:
-            case java.sql.Types.DOUBLE:
-            case java.sql.Types.REAL:
-                // Handle Java error
-                return toDouble(text);
-            case java.sql.Types.FLOAT:
-                return Float.valueOf(text);
-            case java.sql.Types.INTEGER:
+            } else if (originalValue instanceof Integer) {
                 return Integer.valueOf(text);
-            case java.sql.Types.SMALLINT:
+            } else if (originalValue instanceof Short) {
                 return Short.valueOf(text);
-            case java.sql.Types.TINYINT:
+            } else if (originalValue instanceof Byte) {
                 return Byte.valueOf(text);
-            default:
-                if (type.getScale() > 0) {
-                    return toDouble(text);
-                } else {
+            } else if (originalValue instanceof Float) {
+                return Float.valueOf(text);
+            } else if (originalValue instanceof Double) {
+                return Double.valueOf(text);
+            } else if (originalValue instanceof BigInteger) {
+                return new BigInteger(text);
+            } else if (originalValue instanceof BigDecimal) {
+                return new BigDecimal(text);
+            } else {
+                switch (type.getValueType()) {
+                case java.sql.Types.BIGINT:
                     return Long.valueOf(text);
+                case java.sql.Types.DECIMAL:
+                case java.sql.Types.DOUBLE:
+                case java.sql.Types.REAL:
+                    return toDouble(text);
+                case java.sql.Types.FLOAT:
+                    return Float.valueOf(text);
+                case java.sql.Types.INTEGER:
+                    return Integer.valueOf(text);
+                case java.sql.Types.SMALLINT:
+                    return Short.valueOf(text);
+                case java.sql.Types.TINYINT:
+                    return Byte.valueOf(text);
+                default:
+                    if (type.getScale() > 0) {
+                        return toDouble(text);
+                    } else {
+                        return Long.valueOf(text);
+                    }
                 }
             }
         }
