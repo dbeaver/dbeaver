@@ -197,6 +197,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 throw new IllegalAccessException("Can't read lazy properties with null progress monitor");
             }
             value = getGetter().invoke(object, progressMonitor);
+        } else if (isLazy()) {
+            // Lazy but cached
+            value = getGetter().invoke(object, VoidProgressMonitor.INSTANCE);
         } else {
             value = getGetter().invoke(object);
         }

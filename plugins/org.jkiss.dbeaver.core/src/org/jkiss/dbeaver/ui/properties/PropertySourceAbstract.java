@@ -122,7 +122,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         try {
             return !prop.isLazy(object, true) && prop.readValue(object, null) != null;
         } catch (Exception e) {
-            log.error(e);
+            log.error("Error reading property '" + prop.getId() + "' from " + object, e);
             return false;
         }
     }
@@ -184,7 +184,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
                 return prop.readValue(object, null);
             }
         } catch (Exception e) {
-            log.error(e);
+            log.error("Error reading property '" + prop.getId() + "' from " + object, e);
             return e.getMessage();
         }
     }

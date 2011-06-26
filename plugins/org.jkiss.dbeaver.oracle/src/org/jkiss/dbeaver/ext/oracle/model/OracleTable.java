@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -142,7 +141,7 @@ public class OracleTable extends OracleTablePhysical
 //    }
 
     @Association
-    public List<OraclePartition> getPartitions(DBRProgressMonitor monitor)
+    public List<OraclePartitionBase> getPartitions(DBRProgressMonitor monitor)
         throws DBException
     {
         return null;

@@ -69,7 +69,7 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePartition" label="Partitions" iconId="#partitions" description="Table partitions" visibleIf="object.dataSource.info.databaseProductVersion>='5.1.6'">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePartitionBase" label="Partitions" iconId="#partitions" description="Table partitions" visibleIf="object.dataSource.info.databaseProductVersion>='5.1.6'">
                                     <items label="Partition" path="partition" property="partitions" iconId="#partition">
                                         <items label="Subpartitions" itemLabel="Subpartition" path="subpartition" property="subPartitions" navigable="false" inline="true">
                                         </items>

@@ -89,6 +89,11 @@ public abstract class ObjectAttributeDescriptor {
         return getter;
     }
 
+    public boolean isLazy()
+    {
+        return isLazy;
+    }
+
     public boolean isLazy(Object object, boolean checkParent)
     {
         if (isLazy && cacheValidator != null) {

@@ -290,12 +290,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
                     "SELECT /*+ USE_NL(mv)*/ t.OWNER,\n" +
                     "NVL(mv.MVIEW_NAME,t.TABLE_NAME) as TABLE_NAME,\n" +
                     "CASE WHEN mv.MVIEW_NAME IS NULL THEN 'TABLE' ELSE 'MVIEW' END as OBJECT_TYPE," +
-                    "t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TEMPORARY,t.SECONDARY,t.NESTED,t.STATUS,t.NUM_ROWS \n" +
+                    "t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.TEMPORARY,t.SECONDARY,t.NESTED,t.STATUS,t.NUM_ROWS \n" +
                     "FROM SYS.ALL_ALL_TABLES t\n" +
                     "LEFT OUTER JOIN SYS.ALL_MVIEWS mv ON mv.OWNER=t.OWNER AND mv.CONTAINER_NAME=t.TABLE_NAME \n" +
                     "WHERE t.OWNER=?\n" +
                 "UNION ALL\n" +
-                    "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,NULL,NULL,NULL,NULL,NULL,NULL,NULL " +
+                    "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL " +
                     "FROM SYS.ALL_VIEWS v WHERE v.OWNER=?\n" +
                 ") tab\n" +
                 "LEFT OUTER JOIN SYS.ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME\n" +
@@ -698,7 +698,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
                 "SELECT /*+ USE_NL(O)*/ s.*,O.OBJECT_TYPE \n" +
                 "FROM ALL_SYNONYMS S\n" +
                 "JOIN ALL_OBJECTS O ON  O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
-                "WHERE S.OWNER=? " +
+                "WHERE S.OWNER=? AND O.OBJECT_TYPE<>'JAVA CLASS'\n" +
                 "ORDER BY S.SYNONYM_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;

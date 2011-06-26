@@ -835,24 +835,23 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     if (monitor.isCanceled() || isDisposed()) {
                         break;
                     }
-                    try {
-                        ObjectPropertyDescriptor prop = column.propMap.get(object.getClass());
-                        if (prop != null) {
+                    ObjectPropertyDescriptor prop = column.propMap.get(object.getClass());
+                    if (prop != null) {
+                        try {
                             Object lazyValue = prop.readValue(object, monitor);
                             if (lazyValue == null) {
                                 lazyValue = NULL_VALUE;
                             }
                             objectCache.put(prop.getId(), lazyValue);
                         }
-                    }
-                    catch (IllegalAccessException e) {
-                        log.error(e);
-                        return RuntimeUtils.makeExceptionStatus(e);
-                    }
-                    catch (InvocationTargetException e) {
-                        log.error(e.getTargetException());
-                        return RuntimeUtils.makeExceptionStatus(e.getTargetException());
-                    }
+                        catch (Throwable e) {
+                            if (e instanceof InvocationTargetException) {
+                                e = ((InvocationTargetException) e).getTargetException();
+                            }
+                            log.error("Error reading property '" + prop.getId() + "' from " + object, e);
+                            return RuntimeUtils.makeExceptionStatus(e);
+                        }
+                }
                 }
                 monitor.worked(1);
                 if (!isDisposed()) {
