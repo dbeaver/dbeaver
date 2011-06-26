@@ -195,6 +195,9 @@
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataFile" label="Files" iconId="#files" description="Data Files">
                                 <items label="File" path="file" property="files" iconId="#file"/>
                             </folder>
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSegment" label="Objects" iconId="#segments" description="Objects (segments)">
+                                <items label="Segment" path="segment" property="segments" iconId="#segment"/>
+                            </folder>
                         </items>
                     </folder>
                 </folder>

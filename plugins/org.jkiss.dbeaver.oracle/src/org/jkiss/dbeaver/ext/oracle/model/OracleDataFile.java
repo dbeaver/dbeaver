@@ -14,7 +14,7 @@ import java.sql.ResultSet;
 /**
  * Oracle tablespace file
  */
-public class OracleDataFile extends OracleGlobalObject {
+public class OracleDataFile extends OracleObject<OracleTablespace> {
 
     public enum OnlineStatus {
         SYSOFF,
@@ -25,7 +25,6 @@ public class OracleDataFile extends OracleGlobalObject {
     }
 
     private final OracleTablespace tablespace;
-    private String name;
     private long id;
     private long relativeNo;
     private BigDecimal bytes;
@@ -44,10 +43,12 @@ public class OracleDataFile extends OracleGlobalObject {
 
     protected OracleDataFile(OracleTablespace tablespace, ResultSet dbResult, boolean temporary)
     {
-        super(tablespace.getDataSource(), true);
+        super(
+            tablespace,
+            JDBCUtils.safeGetString(dbResult, "FILE_NAME"),
+            true);
         this.tablespace = tablespace;
         this.temporary = temporary;
-        this.name = JDBCUtils.safeGetString(dbResult, "FILE_NAME");
         this.id = JDBCUtils.safeGetLong(dbResult, "FILE_ID");
         this.relativeNo = JDBCUtils.safeGetLong(dbResult, "RELATIVE_FNO");
         this.bytes = JDBCUtils.safeGetBigDecimal(dbResult, "BYTES");

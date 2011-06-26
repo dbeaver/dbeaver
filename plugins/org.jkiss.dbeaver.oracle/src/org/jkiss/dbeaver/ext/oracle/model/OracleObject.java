@@ -18,7 +18,7 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
 
 
     protected final PARENT parent;
-    private String name;
+    protected String name;
     private boolean persisted;
 
     protected OracleObject(

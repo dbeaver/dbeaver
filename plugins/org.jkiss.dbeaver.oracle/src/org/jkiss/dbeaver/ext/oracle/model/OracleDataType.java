@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
@@ -107,7 +108,6 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
     private String typeName;
     private String typeCode;
     private byte[] typeOID;
-    private byte[] typeID;
     private Object superType;
     private final AttributeCache attributeCache;
     private final MethodCache methodCache;
@@ -138,7 +138,6 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         this.typeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
         this.typeCode = JDBCUtils.safeGetString(dbResult, "TYPECODE");
         this.typeOID = JDBCUtils.safeGetBytes(dbResult, "TYPE_OID");
-        this.typeID = JDBCUtils.safeGetBytes(dbResult, "TYPE_ID");
         this.flagPredefined = JDBCUtils.safeGetBoolean(dbResult, "PREDEFINED", OracleConstants.YES);
         this.flagIncomplete = JDBCUtils.safeGetBoolean(dbResult, "INCOMPLETE", OracleConstants.YES);
         this.flagFinal = JDBCUtils.safeGetBoolean(dbResult, "FINAL", OracleConstants.YES);
@@ -269,11 +268,6 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         return typeOID;
     }
 
-    public byte[] getTypeID()
-    {
-        return typeID;
-    }
-
     @Property(name = "Super Type", viewable = true, editable = true, order = 3)
     public OracleDataType getSuperType(DBRProgressMonitor monitor)
     {
@@ -337,12 +331,14 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         return methodCache != null;
     }
 
+    @Association
     public Collection<OracleDataTypeAttribute> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
         return attributeCache != null ? attributeCache.getObjects(monitor, this) : null;
     }
 
+    @Association
     public Collection<OracleDataTypeMethod> getMethods(DBRProgressMonitor monitor)
         throws DBException
     {

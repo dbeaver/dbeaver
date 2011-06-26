@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -22,7 +23,7 @@ import java.util.Collection;
 /**
  * Oracle tablespace
  */
-public class OracleTablespace extends OracleGlobalObject {
+public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
 
     public enum Status {
         ONLINE,
@@ -84,6 +85,7 @@ public class OracleTablespace extends OracleGlobalObject {
     private boolean bigFile;
 
     final FileCache fileCache = new FileCache();
+    final SegmentCache segmentCache = new SegmentCache();
 
     protected OracleTablespace(OracleDataSource dataSource, ResultSet dbResult)
     {
@@ -229,22 +231,63 @@ public class OracleTablespace extends OracleGlobalObject {
         return fileCache.getObjects(monitor, this);
     }
 
-    class FileCache extends JDBCObjectCache<OracleTablespace, OracleDataFile> {
+    public OracleDataFile getFile(DBRProgressMonitor monitor, long relativeFileNo) throws DBException
+    {
+        for (OracleDataFile file : fileCache.getObjects(monitor, this)) {
+            if (file.getRelativeNo() == relativeFileNo) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    @Association
+    public Collection<OracleSegment<OracleTablespace>> getSegments(DBRProgressMonitor monitor) throws DBException
+    {
+        return segmentCache.getObjects(monitor, this);
+    }
+
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    {
+        fileCache.clearCache();
+        segmentCache.clearCache();
+        return true;
+    }
+
+    static class FileCache extends JDBCObjectCache<OracleTablespace, OracleDataFile> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException, DBException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.DBA_" +
-                    (getContents() == Contents.TEMPORARY ? "TEMP" : "DATA") +
+                    (owner.getContents() == Contents.TEMPORARY ? "TEMP" : "DATA") +
                     "_FILES WHERE TABLESPACE_NAME=? ORDER BY FILE_NAME");
-            dbStat.setString(1, getName());
+            dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
         @Override
         protected OracleDataFile fetchObject(JDBCExecutionContext context, OracleTablespace owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleDataFile(owner, resultSet, getContents() == Contents.TEMPORARY);
+            return new OracleDataFile(owner, resultSet, owner.getContents() == Contents.TEMPORARY);
+        }
+    }
+
+    static class SegmentCache extends JDBCObjectCache<OracleTablespace, OracleSegment<OracleTablespace>> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException, DBException
+        {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM " + OracleUtils.getAdminViewPrefix(owner.getDataSource()) +
+                "SEGMENTS WHERE TABLESPACE_NAME=? ORDER BY SEGMENT_NAME");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleSegment<OracleTablespace> fetchObject(JDBCExecutionContext context, OracleTablespace owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleSegment<OracleTablespace>(context.getProgressMonitor(), owner, resultSet);
         }
     }
 
