@@ -191,6 +191,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         Object value;
         if (getParent() != null) {
             object = getParent().getGroupObject(object, progressMonitor);
+            if (object == null) {
+                return null;
+            }
         }
         if (isLazy(object, false)) {
             if (progressMonitor == null) {

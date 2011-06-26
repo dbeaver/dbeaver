@@ -140,14 +140,6 @@ public class OracleTable extends OracleTablePhysical
 //        return DBUtils.findObject(getTriggers(monitor), triggerName);
 //    }
 
-    @Association
-    public List<OraclePartitionBase> getPartitions(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return null;
-    }
-
-
     public String getDDL(DBRProgressMonitor monitor)
         throws DBException
     {
