@@ -541,28 +541,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         protected OracleIndex fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTablePhysical parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
-            String indexTypeName = JDBCUtils.safeGetString(dbResult, "INDEX_TYPE");
-            boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, "UNIQUENESS") != 0;
-            DBSIndexType indexType;
-            if (OracleConstants.INDEX_TYPE_NORMAL.getId().equals(indexTypeName)) {
-                indexType = OracleConstants.INDEX_TYPE_NORMAL;
-            } else if (OracleConstants.INDEX_TYPE_BITMAP.getId().equals(indexTypeName)) {
-                indexType = OracleConstants.INDEX_TYPE_BITMAP;
-            } else if (OracleConstants.INDEX_TYPE_FUNCTION_BASED_NORMAL.getId().equals(indexTypeName)) {
-                indexType = OracleConstants.INDEX_TYPE_FUNCTION_BASED_NORMAL;
-            } else if (OracleConstants.INDEX_TYPE_FUNCTION_BASED_BITMAP.getId().equals(indexTypeName)) {
-                indexType = OracleConstants.INDEX_TYPE_FUNCTION_BASED_BITMAP;
-            } else if (OracleConstants.INDEX_TYPE_DOMAIN.getId().equals(indexTypeName)) {
-                indexType = OracleConstants.INDEX_TYPE_DOMAIN;
-            } else {
-                indexType = DBSIndexType.OTHER;
-            }
-
-            return new OracleIndex(
-                parent,
-                isNonUnique,
-                indexName,
-                indexType);
+            return new OracleIndex(parent, indexName, dbResult);
         }
 
         protected OracleIndexColumn fetchObjectRow(

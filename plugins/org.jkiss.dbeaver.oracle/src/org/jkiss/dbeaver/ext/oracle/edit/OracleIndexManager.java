@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.dbeaver.ext.oracle.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
@@ -38,18 +39,17 @@ public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTabl
             return null;
         }
 
+        StringBuilder idxName = new StringBuilder(64);
+        idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_")
+            .append(CommonUtils.escapeIdentifier(editDialog.getSelectedColumns().iterator().next().getName()))
+            .append("_IDX");
         final OracleIndex index = new OracleIndex(
             parent,
+            JDBCObjectNameCaseTransformer.transformName((DBPDataSource) parent.getDataSource(), idxName.toString()),
             false,
-            null,
             editDialog.getIndexType());
-        StringBuilder idxName = new StringBuilder(64);
-        idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
         int colIndex = 1;
         for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
-            if (colIndex == 1) {
-                idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName()));
-            }
             index.addColumn(
                 new OracleIndexColumn(
                     index,
@@ -57,8 +57,6 @@ public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTabl
                     colIndex++,
                     true));
         }
-        idxName.append("_IDX");
-        index.setName(JDBCObjectNameCaseTransformer.transformName(index, idxName.toString()));
         return index;
     }
 

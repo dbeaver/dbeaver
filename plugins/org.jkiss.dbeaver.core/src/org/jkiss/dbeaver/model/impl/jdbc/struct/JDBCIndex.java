@@ -19,8 +19,8 @@ public abstract class JDBCIndex<TABLE extends JDBCTable>
     implements DBPSaveableObject
 {
     private final TABLE table;
-    private String name;
-    private DBSIndexType indexType;
+    protected String name;
+    protected DBSIndexType indexType;
     private boolean persisted;
 
     protected JDBCIndex(TABLE table, String name, DBSIndexType indexType, boolean persisted) {
