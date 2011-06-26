@@ -22,12 +22,18 @@ public class EditTextDialog extends Dialog {
     private int textWidth = 300;
     private int textHeight = 200;
     private Image image;
+    private boolean readonly = false;
 
     public EditTextDialog(Shell parentShell, String title, String text)
     {
         super(parentShell);
         this.title = title;
         this.text = text;
+    }
+
+    public void setReadonly(boolean readonly)
+    {
+        this.readonly = readonly;
     }
 
     public void setImage(Image image)
@@ -50,7 +56,7 @@ public class EditTextDialog extends Dialog {
 
         textControl = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         textControl.setText(text);
-        textControl.setEditable(true);
+        textControl.setEditable(!readonly);
         GridData gd = new GridData(GridData.FILL_BOTH);
         if (textWidth > 0) {
             gd.widthHint = textWidth;
@@ -63,6 +69,12 @@ public class EditTextDialog extends Dialog {
         textControl.setLayoutData(gd);
 
         return parent;
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(Composite parent)
+    {
+        super.createButtonsForButtonBar(parent);
     }
 
     @Override

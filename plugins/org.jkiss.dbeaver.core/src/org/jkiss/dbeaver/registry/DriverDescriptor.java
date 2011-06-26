@@ -4,18 +4,13 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.osgi.framework.internal.core.BundleHost;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.xml.SAXListener;
-import org.jkiss.utils.xml.SAXReader;
-import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.osgi.framework.internal.core.BundleHost;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
@@ -30,10 +25,16 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.SAXListener;
+import org.jkiss.utils.xml.SAXReader;
+import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.*;
@@ -286,6 +287,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public String getFullName()
+    {
+        if (CommonUtils.isEmpty(category)) {
+            return name;
+        } else {
+            return category + " " + name;
+        }
     }
 
     /**
@@ -742,37 +752,76 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     private void downloadLibraryFiles(final List<DriverFileDescriptor> files)
     {
-//        try {
-            DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    for (DriverFileDescriptor lib : files) {
-                        try {
-                            final boolean success = downloadLibraryFiles(monitor, lib);
-                            if (!success) {
-                                break;
-                            }
-                        } catch (final Exception e) {
-                            Display.getDefault().syncExec(new Runnable() {
-                                public void run()
-                                {
-                                    UIUtils.showErrorDialog(null, "Download driver", "Can't download '" + getName() + "' libraries", e);
-                                }
-                            });
+        if (!acceptDriverLicenses()) {
+            return;
+        }
+
+        DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                for (DriverFileDescriptor lib : files) {
+                    try {
+                        final boolean success = downloadLibraryFile(monitor, lib);
+                        if (!success) {
                             break;
-                            //throw new InvocationTargetException(e);
                         }
+                    } catch (final Exception e) {
+                        Display.getDefault().syncExec(new Runnable() {
+                            public void run()
+                            {
+                                UIUtils.showErrorDialog(null, "Download driver", "Can't download '" + getName() + "' libraries", e);
+                            }
+                        });
+                        break;
+                        //throw new InvocationTargetException(e);
                     }
                 }
-            });
-//        } catch (InvocationTargetException e) {
-//            UIUtils.showErrorDialog(null, "Download driver", "Can't download '" + getName() + "' libraries", e.getTargetException());
-//        } catch (InterruptedException e) {
-//            // do nothing
-//        }
+            }
+        });
     }
 
-    private boolean downloadLibraryFiles(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException
+    private boolean acceptDriverLicenses()
+    {
+        // User must accept all licenses before actual drivers download
+        for (final DriverFileDescriptor file : getFiles()) {
+            if (file.getType() == DriverFileType.license) {
+                final File libraryFile = file.getLocalFile();
+                if (!libraryFile.exists()) {
+                    try {
+                        DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                            {
+                                try {
+                                    downloadLibraryFile(monitor, file);
+                                } catch (final Exception e) {
+                                    log.warn("Can't obtain driver license", e);
+                                }
+                            }
+                        });
+                    } catch (Exception e) {
+                        log.warn(e);
+                    }
+                }
+                if (libraryFile.exists()) {
+                    try {
+                        String licenseText = ContentUtils.readFileToString(libraryFile);
+                        if (!AcceptLicenseDialog.acceptLicense(
+                            DBeaverCore.getActiveWorkbenchShell(),
+                            "You have to accept license of '" + this.getFullName() + " ' to continue",
+                            licenseText)) {
+                            return false;
+                        }
+
+                    } catch (IOException e) {
+                        log.warn("Can't read license text", e);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean downloadLibraryFile(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException
     {
         URL url = new URL(file.getExternalURL());
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();

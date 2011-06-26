@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.utils;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
@@ -19,6 +18,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.util.HashMap;
@@ -380,4 +380,22 @@ public class ContentUtils {
         return file;
     }
 
+    public static String readFileToString(File file) throws IOException
+    {
+        FileReader reader = new FileReader(file);
+        try {
+            StringBuilder result = new StringBuilder((int) file.length());
+            char[] buffer = new char[4000];
+            for (;;) {
+                int count = reader.read(buffer);
+                if (count <= 0) {
+                    break;
+                }
+                result.append(buffer, 0, count);
+            }
+            return result.toString();
+        } finally {
+            ContentUtils.close(reader);
+        }
+    }
 }
