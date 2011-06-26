@@ -20,11 +20,11 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 /**
  * Oracle constraint manager
  */
-public class OracleConstraintManager extends JDBCConstraintManager<OracleConstraint, OracleTable> {
+public class OracleConstraintManager extends JDBCConstraintManager<OracleConstraint, OracleTableBase> {
 
     protected OracleConstraint createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor, DBECommandContext context, OracleTable parent,
+        IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(

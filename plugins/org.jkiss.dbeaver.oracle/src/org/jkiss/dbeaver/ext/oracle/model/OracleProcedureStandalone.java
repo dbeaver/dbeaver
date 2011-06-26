@@ -49,8 +49,8 @@ public class OracleProcedureStandalone extends OracleProcedureBase
     }
 
     @Override
-    public int getOverloadNumber()
+    public Integer getOverloadNumber()
     {
-        return 0;
+        return null;
     }
 }

@@ -19,7 +19,7 @@ import java.sql.ResultSet;
 public class OracleProcedurePackaged extends OracleProcedureBase implements DBSObjectUnique
 {
     private OraclePackage ownerPackage;
-    private int overload = 1;
+    private Integer overload;
 
     public OracleProcedurePackaged(
         OraclePackage ownerPackage,
@@ -60,7 +60,7 @@ public class OracleProcedurePackaged extends OracleProcedureBase implements DBSO
     }
 
     @Override
-    public int getOverloadNumber()
+    public Integer getOverloadNumber()
     {
         return overload;
     }

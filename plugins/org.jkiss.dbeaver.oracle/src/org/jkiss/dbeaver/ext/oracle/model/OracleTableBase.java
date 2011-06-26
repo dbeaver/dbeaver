@@ -48,6 +48,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     private String comment;
     private List<OracleTableColumn> columns;
+    private List<OracleConstraint> constraints;
 
     protected OracleTableBase(OracleSchema schema, boolean persisted)
     {
@@ -99,6 +100,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
         columns = null;
+        constraints = null;
         return true;
     }
 
@@ -124,9 +126,30 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return null;
     }
 
-    public List<? extends DBSConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    @Association
+    public List<OracleConstraint> getConstraints(DBRProgressMonitor monitor)
+        throws DBException
     {
-        return null;
+        if (constraints == null) {
+            getContainer().constraintCache.getObjects(monitor, getContainer(), this);
+        }
+        return constraints;
+    }
+
+    public OracleConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
+        throws DBException
+    {
+        return DBUtils.findObject(getConstraints(monitor), ukName);
+    }
+
+    void setConstraints(List<OracleConstraint> constraints)
+    {
+        this.constraints = constraints;
+    }
+
+    boolean isConstraintsCached()
+    {
+        return constraints != null;
     }
 
     public List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException

@@ -100,15 +100,18 @@ public class OraclePackage extends OracleObject implements OracleSourceObject,DB
         @Override
         protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<OracleProcedurePackaged> objectIter)
         {
-            Map<String, Integer> overloads = new HashMap<String, Integer>();
+            Map<String, OracleProcedurePackaged> overloads = new HashMap<String, OracleProcedurePackaged>();
             while (objectIter.hasNext()) {
                 final OracleProcedurePackaged proc = objectIter.next();
-                final Integer overload = overloads.get(proc.getName());
+                final OracleProcedurePackaged overload = overloads.get(proc.getName());
                 if (overload == null) {
-                    overloads.put(proc.getName(), 1);
+                    overloads.put(proc.getName(), proc);
                 } else {
-                    proc.setOverload(overload + 1);
-                    overloads.put(proc.getName(), overload + 1);
+                    if (overload.getOverloadNumber() == null) {
+                        overload.setOverload(1);
+                    }
+                    proc.setOverload(overload.getOverloadNumber() + 1);
+                    overloads.put(proc.getName(), proc);
                 }
             }
         }

@@ -18,10 +18,10 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 /**
  * Oracle foreign key manager
  */
-public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeignKey, OracleTable> {
+public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeignKey, OracleTableBase> {
 
 
-    protected OracleForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTable table, Object from)
+    protected OracleForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
             workbenchWindow.getShell(),

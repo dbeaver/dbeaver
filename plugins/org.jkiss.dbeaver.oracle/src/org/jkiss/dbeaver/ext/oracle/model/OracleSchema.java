@@ -265,7 +265,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         return null;
     }
 
-    protected static OracleTableColumn getTableColumn(JDBCExecutionContext context, OracleTable parent, ResultSet dbResult) throws DBException
+    protected static OracleTableColumn getTableColumn(JDBCExecutionContext context, OracleTableBase parent, ResultSet dbResult) throws DBException
     {
         String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
         OracleTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
@@ -364,13 +364,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
     /**
      * Index cache implementation
      */
-    class ConstraintCache extends JDBCCompositeCache<OracleSchema, OracleTable, OracleConstraint, OracleConstraintColumn> {
+    class ConstraintCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleConstraint, OracleConstraintColumn> {
         protected ConstraintCache()
         {
-            super(tableCache, OracleTable.class, "TABLE_NAME", "CONSTRAINT_NAME");
+            super(tableCache, OracleTableBase.class, "TABLE_NAME", "CONSTRAINT_NAME");
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTable forTable)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTableBase forTable)
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -379,7 +379,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
                     "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS," +
                     "col.COLUMN_NAME,col.POSITION\n" +
                     "FROM SYS.ALL_CONSTRAINTS c\n" +
-                    "JOIN SYS.ALL_CONS_COLUMNS col ON c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
+                    "LEFT OUTER JOIN SYS.ALL_CONS_COLUMNS col ON c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
                     "WHERE c.CONSTRAINT_TYPE<>'R' AND c.OWNER=?");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
@@ -394,7 +394,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
             return dbStat;
         }
 
-        protected OracleConstraint fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTable parent, String indexName, ResultSet dbResult)
+        protected OracleConstraint fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTableBase parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleConstraint(parent, dbResult);
@@ -402,7 +402,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
 
         protected OracleConstraintColumn fetchObjectRow(
             JDBCExecutionContext context,
-            OracleTable parent, OracleConstraint object, ResultSet dbResult)
+            OracleTableBase parent, OracleConstraint object, ResultSet dbResult)
             throws SQLException, DBException
         {
             final OracleTableColumn tableColumn = getTableColumn(context, parent, dbResult);
@@ -412,12 +412,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
                 JDBCUtils.safeGetInt(dbResult, "POSITION"));
         }
 
-        protected boolean isObjectsCached(OracleTable parent)
+        protected boolean isObjectsCached(OracleTableBase parent)
         {
             return parent.isConstraintsCached();
         }
 
-        protected void cacheObjects(OracleTable parent, List<OracleConstraint> constraints)
+        protected void cacheObjects(OracleTableBase parent, List<OracleConstraint> constraints)
         {
             parent.setConstraints(constraints);
         }

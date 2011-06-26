@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -26,6 +27,9 @@ import java.sql.SQLException;
  */
 public class OracleView extends OracleTableBase
 {
+
+    public static final DBSConstraintType CONSTRAINT_WITH_CHECK_OPTION = new DBSConstraintType("V", "With Check Option", false);
+    public static final DBSConstraintType CONSTRAINT_WITH_READ_ONLY = new DBSConstraintType("O", "With Read Only", false);
 
     public static class AdditionalInfo extends TableAdditionalInfo {
         private String text;

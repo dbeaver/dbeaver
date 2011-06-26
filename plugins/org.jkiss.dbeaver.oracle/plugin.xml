@@ -83,6 +83,12 @@
                                     <items label="Columns" itemLabel="Column" path="column" property="columns" iconId="#column">
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleConstraint" label="Constraints" iconId="#constraints" description="View constraints">
+                                    <items label="Constraint" path="constraint" property="constraints" iconId="#unique-key">
+                                        <items label="Constraint columns" path="column" property="columns" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger" label="Triggers" iconId="#triggers" description="Triggers">
                                     <items label="Trigger" path="trigger" property="triggers" iconId="#trigger">
                                         <items label="Columns" itemLabel="Column" path="column" property="columns" navigable="false" inline="false">
@@ -95,6 +101,12 @@
                             <items label="Materialized View" path="view" property="materializedViews" iconId="#view">
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="Columns" iconId="#columns" description="View columns">
                                     <items label="Columns" itemLabel="Column" path="column" property="columns" iconId="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleConstraint" label="Constraints" iconId="#constraints" description="Materialized view constraints">
+                                    <items label="Constraint" path="constraint" property="constraints" iconId="#unique-key">
+                                        <items label="Constraint columns" path="column" property="columns" navigable="false" inline="true">
+                                        </items>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleIndex" label="Indexes" iconId="#indexes" description="Table indexes">

@@ -32,7 +32,6 @@ public class OracleTable extends OracleTablePhysical
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
-    private List<OracleConstraint> constraints;
     private List<OracleForeignKey> foreignKeys;
 
     public OracleTable(OracleSchema schema)
@@ -92,32 +91,6 @@ public class OracleTable extends OracleTablePhysical
     public boolean isNested()
     {
         return nested;
-    }
-
-    @Association
-    public List<OracleConstraint> getConstraints(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (constraints == null) {
-            getContainer().constraintCache.getObjects(monitor, getContainer(), this);
-        }
-        return constraints;
-    }
-
-    public OracleConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
-        throws DBException
-    {
-        return DBUtils.findObject(getConstraints(monitor), ukName);
-    }
-
-    void setConstraints(List<OracleConstraint> constraints)
-    {
-        this.constraints = constraints;
-    }
-
-    boolean isConstraintsCached()
-    {
-        return constraints != null;
     }
 
     public List<OracleForeignKey> getReferences(DBRProgressMonitor monitor)
@@ -187,7 +160,6 @@ public class OracleTable extends OracleTablePhysical
     {
         super.refreshEntity(monitor);
 
-        constraints = null;
         foreignKeys = null;
         return true;
     }

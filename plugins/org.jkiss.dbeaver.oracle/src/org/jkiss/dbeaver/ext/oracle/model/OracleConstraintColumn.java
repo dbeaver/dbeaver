@@ -14,18 +14,18 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class OracleConstraintColumn extends AbstractConstraintColumn
 {
-    private AbstractConstraint<OracleTable> constraint;
+    private AbstractConstraint<OracleTableBase> constraint;
     private OracleTableColumn tableColumn;
     private int ordinalPosition;
 
-    public OracleConstraintColumn(AbstractConstraint<OracleTable> constraint, OracleTableColumn tableColumn, int ordinalPosition)
+    public OracleConstraintColumn(AbstractConstraint<OracleTableBase> constraint, OracleTableColumn tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
     }
 
-    public AbstractConstraint<OracleTable> getConstraint()
+    public AbstractConstraint<OracleTableBase> getConstraint()
     {
         return constraint;
     }

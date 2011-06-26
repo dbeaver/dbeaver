@@ -431,7 +431,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     {
         List<DBNDatabaseNode> oldChildren;
         synchronized (this) {
-            if (childNodes == null || childNodes.isEmpty()) {
+            if (childNodes == null) {
                 // Nothing to reload
                 return;
             }

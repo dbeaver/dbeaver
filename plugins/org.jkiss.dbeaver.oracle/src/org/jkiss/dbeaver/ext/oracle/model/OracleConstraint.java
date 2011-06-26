@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * OracleConstraint
  */
-public class OracleConstraint extends JDBCConstraint<OracleTable> {
+public class OracleConstraint extends JDBCConstraint<OracleTableBase> {
 
     static final Log log = LogFactory.getLog(OracleConstraint.class);
 
@@ -30,14 +30,14 @@ public class OracleConstraint extends JDBCConstraint<OracleTable> {
     private OracleObjectStatus status;
     private List<OracleConstraintColumn> columns;
 
-    public OracleConstraint(OracleTable oracleTable, String name, DBSConstraintType constraintType, String searchCondition, OracleObjectStatus status)
+    public OracleConstraint(OracleTableBase oracleTable, String name, DBSConstraintType constraintType, String searchCondition, OracleObjectStatus status)
     {
         super(oracleTable, name, null, constraintType, false);
         this.searchCondition = searchCondition;
         this.status = status;
     }
 
-    public OracleConstraint(OracleTable table, ResultSet dbResult)
+    public OracleConstraint(OracleTableBase table, ResultSet dbResult)
     {
         super(
             table,
@@ -107,8 +107,12 @@ public class OracleConstraint extends JDBCConstraint<OracleTable> {
             return DBSConstraintType.PRIMARY_KEY;
         } else if ("U".equals(type)) {
             return DBSConstraintType.UNIQUE_KEY;
-        } else if ("К".equals(type)) {
+        } else if ("R".equals(type)) {
             return DBSConstraintType.FOREIGN_KEY;
+        } else if ("V".equals(type)) {
+            return OracleView.CONSTRAINT_WITH_CHECK_OPTION;
+        } else if ("O".equals(type)) {
+            return OracleView.CONSTRAINT_WITH_READ_ONLY;
         } else {
             log.debug("Unsupported constraint type: " + type);
             return DBSConstraintType.CHECK;

@@ -44,7 +44,7 @@ public abstract class OracleProcedureBase extends OracleSchemaObject implements 
         return procedureType ;
     }
 
-    public abstract int getOverloadNumber();
+    public abstract Integer getOverloadNumber();
 
     public Collection<? extends DBSProcedureColumn> getColumns(DBRProgressMonitor monitor) throws DBException
     {
@@ -64,13 +64,17 @@ public abstract class OracleProcedureBase extends OracleSchemaObject implements 
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_ARGUMENTS " +
                 "WHERE OWNER=? AND OBJECT_NAME=? " +
-                (procedure.getContainer() instanceof OraclePackage ? "AND PACKAGE_NAME=? AND OVERLOAD=? " : "AND PACKAGE_NAME IS NULL ") +
+                (procedure.getContainer() instanceof OraclePackage ? "AND PACKAGE_NAME=? " : "AND PACKAGE_NAME IS NULL ") +
+                (procedure.getOverloadNumber() != null ? "AND OVERLOAD=? " : "AND OVERLOAD IS NULL ") +
                 "\nORDER BY SEQUENCE");
-            dbStat.setString(1, procedure.getSchema().getName());
-            dbStat.setString(2, procedure.getName());
+            int paramNum = 1;
+            dbStat.setString(paramNum++, procedure.getSchema().getName());
+            dbStat.setString(paramNum++, procedure.getName());
             if (procedure.getContainer() instanceof OraclePackage) {
-                dbStat.setString(3, procedure.getContainer().getName());
-                dbStat.setInt(4, procedure.getOverloadNumber());
+                dbStat.setString(paramNum++, procedure.getContainer().getName());
+            }
+            if (procedure.getOverloadNumber() != null) {
+                dbStat.setInt(paramNum, procedure.getOverloadNumber());
             }
             return dbStat;
         }

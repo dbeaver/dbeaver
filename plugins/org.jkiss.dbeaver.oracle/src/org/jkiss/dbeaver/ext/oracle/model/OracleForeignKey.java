@@ -24,7 +24,7 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
     private DBSConstraintModifyRule deleteRule;
 
     public OracleForeignKey(
-        OracleTable oracleTable,
+        OracleTableBase oracleTable,
         String name,
         OracleObjectStatus status,
         OracleConstraint referencedKey,
@@ -49,11 +49,9 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
             table.getDataSource(),
             JDBCUtils.safeGetString(dbResult, "R_OWNER"),
             JDBCUtils.safeGetString(dbResult, "R_TABLE_NAME"));
-        if (refTable instanceof OracleTable) {
-            referencedKey = ((OracleTable)refTable).getConstraint(monitor, refName);
-            if (referencedKey == null) {
-                log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullQualifiedName() + "'");
-            }
+        referencedKey = refTable.getConstraint(monitor, refName);
+        if (referencedKey == null) {
+            log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullQualifiedName() + "'");
         }
 
         String deleteRuleName = JDBCUtils.safeGetString(dbResult, "DELETE_RULE");
@@ -61,7 +59,7 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
     }
 
     @Property(name = "Ref Table", viewable = true, order = 3)
-    public OracleTable getReferencedTable()
+    public OracleTableBase getReferencedTable()
     {
         return referencedKey.getTable();
     }
