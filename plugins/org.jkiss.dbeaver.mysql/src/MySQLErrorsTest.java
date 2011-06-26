@@ -2,18 +2,13 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-import com.mysql.jdbc.ConnectionImpl;
-
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class MySQLErrorsTest {
 
     public static void main(String[] args) throws Exception
     {
-        ConnectionImpl con = (ConnectionImpl) DriverManager.getConnection("jdbc:mysql://localhost/sa", "root", "1978");
+        Connection con = DriverManager.getConnection("jdbc:mysql://localhost/sa", "root", "1978");
         {
             System.out.println("SHOW VARIABLES");
             PreparedStatement stat = con.prepareStatement("SHOW VARIABLES LIKE '%char%'");

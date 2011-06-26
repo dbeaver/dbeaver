@@ -66,6 +66,10 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         case java.sql.Types.BIGINT:
             value = resultSet.getLong(columnIndex);
             break;
+        case java.sql.Types.DOUBLE:
+        case java.sql.Types.REAL:
+            value = resultSet.getDouble(columnIndex);
+            break;
         case java.sql.Types.FLOAT:
             value = resultSet.getFloat(columnIndex);
             break;
@@ -122,6 +126,10 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 break;
             case java.sql.Types.FLOAT:
                 statement.setFloat(paramIndex, number.floatValue());
+                break;
+            case java.sql.Types.DOUBLE:
+            case java.sql.Types.REAL:
+                statement.setDouble(paramIndex, number.doubleValue());
                 break;
             case java.sql.Types.INTEGER:
                 statement.setInt(paramIndex, number.intValue());
