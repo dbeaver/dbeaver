@@ -26,7 +26,7 @@ public abstract class ObjectViewerRenderer {
 
     private boolean isTree;
     // Current selection coordinates
-    private transient int selectedItem = -1;
+    private transient Item selectedItem;
     private transient int selectedColumn = -1;
 
     private ColumnViewer itemsViewer;
@@ -71,44 +71,35 @@ public abstract class ObjectViewerRenderer {
 
     private TableItem detectTableItem(int x, int y)
     {
-        selectedItem = -1;
+        selectedItem = null;
         selectedColumn = -1;
         Point pt = new Point(x, y);
-        TableItem item = getTable().getItem(pt);
-        if (item == null) return null;
-        selectedColumn = UIUtils.getColumnAtPos(item, x, y);
-        selectedItem = getTable().indexOf(item);
-        return item;
+        selectedItem = getTable().getItem(pt);
+        if (selectedItem == null) return null;
+        selectedColumn = UIUtils.getColumnAtPos((TableItem) selectedItem, x, y);
+        return (TableItem) selectedItem;
     }
 
     private TreeItem detectTreeItem(int x, int y)
     {
-        selectedItem = -1;
+        selectedItem = null;
         selectedColumn = -1;
         Point pt = new Point(x, y);
-        TreeItem item = getTree().getItem(pt);
-        if (item == null) return null;
-        selectedColumn = UIUtils.getColumnAtPos(item, x, y);
-        selectedItem = getTree().indexOf(item);
-        return item;
+        selectedItem = getTree().getItem(pt);
+        if (selectedItem == null) {
+            return null;
+        }
+        selectedColumn = UIUtils.getColumnAtPos((TreeItem) selectedItem, x, y);
+        return (TreeItem) selectedItem;
     }
 
     public String getSelectedText()
     {
-        if (selectedItem == -1 || selectedColumn == -1) {
+        if (selectedItem == null || selectedColumn == -1) {
             return null;
         }
-        if (isTree) {
-            if (selectedItem >= getTree().getItemCount()) {
-                return null;
-            }
-            return getTree().getItem(selectedItem).getText(selectedColumn);
-        } else {
-            if (selectedItem >= getTable().getItemCount()) {
-                return null;
-            }
-            return getTable().getItem(selectedItem).getText(selectedColumn);
-        }
+        Object cellValue = getCellValue(selectedItem.getData(), selectedColumn);
+        return getCellString(cellValue);
     }
 
     protected ColumnViewer getItemsViewer()

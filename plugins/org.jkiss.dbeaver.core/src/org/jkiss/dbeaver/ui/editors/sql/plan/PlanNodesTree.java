@@ -5,6 +5,11 @@
 package org.jkiss.dbeaver.ui.editors.sql.plan;
 
 import org.eclipse.jface.viewers.TreeViewer;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -98,6 +103,11 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
     public DBPDataSource getDataSource()
     {
         return dataSourceProvider.getDataSource();
+    }
+
+    protected ObjectViewerRenderer createRenderer()
+    {
+        return new PlanTreeRenderer();
     }
 
     @Override
@@ -195,6 +205,22 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
                 itemsViewer.getControl().setRedraw(true);
             }
         }
+    }
+
+    private class PlanTreeRenderer extends ViewerRenderer {
+        public boolean isHyperlink(Object cellValue)
+        {
+            return cellValue instanceof DBSObject;
+        }
+
+        public void navigateHyperlink(Object cellValue)
+        {
+            if (cellValue instanceof DBSObject) {
+                NavigatorHandlerObjectOpen.openEntityEditor((DBSObject) cellValue);
+            }
+        }
 
     }
+
+
 }

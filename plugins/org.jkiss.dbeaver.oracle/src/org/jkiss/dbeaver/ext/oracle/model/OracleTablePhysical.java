@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -84,6 +85,12 @@ public abstract class OracleTablePhysical extends OracleTableBase implements Ora
             this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
         }
         return indexes;
+    }
+
+    public OracleIndex getIndexe(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return DBUtils.findObject(getIndexes(monitor), name);
     }
 
     boolean isIndexesCached()

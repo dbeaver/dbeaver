@@ -4,9 +4,11 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Date;
@@ -45,5 +47,18 @@ public class OracleDBLink extends OracleSchemaObject {
     public Date getCreated()
     {
         return created;
+    }
+
+    public static Object resolveObject(DBRProgressMonitor monitor, OracleSchema schema, String dbLink) throws DBException
+    {
+        if (CommonUtils.isEmpty(dbLink)) {
+            return null;
+        }
+        final OracleDBLink object = schema.dbLinkCache.getObject(monitor, schema, dbLink);
+        if (object == null) {
+            log.warn("DB Link '" + dbLink + "' not found in schema '" + schema.getName() + "'");
+            return dbLink;
+        }
+        return object;
     }
 }

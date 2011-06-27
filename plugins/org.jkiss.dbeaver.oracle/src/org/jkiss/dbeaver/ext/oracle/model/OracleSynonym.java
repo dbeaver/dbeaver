@@ -4,13 +4,11 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 
@@ -19,22 +17,18 @@ import java.sql.ResultSet;
  */
 public class OracleSynonym extends OracleSchemaObject {
 
-    private OracleSchema objectOwner;
+    private String objectOwner;
     private String objectTypeName;
     private String objectName;
-    private OracleDBLink dbLink;
+    private String dbLink;
 
-    public OracleSynonym(DBRProgressMonitor monitor, OracleSchema schema, ResultSet dbResult) throws DBException
+    public OracleSynonym(OracleSchema schema, ResultSet dbResult) throws DBException
     {
         super(schema, JDBCUtils.safeGetString(dbResult, "SYNONYM_NAME"), true);
         this.objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
-        this.objectOwner = schema.getDataSource().schemaCache.getCachedObject(
-            JDBCUtils.safeGetString(dbResult, "TABLE_OWNER"));
+        this.objectOwner = JDBCUtils.safeGetString(dbResult, "TABLE_OWNER");
         this.objectName = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
-        final String dbLinkName = JDBCUtils.safeGetString(dbResult, "DB_LINK");
-        if (!CommonUtils.isEmpty(dbLinkName)) {
-            this.dbLink = schema.dbLinkCache.getObject(monitor, schema, dbLinkName);
-        }
+        this.dbLink = JDBCUtils.safeGetString(dbResult, "DB_LINK");
     }
 
     public OracleObjectType getObjectType()
@@ -55,30 +49,28 @@ public class OracleSynonym extends OracleSchemaObject {
     }
 
     @Property(name = "Object Owner", viewable = true, order = 3)
-    public OracleSchema getObjectOwner()
+    public Object getObjectOwner()
     {
-        return objectOwner;
+        final OracleSchema schema = getDataSource().schemaCache.getCachedObject(objectOwner);
+        return schema == null ? objectOwner : schema;
     }
 
-    @Property(name = "Object Reference", viewable = true, order = 4)
-    public DBSObject getObject(DBRProgressMonitor monitor) throws DBException
+    @Property(name = "Object", viewable = true, order = 4)
+    public Object getObject(DBRProgressMonitor monitor) throws DBException
     {
-        OracleObjectType objectType = getObjectType();
-        if (objectType == null) {
-            log.warn("Unrecognized object type: " + objectTypeName);
-            return null;
-        }
-        if (!objectType.isBrowsable()) {
-            log.warn("Unsupported object type: " + objectTypeName);
-            return null;
-        }
-        return objectType.findObject(monitor, objectOwner, objectName);
+        return OracleObjectType.resolveObject(
+            monitor,
+            getDataSource(),
+            dbLink,
+            objectTypeName,
+            objectOwner,
+            objectName);
     }
 
-    @Property(name = "DB Link", viewable = true, order = 4)
-    public OracleDBLink getDbLink()
+    @Property(name = "DB Link", viewable = true, order = 5)
+    public Object getDbLink(DBRProgressMonitor monitor) throws DBException
     {
-        return dbLink;
+        return OracleDBLink.resolveObject(monitor, getSchema(), dbLink);
     }
 
 }

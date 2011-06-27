@@ -81,6 +81,15 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         }
     }
 
+    public static IEditorPart openEntityEditor(DBSObject object)
+    {
+        DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject(object);
+        if (node != null) {
+            return NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverCore.getActiveWorkbenchWindow());
+        }
+        return null;
+    }
+
     public static IEditorPart openEntityEditor(DBNDatabaseNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
     {
         if (selectedNode.getObject() instanceof DBEPrivateObjectEditor) {

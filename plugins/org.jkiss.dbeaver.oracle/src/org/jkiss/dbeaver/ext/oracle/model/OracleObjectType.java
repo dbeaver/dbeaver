@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -18,6 +20,7 @@ import java.util.Map;
  * Object type
  */
 public enum OracleObjectType implements DBSObjectType {
+
 	CLUSTER("CLUSTER", null, DBSObject.class, null),
 	CONSUMER_GROUP("CONSUMER GROUP", null, DBSObject.class, null),
 	CONTEXT("CONTEXT", null, DBSObject.class, null),
@@ -29,7 +32,12 @@ public enum OracleObjectType implements DBSObjectType {
             return schema.proceduresCache.getObject(monitor, schema, objectName);
         }
     }),
-	INDEX("INDEX", null, DBSObject.class, null),
+	INDEX("INDEX", DBIcon.TREE_INDEX.getImage(), OracleIndex.class, new ObjectFinder() {
+        public OracleIndex findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
+        {
+            return schema.indexCache.getObject(monitor, schema, objectName);
+        }
+    }),
 	INDEX_PARTITION("INDEX PARTITION", null, DBSObject.class, null),
 	INDEXTYPE("INDEXTYPE", null, DBSObject.class, null),
 	JAVA_CLASS("JAVA CLASS", DBIcon.TREE_JAVA_CLASS.getImage(), OracleJavaClass.class, new ObjectFinder() {
@@ -116,8 +124,10 @@ public enum OracleObjectType implements DBSObjectType {
 	WINDOW_GROUP("WINDOW GROUP", null, DBSObject.class, null),
 	XML_SCHEMA("XML SCHEMA", null, DBSObject.class, null);
     
+    static final Log log = LogFactory.getLog(OracleObjectType.class);
+
     private static Map<String, OracleObjectType> typeMap = new HashMap<String, OracleObjectType>();
-    
+
     static {
         for (OracleObjectType type : values()) {
             typeMap.put(type.getTypeName(), type);
@@ -178,6 +188,39 @@ public enum OracleObjectType implements DBSObjectType {
         } else {
             return null;
         }
+    }
+
+    public static Object resolveObject(
+        DBRProgressMonitor monitor,
+        OracleDataSource dataSource,
+        String dbLink,
+        String objectTypeName,
+        String objectOwner,
+        String objectName) throws DBException
+    {
+        if (dbLink != null) {
+            return objectName;
+        }
+        OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
+        if (objectType == null) {
+            log.warn("Unrecognized object type: " + objectTypeName);
+            return objectName;
+        }
+        if (!objectType.isBrowsable()) {
+            log.warn("Unsupported object type: " + objectTypeName);
+            return objectName;
+        }
+        final OracleSchema schema = dataSource.getSchema(monitor, objectOwner);
+        if (schema == null) {
+            log.warn("Schema '" + objectOwner + "' not found");
+            return objectName;
+        }
+        final DBSObject object = objectType.findObject(monitor, schema, objectName);
+        if (object == null) {
+            log.warn(objectTypeName + " '" + objectName + "' not found");
+            return objectName;
+        }
+        return object;
     }
 
 }

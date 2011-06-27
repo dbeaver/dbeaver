@@ -284,10 +284,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         public void navigateHyperlink(Object cellValue)
         {
             if (cellValue instanceof DBSObject) {
-                DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
-                if (node != null) {
-                    NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverCore.getActiveWorkbenchWindow());
-                }
+                NavigatorHandlerObjectOpen.openEntityEditor((DBSObject) cellValue);
             }
         }
 
