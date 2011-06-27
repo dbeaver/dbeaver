@@ -1,37 +1,41 @@
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 
 <html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>Additional Connection Settings</title>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Additional Connection Settings</title>
+    </head>
 
-<body>
-<h1>Additional Connection Settings</h1>
-<p>This is last page of connection wizard and it contains properties common for all drivers.</p>
-<p>These properties are used by DBeaver itself, not by drivers.</p>
+    <body>
+        <h1>Additional Connection Settings</h1>
+        <p>This is last page of connection wizard and it contains properties common for all drivers.</p>
+        <p>These properties are used by DBeaver, not by drivers.</p>
 
-<table border="1">
-    <tr valign="top">
-        <td nowrap>Connection Name</td>
-        <td>Name of connection. It will be used in <a href="../views/database-navigator.html">database navigator</a>.
-        </td>
-    </tr>
-    <tr valign="top">
-        <td nowrap>Save password locally</td>
-        <td>Check this field if you want to store database password locally. Otherwise DBeaver will ask password each time you connect to this database.
-            Passwords are stored in encrypted form, but if you use highly secured databases and it is possible that third person can access your computer we recommend to avoid this feature.
-        </td>
-    </tr>
-    <tr valign="top">
-        <td nowrap>Show system objects</td>
-        <td>Check if you want to see database system objects (schemas, tables, etc). If not checked then system objects will be hidden.</td>
-    </tr>
-    <tr valign="top">
-        <td nowrap>Filter catalogs/schemas</td>
-        <td>Show only catalogs (schemas) which name matches this pattern. Pattern format may be specific to each database but generally it has LIKE syntax.</td>
-    </tr>
-</table>
+        <table border="1">
+            <tr valign="top">
+                <td nowrap>Connection Name</td>
+                <td>Name of connection. This will be used by the <a href="../views/database-navigator.html">database navigator</a>.
+                </td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Save password locally</td>
+                <td>Check this field if you want to store database password locally. Otherwise DBeaver will ask for a password each time you connect to this database.
+                    Passwords are stored in encrypted form, but if you use highly secured databases it is possible that a third person could access your computer. We recommend avoiding this feature.
+                </td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Show system objects</td>
+                <td>Check this if you want to see database system objects (schemas, tables, etc). If you don't check this then system objects will be hidden.</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Filter catalogs/schemas</td>
+                <td>Show only catalogs (schemas) where the name matches a specific pattern. Pattern format may be specific to each database but generally it uses the LIKE syntax.</td>
+            </tr>
+        </table>
 
-</body>
+    </body>
 </html>

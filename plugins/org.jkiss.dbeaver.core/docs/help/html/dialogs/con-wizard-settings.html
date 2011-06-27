@@ -1,54 +1,58 @@
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 
 <html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>Connection Settings</title>
-</head>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Connection Settings</title>
+    </head>
 
-<body>
-<h1>Connection Settings</h1>
+    <body>
+        <h1>Connection Settings</h1>
 
-<h2>Basic settings</h2>
-<p>Here user may specify connection settings and properties.</p>
-<p>Some properties are required, other are optional.</p>
-<p>List of standard settings:</p>
-<table border="1">
-    <tr valign="top">
-        <td nowrap>JDBC URL</td>
-        <td>Database URL. This field is editable only if database driver doesn't have sample URL.
-            Otherwise it is not editable and it's value will be automatically change whenever you change other connection settings.
-        </td>
-    </tr>
-    <tr valign="top">
-        <td nowrap>Host</td>
-        <td>Database host name</td>
-    </tr>
-    <tr valign="top">
-        <td nowrap>Port</td>
-        <td>Database port number. Usually this field is optional. If left blank then default database port will be used.</td>
-    </tr>
-    <tr valign="top">
-        <td nowrap>Database/Schema</td>
-        <td>Name of remote database/schema.</td>
-    </tr>
-    <tr valign="top">
-        <td nowrap>Server</td>
-        <td>Name of remote server.</td>
-    </tr>
-    <tr valign="top">
-        <td nowrap>User name/password</td>
-        <td>User credentials. May be left blank for some drivers (e.g. for embedded databases)</td>
-    </tr>
-</table>
+        <h2>Basic settings</h2>
+        <p>Here is where you may specify connection settings and properties.</p>
+        <p>Some properties are required, others are optional.</p>
+        <p>List of standard settings:</p>
+        <table border="1">
+            <tr valign="top">
+                <td nowrap>JDBC URL</td>
+                <td>Database URL. This field is editable only if the database driver doesn't have sample URL.
+                    Otherwise its value will be automatically changed whene you change other connection settings.
+                </td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Host</td>
+                <td>Database host name</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Port</td>
+                <td>Database port number. Usually this field is optional. If left blank then the default database port will be used.</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Database/Schema</td>
+                <td>Name of remote database/schema.</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Server</td>
+                <td>Name of remote server.</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>User name/password</td>
+                <td>User credentials. May be left blank for some drivers (e.g. for embedded databases)</td>
+            </tr>
+        </table>
 
-<h2>Advanced settings</h2>
-<p>Database driver may support set of additional connection settings.
-    User mey view list of all available properties on "Advanced" tab. All properties are editable.</p>
-<p>Some drivers supports additional properties but doesn't provide list of them.
-    In this case you may find list of available properties in driver's documentation and then specify any number of properties under "User Properties" element.
-    Right click on it and choose "Add new property" menu item.
-</p>
+        <h2>Advanced settings</h2>
+        <p>The database driver may support additional connection settings.
+            Users may view a list of all available properties on the "Advanced" tab. All properties are editable.</p>
+        <p>Some drivers support additional properties but don't provide a list of them.
+            In this case you may find a list of available properties in driver's documentation. After reviewing the driver's documentation you may specify any number of properties under the "User Properties" element.
+            Right click on it and choose the "Add new property" menu item.
+        </p>
 
-</body>
+    </body>
 </html>
