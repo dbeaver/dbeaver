@@ -408,7 +408,11 @@ public class SQLQueryJob extends DataSourceJob
         }
         boolean result = executeSingleQuery(context, queries.get(0), true);
         if (!result && lastError != null) {
-            throw new DBException(lastError);
+            if (lastError instanceof DBException) {
+                throw (DBException) lastError;
+            } else {
+                throw new DBException(lastError);
+            }
         }
         return rowCount;
     }

@@ -766,14 +766,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                             break;
                         }
                     } catch (final Exception e) {
-                        Display.getDefault().syncExec(new Runnable() {
-                            public void run()
-                            {
-                                UIUtils.showErrorDialog(null, "Download driver", "Can't download '" + getName() + "' libraries", e);
-                            }
-                        });
-                        break;
-                        //throw new InvocationTargetException(e);
+                        UIUtils.showErrorDialog(
+                            null,
+                            "Download driver",
+                            "Can't download library '" + getName() + "' file",
+                            e);
                     }
                 }
             }

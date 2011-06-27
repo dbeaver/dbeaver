@@ -12,13 +12,13 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 class ResultSetDataPumpJob extends DataSourceJob {
 
     private ResultSetViewer resultSetViewer;
     private int offset;
     private int maxRows;
+    private Throwable error;
 
     protected ResultSetDataPumpJob(ResultSetViewer resultSetViewer) {
         super("Read data", DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetViewer.getDataContainer().getDataSource());
@@ -35,9 +35,13 @@ class ResultSetDataPumpJob extends DataSourceJob {
         this.maxRows = maxRows;
     }
 
+    public Throwable getError()
+    {
+        return error;
+    }
+
     protected IStatus run(DBRProgressMonitor monitor) {
-        boolean hasErrors = false;
-        Throwable error = null;
+        error = null;
         DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.USER, "Read data from '" + resultSetViewer.getDataContainer().getName() + "'");
         try {
             resultSetViewer.getDataContainer().readData(
@@ -49,26 +53,11 @@ class ResultSetDataPumpJob extends DataSourceJob {
         }
         catch (DBException e) {
             error = e;
-            hasErrors = true;
         }
         finally {
             context.close();
         }
 
-        if (hasErrors) {
-            // Set status
-            final Throwable err = error;
-            resultSetViewer.getControl().getDisplay().syncExec(new Runnable() {
-                public void run() {
-                    resultSetViewer.setStatus(err.getMessage(), true);
-                    UIUtils.showErrorDialog(
-                        resultSetViewer.getControl().getShell(),
-                        "Error executing query",
-                        "Can't read data",
-                        err);
-                }
-            });
-        }
         return Status.OK_STATUS;
     }
 

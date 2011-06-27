@@ -1100,11 +1100,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
+                    final Throwable error = dataPumpJob == null ? null : dataPumpJob.getError();
                     dataPumpJob = null;
-                    if (oldPos != null) {
-                        Display.getDefault().syncExec(new Runnable() {
-                            public void run()
-                            {
+                    Display.getDefault().asyncExec(new Runnable() {
+                        public void run()
+                        {
+                            final Shell shell = getControl().getShell();
+                            if (error != null) {
+                                setStatus(error.getMessage(), true);
+                                UIUtils.showErrorDialog(
+                                    shell,
+                                    "Error executing query",
+                                    "Query execution failed",
+                                    error);
+                            }
+                            if (oldPos != null) {
                                 // Seems to be refresh
                                 // Restore original position
                                 ResultSetViewer.this.curRowNum = oldPos.row;
@@ -1114,12 +1124,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                                 } else {
                                     spreadsheet.setCursor(new GridPos(0, curColNum), false);
                                 }
-                                if (finalizer != null) {
-                                    finalizer.run();
-                                }
                             }
-                        });
-                    }
+                            if (finalizer != null) {
+                                finalizer.run();
+                            }
+                        }
+                    });
                 }
             });
             dataPumpJob.setOffset(offset);

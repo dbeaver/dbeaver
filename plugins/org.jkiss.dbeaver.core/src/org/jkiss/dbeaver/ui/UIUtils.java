@@ -380,11 +380,7 @@ public class UIUtils {
                 messageBox.open();
             }
         };
-        if (shell.getDisplay().getThread() != Thread.currentThread()) {
-            shell.getDisplay().syncExec(runnable);
-        } else {
-            runnable.run();
-        }
+        runInUI(shell, runnable);
     }
 
     public static boolean confirmAction(final Shell shell, final String title, final String question)
@@ -399,11 +395,7 @@ public class UIUtils {
                 result = (response == SWT.YES);
             }
         };
-        if (shell.getDisplay().getThread() != Thread.currentThread()) {
-            shell.getDisplay().syncExec(confirmer);
-        } else {
-            confirmer.run();
-        }
+        runInUI(shell, confirmer);
         return confirmer.getResult();
     }
 
@@ -788,19 +780,17 @@ public class UIUtils {
         String message,
         Throwable error)
     {
-        if (error == null) {
-            showErrorDialog(shell, title, message);
-            return;
+        if (error != null) {
+            log.error(error);
         }
-        log.error(error);
 
-        // Display the dialog
-        StandardErrorDialog dialog = new StandardErrorDialog(shell,
+        showErrorDialog(
+            shell,
             title,
-            message,
-            RuntimeUtils.makeExceptionStatus(error),
-            IStatus.ERROR);
-        dialog.open();
+            error == null ? null : message,
+            error == null ?
+                new Status(IStatus.ERROR, DBeaverConstants.PLUGIN_ID, message) :
+                RuntimeUtils.makeExceptionStatus(error));
     }
 
     public static void showErrorDialog(
@@ -808,15 +798,7 @@ public class UIUtils {
         String title,
         String message)
     {
-        //log.debug(message);
-        // Display the dialog
-        StandardErrorDialog dialog = new StandardErrorDialog(
-            shell,
-            title,
-            null,
-            new Status(IStatus.ERROR, DBeaverConstants.PLUGIN_ID, message),
-            IStatus.ERROR);
-        dialog.open();
+        showErrorDialog(shell, title, message, (Throwable) null);
     }
 
     public static void showErrorDialog(
@@ -839,30 +821,40 @@ public class UIUtils {
             messageStatuses.toArray(new IStatus[messageStatuses.size()]),
             message,
             null);
-        // Display the dialog
-        StandardErrorDialog dialog = new StandardErrorDialog(
-            shell,
-            title,
-            null,
-            status,
-            IStatus.ERROR);
-        dialog.open();
+        showErrorDialog(shell, title, message, status);
     }
 
     public static void showErrorDialog(
-        Shell shell,
-        String title,
-        IStatus status)
+        final Shell shell,
+        final String title,
+        final String message,
+        final IStatus status)
     {
         //log.debug(message);
-        // Display the dialog
-        StandardErrorDialog dialog = new StandardErrorDialog(
-            shell,
-            title,
-            null,
-            status,
-            IStatus.ERROR);
-        dialog.open();
+        Runnable runnable = new Runnable() {
+            public void run()
+            {
+                // Display the dialog
+                StandardErrorDialog dialog = new StandardErrorDialog(
+                    shell,
+                    title,
+                    message,
+                    status,
+                    IStatus.ERROR);
+                dialog.open();
+            }
+        };
+        runInUI(shell, runnable);
+    }
+
+    public static void runInUI(Shell shell, Runnable runnable)
+    {
+        final Display display = shell == null ? Display.getDefault() : shell.getDisplay();
+        if (display.getThread() != Thread.currentThread()) {
+            display.syncExec(runnable);
+        } else {
+            runnable.run();
+        }
     }
 
     public static String formatMessage(String message, Object... args)

@@ -189,16 +189,10 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                     // ok
                 }
             }
-            final Throwable showError = error;
-            Display.getDefault().asyncExec(new Runnable() {
-                public void run()
-                {
-                    if (showError != null) {
-                        UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + getDatabaseObject().getName() + "'", null, showError);
-                    }
-                    firePropertyChange(IEditorPart.PROP_DIRTY);
-                }
-            });
+            if (error != null) {
+                UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + getDatabaseObject().getName() + "'", null, error);
+            }
+            firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
