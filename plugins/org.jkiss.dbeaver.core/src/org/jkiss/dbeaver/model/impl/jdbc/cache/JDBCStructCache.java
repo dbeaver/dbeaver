@@ -40,7 +40,7 @@ public abstract class JDBCStructCache<
     abstract protected void cacheChildren(OBJECT parent, List<CHILD> children);
 
     abstract protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OWNER owner, OBJECT forObject)
-        throws SQLException, DBException;
+        throws SQLException;
 
     abstract protected CHILD fetchChild(JDBCExecutionContext context, OWNER owner, OBJECT parent, ResultSet dbResult)
         throws SQLException, DBException;

@@ -89,7 +89,7 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
     static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackaged> {
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OraclePackage owner)
-            throws SQLException, DBException
+            throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT P.*,CASE WHEN A.DATA_TYPE IS NULL THEN 'PROCEDURE' ELSE 'FUNCTION' END as PROCEDURE_TYPE FROM ALL_PROCEDURES P\n" +

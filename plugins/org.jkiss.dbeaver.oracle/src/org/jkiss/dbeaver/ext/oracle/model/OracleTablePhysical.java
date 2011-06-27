@@ -168,7 +168,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements Ora
         }
 
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablePhysical table) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablePhysical table) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TAB_PARTITIONS " +
@@ -186,7 +186,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements Ora
         }
 
         @Override
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleTablePhysical table, OracleTablePartition forObject) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleTablePhysical table, OracleTablePartition forObject) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TAB_SUBPARTITIONS " +

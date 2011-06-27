@@ -63,7 +63,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
     static class ArgumentsCache extends JDBCObjectCache<OracleProcedureBase, OracleProcedureArgument> {
 
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleProcedureBase procedure) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleProcedureBase procedure) throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_ARGUMENTS " +

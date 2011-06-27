@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.oracle;
+package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
@@ -83,5 +83,45 @@ public class OracleConstants {
             return title;
         }
     }
+
+    public static final String PLAN_TABLE_DEFINITION =
+        "create global temporary table PLAN_TABLE (\n" +
+            "statement_id varchar2(30),\n" +
+            "plan_id number,\n" +
+            "timestamp date,\n" +
+            "remarks varchar2(4000),\n" +
+            "operation varchar2(30),\n" +
+            "options varchar2(255),\n" +
+            "object_node varchar2(128),\n" +
+            "object_owner varchar2(30),\n" +
+            "object_name varchar2(30),\n" +
+            "object_alias varchar2(65),\n" +
+            "object_instance numeric,\n" +
+            "object_type varchar2(30),\n" +
+            "optimizer varchar2(255),\n" +
+            "search_columns number,\n" +
+            "id numeric,\n" +
+            "parent_id numeric,\n" +
+            "depth numeric,\n" +
+            "position numeric,\n" +
+            "cost numeric,\n" +
+            "cardinality numeric,\n" +
+            "bytes numeric,\n" +
+            "other_tag varchar2(255),\n" +
+            "partition_start varchar2(255),\n" +
+            "partition_stop varchar2(255),\n" +
+            "partition_id numeric,\n" +
+            "other long,\n" +
+            "distribution varchar2(30),\n" +
+            "cpu_cost numeric,\n" +
+            "io_cost numeric,\n" +
+            "temp_space numeric,\n" +
+            "access_predicates varchar2(4000),\n" +
+            "filter_predicates varchar2(4000),\n" +
+            "projection varchar2(4000),\n" +
+            "time numeric,\n" +
+            "qblock_name varchar2(30),\n" +
+            "other_xml clob\n" +
+            ") on commit preserve rows";
 
 }

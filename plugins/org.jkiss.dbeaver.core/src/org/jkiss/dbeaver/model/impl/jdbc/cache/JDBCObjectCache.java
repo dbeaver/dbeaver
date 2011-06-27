@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
-import org.eclipse.core.internal.utils.ArrayIterator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -39,7 +38,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner)
-        throws SQLException, DBException;
+        throws SQLException;
 
     abstract protected OBJECT fetchObject(JDBCExecutionContext context, OWNER owner, ResultSet resultSet)
         throws SQLException, DBException;

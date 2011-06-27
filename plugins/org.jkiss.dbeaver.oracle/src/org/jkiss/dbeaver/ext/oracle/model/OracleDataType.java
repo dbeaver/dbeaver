@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -396,7 +395,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
 
     private class AttributeCache extends JDBCObjectCache<OracleDataType, OracleDataTypeAttribute> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataType owner) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataType owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPE_ATTRS " +
@@ -414,7 +413,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
 
     private class MethodCache extends JDBCObjectCache<OracleDataType, OracleDataTypeMethod> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataType owner) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataType owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT m.*,r.RESULT_TYPE_OWNER,RESULT_TYPE_NAME,RESULT_TYPE_MOD\n" +

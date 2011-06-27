@@ -455,7 +455,7 @@ public class MySQLTable extends MySQLTableBase
     class PartitionCache extends JDBCObjectCache<MySQLTable, MySQLPartition> {
         Map<String, MySQLPartition> partitionMap = new HashMap<String, MySQLPartition>();
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable mySQLTable) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable mySQLTable) throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_PARTITIONS +

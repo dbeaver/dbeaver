@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.views;
 
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -15,7 +16,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.oracle.Activator;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;

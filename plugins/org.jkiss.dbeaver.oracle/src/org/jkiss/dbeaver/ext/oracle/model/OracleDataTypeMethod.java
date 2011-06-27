@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -109,7 +108,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember {
 
     private class ParameterCache extends JDBCObjectCache<OracleDataTypeMethod, OracleDataTypeMethodParameter> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataTypeMethod owner) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataTypeMethod owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT PARAM_NAME,PARAM_NO,PARAM_MODE,PARAM_TYPE_OWNER,PARAM_TYPE_NAME,PARAM_TYPE_MOD " +

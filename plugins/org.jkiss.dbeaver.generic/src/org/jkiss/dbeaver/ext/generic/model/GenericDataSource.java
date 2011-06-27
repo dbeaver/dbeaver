@@ -604,7 +604,7 @@ public class GenericDataSource extends JDBCDataSource
 
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericDataSource owner) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericDataSource owner) throws SQLException
         {
             return context.getMetaData().getTableTypes().getSource();
         }

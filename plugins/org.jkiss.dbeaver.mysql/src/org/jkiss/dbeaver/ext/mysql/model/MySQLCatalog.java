@@ -232,7 +232,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
-            throws SQLException, DBException
+            throws SQLException
         {
             return context.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(getDataSource(), getName()));
         }
@@ -259,7 +259,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
 
         protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTableBase forTable)
-            throws SQLException, DBException
+            throws SQLException
         {
             StringBuilder sql = new StringBuilder();
             sql
@@ -295,7 +295,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
-            throws SQLException, DBException
+            throws SQLException
         {
             StringBuilder sql = new StringBuilder();
             sql
@@ -391,7 +391,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
-            throws SQLException, DBException
+            throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
@@ -480,7 +480,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
-            throws SQLException, DBException
+            throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
@@ -508,7 +508,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
 
         protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLProcedure procedure)
-            throws SQLException, DBException
+            throws SQLException
         {
             // Load procedure columns thru MySQL metadata
             // There is no metadata table about proc/func columns -
@@ -561,7 +561,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
 
     class TriggerCache extends JDBCObjectCache<MySQLCatalog, MySQLTrigger> {
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
-            throws SQLException, DBException
+            throws SQLException
         {
             return context.prepareStatement(
                 "SHOW FULL TRIGGERS FROM " + getName());

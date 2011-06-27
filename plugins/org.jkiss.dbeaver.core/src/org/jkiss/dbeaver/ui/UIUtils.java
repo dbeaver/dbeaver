@@ -28,6 +28,7 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -368,21 +369,42 @@ public class UIUtils {
         }
     }
 
-    public static void showMessageBox(Shell shell, String title, String info, int messageType)
+    public static void showMessageBox(final Shell shell, final String title, final String info, final int messageType)
     {
-        MessageBox messageBox = new MessageBox(shell, messageType | SWT.OK);
-        messageBox.setMessage(info);
-        messageBox.setText(title);
-        messageBox.open();
+        Runnable runnable = new Runnable() {
+            public void run()
+            {
+                MessageBox messageBox = new MessageBox(shell, messageType | SWT.OK);
+                messageBox.setMessage(info);
+                messageBox.setText(title);
+                messageBox.open();
+            }
+        };
+        if (shell.getDisplay().getThread() != Thread.currentThread()) {
+            shell.getDisplay().syncExec(runnable);
+        } else {
+            runnable.run();
+        }
     }
 
-    public static boolean confirmAction(Shell shell, String title, String question)
+    public static boolean confirmAction(final Shell shell, final String title, final String question)
     {
-        MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
-        messageBox.setMessage(question);
-        messageBox.setText(title);
-        int response = messageBox.open();
-        return response == SWT.YES;
+        RunnableWithResult<Boolean> confirmer = new RunnableWithResult<Boolean>() {
+            public void run()
+            {
+                MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                messageBox.setMessage(question);
+                messageBox.setText(title);
+                int response = messageBox.open();
+                result = (response == SWT.YES);
+            }
+        };
+        if (shell.getDisplay().getThread() != Thread.currentThread()) {
+            shell.getDisplay().syncExec(confirmer);
+        } else {
+            confirmer.run();
+        }
+        return confirmer.getResult();
     }
 
     public static Font makeBoldFont(Font normalFont)

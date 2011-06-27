@@ -48,7 +48,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
     }
 
     protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner)
-        throws SQLException, DBException
+        throws SQLException
     {
         return context.getMetaData().getTables(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
@@ -113,7 +113,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
     }
 
     protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forTable)
-        throws SQLException, DBException
+        throws SQLException
     {
         return context.getMetaData().getColumns(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),

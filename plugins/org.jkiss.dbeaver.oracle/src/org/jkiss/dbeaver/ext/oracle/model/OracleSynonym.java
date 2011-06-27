@@ -22,7 +22,7 @@ public class OracleSynonym extends OracleSchemaObject {
     private String objectName;
     private String dbLink;
 
-    public OracleSynonym(OracleSchema schema, ResultSet dbResult) throws DBException
+    public OracleSynonym(OracleSchema schema, ResultSet dbResult)
     {
         super(schema, JDBCUtils.safeGetString(dbResult, "SYNONYM_NAME"), true);
         this.objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");

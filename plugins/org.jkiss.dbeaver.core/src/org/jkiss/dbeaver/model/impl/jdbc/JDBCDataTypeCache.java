@@ -25,7 +25,7 @@ public class JDBCDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSDataTy
     }
 
     @Override
-    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, JDBCDataSource owner) throws SQLException, DBException
+    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, JDBCDataSource owner) throws SQLException
     {
         return context.getMetaData().getTypeInfo().getSource();
     }

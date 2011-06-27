@@ -42,7 +42,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     }
 
     protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
-        throws SQLException, DBException
+        throws SQLException
     {
         return context.getMetaData().getImportedKeys(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),

@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

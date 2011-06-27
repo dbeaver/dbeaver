@@ -28,7 +28,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     }
 
     protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
-        throws SQLException, DBException
+        throws SQLException
     {
         try {
             return context.getMetaData().getPrimaryKeys(
@@ -40,9 +40,9 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             throw e;
         } catch (Exception e) {
             if (forParent == null) {
-                throw new DBException("Global primary keys read not supported", e);
+                throw new SQLException("Global primary keys read not supported", e);
             } else {
-                throw new DBException(e);
+                throw new SQLException(e);
             }
         }
     }

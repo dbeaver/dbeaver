@@ -61,7 +61,7 @@ public abstract class JDBCCompositeCache<
     }
 
     abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner, PARENT forParent)
-        throws SQLException, DBException;
+        throws SQLException;
 
     abstract protected OBJECT fetchObject(JDBCExecutionContext context, OWNER owner, PARENT parent, String childName, ResultSet resultSet)
         throws SQLException, DBException;

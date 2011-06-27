@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;

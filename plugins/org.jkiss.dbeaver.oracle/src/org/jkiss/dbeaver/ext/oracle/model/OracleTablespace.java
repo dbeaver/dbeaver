@@ -256,7 +256,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
 
     static class FileCache extends JDBCObjectCache<OracleTablespace, OracleDataFile> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.DBA_" +
@@ -275,7 +275,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
 
     static class SegmentCache extends JDBCObjectCache<OracleTablespace, OracleSegment<OracleTablespace>> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminViewPrefix(owner.getDataSource()) +

@@ -4,30 +4,37 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.ext.oracle.OracleConstants;
-import org.jkiss.dbeaver.model.meta.Association;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * GenericDataSource
@@ -43,6 +50,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     private OracleSchema publicSchema;
     private String activeSchemaName;
     private boolean isAdmin;
+    private String planTableName;
 
     public OracleDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -260,9 +268,46 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    String getPlanTableName(JDBCExecutionContext context)
+        throws SQLException
+    {
+        if (planTableName == null) {
+            String[] candidateNames = new String[] {"PLAN_TABLE", "TOAD_PLAN_TABLE"};
+            for (String candidate : candidateNames) {
+                try {
+                    JDBCUtils.executeSQL(context, "SELECT 1 FROM " + candidate);
+                } catch (SQLException e) {
+                    // No such table
+                    continue;
+                }
+                planTableName = candidate;
+                break;
+            }
+            if (planTableName == null) {
+                // Plan table not found - try to create new one
+                if (!UIUtils.confirmAction(
+                    DBeaverCore.getActiveWorkbenchShell(),
+                    "Oracle PLAN_TABLE missing",
+                    "PLAN_TABLE not found in current user's context. " +
+                        "Do you want DBeaver to create new PLAN_TABLE?"))
+                {
+                    return null;
+                }
+                planTableName = createPlanTable(context);
+            }
+        }
+        return planTableName;
+    }
+
+    private String createPlanTable(JDBCExecutionContext context) throws SQLException
+    {
+        JDBCUtils.executeSQL(context, OracleConstants.PLAN_TABLE_DEFINITION);
+        return "PLAN_TABLE";
+    }
+
     class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             StringBuilder schemasQuery = new StringBuilder("SELECT U.USERNAME,U.USER_ID FROM SYS.ALL_USERS u\n");
             List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
@@ -275,7 +320,9 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
             if (!schemaFilters.isEmpty()) {
                 schemasQuery.append(" AND (");
                 for (int i = 0; i < schemaFilters.size(); i++) {
-                    if (i > 0) schemasQuery.append(" OR ");
+                    if (i > 0) {
+                        schemasQuery.append(" OR ");
+                    }
                     schemasQuery.append("USERNAME LIKE ?");
                 }
                 schemasQuery.append(")");
@@ -301,7 +348,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     static class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             return context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPES WHERE OWNER IS NULL ORDER BY TYPE_NAME");
@@ -327,7 +374,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException, DBException
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             return context.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminViewPrefix(OracleDataSource.this) + "TABLESPACES ORDER BY TABLESPACE_NAME");

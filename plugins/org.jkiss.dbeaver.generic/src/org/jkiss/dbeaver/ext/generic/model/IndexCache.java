@@ -29,7 +29,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     }
 
     protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
-        throws SQLException, DBException
+        throws SQLException
     {
         try {
             return context.getMetaData().getIndexInfo(
@@ -45,9 +45,9 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             throw e;
         } catch (Exception e) {
             if (forParent == null) {
-                throw new DBException("Global indexes read not supported", e);
+                throw new SQLException("Global indexes read not supported", e);
             } else {
-                throw new DBException(e);
+                throw new SQLException(e);
             }
         }
     }

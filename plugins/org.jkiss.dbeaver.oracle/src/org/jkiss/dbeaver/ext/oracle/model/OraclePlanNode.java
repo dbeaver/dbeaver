@@ -167,7 +167,10 @@ public class OraclePlanNode implements DBCPlanNode {
         if (divPos != -1) {
             objectTypeName = objectTypeName.substring(0, divPos).trim();
         }
-        if (objectTypeName.equals("INDEX")) {
+        if (objectTypeName.equals(OracleObjectType.CLUSTER.name())) {
+            objectTypeName = OracleObjectType.TABLE.name();
+        }
+        if (objectTypeName.equals(OracleObjectType.INDEX.name())) {
             // Get index from parent table - reading of all indexes takes too much time
             for (OraclePlanNode parentNode = parent; parentNode != null; parentNode = parentNode.getParent()) {
                 final Object parentObject = parentNode.getObject(monitor);
