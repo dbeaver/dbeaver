@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
@@ -507,6 +508,16 @@ public class JDBCUtils {
             case DatabaseMetaData.importedKeySetDefault: return DBSConstraintModifyRule.SET_DEFAULT;
             case DatabaseMetaData.importedKeyRestrict: return DBSConstraintModifyRule.RESTRICT;
             default: return DBSConstraintModifyRule.UNKNOWN;
+        }
+    }
+
+    public static void executeSQL(JDBCExecutionContext context, String sql) throws SQLException
+    {
+        final JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        try {
+            dbStat.execute();
+        } finally {
+            dbStat.close();
         }
     }
 

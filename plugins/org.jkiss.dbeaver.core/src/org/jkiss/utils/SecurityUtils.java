@@ -4,7 +4,9 @@
 
 package org.jkiss.utils;
 
-import java.security.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 /**
  * Come security-related functions.
@@ -35,7 +37,7 @@ public class SecurityUtils {
 		    return null;
 		}
 
-	    java.net.InetAddress id = null;
+	    java.net.InetAddress id;
 	    try {
 	    	id = java.net.InetAddress.getLocalHost();
 		}
@@ -44,7 +46,7 @@ public class SecurityUtils {
 		}
 
 	    long time = System.currentTimeMillis();
-	    long rand = 0;
+	    long rand;
 
 	    if(secure) {
 			rand = secureRand.nextLong();
@@ -90,6 +92,19 @@ public class SecurityUtils {
 		sb.append(raw.substring(20));
 
 		return sb.toString();
+    }
+
+    public static String generateUniqueId()
+    {
+        long curTime = System.currentTimeMillis();
+        int random = secureRand.nextInt();
+        if (random < 0) {
+            random = -random;
+        }
+
+        return
+            Long.toString(curTime, Character.MAX_RADIX) +
+            Integer.toString(random, Character.MAX_RADIX);
     }
 
 	public static String generateSessionId()

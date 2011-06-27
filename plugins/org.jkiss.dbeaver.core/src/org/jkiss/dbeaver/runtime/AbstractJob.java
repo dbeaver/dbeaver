@@ -11,8 +11,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Abstract Database Job
@@ -48,18 +50,40 @@ public abstract class AbstractJob extends Job
         this.cancelTimeout = cancelTimeout;
     }
 
+    protected Thread getActiveThread()
+    {
+        final Thread thread = getThread();
+        return thread == null ? Thread.currentThread() : thread;
+    }
+
+    public final IStatus runDirectly(DBRProgressMonitor monitor)
+    {
+        progressMonitor = monitor;
+        blockCanceled = false;
+        try {
+            finished = false;
+            IStatus result;
+            try {
+                result = this.run(progressMonitor);
+            } catch (Throwable e) {
+                result = RuntimeUtils.makeExceptionStatus(e);
+            }
+            return result;
+        } finally {
+            finished = true;
+        }
+    }
+
     protected final IStatus run(IProgressMonitor monitor)
     {
         progressMonitor = RuntimeUtils.makeMonitor(monitor);
         blockCanceled = false;
-        IStatus status;
         try {
             finished = false;
-            status = this.run(progressMonitor);
+            return this.run(progressMonitor);
         } finally {
             finished = true;
         }
-        return status;
     }
 
     protected abstract IStatus run(DBRProgressMonitor monitor);

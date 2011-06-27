@@ -235,7 +235,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
     {
         OraclePlanAnalyser plan = new OraclePlanAnalyser(this, query);
-        plan.explain(context);
+        plan.explain((JDBCExecutionContext) context);
         return plan;
     }
 

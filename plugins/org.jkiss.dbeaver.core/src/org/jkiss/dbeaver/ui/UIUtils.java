@@ -766,6 +766,10 @@ public class UIUtils {
         String message,
         Throwable error)
     {
+        if (error == null) {
+            showErrorDialog(shell, title, message);
+            return;
+        }
         log.error(error);
 
         // Display the dialog
@@ -813,6 +817,22 @@ public class UIUtils {
             messageStatuses.toArray(new IStatus[messageStatuses.size()]),
             message,
             null);
+        // Display the dialog
+        StandardErrorDialog dialog = new StandardErrorDialog(
+            shell,
+            title,
+            null,
+            status,
+            IStatus.ERROR);
+        dialog.open();
+    }
+
+    public static void showErrorDialog(
+        Shell shell,
+        String title,
+        IStatus status)
+    {
+        //log.debug(message);
         // Display the dialog
         StandardErrorDialog dialog = new StandardErrorDialog(
             shell,
