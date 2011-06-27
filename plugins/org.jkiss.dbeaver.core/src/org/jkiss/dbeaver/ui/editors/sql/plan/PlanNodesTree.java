@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.plan;
 
+import org.eclipse.jface.viewers.TreeViewer;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -104,7 +105,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
     {
         return LoadingUtils.createService(
                 new ExplainPlanService(),
-                new ObjectsLoadVisualizer());
+                new PlanLoadVisualizer());
     }
 
     private void createContextMenu()
@@ -166,7 +167,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
                 DBCExecutionContext context = getDataSource().openContext(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Explain '" + query + "'");
                 try {
                     DBCPlan plan = planner.planQueryExecution(context, query);
-                    return plan.getPlanNodes();
+                    return (Collection<DBCPlanNode>) plan.getPlanNodes();
                 }
                 finally {
                     context.close();
@@ -181,4 +182,19 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
         }
     }
 
+    public class PlanLoadVisualizer extends ObjectsLoadVisualizer {
+
+        public void completeLoading(Collection<DBCPlanNode> items)
+        {
+            super.completeLoading(items);
+            final TreeViewer itemsViewer = (TreeViewer) PlanNodesTree.this.getItemsViewer();
+            itemsViewer.getControl().setRedraw(false);
+            try {
+                itemsViewer.expandAll();
+            } finally {
+                itemsViewer.getControl().setRedraw(true);
+            }
+        }
+
+    }
 }

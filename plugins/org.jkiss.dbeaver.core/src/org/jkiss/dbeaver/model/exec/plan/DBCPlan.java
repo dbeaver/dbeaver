@@ -13,6 +13,6 @@ public interface DBCPlan {
 
     String getQueryString();
 
-    Collection<DBCPlanNode> getPlanNodes();
+    Collection<? extends DBCPlanNode> getPlanNodes();
 
 }

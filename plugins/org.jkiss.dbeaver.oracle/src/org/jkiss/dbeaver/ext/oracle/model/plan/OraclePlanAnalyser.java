@@ -14,8 +14,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.utils.IntKeyMap;
 import org.jkiss.utils.SecurityUtils;
 
 import java.sql.SQLException;
@@ -28,9 +28,8 @@ import java.util.List;
  */
 public class OraclePlanAnalyser implements DBCPlan {
 
-    public static final String DBEAVER_STATEMENT_PREFIX = "DBEAVER";
     public static final String PLAN_TABLE_DEFINITION =
-        "create table PLAN_TABLE (\n" +
+        "create global temporary table PLAN_TABLE (\n" +
             "statement_id varchar2(30),\n" +
             "plan_id number,\n" +
             "timestamp date,\n" +
@@ -72,7 +71,7 @@ public class OraclePlanAnalyser implements DBCPlan {
     private OracleDataSource dataSource;
     private String usePlanTable;
     private String query;
-    private List<DBCPlanNode> rootNodes;
+    private List<OraclePlanNode> rootNodes;
 
     public OraclePlanAnalyser(OracleDataSource dataSource, String query)
     {
@@ -85,7 +84,7 @@ public class OraclePlanAnalyser implements DBCPlan {
         return query;
     }
 
-    public Collection<DBCPlanNode> getPlanNodes()
+    public Collection<OraclePlanNode> getPlanNodes()
     {
         return rootNodes;
     }
@@ -140,10 +139,14 @@ public class OraclePlanAnalyser implements DBCPlan {
                 dbStat.setString(1, planStmtId);
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    rootNodes = new ArrayList<DBCPlanNode>();
+                    rootNodes = new ArrayList<OraclePlanNode>();
+                    IntKeyMap<OraclePlanNode> allNodes = new IntKeyMap<OraclePlanNode>();
                     while (dbResult.next()) {
-                        OraclePlanNode node = new OraclePlanNode(null, dbResult);
-                        rootNodes.add(node);
+                        OraclePlanNode node = new OraclePlanNode(allNodes, dbResult);
+                        allNodes.put(node.getId(), node);
+                        if (node.getParent() == null) {
+                            rootNodes.add(node);
+                        }
                     }
                 } finally {
                     dbResult.close();

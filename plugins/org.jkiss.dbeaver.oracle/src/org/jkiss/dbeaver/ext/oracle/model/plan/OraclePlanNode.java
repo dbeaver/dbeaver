@@ -7,9 +7,13 @@ package org.jkiss.dbeaver.ext.oracle.model.plan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IntKeyMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,35 +21,94 @@ import java.util.List;
  */
 public class OraclePlanNode implements DBCPlanNode {
 
-    private long id;
-    private String selectType;
-    private String table;
-    private String type;
-    private String possibleKeys;
-    private String key;
-    private String keyLength;
-    private String ref;
-    private long rowCount;
-    private double filtered;
-    private String extra;
+    private String statement_id;
+    private long plan_id;
+    private Timestamp timestamp;
+    private String remarks;
+    private String operation;
+    private String options;
+    private String object_node;
+    private String object_owner;
+    private String object_name;
+    private String object_alias;
+    private long object_instance;
+    private String object_type;
+    private String optimizer;
+    private long search_columns;
+    private int id;
+    private int parent_id;
+    private int depth;
+    private int position;
+    private long cost;
+    private long cardinality;
+    private long bytes;
+    private String other_tag;
+    private String partition_start;
+    private String partition_stop;
+    private long partition_id;
+    private String other;
+    private String distribution;
+    private long cpu_cost;
+    private long io_cost;
+    private long temp_space;
+    private String access_predicates;
+    private String filter_predicates;
+    private String projection;
+    private long time;
+    private String qblock_name;
+    private String other_xml;
 
     private OraclePlanNode parent;
     private List<OraclePlanNode> nested;
 
-    public OraclePlanNode(OraclePlanNode parent, ResultSet dbResult) throws SQLException
+    public OraclePlanNode(IntKeyMap<OraclePlanNode> prevNodes, ResultSet dbResult) throws SQLException
     {
-        this.parent = parent;
-        this.id = JDBCUtils.safeGetLong(dbResult, "id");
-        this.selectType = JDBCUtils.safeGetString(dbResult, "select_type");
-        this.table = JDBCUtils.safeGetString(dbResult, "table");
-        this.type = JDBCUtils.safeGetString(dbResult, "type");
-        this.possibleKeys = JDBCUtils.safeGetString(dbResult, "possible_keys");
-        this.key = JDBCUtils.safeGetString(dbResult, "key");
-        this.keyLength = JDBCUtils.safeGetString(dbResult, "key_len");
-        this.ref = JDBCUtils.safeGetString(dbResult, "ref");
-        this.rowCount = JDBCUtils.safeGetLong(dbResult, "rows");
-        this.filtered = JDBCUtils.safeGetDouble(dbResult, "filtered");
-        this.extra = JDBCUtils.safeGetString(dbResult, "extra");
+        this.statement_id = JDBCUtils.safeGetString(dbResult, "statement_id");
+        this.plan_id = JDBCUtils.safeGetLong(dbResult, "plan_id");
+        this.timestamp = JDBCUtils.safeGetTimestamp(dbResult, "timestamp");
+        this.remarks = JDBCUtils.safeGetString(dbResult, "remarks");
+        this.operation = JDBCUtils.safeGetString(dbResult, "operation");
+        this.options = JDBCUtils.safeGetString(dbResult, "options");
+        this.object_node = JDBCUtils.safeGetString(dbResult, "object_node");
+        this.object_owner = JDBCUtils.safeGetString(dbResult, "object_owner");
+        this.object_name = JDBCUtils.safeGetString(dbResult, "object_name");
+        this.object_alias = JDBCUtils.safeGetString(dbResult, "object_alias");
+        this.object_instance = JDBCUtils.safeGetLong(dbResult, "object_instance");
+        this.object_type = JDBCUtils.safeGetString(dbResult, "object_type");
+        this.optimizer = JDBCUtils.safeGetString(dbResult, "optimizer");
+        this.search_columns = JDBCUtils.safeGetLong(dbResult, "search_columns");
+        this.id = JDBCUtils.safeGetInt(dbResult, "id");
+        this.depth = JDBCUtils.safeGetInt(dbResult, "depth");
+        this.position = JDBCUtils.safeGetInt(dbResult, "position");
+        this.cost = JDBCUtils.safeGetLong(dbResult, "cost");
+        this.cardinality = JDBCUtils.safeGetLong(dbResult, "cardinality");
+        this.bytes = JDBCUtils.safeGetLong(dbResult, "bytes");
+        this.other_tag = JDBCUtils.safeGetString(dbResult, "other_tag");
+        this.partition_start = JDBCUtils.safeGetString(dbResult, "partition_start");
+        this.partition_stop = JDBCUtils.safeGetString(dbResult, "partition_stop");
+        this.partition_id = JDBCUtils.safeGetLong(dbResult, "partition_id");
+        this.other = JDBCUtils.safeGetString(dbResult, "other");
+        this.distribution = JDBCUtils.safeGetString(dbResult, "distribution");
+        this.cpu_cost = JDBCUtils.safeGetLong(dbResult, "cpu_cost");
+        this.io_cost = JDBCUtils.safeGetLong(dbResult, "io_cost");
+        this.temp_space = JDBCUtils.safeGetLong(dbResult, "temp_space");
+        this.access_predicates = JDBCUtils.safeGetString(dbResult, "access_predicates");
+        this.filter_predicates = JDBCUtils.safeGetString(dbResult, "filter_predicates");
+        this.projection = JDBCUtils.safeGetString(dbResult, "projection");
+        this.time = JDBCUtils.safeGetLong(dbResult, "time");
+        this.qblock_name = JDBCUtils.safeGetString(dbResult, "qblock_name");
+        this.other_xml = JDBCUtils.safeGetString(dbResult, "other_xml");
+
+        Integer parent_id = JDBCUtils.safeGetInteger(dbResult, "parent_id");
+        if (parent_id != null) {
+            parent = prevNodes.get(parent_id);
+        }
+        if (parent != null) {
+            if (parent.nested == null) {
+                parent.nested = new ArrayList<OraclePlanNode>();
+            }
+            parent.nested.add(this);
+        }
     }
 
     public DBCPlanNode getParent()
@@ -58,69 +121,33 @@ public class OraclePlanNode implements DBCPlanNode {
         return nested;
     }
 
-    @Property(name = "ID", order = 0, viewable = true, description = "The SELECT identifier. This is the sequential number of the SELECT within the query")
-    public long getId()
+    //@Property(name = "ID", order = 0, viewable = true, description = "Node ID")
+    public int getId()
     {
         return id;
     }
 
-    @Property(name = "Select Type", order = 1, viewable = true, description = "The type of SELECT")
-    public String getSelectType()
+    @Property(name = "Operation", order = 1, viewable = true, description = "Operation")
+    public String getOperation()
     {
-        return selectType;
+        return operation;
     }
 
-    @Property(name = "Table", order = 2, viewable = true, description = "The table to which the row of output refers")
-    public String getTable()
+    @Property(name = "Options", order = 2, viewable = true, description = "Options")
+    public String getOptions()
     {
-        return table;
+        return options;
     }
 
-    @Property(name = "Type", order = 3, viewable = true, description = "The join type")
-    public String getType()
+    @Property(name = "Object", order = 3, viewable = true, description = "Object")
+    public String getObjectName()
     {
-        return type;
+        return object_name;
     }
 
-    @Property(name = "Possible Keys", order = 4, viewable = true, description = "Indicates which indexes Oracle can choose from use to find the rows in this table")
-    public String getPossibleKeys()
+    @Override
+    public String toString()
     {
-        return possibleKeys;
-    }
-
-    @Property(name = "Key", order = 5, viewable = true, description = "Key (index) that Oracle actually decided to use")
-    public String getKey()
-    {
-        return key;
-    }
-
-    @Property(name = "Key Length", order = 6, viewable = true, description = "Length of the key that Oracle decided to use")
-    public String getKeyLength()
-    {
-        return keyLength;
-    }
-
-    @Property(name = "Ref", order = 7, viewable = true, description = "Shows which columns or constants are compared to the index named in the key column to select rows from the table")
-    public String getRef()
-    {
-        return ref;
-    }
-
-    @Property(name = "Rows", order = 8, viewable = true, description = "Number of rows Oracle believes it must examine to execute the query")
-    public long getRowCount()
-    {
-        return rowCount;
-    }
-
-    @Property(name = "Filtered", order = 9, viewable = true, description = "Estimated percentage of table rows that will be filtered by the table condition")
-    public double getFiltered()
-    {
-        return filtered;
-    }
-
-    @Property(name = "Extra", order = 10, viewable = true, description = "Additional information about how Oracle resolves the query")
-    public String getExtra()
-    {
-        return extra;
+        return getOperation() + " " + CommonUtils.toString(getOptions()) + " " + CommonUtils.toString(getObjectName());
     }
 }
