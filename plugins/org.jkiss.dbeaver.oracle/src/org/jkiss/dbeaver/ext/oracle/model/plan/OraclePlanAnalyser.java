@@ -66,7 +66,7 @@ public class OraclePlanAnalyser implements DBCPlan {
             "time numeric,\n" +
             "qblock_name varchar2(30),\n" +
             "other_xml clob\n" +
-            ");";
+            ") on commit preserve rows;";
 
     private OracleDataSource dataSource;
     private String usePlanTable;
