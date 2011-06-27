@@ -395,16 +395,12 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
-                "SELECT c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.TABLE_NAME ,\n" +
-                    "kc.COLUMN_NAME,kc.ORDINAL_POSITION,kc.REFERENCED_TABLE_SCHEMA,kc.REFERENCED_TABLE_NAME,kc.REFERENCED_COLUMN_NAME\n" +
-                    "FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS c\n" +
-                    "JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc ON \n" +
-                    "\tkc.CONSTRAINT_SCHEMA=c.CONSTRAINT_SCHEMA AND kc.CONSTRAINT_NAME=c.CONSTRAINT_NAME AND kc.TABLE_NAME=c.TABLE_NAME\n" +
-                    "WHERE c.CONSTRAINT_SCHEMA=?");
+                "SELECT kc.CONSTRAINT_NAME,kc.TABLE_NAME,kc.COLUMN_NAME,kc.ORDINAL_POSITION\n" +
+                "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc WHERE kc.TABLE_SCHEMA=? AND kc.REFERENCED_TABLE_NAME IS NULL");
             if (forTable != null) {
-                sql.append(" AND c.TABLE_NAME=?");
+                sql.append(" AND kc.TABLE_NAME=?");
             }
-            sql.append("\nORDER BY c.CONSTRAINT_NAME,kc.ORDINAL_POSITION");
+            sql.append("\nORDER BY kc.CONSTRAINT_NAME,kc.ORDINAL_POSITION");
 
             JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
             dbStat.setString(1, MySQLCatalog.this.getName());
@@ -417,20 +413,12 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         protected MySQLConstraint fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String constraintName, ResultSet dbResult)
             throws SQLException, DBException
         {
-            String constraintType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
-            if (MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constraintType)) {
-                // Skip foreign keys
-                return null;
-            }
-            if (MySQLConstants.CONSTRAINT_PRIMARY_KEY.equals(constraintType)) {
+            if (constraintName.equals("PRIMARY")) {
                 return new MySQLConstraint(
                     parent, constraintName, null, DBSConstraintType.PRIMARY_KEY, true);
-            } else if (MySQLConstants.CONSTRAINT_UNIQUE.equals(constraintType)) {
+            } else {
                 return new MySQLConstraint(
                     parent, constraintName, null, DBSConstraintType.UNIQUE_KEY, true);
-            } else {
-                log.warn("Constraint type '" + constraintType + "' is not supported");
-                return null;
             }
         }
 

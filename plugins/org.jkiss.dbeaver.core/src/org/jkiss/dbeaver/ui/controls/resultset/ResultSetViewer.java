@@ -580,6 +580,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
         if (update) {
+            UIUtils.runInUI(null, new Runnable() {
+                public void run()
+                {
+                    spreadsheet.clearGrid();
+                }
+            });
+            this.clearData();
             this.metaColumns = columns;
             this.dataFilter = new DBDDataFilter();
         }
