@@ -217,7 +217,7 @@ public enum OracleObjectType implements DBSObjectType {
         }
         final DBSObject object = objectType.findObject(monitor, schema, objectName);
         if (object == null) {
-            log.warn(objectTypeName + " '" + objectName + "' not found");
+            log.warn(objectTypeName + " '" + objectName + "' not found in '" + schema.getName() + "'");
             return objectName;
         }
         return object;

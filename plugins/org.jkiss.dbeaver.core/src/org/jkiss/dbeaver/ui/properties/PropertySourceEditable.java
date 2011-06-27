@@ -56,35 +56,6 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         return commandContext;
     }
 
-/*
-    public void addPropertySourceListener(IPropertySourceListener listener)
-    {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-
-    public void removePropertySourceListener(IPropertySourceListener listener)
-    {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-*/
-
-    @Override
-    public Object getPropertyValue(Object editableValue, ObjectPropertyDescriptor prop)
-    {
-//        final DBECommandComposite compositeCommand = (DBECommandComposite)getCommandContext().getUserParams().get(editableValue);
-//        if (compositeCommand != null) {
-//            final Object value = compositeCommand.getProperty(prop.getId());
-//            if (value != null) {
-//                return value;
-//            }
-//        }
-        return super.getPropertyValue(editableValue, prop);
-    }
-
     @Override
     public void setPropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object newValue)
     {

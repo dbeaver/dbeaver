@@ -282,104 +282,108 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (itemsControl.isDisposed()) {
             return;
         }
+        itemsControl.setRedraw(false);
+        try {
+            final boolean reload = (objectList == null);
 
-        final boolean reload = objectList == null;
-
-        if (reload) {
-            clearListData();
-        }
-        {
-            // Collect list of items' classes
-            final List<Class<?>> classList = new ArrayList<Class<?>>();
-            Class<?>[] baseTypes = getListBaseTypes();
-            if (!CommonUtils.isEmpty(baseTypes)) {
-                Collections.addAll(classList, baseTypes);
+            if (reload) {
+                clearListData();
             }
-            if (!CommonUtils.isEmpty(items)) {
-                for (OBJECT_TYPE item : items) {
-                    Object object = getObjectValue(item);
-                    if (object != null && !classList.contains(object.getClass())) {
-                        classList.add(object.getClass());
-                    }
-                    if (renderer.isTree()) {
-                        collectItemClasses(item, classList);
-                    }
+            {
+                // Collect list of items' classes
+                final List<Class<?>> classList = new ArrayList<Class<?>>();
+                Class<?>[] baseTypes = getListBaseTypes();
+                if (!CommonUtils.isEmpty(baseTypes)) {
+                    Collections.addAll(classList, baseTypes);
                 }
-            }
-
-            IFilter propertyFilter = new DataSourcePropertyFilter(
-                ObjectListControl.this instanceof IDataSourceProvider ?
-                    ((IDataSourceProvider)ObjectListControl.this).getDataSource() :
-                    null);
-
-            // Create columns from classes' annotations
-            for (Class<?> objectClass : classList) {
-                List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass, propertyFilter);
-                for (ObjectPropertyDescriptor prop : props) {
-                    if (!prop.isViewable() || prop.isHidden()) {
-                        continue;
-                    }
-                    if (!listPropertySource.hasProperty(prop)) {
-                        listPropertySource.addProperty(prop);
-                        createColumn(objectClass, prop);
-                    }
-                }
-            }
-        }
-
-        if (!itemsControl.isDisposed()) {
-            if (reload || objectList.isEmpty()) {
-                // Set viewer content
-                objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<OBJECT_TYPE>(items);
-
-                // Pack columns
-                sampleItems = true;
-                try {
-                    List<OBJECT_TYPE> sampleList;
-                    if (objectList.size() > 200) {
-                        sampleList = objectList.subList(0, 100);
-                    } else {
-                        sampleList = objectList;
-                    }
-                    itemsViewer.setInput(sampleList);
-
-                    if (renderer.isTree()) {
-                        ((TreeViewer)itemsViewer).expandAll();
-                        UIUtils.packColumns(getTree(), isFitWidth, null);
-                    } else {
-                        UIUtils.packColumns(getTable());
-                    }
-                } finally {
-                    sampleItems = false;
-                }
-                // Set real content
-                itemsViewer.setInput(objectList);
-            } else {
-                // Update object list and refresh
-                if (!objectList.equals(items)) {
-                    int newListSize = items.size();
-                    int itemIndex = 0;
-                    for (Iterator<OBJECT_TYPE> iter = items.iterator(); iter.hasNext(); ) {
-                        OBJECT_TYPE newObject = iter.next();
-                        if (itemIndex >= objectList.size()) {
-                            // Add to tail
-                            objectList.add(itemIndex, newObject);
-                        } else {
-                            OBJECT_TYPE oldObject = objectList.get(itemIndex);
-                            if (!CommonUtils.equalObjects(oldObject, newObject)) {
-                                // Replace old object
-                                objectList.set(itemIndex, newObject);
-                            }
+                if (!CommonUtils.isEmpty(items)) {
+                    for (OBJECT_TYPE item : items) {
+                        Object object = getObjectValue(item);
+                        if (object != null && !classList.contains(object.getClass())) {
+                            classList.add(object.getClass());
                         }
-                        itemIndex++;
-                    }
-                    while (objectList.size() > newListSize) {
-                        objectList.remove(objectList.size() - 1);
+                        if (renderer.isTree()) {
+                            collectItemClasses(item, classList);
+                        }
                     }
                 }
 
-                itemsViewer.refresh();
+                IFilter propertyFilter = new DataSourcePropertyFilter(
+                    ObjectListControl.this instanceof IDataSourceProvider ?
+                        ((IDataSourceProvider)ObjectListControl.this).getDataSource() :
+                        null);
+
+                // Create columns from classes' annotations
+                for (Class<?> objectClass : classList) {
+                    List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass, propertyFilter);
+                    for (ObjectPropertyDescriptor prop : props) {
+                        if (!prop.isViewable() || prop.isHidden()) {
+                            continue;
+                        }
+                        if (!listPropertySource.hasProperty(prop)) {
+                            listPropertySource.addProperty(prop);
+                            createColumn(objectClass, prop);
+                        }
+                    }
+                }
             }
+
+            if (!itemsControl.isDisposed()) {
+                if (reload || objectList.isEmpty()) {
+                    // Set viewer content
+                    objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<OBJECT_TYPE>(items);
+
+                    // Pack columns
+                    sampleItems = true;
+                    try {
+                        List<OBJECT_TYPE> sampleList;
+                        if (objectList.size() > 200) {
+                            sampleList = objectList.subList(0, 100);
+                        } else {
+                            sampleList = objectList;
+                        }
+                        itemsViewer.setInput(sampleList);
+
+                        if (renderer.isTree()) {
+                            ((TreeViewer)itemsViewer).expandAll();
+                            UIUtils.packColumns(getTree(), isFitWidth, null);
+                        } else {
+                            UIUtils.packColumns(getTable());
+                        }
+                    } finally {
+                        sampleItems = false;
+                    }
+                    // Set real content
+                    itemsViewer.setInput(objectList);
+                } else {
+                    // Update object list and refresh
+                    if (!objectList.equals(items)) {
+                        int newListSize = items.size();
+                        int itemIndex = 0;
+                        for (Iterator<OBJECT_TYPE> iter = items.iterator(); iter.hasNext(); ) {
+                            OBJECT_TYPE newObject = iter.next();
+                            if (itemIndex >= objectList.size()) {
+                                // Add to tail
+                                objectList.add(itemIndex, newObject);
+                            } else {
+                                OBJECT_TYPE oldObject = objectList.get(itemIndex);
+                                if (!CommonUtils.equalObjects(oldObject, newObject)) {
+                                    // Replace old object
+                                    objectList.set(itemIndex, newObject);
+                                }
+                            }
+                            itemIndex++;
+                        }
+                        while (objectList.size() > newListSize) {
+                            objectList.remove(objectList.size() - 1);
+                        }
+                    }
+
+                    itemsViewer.refresh();
+                }
+            }
+        } finally {
+            itemsControl.setRedraw(true);
         }
         setInfo(getItemsLoadMessage(objectList.size()));
     }
@@ -528,7 +532,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     }
                 }
             }
-            return LOADING_LABEL;
+            return new LazyValue(LOADING_LABEL);
         }
         return listPropertySource.getPropertyValue(objectValue, prop);
     }
@@ -770,6 +774,21 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     }
 
+    private static class LazyValue {
+        private final Object value;
+
+        private LazyValue(Object value)
+        {
+            this.value = value;
+        }
+
+        @Override
+        public String toString()
+        {
+            return value.toString();
+        }
+    }
+
 	class PaintListener implements Listener {
 
 		public void handleEvent(Event event) {
@@ -782,7 +801,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     final Object objectValue = getObjectValue(object);
                     Object cellValue = getCellValue(object, event.index);
                     final ObjectColumn objectColumn = columns.get(event.index);
-                    if (cellValue == LOADING_LABEL) {
+                    if (cellValue instanceof LazyValue) {
                         if (!lazyLoadCanceled) {
                             addLazyObject(object, objectColumn);
                         }
@@ -838,11 +857,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     ObjectPropertyDescriptor prop = column.propMap.get(object.getClass());
                     if (prop != null) {
                         try {
+                            synchronized (lazyCache) {
+                                if (objectCache.containsKey(prop.getId())) {
+                                    // This property already cached
+                                    continue;
+                                }
+                            }
                             Object lazyValue = prop.readValue(object, monitor);
                             if (lazyValue == null) {
                                 lazyValue = NULL_VALUE;
                             }
-                            objectCache.put(prop.getId(), lazyValue);
+                            synchronized (lazyCache) {
+                                objectCache.put(prop.getId(), lazyValue);
+                            }
                         }
                         catch (Throwable e) {
                             if (e instanceof InvocationTargetException) {
