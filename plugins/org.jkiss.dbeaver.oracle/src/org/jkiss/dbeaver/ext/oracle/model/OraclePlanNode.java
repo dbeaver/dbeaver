@@ -143,7 +143,7 @@ public class OraclePlanNode implements DBCPlanNode {
         return options;
     }
 
-    @Property(name = "Type", order = 3, viewable = true, description = "Object type")
+    //@Property(name = "Type", order = 3, viewable = true, description = "Object type")
     public String getObjectType()
     {
         return objectType;
@@ -187,16 +187,34 @@ public class OraclePlanNode implements DBCPlanNode {
             objectName);
     }
 
-    @Property(name = "Alias", order = 6, viewable = true, description = "Object alias")
+    //@Property(name = "Alias", order = 6, viewable = true, description = "Object alias")
     public String getAlias()
     {
         return objectAlias;
     }
 
-    @Property(name = "Optimizer", order = 7, viewable = true, description = "Optimizer")
+    //@Property(name = "Optimizer", order = 7, viewable = true, description = "Optimizer")
     public String getOptimizer()
     {
         return optimizer;
+    }
+
+    @Property(name = "Cost", order = 8, viewable = true, description = "Cost of the current operation estimated by the cost-based optimizer (CBO)")
+    public long getCost()
+    {
+        return cost;
+    }
+
+    @Property(name = "Cardinality", order = 9, viewable = true, description = "Number of rows returned by the current operation (estimated by the CBO)")
+    public long getCardinality()
+    {
+        return cardinality;
+    }
+
+    @Property(name = "Bytes", order = 10, viewable = true, description = "Number of bytes returned by the current operation")
+    public long getBytes()
+    {
+        return bytes;
     }
 
     @Override
