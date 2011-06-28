@@ -116,6 +116,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
     private boolean flagInstantiable;
     private TypeDesc typeDesc;
     private int precision = 0;
+    private int valueType = java.sql.Types.OTHER;
 
     private boolean persisted;
 
@@ -160,6 +161,12 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         if (owner instanceof OracleDataSource && flagPredefined) {
             // Determine value type for predefined types
             findTypeDesc(typeName);
+        } else {
+            if ("COLLECTION".equals(this.typeCode)) {
+                this.valueType = java.sql.Types.ARRAY;
+            } else if ("OBJECT".equals(this.typeCode)) {
+                this.valueType = java.sql.Types.STRUCT;
+            }
         }
     }
 
@@ -185,6 +192,8 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         this.typeDesc = PREDEFINED_TYPES.get(typeName);
         if (this.typeDesc == null) {
             log.warn("Unknown predefined type: " + typeName);
+        } else {
+            this.valueType = this.typeDesc.valueType;
         }
     }
 
@@ -205,7 +214,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
 
     public int getValueType()
     {
-        return typeDesc == null ? java.sql.Types.OTHER : typeDesc.valueType;
+        return valueType;
     }
 
     public DBSDataKind getDataKind()

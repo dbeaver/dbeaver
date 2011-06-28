@@ -318,6 +318,7 @@
 
             <type name="XMLTYPE"/>
             <type name="SYS.XMLTYPE"/>
+            <type standard="STRUCT"/>
 
         </provider>
     </extension>

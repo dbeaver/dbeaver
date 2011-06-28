@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -27,13 +28,11 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
         String typeName = type.getTypeName();
         if (OracleConstants.TYPE_NAME_XML.equals(typeName) || OracleConstants.TYPE_FQ_XML.equals(typeName)) {
             return OracleXMLValueHandler.INSTANCE;
-        }/* else if (OracleConstants.TYPE_NAME_SET.equalsIgnoreCase(typeName)) {
-            return OracleSetValueHandler.INSTANCE;
+        } else if (type.getValueType() == java.sql.Types.STRUCT) {
+            return OracleObjectValueHandler.INSTANCE;
         } else {
             return null;
         }
-*/
-        return null;
     }
 
 }
