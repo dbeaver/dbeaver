@@ -163,15 +163,15 @@ public class OraclePlanNode implements DBCPlanNode {
     @Property(name = "Object", order = 5, viewable = true, supportsPreview = true, description = "Name of the table or index")
     public Object getObject(DBRProgressMonitor monitor) throws DBException
     {
-        if (monitor == null || CommonUtils.isEmpty(objectType)) {
+        if (monitor == null || CommonUtils.isEmpty(objectOwner)) {
             return objectName;
         }
         String objectTypeName = objectType;
-        final int divPos = objectTypeName.indexOf('(');
+        final int divPos = objectTypeName == null ? -1 : objectTypeName.indexOf('(');
         if (divPos != -1) {
             objectTypeName = objectTypeName.substring(0, divPos).trim();
         }
-        if (objectTypeName.equals(OracleObjectType.INDEX.name())) {
+        if (OracleObjectType.INDEX.name().equals(objectTypeName)) {
             // Get index from parent table - reading of all indexes takes too much time
             for (OraclePlanNode parentNode = parent; parentNode != null; parentNode = parentNode.getParent()) {
                 final Object parentObject = parentNode.getObject(monitor);
