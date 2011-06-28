@@ -199,25 +199,25 @@ public class OraclePlanNode implements DBCPlanNode {
         return objectAlias;
     }
 
-    @Property(name = "Optimizer", order = 7, viewable = true, description = "Optimizer")
+    @Property(name = "Optimizer", order = 7, viewable = true, description = "Current mode of the optimizer")
     public String getOptimizer()
     {
         return optimizer;
     }
 
-    @Property(name = "Cost", order = 8, viewable = true, description = "Cost of the current operation estimated by the cost-based optimizer (CBO)")
+    @Property(name = "Cost", order = 8, viewable = true, description = "Cost of the operation as estimated by the optimizer's query approach. Cost is not determined for table access operations. The value of this column does not have any particular unit of measurement; it is merely a weighted value used to compare costs of execution plans.")
     public long getCost()
     {
         return cost;
     }
 
-    @Property(name = "Cardinality", order = 9, viewable = true, description = "Number of rows returned by the current operation (estimated by the CBO)")
+    @Property(name = "Cardinality", order = 9, viewable = true, description = "Estimate by the query optimization approach of the number of rows accessed by the operation")
     public long getCardinality()
     {
         return cardinality;
     }
 
-    @Property(name = "Bytes", order = 10, viewable = true, description = "Number of bytes returned by the current operation")
+    @Property(name = "Bytes", order = 10, viewable = true, description = "Estimate by the query optimization approach of the number of bytes accessed by the operation")
     public long getBytes()
     {
         return bytes;

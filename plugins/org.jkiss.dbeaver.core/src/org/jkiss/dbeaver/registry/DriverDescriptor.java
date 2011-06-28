@@ -601,39 +601,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             if (file.getType() == DriverFileType.license) {
                 final File licenseFile = file.getFile();
                 if (licenseFile.exists()) {
-                    return extractLicenseText(licenseFile);
-                } else {
-                    return null;
+                    try {
+                        return ContentUtils.readFileToString(licenseFile);
+                    } catch (IOException e) {
+                        log.warn(e);
+                    }
                 }
             }
         }
         return null;
-    }
-
-    private String extractLicenseText(File licenseFile)
-    {
-        final int length = (int) licenseFile.length();
-        try {
-            StringBuilder licenseText = new StringBuilder(length);
-            Reader fileReader = new FileReader(licenseFile);
-            try {
-                char[] buffer = new char[10000];
-                for (;;) {
-                    final int count = fileReader.read(buffer);
-                    if (count <= 0) {
-                        break;
-                    }
-                    licenseText.append(buffer, 0, count);
-                }
-            }
-            finally {
-                ContentUtils.close(fileReader);
-            }
-            return licenseText.toString();
-        } catch (IOException e) {
-            log.warn(e);
-            return e.getMessage();
-        }
     }
 
     public void loadDriver()
@@ -655,7 +631,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         try {
             try {
                 if (this.isInternalDriver()) {
-                    // Use system classloader
+                    // Use system class loader
                     driverClass = Class.forName(driverClassName);
                 } else {
                     // Load driver classes into core module using plugin class loader
@@ -831,7 +807,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             throw new IOException("Can't find driver file '" + url + "': " + connection.getResponseMessage());
         }
         final int contentLength = connection.getContentLength();
-        final String contentType = connection.getContentType();
+        //final String contentType = connection.getContentType();
         monitor.beginTask("Download " + file.getExternalURL(), contentLength);
         boolean success = false;
         final File localFile = file.getLocalFile();
@@ -932,7 +908,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         xml.addAttribute(DataSourceConstants.ATTR_CLASS, this.getDriverClassName());
         xml.addAttribute(DataSourceConstants.ATTR_URL, this.getSampleURL());
         if (this.getDefaultPort() != null) {
-            xml.addAttribute(DataSourceConstants.ATTR_PORT, this.getDefaultPort().toString());
+            xml.addAttribute(DataSourceConstants.ATTR_PORT, this.getDefaultPort());
         }
         xml.addAttribute(DataSourceConstants.ATTR_DESCRIPTION, CommonUtils.getString(this.getDescription()));
 

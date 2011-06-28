@@ -355,7 +355,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     }
                     // Set real content
                     itemsViewer.setInput(objectList);
-                } else {
+                } else if (items != null) {
                     // Update object list and refresh
                     if (!objectList.equals(items)) {
                         int newListSize = items.size();

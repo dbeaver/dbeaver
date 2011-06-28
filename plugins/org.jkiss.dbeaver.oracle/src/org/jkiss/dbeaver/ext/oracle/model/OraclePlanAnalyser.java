@@ -45,10 +45,6 @@ public class OraclePlanAnalyser implements DBCPlan {
     public void explain(JDBCExecutionContext context)
         throws DBCException
     {
-        if (!query.trim().toUpperCase().startsWith("SELECT")) {
-            throw new DBCException("Only SELECT statements could produce execution plan");
-        }
-
         String planStmtId = SecurityUtils.generateUniqueId();
         try {
             // Detect plan table
