@@ -44,6 +44,8 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
                 return new JDBCContentValueHandler();
             case ARRAY:
                 return new JDBCArrayValueHandler();
+            case STRUCT:
+                return new JDBCStructValueHandler();
             default:
                 return null;
         }

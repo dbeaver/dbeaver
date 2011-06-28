@@ -1606,9 +1606,11 @@
             <!--
             <type standard="JAVA_OBJECT"/>
             <type standard="DISTINCT"/>
-            <type standard="STRUCT"/>
             -->
+
+            <type standard="STRUCT"/>
             <type standard="ARRAY"/>
+
             <type standard="BLOB"/>
             <type standard="CLOB"/>
             <!--
@@ -1622,9 +1624,7 @@
             <type standard="NVARCHAR"/>
             <type standard="LONGNVARCHAR"/>
             <type standard="NCLOB"/>
-            <!--
             <type standard="SQLXML"/>
-            -->
 
         </provider>
     </extension>

@@ -8,8 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDArray;
-import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -19,20 +17,20 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
-import java.sql.Array;
 import java.sql.SQLException;
+import java.sql.Struct;
 
 /**
- * JDBC Array value handler.
- * Handle ARRAY types.
+ * JDBC Struct value handler.
+ * Handle STRUCT types.
  *
  * @author Serge Rider
  */
-public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
+public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
 
-    static final Log log = LogFactory.getLog(JDBCArrayValueHandler.class);
+    static final Log log = LogFactory.getLog(JDBCStructValueHandler.class);
 
-    public static final JDBCArrayValueHandler INSTANCE = new JDBCArrayValueHandler();
+    public static final JDBCStructValueHandler INSTANCE = new JDBCStructValueHandler();
 
     protected Object getColumnValue(
         DBCExecutionContext context,
@@ -44,11 +42,11 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         Object value = resultSet.getObject(columnIndex);
 
         if (value == null) {
-            return JDBCArray.makeArray((JDBCExecutionContext) context, null);
-        } else if (value instanceof Array) {
-            return JDBCArray.makeArray((JDBCExecutionContext) context, (Array)value);
+            return new JDBCStruct(null);
+        } else if (value instanceof Struct) {
+            return new JDBCStruct((Struct) value);
         } else {
-            throw new DBCException("Unsupported array type: " + value.getClass().getName());
+            throw new DBCException("Unsupported struct type: " + value.getClass().getName());
         }
     }
 
@@ -65,7 +63,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
 
     public Class getValueObjectType()
     {
-        return DBDArray.class;
+        return Struct.class;
     }
 
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
@@ -74,16 +72,18 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         return null;
     }
 
+/*
     public String getValueDisplayString(DBSTypedObject column, Object value)
     {
-        if (value instanceof JDBCArray) {
-            String displayString = ((JDBCArray) value).makeArrayString();
+        if (value instanceof JDBCStruct) {
+            String displayString = value.toString();
             if (displayString != null) {
                 return displayString;
             }
         }
         return super.getValueDisplayString(column, value);
     }
+*/
 
     public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
         throws DBCException
@@ -94,17 +94,15 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
     {
         try {
             Object value = controller.getValue();
-            if (value instanceof DBDArray) {
-/*
+            if (value instanceof JDBCStruct) {
                 propertySource.addProperty(
-                    "array_length",
-                    "Length",
-                    ((DBDArray)value).getLength());
-*/
+                    "sql_type",
+                    "Type Name",
+                    ((JDBCStruct)value).getTypeName());
             }
         }
         catch (Exception e) {
-            log.warn("Could not extract array value information", e);
+            log.warn("Could not extract struct value information", e);
         }
     }
 

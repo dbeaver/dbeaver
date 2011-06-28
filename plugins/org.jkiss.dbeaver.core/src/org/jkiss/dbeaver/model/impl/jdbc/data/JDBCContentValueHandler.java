@@ -161,15 +161,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    @Override
-    public void releaseValueObject(Object value)
-    {
-        if (value instanceof DBDContent) {
-            ((DBDContent)value).release();
-        }
-        super.releaseValueObject(value);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
     public String getValueDisplayString(DBSTypedObject column, Object value)
     {
         if (value instanceof DBDContent) {

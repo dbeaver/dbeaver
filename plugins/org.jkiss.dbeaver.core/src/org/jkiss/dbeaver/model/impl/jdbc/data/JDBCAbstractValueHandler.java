@@ -13,6 +13,7 @@ import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -61,7 +62,9 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
     public void releaseValueObject(Object value)
     {
-        // do nothing by default
+        if (value instanceof DBDValue) {
+            ((DBDValue)value).release();
+        }
     }
 
     public String getValueDisplayString(DBSTypedObject column, Object value) {

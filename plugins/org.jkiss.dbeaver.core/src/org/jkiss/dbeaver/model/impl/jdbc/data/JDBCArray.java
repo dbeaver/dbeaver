@@ -162,7 +162,8 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         for (Object item : contents) {
             String itemString = type.getValueHandler().getValueDisplayString(type, item);
             if (str.length() > 0) {
-                str.append(ContentUtils.getDefaultLineSeparator());
+                //str.append(ContentUtils.getDefaultLineSeparator());
+                str.append(",");
             }
             str.append(itemString);
         }
