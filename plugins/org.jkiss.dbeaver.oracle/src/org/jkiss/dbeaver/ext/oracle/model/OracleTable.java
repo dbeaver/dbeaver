@@ -63,6 +63,12 @@ public class OracleTable extends OracleTablePhysical
         return additionalInfo;
     }
 
+    @Override
+    protected String getTableTypeName()
+    {
+        return "TABLE";
+    }
+
     public boolean isView()
     {
         return false;
@@ -139,12 +145,6 @@ public class OracleTable extends OracleTablePhysical
 //    {
 //        return DBUtils.findObject(getTriggers(monitor), triggerName);
 //    }
-
-    public String getDDL(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return "";
-    }
 
     @Override
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException

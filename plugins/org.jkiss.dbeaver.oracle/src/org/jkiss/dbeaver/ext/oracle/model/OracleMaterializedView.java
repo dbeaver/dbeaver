@@ -62,6 +62,12 @@ public class OracleMaterializedView extends OracleTablePhysical
         return additionalInfo;
     }
 
+    @Override
+    protected String getTableTypeName()
+    {
+        return "MATERIALIZED_VIEW";
+    }
+
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
     public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException

@@ -1,6 +1,2 @@
 DBeaver is freeware. You can use it for any purpose with no limitations.
 This software is provided "as is" without express or implied warranty.
-
-DBeaver ships with a set of JDBC drivers.
-These drivers are covered under their own licenses and copyrights.
-Please refer certain driver license at "License" tab of driver's properties dialog.

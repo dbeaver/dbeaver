@@ -61,9 +61,6 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     @Override
     protected void appendTableModifiers(OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl)
     {
-        if ((!table.isPersisted() || tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
-            ddl.append("\nCOMMENT='").append(table.getDescription().replace('\'', '"')).append("'");
-        }
     }
 
     protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)

@@ -13,6 +13,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 
 import java.sql.SQLException;
 
@@ -22,6 +24,62 @@ import java.sql.SQLException;
 public class OracleUtils {
 
     static final Log log = LogFactory.getLog(OracleUtils.class);
+
+    public static String getDDL(
+        DBRProgressMonitor monitor,
+        String objectType,
+        DBSEntity object) throws DBCException
+    {
+        String objectName = object.getName();
+        String objectFullName = object instanceof DBSEntityQualified ?
+            ((DBSEntityQualified)object).getFullQualifiedName() : objectName;
+        OracleSchema schema = null;
+        if (object instanceof OracleSchemaObject) {
+            schema = ((OracleSchemaObject)object).getSchema();
+        } else if (object instanceof OracleTableBase) {
+            schema = ((OracleTableBase)object).getContainer();
+        }
+        final OracleDataSource dataSource = (OracleDataSource) object.getDataSource();
+        monitor.beginTask("Load sources for " + objectType + " '" + objectFullName + "'...", 1);
+        final JDBCExecutionContext context = dataSource.openContext(
+            monitor,
+            DBCExecutionPurpose.META,
+            "Load source code for " + objectType + " '" + objectFullName + "'");
+        try {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT DBMS_METADATA.GET_DDL(?,?" +
+                (schema == null ? "": ",?") +
+                ") TXT " +
+                "FROM DUAL");
+            try {
+                dbStat.setString(1, objectType);
+                dbStat.setString(2, object.getName());
+                if (schema != null) {
+                    dbStat.setString(3, schema.getName());
+                }
+                final JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    if (dbResult.next()) {
+                        return dbResult.getString(1);
+                    } else {
+                        log.warn("No DDL for " + objectType + " '" + objectFullName + "'");
+                        return "EMPTY DDL";
+                    }
+                }
+                finally {
+                    dbResult.close();
+                }
+            }
+            finally {
+                dbStat.close();
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e);
+        } finally {
+            context.close();
+            monitor.done();
+        }
+    }
 
     public static String getSource(DBRProgressMonitor monitor, OracleSourceObject sourceObject, boolean body) throws DBCException
     {

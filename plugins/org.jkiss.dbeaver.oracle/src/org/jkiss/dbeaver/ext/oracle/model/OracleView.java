@@ -84,6 +84,12 @@ public class OracleView extends OracleTableBase
         return additionalInfo;
     }
 
+    @Override
+    protected String getTableTypeName()
+    {
+        return "VIEW";
+    }
+
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
     public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException

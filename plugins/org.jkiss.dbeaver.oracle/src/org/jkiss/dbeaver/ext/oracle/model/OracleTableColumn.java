@@ -29,7 +29,6 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     private OracleDataTypeModifier typeMod;
     private String comment;
     private String defaultValue;
-    private long charLength;
     private boolean hidden;
 
     public OracleTableColumn(OracleTableBase table)
@@ -58,7 +57,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             this.typeName = type.getName();
             this.valueType = type.getValueType();
         }
-        this.charLength = JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH");
+        this.maxLength = JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH");
         this.notNull = !"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE"));
         this.scale = JDBCUtils.safeGetInt(dbResult, "DATA_SCALE");
         this.precision = JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION");
@@ -75,11 +74,6 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     public OracleDataSource getDataSource()
     {
         return getTable().getDataSource();
-    }
-
-    public long getCharLength()
-    {
-        return charLength;
     }
 
     @Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20)

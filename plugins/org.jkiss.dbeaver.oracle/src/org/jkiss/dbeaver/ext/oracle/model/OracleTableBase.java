@@ -45,6 +45,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     public abstract TableAdditionalInfo getAdditionalInfo();
 
+    protected abstract String getTableTypeName();
+
     private String comment;
     private List<OracleTableColumn> columns;
     private List<OracleConstraint> constraints;
@@ -161,6 +163,11 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return null;
     }
 
+    public String getDDL(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return OracleUtils.getDDL(monitor, getTableTypeName(), this);
+    }
 
     public static OracleTableBase findTable(DBRProgressMonitor monitor, OracleDataSource dataSource, String ownerName, String tableName) throws DBException
     {
