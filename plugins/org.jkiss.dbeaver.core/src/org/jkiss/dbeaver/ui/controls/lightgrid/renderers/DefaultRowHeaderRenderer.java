@@ -47,7 +47,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
 
 
         {
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 
             gc.drawLine(
                 getBounds().x + getBounds().width - 1,
