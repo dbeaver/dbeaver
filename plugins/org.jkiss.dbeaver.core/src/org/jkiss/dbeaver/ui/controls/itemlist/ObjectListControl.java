@@ -38,7 +38,7 @@ import java.util.List;
 public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl {
     static final Log log = LogFactory.getLog(ObjectListControl.class);
 
-    private final static String LOADING_LABEL = "...";
+    private final static LazyValue DEF_LAZY_VALUE = new LazyValue("...");
     private final static String DATA_OBJECT_COLUMN = "objectColumn";
     private final static int LAZY_LOAD_DELAY = 100;
     private final static Object NULL_VALUE = new Object();
@@ -532,7 +532,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     }
                 }
             }
-            return new LazyValue(LOADING_LABEL);
+            if (prop.supportsPreview()) {
+                final Object previewValue = listPropertySource.getPropertyValue(objectValue, prop);
+                if (previewValue != null) {
+                    return new LazyValue(previewValue);
+                }
+            }
+            return DEF_LAZY_VALUE;
         }
         return listPropertySource.getPropertyValue(objectValue, prop);
     }
@@ -752,6 +758,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public String getText(Object element)
         {
             Object cellValue = getCellValue(element, columnIndex);
+            if (cellValue instanceof LazyValue) {
+                cellValue = ((LazyValue)cellValue).value;
+            }
             if (!sampleItems && renderer.isHyperlink(cellValue)) {
                 return "";
             }

@@ -108,6 +108,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo != null && propInfo.expensive();
     }
 
+    public boolean supportsPreview()
+    {
+        return propInfo != null && propInfo.supportsPreview();
+    }
+
     public IPropertyValueTransformer getValueTransformer()
     {
         return valueTransformer;
@@ -197,6 +202,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         }
         if (isLazy()) {
             // Lazy (probably cached)
+            if (isLazy(object, true) && progressMonitor == null && !supportsPreview()) {
+                throw new IllegalAccessException("Lazy property can't be read with null progress monitor");
+            }
             value = getGetter().invoke(object, progressMonitor);
         } else {
             value = getGetter().invoke(object);

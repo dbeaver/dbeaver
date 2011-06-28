@@ -140,7 +140,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
     public Object getPropertyValue(final Object object, final ObjectPropertyDescriptor prop)
     {
         try {
-            if (prop.isLazy(object, true)) {
+            if (prop.isLazy(object, true) && !prop.supportsPreview()) {
                 final Object value = lazyValues.get(prop.getId());
                 if (value != null) {
                     return value;

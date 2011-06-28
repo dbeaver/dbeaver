@@ -131,13 +131,17 @@ public class OraclePlanNode implements DBCPlanNode {
         return id;
     }
 
-    @Property(name = "Operation", order = 1, viewable = true, description = "Operation")
+    @Property(name = "Operation", order = 1, viewable = true, description = "Name of the internal operation performed in this step")
     public String getOperation()
     {
-        return operation;
+        if (CommonUtils.isEmpty(options)) {
+            return operation;
+        } else {
+            return operation + " (" + options + ")";
+        }
     }
 
-    @Property(name = "Options", order = 2, viewable = true, description = "Options")
+    //@Property(name = "Options", order = 2, viewable = true, description = "A variation on the operation described in the Operation column")
     public String getOptions()
     {
         return options;
@@ -149,26 +153,23 @@ public class OraclePlanNode implements DBCPlanNode {
         return objectType;
     }
 
-    @Property(name = "Owner", order = 4, viewable = true, description = "Object owner (schema)")
+    //@Property(name = "Owner", order = 4, viewable = true, description = "Object owner (schema)")
     public Object getObjectOwner()
     {
         final OracleSchema schema = dataSource.schemaCache.getCachedObject(objectOwner);
         return schema == null ? objectOwner : schema;
     }
 
-    @Property(name = "Object", order = 5, viewable = true, description = "Object")
+    @Property(name = "Object", order = 5, viewable = true, supportsPreview = true, description = "Name of the table or index")
     public Object getObject(DBRProgressMonitor monitor) throws DBException
     {
-        if (CommonUtils.isEmpty(objectType)) {
+        if (monitor == null || CommonUtils.isEmpty(objectType)) {
             return objectName;
         }
         String objectTypeName = objectType;
         final int divPos = objectTypeName.indexOf('(');
         if (divPos != -1) {
             objectTypeName = objectTypeName.substring(0, divPos).trim();
-        }
-        if (objectTypeName.equals(OracleObjectType.CLUSTER.name())) {
-            objectTypeName = OracleObjectType.TABLE.name();
         }
         if (objectTypeName.equals(OracleObjectType.INDEX.name())) {
             // Get index from parent table - reading of all indexes takes too much time
@@ -179,6 +180,8 @@ public class OraclePlanNode implements DBCPlanNode {
                 }
             }
             return objectName;
+        } else {
+            objectTypeName = OracleObjectType.TABLE.name();
         }
 
         return OracleObjectType.resolveObject(
@@ -196,7 +199,7 @@ public class OraclePlanNode implements DBCPlanNode {
         return objectAlias;
     }
 
-    //@Property(name = "Optimizer", order = 7, viewable = true, description = "Optimizer")
+    @Property(name = "Optimizer", order = 7, viewable = true, description = "Optimizer")
     public String getOptimizer()
     {
         return optimizer;
