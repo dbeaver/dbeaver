@@ -19,6 +19,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -41,6 +42,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
     private DBCQueryPlanner planner;
     private RefreshPlanAction refreshPlanAction;
     private ToggleViewAction toggleViewAction;
+    private Text sqlText;
 
     public ExplainPlanViewer(SQLEditor editor, Composite parent)
     {
@@ -55,7 +57,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         gl.marginHeight = 0;
         this.planPanel.setLayout(gl);
         {
-            final Composite ph = UIUtils.createPlaceholder(planPanel, 1);
+            sqlText = new Text(planPanel, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         }
         this.planTree = new PlanNodesTree(planPanel, SWT.SHEET, editor, editor) {
             @Override
@@ -183,6 +185,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
             throw new DBCException("This datasource doesn't support execution plans");
         }
 
+        sqlText.setText(query);
         planTree.init(planner, query);
         planTree.loadData();
 
@@ -199,8 +202,12 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         @Override
         public void run()
         {
-            if (planTree != null && planTree.isInitialized()) {
-                planTree.loadData();
+            if (planTree != null) {
+                try {
+                    explainQueryPlan(sqlText.getText());
+                } catch (DBCException e) {
+                    UIUtils.showErrorDialog(getControl().getShell(), "Explain plan", "Can't explain execution plan", e);
+                }
             }
         }
     }
