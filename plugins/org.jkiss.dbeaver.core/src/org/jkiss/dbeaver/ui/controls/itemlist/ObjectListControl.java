@@ -47,7 +47,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private ColumnViewer itemsViewer;
     //private ColumnViewerEditor itemsEditor;
-    private List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
+    private final List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
     private IDoubleClickListener doubleClickHandler;
     private PropertySourceAbstract listPropertySource;
 
@@ -284,7 +284,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
         itemsControl.setRedraw(false);
         try {
-            final boolean reload = (objectList == null);
+            final boolean reload = (objectList == null) || (columns.isEmpty());
 
             if (reload) {
                 clearListData();
@@ -396,6 +396,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         columns.clear();
         if (!itemsViewer.getControl().isDisposed()) {
             itemsViewer.setInput(Collections.<Object>emptyList());
+        }
+        if (listPropertySource != null) {
+            listPropertySource.clearProperties();
         }
         clearLazyCache();
     }

@@ -4,29 +4,18 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.plan;
 
-import org.eclipse.gef.editparts.ZoomManager;
-import org.eclipse.gef.ui.actions.ZoomComboContributionItem;
-import org.eclipse.gef.ui.actions.ZoomInAction;
-import org.eclipse.gef.ui.actions.ZoomOutAction;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.*;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
-import org.jkiss.dbeaver.utils.ViewUtils;
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -35,10 +24,14 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -116,25 +109,6 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
     }
 
     @Override
-    protected Composite createProgressPanel(Composite container)
-    {
-        Composite infoGroup = super.createProgressPanel(container);
-
-        ToolBar toolBar = new ToolBar(infoGroup, SWT.FLAT | SWT.HORIZONTAL);
-        UIUtils.createToolItem(toolBar, "Refresh", DBIcon.REFRESH, new Action() {
-            @Override
-            public void run()
-            {
-                if (planner != null) {
-                    loadData();
-                }
-            }
-        });
-
-        return infoGroup;
-    }
-
-    @Override
     protected LoadingJob<Collection<DBCPlanNode>> createLoadService()
     {
         return LoadingUtils.createService(
@@ -174,6 +148,11 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
         workbenchPart.getSite().registerContextMenu(menuMgr, getSelectionProvider());
+    }
+
+    public boolean isInitialized()
+    {
+        return planner != null;
     }
 
     public void init(DBCQueryPlanner planner, String query)

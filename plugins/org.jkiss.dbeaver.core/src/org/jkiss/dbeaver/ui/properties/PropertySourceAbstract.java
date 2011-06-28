@@ -70,6 +70,12 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         return this;
     }
 
+    public void clearProperties()
+    {
+        props.clear();
+        propValues.clear();
+    }
+
     public boolean hasProperty(ObjectPropertyDescriptor prop)
     {
         return props.contains(prop);

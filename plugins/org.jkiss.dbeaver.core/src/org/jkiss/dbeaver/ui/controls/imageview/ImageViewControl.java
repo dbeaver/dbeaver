@@ -78,11 +78,11 @@ public class ImageViewControl extends Composite {
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
                 toolBar.setLayoutData(gd);
 
-                itemZoomIn = UIUtils.createToolItem(toolBar, "Zoom In", DBIcon.ZOOM_IN, new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN));
-                itemZoomOut = UIUtils.createToolItem(toolBar, "Zoom Out", DBIcon.ZOOM_OUT, new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT));
-                itemRotate = UIUtils.createToolItem(toolBar, "Rotate", DBIcon.ROTATE_LEFT, new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE));
-                itemFit = UIUtils.createToolItem(toolBar, "Fit Window", DBIcon.FIT_WINDOW, new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT));
-                itemOriginal = UIUtils.createToolItem(toolBar, "Original Size", DBIcon.ORIGINAL_SIZE, new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL));
+                itemZoomIn = UIUtils.createToolItem(toolBar, "Zoom In", DBIcon.ZOOM_IN.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN));
+                itemZoomOut = UIUtils.createToolItem(toolBar, "Zoom Out", DBIcon.ZOOM_OUT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT));
+                itemRotate = UIUtils.createToolItem(toolBar, "Rotate", DBIcon.ROTATE_LEFT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE));
+                itemFit = UIUtils.createToolItem(toolBar, "Fit Window", DBIcon.FIT_WINDOW.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT));
+                itemOriginal = UIUtils.createToolItem(toolBar, "Original Size", DBIcon.ORIGINAL_SIZE.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL));
             }
         }
         updateActions();

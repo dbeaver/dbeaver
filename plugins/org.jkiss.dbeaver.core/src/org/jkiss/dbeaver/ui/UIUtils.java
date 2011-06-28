@@ -163,11 +163,13 @@ public class UIUtils {
     }
 */
 
-    public static ToolItem createToolItem(ToolBar toolBar, String text, DBIcon icon, final IAction action)
+    public static ToolItem createToolItem(ToolBar toolBar, String text, Image icon, final IAction action)
     {
         ToolItem item = new ToolItem(toolBar, SWT.PUSH);
         item.setToolTipText(text);
-        item.setImage(icon.getImage());
+        if (icon != null) {
+            item.setImage(icon);
+        }
         item.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
