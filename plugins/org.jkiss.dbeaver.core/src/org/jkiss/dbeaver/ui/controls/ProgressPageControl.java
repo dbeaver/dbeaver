@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ViewUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 
@@ -46,6 +46,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     private final static int PROGRESS_MIN = 0;
     private final static int PROGRESS_MAX = 20;
+
+    private boolean showDivider;
 
     private Text listInfoLabel;
 
@@ -74,6 +76,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if ((style & SWT.SHEET) != 0) {
             layout.marginHeight = 0;
             layout.marginWidth = 0;
+            layout.verticalSpacing = 0;
+            layout.horizontalSpacing = 0;
         }
         //layout.horizontalSpacing = 0;
         //layout.verticalSpacing = 0;
@@ -91,6 +95,11 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     public GridLayout getLayout()
     {
         return (GridLayout)super.getLayout();
+    }
+
+    public void setShowDivider(boolean showDivider)
+    {
+        this.showDivider = showDivider;
     }
 
     public void setInfo(String info)
@@ -145,6 +154,10 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     {
         if (this.ownerPageControl != null) {
             throw new IllegalStateException("Can't create page control while substitution control already set");
+        }
+        if (showDivider) {
+            Label separator = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
+            separator.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
         Composite infoGroup = new Composite(container, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);

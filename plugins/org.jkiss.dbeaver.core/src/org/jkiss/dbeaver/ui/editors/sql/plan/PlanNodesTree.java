@@ -4,12 +4,22 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.plan;
 
+import org.eclipse.gef.editparts.ZoomManager;
+import org.eclipse.gef.ui.actions.ZoomComboContributionItem;
+import org.eclipse.gef.ui.actions.ZoomInAction;
+import org.eclipse.gef.ui.actions.ZoomOutAction;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
+import org.jkiss.dbeaver.utils.ViewUtils;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -17,11 +27,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -108,6 +113,25 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
     protected ObjectViewerRenderer createRenderer()
     {
         return new PlanTreeRenderer();
+    }
+
+    @Override
+    protected Composite createProgressPanel(Composite container)
+    {
+        Composite infoGroup = super.createProgressPanel(container);
+
+        ToolBar toolBar = new ToolBar(infoGroup, SWT.FLAT | SWT.HORIZONTAL);
+        UIUtils.createToolItem(toolBar, "Refresh", DBIcon.REFRESH, new Action() {
+            @Override
+            public void run()
+            {
+                if (planner != null) {
+                    loadData();
+                }
+            }
+        });
+
+        return infoGroup;
     }
 
     @Override

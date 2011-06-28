@@ -158,7 +158,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public String getDescription()
     {
-        return CommonUtils.isEmpty(propInfo.description()) ? null : propInfo.description();
+        return CommonUtils.isEmpty(propInfo.description()) ? getDisplayName() : propInfo.description();
     }
 
     public String getDisplayName()
