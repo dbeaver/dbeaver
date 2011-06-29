@@ -28,7 +28,8 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * LOB Editor contributor
+ * Content Editor contributor.
+ * Uses text editor contributor to fill status bar and menu for possible integrated text editors.
  */
 public class ContentEditorContributor extends MultiPageEditorActionBarContributor
 {

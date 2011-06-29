@@ -1759,6 +1759,9 @@ public class HexEditControl extends Composite {
      */
     public void setContentProvider(BinaryContent aContent)
     {
+        if (isDisposed()) {
+            return;
+        }
         boolean firstContent = content == null;
         if (!firstContent) {
             content.dispose();
