@@ -9,21 +9,18 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 
 /**
- * OracleRolePriv
+ * OraclePrivRole
  */
-public class OracleRolePriv extends OracleObject<OracleGrantee> implements DBSObjectLazy<OracleDataSource> {
+public class OraclePrivRole extends OraclePriv implements DBSObjectLazy<OracleDataSource> {
     private Object role;
-    private boolean adminOption;
     private boolean defaultRole;
 
-    public OracleRolePriv(OracleGrantee user, ResultSet resultSet) {
-        super(user, JDBCUtils.safeGetString(resultSet, "GRANTED_ROLE"), true);
-        this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION", "Y");
+    public OraclePrivRole(OracleGrantee user, ResultSet resultSet) {
+        super(user, JDBCUtils.safeGetString(resultSet, "GRANTED_ROLE"), resultSet);
         this.defaultRole = JDBCUtils.safeGetBoolean(resultSet, "DEFAULT_ROLE", "Y");
         this.role = this.name;
     }
@@ -39,12 +36,6 @@ public class OracleRolePriv extends OracleObject<OracleGrantee> implements DBSOb
             return role;
         }
         return OracleUtils.resolveLazyReference(monitor, getDataSource(), getDataSource().roleCache, this, null);
-    }
-
-    @Property(name = "Admin Option", viewable = true, order = 3, description = "Indicates whether the grant was with the ADMIN OPTION")
-    public boolean isAdminOption()
-    {
-        return adminOption;
     }
 
     @Property(name = "Default", viewable = true, order = 4, description = "Indicates whether the role is designated as a DEFAULT ROLE for the user")

@@ -204,8 +204,24 @@
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="Security" iconId="#security" description="Security management" visibleIf="object.dataSource.admin">
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="Users" iconId="#folder_user" description="Users">
                         <items label="User" path="users" property="users" iconId="#user">
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRolePriv" label="Roles" iconId="#folder_role" description="User roles">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="Roles" iconId="#folder_role" description="User roles" navigable="false">
                                 <items label="Role" path="roles" property="rolePrivs" iconId="#role">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="System Privileges" iconId="#folder_privilege" description="System Privileges" navigable="false">
+                                <items label="Privilege" path="sysPrivs" property="systemPrivs" iconId="#privilege">
+                                </items>
+                            </folder>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRole" label="Roles" iconId="#folder_role" description="Roles">
+                        <items label="Role" path="roles" property="roles" iconId="#role">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="Roles" iconId="#folder_role" description="Roles" navigable="false">
+                                <items label="Role" path="roles" property="rolePrivs" iconId="#role">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="System Privileges" iconId="#folder_privilege" description="System Privileges" navigable="false">
+                                <items label="Privilege" path="sysPrivs" property="systemPrivs" iconId="#privilege">
                                 </items>
                             </folder>
                         </items>
@@ -213,14 +229,6 @@
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUserProfile" label="Profiles" iconId="#folder_profile" description="User profiles">
                         <items label="Profile" path="profiles" property="profiles" iconId="#profile">
                             <items label="Resource" path="resource" property="resources" iconId="#resource"/>
-                        </items>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRole" label="Roles" iconId="#folder_role" description="Roles">
-                        <items label="Role" path="roles" property="roles" iconId="#role">
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRolePriv" label="Roles" iconId="#folder_role" description="Roles" navigable="false">
-                                <items label="Role" path="roles" property="rolePrivs" iconId="#role">
-                                </items>
-                            </folder>
                         </items>
                     </folder>
                 </folder>
