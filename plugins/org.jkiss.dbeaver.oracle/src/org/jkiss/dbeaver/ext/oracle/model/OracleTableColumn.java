@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -15,6 +16,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSHiddenObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.sql.ResultSet;
 
@@ -25,7 +27,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
 {
     static final Log log = LogFactory.getLog(OracleTableColumn.class);
 
-    private DBSDataType type;
+    private OracleDataType type;
     private OracleDataTypeModifier typeMod;
     private String comment;
     private String defaultValue;
@@ -152,4 +154,13 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     {
         return hidden;
     }
+
+    public Image getObjectImage()
+    {
+        if (type.getName().equals(OracleConstants.TYPE_NAME_XML)) {
+            return DBIcon.TYPE_XML.getImage();
+        }
+        return super.getObjectImage();
+    }
+
 }

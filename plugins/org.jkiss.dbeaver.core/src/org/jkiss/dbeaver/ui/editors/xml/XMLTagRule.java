@@ -5,9 +5,9 @@ import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.MultiLineRule;
 
 
-public class TagRule extends MultiLineRule {
+public class XMLTagRule extends MultiLineRule {
 
-	public TagRule(IToken token) {
+	public XMLTagRule(IToken token) {
 		super("<", ">", token);  //$NON-NLS-1$//$NON-NLS-2$
 	}
 	@Override

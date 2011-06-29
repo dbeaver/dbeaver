@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.views.search;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -364,7 +364,9 @@ public class SearchObjectsView extends ViewPart {
                 if (objectType.getImage() != null) {
                     item.setImage(0, objectType.getImage());
                 }
-                item.setText(1, objectType.getDescription());
+                if (!CommonUtils.isEmpty(objectType.getDescription())) {
+                    item.setText(1, objectType.getDescription());
+                }
                 item.setData(objectType);
                 if (checkedTypes.contains(objectType)) {
                     item.setChecked(true);

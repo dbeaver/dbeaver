@@ -11,9 +11,16 @@ import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
+import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.core.DBeaverCore;
 
 public class XMLConfiguration extends SourceViewerConfiguration {
+    static final RGB COLOR_XML_COMMENT = new RGB(128, 0, 0);
+    static final RGB COLOR_PROC_INSTR = new RGB(128, 128, 128);
+    static final RGB COLOR_STRING = new RGB(0, 128, 0);
+    static final RGB COLOR_DEFAULT = new RGB(0, 0, 0);
+    static final RGB COLOR_TAG = new RGB(0, 0, 128);
+
 	private final ISharedTextColors colorManager;
 
 	public XMLConfiguration() {
@@ -55,7 +62,7 @@ public class XMLConfiguration extends SourceViewerConfiguration {
 		NonRuleBasedDamagerRepairer ndr =
 			new NonRuleBasedDamagerRepairer(
 				new TextAttribute(
-					colorManager.getColor(IXMLColorConstants.XML_COMMENT)));
+					colorManager.getColor(COLOR_XML_COMMENT)));
 		reconciler.setDamager(ndr, XMLPartitionScanner.XML_COMMENT);
 		reconciler.setRepairer(ndr, XMLPartitionScanner.XML_COMMENT);
 
@@ -67,7 +74,7 @@ public class XMLConfiguration extends SourceViewerConfiguration {
 		scanner.setDefaultReturnToken(
 			new Token(
 				new TextAttribute(
-					colorManager.getColor(IXMLColorConstants.DEFAULT))));
+					colorManager.getColor(COLOR_DEFAULT))));
 		return scanner;
 	}
 
@@ -76,7 +83,7 @@ public class XMLConfiguration extends SourceViewerConfiguration {
 		tagScanner.setDefaultReturnToken(
 			new Token(
 				new TextAttribute(
-					colorManager.getColor(IXMLColorConstants.TAG))));
+					colorManager.getColor(COLOR_TAG))));
 		return tagScanner;
 	}
 }

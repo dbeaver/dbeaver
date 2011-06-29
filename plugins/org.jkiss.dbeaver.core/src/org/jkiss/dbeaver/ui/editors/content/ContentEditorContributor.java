@@ -16,11 +16,9 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IPropertyListener;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
+import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.SimpleAction;
@@ -36,14 +34,15 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 {
     static final Log log = LogFactory.getLog(ContentEditorContributor.class);
 
+    private final BasicTextEditorActionContributor textContributor;
     private ContentEditor activeEditor;
-    private IEditorPart activePage;
+    //private IEditorPart activePage;
 
-    private IAction saveAction = new FileExportAction();
-    private IAction loadAction = new FileImportAction();
-    private IAction infoAction = new InfoAction();
-    private IAction applyAction = new ApplyAction();
-    private IAction closeAction = new CloseAction();
+    private final IAction saveAction = new FileExportAction();
+    private final IAction loadAction = new FileImportAction();
+    private final IAction infoAction = new InfoAction();
+    private final IAction applyAction = new ApplyAction();
+    private final IAction closeAction = new CloseAction();
     private Combo encodingCombo;
 
     private IPropertyListener dirtyListener = new IPropertyListener() {
@@ -59,6 +58,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
     public ContentEditorContributor()
     {
+        textContributor = new BasicTextEditorActionContributor();
     }
 
     ContentEditor getEditor()
@@ -67,8 +67,23 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     }
 
     @Override
+    public void init(IActionBars bars, IWorkbenchPage page)
+    {
+        super.init(bars, page);
+        textContributor.init(bars, page);
+    }
+
+    @Override
+    public void init(IActionBars bars)
+    {
+        super.init(bars);
+        textContributor.init(bars);
+    }
+
+    @Override
     public void dispose()
     {
+        textContributor.dispose();
         if (activeEditor != null) {
             activeEditor.removePropertyListener(dirtyListener);
         }
@@ -79,6 +94,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     public void setActiveEditor(IEditorPart part)
     {
         super.setActiveEditor(part);
+        //textContributor.setActiveEditor(part);
         if (activeEditor != null) {
             activeEditor.removePropertyListener(dirtyListener);
         }
@@ -112,13 +128,15 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
     public void setActivePage(IEditorPart activeEditor)
     {
-        this.activePage = activeEditor;
+        //this.activePage = activeEditor;
+        this.textContributor.setActiveEditor(activeEditor);
     }
 
     @Override
     public void contributeToMenu(IMenuManager manager)
     {
         super.contributeToMenu(manager);
+        textContributor.contributeToMenu(manager);
 
         IMenuManager menu = new MenuManager("L&OB Editor");
         manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
@@ -135,12 +153,14 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     public void contributeToStatusLine(IStatusLineManager statusLineManager)
     {
         super.contributeToStatusLine(statusLineManager);
+        textContributor.contributeToStatusLine(statusLineManager);
     }
 
     @Override
     public void contributeToToolBar(IToolBarManager manager)
     {
         super.contributeToToolBar(manager);
+        textContributor.contributeToToolBar(manager);
         // Execution
         manager.add(loadAction);
         manager.add(saveAction);

@@ -22,7 +22,7 @@ public class XMLPartitionScanner extends RuleBasedPartitionScanner {
 		IPredicateRule[] rules = new IPredicateRule[2];
 
 		rules[0] = new MultiLineRule("<!--", "-->", xmlComment);  //$NON-NLS-1$//$NON-NLS-2$
-		rules[1] = new TagRule(tag);
+		rules[1] = new XMLTagRule(tag);
 
 		setPredicateRules(rules);
 	}

@@ -1424,11 +1424,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private class ResultSetValueController implements DBDValueController, DBDRowController {
 
+        private DBDColumnBinding[] columns;
         private Object[] curRow;
         private int columnIndex;
         private Composite inlinePlaceholder;
 
         private ResultSetValueController(Object[] curRow, int columnIndex, Composite inlinePlaceholder) {
+            this.columns = ResultSetViewer.this.metaColumns;
             this.curRow = curRow;
             this.columnIndex = columnIndex;
             this.inlinePlaceholder = inlinePlaceholder;
@@ -1445,7 +1447,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public DBCColumnMetaData getColumnMetaData()
         {
-            return metaColumns[columnIndex].getColumn();
+            return columns[columnIndex].getColumn();
         }
 
         public String getColumnId() {
@@ -1510,12 +1512,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public DBDValueLocator getValueLocator()
         {
-            return metaColumns[columnIndex].getValueLocator();
+            return columns[columnIndex].getValueLocator();
         }
 
         public DBDValueHandler getValueHandler()
         {
-            return metaColumns[columnIndex].getValueHandler();
+            return columns[columnIndex].getValueHandler();
         }
 
         public boolean isInlineEdit()
@@ -1525,7 +1527,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public boolean isReadOnly()
         {
-            return isColumnReadOnly(metaColumns[columnIndex]);
+            return isColumnReadOnly(columns[columnIndex]);
         }
 
         public IWorkbenchPartSite getValueSite()
@@ -1576,7 +1578,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public Collection<DBCColumnMetaData> getColumnsMetaData() {
             List<DBCColumnMetaData> columns = new ArrayList<DBCColumnMetaData>();
-            for (DBDColumnBinding column : metaColumns) {
+            for (DBDColumnBinding column : this.columns) {
                 columns.add(column.getColumn());
             }
             return columns;
@@ -1584,7 +1586,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public DBCColumnMetaData getColumnMetaData(DBCTableMetaData table, String columnName)
         {
-            for (DBDColumnBinding column : metaColumns) {
+            for (DBDColumnBinding column : columns) {
                 if (column.getColumn().getTable() == table && column.getColumnName().equals(columnName)) {
                     return column.getColumn();
                 }
@@ -1594,8 +1596,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public Object getColumnValue(DBCColumnMetaData column)
         {
-            for (int i = 0; i < metaColumns.length; i++) {
-                DBDColumnBinding metaColumn = metaColumns[i];
+            for (int i = 0; i < columns.length; i++) {
+                DBDColumnBinding metaColumn = columns[i];
                 if (metaColumn.getColumn() == column) {
                     return curRow[i];
                 }
