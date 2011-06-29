@@ -217,6 +217,10 @@
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRole" label="Roles" iconId="#folder_role" description="Roles">
                         <items label="Role" path="roles" property="roles" iconId="#role">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRolePriv" label="Roles" iconId="#folder_role" description="Roles" navigable="false">
+                                <items label="Role" path="roles" property="rolePrivs" iconId="#role">
+                                </items>
+                            </folder>
                         </items>
                     </folder>
                 </folder>

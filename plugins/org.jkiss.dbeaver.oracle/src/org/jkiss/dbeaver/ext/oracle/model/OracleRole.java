@@ -14,7 +14,7 @@ import java.sql.ResultSet;
 /**
  * OracleRole
  */
-public class OracleRole extends OracleGlobalObject
+public class OracleRole extends OracleGrantee
 {
     static final Log log = LogFactory.getLog(OracleRole.class);
 
@@ -22,7 +22,7 @@ public class OracleRole extends OracleGlobalObject
     private String authentication;
 
     public OracleRole(OracleDataSource dataSource, ResultSet resultSet) {
-        super(dataSource, true);
+        super(dataSource);
         this.name = JDBCUtils.safeGetString(resultSet, "ROLE");
         this.authentication = JDBCUtils.safeGetStringTrimmed(resultSet, "PASSWORD_REQUIRED");
     }

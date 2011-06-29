@@ -7,12 +7,8 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
@@ -21,14 +17,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
 
 /**
  * OracleUser
  */
-public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveableObject, DBSObjectLazy<OracleDataSource>
+public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>
 {
     static final Log log = LogFactory.getLog(OracleUser.class);
 
@@ -44,25 +39,21 @@ public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveab
     private Object profile;
     private String consumerGroup;
 
-    final RolePrivCache rolePrivCache = new RolePrivCache();
-
     public OracleUser(OracleDataSource dataSource, ResultSet resultSet) {
-        super(dataSource, resultSet != null);
-        if (resultSet != null) {
-            this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
-            this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
-            this.externalName = JDBCUtils.safeGetString(resultSet, "EXTERNAL_NAME");
-            this.status = JDBCUtils.safeGetString(resultSet, "ACCOUNT_STATUS");
+        super(dataSource);
+        this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
+        this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
+        this.externalName = JDBCUtils.safeGetString(resultSet, "EXTERNAL_NAME");
+        this.status = JDBCUtils.safeGetString(resultSet, "ACCOUNT_STATUS");
 
-            this.createDate = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
-            this.lockDate = JDBCUtils.safeGetTimestamp(resultSet, "LOCK_DATE");
-            this.expiryDate = JDBCUtils.safeGetTimestamp(resultSet, "EXPIRY_DATE");
-            this.defaultTablespace = JDBCUtils.safeGetString(resultSet, "DEFAULT_TABLESPACE");
-            this.tempTablespace = JDBCUtils.safeGetString(resultSet, "TEMPORARY_TABLESPACE");
+        this.createDate = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
+        this.lockDate = JDBCUtils.safeGetTimestamp(resultSet, "LOCK_DATE");
+        this.expiryDate = JDBCUtils.safeGetTimestamp(resultSet, "EXPIRY_DATE");
+        this.defaultTablespace = JDBCUtils.safeGetString(resultSet, "DEFAULT_TABLESPACE");
+        this.tempTablespace = JDBCUtils.safeGetString(resultSet, "TEMPORARY_TABLESPACE");
 
-            this.profile = JDBCUtils.safeGetString(resultSet, "PROFILE");
-            this.consumerGroup = JDBCUtils.safeGetString(resultSet, "INITIAL_RSRC_CONSUMER_GROUP");
-        }
+        this.profile = JDBCUtils.safeGetString(resultSet, "PROFILE");
+        this.consumerGroup = JDBCUtils.safeGetString(resultSet, "INITIAL_RSRC_CONSUMER_GROUP");
     }
 
     @Property(name = "ID", order = 1, description = "ID number of the user")
@@ -150,23 +141,6 @@ public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveab
     public Collection<OracleRolePriv> getRolePrivs(DBRProgressMonitor monitor) throws DBException
     {
         return rolePrivCache.getObjects(monitor, this);
-    }
-
-    static class RolePrivCache extends JDBCObjectCache<OracleUser, OracleRolePriv> {
-        @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleUser owner) throws SQLException
-        {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT * FROM DBA_ROLE_PRIVS WHERE GRANTEE=? ORDER BY GRANTED_ROLE");
-            dbStat.setString(1, owner.getName());
-            return dbStat;
-        }
-
-        @Override
-        protected OracleRolePriv fetchObject(JDBCExecutionContext context, OracleUser owner, ResultSet resultSet) throws SQLException, DBException
-        {
-            return new OracleRolePriv(owner, resultSet);
-        }
     }
 
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {
