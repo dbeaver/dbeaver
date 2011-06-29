@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.SQLException;
@@ -147,14 +148,14 @@ public class OracleUtils {
         return dataSource.isAdmin() ? "SYS.DBA_" : "SYS.ALL_";
     }
 
-    static Object resolveLazyReference(DBRProgressMonitor monitor, JDBCAbstractCache<OracleDataSource,?> cache, DBSObjectLazy<OracleDataSource> referrer, Object propertyId)
+    static <PARENT extends DBSObject> Object resolveLazyReference(DBRProgressMonitor monitor, PARENT parent, JDBCAbstractCache<PARENT,?> cache, DBSObjectLazy<?> referrer, Object propertyId)
         throws DBException
     {
         final Object reference = referrer.getLazyReference(propertyId);
         if (reference instanceof String) {
             Object object = cache.getObject(
                 monitor,
-                referrer.getDataSource(),
+                parent,
                 (String) reference);
             if (object != null) {
                 return object;

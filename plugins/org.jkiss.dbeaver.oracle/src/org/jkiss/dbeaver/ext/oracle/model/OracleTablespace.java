@@ -298,7 +298,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
         if (!dataSource.isAdmin()) {
             return referrer;
         } else {
-            return OracleUtils.resolveLazyReference(monitor, dataSource.tablespaceCache, referrer, propertyId);
+            return OracleUtils.resolveLazyReference(monitor, dataSource, dataSource.tablespaceCache, referrer, propertyId);
         }
     }
 

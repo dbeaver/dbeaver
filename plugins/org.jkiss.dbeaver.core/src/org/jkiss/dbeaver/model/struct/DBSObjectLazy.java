@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 /**
  * Lazy object
  */
-public interface DBSObjectLazy<DATA_SOURCE extends DBPDataSource> {
+public interface DBSObjectLazy<DATA_SOURCE extends DBPDataSource> extends DBSObject {
 
     DATA_SOURCE getDataSource();
 

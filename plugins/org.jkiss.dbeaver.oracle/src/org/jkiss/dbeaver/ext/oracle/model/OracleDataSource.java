@@ -49,6 +49,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     final TablespaceCache tablespaceCache = new TablespaceCache();
     final UserCache userCache = new UserCache();
     final ProfileCache profileCache = new ProfileCache();
+    final RoleCache roleCache = new RoleCache();
 
     private OracleSchema publicSchema;
     private String activeSchemaName;
@@ -98,6 +99,12 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     public Collection<OracleUserProfile> getProfiles(DBRProgressMonitor monitor) throws DBException
     {
         return profileCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<OracleRole> getRoles(DBRProgressMonitor monitor) throws DBException
+    {
+        return roleCache.getObjects(monitor, this);
     }
 
     @Association
@@ -181,6 +188,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         this.tablespaceCache.clearCache();
         this.userCache.clearCache();
         this.profileCache.clearCache();
+        this.roleCache.clearCache();
         this.activeSchemaName = null;
 
         this.initialize(monitor);
@@ -323,14 +331,14 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return "PLAN_TABLE";
     }
 
-    class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
+    static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             StringBuilder schemasQuery = new StringBuilder("SELECT U.USERNAME,U.USER_ID FROM SYS.ALL_USERS u\n");
-            List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
+            List<String> schemaFilters = SQLUtils.splitFilter(owner.getContainer().getSchemaFilter());
             schemasQuery.append("WHERE (EXISTS (SELECT 1 FROM ALL_OBJECTS WHERE OWNER=U.USERNAME)");
-            final String curUserName = getContainer().getConnectionInfo().getUserName();
+            final String curUserName = owner.getContainer().getConnectionInfo().getUserName();
             if (!CommonUtils.isEmpty(curUserName)) {
                 schemasQuery.append(" OR U.USERNAME='").append(curUserName.toUpperCase()).append("'");
             }
@@ -360,7 +368,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         @Override
         protected OracleSchema fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleSchema(OracleDataSource.this, resultSet);
+            return new OracleSchema(owner, resultSet);
         }
     }
 
@@ -390,37 +398,52 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         }
     }
 
-    class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
+    static class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             return context.prepareStatement(
-                "SELECT * FROM " + OracleUtils.getAdminViewPrefix(OracleDataSource.this) + "TABLESPACES ORDER BY TABLESPACE_NAME");
+                "SELECT * FROM " + OracleUtils.getAdminViewPrefix(owner) + "TABLESPACES ORDER BY TABLESPACE_NAME");
         }
 
         @Override
         protected OracleTablespace fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleTablespace(OracleDataSource.this, resultSet);
+            return new OracleTablespace(owner, resultSet);
         }
     }
 
-    class UserCache extends JDBCObjectCache<OracleDataSource, OracleUser> {
+    static class UserCache extends JDBCObjectCache<OracleDataSource, OracleUser> {
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             return context.prepareStatement(
-                "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(OracleDataSource.this) + "USERS ORDER BY USERNAME");
+                "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(owner) + "USERS ORDER BY USERNAME");
         }
 
         @Override
         protected OracleUser fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleUser(OracleDataSource.this, resultSet);
+            return new OracleUser(owner, resultSet);
         }
     }
 
-    class ProfileCache extends JDBCStructCache<OracleDataSource, OracleUserProfile, OracleUserProfile.ProfileResource> {
+    static class RoleCache extends JDBCObjectCache<OracleDataSource, OracleRole> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        {
+            return context.prepareStatement(
+                "SELECT * FROM DBA_ROLES ORDER BY ROLE");
+        }
+
+        @Override
+        protected OracleRole fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleRole(owner, resultSet);
+        }
+    }
+
+    static class ProfileCache extends JDBCStructCache<OracleDataSource, OracleUserProfile, OracleUserProfile.ProfileResource> {
         protected ProfileCache()
         {
             super("PROFILE");
@@ -436,7 +459,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         @Override
         protected OracleUserProfile fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleUserProfile(OracleDataSource.this, resultSet);
+            return new OracleUserProfile(owner, resultSet);
         }
 
         @Override

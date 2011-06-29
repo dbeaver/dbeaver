@@ -9,7 +9,11 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -17,7 +21,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Collection;
 
 /**
  * OracleUser
@@ -37,6 +43,8 @@ public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveab
     private Object tempTablespace;
     private Object profile;
     private String consumerGroup;
+
+    final RolePrivCache rolePrivCache = new RolePrivCache();
 
     public OracleUser(OracleDataSource dataSource, ResultSet resultSet) {
         super(dataSource, resultSet != null);
@@ -129,13 +137,36 @@ public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveab
     @LazyProperty(cacheValidator = ProfileReferenceValidator.class)
     public Object getProfile(DBRProgressMonitor monitor) throws DBException
     {
-        return OracleUtils.resolveLazyReference(monitor, getDataSource().profileCache, this, "profile");
+        return OracleUtils.resolveLazyReference(monitor, getDataSource(), getDataSource().profileCache, this, "profile");
     }
 
     @Property(name = "Consumer group", order = 11, description = "Initial resource consumer group for the user")
     public String getConsumerGroup()
     {
         return consumerGroup;
+    }
+
+    @Association
+    public Collection<OracleRolePriv> getRolePrivs(DBRProgressMonitor monitor) throws DBException
+    {
+        return rolePrivCache.getObjects(monitor, this);
+    }
+
+    static class RolePrivCache extends JDBCObjectCache<OracleUser, OracleRolePriv> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleUser owner) throws SQLException
+        {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM DBA_ROLE_PRIVS WHERE GRANTEE=? ORDER BY GRANTED_ROLE");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleRolePriv fetchObject(JDBCExecutionContext context, OracleUser owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleRolePriv(owner, resultSet);
+        }
     }
 
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {
@@ -147,6 +178,5 @@ public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveab
                 object.getDataSource().profileCache.isCached();
         }
     }
-
 
 }
