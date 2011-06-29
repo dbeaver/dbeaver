@@ -19,6 +19,7 @@ public class DataSourceConstants {
     public static final String TAG_FILE = "file";
     public static final String TAG_LIBRARY = "library"; // [LEGACY: from DBeaver 1.1.0]
     public static final String TAG_PATH = "path";
+    public static final String TAG_REPLACE = "replace";
 
     public static final String ATTR_ID = "id";
     public static final String ATTR_CATEGORY = "category";
@@ -35,5 +36,6 @@ public class DataSourceConstants {
     public static final String ATTR_COMMENT = "comment";
     public static final String ATTR_ORDER = "order";
     public static final String ATTR_ENABLED = "enabled";
+    public static final String ATTR_DRIVER = "driver";
 
 }

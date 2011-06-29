@@ -225,7 +225,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         List<DriverDescriptor> eDrivers = new ArrayList<DriverDescriptor>();
         for (DriverDescriptor driver : drivers) {
-            if (!driver.isDisabled()) {
+            if (!driver.isDisabled() && driver.getReplacedBy() == null) {
                 eDrivers.add(driver);
             }
         }
@@ -236,6 +236,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         for (DriverDescriptor driver : drivers) {
             if (driver.getId().equals(id)) {
+                while (driver.getReplacedBy() != null) {
+                    driver = driver.getReplacedBy();
+                }
                 return driver;
             }
         }

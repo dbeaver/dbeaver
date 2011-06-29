@@ -81,6 +81,21 @@ public class DataSourceProviderRegistry
         } else {
             loadDrivers(driversConfig);
         }
+
+        // Resolve all driver replacements
+        {
+            List<DriverDescriptor> allDrivers = new ArrayList<DriverDescriptor>();
+            for (DataSourceProviderDescriptor provider : dataSourceProviders) {
+                allDrivers.addAll(provider.getDrivers());
+            }
+            for (DriverDescriptor driver1 : allDrivers) {
+                for (DriverDescriptor driver2 : allDrivers) {
+                    if (driver1 != driver2 && driver1.replaces(driver2)) {
+                        driver2.setReplacedBy(driver1);
+                    }
+                }
+            }
+        }
     }
 
     public void dispose()

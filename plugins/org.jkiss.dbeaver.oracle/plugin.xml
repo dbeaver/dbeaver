@@ -216,18 +216,20 @@
             </tree>
             <drivers managable="false">
                 <driver
-                    id="oracle"
-                    label="Oracle"
+                    id="oracle_thin"
+                    label="Oracle Thin"
                     class="oracle.jdbc.OracleDriver"
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
-                    description="Oracle driver">
+                    description="Oracle thin driver. Doesn't require Oracle client.">
                     <file type="jar" path="drivers/oracle/ojdbc6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/ojdbc6.jar"/>
                     <file type="jar" path="drivers/oracle/orai18n.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/orai18n.jar"/>
                     <file type="jar" path="drivers/oracle/xdb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/xdb.jar"/>
                     <file type="jar" path="drivers/oracle/xmlparserv2.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/xmlparserv2.jar"/>
                     <file type="license" path="drivers/oracle/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/LICENSE.txt"/>
+                    <replace provider="generic" driver="oracle"/>
+                    <replace provider="oracle" driver="oracle"/>
                 </driver>
             </drivers>
             <views>

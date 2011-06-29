@@ -40,7 +40,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private PropertySourceCustom propertySource;
 
     private ModifyListener controlModifyListener;
-    private Button ociDriverCheck;
+    //private Button ociDriverCheck;
     private Text connectionUrlText;
     private Button osAuthCheck;
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
@@ -118,8 +118,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         connectionTypeFolder = new CTabFolder(protocolGroup, SWT.TOP | SWT.MULTI);
         connectionTypeFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        ociDriverCheck = UIUtils.createCheckbox(connectionTypeFolder, "OCI Driver", false);
-        connectionTypeFolder.setTopRight(ociDriverCheck);
+        //ociDriverCheck = UIUtils.createCheckbox(connectionTypeFolder, "OCI Driver", false);
+        //connectionTypeFolder.setTopRight(ociDriverCheck);
 
         createBasicConnectionControls(connectionTypeFolder);
         createTNSConnectionControls(connectionTypeFolder);
@@ -137,7 +137,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         final Group securityGroup = UIUtils.createControlGroup(addrGroup, "Security", 4, GridData.FILL_HORIZONTAL, 0);
         createSecurityGroup(securityGroup);
 
-        final Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 5);
+        final Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 1);
+        bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createBottomGroup(bottomControls);
         return addrGroup;
     }
@@ -264,32 +265,29 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private void createBottomGroup(Composite bottomControls)
     {
-        GridData gd;
-        bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        {
-            UIUtils.createControlLabel(bottomControls, "Oracle Home");
-            final Combo oraHomeCombo = new Combo(bottomControls, SWT.DROP_DOWN | SWT.READ_ONLY);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.widthHint = 100;
-            oraHomeCombo.setLayoutData(gd);
-            Button oraHomeButton = new Button(bottomControls, SWT.PUSH);
-            oraHomeButton.setText("...");
-            oraHomeButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    OracleHomesDialog homesDialog = new OracleHomesDialog(getShell(), site.getDriver());
-                    homesDialog.open();
-                }
-            });
-            Label phLabel = new Label(bottomControls, SWT.NONE);
-            phLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        }
+//        {
+//            UIUtils.createControlLabel(bottomControls, "Oracle Home");
+//            final Combo oraHomeCombo = new Combo(bottomControls, SWT.DROP_DOWN | SWT.READ_ONLY);
+//            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+//            gd.widthHint = 100;
+//            oraHomeCombo.setLayoutData(gd);
+//            Button oraHomeButton = new Button(bottomControls, SWT.PUSH);
+//            oraHomeButton.setText("...");
+//            oraHomeButton.addSelectionListener(new SelectionAdapter() {
+//                @Override
+//                public void widgetSelected(SelectionEvent e)
+//                {
+//                    OracleHomesDialog homesDialog = new OracleHomesDialog(getShell(), site.getDriver());
+//                    homesDialog.open();
+//                }
+//            });
+//            Label phLabel = new Label(bottomControls, SWT.NONE);
+//            phLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+//        }
         {
             testButton = new Button(bottomControls, SWT.PUSH);
             testButton.setText("Test Connection ... ");
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            testButton.setLayoutData(gd);
+            testButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             testButton.addSelectionListener(new SelectionListener()
             {
                 public void widgetSelected(SelectionEvent e)
@@ -404,8 +402,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             }
 
             connectionInfo.getProperties().put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
-            connectionInfo.getProperties().put(OracleConstants.PROP_DRIVER_TYPE,
-                ociDriverCheck.getSelection() ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
+            connectionInfo.getProperties().put(OracleConstants.PROP_DRIVER_TYPE, OracleConstants.DRIVER_TYPE_THIN);
+//            connectionInfo.getProperties().put(OracleConstants.PROP_DRIVER_TYPE,
+//                ociDriverCheck.getSelection() ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
             switch (connectionType) {
                 case BASIC:
                     connectionInfo.setHostName(hostText.getText());

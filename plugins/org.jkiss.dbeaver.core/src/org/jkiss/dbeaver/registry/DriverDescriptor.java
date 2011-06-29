@@ -69,9 +69,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean custom;
     private boolean modified;
     private boolean disabled;
-    private List<DriverFileDescriptor> files = new ArrayList<DriverFileDescriptor>(), origFiles;
-    private List<DriverPathDescriptor> pathList = new ArrayList<DriverPathDescriptor>();
-    private List<IPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<IPropertyDescriptor>();
+    private final List<DriverFileDescriptor> files = new ArrayList<DriverFileDescriptor>();
+    private final List<DriverFileDescriptor> origFiles = new ArrayList<DriverFileDescriptor>();
+    private final List<DriverPathDescriptor> pathList = new ArrayList<DriverPathDescriptor>();
+    private final List<IPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<IPropertyDescriptor>();
+
+    private final List<ReplaceInfo> driverReplacements = new ArrayList<ReplaceInfo>();
+    private DriverDescriptor replacedBy;
 
     private Map<Object, Object> defaultParameters = new HashMap<Object, Object>();
     private Map<Object, Object> customParameters = new HashMap<Object, Object>();
@@ -125,7 +129,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         for (IConfigurationElement lib : config.getChildren(DataSourceConstants.TAG_FILE)) {
             this.files.add(new DriverFileDescriptor(this, lib));
         }
-        this.origFiles = new ArrayList<DriverFileDescriptor>(this.files);
+        this.origFiles.addAll(this.files);
 
         String iconName = config.getAttribute("icon");
         if (!CommonUtils.isEmpty(iconName)) {
@@ -179,12 +183,45 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
+        {
+            // Driver replacements
+            IConfigurationElement[] replaceElements = config.getChildren(DataSourceConstants.TAG_REPLACE);
+            for (IConfigurationElement replace : replaceElements) {
+                String providerId = replace.getAttribute(DataSourceConstants.ATTR_PROVIDER);
+                String driverId = replace.getAttribute(DataSourceConstants.ATTR_DRIVER);
+                if (!CommonUtils.isEmpty(providerId) && !CommonUtils.isEmpty(driverId)) {
+                    driverReplacements.add(new ReplaceInfo(providerId, driverId));
+                }
+            }
+        }
         // Create class loader
         this.classLoader = new DriverClassLoader(
             this,
             new URL[0],
             //getClass().getClassLoader());
             ((BundleHost)providerDescriptor.getContributorBundle()).getClassLoader());
+    }
+
+    DriverDescriptor getReplacedBy()
+    {
+        return replacedBy;
+    }
+
+    void setReplacedBy(DriverDescriptor replaceBy)
+    {
+        this.replacedBy = replaceBy;
+    }
+
+    boolean replaces(DriverDescriptor driver)
+    {
+        for (ReplaceInfo replaceInfo : driverReplacements) {
+            if (driver.getProviderDescriptor().getId().equals(replaceInfo.providerId) &&
+                driver.getId().equals(replaceInfo.driverId))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void makeIconExtensions()
@@ -540,7 +577,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     
     public void setPathList(List<DriverPathDescriptor> pathList)
     {
-        this.pathList = pathList;
+        this.pathList.clear();
+        this.pathList.addAll(pathList);
     }
 
     public List<IPropertyDescriptor> getConnectionPropertyDescriptors()
@@ -1055,6 +1093,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         public void saxText(SAXReader reader, String data) {}
 
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {}
+    }
+
+    private static class ReplaceInfo {
+        String providerId;
+        String driverId;
+
+        private ReplaceInfo(String providerId, String driverId)
+        {
+            this.providerId = providerId;
+            this.driverId = driverId;
+        }
     }
 
     public static class MetaURL {

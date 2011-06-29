@@ -83,7 +83,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         final DataSourceProviderRegistry registry = DBeaverCore.getInstance().getDataSourceProviderRegistry();
         List<DriverDescriptor> matchedDrivers = new ArrayList<DriverDescriptor>();
         for (DataSourceProviderDescriptor dataSourceProvider : registry.getDataSourceProviders()) {
-            for (DriverDescriptor driver : dataSourceProvider.getDrivers()) {
+            for (DriverDescriptor driver : dataSourceProvider.getEnabledDrivers()) {
                 if (driver.getDriverClassName().equals(driverInfo.getDriverClass())) {
                     matchedDrivers.add(driver);
                 }

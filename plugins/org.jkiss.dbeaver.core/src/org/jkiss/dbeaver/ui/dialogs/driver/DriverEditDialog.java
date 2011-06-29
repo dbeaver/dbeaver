@@ -151,7 +151,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                     driverCategoryCombo.setEnabled(false);
                 }
                 Set<String> categories = new HashSet<String>();
-                for (DriverDescriptor drv : driver.getProviderDescriptor().getDrivers()) {
+                for (DriverDescriptor drv : driver.getProviderDescriptor().getEnabledDrivers()) {
                     if (!CommonUtils.isEmpty(drv.getCategory())) {
                         categories.add(drv.getCategory());
                     }
@@ -191,7 +191,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             UIUtils.createControlLabel(propsGroup, "Default Port");
             Composite ph = hasSite ? UIUtils.createPlaceholder(propsGroup, 3) : propsGroup;
             driverPortText = new Text(ph, SWT.BORDER | advStyle);
-            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort().toString());
+            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort());
             driverPortText.setLayoutData(new GridData(SWT.NONE));
             driverPortText.addModifyListener(new ModifyListener()
             {
