@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -291,38 +292,22 @@ public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
         }
     }
 
-    interface TablespaceReferrer {
-        OracleDataSource getDataSource();
-        Object getTablespaceReference(Object propertyId);
-    }
-
-    static Object resolveTablespaceReference(DBRProgressMonitor monitor, TablespaceReferrer referrer, Object propertyId) throws DBException
+    static Object resolveTablespaceReference(DBRProgressMonitor monitor, DBSObjectLazy<OracleDataSource> referrer, Object propertyId) throws DBException
     {
         final OracleDataSource dataSource = referrer.getDataSource();
         if (!dataSource.isAdmin()) {
             return referrer;
         } else {
-            final Object reference = referrer.getTablespaceReference(propertyId);
-            if (reference instanceof String) {
-                OracleTablespace tablespace = dataSource.tablespaceCache.getObject(monitor, dataSource, (String) reference);
-                if (tablespace != null) {
-                    return tablespace;
-                } else {
-                    log.warn("Tablespace '" + reference + "' not found");
-                    return reference;
-                }
-            } else {
-                return reference;
-            }
+            return OracleUtils.resolveLazyReference(monitor, dataSource.tablespaceCache, referrer, propertyId);
         }
     }
 
-    public static class TablespaceReferenceValidator implements IPropertyCacheValidator<TablespaceReferrer> {
-        public boolean isPropertyCached(TablespaceReferrer object, Object propertyId)
+    public static class TablespaceReferenceValidator implements IPropertyCacheValidator<DBSObjectLazy<OracleDataSource>> {
+        public boolean isPropertyCached(DBSObjectLazy<OracleDataSource> object, Object propertyId)
         {
             return
-                object.getTablespaceReference(propertyId) instanceof OracleTablespace ||
-                object.getTablespaceReference(propertyId) == null ||
+                object.getLazyReference(propertyId) instanceof OracleTablespace ||
+                object.getLazyReference(propertyId) == null ||
                 object.getDataSource().tablespaceCache.isCached() ||
                 !object.getDataSource().isAdmin();
         }

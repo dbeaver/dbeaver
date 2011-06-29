@@ -10,9 +10,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -20,7 +22,7 @@ import java.sql.Timestamp;
 /**
  * OracleUser
  */
-public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveableObject, OracleTablespace.TablespaceReferrer
+public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveableObject, DBSObjectLazy<OracleDataSource>
 {
     static final Log log = LogFactory.getLog(OracleUser.class);
 
@@ -33,7 +35,7 @@ public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveab
     private Timestamp expiryDate;
     private Object defaultTablespace;
     private Object tempTablespace;
-    private String profile;
+    private Object profile;
     private String consumerGroup;
 
     public OracleUser(OracleDataSource dataSource, ResultSet resultSet) {
@@ -110,15 +112,24 @@ public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveab
         return OracleTablespace.resolveTablespaceReference(monitor, this, "tempTablespace");
     }
 
-    public Object getTablespaceReference(Object propertyId)
+    public Object getLazyReference(Object propertyId)
     {
-        return "defaultTablespace".equals(propertyId) ? defaultTablespace : tempTablespace;
+        if ("defaultTablespace".equals(propertyId)) {
+            return defaultTablespace;
+        } else if ("tempTablespace".equals(propertyId)) {
+            return tempTablespace;
+        } else if ("profile".equals(propertyId)) {
+            return profile;
+        } else {
+            return null;
+        }
     }
 
     @Property(name = "Profile", order = 10, description = "User resource profile name")
-    public String getProfile()
+    @LazyProperty(cacheValidator = ProfileReferenceValidator.class)
+    public Object getProfile(DBRProgressMonitor monitor) throws DBException
     {
-        return profile;
+        return OracleUtils.resolveLazyReference(monitor, getDataSource().profileCache, this, "profile");
     }
 
     @Property(name = "Consumer group", order = 11, description = "Initial resource consumer group for the user")
@@ -126,5 +137,16 @@ public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveab
     {
         return consumerGroup;
     }
+
+    public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {
+        public boolean isPropertyCached(OracleUser object, Object propertyId)
+        {
+            return
+                object.getLazyReference(propertyId) instanceof OracleUserProfile ||
+                object.getLazyReference(propertyId) == null ||
+                object.getDataSource().profileCache.isCached();
+        }
+    }
+
 
 }

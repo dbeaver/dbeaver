@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,7 +24,7 @@ import java.util.List;
 /**
  * Oracle physical table
  */
-public abstract class OracleTablePhysical extends OracleTableBase implements OracleTablespace.TablespaceReferrer
+public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy
 {
 
     private boolean valid;
@@ -64,7 +65,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements Ora
         return valid;
     }
 
-    public Object getTablespaceReference(Object propertyId)
+    public Object getLazyReference(Object propertyId)
     {
         return tablespace;
     }

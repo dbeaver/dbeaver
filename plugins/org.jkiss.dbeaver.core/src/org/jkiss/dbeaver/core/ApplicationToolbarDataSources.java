@@ -91,6 +91,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         {
             DBSEntityContainer entityContainer = (DBSEntityContainer) getDataSource();
             try {
+                monitor.beginTask("Obtain database list", 1);
                 Class<? extends DBSEntity> childType = entityContainer.getChildType(monitor);
                 if (childType == null || !DBSEntityContainer.class.isAssignableFrom(childType)) {
                     enabled = false;
@@ -102,6 +103,9 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
             }
             catch (DBException e) {
                 return RuntimeUtils.makeExceptionStatus(e);
+            }
+            finally {
+                monitor.done();
             }
             if (enabled) {
                 // Cache navigator tree

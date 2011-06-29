@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -18,7 +19,7 @@ import java.sql.Timestamp;
 /**
  * Oracle abstract partition
  */
-public abstract class OraclePartitionBase<PARENT extends DBSObject> extends OracleObject<PARENT> implements OracleTablespace.TablespaceReferrer
+public abstract class OraclePartitionBase<PARENT extends DBSObject> extends OracleObject<PARENT> implements DBSObjectLazy
 {
     public enum PartitionType {
         NONE,
@@ -90,7 +91,7 @@ public abstract class OraclePartitionBase<PARENT extends DBSObject> extends Orac
         this.lastAnalyzed = JDBCUtils.safeGetTimestamp(dbResult, "LAST_ANALYZED");
     }
 
-    public Object getTablespaceReference(Object propertyId)
+    public Object getLazyReference(Object propertyId)
     {
         return tablespace;
     }

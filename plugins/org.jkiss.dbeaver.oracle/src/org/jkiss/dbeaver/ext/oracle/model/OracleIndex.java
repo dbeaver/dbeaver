@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ import java.util.List;
 /**
  * OracleIndex
  */
-public class OracleIndex extends JDBCIndex<OracleTablePhysical> implements OracleTablespace.TablespaceReferrer
+public class OracleIndex extends JDBCIndex<OracleTablePhysical> implements DBSObjectLazy
 {
     private Object tablespace;
     private boolean nonUnique;
@@ -69,7 +70,7 @@ public class OracleIndex extends JDBCIndex<OracleTablePhysical> implements Oracl
         return !nonUnique;
     }
 
-    public Object getTablespaceReference(Object propertyId)
+    public Object getLazyReference(Object propertyId)
     {
         return tablespace;
     }

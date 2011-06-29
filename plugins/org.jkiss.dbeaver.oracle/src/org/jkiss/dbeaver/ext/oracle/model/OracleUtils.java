@@ -6,15 +6,18 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
+import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.SQLException;
 
@@ -142,6 +145,26 @@ public class OracleUtils {
     public static String getAdminAllViewPrefix(OracleDataSource dataSource)
     {
         return dataSource.isAdmin() ? "SYS.DBA_" : "SYS.ALL_";
+    }
+
+    static Object resolveLazyReference(DBRProgressMonitor monitor, JDBCAbstractCache<OracleDataSource,?> cache, DBSObjectLazy<OracleDataSource> referrer, Object propertyId)
+        throws DBException
+    {
+        final Object reference = referrer.getLazyReference(propertyId);
+        if (reference instanceof String) {
+            Object object = cache.getObject(
+                monitor,
+                referrer.getDataSource(),
+                (String) reference);
+            if (object != null) {
+                return object;
+            } else {
+                log.warn("Object '" + reference + "' not found");
+                return reference;
+            }
+        } else {
+            return reference;
+        }
     }
 
 }
