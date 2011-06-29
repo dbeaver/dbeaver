@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -47,6 +48,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     final DataTypeCache dataTypeCache = new DataTypeCache();
     final TablespaceCache tablespaceCache = new TablespaceCache();
     final UserCache userCache = new UserCache();
+    final ProfileCache profileCache = new ProfileCache();
 
     private OracleSchema publicSchema;
     private String activeSchemaName;
@@ -90,6 +92,12 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     public Collection<OracleUser> getUsers(DBRProgressMonitor monitor) throws DBException
     {
         return userCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<OracleUserProfile> getProfiles(DBRProgressMonitor monitor) throws DBException
+    {
+        return profileCache.getObjects(monitor, this);
     }
 
     @Association
@@ -172,6 +180,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         this.dataTypeCache.clearCache();
         this.tablespaceCache.clearCache();
         this.userCache.clearCache();
+        this.profileCache.clearCache();
         this.activeSchemaName = null;
 
         this.initialize(monitor);
@@ -408,6 +417,57 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         protected OracleUser fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleUser(OracleDataSource.this, resultSet);
+        }
+    }
+
+    class ProfileCache extends JDBCStructCache<OracleDataSource, OracleUserProfile, OracleUserProfile.ProfileResource> {
+        protected ProfileCache()
+        {
+            super("PROFILE");
+        }
+
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        {
+            return context.prepareStatement(
+                "SELECT DISTINCT PROFILE FROM DBA_PROFILES ORDER BY PROFILE");
+        }
+
+        @Override
+        protected OracleUserProfile fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleUserProfile(OracleDataSource.this, resultSet);
+        }
+
+        @Override
+        protected boolean isChildrenCached(OracleUserProfile parent)
+        {
+            return parent.isResourcesCached();
+        }
+
+        @Override
+        protected void cacheChildren(OracleUserProfile parent, List<OracleUserProfile.ProfileResource> resources)
+        {
+            parent.setResources(resources);
+        }
+
+        @Override
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleDataSource dataSource, OracleUserProfile forObject) throws SQLException
+        {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT RESOURCE_NAME,RESOURCE_TYPE,LIMIT FROM DBA_PROFILES " +
+                (forObject == null ? "" : "WHERE PROFILE=? ") +
+                "ORDER BY RESOURCE_NAME");
+            if (forObject != null) {
+                dbStat.setString(1, forObject.getName());
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected OracleUserProfile.ProfileResource fetchChild(JDBCExecutionContext context, OracleDataSource dataSource, OracleUserProfile parent, ResultSet dbResult) throws SQLException, DBException
+        {
+            return new OracleUserProfile.ProfileResource(parent, dbResult);
         }
     }
 
