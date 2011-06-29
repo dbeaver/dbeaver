@@ -6,179 +6,125 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 /**
  * OracleUser
  */
-public class OracleUser implements DBAUser, DBPSaveableObject
+public class OracleUser extends OracleGlobalObject implements DBAUser, DBPSaveableObject, OracleTablespace.TablespaceReferrer
 {
     static final Log log = LogFactory.getLog(OracleUser.class);
 
-    private OracleDataSource dataSource;
-    private String userName;
-    private String host;
-    private String passwordHash;
-
-    private String sslType;
-    private byte[] sslCipher;
-    private byte[] x509Issuer;
-    private byte[] x509Subject;
-
-    private int maxQuestions;
-    private int maxUpdates;
-    private int maxConnections;
-    private int maxUserConnections;
-
-    private boolean persisted;
+    private long id;
+    private String name;
+    private String externalName;
+    private String status;
+    private Timestamp createDate;
+    private Timestamp lockDate;
+    private Timestamp expiryDate;
+    private Object defaultTablespace;
+    private Object tempTablespace;
+    private String profile;
+    private String consumerGroup;
 
     public OracleUser(OracleDataSource dataSource, ResultSet resultSet) {
-        this.dataSource = dataSource;
+        super(dataSource, resultSet != null);
         if (resultSet != null) {
-            this.persisted = true;
-            this.userName = JDBCUtils.safeGetString(resultSet, "user");
-            this.host = JDBCUtils.safeGetString(resultSet, "host");
-            this.passwordHash = JDBCUtils.safeGetString(resultSet, "password");
+            this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
+            this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
+            this.externalName = JDBCUtils.safeGetString(resultSet, "EXTERNAL_NAME");
+            this.status = JDBCUtils.safeGetString(resultSet, "ACCOUNT_STATUS");
 
-            this.sslType = JDBCUtils.safeGetString(resultSet, "ssl_type");
-            this.sslCipher = JDBCUtils.safeGetBytes(resultSet, "ssl_cipher");
-            this.x509Issuer = JDBCUtils.safeGetBytes(resultSet, "x509_issuer");
-            this.x509Subject = JDBCUtils.safeGetBytes(resultSet, "x509_subject");
+            this.createDate = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
+            this.lockDate = JDBCUtils.safeGetTimestamp(resultSet, "LOCK_DATE");
+            this.expiryDate = JDBCUtils.safeGetTimestamp(resultSet, "EXPIRY_DATE");
+            this.defaultTablespace = JDBCUtils.safeGetString(resultSet, "DEFAULT_TABLESPACE");
+            this.tempTablespace = JDBCUtils.safeGetString(resultSet, "TEMPORARY_TABLESPACE");
 
-            this.maxQuestions = JDBCUtils.safeGetInt(resultSet, "max_questions");
-            this.maxUpdates = JDBCUtils.safeGetInt(resultSet, "max_updates");
-            this.maxConnections = JDBCUtils.safeGetInt(resultSet, "max_connections");
-            this.maxUserConnections = JDBCUtils.safeGetInt(resultSet, "max_user_connections");
-        } else {
-            this.persisted = false;
-            this.userName = "user";
-            this.host = "%";
+            this.profile = JDBCUtils.safeGetString(resultSet, "PROFILE");
+            this.consumerGroup = JDBCUtils.safeGetString(resultSet, "INITIAL_RSRC_CONSUMER_GROUP");
         }
     }
 
-    @Property(name = "User name", viewable = true, order = 1)
+    @Property(name = "ID", order = 1, description = "ID number of the user")
+    public long getId()
+    {
+        return id;
+    }
+
+    @Property(name = "User name", viewable = true, order = 2, description = "Name of the user")
     public String getName() {
-        return userName + "@" + host;
+        return name;
     }
 
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName)
+    @Property(name = "External name", order = 3, description = "User external name")
+    public String getExternalName()
     {
-        this.userName = userName;
+        return externalName;
     }
 
-    public String getFullName() {
-        return "'" + userName + "'@'" + host + "'";
-    }
-
-    public String getDescription() {
-        return null;
-    }
-
-    public DBSObject getParentObject() {
-        return dataSource.getContainer();
-    }
-
-    public OracleDataSource getDataSource() {
-        return dataSource;
-    }
-
-    public boolean isPersisted()
+    @Property(name = "Status", viewable = true, order = 4, description = "Account status")
+    public String getStatus()
     {
-        return persisted;
+        return status;
     }
 
-    public void setPersisted(boolean persisted)
+    @Property(name = "Create date", viewable = true, order = 5, description = "User creation date")
+    public Timestamp getCreateDate()
     {
-        this.persisted = persisted;
-        DBUtils.fireObjectUpdate(this);
+        return createDate;
     }
 
-    @Property(name = "Host mask", viewable = true, order = 2)
-    public String getHost() {
-        return host;
+    @Property(name = "Lock date", order = 6, description = "Date the account was locked if account status was LOCKED")
+    public Timestamp getLockDate()
+    {
+        return lockDate;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    @Property(name = "Expiry date", order = 7, description = "Date of expiration of the account")
+    public Timestamp getExpiryDate()
+    {
+        return expiryDate;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    @Property(name = "Default tablespace", order = 8, description = "Default tablespace for data")
+    @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
+    public Object getDefaultTablespace(DBRProgressMonitor monitor) throws DBException
+    {
+        return OracleTablespace.resolveTablespaceReference(monitor, this, "defaultTablespace");
     }
 
-    public String getSslType() {
-        return sslType;
+    @Property(name = "Temporary tablespace", order = 9, description = "Default tablespace for temporary tables or a tablespace group")
+    @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
+    public Object getTempTablespace(DBRProgressMonitor monitor) throws DBException
+    {
+        return OracleTablespace.resolveTablespaceReference(monitor, this, "tempTablespace");
     }
 
-    void setSslType(String sslType) {
-        this.sslType = sslType;
+    public Object getTablespaceReference(Object propertyId)
+    {
+        return "defaultTablespace".equals(propertyId) ? defaultTablespace : tempTablespace;
     }
 
-    public byte[] getSslCipher() {
-        return sslCipher;
+    @Property(name = "Profile", order = 10, description = "User resource profile name")
+    public String getProfile()
+    {
+        return profile;
     }
 
-    void setSslCipher(byte[] sslCipher) {
-        this.sslCipher = sslCipher;
-    }
-
-    public byte[] getX509Issuer() {
-        return x509Issuer;
-    }
-
-    void setX509Issuer(byte[] x509Issuer) {
-        this.x509Issuer = x509Issuer;
-    }
-
-    public byte[] getX509Subject() {
-        return x509Subject;
-    }
-
-    void setX509Subject(byte[] x509Subject) {
-        this.x509Subject = x509Subject;
-    }
-
-    public int getMaxQuestions() {
-        return maxQuestions;
-    }
-
-    public void setMaxQuestions(int maxQuestions) {
-        this.maxQuestions = maxQuestions;
-    }
-
-    public int getMaxUpdates() {
-        return maxUpdates;
-    }
-
-    public void setMaxUpdates(int maxUpdates) {
-        this.maxUpdates = maxUpdates;
-    }
-
-    public int getMaxConnections() {
-        return maxConnections;
-    }
-
-    public void setMaxConnections(int maxConnections) {
-        this.maxConnections = maxConnections;
-    }
-
-    public int getMaxUserConnections() {
-        return maxUserConnections;
-    }
-
-    public void setMaxUserConnections(int maxUserConnections) {
-        this.maxUserConnections = maxUserConnections;
+    @Property(name = "Consumer group", order = 11, description = "Initial resource consumer group for the user")
+    public String getConsumerGroup()
+    {
+        return consumerGroup;
     }
 
 }

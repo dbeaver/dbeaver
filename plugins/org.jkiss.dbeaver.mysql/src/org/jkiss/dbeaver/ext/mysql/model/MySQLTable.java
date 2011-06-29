@@ -69,7 +69,7 @@ public class MySQLTable extends MySQLTableBase
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLTable> {
-        public boolean isPropertyCached(MySQLTable object)
+        public boolean isPropertyCached(MySQLTable object, Object propertyId)
         {
             return object.additionalInfo.loaded;
         }

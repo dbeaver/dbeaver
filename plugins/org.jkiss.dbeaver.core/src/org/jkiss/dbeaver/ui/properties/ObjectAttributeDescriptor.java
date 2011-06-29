@@ -109,7 +109,7 @@ public abstract class ObjectAttributeDescriptor {
                     return true;
                 }
             }
-            return !cacheValidator.isPropertyCached(object);
+            return !cacheValidator.isPropertyCached(object, id);
         }
         return isLazy || (checkParent && parent != null && parent.isLazy(object, checkParent));
     }

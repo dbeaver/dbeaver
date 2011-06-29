@@ -69,7 +69,7 @@ public class OracleIndex extends JDBCIndex<OracleTablePhysical> implements Oracl
         return !nonUnique;
     }
 
-    public Object getTablespaceReference()
+    public Object getTablespaceReference(Object propertyId)
     {
         return tablespace;
     }
@@ -78,7 +78,7 @@ public class OracleIndex extends JDBCIndex<OracleTablePhysical> implements Oracl
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getTablespace(DBRProgressMonitor monitor) throws DBException
     {
-        return OracleTablespace.resolveTablespaceReference(monitor, this);
+        return OracleTablespace.resolveTablespaceReference(monitor, this, null);
     }
 
     public String getDescription()

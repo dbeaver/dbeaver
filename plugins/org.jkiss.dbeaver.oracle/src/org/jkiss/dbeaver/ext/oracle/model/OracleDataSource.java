@@ -46,6 +46,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     final SchemaCache schemaCache = new SchemaCache();
     final DataTypeCache dataTypeCache = new DataTypeCache();
     final TablespaceCache tablespaceCache = new TablespaceCache();
+    final UserCache userCache = new UserCache();
 
     private OracleSchema publicSchema;
     private String activeSchemaName;
@@ -83,6 +84,12 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     public Collection<OracleTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException
     {
         return tablespaceCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<OracleUser> getUsers(DBRProgressMonitor monitor) throws DBException
+    {
+        return userCache.getObjects(monitor, this);
     }
 
     @Association
@@ -163,6 +170,8 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
         this.schemaCache.clearCache();
         this.dataTypeCache.clearCache();
+        this.tablespaceCache.clearCache();
+        this.userCache.clearCache();
         this.activeSchemaName = null;
 
         this.initialize(monitor);
@@ -384,6 +393,21 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         protected OracleTablespace fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleTablespace(OracleDataSource.this, resultSet);
+        }
+    }
+
+    class UserCache extends JDBCObjectCache<OracleDataSource, OracleUser> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        {
+            return context.prepareStatement(
+                "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(OracleDataSource.this) + "USERS ORDER BY USERNAME");
+        }
+
+        @Override
+        protected OracleUser fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleUser(OracleDataSource.this, resultSet);
         }
     }
 

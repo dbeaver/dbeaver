@@ -293,16 +293,16 @@ public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
 
     interface TablespaceReferrer {
         OracleDataSource getDataSource();
-        Object getTablespaceReference();
+        Object getTablespaceReference(Object propertyId);
     }
 
-    static Object resolveTablespaceReference(DBRProgressMonitor monitor, TablespaceReferrer referrer) throws DBException
+    static Object resolveTablespaceReference(DBRProgressMonitor monitor, TablespaceReferrer referrer, Object propertyId) throws DBException
     {
         final OracleDataSource dataSource = referrer.getDataSource();
         if (!dataSource.isAdmin()) {
             return referrer;
         } else {
-            final Object reference = referrer.getTablespaceReference();
+            final Object reference = referrer.getTablespaceReference(propertyId);
             if (reference instanceof String) {
                 OracleTablespace tablespace = dataSource.tablespaceCache.getObject(monitor, dataSource, (String) reference);
                 if (tablespace != null) {
@@ -318,11 +318,11 @@ public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
     }
 
     public static class TablespaceReferenceValidator implements IPropertyCacheValidator<TablespaceReferrer> {
-        public boolean isPropertyCached(TablespaceReferrer object)
+        public boolean isPropertyCached(TablespaceReferrer object, Object propertyId)
         {
             return
-                object.getTablespaceReference() instanceof OracleTablespace ||
-                object.getTablespaceReference() == null ||
+                object.getTablespaceReference(propertyId) instanceof OracleTablespace ||
+                object.getTablespaceReference(propertyId) == null ||
                 object.getDataSource().tablespaceCache.isCached() ||
                 !object.getDataSource().isAdmin();
         }

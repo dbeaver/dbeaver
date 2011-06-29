@@ -52,19 +52,19 @@ public abstract class OracleTablePhysical extends OracleTableBase implements Ora
         this.partitionCache = partitioned ? new PartitionCache() : null;
     }
 
-    @Property(name = "Row Count", viewable = true, order = 20)
+    @Property(name = "Row Count", viewable = true, order = 20, description = "Number of rows in the table (populated only if you collect statistics)")
     public long getRowCount()
     {
         return rowCount;
     }
 
-    @Property(name = "Valid", viewable = true, order = 21)
+    @Property(name = "Valid", viewable = true, order = 21, description = "If a previous DROP TABLE operation failed, indicates whether the table is unusable")
     public boolean isValid()
     {
         return valid;
     }
 
-    public Object getTablespaceReference()
+    public Object getTablespaceReference(Object propertyId)
     {
         return tablespace;
     }
@@ -73,7 +73,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements Ora
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getTablespace(DBRProgressMonitor monitor) throws DBException
     {
-        return OracleTablespace.resolveTablespaceReference(monitor, this);
+        return OracleTablespace.resolveTablespaceReference(monitor, this, null);
     }
 
     @Association
@@ -231,7 +231,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements Ora
     }
 
     public static class PartitionInfoValidator implements IPropertyCacheValidator<OracleTablePhysical> {
-        public boolean isPropertyCached(OracleTablePhysical object)
+        public boolean isPropertyCached(OracleTablePhysical object, Object propertyId)
         {
             return object.partitioned && object.partitionInfo != null;
         }

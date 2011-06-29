@@ -90,7 +90,7 @@ public abstract class OraclePartitionBase<PARENT extends DBSObject> extends Orac
         this.lastAnalyzed = JDBCUtils.safeGetTimestamp(dbResult, "LAST_ANALYZED");
     }
 
-    public Object getTablespaceReference()
+    public Object getTablespaceReference(Object propertyId)
     {
         return tablespace;
     }
@@ -111,7 +111,7 @@ public abstract class OraclePartitionBase<PARENT extends DBSObject> extends Orac
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getTablespace(DBRProgressMonitor monitor) throws DBException
     {
-        return OracleTablespace.resolveTablespaceReference(monitor, this);
+        return OracleTablespace.resolveTablespaceReference(monitor, this, null);
     }
 
     @Property(name = "High Value", viewable = true, order = 30)

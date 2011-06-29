@@ -74,25 +74,25 @@ public class OracleTable extends OracleTablePhysical
         return false;
     }
 
-    @Property(name = "Table Type", viewable = false, order = 5)
+    @Property(name = "Table Type", viewable = false, order = 5, description = "If an object table, type of the table")
     public OracleDataType getTableType()
     {
         return tableType;
     }
 
-    @Property(name = "Temporary", viewable = false, order = 6)
+    @Property(name = "Temporary", viewable = false, order = 6, description = "Indicates whether the table is temporary")
     public boolean isTemporary()
     {
         return temporary;
     }
 
-    @Property(name = "Secondary", viewable = false, order = 6)
+    @Property(name = "Secondary", viewable = false, order = 6, description = "Indicates whether the table is a secondary object created by the ODCIIndexCreate method of the Oracle Data Cartridge to contain the contents of a domain index")
     public boolean isSecondary()
     {
         return secondary;
     }
 
-    @Property(name = "Nested", viewable = false, order = 7)
+    @Property(name = "Nested", viewable = false, order = 7, description = "Indicates whether the table is a nested table")
     public boolean isNested()
     {
         return nested;

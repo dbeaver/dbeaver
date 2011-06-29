@@ -287,26 +287,6 @@
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleTriggerManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger"/>
-
-        <editor
-            id="org.jkiss.dbeaver.ext.oracle.editors.OracleUserEditorGeneral"
-            class="org.jkiss.dbeaver.ext.oracle.editors.OracleUserEditorGeneral"
-            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleUser"
-            main="true"
-            label="General"
-            description="General user settings"
-            icon="#user">
-        </editor>
-        <editor
-            id="org.jkiss.dbeaver.ext.oracle.editors.OracleUserEditorPrivileges"
-            class="org.jkiss.dbeaver.ext.oracle.editors.OracleUserEditorPrivileges"
-            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleUser"
-            main="false"
-            label="Schema Privileges"
-            description="Schema user privileges"
-            position="additions_start"
-            icon="#user">
-        </editor>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

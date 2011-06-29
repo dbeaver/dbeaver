@@ -37,7 +37,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleTableBase> {
-        public boolean isPropertyCached(OracleTableBase object)
+        public boolean isPropertyCached(OracleTableBase object, Object propertyId)
         {
             return object.getAdditionalInfo().isLoaded();
         }
@@ -63,7 +63,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 
-    @Property(name = "Name", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 1)
+    @Property(name = "Name", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 1, description = "Name of the table")
     public String getName()
     {
         return super.getName();

@@ -71,7 +71,7 @@ public class MySQLView extends MySQLTableBase
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLView> {
-        public boolean isPropertyCached(MySQLView object)
+        public boolean isPropertyCached(MySQLView object, Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
