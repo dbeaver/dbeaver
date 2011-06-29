@@ -29,9 +29,9 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -213,11 +213,18 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         getValueController().registerEditor(this);
         valueEditorRegistered = true;
 
+        DBDContent content = getContent();
+        if (content == null) {
+            return;
+        }
+
+        MimeType mimeType = ContentUtils.getMimeType(content.getContentType());
+
         // Fill nested editorParts info
         IContentEditorPart[] editorParts = getEditorInput().getEditors();
         for (IContentEditorPart editorPart : editorParts) {
             contentParts.add(new ContentPartInfo(editorPart));
-            editorPart.initPart(this);
+            editorPart.initPart(this, mimeType);
         }
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
@@ -286,21 +293,14 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
             // Get file length
             contentLength = getEditorInput().getFile().getFullPath().toFile().length();
         }
-        MimeType mimeType = null;
-        if (contentType != null) {
-            try {
-                mimeType = new MimeType(contentType);
-            } catch (MimeTypeParseException e) {
-                log.error("Invalid content MIME type", e);
-            }
-        }
-        IEditorPart defaultPage = null, preferedPage = null;
+        MimeType mimeType = ContentUtils.getMimeType(contentType);
+        IEditorPart defaultPage = null, preferredPage = null;
         for (ContentPartInfo contentPart : contentParts) {
             IContentEditorPart editorPart = contentPart.editorPart;
             if (contentLength > editorPart.getMaxContentLength()) {
                 continue;
             }
-            if (preferedPage != null && editorPart.isOptionalContent()) {
+            if (preferredPage != null && editorPart.isOptionalContent()) {
                 // Do not add optional parts if we already have prefered one
                 continue;
             }
@@ -311,26 +311,26 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
                 contentPart.activated = true;
                 contentPart.index = index;
                 // Check MIME type
-                if (mimeType != null && mimeType.getPrimaryType().equals(editorPart.getPreferedMimeType())) {
+                if (mimeType != null && mimeType.getPrimaryType().equals(editorPart.getPreferredMimeType())) {
                     defaultPage = editorPart;
                 }
-                if (editorPart.isPreferedContent()) {
-                    preferedPage = editorPart;
+                if (editorPart.isPreferredContent()) {
+                    preferredPage = editorPart;
                 }
             } catch (PartInitException e) {
                 log.error(e);
             }
         }
-        if (preferedPage != null) {
+        if (preferredPage != null) {
             // Remove all optional pages
             for (ContentPartInfo contentPart : contentParts) {
-                if (contentPart.activated && contentPart.editorPart != preferedPage && contentPart.editorPart.isOptionalContent()) {
+                if (contentPart.activated && contentPart.editorPart != preferredPage && contentPart.editorPart.isOptionalContent()) {
                     removePage(contentPart.index);
                 }
             }
 
             // Set default page
-            setActiveEditor(preferedPage);
+            setActiveEditor(preferredPage);
         } else if (defaultPage != null) {
             setActiveEditor(defaultPage);
         }

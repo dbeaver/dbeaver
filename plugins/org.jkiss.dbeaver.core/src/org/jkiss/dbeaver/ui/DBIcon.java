@@ -153,6 +153,7 @@ public enum DBIcon
     TYPE_DATETIME("datetime", "/icons/sql/types/datetime.png"),
     TYPE_BINARY("binary", "/icons/sql/types/binary.png"),
     TYPE_TEXT("text", "/icons/sql/types/text.png"),
+    TYPE_XML("xml", "/icons/sql/types/xml.png"),
     TYPE_LOB("lob", "/icons/sql/types/lob.png"),
     TYPE_ARRAY("array", "/icons/sql/types/array.png"),
     TYPE_STRUCT("struct", "/icons/sql/types/struct.png"),

@@ -77,11 +77,17 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         if (object != null) {
             Document document = createEmptyDocument();
             if (setDocumentContent(document, object)) {
+                setupDocument(document);
                 return document;
             }
         }
 
         throw new IllegalArgumentException("Project document provider supports only editor inputs which provides IStorage facility");
+    }
+
+    protected void setupDocument(IDocument document)
+    {
+
     }
 
     private Document createEmptyDocument()

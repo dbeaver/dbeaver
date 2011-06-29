@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewControl;
 
+import javax.activation.MimeType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -102,7 +103,7 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         imageViewer.setFocus();
     }
 
-    public void initPart(IEditorPart contentEditor)
+    public void initPart(IEditorPart contentEditor, MimeType mimeType)
     {
     }
 
@@ -121,7 +122,7 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         return DBIcon.TYPE_IMAGE.getImage();
     }
 
-    public String getPreferedMimeType()
+    public String getPreferredMimeType()
     {
         return "image";
     }
@@ -131,7 +132,7 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         return 20 * 1024 * 1024;
     }
 
-    public boolean isPreferedContent()
+    public boolean isPreferredContent()
     {
         return contentValid;
     }

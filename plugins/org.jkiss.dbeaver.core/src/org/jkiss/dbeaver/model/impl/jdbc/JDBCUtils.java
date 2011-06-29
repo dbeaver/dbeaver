@@ -295,6 +295,9 @@ public class JDBCUtils {
             case STRUCT:
                 return DBIcon.TYPE_STRUCT;
             default:
+                if (type.getValueType() == java.sql.Types.SQLXML) {
+                    return DBIcon.TYPE_XML;
+                }
                 return DBIcon.TYPE_UNKNOWN;
         }
     }

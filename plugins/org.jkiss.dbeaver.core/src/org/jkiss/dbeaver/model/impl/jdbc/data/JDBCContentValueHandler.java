@@ -30,8 +30,10 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
+import org.jkiss.dbeaver.ui.editors.content.parts.ContentXMLEditorPart;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.MimeTypes;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -257,13 +259,14 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         // Open LOB editor
         Object value = controller.getValue();
         if (value instanceof DBDContent) {
-            boolean isText = ContentUtils.isTextContent((DBDContent)value);
-            if (isText) {
-                // Check for length
-            }
+            DBDContent content = (DBDContent)value;
+            boolean isText = ContentUtils.isTextContent(content);
             List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
             if (isText) {
                 parts.add(new ContentTextEditorPart());
+                if (MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType())) {
+                    parts.add(new ContentXMLEditorPart());
+                }
             } else {
                 parts.add(new ContentBinaryEditorPart());
                 parts.add(new ContentTextEditorPart());

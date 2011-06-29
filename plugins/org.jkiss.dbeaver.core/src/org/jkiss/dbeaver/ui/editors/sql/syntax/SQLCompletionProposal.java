@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -19,6 +21,8 @@ import org.eclipse.swt.graphics.Point;
  * SQL Completion proposal
  */
 public class SQLCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2 {
+
+    static final Log log = LogFactory.getLog(SQLCompletionProposal.class);
 
     private SQLSyntaxManager syntaxManager;
 
@@ -70,8 +74,9 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     public void apply(IDocument document) {
         try {
             document.replace(replacementOffset, replacementLength, replacementString);
-        } catch (BadLocationException x) {
+        } catch (BadLocationException e) {
             // ignore
+            log.debug(e);
         }
     }
 

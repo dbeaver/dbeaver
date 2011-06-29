@@ -11,6 +11,8 @@ import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryEditor;
 
+import javax.activation.MimeType;
+
 /**
  * LOB Binary Editor
  */
@@ -20,7 +22,7 @@ public class ContentBinaryEditorPart extends BinaryEditor implements IContentEdi
     {
     }
 
-    public void initPart(IEditorPart contentEditor)
+    public void initPart(IEditorPart contentEditor, MimeType mimeType)
     {
     }
 
@@ -39,7 +41,7 @@ public class ContentBinaryEditorPart extends BinaryEditor implements IContentEdi
         return DBIcon.TYPE_BINARY.getImage();
     }
 
-    public String getPreferedMimeType()
+    public String getPreferredMimeType()
     {
         return "application";
     }
@@ -53,7 +55,7 @@ public class ContentBinaryEditorPart extends BinaryEditor implements IContentEdi
      * Any content is valid for binary editor so always returns true
      * @return
      */
-    public boolean isPreferedContent()
+    public boolean isPreferredContent()
     {
         return false;
     }

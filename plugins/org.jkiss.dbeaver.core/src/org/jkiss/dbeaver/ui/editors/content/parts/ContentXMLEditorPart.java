@@ -9,28 +9,29 @@ import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
-import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.editors.xml.XMLEditor;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 
 /**
- * LOB text editor
+ * XML editor
  */
-public class ContentTextEditorPart extends BaseTextEditor implements IContentEditorPart {
+public class ContentXMLEditorPart extends XMLEditor implements IContentEditorPart {
 
     private IEditorPart contentEditor;
+    private MimeType mimeType;
 
-    public ContentTextEditorPart() {
-        setDocumentProvider(new FileRefDocumentProvider());
+    public ContentXMLEditorPart() {
     }
 
     public void initPart(IEditorPart contentEditor, MimeType mimeType)
     {
         this.contentEditor = contentEditor;
+        this.mimeType = mimeType;
     }
 
     public IEditorActionBarContributor getActionBarContributor()
@@ -40,17 +41,17 @@ public class ContentTextEditorPart extends BaseTextEditor implements IContentEdi
 
     public String getContentTypeTitle()
     {
-        return "Text";
+        return "XML";
     }
 
     public Image getContentTypeImage()
     {
-        return DBIcon.TYPE_TEXT.getImage();
+        return DBIcon.TYPE_XML.getImage();
     }
 
     public String getPreferredMimeType()
     {
-        return MimeTypes.TEXT;
+        return MimeTypes.TEXT_XML;
     }
 
     public long getMaxContentLength()
@@ -61,13 +62,13 @@ public class ContentTextEditorPart extends BaseTextEditor implements IContentEdi
         return 10 * 1024 * 1024;
     }
 
-    /**
-     * Always return false cos' text editor can load any binary content
-     * @return false
-     */
     public boolean isPreferredContent()
     {
-        return false;
+        try {
+            return mimeType.match(MimeTypes.TEXT_XML);
+        } catch (MimeTypeParseException e) {
+            return false;
+        }
     }
 
     public boolean isOptionalContent()

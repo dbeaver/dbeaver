@@ -103,6 +103,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             identifier = document.get(identStart, identEnd - identStart);
             word = document.get(wordStart, wordEnd - wordStart);
         } catch (BadLocationException e) {
+            log.debug(e);
             return null;
         }
 

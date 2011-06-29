@@ -2,14 +2,14 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax;
+package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.jface.text.rules.IWhitespaceDetector;
 
 /**
  * A class that determines if a character is an SQL whitespace character
  */
-public class SQLWhiteSpaceDetector implements IWhitespaceDetector
+public class TextWhiteSpaceDetector implements IWhitespaceDetector
 {
 
     public boolean isWhitespace(char c)

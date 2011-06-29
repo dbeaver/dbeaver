@@ -109,7 +109,7 @@ public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
             }
 
         } catch (BadLocationException x) {
-            log.warn(x);
+            log.debug(x);
         }
 
         return false;
@@ -152,7 +152,7 @@ public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
 
             return true;
         } catch (BadLocationException x) {
-            log.warn(x);
+            log.debug(x);
         }
 
         return false;

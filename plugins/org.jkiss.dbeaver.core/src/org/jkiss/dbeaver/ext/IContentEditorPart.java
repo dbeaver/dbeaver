@@ -8,12 +8,14 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 
+import javax.activation.MimeType;
+
 /**
  * Database content editor
  */
 public interface IContentEditorPart extends IEditorPart {
 
-    void initPart(IEditorPart contentEditor);
+    void initPart(IEditorPart contentEditor, MimeType mimeType);
 
     IEditorActionBarContributor getActionBarContributor();
 
@@ -21,19 +23,19 @@ public interface IContentEditorPart extends IEditorPart {
 
     Image getContentTypeImage();
 
-    String getPreferedMimeType();
+    String getPreferredMimeType();
 
     /**
      * Maximum part length. If content length is more than this value then this part will be committed.
-     * @return
+     * @return max length
      */
     long getMaxContentLength();
 
     /**
-     * Prefered content part will be set as default part in content editor.
-     * @return
+     * Preferred content part will be set as default part in content editor.
+     * @return true or false
      */
-    boolean isPreferedContent();
+    boolean isPreferredContent();
 
     boolean isOptionalContent();
 }

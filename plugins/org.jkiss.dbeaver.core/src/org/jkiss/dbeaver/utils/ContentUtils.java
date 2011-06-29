@@ -20,6 +20,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -397,5 +399,18 @@ public class ContentUtils {
         } finally {
             ContentUtils.close(reader);
         }
+    }
+
+    public static MimeType getMimeType(String contentType)
+    {
+        MimeType mimeType = null;
+        if (contentType != null) {
+            try {
+                mimeType = new MimeType(contentType);
+            } catch (MimeTypeParseException e) {
+                log.error("Invalid content MIME type", e);
+            }
+        }
+        return mimeType;
     }
 }
