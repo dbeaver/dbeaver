@@ -15,6 +15,7 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.jkiss.dbeaver.ui.actions.common.AboutBoxAction;
+import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView;
@@ -34,6 +35,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     // in the fill methods.  This ensures that the actions aren't recreated
     // when fillActionBars is called with FILL_PROXY.
     //private IWorkbenchAction findAction;
+    private IActionDelegate emergentExitAction;
     private IActionDelegate aboutAction;
     private IWorkbenchAction showHelpAction;
     private IWorkbenchAction searchHelpAction;
@@ -92,6 +94,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //aboutAction = ActionFactory.ABOUT.create(window);
         //register(aboutAction);
         aboutAction = new AboutBoxAction(window);
+        emergentExitAction = new EmergentExitAction(window);
         register(showHelpAction = ActionFactory.HELP_CONTENTS.create(window));
         register(searchHelpAction = ActionFactory.HELP_SEARCH.create(window));
         register(dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window));
@@ -124,6 +127,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         // File
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(new Separator("end"));
+        fileMenu.add(ViewUtils.makeAction(emergentExitAction, null, null, "Emergency Exit", null, null));
 
         // Edit
 /*

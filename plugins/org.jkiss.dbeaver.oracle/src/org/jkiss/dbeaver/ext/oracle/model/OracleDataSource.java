@@ -130,7 +130,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     {
         super.initialize(monitor);
 
-        this.dataTypeCache.getObjects(monitor, this);
         this.publicSchema = new OracleSchema(this, 1, OracleConstants.USER_PUBLIC);
         {
             final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
@@ -176,6 +175,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
                 context.close();
             }
         }
+        this.dataTypeCache.getObjects(monitor, this);
     }
 
     public boolean refreshEntity(DBRProgressMonitor monitor)
@@ -335,26 +335,25 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
-            StringBuilder schemasQuery = new StringBuilder("SELECT U.USERNAME,U.USER_ID FROM SYS.ALL_USERS u\n");
             List<String> schemaFilters = SQLUtils.splitFilter(owner.getContainer().getSchemaFilter());
-            schemasQuery.append("WHERE (EXISTS (SELECT 1 FROM ALL_OBJECTS WHERE OWNER=U.USERNAME)");
-            final String curUserName = owner.getContainer().getConnectionInfo().getUserName();
-            if (!CommonUtils.isEmpty(curUserName)) {
-                schemasQuery.append(" OR U.USERNAME='").append(curUserName.toUpperCase()).append("'");
-            }
-            schemasQuery.append(")");
+            StringBuilder schemasQuery = new StringBuilder(
+                "SELECT DISTINCT OWNER AS USERNAME FROM SYS.ALL_OBJECTS u");
             if (!schemaFilters.isEmpty()) {
-                schemasQuery.append(" AND (");
+                schemasQuery.append(" WHERE ");
                 for (int i = 0; i < schemaFilters.size(); i++) {
                     if (i > 0) {
                         schemasQuery.append(" OR ");
                     }
-                    schemasQuery.append("USERNAME LIKE ?");
+                    schemasQuery.append("OWNER LIKE ?");
                 }
-                schemasQuery.append(")");
+            }
+            //schemasQuery.append("WHERE (EXISTS (SELECT 1 FROM ALL_OBJECTS WHERE OWNER=U.USERNAME)");
+            final String curUserName = owner.getContainer().getConnectionInfo().getUserName();
+            if (!CommonUtils.isEmpty(curUserName)) {
+                schemasQuery.append("\nUNION ALL SELECT '").append(curUserName.toUpperCase()).append("' AS USERNAME FROM DUAL");
             }
             //schemasQuery.append("\nUNION ALL SELECT 'PUBLIC' as USERNAME,1 as USER_ID FROM DUAL");
-            schemasQuery.append("\nORDER BY USERNAME");
+            schemasQuery.append("\nORDER BY USERNAME ");
             JDBCPreparedStatement dbStat = context.prepareStatement(schemasQuery.toString());
 
             if (!schemaFilters.isEmpty()) {
@@ -368,7 +367,11 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         @Override
         protected OracleSchema fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleSchema(owner, resultSet);
+            final OracleSchema schema = new OracleSchema(owner, resultSet);
+            if (schema.isPublic()) {
+                return null;
+            }
+            return schema;
         }
     }
 

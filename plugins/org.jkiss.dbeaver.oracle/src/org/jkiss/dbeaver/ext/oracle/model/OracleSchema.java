@@ -49,13 +49,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
     final JavaCache javaCache = new JavaCache();
     final RecycleBin recycleBin = new RecycleBin();
 
-    private long id;
     private String name;
 
     OracleSchema(OracleDataSource dataSource, long id, String name)
     {
         super(dataSource, true);
-        this.id = id;
         this.name = name;
     }
 
@@ -63,7 +61,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
     {
         super(dataSource, dbResult != null);
         if (dbResult != null) {
-            this.id = JDBCUtils.safeGetLong(dbResult, "USER_ID");
             this.name = JDBCUtils.safeGetString(dbResult, "USERNAME");
         }
     }
@@ -89,13 +86,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         return null;
     }
 
-    @Property(name = "User ID", viewable = false, order = 200)
-    public long getId()
-    {
-        return id;
-    }
-
-
     @Association
     public Collection<OracleIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
@@ -108,12 +98,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         throws DBException
     {
         return tableCache.getObjects(monitor, this, OracleTable.class);
-    }
-
-    public OracleTable getTable(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
-        return tableCache.getObject(monitor, this, name, OracleTable.class);
     }
 
     @Association
