@@ -108,7 +108,7 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
         }
 
         @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<OracleProcedurePackaged> objectIter)
+        protected void invalidateObjects(DBRProgressMonitor monitor, OraclePackage owner, Iterator<OracleProcedurePackaged> objectIter)
         {
             Map<String, OracleProcedurePackaged> overloads = new HashMap<String, OracleProcedurePackaged>();
             while (objectIter.hasNext()) {

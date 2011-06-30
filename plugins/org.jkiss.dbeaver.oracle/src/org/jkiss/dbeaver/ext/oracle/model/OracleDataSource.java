@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -367,7 +366,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
             //if (!CommonUtils.isEmpty(owner.activeSchemaName)) {
                 //schemasQuery.append("\nUNION ALL SELECT '").append(owner.activeSchemaName).append("' AS USERNAME FROM DUAL");
             //}
-            schemasQuery.append("\nORDER BY USERNAME");
+            //schemasQuery.append("\nORDER BY USERNAME");
 
             JDBCPreparedStatement dbStat = context.prepareStatement(schemasQuery.toString());
 
@@ -383,6 +382,17 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         protected OracleSchema fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSchema(owner, resultSet);
+        }
+
+        @Override
+        protected void invalidateObjects(DBRProgressMonitor monitor, OracleDataSource owner, Iterator<OracleSchema> objectIter)
+        {
+            setListOrderComparator(DBUtils.<OracleSchema>nameComparator());
+            // Add predefined types
+            if (getCachedObject(owner.activeSchemaName) == null) {
+                cacheObject(
+                    new OracleSchema(owner, -1, owner.activeSchemaName));
+            }
         }
     }
 
@@ -400,7 +410,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         }
 
         @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<OracleDataType> objectIter)
+        protected void invalidateObjects(DBRProgressMonitor monitor, OracleDataSource owner, Iterator<OracleDataType> objectIter)
         {
             // Add predefined types
             for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {

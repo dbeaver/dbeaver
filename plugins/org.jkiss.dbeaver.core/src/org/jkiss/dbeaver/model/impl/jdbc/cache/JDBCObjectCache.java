@@ -164,20 +164,20 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             context.close();
         }
 
-        if (listOrderComparator != null) {
-            Collections.sort(tmpObjectList, listOrderComparator);
-        }
         synchronized (this) {
             this.objectList = tmpObjectList;
             this.objectMap = new LinkedHashMap<String, OBJECT>();
             for (OBJECT object : tmpObjectList) {
                 this.objectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
             }
-            this.invalidateObjects(monitor, new CacheIterator());
+            this.invalidateObjects(monitor, owner, new CacheIterator());
+        }
+        if (listOrderComparator != null) {
+            Collections.sort(tmpObjectList, listOrderComparator);
         }
     }
 
-    protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<OBJECT> objectIter)
+    protected void invalidateObjects(DBRProgressMonitor monitor, OWNER owner, Iterator<OBJECT> objectIter)
     {
 
     }

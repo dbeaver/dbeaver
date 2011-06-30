@@ -90,7 +90,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
         }
 
         @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<OracleProcedureArgument> objectIter)
+        protected void invalidateObjects(DBRProgressMonitor monitor, OracleProcedureBase owner, Iterator<OracleProcedureArgument> objectIter)
         {
             IntKeyMap<OracleProcedureArgument> argStack = new IntKeyMap<OracleProcedureArgument>();
             while (objectIter.hasNext()) {

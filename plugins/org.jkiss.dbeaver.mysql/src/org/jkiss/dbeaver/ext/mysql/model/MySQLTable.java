@@ -485,7 +485,7 @@ public class MySQLTable extends MySQLTableBase
         }
 
         @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor, Iterator<MySQLPartition> objectIter)
+        protected void invalidateObjects(DBRProgressMonitor monitor, MySQLTable owner, Iterator<MySQLPartition> objectIter)
         {
             partitionMap = null;
         }
