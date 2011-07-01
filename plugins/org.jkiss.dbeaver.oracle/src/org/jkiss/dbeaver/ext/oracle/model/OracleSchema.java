@@ -681,7 +681,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
                 "SELECT /*+ USE_NL(O)*/ s.*,O.OBJECT_TYPE \n" +
                 "FROM ALL_SYNONYMS S\n" +
                 "JOIN ALL_OBJECTS O ON  O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
-                "WHERE S.OWNER=? AND O.OBJECT_TYPE<>'JAVA CLASS'\n" +
+                "WHERE S.OWNER=? AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')\n" +
                 "ORDER BY S.SYNONYM_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;

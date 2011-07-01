@@ -28,6 +28,8 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
 
     final RolePrivCache rolePrivCache = new RolePrivCache();
     final SystemPrivCache systemPrivCache = new SystemPrivCache();
+    final ObjectPrivCache objectPrivCache = new ObjectPrivCache();
+
 
     public OracleGrantee(OracleDataSource dataSource) {
         super(dataSource, true);
@@ -43,6 +45,12 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
     public Collection<OraclePrivSystem> getSystemPrivs(DBRProgressMonitor monitor) throws DBException
     {
         return systemPrivCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<OraclePrivObject> getObjectPrivs(DBRProgressMonitor monitor) throws DBException
+    {
+        return objectPrivCache.getObjects(monitor, this);
     }
 
     static class RolePrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivRole> {
@@ -79,5 +87,24 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
         }
     }
 
+    static class ObjectPrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivObject> {
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleGrantee owner) throws SQLException
+        {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT p.*,o.OBJECT_TYPE\n" +
+                "FROM DBA_TAB_PRIVS p, DBA_OBJECTS o\n" +
+                "WHERE p.GRANTEE=? " +
+                "AND o.OWNER=p.OWNER AND o.OBJECT_NAME=p.TABLE_NAME AND o.OBJECT_TYPE<>'PACKAGE BODY'");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OraclePrivObject fetchObject(JDBCExecutionContext context, OracleGrantee owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new OraclePrivObject(owner, resultSet);
+        }
+    }
 
 }
