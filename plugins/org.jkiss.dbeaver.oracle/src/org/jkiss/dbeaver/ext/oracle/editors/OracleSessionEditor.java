@@ -123,10 +123,10 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
                 }
                 SessionInfo session = getSelectedSession();
                 if (session != null) {
-                    if (session.event == null) {
+                    if (session.sql == null) {
                         sessionInfo.setText("");
                     } else {
-                        sessionInfo.setText(session.event);
+                        sessionInfo.setText(session.sql);
                     }
                     pageControl.killSessionButton.setEnabled(false);
                     pageControl.killQueryButton.setEnabled(false);

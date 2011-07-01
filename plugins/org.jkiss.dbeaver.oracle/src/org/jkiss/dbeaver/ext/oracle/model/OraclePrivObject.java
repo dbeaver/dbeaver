@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -15,7 +16,7 @@ import java.sql.ResultSet;
 /**
  * OraclePrivObject
  */
-public class OraclePrivObject extends OracleObject<OracleGrantee> {
+public class OraclePrivObject extends OracleObject<OracleGrantee> implements DBAPrivilege {
     private String objectOwner;
     private String objectType;
     private String privilege;

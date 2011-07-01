@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -12,7 +13,7 @@ import java.sql.ResultSet;
 /**
  * OraclePrivRole
  */
-public abstract class OraclePriv extends OracleObject<OracleGrantee> {
+public abstract class OraclePriv extends OracleObject<OracleGrantee> implements DBAPrivilege {
     private boolean adminOption;
 
     public OraclePriv(OracleGrantee user, String name, ResultSet resultSet) {
