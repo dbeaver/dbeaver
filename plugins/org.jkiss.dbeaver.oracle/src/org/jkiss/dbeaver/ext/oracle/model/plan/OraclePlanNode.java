@@ -2,9 +2,12 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.oracle.model;
+package org.jkiss.dbeaver.ext.oracle.model.plan;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -154,11 +157,11 @@ public class OraclePlanNode implements DBCPlanNode {
     }
 
     //@Property(name = "Owner", order = 4, viewable = true, description = "Object owner (schema)")
-    public Object getObjectOwner()
-    {
-        final OracleSchema schema = dataSource.schemaCache.getCachedObject(objectOwner);
-        return schema == null ? objectOwner : schema;
-    }
+//    public Object getObjectOwner()
+//    {
+//        final OracleSchema schema = dataSource.schemaCache.getCachedObject(objectOwner);
+//        return schema == null ? objectOwner : schema;
+//    }
 
     @Property(name = "Object", order = 5, viewable = true, supportsPreview = true, description = "Name of the table or index")
     public Object getObject(DBRProgressMonitor monitor) throws DBException

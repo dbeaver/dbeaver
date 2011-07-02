@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
+import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -293,7 +294,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return dataTypeCache.getCachedObject(typeName);
     }
 
-    String getPlanTableName(JDBCExecutionContext context)
+    public String getPlanTableName(JDBCExecutionContext context)
         throws SQLException
     {
         if (planTableName == null) {
