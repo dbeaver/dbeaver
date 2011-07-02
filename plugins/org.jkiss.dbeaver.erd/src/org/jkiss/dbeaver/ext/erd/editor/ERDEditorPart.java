@@ -796,7 +796,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         @Override
-        protected Composite createProgressPanel(Composite container)
+        public Composite createProgressPanel(Composite container)
         {
             Composite infoGroup = super.createProgressPanel(container);
 

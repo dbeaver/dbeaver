@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class SessionManagerViewer
 {
-    private SessionTable sessionTable;
+    private SessionListControl sessionTable;
     private Text sessionInfo;
     private Font boldFont;
 
@@ -48,27 +48,7 @@ public class SessionManagerViewer
         SashForm sash = UIUtils.createPartDivider(part, composite, SWT.VERTICAL | SWT.SMOOTH);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        sessionTable = new SessionTable(sash, SWT.NONE, sessionManager) {
-            @Override
-            protected Composite createProgressPanel(Composite container)
-            {
-                Composite infoGroup = super.createProgressPanel(container);
-
-                ToolBarManager toolBar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-                contributeToToolbar(sessionManager, toolBar);
-                toolBar.add(new Action("Refresh sessions", DBIcon.REFRESH.getImageDescriptor()) {
-                    @Override
-                    public void run()
-                    {
-                        refreshSessions();
-                    }
-                });
-
-                toolBar.createControl(infoGroup);
-
-                return infoGroup;
-            }
-        };
+        sessionTable = new SessionListControl(sash, sessionManager);
         sessionTable.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event)
             {
@@ -77,7 +57,8 @@ public class SessionManagerViewer
         });
 
         sessionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        sessionTable.createProgressPanel();
+        sessionTable.createProgressPanel(composite);
+
 
         sessionInfo = new Text(sash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
         sessionInfo.setEditable(false);
@@ -121,4 +102,33 @@ public class SessionManagerViewer
         sessionTable.createAlterService(session, options).schedule();
     }
 
+    private class SessionListControl extends SessionTable {
+        private final DBAServerSessionManager sessionManager;
+
+        public SessionListControl(SashForm sash, DBAServerSessionManager sessionManager)
+        {
+            super(sash, SWT.NONE, sessionManager);
+            this.sessionManager = sessionManager;
+        }
+
+        @Override
+        public Composite createProgressPanel(Composite container)
+        {
+            Composite infoGroup = super.createProgressPanel(container);
+
+            ToolBarManager toolBar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+            contributeToToolbar(sessionManager, toolBar);
+            toolBar.add(new Action("Refresh sessions", DBIcon.REFRESH.getImageDescriptor()) {
+                @Override
+                public void run()
+                {
+                    refreshSessions();
+                }
+            });
+
+            toolBar.createControl(infoGroup);
+
+            return infoGroup;
+        }
+    }
 }

@@ -150,7 +150,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         return container;
     }
 
-    protected Composite createProgressPanel(Composite container)
+    public Composite createProgressPanel(Composite container)
     {
         if (this.ownerPageControl != null) {
             throw new IllegalStateException("Can't create page control while substitution control already set");

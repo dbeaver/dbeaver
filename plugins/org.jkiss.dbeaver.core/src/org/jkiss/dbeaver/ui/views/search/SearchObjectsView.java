@@ -180,9 +180,9 @@ public class SearchObjectsView extends ViewPart {
 
                 UIUtils.createControlLabel(optionsGroup2, "Name match");
                 final Combo matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-                matchCombo.add("Starts with");
-                matchCombo.add("Contains");
-                matchCombo.add("Like");
+                matchCombo.add("Starts with", MATCH_INDEX_STARTS_WITH);
+                matchCombo.add("Contains", MATCH_INDEX_CONTAINS);
+                matchCombo.add("Like", MATCH_INDEX_LIKE);
                 matchCombo.select(0);
                 matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 if (matchTypeIndex >= 0) {
@@ -418,7 +418,7 @@ public class SearchObjectsView extends ViewPart {
         }
 
         @Override
-        protected Composite createProgressPanel(Composite container)
+        public Composite createProgressPanel(Composite container)
         {
             Composite panel = super.createProgressPanel(container);
 

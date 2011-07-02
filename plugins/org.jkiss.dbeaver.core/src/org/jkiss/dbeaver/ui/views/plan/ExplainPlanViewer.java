@@ -49,7 +49,10 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         this.dataSourceProvider = dataSourceProvider;
         createActions();
 
-        this.planPanel = UIUtils.createPartDivider(workbenchPart, parent, SWT.HORIZONTAL | SWT.SMOOTH);
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
+
+        this.planPanel = UIUtils.createPartDivider(workbenchPart, composite, SWT.HORIZONTAL | SWT.SMOOTH);
+        planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
         final GridLayout gl = new GridLayout(1, false);
         gl.marginWidth = 0;
         gl.marginHeight = 0;
@@ -59,7 +62,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         }
         this.planTree = new PlanNodesTree(planPanel, SWT.SHEET) {
             @Override
-            protected Composite createProgressPanel(Composite container)
+            public Composite createProgressPanel(Composite container)
             {
                 Composite infoGroup = super.createProgressPanel(container);
 
@@ -73,7 +76,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
             }
         };
         this.planTree.setShowDivider(true);
-        this.planTree.createProgressPanel();
+        this.planTree.createProgressPanel(composite);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
@@ -143,7 +146,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
 
     public Control getControl()
     {
-        return planPanel;
+        return planPanel.getParent();
     }
 
     public Viewer getViewer()
