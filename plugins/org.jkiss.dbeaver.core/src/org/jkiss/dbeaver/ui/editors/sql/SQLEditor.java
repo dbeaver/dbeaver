@@ -16,6 +16,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -49,13 +51,14 @@ import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
-import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
+import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCommentToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
@@ -201,26 +204,32 @@ public class SQLEditor extends SQLEditorBase
 
             resultsView = new ResultSetViewer(resultTabs, getSite(), this);
 
-            planView = new ExplainPlanViewer(this, resultTabs);
+            planView = new ExplainPlanViewer(this, resultTabs, this);
             final SQLLogPanel logViewer = new SQLLogPanel(resultTabs, this);
 
             // Create tabs
-            CTabItem item = new CTabItem(resultTabs, SWT.NONE, 0);
+            CTabItem item = new CTabItem(resultTabs, SWT.NONE, PAGE_INDEX_RESULTSET);
             item.setControl(resultsView.getControl());
             item.setText("Data Grid");
             item.setImage(imgDataGrid);
 
-            item = new CTabItem(resultTabs, SWT.NONE, 1);
+            item = new CTabItem(resultTabs, SWT.NONE, PAGE_INDEX_PLAN);
             item.setControl(planView.getControl());
             item.setText("Explain Plan");
             item.setImage(imgExplainPlan);
 
-            item = new CTabItem(resultTabs, SWT.NONE, 2);
+            item = new CTabItem(resultTabs, SWT.NONE, PAGE_INDEX_LOG);
             item.setControl(logViewer);
             item.setText("Execution Log");
             item.setImage(imgLog);
 
             resultTabs.setSelection(0);
+
+            final CompositeSelectionProvider selectionProvider = new CompositeSelectionProvider();
+            selectionProvider.trackViewer(getTextViewer().getTextWidget(), getTextViewer());
+            selectionProvider.trackViewer(resultsView.getGridControl(), resultsView);
+            selectionProvider.trackViewer(planView.getViewer().getControl(), planView.getViewer());
+            getSite().setSelectionProvider(selectionProvider);
         }
 
         // Check connection

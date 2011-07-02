@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.plan;
+package org.jkiss.dbeaver.ui.views.plan;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -40,47 +40,6 @@ import java.util.Collection;
  * Plan nodes tree
  */
 public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDataSourceProvider {
-
-    private static ITreeContentProvider CONTENT_PROVIDER = new ITreeContentProvider() {
-        public Object[] getElements(Object inputElement)
-        {
-            if (inputElement instanceof Collection) {
-                return ((Collection<?>)inputElement).toArray();
-            }
-            return null;
-        }
-
-        public Object[] getChildren(Object parentElement)
-        {
-            if (parentElement instanceof DBCPlanNode) {
-                Collection<? extends DBCPlanNode> nestedNodes = ((DBCPlanNode) parentElement).getNested();
-                return CommonUtils.isEmpty(nestedNodes) ? new Object[0] : nestedNodes.toArray();
-            }
-            return null;
-        }
-
-        public Object getParent(Object element)
-        {
-            if (element instanceof DBCPlanNode) {
-                return ((DBCPlanNode)element).getParent();
-            }
-            return null;
-        }
-
-        public boolean hasChildren(Object element)
-        {
-            return element instanceof DBCPlanNode && !CommonUtils.isEmpty(((DBCPlanNode) element).getNested());
-        }
-
-        public void dispose()
-        {
-        }
-
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-        {
-        }
-
-    };
 
     private IDataSourceProvider dataSourceProvider;
     private IWorkbenchPart workbenchPart;
@@ -142,7 +101,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
 
                 manager.add(copyAction);
 
-                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+                //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
@@ -161,6 +120,46 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
         this.query = query;
     }
 
+    private static ITreeContentProvider CONTENT_PROVIDER = new ITreeContentProvider() {
+        public Object[] getElements(Object inputElement)
+        {
+            if (inputElement instanceof Collection) {
+                return ((Collection<?>)inputElement).toArray();
+            }
+            return null;
+        }
+
+        public Object[] getChildren(Object parentElement)
+        {
+            if (parentElement instanceof DBCPlanNode) {
+                Collection<? extends DBCPlanNode> nestedNodes = ((DBCPlanNode) parentElement).getNested();
+                return CommonUtils.isEmpty(nestedNodes) ? new Object[0] : nestedNodes.toArray();
+            }
+            return null;
+        }
+
+        public Object getParent(Object element)
+        {
+            if (element instanceof DBCPlanNode) {
+                return ((DBCPlanNode)element).getParent();
+            }
+            return null;
+        }
+
+        public boolean hasChildren(Object element)
+        {
+            return element instanceof DBCPlanNode && !CommonUtils.isEmpty(((DBCPlanNode) element).getNested());
+        }
+
+        public void dispose()
+        {
+        }
+
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
+        {
+        }
+
+    };
 
     private class ExplainPlanService extends DatabaseLoadService<Collection<DBCPlanNode>> {
 

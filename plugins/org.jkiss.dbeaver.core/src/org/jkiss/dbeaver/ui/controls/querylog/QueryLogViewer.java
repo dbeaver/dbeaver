@@ -626,7 +626,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                 manager.add(copyAllAction);
                 manager.add(selectAllAction);
                 manager.add(clearLogAction);
-                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+                //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             }
         });
         menuMgr.setRemoveAllWhenShown(true);

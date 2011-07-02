@@ -188,7 +188,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         this.curListObject = curListObject;
     }
 
-    protected ColumnViewer getItemsViewer()
+    public ColumnViewer getItemsViewer()
     {
         return itemsViewer;
     }

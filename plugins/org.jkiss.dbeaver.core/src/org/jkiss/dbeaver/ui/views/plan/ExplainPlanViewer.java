@@ -2,13 +2,12 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.plan;
+package org.jkiss.dbeaver.ui.views.plan;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -20,22 +19,22 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
  * ResultSetViewer
  */
-public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
+public class ExplainPlanViewer implements IPropertyChangeListener
 {
     //static final Log log = LogFactory.getLog(ResultSetViewer.class);
-
-    private SQLEditor editor;
+    private IDataSourceProvider dataSourceProvider;
     private SashForm planPanel;
     private PlanNodesTree planTree;
 
@@ -44,14 +43,13 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
     private ToggleViewAction toggleViewAction;
     private Text sqlText;
 
-    public ExplainPlanViewer(SQLEditor editor, Composite parent)
+    public ExplainPlanViewer(IWorkbenchPart workbenchPart, Composite parent, IDataSourceProvider dataSourceProvider)
     {
         super();
-        this.editor = editor;
-
+        this.dataSourceProvider = dataSourceProvider;
         createActions();
 
-        this.planPanel = UIUtils.createPartDivider(editor, parent, SWT.HORIZONTAL | SWT.SMOOTH);
+        this.planPanel = UIUtils.createPartDivider(workbenchPart, parent, SWT.HORIZONTAL | SWT.SMOOTH);
         final GridLayout gl = new GridLayout(1, false);
         gl.marginWidth = 0;
         gl.marginHeight = 0;
@@ -59,7 +57,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         {
             sqlText = new Text(planPanel, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         }
-        this.planTree = new PlanNodesTree(planPanel, SWT.SHEET, editor, editor) {
+        this.planTree = new PlanNodesTree(planPanel, SWT.SHEET, workbenchPart, dataSourceProvider) {
             @Override
             protected Composite createProgressPanel(Composite container)
             {
@@ -132,7 +130,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
 
     private DBPDataSource getDataSource()
     {
-        return editor.getDataSource();
+        return dataSourceProvider.getDataSource();
     }
 
     public void dispose()
@@ -148,22 +146,9 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         return planPanel;
     }
 
-    public Object getInput()
+    public Viewer getViewer()
     {
-        return null;
-    }
-
-    public void setInput(Object input)
-    {
-    }
-
-    public ISelection getSelection()
-    {
-        return planTree.getSelectionProvider().getSelection();
-    }
-
-    public void setSelection(ISelection selection, boolean reveal)
-    {
+        return planTree.getItemsViewer();
     }
 
     public void refresh()

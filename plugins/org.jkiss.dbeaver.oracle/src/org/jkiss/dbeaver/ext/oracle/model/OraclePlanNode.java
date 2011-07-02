@@ -164,7 +164,7 @@ public class OraclePlanNode implements DBCPlanNode {
     public Object getObject(DBRProgressMonitor monitor) throws DBException
     {
         if (monitor == null || CommonUtils.isEmpty(objectOwner)) {
-            return objectName;
+            return objectName == null ? "" : objectName;
         }
         String objectTypeName = objectType;
         final int divPos = objectTypeName == null ? -1 : objectTypeName.indexOf('(');

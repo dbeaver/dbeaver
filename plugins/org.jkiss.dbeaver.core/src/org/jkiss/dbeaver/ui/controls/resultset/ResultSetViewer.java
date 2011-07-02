@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -950,6 +951,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public Control getControl()
     {
         return viewerPanel;
+    }
+
+    public LightGrid getGridControl()
+    {
+        return this.spreadsheet.getGrid();
     }
 
     public Object getInput()

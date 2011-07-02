@@ -1,6 +1,15 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,43 +19,86 @@ import java.util.List;
  */
 public class CompositeSelectionProvider implements ISelectionProvider {
 
-    private List<Viewer> viewers = new ArrayList<Viewer>();
+    private List<ISelectionChangedListener> listeners = new ArrayList<ISelectionChangedListener>();
+    private ISelectionProvider provider;
+    private ISelection selection = StructuredSelection.EMPTY;
 
-    public void addViewer(Viewer viewer)
+    public void trackViewer(final Control control, final Viewer viewer)
     {
-        viewers.add(viewer);
+        control.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e)
+            {
+                setProvider(viewer);
+            }
+        });
     }
 
     public void addSelectionChangedListener(ISelectionChangedListener listener)
     {
-        for (ISelectionProvider provider : viewers) {
-            provider.addSelectionChangedListener(listener);
-        }
+        listeners.add(listener);
     }
 
     public void removeSelectionChangedListener(ISelectionChangedListener listener)
     {
-        for (ISelectionProvider provider : viewers) {
-            provider.removeSelectionChangedListener(listener);
-        }
+        listeners.remove(listener);
     }
 
     public ISelection getSelection()
     {
-        for (Viewer provider : viewers) {
-            if (provider.getControl().isFocusControl()) {
-                return provider.getSelection();
-            }
+        if (provider != null) {
+            return provider.getSelection();
+        } else {
+            return selection;
         }
-        return new StructuredSelection();
     }
 
     public void setSelection(ISelection selection)
     {
-        for (Viewer provider : viewers) {
-            if (provider.getControl().isFocusControl()) {
-                provider.setSelection(selection);
-                break;
+        if (provider != null) {
+            provider.setSelection(selection);
+        } else {
+            this.selection = selection;
+            if (!CommonUtils.isEmpty(listeners)) {
+            	SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
+            	for (ISelectionChangedListener listener : listeners) {
+            		 listener.selectionChanged(event);
+            	}
+            }
+        }
+    }
+
+    public ISelectionProvider getProvider()
+    {
+        return provider;
+    }
+
+    public void setProvider(ISelectionProvider newProvider)
+    {
+        if (this.provider != newProvider){
+        	ISelection newSelection = null;
+            if (!CommonUtils.isEmpty(listeners)) {
+                if (this.provider != null){
+                    for (ISelectionChangedListener listener : listeners) {
+                         this.provider.removeSelectionChangedListener(listener);
+                    }
+                }
+
+                if (newProvider != null) {
+                    for (ISelectionChangedListener listener : listeners) {
+                         newProvider.addSelectionChangedListener(listener);
+                    }
+
+	                newSelection = newProvider.getSelection();
+                } else {
+                	newSelection = this.selection;
+                }
+            }
+            this.provider = newProvider;
+
+            if (newSelection != null){
+            	//force a selection change event propagation
+            	setSelection(newSelection);
             }
         }
     }
