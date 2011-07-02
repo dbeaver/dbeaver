@@ -4,12 +4,15 @@
 
 package org.jkiss.dbeaver.model.exec.plan;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
+
 import java.util.Collection;
 
 /**
  * Execution plan node
  */
-public interface DBCPlanNode {
+public interface DBCPlanNode extends DBPObject {
 
     DBCPlanNode getParent();
 

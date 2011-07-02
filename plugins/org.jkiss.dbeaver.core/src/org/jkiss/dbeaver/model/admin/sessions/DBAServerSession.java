@@ -4,9 +4,11 @@
 
 package org.jkiss.dbeaver.model.admin.sessions;
 
+import org.jkiss.dbeaver.model.DBPObject;
+
 /**
  * Server session
  */
-public interface DBAServerSession {
+public interface DBAServerSession extends DBPObject {
 
 }

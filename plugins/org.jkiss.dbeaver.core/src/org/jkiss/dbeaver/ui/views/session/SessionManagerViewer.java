@@ -13,7 +13,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -33,14 +33,14 @@ public class SessionManagerViewer
         UIUtils.dispose(boldFont);
     }
 
-    public SessionManagerViewer(IWorkbenchPart part, Composite parent, IDataSourceProvider dataSourceProvider) {
+    public SessionManagerViewer(IWorkbenchPart part, Composite parent, DBAServerSessionManager sessionManager) {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         SashForm sash = UIUtils.createPartDivider(part, composite, SWT.HORIZONTAL | SWT.SMOOTH);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        pageControl = new SessionTable(sash, SWT.NONE, part, dataSourceProvider);
+        pageControl = new SessionTable(sash, SWT.NONE, sessionManager);
         pageControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         pageControl.createProgressPanel();
 

@@ -57,7 +57,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         {
             sqlText = new Text(planPanel, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         }
-        this.planTree = new PlanNodesTree(planPanel, SWT.SHEET, workbenchPart, dataSourceProvider) {
+        this.planTree = new PlanNodesTree(planPanel, SWT.SHEET) {
             @Override
             protected Composite createProgressPanel(Composite container)
             {

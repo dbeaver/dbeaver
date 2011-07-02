@@ -5,8 +5,8 @@
 package org.jkiss.dbeaver.model.admin.sessions;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
 import java.util.Map;
@@ -15,6 +15,8 @@ import java.util.Map;
  * Session manager
  */
 public interface DBAServerSessionManager {
+
+    DBPDataSource getDataSource();
 
     Collection<DBAServerSession> getSessions(DBCExecutionContext monitor, Map<String, Object> options)
         throws DBException;

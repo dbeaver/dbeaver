@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.exec.plan;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
