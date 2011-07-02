@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
+import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,7 +91,7 @@ import java.util.*;
  * an editor </i> in chapter <i>Introduction to GEF </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
-    implements DBPDataSourceUser, ISearchContextProvider
+    implements DBPDataSourceUser, ISearchContextProvider, IRefreshablePart
 {
     static final Log log = LogFactory.getLog(ERDEditorPart.class);
 
@@ -611,6 +612,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (isLoaded) {
             loadDiagram();
         }
+    }
+
+    public void refreshPart(Object source)
+    {
+        refreshDiagram();
     }
 
     public void showPreferences()

@@ -133,13 +133,6 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseNodeEdi
         return getEditorInput().getDataSource();
     }
 
-    public void refreshPart(Object source)
-    {
-        if (isLoaded()) {
-            loadDiagram();
-        }
-    }
-
     private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
         throws DBException
     {
