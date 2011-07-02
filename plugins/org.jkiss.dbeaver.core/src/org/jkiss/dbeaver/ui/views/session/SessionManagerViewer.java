@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -33,6 +35,7 @@ public class SessionManagerViewer
     private SessionListControl sessionTable;
     private Text sessionInfo;
     private Font boldFont;
+    private PropertyTreeViewer sessionProps;
 
     public void dispose()
     {
@@ -59,10 +62,18 @@ public class SessionManagerViewer
         sessionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         sessionTable.createProgressPanel(composite);
 
+        {
+            SashForm infoSash = UIUtils.createPartDivider(part, sash, SWT.HORIZONTAL | SWT.SMOOTH);
+            infoSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        sessionInfo = new Text(sash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
-        sessionInfo.setEditable(false);
-        sessionInfo.setLayoutData(new GridData(GridData.FILL_BOTH));
+            sessionInfo = new Text(infoSash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
+            sessionInfo.setEditable(false);
+            sessionInfo.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            sessionProps = new PropertyTreeViewer(infoSash, SWT.NONE);
+
+            sash.setWeights(new int[]{50, 50});
+        }
 
         sash.setWeights(new int[]{70, 30});
     }
@@ -71,9 +82,15 @@ public class SessionManagerViewer
     {
         if (session == null) {
             sessionInfo.setText("");
+
+            sessionProps.clearProperties();
         } else {
             final String activeQuery = session.getActiveQuery();
             sessionInfo.setText(CommonUtils.getString(activeQuery));
+
+            PropertyCollector propCollector = new PropertyCollector(session, true);
+            propCollector.collectProperties();
+            sessionProps.loadProperties(propCollector);
         }
     }
 

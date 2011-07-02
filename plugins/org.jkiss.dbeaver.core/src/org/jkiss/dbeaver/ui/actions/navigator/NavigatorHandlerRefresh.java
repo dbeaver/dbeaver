@@ -15,10 +15,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,9 +35,13 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
     }
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        //final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final IWorkbenchPart workbenchPart = HandlerUtil.getActivePart(event);
         if (!(workbenchPart instanceof INavigatorModelView)) {
+            // Try to refresh as refreshable part
+            if (workbenchPart instanceof IRefreshablePart) {
+                ((IRefreshablePart) workbenchPart).refreshPart(this);
+            }
             return null;
         }
         final INavigatorModelView navigatorView = (INavigatorModelView)workbenchPart;

@@ -316,7 +316,10 @@
         <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh">
             <activeWhen>
                 <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                    <or>
+                        <adapt type="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                        <adapt type="org.jkiss.dbeaver.ext.ui.IRefreshablePart"/>
+                    </or>
                 </with>
             </activeWhen>
         </handler>

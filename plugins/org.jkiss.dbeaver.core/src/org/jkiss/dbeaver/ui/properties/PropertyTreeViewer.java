@@ -203,6 +203,11 @@ public class PropertyTreeViewer extends TreeViewer {
         disposeOldEditor();
     }
 
+    public void clearProperties()
+    {
+        super.setInput(null);
+    }
+
     protected void addProperty(Object node, IPropertyDescriptor property)
     {
         if (node instanceof TreeNode) {
