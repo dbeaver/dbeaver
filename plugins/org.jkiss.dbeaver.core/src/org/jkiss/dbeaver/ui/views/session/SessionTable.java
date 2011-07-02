@@ -2,11 +2,10 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.views.plan;
+package org.jkiss.dbeaver.ui.views.session;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -14,16 +13,15 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
@@ -37,17 +35,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
 /**
- * Plan nodes tree
+ * Session table
  */
-public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDataSourceProvider {
+class SessionTable extends ObjectListControl<DBAServerSession> implements IDataSourceProvider {
 
     private IDataSourceProvider dataSourceProvider;
     private IWorkbenchPart workbenchPart;
 
-    private DBCQueryPlanner planner;
+    private DBAServerSessionManager planner;
     private String query;
 
-    public PlanNodesTree(Composite parent, int style, IWorkbenchPart workbenchPart, IDataSourceProvider dataSourceProvider)
+    public SessionTable(Composite parent, int style, IWorkbenchPart workbenchPart, IDataSourceProvider dataSourceProvider)
     {
         super(parent, style, CONTENT_PROVIDER);
         this.dataSourceProvider = dataSourceProvider;
@@ -68,11 +66,11 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
     }
 
     @Override
-    protected LoadingJob<Collection<DBCPlanNode>> createLoadService()
+    protected LoadingJob<Collection<DBAServerSession>> createLoadService()
     {
         return LoadingUtils.createService(
                 new ExplainPlanService(),
-                new PlanLoadVisualizer());
+                new ObjectsLoadVisualizer());
     }
 
     private void createContextMenu()
@@ -97,11 +95,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
                     }
                 };
                 copyAction.setEnabled(!getSelectionProvider().getSelection().isEmpty());
-                //copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
-
                 manager.add(copyAction);
-
-                //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
@@ -109,12 +103,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
         workbenchPart.getSite().registerContextMenu(menuMgr, getSelectionProvider());
     }
 
-    public boolean isInitialized()
-    {
-        return planner != null;
-    }
-
-    public void init(DBCQueryPlanner planner, String query)
+    public void init(DBAServerSessionManager planner, String query)
     {
         this.planner = planner;
         this.query = query;
@@ -161,14 +150,14 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
 
     };
 
-    private class ExplainPlanService extends DatabaseLoadService<Collection<DBCPlanNode>> {
+    private class ExplainPlanService extends DatabaseLoadService<Collection<DBAServerSession>> {
 
         protected ExplainPlanService()
         {
             super("Explain plan", getDataSource());
         }
 
-        public Collection<DBCPlanNode> evaluate()
+        public Collection<DBAServerSession> evaluate()
             throws InvocationTargetException, InterruptedException
         {
             try {
@@ -178,8 +167,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
 
                 DBCExecutionContext context = getDataSource().openContext(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Explain '" + query + "'");
                 try {
-                    DBCPlan plan = planner.planQueryExecution(context, query);
-                    return (Collection<DBCPlanNode>) plan.getPlanNodes();
+                    return planner.getSessions(context, null);
                 }
                 finally {
                     context.close();
@@ -190,21 +178,6 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
                 } else {
                     throw new InvocationTargetException(ex);
                 }
-            }
-        }
-    }
-
-    public class PlanLoadVisualizer extends ObjectsLoadVisualizer {
-
-        public void completeLoading(Collection<DBCPlanNode> items)
-        {
-            super.completeLoading(items);
-            final TreeViewer itemsViewer = (TreeViewer) PlanNodesTree.this.getItemsViewer();
-            itemsViewer.getControl().setRedraw(false);
-            try {
-                itemsViewer.expandAll();
-            } finally {
-                itemsViewer.getControl().setRedraw(true);
             }
         }
     }
@@ -221,7 +194,6 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> implements IDa
                 NavigatorHandlerObjectOpen.openEntityEditor((DBSObject) cellValue);
             }
         }
-
     }
 
 }

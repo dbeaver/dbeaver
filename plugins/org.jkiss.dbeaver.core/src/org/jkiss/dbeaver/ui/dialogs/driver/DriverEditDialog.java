@@ -227,16 +227,14 @@ public class DriverEditDialog extends HelpEnabledDialog
 //            }
         }
         final String license = driver.getLicense();
-        if (!isReadOnly || license != null) {
+        {
             TabFolder tabFolder = new TabFolder(group, SWT.NONE);
             tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
             //tabFolder.setLayout(new FillLayout());
 
-            if (!isReadOnly) {
-                createLibrariesTab(tabFolder);
-                createConnectionPropertiesTab(tabFolder);
-                createParametersTab(tabFolder);
-            }
+            createLibrariesTab(tabFolder);
+            createConnectionPropertiesTab(tabFolder);
+            createParametersTab(tabFolder);
             if (license != null) {
                 createLicenseTab(tabFolder, license);
             }
@@ -528,16 +526,12 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        if (provider.isDriversManagable()) {
-            Button resetButton = createButton(parent, IDialogConstants.RETRY_ID, "Reset to Defaults", false);
-            if (driver.isCustom()) {
-                resetButton.setEnabled(false);
-            }
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-        } else {
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
+        Button resetButton = createButton(parent, IDialogConstants.RETRY_ID, "Reset to Defaults", false);
+        if (driver.isCustom()) {
+            resetButton.setEnabled(false);
         }
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
     private DriverFileDescriptor getSelectedLibrary()
@@ -562,11 +556,9 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private void onChangeProperty()
     {
-        if (provider.isDriversManagable()) {
-            getButton(IDialogConstants.OK_ID).setEnabled(
-                !CommonUtils.isEmpty(driverNameText.getText()) &&
-                    !CommonUtils.isEmpty(driverClassText.getText()));
-        }
+        getButton(IDialogConstants.OK_ID).setEnabled(
+            !CommonUtils.isEmpty(driverNameText.getText()) &&
+                !CommonUtils.isEmpty(driverClassText.getText()));
     }
 
     private void resetSettings()
@@ -606,11 +598,6 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     protected void okPressed()
     {
-        if (!provider.isDriversManagable()) {
-            super.okPressed();
-            return;
-        }
-
         // Set props
         driver.setName(driverNameText.getText());
         driver.setCategory(driverCategoryCombo.getText());

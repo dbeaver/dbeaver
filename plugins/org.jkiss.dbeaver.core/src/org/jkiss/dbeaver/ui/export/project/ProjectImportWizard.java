@@ -258,7 +258,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
 
         // Add libraries (only for managable drivers with empty library list)
-        if (driver.isManagable() && CommonUtils.isEmpty(driver.getFiles())) {
+        if (CommonUtils.isEmpty(driver.getFiles())) {
             List<String> libraryList = new ArrayList<String>();
             final Element[] libList = XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_FILE);
             for (Element libElement : libList) {
