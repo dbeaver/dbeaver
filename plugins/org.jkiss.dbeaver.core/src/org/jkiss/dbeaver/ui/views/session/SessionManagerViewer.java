@@ -66,7 +66,7 @@ public class SessionManagerViewer
             SashForm infoSash = UIUtils.createPartDivider(part, sash, SWT.HORIZONTAL | SWT.SMOOTH);
             infoSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            sessionInfo = new Text(infoSash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
+            sessionInfo = new Text(infoSash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.WRAP);
             sessionInfo.setEditable(false);
             sessionInfo.setLayoutData(new GridData(GridData.FILL_BOTH));
 

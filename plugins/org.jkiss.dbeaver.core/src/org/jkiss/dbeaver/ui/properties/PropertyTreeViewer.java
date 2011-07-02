@@ -65,8 +65,6 @@ public class PropertyTreeViewer extends TreeViewer {
         //GridData gd = new GridData(GridData.FILL_BOTH);
         //this.setLayoutData(gd);
 
-        PropsLabelProvider labelProvider = new PropsLabelProvider();
-
         super.setContentProvider(new PropsContentProvider());
         //super.setLabelProvider(labelProvider);
         final Tree treeControl = super.getTree();
@@ -102,7 +100,7 @@ public class PropertyTreeViewer extends TreeViewer {
         column.getColumn().setWidth(200);
         column.getColumn().setMoveable(true);
         column.getColumn().setText("Name");
-        column.setLabelProvider(labelProvider);
+        column.setLabelProvider(new PropsLabelProvider(true));
         column.getColumn().addListener(SWT.Selection, new SortListener());
 
 
@@ -110,7 +108,7 @@ public class PropertyTreeViewer extends TreeViewer {
         column.getColumn().setWidth(120);
         column.getColumn().setMoveable(true);
         column.getColumn().setText("Value");
-        column.setLabelProvider(labelProvider);
+        column.setLabelProvider(new PropsLabelProvider(false));
 
         /*
                 List<? extends DBPProperty> props = ((DBPPropertyGroup) parent).getProperties();
@@ -592,6 +590,11 @@ public class PropertyTreeViewer extends TreeViewer {
 
     private class PropsLabelProvider extends CellLabelProvider
     {
+        private final boolean isName;
+        public PropsLabelProvider(boolean isName)
+        {
+            this.isName = isName;
+        }
 
         public String getText(Object obj, int columnIndex)
         {
@@ -627,7 +630,7 @@ public class PropertyTreeViewer extends TreeViewer {
             if (node.category != null) {
                 return node.category;
             } else {
-                return node.property.getDescription();
+                return isName ? node.property.getDescription() : getText(obj, 1);
             }
         }
 

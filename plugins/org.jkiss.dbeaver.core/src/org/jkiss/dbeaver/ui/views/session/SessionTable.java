@@ -31,7 +31,7 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
     {
         super(parent, style, CONTENT_PROVIDER);
         this.sessionManager = sessionManager;
-        setFitWidth(true);
+        //setFitWidth(true);
     }
 
     @Override

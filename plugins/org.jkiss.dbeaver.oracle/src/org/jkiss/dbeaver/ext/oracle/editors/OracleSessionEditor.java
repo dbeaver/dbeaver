@@ -12,17 +12,14 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
-import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSession;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
