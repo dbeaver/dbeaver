@@ -41,11 +41,16 @@ public class ConnectJob extends AbstractJob
     {
         try {
             connectThread = getThread();
+            String oldName = connectThread.getName();
             connectThread.setName("Connect to datasource '" + container.getName() + "'");
 
-            container.connect(monitor);
+            try {
+                container.connect(monitor);
+            } finally {
+                connectThread.setName(oldName);
+                connectThread = null;
+            }
 
-            connectThread = null;
             return new Status(
                 Status.OK,
                 DBeaverCore.getInstance().getPluginID(),

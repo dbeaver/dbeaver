@@ -33,8 +33,8 @@ public class SQLQueryErrorJob extends AbstractUIJob {
             null,
             "SQL Error",
             script ?
-                "Error occured during SQL script execution" :
-                "Error occured during SQL query execution",
+                "Error occurred during SQL script execution" :
+                "Error occurred during SQL query execution",
             RuntimeUtils.makeExceptionStatus(error),
             IStatus.INFO | IStatus.WARNING | IStatus.ERROR,
             script);

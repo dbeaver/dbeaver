@@ -25,6 +25,7 @@ import java.util.Map;
 public class OracleServerSessionManager implements DBAServerSessionManager<OracleServerSession> {
 
     public static final String PROP_KILL_SESSION = "killSession";
+    public static final String PROP_IMMEDIATE = "immediate";
 
     private final OracleDataSource dataSource;
 
@@ -66,11 +67,23 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
 
     public void alterSession(DBCExecutionContext context, OracleServerSession session, Map<String, Object> options) throws DBException
     {
+        final boolean toKill = Boolean.TRUE.equals(options.get(PROP_KILL_SESSION));
+        final boolean immediate = Boolean.TRUE.equals(options.get(PROP_IMMEDIATE));
+
         try {
-            JDBCPreparedStatement dbStat = ((JDBCExecutionContext)context).prepareStatement(
-                Boolean.TRUE.equals(options.get(PROP_KILL_SESSION)) ?
-                    "KILL CONNECTION " + session.getSid() :
-                    "KILL QUERY " + session.getSid());
+            StringBuilder sql = new StringBuilder("ALTER SYSTEM ");
+            if (toKill) {
+                sql.append("KILL SESSION ");
+            } else {
+                sql.append("DISCONNECT SESSION ");
+            }
+            sql.append("'").append(session.getSid()).append(',').append(session.getSerial()).append("'");
+            if (immediate) {
+                sql.append(" IMMEDIATE");
+            } else if (!toKill) {
+                sql.append(" POST_TRANSACTION");
+            }
+            JDBCPreparedStatement dbStat = ((JDBCExecutionContext)context).prepareStatement(sql.toString());
             try {
                 dbStat.execute();
             } finally {

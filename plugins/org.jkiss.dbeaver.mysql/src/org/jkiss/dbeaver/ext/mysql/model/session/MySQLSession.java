@@ -84,6 +84,6 @@ public class MySQLSession implements DBAServerSession {
     @Override
     public String toString()
     {
-        return command + (info == null ? "" : " - " + info);
+        return pid + "@" + db;
     }
 }

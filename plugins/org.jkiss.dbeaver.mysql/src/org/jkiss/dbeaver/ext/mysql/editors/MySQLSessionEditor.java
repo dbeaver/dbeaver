@@ -14,11 +14,13 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
+import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSession;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 import org.jkiss.utils.CommonUtils;
@@ -34,7 +36,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
 
     private SessionManagerViewer sessionsViewer;
     private KillSessionAction killSessionAction;
-    private TerminateQueryAction terminateQueryAction;
+    private KillSessionAction terminateQueryAction;
 
     @Override
     public void dispose()
@@ -44,8 +46,8 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
     }
 
     public void createPartControl(Composite parent) {
-        killSessionAction = new KillSessionAction();
-        terminateQueryAction = new TerminateQueryAction();
+        killSessionAction = new KillSessionAction(false);
+        terminateQueryAction = new KillSessionAction(true);
         sessionsViewer = new SessionManagerViewer(this, parent, new MySQLSessionManager(getDataSource())) {
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
@@ -83,33 +85,30 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
     }
 
     private class KillSessionAction extends Action {
-        public KillSessionAction()
+        private boolean killQuery;
+        public KillSessionAction(boolean killQuery)
         {
-            super("Kill Session", DBIcon.SQL_DISCONNECT.getImageDescriptor());
+            super(
+                killQuery ? "Terminate Query" : "Kill Session",
+                killQuery ?
+                    PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_STOP) :
+                    DBIcon.SQL_DISCONNECT.getImageDescriptor());
+            this.killQuery = killQuery;
         }
 
         @Override
         public void run()
         {
-            sessionsViewer.alterSession(
-                sessionsViewer.getSelectedSession(),
-                Collections.singletonMap(MySQLSessionManager.PROP_KILL_QUERY, (Object)true));
+            final DBAServerSession session = sessionsViewer.getSelectedSession();
+            if (session != null && UIUtils.confirmAction(getSite().getShell(),
+                this.getText(),
+                getText() + " '" + session + "'. Are you sure?"))
+            {
+                sessionsViewer.alterSession(
+                    sessionsViewer.getSelectedSession(),
+                    Collections.singletonMap(MySQLSessionManager.PROP_KILL_QUERY, (Object)killQuery));
+            }
         }
     }
 
-    private class TerminateQueryAction extends Action {
-        public TerminateQueryAction()
-        {
-            super("Terminate Query",
-                PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_STOP));
-        }
-
-        @Override
-        public void run()
-        {
-            sessionsViewer.alterSession(
-                sessionsViewer.getSelectedSession(),
-                Collections.singletonMap(MySQLSessionManager.PROP_KILL_QUERY, (Object)false));
-        }
-    }
 }

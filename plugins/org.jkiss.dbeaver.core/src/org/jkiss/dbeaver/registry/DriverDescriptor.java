@@ -7,13 +7,17 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.framework.internal.core.BundleHost;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -22,9 +26,9 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -770,25 +774,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             return;
         }
 
-        DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
-                for (DriverFileDescriptor lib : files) {
-                    try {
-                        final boolean success = downloadLibraryFile(monitor, lib);
-                        if (!success) {
-                            break;
-                        }
-                    } catch (final Exception e) {
-                        UIUtils.showErrorDialog(
-                            null,
-                            "Download driver",
-                            "Can't download library '" + getName() + "' file",
-                            e);
-                    }
-                }
+        for (int i = 0, filesSize = files.size(); i < filesSize; ) {
+            DriverFileDescriptor lib = files.get(i);
+            int result = downloadLibraryFile(lib);
+            switch (result) {
+                case IDialogConstants.CANCEL_ID:
+                case IDialogConstants.ABORT_ID:
+                    return;
+                case IDialogConstants.RETRY_ID:
+                    continue;
+                case IDialogConstants.OK_ID:
+                case IDialogConstants.IGNORE_ID:
+                    i++;
+                    break;
             }
-        });
+        }
     }
 
     private boolean acceptDriverLicenses()
@@ -832,7 +832,37 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return true;
     }
 
-    private boolean downloadLibraryFile(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException
+    private int downloadLibraryFile(final DriverFileDescriptor file)
+    {
+        try {
+            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        downloadLibraryFile(monitor, file);
+                    } catch (IOException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+            return IDialogConstants.OK_ID;
+        } catch (InterruptedException e) {
+            // User just canceled download
+            return IDialogConstants.CANCEL_ID;
+        } catch (InvocationTargetException e) {
+            if (file.getType() == DriverFileType.license) {
+                return IDialogConstants.OK_ID;
+            }
+            DownloadErrorDialog dialog = new DownloadErrorDialog(
+                null,
+                file.getPath(),
+                "Driver file download failed.\nDo you want to retry?",
+                e.getTargetException());
+            return dialog.open();
+        }
+    }
+
+    private void downloadLibraryFile(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException, InterruptedException
     {
         URL url = new URL(file.getExternalURL());
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -864,7 +894,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 int totalRead = 0;
                 for (;;) {
                     if (monitor.isCanceled()) {
-                        break;
+                        throw new InterruptedException();
                     }
                     monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
                     final int count = inputStream.read(buffer);
@@ -889,7 +919,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
         monitor.done();
-        return success;
     }
 
     public String getOrigName()
@@ -1183,6 +1212,44 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
 */
         return metaURL;
+    }
+
+    public static class DownloadErrorDialog extends ErrorDialog {
+
+        public DownloadErrorDialog(
+            Shell parentShell,
+            String dialogTitle,
+            String message,
+            Throwable error)
+        {
+            super(parentShell, dialogTitle, message,
+                RuntimeUtils.makeExceptionStatus(error),
+                IStatus.INFO | IStatus.WARNING | IStatus.ERROR);
+        }
+
+        protected void createButtonsForButtonBar(Composite parent) {
+            createButton(
+                parent,
+                IDialogConstants.ABORT_ID,
+                IDialogConstants.ABORT_LABEL,
+                true);
+            createButton(
+                parent,
+                IDialogConstants.RETRY_ID,
+                IDialogConstants.RETRY_LABEL,
+                false);
+            createButton(
+                parent,
+                IDialogConstants.IGNORE_ID,
+                IDialogConstants.IGNORE_LABEL,
+                false);
+            createDetailsButton(parent);
+        }
+
+        protected void buttonPressed(int buttonId) {
+            setReturnCode(buttonId);
+            close();
+        }
     }
 
 }

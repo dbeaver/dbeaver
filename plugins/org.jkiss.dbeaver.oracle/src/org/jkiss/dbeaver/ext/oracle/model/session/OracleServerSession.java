@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 */
 public class OracleServerSession implements DBAServerSession {
     private String sid;
+    private String serial;
     private String user;
     private String schema;
     private String state;
@@ -27,6 +28,7 @@ public class OracleServerSession implements DBAServerSession {
     public OracleServerSession(ResultSet dbResult)
     {
         this.sid = JDBCUtils.safeGetString(dbResult, "SID");
+        this.serial = JDBCUtils.safeGetString(dbResult, "SERIAL#");
         this.user = JDBCUtils.safeGetString(dbResult, "USERNAME");
         this.schema = JDBCUtils.safeGetString(dbResult, "SCHEMANAME");
         this.state = JDBCUtils.safeGetString(dbResult, "STATE");
@@ -41,6 +43,11 @@ public class OracleServerSession implements DBAServerSession {
     public String getSid()
     {
         return sid;
+    }
+
+    public String getSerial()
+    {
+        return serial;
     }
 
     @Property(name = "User", viewable = true, order = 2, description = "Oracle user")
