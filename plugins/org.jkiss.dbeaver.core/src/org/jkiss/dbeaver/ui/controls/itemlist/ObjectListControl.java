@@ -786,6 +786,18 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     }
 
+    public class ObjectActionVisualizer extends ProgressVisualizer<Void> {
+
+        public ObjectActionVisualizer()
+        {
+        }
+
+        public void completeLoading(Void v)
+        {
+            super.completeLoading(v);
+        }
+    }
+
     private static class LazyValue {
         private final Object value;
 

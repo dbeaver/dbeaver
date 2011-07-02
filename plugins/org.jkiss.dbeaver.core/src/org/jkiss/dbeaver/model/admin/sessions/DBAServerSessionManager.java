@@ -14,14 +14,14 @@ import java.util.Map;
 /**
  * Session manager
  */
-public interface DBAServerSessionManager {
+public interface DBAServerSessionManager<SESSION_TYPE extends DBAServerSession> {
 
     DBPDataSource getDataSource();
 
-    Collection<DBAServerSession> getSessions(DBCExecutionContext monitor, Map<String, Object> options)
+    Collection<SESSION_TYPE> getSessions(DBCExecutionContext context, Map<String, Object> options)
         throws DBException;
 
-    void terminateSession(DBAServerSession session, Map<String, Object> options)
+    void alterSession(DBCExecutionContext context, SESSION_TYPE session, Map<String, Object> options)
         throws DBException;
 
 }

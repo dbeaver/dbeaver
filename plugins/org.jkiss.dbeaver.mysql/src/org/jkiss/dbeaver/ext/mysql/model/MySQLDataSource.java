@@ -13,8 +13,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
+import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -602,7 +604,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         }
     }
 
-
     @Override
     public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
@@ -624,10 +625,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
     {
         if (adapter == DBSStructureAssistant.class) {
             return new MySQLStructureAssistant(this);
+        } else if (adapter == DBAServerSessionManager.class) {
+            return new MySQLSessionManager(this);
         }
         return null;
     }
-
 
     public MySQLDataSource getDataSource() {
         return this;

@@ -160,6 +160,8 @@ public enum DBIcon
     TYPE_IMAGE("image", "/icons/sql/types/image.png"),
     TYPE_UNKNOWN("unknown", "/icons/sql/types/unknown.png"),
 
+    SQL_CONNECT("sql_connect", "/icons/sql/connect.png"),
+    SQL_DISCONNECT("sql_disconnect", "/icons/sql/disconnect.png"),
     SQL_SCRIPT("sql_script", "/icons/sql/sql_script.png"),
     SQL_EXECUTE("sql_exec", "/icons/sql/sql_exec.png"),
     SQL_SCRIPT_EXECUTE("sql_script_exec", "/icons/sql/sql_script_exec.png"),

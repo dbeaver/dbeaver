@@ -4,8 +4,12 @@
 
 package org.jkiss.dbeaver.ui.views.session;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Font;
@@ -13,42 +17,108 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 /**
  * SessionManagerViewer
  */
 public class SessionManagerViewer
 {
-    static final Log log = LogFactory.getLog(SessionManagerViewer.class);
-
-    private SessionTable pageControl;
+    private SessionTable sessionTable;
     private Text sessionInfo;
     private Font boldFont;
 
     public void dispose()
     {
-        pageControl.dispose();
+        sessionTable.dispose();
         UIUtils.dispose(boldFont);
     }
 
-    public SessionManagerViewer(IWorkbenchPart part, Composite parent, DBAServerSessionManager sessionManager) {
+    public SessionManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerSessionManager sessionManager) {
+
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        SashForm sash = UIUtils.createPartDivider(part, composite, SWT.HORIZONTAL | SWT.SMOOTH);
+        SashForm sash = UIUtils.createPartDivider(part, composite, SWT.VERTICAL | SWT.SMOOTH);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        pageControl = new SessionTable(sash, SWT.NONE, sessionManager);
-        pageControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        pageControl.createProgressPanel();
+        sessionTable = new SessionTable(sash, SWT.NONE, sessionManager) {
+            @Override
+            protected Composite createProgressPanel(Composite container)
+            {
+                Composite infoGroup = super.createProgressPanel(container);
+
+                ToolBarManager toolBar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+                contributeToToolbar(sessionManager, toolBar);
+                toolBar.add(new Action("Refresh sessions", DBIcon.REFRESH.getImageDescriptor()) {
+                    @Override
+                    public void run()
+                    {
+                        refreshSessions();
+                    }
+                });
+
+                toolBar.createControl(infoGroup);
+
+                return infoGroup;
+            }
+        };
+        sessionTable.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+            public void selectionChanged(SelectionChangedEvent event)
+            {
+                onSessionSelect(getSelectedSession());
+            }
+        });
+
+        sessionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        sessionTable.createProgressPanel();
 
         sessionInfo = new Text(sash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
         sessionInfo.setEditable(false);
         sessionInfo.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         sash.setWeights(new int[]{70, 30});
+    }
+
+    protected void onSessionSelect(DBAServerSession session)
+    {
+        if (session == null) {
+            sessionInfo.setText("");
+        } else {
+            final String activeQuery = session.getActiveQuery();
+            sessionInfo.setText(CommonUtils.getString(activeQuery));
+        }
+    }
+
+    protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
+    {
+
+    }
+
+    public DBAServerSession getSelectedSession()
+    {
+        ISelection selection = sessionTable.getSelectionProvider().getSelection();
+        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+            return (DBAServerSession)((IStructuredSelection) selection).getFirstElement();
+        } else {
+            return null;
+        }
+    }
+
+    public void refreshSessions()
+    {
+        sessionTable.loadData();
+        onSessionSelect(null);
+    }
+
+    public void alterSession(final DBAServerSession session, Map<String, Object> options) {
+        sessionTable.createAlterService(session, options).schedule();
     }
 
 }

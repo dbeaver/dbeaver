@@ -11,4 +11,6 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface DBAServerSession extends DBPObject {
 
+    String getActiveQuery();
+
 }

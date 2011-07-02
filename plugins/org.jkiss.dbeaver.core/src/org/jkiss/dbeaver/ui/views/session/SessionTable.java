@@ -18,16 +18,16 @@ import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Session table
  */
 class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
 
-    private DBAServerSessionManager sessionManager;
-    private String query;
+    private DBAServerSessionManager<DBAServerSession> sessionManager;
 
-    public SessionTable(Composite parent, int style, DBAServerSessionManager sessionManager)
+    public SessionTable(Composite parent, int style, DBAServerSessionManager<DBAServerSession> sessionManager)
     {
         super(parent, style, CONTENT_PROVIDER);
         this.sessionManager = sessionManager;
@@ -38,14 +38,20 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
     protected LoadingJob<Collection<DBAServerSession>> createLoadService()
     {
         return LoadingUtils.createService(
-                new ExplainPlanService(),
+                new LoadSessionsService(),
                 new ObjectsLoadVisualizer());
     }
 
-    public void init(DBAServerSessionManager planner, String query)
+    protected LoadingJob<Void> createAlterService(DBAServerSession session, Map<String, Object> options)
     {
-        this.sessionManager = planner;
-        this.query = query;
+        return LoadingUtils.createService(
+                new KillSessionService(session, options),
+                new ObjectActionVisualizer());
+    }
+
+    public void init(DBAServerSessionManager<DBAServerSession> sessionManager)
+    {
+        this.sessionManager = sessionManager;
     }
 
     private static IStructuredContentProvider CONTENT_PROVIDER = new IStructuredContentProvider() {
@@ -67,18 +73,18 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
 
     };
 
-    private class ExplainPlanService extends DatabaseLoadService<Collection<DBAServerSession>> {
+    private class LoadSessionsService extends DatabaseLoadService<Collection<DBAServerSession>> {
 
-        protected ExplainPlanService()
+        protected LoadSessionsService()
         {
-            super("Explain plan", sessionManager.getDataSource());
+            super("Load sessions", sessionManager.getDataSource());
         }
 
         public Collection<DBAServerSession> evaluate()
             throws InvocationTargetException, InterruptedException
         {
             try {
-                DBCExecutionContext context = sessionManager.getDataSource().openContext(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Explain '" + query + "'");
+                DBCExecutionContext context = sessionManager.getDataSource().openContext(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Retrieve server sessions");
                 try {
                     return sessionManager.getSessions(context, null);
                 }
@@ -93,6 +99,40 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
                 }
             }
         }
+    }
+
+    private class KillSessionService extends DatabaseLoadService<Void> {
+        private final DBAServerSession session;
+        private final Map<String, Object> options;
+
+        protected KillSessionService(DBAServerSession session, Map<String, Object> options)
+        {
+            super("Kill session", sessionManager.getDataSource());
+            this.session = session;
+            this.options = options;
+        }
+
+        public Void evaluate()
+            throws InvocationTargetException, InterruptedException
+        {
+            try {
+                DBCExecutionContext context = sessionManager.getDataSource().openContext(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Kill server session");
+                try {
+                    sessionManager.alterSession(context, session, options);
+                    return null;
+                }
+                finally {
+                    context.close();
+                }
+            } catch (Throwable ex) {
+                if (ex instanceof InvocationTargetException) {
+                    throw (InvocationTargetException)ex;
+                } else {
+                    throw new InvocationTargetException(ex);
+                }
+            }
+        }
+
     }
 
 }
