@@ -163,7 +163,7 @@
 
         <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnect" name="Disconnect" description="Disconnect from database" categoryId="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate" description="Invalidate database connection" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate/Reconnect" description="Invalidate database connection" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.commit" name="Commit changes" description="Commit changes in SQL Session" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.rollback" name="Rollback changes" description="Rollback changes in SQL Session" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.autocommit" name="Transactional mode" description="Changes transactional mode of active session" categoryId="org.jkiss.dbeaver.core.database"/>

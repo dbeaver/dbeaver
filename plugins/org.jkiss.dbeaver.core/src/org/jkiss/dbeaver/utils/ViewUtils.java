@@ -139,6 +139,17 @@ public class ViewUtils
         return makeCommandContribution(serviceLocator, commandId, name, imageDescriptor, null, false);
     }
 
+    public static ContributionItem makeActionContribution(
+        IAction action,
+        boolean showText)
+    {
+        ActionContributionItem item = new ActionContributionItem(action);
+        if (showText) {
+            item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        }
+        return item;
+    }
+
     public static CommandContributionItem makeCommandContribution(
         IServiceLocator serviceLocator,
         String commandId,
