@@ -127,8 +127,9 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         this.persisted = persisted;
         this.attributeCache = new AttributeCache();
         this.methodCache = new MethodCache();
-
-        findTypeDesc(typeName);
+        if (owner == null) {
+            findTypeDesc(typeName);
+        }
     }
 
     public OracleDataType(DBSObject owner, ResultSet dbResult)

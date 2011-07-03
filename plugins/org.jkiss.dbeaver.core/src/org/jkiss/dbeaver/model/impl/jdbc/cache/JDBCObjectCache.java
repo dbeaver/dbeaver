@@ -122,7 +122,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     public void loadObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
-        if (isCached()) {
+        if (isCached() || monitor.isCanceled()) {
             return;
         }
 
@@ -136,6 +136,9 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
 
                         OBJECT object = fetchObject(context, owner, dbResult);
                         if (object == null) {
@@ -144,9 +147,6 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                         tmpObjectList.add(object);
 
                         monitor.subTask(object.getName());
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
                     }
                 }
                 finally {

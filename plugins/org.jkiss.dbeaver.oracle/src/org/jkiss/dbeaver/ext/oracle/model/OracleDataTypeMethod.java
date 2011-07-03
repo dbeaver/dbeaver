@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -100,10 +101,11 @@ public class OracleDataTypeMethod extends OracleDataTypeMember {
         return flagOverriding;
     }
 
+    @Association
     public Collection<OracleDataTypeMethodParameter> getParameters(DBRProgressMonitor monitor)
         throws DBException
     {
-        return parameterCache.getObjects(monitor, this);
+        return parameterCache == null ? null : parameterCache.getObjects(monitor, this);
     }
 
     private class ParameterCache extends JDBCObjectCache<OracleDataTypeMethod, OracleDataTypeMethodParameter> {

@@ -146,7 +146,19 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
     public OracleDataType getDataType(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return dataTypeCache.getObject(monitor, this, name);
+        OracleDataType type = dataTypeCache.getObject(monitor, this, name);
+        if (type == null) {
+            final OracleSynonym synonym = synonymCache.getObject(monitor, this, name);
+            if (synonym != null && synonym.getObjectType() == OracleObjectType.TYPE) {
+                Object object = synonym.getObject(monitor);
+                if (object instanceof OracleDataType) {
+                    return (OracleDataType)object;
+                }
+            }
+            return null;
+        } else {
+            return type;
+        }
     }
 
     @Association

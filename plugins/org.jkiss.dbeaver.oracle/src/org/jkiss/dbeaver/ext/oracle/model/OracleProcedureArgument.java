@@ -30,6 +30,7 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     private OracleParameterMode mode;
     private OracleDataType type;
     private OracleDataType dataType;
+    private String packageTypeName;
     private int dataLength;
     private int dataScale;
     private int dataPrecision;
@@ -46,18 +47,23 @@ public class OracleProcedureArgument implements DBSProcedureColumn
         this.dataLevel = JDBCUtils.safeGetInt(dbResult, "DATA_LEVEL");
         this.sequence = JDBCUtils.safeGetInt(dbResult, "SEQUENCE");
         this.mode = OracleParameterMode.getMode(JDBCUtils.safeGetString(dbResult, "IN_OUT"));
-        this.type = OracleDataType.resolveDataType(
+        final String dataType = JDBCUtils.safeGetString(dbResult, "DATA_TYPE");
+        this.type = CommonUtils.isEmpty(dataType) ? null : OracleDataType.resolveDataType(
             monitor,
             procedure.getDataSource(),
             null,
-            JDBCUtils.safeGetString(dbResult, "DATA_TYPE"));
-        final String dataTypeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
-        if (!CommonUtils.isEmpty(dataTypeName)) {
+            dataType);
+        final String typeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
+        final String typeOwner = JDBCUtils.safeGetString(dbResult, "TYPE_OWNER");
+        this.packageTypeName = JDBCUtils.safeGetString(dbResult, "TYPE_SUBNAME");
+        if (!CommonUtils.isEmpty(typeName) && !CommonUtils.isEmpty(typeOwner) && CommonUtils.isEmpty(this.packageTypeName)) {
             this.dataType = OracleDataType.resolveDataType(
                 monitor,
                 procedure.getDataSource(),
-                JDBCUtils.safeGetString(dbResult, "TYPE_OWNER"),
-                dataTypeName);
+                typeOwner,
+                typeName);
+        } else if (this.packageTypeName != null) {
+            packageTypeName = typeName + "." + packageTypeName;
         }
         this.dataLength = JDBCUtils.safeGetInt(dbResult, "DATA_LENGTH");
         this.dataScale = JDBCUtils.safeGetInt(dbResult, "DATA_SCALE");
@@ -117,9 +123,11 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     }
 
     @Property(name = "Type", viewable = true, order = 21)
-    public OracleDataType getType()
+    public Object getType()
     {
-        return dataType == null ? type : dataType;
+        return packageTypeName != null ?
+            packageTypeName :
+            dataType == null ? type : dataType;
     }
 
     public boolean isNotNull()

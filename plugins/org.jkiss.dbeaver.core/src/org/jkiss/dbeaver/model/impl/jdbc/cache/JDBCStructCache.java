@@ -60,7 +60,8 @@ public abstract class JDBCStructCache<
         throws DBException
     {
         if ((forObject == null && this.childrenCached) ||
-            (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject))))
+            (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject))) ||
+            monitor.isCanceled())
         {
             return;
         }
@@ -79,6 +80,9 @@ public abstract class JDBCStructCache<
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
                         String objectName = JDBCUtils.safeGetString(dbResult, objectNameColumn);
 
                         OBJECT object = forObject;
@@ -105,10 +109,6 @@ public abstract class JDBCStructCache<
                             objectMap.put(object, children);
                         }
                         children.add(child);
-
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
                     }
 
                     if (monitor.isCanceled()) {

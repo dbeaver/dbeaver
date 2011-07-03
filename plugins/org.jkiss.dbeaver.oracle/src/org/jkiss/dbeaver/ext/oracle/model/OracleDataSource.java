@@ -80,6 +80,9 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     public OracleSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException
     {
+        if (publicSchema != null && publicSchema.getName().equals(name)) {
+            return publicSchema;
+        }
         return schemaCache.getObject(monitor, this, name);
     }
 

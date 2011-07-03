@@ -31,29 +31,11 @@
       <Fax_Phone>+7-962-728-16-88</Fax_Phone>
     </Support_Info>
   </Company_Info>
-  <NewsFeed>
-    <NewsFeed_FORM>Y</NewsFeed_FORM>
-    <NewsFeed_VERSION>1.0</NewsFeed_VERSION>
-    <NewsFeed_URL>http://Submit-Everywhere.com/extensions/NewsFeed.htm</NewsFeed_URL>
-    <NewsFeed_DESCRIPTION>This PAD extension allows you to add your RSS and Atom news feeds info into your PAD file. This info can be used by RSS feed submission software or by feed directories themselves.</NewsFeed_DESCRIPTION>
-    <NewsFeed_Type>RSS 0.90</NewsFeed_Type>
-    <NewsFeed_Language>English</NewsFeed_Language>
-    <NewsFeed_Purpose>News</NewsFeed_Purpose>
-    <NewsFeed_Author_Email>serge@jkiss.org</NewsFeed_Author_Email>
-    <NewsFeed_Author_First_Name>Serge</NewsFeed_Author_First_Name>
-    <NewsFeed_Author_Last_Name>Rieder</NewsFeed_Author_Last_Name>
-    <NewsFeed_Feed_URL></NewsFeed_Feed_URL>
-    <NewsFeed_Site_Name></NewsFeed_Site_Name>
-    <NewsFeed_Site_URL></NewsFeed_Site_URL>
-    <NewsFeed_Title></NewsFeed_Title>
-    <NewsFeed_Description_70></NewsFeed_Description_70>
-    <NewsFeed_Description_250></NewsFeed_Description_250>
-  </NewsFeed>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.2.2</Program_Version>
-    <Program_Release_Month>06</Program_Release_Month>
-    <Program_Release_Day>09</Program_Release_Day>
+    <Program_Version>1.3.0</Program_Version>
+    <Program_Release_Month>07</Program_Release_Month>
+    <Program_Release_Day>04</Program_Release_Day>
     <Program_Release_Year>2011</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -62,11 +44,12 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-- Integrated Context Help
-- SQLite driver added
-- MS SQL Single Sign On feature
-- Driver Manager enhancements
-- Installer for Windows 64 version
+- Oracle extension.
+        Allows to browse all Oracle-specific metadata like packages, views, sequences, procedures, tablespaces, users, roles, etc.
+        Manages server sessions.
+- Ingres database driver
+- Linter database driver
+- Context help update
 - Bug fixes
 	</Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>

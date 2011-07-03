@@ -190,6 +190,9 @@ public abstract class JDBCCompositeCache<
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
                         String parentName = JDBCUtils.safeGetString(dbResult, parentColumnName);
                         String objectName = JDBCUtils.safeGetString(dbResult, objectColumnName);
 
@@ -247,6 +250,10 @@ public abstract class JDBCCompositeCache<
         }
         finally {
             context.close();
+        }
+
+        if (monitor.isCanceled()) {
+            return;
         }
 
         // Fill global cache
