@@ -124,7 +124,7 @@ public class SessionManagerViewer
 
         public SessionListControl(SashForm sash, DBAServerSessionManager sessionManager)
         {
-            super(sash, SWT.NONE, sessionManager);
+            super(sash, SWT.SHEET, sessionManager);
             this.sessionManager = sessionManager;
         }
 
