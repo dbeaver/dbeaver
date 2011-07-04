@@ -44,18 +44,22 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-- Oracle extension.
-        Allows to browse all Oracle-specific metadata like packages, views, sequences, procedures, tablespaces, users, roles, etc.
-        Manages server sessions.
+- Oracle extension:
+    Allows to browse all Oracle-specific metadata like packages, views, sequences, procedures, tablespaces, users, roles, etc;
+    Fully supports XML data type, supports Object and Collection types in read-only mode;
+    Supports execution plan explain feature;
+    Manages server sessions;
+- MySQL driver performance improved
 - Ingres database driver
 - Linter database driver
 - Context help update
+- Many UI updates
 - Bug fixes
 	</Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
     <File_Info>
-      <File_Size_Bytes>23303977</File_Size_Bytes>
+      <File_Size_Bytes>22855234</File_Size_Bytes>
       <Filename_Versioned></Filename_Versioned>
       <Filename_Previous></Filename_Previous>
       <Filename_Generic></Filename_Generic>
@@ -89,7 +93,7 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.2.2-x86-setup.exe</Primary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.3.0-x86-setup.exe</Primary_Download_URL>
       <Secondary_Download_URL></Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
