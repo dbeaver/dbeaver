@@ -250,6 +250,12 @@
             </tree>
             <drivers managable="false">
                 <driver
+                    id="oracle"
+                    label="Oracle"
+                    class="oracle.jdbc.OracleDriver"
+                    description="Oracle obsolete driver. Use Thin or OCI driver.">
+                </driver>
+                <driver
                     id="oracle_thin"
                     label="Oracle Thin"
                     class="oracle.jdbc.OracleDriver"
