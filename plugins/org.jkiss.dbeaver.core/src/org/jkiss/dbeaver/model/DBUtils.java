@@ -586,7 +586,7 @@ public final class DBUtils {
         }
         return statement;
 */
-        return context.prepareStatement(statementType, query, true, false, false);
+        return context.prepareStatement(statementType, query, false, false, false);
     }
 
     public static void fireObjectUpdate(DBSObject object)
