@@ -155,6 +155,9 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
                 catch (UnsupportedOperationException e) {
                     return prepareStatement(sqlQuery);
                 }
+                catch (SQLException e) {
+                    return prepareStatement(sqlQuery);
+                }
             } else {
                 return prepareStatement(
                     sqlQuery,
