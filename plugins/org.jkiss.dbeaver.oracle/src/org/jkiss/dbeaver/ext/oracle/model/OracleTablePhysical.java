@@ -24,10 +24,10 @@ import java.util.List;
 /**
  * Oracle physical table
  */
-public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy
+public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy<OracleDataSource>
 {
 
-    private boolean valid;
+    //private boolean valid;
     private long rowCount;
     private Object tablespace;
     private List<OracleIndex> indexes;
@@ -46,7 +46,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     {
         super(schema, dbResult);
         this.rowCount = JDBCUtils.safeGetLong(dbResult, "NUM_ROWS");
-        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
+        //this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
         this.tablespace = JDBCUtils.safeGetString(dbResult, "TABLESPACE_NAME");
 
         this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", "Y");
@@ -59,11 +59,11 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return rowCount;
     }
 
-    @Property(name = "Valid", viewable = true, order = 21, description = "If a previous DROP TABLE operation failed, indicates whether the table is unusable")
-    public boolean isValid()
-    {
-        return valid;
-    }
+//    @Property(name = "Valid", viewable = true, order = 21, description = "If a previous DROP TABLE operation failed, indicates whether the table is unusable")
+//    public boolean isValid()
+//    {
+//        return valid;
+//    }
 
     public Object getLazyReference(Object propertyId)
     {
