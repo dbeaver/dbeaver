@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
+import org.jkiss.dbeaver.model.data.query.DBQCondition;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -23,8 +25,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
-import org.jkiss.dbeaver.model.data.DBDColumnFilter;
-import org.jkiss.dbeaver.model.data.DBDColumnOrder;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -187,7 +187,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                 return ((IObjectImageProvider)column.getColumn()).getObjectImage();
             }
             if (columnIndex == 1) {
-                DBDColumnOrder orderColumn = dataFilter.getOrderColumn(column.getColumnName());
+                DBQOrderColumn orderColumn = dataFilter.getOrderColumn(column.getColumnName());
                 if (orderColumn != null) {
                     return orderColumn.isDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
                 }
@@ -209,9 +209,9 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                     }
                 }
                 case 2: {
-                    DBDColumnFilter filterColumn = dataFilter.getFilterColumn(column.getColumnName());
+                    DBQCondition filterColumn = dataFilter.getFilterColumn(column.getColumnName());
                     if (filterColumn != null) {
-                        return filterColumn.getWhere();
+                        return filterColumn.getCondition();
                     } else {
                         return "";
                     }
@@ -235,7 +235,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                     if (event.index == 1) {
                         TableItem tableItem = (TableItem) event.item;
                         DBDColumnBinding columnBinding = (DBDColumnBinding)tableItem.getData();
-                        DBDColumnOrder orderColumn = dataFilter.getOrderColumn(columnBinding.getColumnName());
+                        DBQOrderColumn orderColumn = dataFilter.getOrderColumn(columnBinding.getColumnName());
                         if (orderColumn != null) {
                             int columnWidth = table.getColumn(1).getWidth();
                             Image image = orderColumn.isDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
@@ -304,9 +304,9 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         private void toggleColumnOrder(TableItem item)
         {
             DBDColumnBinding column = (DBDColumnBinding) item.getData();
-            DBDColumnOrder columnOrder = dataFilter.getOrderColumn(column.getColumnName());
+            DBQOrderColumn columnOrder = dataFilter.getOrderColumn(column.getColumnName());
             if (columnOrder == null) {
-                dataFilter.addOrderColumn(new DBDColumnOrder(column.getColumnName(), column.getColumnIndex(), false));
+                dataFilter.addOrderColumn(new DBQOrderColumn(column.getColumnName(), false));
             } else if (!columnOrder.isDescending()) {
                 columnOrder.setDescending(true);
             } else {
@@ -324,16 +324,16 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                     Text text = (Text) tableEditor.getEditor();
                     String criteria = text.getText().trim();
                     DBDColumnBinding column = (DBDColumnBinding) item.getData();
-                    DBDColumnFilter filterColumn = dataFilter.getFilterColumn(column.getColumnName());
+                    DBQCondition filterColumn = dataFilter.getFilterColumn(column.getColumnName());
                     if (CommonUtils.isEmpty(criteria)) {
                         if (filterColumn != null) {
                             dataFilter.removeFilterColumn(filterColumn);
                         }
                     } else {
                         if (filterColumn != null) {
-                            filterColumn.setWhere(criteria);
+                            filterColumn.setCondition(criteria);
                         } else {
-                            dataFilter.addFilterColumn(new DBDColumnFilter(column.getColumnName(), column.getColumnIndex(), criteria));
+                            dataFilter.addFilterColumn(new DBQCondition(column.getColumnName(), criteria));
                         }
                     }
                     tableEditor.getItem().setText(2, criteria);

@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
+import org.jkiss.dbeaver.model.data.query.DBQCondition;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -91,13 +93,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 query.append(" WHERE ");
                 boolean hasWhere = false;
                 if (!CommonUtils.isEmpty(dataFilter.getFilters())) {
-                    for (DBDColumnFilter filter : dataFilter.getFilters()) {
+                    for (DBQCondition filter : dataFilter.getFilters()) {
                         if (hasWhere) query.append(" AND ");
                         hasWhere = true;
                         query
                             .append(DBUtils.getQuotedIdentifier(getDataSource(), filter.getColumnName()));
 
-                        final String condition = filter.getWhere();
+                        final String condition = filter.getCondition();
                         final char firstChar = condition.trim().charAt(0);
                         if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
                             query.append('=').append(condition);
@@ -116,7 +118,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (!CommonUtils.isEmpty(dataFilter.getOrderColumns()) || !CommonUtils.isEmpty(dataFilter.getOrder())) {
                 query.append(" ORDER BY ");
                 boolean hasOrder = false;
-                for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
+                for (DBQOrderColumn co : dataFilter.getOrderColumns()) {
                     if (hasOrder) query.append(',');
                     query.append(DBUtils.getQuotedIdentifier(getDataSource(), co.getColumnName()));
                     if (co.isDescending()) {

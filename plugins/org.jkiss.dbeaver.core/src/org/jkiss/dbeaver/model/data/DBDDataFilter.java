@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
+import org.jkiss.dbeaver.model.data.query.DBQCondition;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -15,8 +17,8 @@ import java.util.List;
  */
 public class DBDDataFilter {
 
-    private List<DBDColumnOrder> orderColumns = new ArrayList<DBDColumnOrder>();
-    private List<DBDColumnFilter> filters = new ArrayList<DBDColumnFilter>();
+    private List<DBQOrderColumn> orderColumns = new ArrayList<DBQOrderColumn>();
+    private List<DBQCondition> filters = new ArrayList<DBQCondition>();
     private String order;
     private String where;
 
@@ -26,24 +28,24 @@ public class DBDDataFilter {
 
     public DBDDataFilter(DBDDataFilter source)
     {
-        for (DBDColumnOrder column : source.orderColumns) {
-            orderColumns.add(new DBDColumnOrder(column));
+        for (DBQOrderColumn column : source.orderColumns) {
+            orderColumns.add(new DBQOrderColumn(column));
         }
-        for (DBDColumnFilter column : source.filters) {
-            filters.add(new DBDColumnFilter(column));
+        for (DBQCondition column : source.filters) {
+            filters.add(new DBQCondition(column));
         }
         this.order = source.order;
         this.where = source.where;
     }
 
-    public Collection<DBDColumnOrder> getOrderColumns()
+    public Collection<DBQOrderColumn> getOrderColumns()
     {
         return orderColumns;
     }
 
-    public DBDColumnOrder getOrderColumn(String columnName)
+    public DBQOrderColumn getOrderColumn(String columnName)
     {
-        for (DBDColumnOrder co : orderColumns) {
+        for (DBQOrderColumn co : orderColumns) {
             if (co.getColumnName().equals(columnName)) {
                 return co;
             }
@@ -54,7 +56,7 @@ public class DBDDataFilter {
     public int getOrderColumnIndex(String columnName)
     {
         for (int i = 0, orderColumnsSize = orderColumns.size(); i < orderColumnsSize; i++) {
-            DBDColumnOrder co = orderColumns.get(i);
+            DBQOrderColumn co = orderColumns.get(i);
             if (co.getColumnName().equals(columnName)) {
                 return i;
             }
@@ -62,12 +64,12 @@ public class DBDDataFilter {
         return -1;
     }
 
-    public void addOrderColumn(DBDColumnOrder columnOrder)
+    public void addOrderColumn(DBQOrderColumn columnOrder)
     {
         orderColumns.add(columnOrder);
     }
 
-    public boolean removeOrderColumn(DBDColumnOrder columnOrder)
+    public boolean removeOrderColumn(DBQOrderColumn columnOrder)
     {
         return orderColumns.remove(columnOrder);
     }
@@ -77,14 +79,14 @@ public class DBDDataFilter {
         orderColumns.clear();
     }
 
-    public List<DBDColumnFilter> getFilters()
+    public List<DBQCondition> getFilters()
     {
         return filters;
     }
 
-    public DBDColumnFilter getFilterColumn(String columnName)
+    public DBQCondition getFilterColumn(String columnName)
     {
-        for (DBDColumnFilter co : filters) {
+        for (DBQCondition co : filters) {
             if (co.getColumnName().equals(columnName)) {
                 return co;
             }
@@ -92,12 +94,12 @@ public class DBDDataFilter {
         return null;
     }
 
-    public void addFilterColumn(DBDColumnFilter columnFilter)
+    public void addFilterColumn(DBQCondition columnFilter)
     {
         filters.add(columnFilter);
     }
 
-    public boolean removeFilterColumn(DBDColumnFilter columnFilter)
+    public boolean removeFilterColumn(DBQCondition columnFilter)
     {
         return filters.remove(columnFilter);
     }

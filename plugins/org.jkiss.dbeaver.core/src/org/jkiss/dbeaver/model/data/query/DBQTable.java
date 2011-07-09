@@ -2,10 +2,10 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.data.criteria;
+package org.jkiss.dbeaver.model.data.query;
 
 /**
- * Criteria
+ * Table
  */
-public interface DBDCriterion {
+public class DBQTable {
 }

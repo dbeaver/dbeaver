@@ -306,7 +306,7 @@ public class SearchObjectsView extends ViewPart {
         {
             itemList = new SearchResultsControl(divider);
             itemList.createProgressPanel();
-            itemList.setInfo("You have to set search criteria");
+            itemList.setInfo("You have to set search query");
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 700;
             gd.heightHint = 500;

@@ -2,35 +2,35 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.data.criteria;
+package org.jkiss.dbeaver.model.data.query;
 
 import java.util.List;
 
 /**
  * Criteria
  */
-public class DBDCriterionGroup implements DBDCriterion {
+public class DBQCriterionGroup implements DBQCriterion {
 
-    private final List<DBDCriterion> criteria;
+    private final List<DBQCriterion> criteria;
     private boolean conjunction;
 
-    public DBDCriterionGroup(List<DBDCriterion> criteria, boolean conjunction)
+    public DBQCriterionGroup(List<DBQCriterion> criteria, boolean conjunction)
     {
         this.criteria = criteria;
         this.conjunction = conjunction;
     }
 
-    public List<DBDCriterion> getCriteria()
+    public List<DBQCriterion> getCriteria()
     {
         return criteria;
     }
 
-    public void addCriterion(DBDCriterion criterion)
+    public void addCriterion(DBQCriterion criterion)
     {
         criteria.add(criterion);
     }
 
-    public boolean removeCriterion(DBDCriterion criterion)
+    public boolean removeCriterion(DBQCriterion criterion)
     {
         return criteria.remove(criterion);
     }

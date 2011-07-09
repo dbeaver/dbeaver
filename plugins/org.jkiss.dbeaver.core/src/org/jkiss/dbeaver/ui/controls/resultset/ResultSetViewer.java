@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -343,7 +344,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (!spreadsheet.isDisposed() && metaColumns != null && mode == ResultSetMode.GRID) {
             for (int i = 0, metaColumnsLength = metaColumns.length; i < metaColumnsLength; i++) {
                 DBDColumnBinding column = metaColumns[i];
-                DBDColumnOrder columnOrder = dataFilter.getOrderColumn(column.getColumnName());
+                DBQOrderColumn columnOrder = dataFilter.getOrderColumn(column.getColumnName());
                 GridColumn gridColumn = spreadsheet.getGrid().getColumn(i);
                 if (columnOrder == null) {
                     gridColumn.setSort(SWT.DEFAULT);
@@ -902,7 +903,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             dataFilter.clearOrderColumns();
         }
         DBDColumnBinding metaColumn = metaColumns[column.getIndex()];
-        DBDColumnOrder columnOrder = dataFilter.getOrderColumn(metaColumn.getColumnName());
+        DBQOrderColumn columnOrder = dataFilter.getOrderColumn(metaColumn.getColumnName());
         //int newSort;
         if (columnOrder == null) {
             if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
@@ -914,7 +915,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     return;
                 }
             }
-            columnOrder = new DBDColumnOrder(metaColumn.getColumnName(), column.getIndex() + 1, altPressed);
+            columnOrder = new DBQOrderColumn(metaColumn.getColumnName(), altPressed);
             dataFilter.addOrderColumn(columnOrder);
             //newSort = SWT.DOWN;
 
@@ -1053,9 +1054,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             public int compare(Object[] row1, Object[] row2)
             {
                 int result = 0;
-                for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
-                    Object cell1 = row1[co.getColumnIndex() - 1];
-                    Object cell2 = row2[co.getColumnIndex() - 1];
+                for (DBQOrderColumn co : dataFilter.getOrderColumns()) {
+                    final int colIndex = getMetaColumnIndex(null, co.getColumnName());
+                    if (colIndex < 0) {
+                        continue;
+                    }
+                    Object cell1 = row1[colIndex];
+                    Object cell2 = row2[colIndex];
                     if (cell1 == cell2) {
                         result = 0;
                     } else if (DBUtils.isNullValue(cell1)) {
@@ -1417,11 +1422,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return -1;
     }
 
-    public int getMetaColumnIndex(DBSTable table, String columnName)
+    private int getMetaColumnIndex(DBSTable table, String columnName)
     {
         for (int i = 0; i < metaColumns.length; i++) {
             DBDColumnBinding column = metaColumns[i];
-            if (column.getValueLocator().getTable() == table && column.getColumnName().equals(columnName)) {
+            if ((table == null || column.getValueLocator().getTable() == table) &&
+                column.getColumnName().equals(columnName))
+            {
                 return i;
             }
         }
@@ -2198,8 +2205,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             } else {
                 column.setSort(SWT.DEFAULT);
                 int index = column.getIndex();
-                for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
-                    if (co.getColumnIndex() - 1 == index) {
+                for (DBQOrderColumn co : dataFilter.getOrderColumns()) {
+                    if (getMetaColumnIndex(null, co.getColumnName()) == index) {
                         column.setSort(co.isDescending() ? SWT.UP : SWT.DOWN);
                         break;
                     }
