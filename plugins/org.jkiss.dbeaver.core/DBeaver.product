@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.product" application="org.jkiss.dbeaver.core.application" version="1.2.0" useFeatures="false" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.product" application="org.jkiss.dbeaver.core.application" version="1.3.2" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="product_lg.gif"/>
@@ -54,6 +54,7 @@ This software is provided “as is” without express or implied warranty.
       <plugin id="org.apache.jasper"/>
       <plugin id="org.apache.lucene"/>
       <plugin id="org.apache.lucene.analysis"/>
+      <plugin id="org.apache.lucene.core"/>
       <plugin id="org.eclipse.compare.core"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>
@@ -131,6 +132,7 @@ This software is provided “as is” without express or implied warranty.
       <plugin id="org.jkiss.dbeaver.ext.import_config"/>
       <plugin id="org.jkiss.dbeaver.ext.mysql"/>
       <plugin id="org.jkiss.dbeaver.ext.oracle"/>
+      <plugin id="org.jkiss.dbeaver.logging" fragment="true"/>
       <plugin id="org.mortbay.jetty.server"/>
       <plugin id="org.mortbay.jetty.util"/>
    </plugins>

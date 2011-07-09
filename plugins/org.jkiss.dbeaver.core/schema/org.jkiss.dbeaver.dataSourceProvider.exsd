@@ -161,7 +161,7 @@
             <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="icon" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="property" type="string" use="required">
+         <attribute name="property" type="string">
             <annotation>
                <documentation>
                   Item collection reading property
@@ -205,7 +205,7 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="path" type="string" use="required">
+         <attribute name="path" type="string">
             <annotation>
                <documentation>
                   Items path element
@@ -230,24 +230,31 @@
          <attribute name="virtual" type="boolean">
             <annotation>
                <documentation>
-                   Virtual items are copies of other "real" objects. Navigator will always return real object to user.
+                  Virtual items are copies of other &quot;real&quot; objects. Navigator will always return real object to user.
                    Default value is false.
                </documentation>
             </annotation>
          </attribute>
-          <attribute name="navigable" type="boolean">
-             <annotation>
-                <documentation>
-                    Non-navigable items do not present in navigator tree but still present in entity editor's tabs.
+         <attribute name="navigable" type="boolean">
+            <annotation>
+               <documentation>
+                  Non-navigable items do not present in navigator tree but still present in entity editor&apos;s tabs.
                     Default value is true.
-                </documentation>
-             </annotation>
-          </attribute>
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="inline" type="boolean">
             <annotation>
                <documentation>
-                   Inline items are present in item lists as child items.
+                  Inline items are present in item lists as child items.
                    Default value is false.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="ref" type="string">
+            <annotation>
+               <documentation>
+                  
                </documentation>
             </annotation>
          </attribute>
@@ -381,7 +388,7 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="sampleURL" type="string" use="required">
+         <attribute name="sampleURL" type="string">
             <annotation>
                <documentation>
                   
