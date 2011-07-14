@@ -54,9 +54,9 @@ public class DBeaverActivator extends AbstractUIPlugin
 
         instance = this;
 
-        LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", DBeaverLogger.class.getName());
+        LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", DBeaverLogger.class.getName()); // $NON-NLS-1$"
         try {
-            resourceBundle = ResourceBundle.getBundle("org.jkiss.dbeaver.core.DBeaverResources");
+            resourceBundle = ResourceBundle.getBundle("org.jkiss.dbeaver.core.DBeaverResources");  // $NON-NLS-1$"
         } catch (MissingResourceException x) {
             resourceBundle = null;
         }
@@ -111,10 +111,11 @@ public class DBeaverActivator extends AbstractUIPlugin
 
     /**
      * Returns the plugin's resource bundle,
+     * @return core resource bundle
      */
-    public ResourceBundle getResourceBundle()
+    public static ResourceBundle getResourceBundle()
     {
-        return resourceBundle;
+        return getInstance().resourceBundle;
     }
 
     /**
@@ -123,7 +124,7 @@ public class DBeaverActivator extends AbstractUIPlugin
      */
     public static String getResourceString(String key)
     {
-        ResourceBundle bundle = DBeaverCore.getInstance().getPlugin().getResourceBundle();
+        ResourceBundle bundle = getResourceBundle();
         try {
             return bundle.getString(key);
         } catch (MissingResourceException e) {

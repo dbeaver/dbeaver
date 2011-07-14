@@ -229,7 +229,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     {
         super.createActions();
 
-        ResourceBundle bundle = DBeaverActivator.getInstance().getResourceBundle();
+        ResourceBundle bundle = DBeaverActivator.getResourceBundle();
 
         IAction a = new TextOperationAction(bundle, "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS);
         a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);

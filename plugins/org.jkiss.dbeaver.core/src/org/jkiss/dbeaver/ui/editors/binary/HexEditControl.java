@@ -40,7 +40,8 @@ public class HexEditControl extends Composite {
 
     static final Log log = LogFactory.getLog(HexEditControl.class);
 
-    public static final FontData DEFAULT_FONT_DATA = new FontData("Courier New", 10, SWT.NORMAL);
+    public static final String DEFAULT_FONT_NAME = "Courier New"; // $NON-NLS-1$"
+    public static final FontData DEFAULT_FONT_DATA = new FontData(DEFAULT_FONT_NAME, 10, SWT.NORMAL);
 
     static final Color COLOR_BLUE = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
     static final Color COLOR_LIGHT_SHADOW = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);

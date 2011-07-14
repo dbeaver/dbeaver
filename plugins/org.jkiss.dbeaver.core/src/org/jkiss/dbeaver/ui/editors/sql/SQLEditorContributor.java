@@ -20,6 +20,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.ICommandIds;
@@ -55,7 +56,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     private void createActions()
     {
         // Init custom actions
-        ResourceBundle bundle = DBeaverCore.getInstance().getPlugin().getResourceBundle();
+        ResourceBundle bundle = DBeaverActivator.getResourceBundle();
         contentAssistProposal = new RetargetTextEditorAction(bundle, "ContentAssistProposal.");
         contentAssistProposal.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         contentFormatProposal = new RetargetTextEditorAction(bundle, "ContentFormatProposal.");

@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
+import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
@@ -45,6 +46,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +58,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     static final Log log = LogFactory.getLog(DBeaverCore.class);
 
     //private static final String AUTOSAVE_DIR = ".autosave";
-    private static final String LOB_DIR = ".lob";
+    private static final String LOB_DIR = ".lob"; // $NON-NLS-1$"
+    public static final String TEMP_PROJECT_NAME = "temp"; // $NON-NLS-1$"
 
     private static DBeaverCore instance;
     private DBeaverActivator plugin;
@@ -156,14 +159,14 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                     try {
                         try {
 // Temp project
-                            tempProject = workspace.getRoot().getProject("temp");
+                            tempProject = workspace.getRoot().getProject(TEMP_PROJECT_NAME);
                             if (!tempProject.exists()) {
                                 tempProject.create(monitor);
                             }
                             tempProject.open(monitor);
                             tempProject.setHidden(true);
                         } catch (CoreException e) {
-                            log.error("Cannot create temp project", e);
+                            log.error("Cannot create temp project", e); // $NON-NLS-1$"
                         }
 
                         // Projects registry
@@ -218,7 +221,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 }
             }
             catch (CoreException ex) {
-                log.error("Can't close default project", ex);
+                log.error("Can't close default project", ex); // $NON-NLS-1$"
             }
         }
         if (workspace != null) {
@@ -226,7 +229,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 workspace.save(true, monitor);
             }
             catch (CoreException ex) {
-                log.error("Can't save workspace", ex);
+                log.error("Can't save workspace", ex); // $NON-NLS-1$"
             }
         }
         if (queryManager != null) {
@@ -430,7 +433,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 tempFolder.setHidden(true);
             }
             catch (CoreException ex) {
-                throw new IOException("Could not create temp directory '" + tempFolder.toString() + "'", ex);
+                throw new IOException(MessageFormat.format("Could not create temp directory ''{0}''", tempFolder.toString()), ex);
             }
         }
         return tempFolder;
@@ -439,13 +442,13 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public IFile makeTempFile(DBRProgressMonitor monitor, IFolder folder, String name, String extension)
         throws IOException
     {
-        IFile tempFile = folder.getFile(name + "-" + System.currentTimeMillis() + "." + extension);
+        IFile tempFile = folder.getFile(name + "-" + System.currentTimeMillis() + "." + extension);  // $NON-NLS-1$"
         try {
             InputStream contents = new ByteArrayInputStream(new byte[0]);
             tempFile.create(contents, true, monitor.getNestedMonitor());
         }
         catch (CoreException ex) {
-            throw new IOException("Coud not create temp file '" + tempFile.toString() + "' in '" + folder.toString() + "'", ex);
+            throw new IOException(MessageFormat.format("Could not create temp file ''{0}'' in ''{1}''", tempFile.toString(), folder.toString()), ex);
         }
         return tempFile;
     }
@@ -491,7 +494,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         // Text editor default preferences
         RuntimeUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
 
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.HEX_FONT_NAME, "Courier New");
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.HEX_FONT_NAME, HexEditControl.DEFAULT_FONT_NAME);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.HEX_FONT_SIZE, 10);
 
         // QM
