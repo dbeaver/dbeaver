@@ -895,7 +895,7 @@
         </menuContribution>
 
         <!-- File menu-->
-        <menuContribution allPopups="false" locationURI="menu:file?before=end">
+        <menuContribution allPopups="false" locationURI="menu:file?before=fileEnd">
             <command commandId="org.eclipse.ui.newWizard"/>
             <command commandId="org.eclipse.ui.file.save"/>
             <command commandId="org.eclipse.ui.file.saveAs"/>

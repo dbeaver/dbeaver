@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.DropTargetAdapter;
-import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -134,9 +133,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     private void updateWindowTitle()
     {
         IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        String title = "DBeaver";
+        String title = DBeaverActivator.getResourceBundle().getString("productName"); // $NON-NLS-1$
         if (activeProject != null) {
-            title += " - " + activeProject.getName();
+            title += " - " + activeProject.getName(); // $NON-NLS-1$
         }
         getWindowConfigurer().getWindow().getShell().setText(title);
     }
@@ -148,9 +147,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
     public class EditorAreaDropAdapter extends DropTargetAdapter
     {
-        public void handleDrop(IWorkbenchPage page, DropTargetEvent event)
-        {
-        }
     }
 
 }

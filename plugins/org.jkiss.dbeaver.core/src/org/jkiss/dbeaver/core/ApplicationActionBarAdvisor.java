@@ -31,6 +31,9 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 {
 
+    public static final String LOG_VIEW_ID = "org.eclipse.pde.runtime.LogView"; //$NON-NLS-1$
+    public static final String HELP_VIEW_ID = "org.eclipse.help.ui.HelpView"; //$NON-NLS-1$
+
     // Actions - important to allocate these only in makeActions, and then use them
     // in the fill methods.  This ensures that the actions aren't recreated
     // when fillActionBars is called with FILL_PROXY.
@@ -126,7 +129,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         // File
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        fileMenu.add(new Separator("end"));
+        fileMenu.add(new Separator(IWorkbenchActionConstants.FILE_END));
         fileMenu.add(ViewUtils.makeAction(emergentExitAction, null, null, "Emergency Exit", null, null));
 
         // Edit
@@ -157,15 +160,15 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         // Window
         windowMenu.add(newWindowAction);
         windowMenu.add(new Separator());
-        windowMenu.add(new ToggleViewAction("databases", DatabaseNavigatorView.VIEW_ID)); //$NON-NLS-1$
-        windowMenu.add(new ToggleViewAction("projects", ProjectNavigatorView.VIEW_ID)); //$NON-NLS-1$
-        windowMenu.add(new ToggleViewAction("explorer", ProjectExplorerView.VIEW_ID)); //$NON-NLS-1$
+        windowMenu.add(new ToggleViewAction(DatabaseNavigatorView.VIEW_ID));
+        windowMenu.add(new ToggleViewAction(ProjectNavigatorView.VIEW_ID));
+        windowMenu.add(new ToggleViewAction(ProjectExplorerView.VIEW_ID));
         windowMenu.add(new Separator());
-        windowMenu.add(new ToggleViewAction("properties", IPageLayout.ID_PROP_SHEET)); //$NON-NLS-1$
-        windowMenu.add(new ToggleViewAction("qm", QueryManagerView.VIEW_ID)); //$NON-NLS-1$
-        windowMenu.add(new ToggleViewAction("outline", IPageLayout.ID_OUTLINE)); //$NON-NLS-1$
-        windowMenu.add(new ToggleViewAction("progress", IPageLayout.ID_PROGRESS_VIEW)); //$NON-NLS-1$
-        windowMenu.add(new ToggleViewAction("error log", "org.eclipse.pde.runtime.LogView")); //$NON-NLS-1$
+        windowMenu.add(new ToggleViewAction(IPageLayout.ID_PROP_SHEET));
+        windowMenu.add(new ToggleViewAction(QueryManagerView.VIEW_ID));
+        windowMenu.add(new ToggleViewAction(IPageLayout.ID_OUTLINE));
+        windowMenu.add(new ToggleViewAction(IPageLayout.ID_PROGRESS_VIEW));
+        windowMenu.add(new ToggleViewAction(LOG_VIEW_ID));
         windowMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         windowMenu.add(new Separator());
 /*

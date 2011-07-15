@@ -91,7 +91,7 @@ public class DBeaverLogger implements Log, Serializable
     {
         PrintStream debugWriter = DBeaverActivator.getInstance().getDebugWriter();
         if (debugWriter != null) {
-            synchronized (debugWriter) {
+            synchronized (DBeaverLogger.class) {
                 debugWriter.print(new Date());
                 debugWriter.print(" - ");
                 if (t == null) {

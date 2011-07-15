@@ -34,17 +34,17 @@ import java.util.*;
 
 public class SearchObjectsView extends ViewPart {
 
-    public static final String VIEW_ID = "org.jkiss.dbeaver.core.findObjects";
+    public static final String VIEW_ID = "org.jkiss.dbeaver.core.findObjects"; //$NON-NLS-1$
 
     private static final int MATCH_INDEX_STARTS_WITH = 0;
     private static final int MATCH_INDEX_CONTAINS = 1;
     private static final int MATCH_INDEX_LIKE = 2;
 
-    private static final String PROP_MASK = "search-view.mask";
-    private static final String PROP_MAX_RESULT = "search-view.max-results";
-    private static final String PROP_MATCH_INDEX = "search-view.match-index";
-    private static final String PROP_HISTORY = "search-view.history";
-    private static final String PROP_OBJECT_TYPE = "search-view.object-type";
+    private static final String PROP_MASK = "search-view.mask"; //$NON-NLS-1$
+    private static final String PROP_MAX_RESULT = "search-view.max-results"; //$NON-NLS-1$
+    private static final String PROP_MATCH_INDEX = "search-view.match-index"; //$NON-NLS-1$
+    private static final String PROP_HISTORY = "search-view.history"; //$NON-NLS-1$
+    private static final String PROP_OBJECT_TYPE = "search-view.object-type"; //$NON-NLS-1$
 
     private Composite searchGroup;
     private Table typesTable;

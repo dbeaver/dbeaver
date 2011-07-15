@@ -16,10 +16,10 @@ import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
 public class DBeaverPerspective implements IPerspectiveFactory
 {
 
-    public static final String FOLDER_NAVIGATION = "navigation";
-    public static final String FOLDER_HELP = "help";
-    public static final String BOTTOM_BOTTOM_LEFT = "bottomLeft";
-    public static final String FOLDER_BOTTOM_RIGHT = "bottomRight";
+    public static final String FOLDER_NAVIGATION = "navigation"; //$NON-NLS-1$
+    public static final String FOLDER_HELP = "help"; //$NON-NLS-1$
+    public static final String BOTTOM_BOTTOM_LEFT = "bottomLeft"; //$NON-NLS-1$
+    public static final String FOLDER_BOTTOM_RIGHT = "bottomRight"; //$NON-NLS-1$
 
     public void createInitialLayout(IPageLayout layout)
     {
@@ -41,7 +41,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
             IPageLayout.RIGHT,
             IPageLayout.RATIO_MIN,
             editorArea);
-        right.addPlaceholder("org.eclipse.help.ui.HelpView");
+        right.addPlaceholder(ApplicationActionBarAdvisor.HELP_VIEW_ID);
 
         // Bottom left.
         //IPlaceholderFolderLayout bottomLeft = layout.createPlaceholderFolder(
@@ -58,7 +58,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
             IPageLayout.BOTTOM,
             0.2f,
             editorArea);
-        bottomRight.addPlaceholder("org.eclipse.pde.runtime.LogView");
+        bottomRight.addPlaceholder(ApplicationActionBarAdvisor.LOG_VIEW_ID);
         bottomRight.addPlaceholder(QueryManagerView.VIEW_ID);
         bottomRight.addPlaceholder(IPageLayout.ID_PROP_SHEET);
         bottomRight.addPlaceholder(IPageLayout.ID_PROGRESS_VIEW);

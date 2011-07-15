@@ -9,8 +9,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.misc.AboutBoxDialog;
-
 
 public class EmergentExitAction implements IWorkbenchWindowActionDelegate
 {

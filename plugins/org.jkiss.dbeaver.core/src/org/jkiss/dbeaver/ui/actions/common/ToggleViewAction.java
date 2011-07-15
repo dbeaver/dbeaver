@@ -20,9 +20,8 @@ public class ToggleViewAction extends Action implements IPartListener
     private boolean listenerRegistered = false;
     private IViewDescriptor viewDescriptor;
 
-    public ToggleViewAction(String text, String viewId)
+    public ToggleViewAction(String viewId)
     {
-        setText(text);
         this.viewId = viewId;
         viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(viewId);
     }

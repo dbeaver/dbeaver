@@ -13,172 +13,172 @@ import org.jkiss.dbeaver.core.DBeaverIcons;
  */
 public enum DBIcon
 {
-    GEN_DATABASE("gen_database", "icons/database.png"),
-    GEN_DATABASE_TYPE("gen_database_type", "icons/database_type.png"),
+    GEN_DATABASE("gen_database", "icons/database.png"), //$NON-NLS-1$
+    GEN_DATABASE_TYPE("gen_database_type", "icons/database_type.png"), //$NON-NLS-1$
 
-    TREE("tree", "icons/tree/tree.png"),
-    TREE_ADMIN("admin", "icons/tree/admin.png"),
-    TREE_DATABASE("database", "icons/tree/database.png"),
-    TREE_SCHEMA("schema", "icons/tree/schema.png"),
-    TREE_TABLES("tables", "icons/tree/tables.png"),
-    TREE_TABLE("table", "icons/tree/table.png"),
-    TREE_TABLE_ALIAS("table_alias", "icons/tree/table_alias.png"),
-    TREE_TABLE_SORT("table_sort", "icons/tree/table_sort.png"),
-    TREE_VIEW("view", "icons/tree/view.png"),
-    TREE_PROCEDURE("procedure", "icons/tree/procedure.png"),
-    TREE_COLUMNS("columns", "icons/tree/columns.png"),
-    TREE_COLUMN("column", "icons/tree/column.png"),
-    TREE_INDEX("index", "icons/tree/index.png"),
-    TREE_CONSTRAINT("constraint", "icons/tree/constraint.png"),
-    TREE_UNIQUE_KEY("unique-key", "icons/tree/unique_constraint.png"),
-    TREE_FOREIGN_KEY("foreign-key", "icons/tree/foreign_key.png"),
-    TREE_FOREIGN_KEY_COLUMN("foreign-key-column", "icons/tree/foreign_key_column.png"),
-    TREE_REFERENCE("reference", "icons/tree/reference.png"),
-    TREE_TRIGGER("trigger", "icons/tree/trigger.png"),
-    TREE_USER("user", "icons/tree/user.png"),
-    TREE_PAGE("page", "icons/tree/page.png"),
-    TREE_FOLDER("folder", "icons/tree/folder.png"),
-    TREE_FOLDER_DATABASE("folder_database", "icons/tree/folder_database.png"),
-    TREE_FOLDER_SCHEMA("folder_schema", "icons/tree/folder_schema.png"),
-    TREE_FOLDER_TABLE("folder_table", "icons/tree/folder_table.png"),
-    TREE_FOLDER_VIEW("folder_view", "icons/tree/folder_view.png"),
-    TREE_FOLDER_USER("folder_user", "icons/tree/folder_user.png"),
-    TREE_FOLDER_ADMIN("folder_admin", "icons/tree/folder_admin.png"),
-    TREE_PACKAGE("package", "icons/tree/package.png"),
-    TREE_DATA_TYPE("data_type", "icons/tree/data_type.png"),
-    TREE_SEQUENCE("sequence", "icons/tree/sequence.png"),
-    TREE_SYNONYM("synonym", "icons/tree/synonym.png"),
-    TREE_TABLESPACE("tablespace", "icons/tree/tablespace.png"),
-    TREE_PARTITION("partition", "icons/tree/partition.png"),
-    TREE_ATTRIBUTE("attribute", "icons/tree/attribute.png"),
-    TREE_ARGUMENT("argument", "icons/tree/argument.png"),
-    TREE_JAVA_CLASS("javaClass", "icons/tree/java_class.png"),
-    TREE_JAVA_INTERFACE("javaInterface", "icons/tree/java_interface.png"),
-    TREE_LINK("link", "icons/tree/link.png"),
-    TREE_FILE("file", "icons/tree/file.png"),
+    TREE("tree", "icons/tree/tree.png"), //$NON-NLS-1$
+    TREE_ADMIN("admin", "icons/tree/admin.png"), //$NON-NLS-1$
+    TREE_DATABASE("database", "icons/tree/database.png"), //$NON-NLS-1$
+    TREE_SCHEMA("schema", "icons/tree/schema.png"), //$NON-NLS-1$
+    TREE_TABLES("tables", "icons/tree/tables.png"), //$NON-NLS-1$
+    TREE_TABLE("table", "icons/tree/table.png"), //$NON-NLS-1$
+    TREE_TABLE_ALIAS("table_alias", "icons/tree/table_alias.png"), //$NON-NLS-1$
+    TREE_TABLE_SORT("table_sort", "icons/tree/table_sort.png"), //$NON-NLS-1$
+    TREE_VIEW("view", "icons/tree/view.png"), //$NON-NLS-1$
+    TREE_PROCEDURE("procedure", "icons/tree/procedure.png"), //$NON-NLS-1$
+    TREE_COLUMNS("columns", "icons/tree/columns.png"), //$NON-NLS-1$
+    TREE_COLUMN("column", "icons/tree/column.png"), //$NON-NLS-1$
+    TREE_INDEX("index", "icons/tree/index.png"), //$NON-NLS-1$
+    TREE_CONSTRAINT("constraint", "icons/tree/constraint.png"), //$NON-NLS-1$
+    TREE_UNIQUE_KEY("unique-key", "icons/tree/unique_constraint.png"), //$NON-NLS-1$
+    TREE_FOREIGN_KEY("foreign-key", "icons/tree/foreign_key.png"), //$NON-NLS-1$
+    TREE_FOREIGN_KEY_COLUMN("foreign-key-column", "icons/tree/foreign_key_column.png"), //$NON-NLS-1$
+    TREE_REFERENCE("reference", "icons/tree/reference.png"), //$NON-NLS-1$
+    TREE_TRIGGER("trigger", "icons/tree/trigger.png"), //$NON-NLS-1$
+    TREE_USER("user", "icons/tree/user.png"), //$NON-NLS-1$
+    TREE_PAGE("page", "icons/tree/page.png"), //$NON-NLS-1$
+    TREE_FOLDER("folder", "icons/tree/folder.png"), //$NON-NLS-1$
+    TREE_FOLDER_DATABASE("folder_database", "icons/tree/folder_database.png"), //$NON-NLS-1$
+    TREE_FOLDER_SCHEMA("folder_schema", "icons/tree/folder_schema.png"), //$NON-NLS-1$
+    TREE_FOLDER_TABLE("folder_table", "icons/tree/folder_table.png"), //$NON-NLS-1$
+    TREE_FOLDER_VIEW("folder_view", "icons/tree/folder_view.png"), //$NON-NLS-1$
+    TREE_FOLDER_USER("folder_user", "icons/tree/folder_user.png"), //$NON-NLS-1$
+    TREE_FOLDER_ADMIN("folder_admin", "icons/tree/folder_admin.png"), //$NON-NLS-1$
+    TREE_PACKAGE("package", "icons/tree/package.png"), //$NON-NLS-1$
+    TREE_DATA_TYPE("data_type", "icons/tree/data_type.png"), //$NON-NLS-1$
+    TREE_SEQUENCE("sequence", "icons/tree/sequence.png"), //$NON-NLS-1$
+    TREE_SYNONYM("synonym", "icons/tree/synonym.png"), //$NON-NLS-1$
+    TREE_TABLESPACE("tablespace", "icons/tree/tablespace.png"), //$NON-NLS-1$
+    TREE_PARTITION("partition", "icons/tree/partition.png"), //$NON-NLS-1$
+    TREE_ATTRIBUTE("attribute", "icons/tree/attribute.png"), //$NON-NLS-1$
+    TREE_ARGUMENT("argument", "icons/tree/argument.png"), //$NON-NLS-1$
+    TREE_JAVA_CLASS("javaClass", "icons/tree/java_class.png"), //$NON-NLS-1$
+    TREE_JAVA_INTERFACE("javaInterface", "icons/tree/java_interface.png"), //$NON-NLS-1$
+    TREE_LINK("link", "icons/tree/link.png"), //$NON-NLS-1$
+    TREE_FILE("file", "icons/tree/file.png"), //$NON-NLS-1$
 
-    TREE_INFO("info", "/icons/tree/info.png"),
-    TREE_FOLDER_INFO("folder_info", "/icons/tree/folder_info.png"),
-    TREE_RECYCLE_BIN("recycle_bin", "/icons/tree/recycle_bin.png"),
+    TREE_INFO("info", "/icons/tree/info.png"), //$NON-NLS-1$
+    TREE_FOLDER_INFO("folder_info", "/icons/tree/folder_info.png"), //$NON-NLS-1$
+    TREE_RECYCLE_BIN("recycle_bin", "/icons/tree/recycle_bin.png"), //$NON-NLS-1$
 
-    PROJECT("project", "icons/project.png"),
-    PROJECTS("projects", "icons/projects.png"),
-    CONNECTIONS("connections", "icons/connections.png"),
-    DATABASES("databases", "icons/databases.png"),
-    SCRIPTS("scripts", "icons/scripts.png"),
-    BOOKMARK_FOLDER("bookmark_folder", "icons/bookmark_folder.png"),
-    BOOKMARK("bookmark", "icons/bookmark.png"),
-    PICTURE("picture", "icons/picture.png"),
-    PICTURE_SAVE("picture_save", "icons/picture.png"),
-    PROPERTIES("properties", "icons/properties.png"),
-    CONFIGURATION("properties", "icons/configuration.png"),
+    PROJECT("project", "icons/project.png"), //$NON-NLS-1$
+    PROJECTS("projects", "icons/projects.png"), //$NON-NLS-1$
+    CONNECTIONS("connections", "icons/connections.png"), //$NON-NLS-1$
+    DATABASES("databases", "icons/databases.png"), //$NON-NLS-1$
+    SCRIPTS("scripts", "icons/scripts.png"), //$NON-NLS-1$
+    BOOKMARK_FOLDER("bookmark_folder", "icons/bookmark_folder.png"), //$NON-NLS-1$
+    BOOKMARK("bookmark", "icons/bookmark.png"), //$NON-NLS-1$
+    PICTURE("picture", "icons/picture.png"), //$NON-NLS-1$
+    PICTURE_SAVE("picture_save", "icons/picture_save.png"), //$NON-NLS-1$
+    PROPERTIES("properties", "icons/properties.png"), //$NON-NLS-1$
+    CONFIGURATION("configuration", "icons/configuration.png"), //$NON-NLS-1$
 
-    LOADING1("loading1", "icons/tree/load/loading1.gif"),
-    LOADING2("loading2", "icons/tree/load/loading2.gif"),
-    LOADING3("loading3", "icons/tree/load/loading3.gif"),
-    LOADING4("loading4", "icons/tree/load/loading4.gif"),
+    LOADING1("loading1", "icons/tree/load/loading1.gif"), //$NON-NLS-1$
+    LOADING2("loading2", "icons/tree/load/loading2.gif"), //$NON-NLS-1$
+    LOADING3("loading3", "icons/tree/load/loading3.gif"), //$NON-NLS-1$
+    LOADING4("loading4", "icons/tree/load/loading4.gif"), //$NON-NLS-1$
 
-    ROTATE1("rotate1", "icons/tree/load/rotate1.png"),
-    ROTATE2("rotate2", "icons/tree/load/rotate2.png"),
-    ROTATE3("rotate3", "icons/tree/load/rotate3.png"),
-    ROTATE4("rotate4", "icons/tree/load/rotate4.png"),
+    ROTATE1("rotate1", "icons/tree/load/rotate1.png"), //$NON-NLS-1$
+    ROTATE2("rotate2", "icons/tree/load/rotate2.png"), //$NON-NLS-1$
+    ROTATE3("rotate3", "icons/tree/load/rotate3.png"), //$NON-NLS-1$
+    ROTATE4("rotate4", "icons/tree/load/rotate4.png"), //$NON-NLS-1$
 
-    RS_MODE_GRID("rs_toggle_grid", "/icons/sql/resultset_grid.png"),
-    RS_MODE_RECORD("rs_toggle_record", "/icons/sql/resultset_record.png"),
-    RS_FIRST("rs_first", "/icons/sql/resultset_first.png"),
-    RS_LAST("rs_last", "/icons/sql/resultset_last.png"),
-    RS_NEXT("rs_next", "/icons/sql/resultset_next.png"),
-    RS_PREV("rs_prev", "/icons/sql/resultset_previous.png"),
-    RS_REFRESH("rs_refresh", "/icons/sql/resultset_refresh.png"),
+    RS_MODE_GRID("rs_toggle_grid", "/icons/sql/resultset_grid.png"), //$NON-NLS-1$
+    RS_MODE_RECORD("rs_toggle_record", "/icons/sql/resultset_record.png"), //$NON-NLS-1$
+    RS_FIRST("rs_first", "/icons/sql/resultset_first.png"), //$NON-NLS-1$
+    RS_LAST("rs_last", "/icons/sql/resultset_last.png"), //$NON-NLS-1$
+    RS_NEXT("rs_next", "/icons/sql/resultset_next.png"), //$NON-NLS-1$
+    RS_PREV("rs_prev", "/icons/sql/resultset_previous.png"), //$NON-NLS-1$
+    RS_REFRESH("rs_refresh", "/icons/sql/resultset_refresh.png"), //$NON-NLS-1$
 
-    FIND("find", "/icons/misc/find.png"),
-    SEARCH("search", "/icons/misc/search.png"),
-    CHECK("check", "/icons/misc/check.png"),
-    CHECK2("check2", "/icons/misc/check2.png"),
-    CHECK_ON("checked", "/icons/misc/checked.png"),
-    CHECK_OFF("unchecked", "/icons/misc/unchecked.png"),
-    ZOOM("zoom", "/icons/misc/zoom.png"),
-    ZOOM_IN("zoom_in", "/icons/misc/zoom_in.png"),
-    ZOOM_OUT("zoom_out", "/icons/misc/zoom_out.png"),
-    ROTATE("rotate", "/icons/misc/rotate.png"),
-    ROTATE_LEFT("rotate_left", "/icons/misc/rotate_left.png"),
-    ROTATE_RIGHT("rotate_right", "/icons/misc/rotate_right.png"),
-    FIT_WINDOW("fit_window", "/icons/misc/fit-window.png"),
-    ORIGINAL_SIZE("original_size", "/icons/misc/original-size.png"),
-    ASTERISK("asterisk", "/icons/misc/asterisk.png"),
-    BULLET_BLACK("bullet_black", "/icons/misc/bullet_black.png"),
-    BULLET_GREEN("bullet_green", "/icons/misc/bullet_green.png"),
-    BULLET_RED("bullet_red", "/icons/misc/bullet_red.png"),
-    BULLET_STAR("bullet_star", "/icons/misc/bullet_star.png"),
-    ARROW_UP("arrow_up", "/icons/misc/arrow_up.png"),
-    ARROW_DOWN("arrow_down", "/icons/misc/arrow_down.png"),
-    ARROW_LEFT("arrow_left", "/icons/misc/arrow_left.png"),
-    ARROW_LEFT_ALL("arrow_left_all", "/icons/misc/arrow_left_all.png"),
-    ARROW_RIGHT("arrow_right", "/icons/misc/arrow_right.png"),
-    ARROW_RIGHT_ALL("arrow_right_all", "/icons/misc/arrow_right_all.png"),
-    ARROW_RESET("arrow_reset", "/icons/misc/arrow_reset.png"),
-    SORT_INCREASE("sort_increase", "/icons/misc/sort_increase.png"),
-    SORT_DECREASE("sort_decrease", "/icons/misc/sort_decrease.png"),
-    SORT_UNKNOWN("sort_unknown", "/icons/misc/sort_unknown.png"),
-    FRAME_QUERY("frame_query", "/icons/misc/frame_query.png"),
-    FILTER("filter", "/icons/misc/filter.png"),
+    FIND("find", "/icons/misc/find.png"), //$NON-NLS-1$
+    SEARCH("search", "/icons/misc/search.png"), //$NON-NLS-1$
+    CHECK("check", "/icons/misc/check.png"), //$NON-NLS-1$
+    CHECK2("check2", "/icons/misc/check2.png"), //$NON-NLS-1$
+    CHECK_ON("checked", "/icons/misc/checked.png"), //$NON-NLS-1$
+    CHECK_OFF("unchecked", "/icons/misc/unchecked.png"), //$NON-NLS-1$
+    ZOOM("zoom", "/icons/misc/zoom.png"), //$NON-NLS-1$
+    ZOOM_IN("zoom_in", "/icons/misc/zoom_in.png"), //$NON-NLS-1$
+    ZOOM_OUT("zoom_out", "/icons/misc/zoom_out.png"), //$NON-NLS-1$
+    ROTATE("rotate", "/icons/misc/rotate.png"), //$NON-NLS-1$
+    ROTATE_LEFT("rotate_left", "/icons/misc/rotate_left.png"), //$NON-NLS-1$
+    ROTATE_RIGHT("rotate_right", "/icons/misc/rotate_right.png"), //$NON-NLS-1$
+    FIT_WINDOW("fit_window", "/icons/misc/fit-window.png"), //$NON-NLS-1$
+    ORIGINAL_SIZE("original_size", "/icons/misc/original-size.png"), //$NON-NLS-1$
+    ASTERISK("asterisk", "/icons/misc/asterisk.png"), //$NON-NLS-1$
+    BULLET_BLACK("bullet_black", "/icons/misc/bullet_black.png"), //$NON-NLS-1$
+    BULLET_GREEN("bullet_green", "/icons/misc/bullet_green.png"), //$NON-NLS-1$
+    BULLET_RED("bullet_red", "/icons/misc/bullet_red.png"), //$NON-NLS-1$
+    BULLET_STAR("bullet_star", "/icons/misc/bullet_star.png"), //$NON-NLS-1$
+    ARROW_UP("arrow_up", "/icons/misc/arrow_up.png"), //$NON-NLS-1$
+    ARROW_DOWN("arrow_down", "/icons/misc/arrow_down.png"), //$NON-NLS-1$
+    ARROW_LEFT("arrow_left", "/icons/misc/arrow_left.png"), //$NON-NLS-1$
+    ARROW_LEFT_ALL("arrow_left_all", "/icons/misc/arrow_left_all.png"), //$NON-NLS-1$
+    ARROW_RIGHT("arrow_right", "/icons/misc/arrow_right.png"), //$NON-NLS-1$
+    ARROW_RIGHT_ALL("arrow_right_all", "/icons/misc/arrow_right_all.png"), //$NON-NLS-1$
+    ARROW_RESET("arrow_reset", "/icons/misc/arrow_reset.png"), //$NON-NLS-1$
+    SORT_INCREASE("sort_increase", "/icons/misc/sort_increase.png"), //$NON-NLS-1$
+    SORT_DECREASE("sort_decrease", "/icons/misc/sort_decrease.png"), //$NON-NLS-1$
+    SORT_UNKNOWN("sort_unknown", "/icons/misc/sort_unknown.png"), //$NON-NLS-1$
+    FRAME_QUERY("frame_query", "/icons/misc/frame_query.png"), //$NON-NLS-1$
+    FILTER("filter", "/icons/misc/filter.png"), //$NON-NLS-1$
 
-    SAVE("save", "/icons/file/save.png"),
-    SAVE_ALL("save_all", "/icons/file/save_all.png"),
-    SAVE_AS("save_as", "/icons/file/save_as.png"),
-    LOAD("load", "/icons/file/load.png"),
-    RESET("reset", "/icons/file/reset.png"),
-    ACCEPT("accept", "/icons/sql/accept.png"),
-    REJECT("reject", "/icons/sql/cancel.png"),
-    REVERT("revert", "/icons/sql/revert.png"),
-    IMPORT("import", "/icons/file/import.png"),
-    EXPORT("export", "/icons/file/export.png"),
-    REFRESH("refresh", "/icons/refresh.png"),
-    JAR("jar", "/icons/misc/jar.png"),
-    SOURCES("sources", "/icons/misc/sources.png"),
+    SAVE("save", "/icons/file/save.png"), //$NON-NLS-1$
+    SAVE_ALL("save_all", "/icons/file/save_all.png"), //$NON-NLS-1$
+    SAVE_AS("save_as", "/icons/file/save_as.png"), //$NON-NLS-1$
+    LOAD("load", "/icons/file/load.png"), //$NON-NLS-1$
+    RESET("reset", "/icons/file/reset.png"), //$NON-NLS-1$
+    ACCEPT("accept", "/icons/sql/accept.png"), //$NON-NLS-1$
+    REJECT("reject", "/icons/sql/cancel.png"), //$NON-NLS-1$
+    REVERT("revert", "/icons/sql/revert.png"), //$NON-NLS-1$
+    IMPORT("import", "/icons/file/import.png"), //$NON-NLS-1$
+    EXPORT("export", "/icons/file/export.png"), //$NON-NLS-1$
+    REFRESH("refresh", "/icons/refresh.png"), //$NON-NLS-1$
+    JAR("jar", "/icons/misc/jar.png"), //$NON-NLS-1$
+    SOURCES("sources", "/icons/misc/sources.png"), //$NON-NLS-1$
 
-    ROW_ADD("row_add", "/icons/sql/row_add.png"),
-    ROW_COPY("row_copy", "/icons/sql/row_copy.png"),
-    ROW_EDIT("row_edit", "/icons/sql/row_edit.png"),
-    ROW_DELETE("row_delete", "/icons/sql/row_delete.png"),
+    ROW_ADD("row_add", "/icons/sql/row_add.png"), //$NON-NLS-1$
+    ROW_COPY("row_copy", "/icons/sql/row_copy.png"), //$NON-NLS-1$
+    ROW_EDIT("row_edit", "/icons/sql/row_edit.png"), //$NON-NLS-1$
+    ROW_DELETE("row_delete", "/icons/sql/row_delete.png"), //$NON-NLS-1$
 
-    EDIT_DATABSE("edit_database", "/icons/misc/edit_database.png"),
-    EDIT_TABLE("edit_table", "/icons/misc/edit_table.png"),
-    EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"),
-    LOCKED("locked", "/icons/misc/locked.png"),
+    EDIT_DATABSE("edit_database", "/icons/misc/edit_database.png"), //$NON-NLS-1$
+    EDIT_TABLE("edit_table", "/icons/misc/edit_table.png"), //$NON-NLS-1$
+    EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"), //$NON-NLS-1$
+    LOCKED("locked", "/icons/misc/locked.png"), //$NON-NLS-1$
 
-    TYPE_BOOLEAN("boolean", "/icons/sql/types/boolean.png"),
-    TYPE_NUMBER("number", "/icons/sql/types/number.png"),
-    TYPE_STRING("string", "/icons/sql/types/string.png"),
-    TYPE_DATETIME("datetime", "/icons/sql/types/datetime.png"),
-    TYPE_BINARY("binary", "/icons/sql/types/binary.png"),
-    TYPE_TEXT("text", "/icons/sql/types/text.png"),
-    TYPE_XML("xml", "/icons/sql/types/xml.png"),
-    TYPE_LOB("lob", "/icons/sql/types/lob.png"),
-    TYPE_ARRAY("array", "/icons/sql/types/array.png"),
-    TYPE_STRUCT("struct", "/icons/sql/types/struct.png"),
-    TYPE_IMAGE("image", "/icons/sql/types/image.png"),
-    TYPE_UNKNOWN("unknown", "/icons/sql/types/unknown.png"),
+    TYPE_BOOLEAN("boolean", "/icons/sql/types/boolean.png"), //$NON-NLS-1$
+    TYPE_NUMBER("number", "/icons/sql/types/number.png"), //$NON-NLS-1$
+    TYPE_STRING("string", "/icons/sql/types/string.png"), //$NON-NLS-1$
+    TYPE_DATETIME("datetime", "/icons/sql/types/datetime.png"), //$NON-NLS-1$
+    TYPE_BINARY("binary", "/icons/sql/types/binary.png"), //$NON-NLS-1$
+    TYPE_TEXT("text", "/icons/sql/types/text.png"), //$NON-NLS-1$
+    TYPE_XML("xml", "/icons/sql/types/xml.png"), //$NON-NLS-1$
+    TYPE_LOB("lob", "/icons/sql/types/lob.png"), //$NON-NLS-1$
+    TYPE_ARRAY("array", "/icons/sql/types/array.png"), //$NON-NLS-1$
+    TYPE_STRUCT("struct", "/icons/sql/types/struct.png"), //$NON-NLS-1$
+    TYPE_IMAGE("image", "/icons/sql/types/image.png"), //$NON-NLS-1$
+    TYPE_UNKNOWN("unknown", "/icons/sql/types/unknown.png"), //$NON-NLS-1$
 
-    SQL_CONNECT("sql_connect", "/icons/sql/connect.png"),
-    SQL_DISCONNECT("sql_disconnect", "/icons/sql/disconnect.png"),
-    SQL_SCRIPT("sql_script", "/icons/sql/sql_script.png"),
-    SQL_EXECUTE("sql_exec", "/icons/sql/sql_exec.png"),
-    SQL_SCRIPT_EXECUTE("sql_script_exec", "/icons/sql/sql_script_exec.png"),
-    SQL_ANALYSE("sql_analyse", "/icons/sql/sql_analyse.png"),
-    SQL_EXPLAIN_PLAN("sql_explain", "/icons/sql/sql_plan.png"),
-    SQL_VALIDATE("sql_validate", "/icons/sql/sql_validate.png"),
-    SQL_PREVIEW("sql_preview", "/icons/sql/sql_preview.png"),
-    SAVE_TO_DATABASE("save_to_db", "/icons/sql/save_to_database.png"),
+    SQL_CONNECT("sql_connect", "/icons/sql/connect.png"), //$NON-NLS-1$
+    SQL_DISCONNECT("sql_disconnect", "/icons/sql/disconnect.png"), //$NON-NLS-1$
+    SQL_SCRIPT("sql_script", "/icons/sql/sql_script.png"), //$NON-NLS-1$
+    SQL_EXECUTE("sql_exec", "/icons/sql/sql_exec.png"), //$NON-NLS-1$
+    SQL_SCRIPT_EXECUTE("sql_script_exec", "/icons/sql/sql_script_exec.png"), //$NON-NLS-1$
+    SQL_ANALYSE("sql_analyse", "/icons/sql/sql_analyse.png"), //$NON-NLS-1$
+    SQL_EXPLAIN_PLAN("sql_explain", "/icons/sql/sql_plan.png"), //$NON-NLS-1$
+    SQL_VALIDATE("sql_validate", "/icons/sql/sql_validate.png"), //$NON-NLS-1$
+    SQL_PREVIEW("sql_preview", "/icons/sql/sql_preview.png"), //$NON-NLS-1$
+    SAVE_TO_DATABASE("save_to_db", "/icons/sql/save_to_database.png"), //$NON-NLS-1$
 
-    OVER_SUCCESS("over_success", "/icons/over/success_ovr.png"),
-    OVER_FAILED("over_failed", "/icons/over/failed_ovr.png"),
-    OVER_ERROR("over_failed", "/icons/over/error_ovr.png"),
-    OVER_CONDITION("over_condition", "/icons/over/conditional_ovr.png"),
-    OVER_KEY("over_key", "/icons/over/key_ovr.png"),
-    OVER_REFERENCE("over_reference", "/icons/over/reference_ovr.png"),
+    OVER_SUCCESS("over_success", "/icons/over/success_ovr.png"), //$NON-NLS-1$
+    OVER_FAILED("over_failed", "/icons/over/failed_ovr.png"), //$NON-NLS-1$
+    OVER_ERROR("over_error", "/icons/over/error_ovr.png"), //$NON-NLS-1$
+    OVER_CONDITION("over_condition", "/icons/over/conditional_ovr.png"), //$NON-NLS-1$
+    OVER_KEY("over_key", "/icons/over/key_ovr.png"), //$NON-NLS-1$
+    OVER_REFERENCE("over_reference", "/icons/over/reference_ovr.png"), //$NON-NLS-1$
 
-    ABOUT("about", "/icons/about_circle.png");
+    ABOUT("about", "/icons/about_circle.png"); //$NON-NLS-1$
 
     private final String token;
     private final String path;
