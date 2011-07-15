@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.utils;
 
+import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,8 +52,6 @@ import java.util.*;
 public class ViewUtils
 {
     static final Log log = LogFactory.getLog(ViewUtils.class);
-    //public static final String MENU_ID = "org.jkiss.dbeaver.core.navigationMenu";
-    public static final String MB_ADDITIONS_END = "additions_end";
 
     public static <T> T findView(IWorkbenchWindow workbenchWindow, Class<T> viewClass)
     {
@@ -253,7 +252,7 @@ public class ViewUtils
                 }
 
                 manager.add(new Separator());
-                manager.add(new GroupMarker(MB_ADDITIONS_END));
+                manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
 
                 // Add properties button
                 if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {

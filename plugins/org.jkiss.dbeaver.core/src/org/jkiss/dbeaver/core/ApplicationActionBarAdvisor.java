@@ -14,6 +14,7 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
+import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.actions.common.AboutBoxAction;
 import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
@@ -31,9 +32,6 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 {
 
-    public static final String LOG_VIEW_ID = "org.eclipse.pde.runtime.LogView"; //$NON-NLS-1$
-    public static final String HELP_VIEW_ID = "org.eclipse.help.ui.HelpView"; //$NON-NLS-1$
-
     // Actions - important to allocate these only in makeActions, and then use them
     // in the fill methods.  This ensures that the actions aren't recreated
     // when fillActionBars is called with FILL_PROXY.
@@ -44,7 +42,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private IWorkbenchAction searchHelpAction;
     private IWorkbenchAction dynamicHelpAction;
     private IWorkbenchAction newWindowAction;
-    //private IWorkbenchAction viewPropertiesAction;
     private ApplicationToolbarDataSources dataSourceToolbar;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
@@ -52,42 +49,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         super(configurer);
     }
 
-/*
-    @SuppressWarnings("restriction")
-	private void removeActionExtension(String actionSetId)
-    {
-        ActionSetRegistry reg = WorkbenchPlugin.getDefault().getActionSetRegistry();
-        IActionSetDescriptor[] actionSets = reg.getActionSets();
-        for (IActionSetDescriptor actionSet : actionSets) {
-            if (!actionSet.getId().equals(actionSetId)) {
-                continue;
-            }
-            IExtension ext = actionSet.getConfigurationElement().getDeclaringExtension();
-            reg.removeExtension(ext, new Object[]{actionSet});
-        }
-    }
-*/
-
     protected void makeActions(final IWorkbenchWindow window)
     {
-        // Remove annotations actions
-        //removeActionExtension("org.eclipse.ui.edit.text.actionSet.annotationNavigation"); //$NON-NLS-1$
-        // Removing annoying gotoLastPosition Message.
-        //removeActionExtension("org.eclipse.ui.edit.text.actionSet.navigation"); //$NON-NLS-1$
-        // Removing convert line delimiters menu.
-        //removeActionExtension("org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo"); //$NON-NLS-1$
-        // Removing convert line delimiters menu.
-        //removeActionExtension("org.eclipse.ui.actionSet.openFiles"); //$NON-NLS-1$
-
-        // Creates the actions and registers them.
-        // Registering is needed to ensure that key bindings work.
-        // The corresponding commands keybindings are defined in the plugin.xml file.
-        // Registering also provides automatic disposal of the actions when
-        // the window is closed.
-
-        //findAction = ActionFactory.FIND.create(window);
-        //register(findAction);
-
         register(ActionFactory.SAVE.create(window));
         register(ActionFactory.SAVE_AS.create(window));
         register(ActionFactory.SAVE_ALL.create(window));
@@ -104,9 +67,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
         register(newWindowAction);
-
-        //viewPropertiesAction = ActionFactory.PROPERTIES.create(window);
-        //register(viewPropertiesAction);
     }
 
     protected void fillMenuBar(IMenuManager menuBar)
@@ -114,7 +74,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         MenuManager fileMenu = new MenuManager("&File", IWorkbenchActionConstants.M_FILE);
         MenuManager editMenu = new MenuManager("&Edit", IWorkbenchActionConstants.M_EDIT);
         MenuManager navigateMenu = new MenuManager("&Navigate", IWorkbenchActionConstants.M_NAVIGATE);
-        MenuManager databaseMenu = new MenuManager("&Database", "dataSourceMenu");
+        MenuManager databaseMenu = new MenuManager("&Database", IActionConstants.M_DATABASE);
         MenuManager windowMenu = new MenuManager("&Window", IWorkbenchActionConstants.M_WINDOW);
         MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
 
@@ -148,10 +108,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_END));
 
         // Database
-        databaseMenu.add(new Separator("driverGroup"));
-        databaseMenu.add(new Separator("connectionGroup"));
-        databaseMenu.add(new Separator("toolsGroup"));
-        databaseMenu.add(new Separator("sessionGroup"));
+        databaseMenu.add(new Separator(IActionConstants.M_DRIVER_GROUP));
+        databaseMenu.add(new Separator(IActionConstants.M_CONNECTION_GROUP));
+        databaseMenu.add(new Separator(IActionConstants.M_TOOLS_GROUP));
+        databaseMenu.add(new Separator(IActionConstants.M_SESSION_GROUP));
         databaseMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         //editMenu.add(ActionFactory.PROPERTIES);
@@ -168,7 +128,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         windowMenu.add(new ToggleViewAction(QueryManagerView.VIEW_ID));
         windowMenu.add(new ToggleViewAction(IPageLayout.ID_OUTLINE));
         windowMenu.add(new ToggleViewAction(IPageLayout.ID_PROGRESS_VIEW));
-        windowMenu.add(new ToggleViewAction(LOG_VIEW_ID));
+        windowMenu.add(new ToggleViewAction(IActionConstants.LOG_VIEW_ID));
         windowMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         windowMenu.add(new Separator());
 /*
@@ -189,13 +149,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     protected void fillCoolBar(ICoolBarManager coolBar)
     {
-        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), "database"));
-        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), "txn"));
+        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATABASE));
+        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_TXN));
 
         IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
         dataSourceToolbar = new ApplicationToolbarDataSources(getActionBarConfigurer().getWindowConfigurer().getWindow());
         dataSourceToolbar.fillToolBar(toolbar);
-        coolBar.add(new ToolBarContributionItem(toolbar, "datasource-settings"));
+        coolBar.add(new ToolBarContributionItem(toolbar, IActionConstants.TOOLBAR_DATASOURCE));
     }
 
     @Override

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.editors.entity.ObjectPropertiesEditor;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -23,9 +24,11 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.databaseEditor"; //NON-NLS-1
 
-    public static final String POSITION_PROPS = "additions_props"; //NON-NLS-1
-    public static final String POSITION_START = "additions_start"; //NON-NLS-1
-    public static final String POSITION_END = "additions_end"; //NON-NLS-1
+    public static final String DEFAULT_OBJECT_EDITOR_ID = "default.object.editor"; //NON-NLS-1
+
+    public static final String POSITION_PROPS = IActionConstants.MB_ADDITIONS_PROPS;
+    public static final String POSITION_START = IActionConstants.MB_ADDITIONS_START;
+    public static final String POSITION_END = IActionConstants.MB_ADDITIONS_END;
 
     private String id;
     private String className;
@@ -46,7 +49,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
                 return DBeaverConstants.PLUGIN_ID;
             }
         });
-        this.id = "default.object.editor";
+        this.id = DEFAULT_OBJECT_EDITOR_ID;
         this.className = ObjectPropertiesEditor.class.getName();
         this.objectTypes = new ArrayList<String>();
         this.main = true;
@@ -60,27 +63,27 @@ public class EntityEditorDescriptor extends AbstractDescriptor
     {
         super(config.getContributor());
 
-        this.id = config.getAttribute("id");
-        this.className = config.getAttribute("class");
-        this.main = "true".equals(config.getAttribute("main"));
-        this.name = config.getAttribute("label");
-        this.description = config.getAttribute("description");
-        this.position = config.getAttribute("position");
-        String iconPath = config.getAttribute("icon");
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.main = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_MAIN));
+        this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.position = config.getAttribute(RegistryConstants.ATTR_POSITION);
+        String iconPath = config.getAttribute(RegistryConstants.ATTR_ICON);
         if (!CommonUtils.isEmpty(iconPath)) {
             this.icon = iconToImage(iconPath);
         }
 
         {
-            String objectType = config.getAttribute("objectType");
+            String objectType = config.getAttribute(RegistryConstants.ATTR_OBJECT_TYPE);
             if (objectType != null) {
                 objectTypes.add(objectType);
             }
         }
-        IConfigurationElement[] typesCfg = config.getChildren("objectType");
+        IConfigurationElement[] typesCfg = config.getChildren(RegistryConstants.TAG_OBJECT_TYPE);
         if (typesCfg != null) {
             for (IConfigurationElement typeCfg : typesCfg) {
-                String objectType = typeCfg.getAttribute("name");
+                String objectType = typeCfg.getAttribute(RegistryConstants.ATTR_NAME);
                 if (objectType != null) {
                     objectTypes.add(objectType);
                 }

@@ -25,13 +25,16 @@ import java.util.Map;
  */
 class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeListener {
 
+    private static final String PROP_LANGUAGE = "dataformat.profile.language"; //$NON-NLS-1$
+    private static final String PROP_COUNTRY = "dataformat.profile.country"; //$NON-NLS-1$
+    private static final String PROP_VARIANT = "dataformat.profile.variant"; //$NON-NLS-1$
+    public static final String DATAFORMAT_PREFIX = "dataformat."; //$NON-NLS-1$
+    public static final String DATAFORMAT_TYPE_PREFIX = DATAFORMAT_PREFIX + ".type."; //$NON-NLS-1$
+
     private IPreferenceStore store;
     private String name;
     private Locale locale;
     private Map<String, Map<Object, Object>> properties = new HashMap<String, Map<Object, Object>>();
-    private static final String PROP_LANGUAGE = "dataformat.profile.language";
-    private static final String PROP_COUNTRY = "dataformat.profile.country";
-    private static final String PROP_VARIANT = "dataformat.profile.variant";
 
     DataFormatterProfile(String profileName, IPreferenceStore store)
     {
@@ -63,7 +66,9 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
         for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
             Map<Object, Object> formatterProps = new HashMap<Object, Object>();
             for (PropertyDescriptorEx prop : formatter.getProperties()) {
-                Object propValue = RuntimeUtils.getPreferenceValue(store, "dataformat.type." + formatter.getId() + "." + prop.getId(), prop.getDataType());
+                Object propValue = RuntimeUtils.getPreferenceValue(
+                    store,
+                    DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), prop.getDataType());
                 if (propValue != null) {
                     formatterProps.put(prop.getId(), propValue);
                 }
@@ -83,9 +88,9 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
             for (PropertyDescriptorEx prop : formatter.getProperties()) {
                 Object propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
                 if (propValue != null) {
-                    RuntimeUtils.setPreferenceValue(store, "dataformat.type." + formatter.getId() + "." + prop.getId(), propValue);
+                    RuntimeUtils.setPreferenceValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), propValue);
                 } else {
-                    store.setToDefault("dataformat.type." + formatter.getId() + "." + prop.getId());
+                    store.setToDefault(DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId());
                 }
             }
         }
@@ -170,7 +175,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
 
     public void propertyChange(PropertyChangeEvent event)
     {
-        if (event.getProperty() != null && event.getProperty().startsWith("dataformat.")) {
+        if (event.getProperty() != null && event.getProperty().startsWith(DATAFORMAT_PREFIX)) {
             // Reload this profile
             loadProfile();
         }

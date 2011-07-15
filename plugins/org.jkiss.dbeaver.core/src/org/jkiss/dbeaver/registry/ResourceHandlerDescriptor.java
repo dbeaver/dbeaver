@@ -16,7 +16,8 @@ import java.util.List;
  */
 public class ResourceHandlerDescriptor extends AbstractDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler";
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
+    public static final char EXTENSIONS_DELIMITER = ',';
 
     private String className;
     private String resourceType;
@@ -29,11 +30,11 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     {
         super(config.getContributor());
 
-        this.resourceType = config.getAttribute("type");
-        this.className = config.getAttribute("class");
-        String extensionsString = config.getAttribute("extensions");
+        this.resourceType = config.getAttribute(RegistryConstants.ATTR_TYPE);
+        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        String extensionsString = config.getAttribute(RegistryConstants.ATTR_EXTENSIONS);
         if (!CommonUtils.isEmpty(extensionsString)) {
-            this.fileExtensions = CommonUtils.splitString(extensionsString, ',');
+            this.fileExtensions = CommonUtils.splitString(extensionsString, EXTENSIONS_DELIMITER);
         } else {
             this.fileExtensions = Collections.emptyList();
         }

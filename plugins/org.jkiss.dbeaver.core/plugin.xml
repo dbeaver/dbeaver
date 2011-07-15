@@ -137,7 +137,7 @@
                 category="org.eclipse.ui"
                 class="org.eclipse.ui.ExtensionFactory:progressView"
                 id="org.eclipse.ui.views.ProgressView">
-          </view>
+        </view>
 
     </extension>
 

@@ -55,8 +55,8 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
             registry.addDataSource(dataSource);
         } else {
             DataSourceRegistry registry;
-            if (parent instanceof DataSourceRegistry) {
-                registry = (DataSourceRegistry)parent;
+            if (parent != null) {
+                registry = parent;
             } else {
                 registry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
             }

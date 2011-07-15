@@ -32,7 +32,7 @@ import java.util.List;
 
 class ProjectExportWizardPage extends WizardPage {
 
-    private static final String PREF_PROJECTS_EXPORT_OUT_DIR = "export.projects.out.dir";
+    private static final String PREF_PROJECTS_EXPORT_OUT_DIR = "export.projects.out.dir"; //NON-NLS-1
 
     private Text directoryText;
     private Table projectsTable;

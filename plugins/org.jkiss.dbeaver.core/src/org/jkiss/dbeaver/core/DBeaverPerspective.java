@@ -8,6 +8,7 @@ import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.IPlaceholderFolderLayout;
+import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
@@ -41,7 +42,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
             IPageLayout.RIGHT,
             IPageLayout.RATIO_MIN,
             editorArea);
-        right.addPlaceholder(ApplicationActionBarAdvisor.HELP_VIEW_ID);
+        right.addPlaceholder(IActionConstants.HELP_VIEW_ID);
 
         // Bottom left.
         //IPlaceholderFolderLayout bottomLeft = layout.createPlaceholderFolder(
@@ -58,7 +59,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
             IPageLayout.BOTTOM,
             0.2f,
             editorArea);
-        bottomRight.addPlaceholder(ApplicationActionBarAdvisor.LOG_VIEW_ID);
+        bottomRight.addPlaceholder(IActionConstants.LOG_VIEW_ID);
         bottomRight.addPlaceholder(QueryManagerView.VIEW_ID);
         bottomRight.addPlaceholder(IPageLayout.ID_PROP_SHEET);
         bottomRight.addPlaceholder(IPageLayout.ID_PROGRESS_VIEW);

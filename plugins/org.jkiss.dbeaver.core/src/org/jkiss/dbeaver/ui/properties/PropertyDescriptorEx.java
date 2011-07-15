@@ -67,7 +67,7 @@ public class PropertyDescriptorEx implements IPropertyDescriptorEx, IPropertyVal
         this.id = config.getAttribute(ATTR_ID);
         this.name = config.getAttribute(ATTR_LABEL);
         this.description = config.getAttribute(ATTR_DESCRIPTION);
-        this.required = "true".equals(config.getAttribute(ATTR_REQUIRED));
+        this.required = CommonUtils.getBoolean(config.getAttribute(ATTR_REQUIRED));
         String typeString = config.getAttribute(ATTR_TYPE);
         if (typeString == null) {
             type = String.class;

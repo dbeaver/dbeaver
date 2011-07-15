@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class DataTypeProviderDescriptor extends AbstractDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTypeProvider";
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTypeProvider"; //$NON-NLS-1$
 
     static final Log log = LogFactory.getLog(DataSourceProviderRegistry.class);
 
@@ -36,17 +36,17 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
     {
         super(config.getContributor());
 
-        this.id = config.getAttribute("id");
-        this.className = config.getAttribute("class");
-        this.name = config.getAttribute("label");
-        this.description = config.getAttribute("description");
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
 
         if (className == null) {
             log.error("Empty class name of data type provider '" + this.id + "'");
         } else {
             Class<?> providerClass = super.getObjectClass(className);
             if (providerClass == null) {
-                log.error("Could not find datatype provider class '" + this.className + "'");
+                log.error("Could not find data type provider class '" + this.className + "'");
             } else {
                 try {
                     this.instance = (DBDValueHandlerProvider) providerClass.newInstance();
@@ -57,13 +57,13 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
             }
         }
 
-        IConfigurationElement[] typeElements = config.getChildren("type");
+        IConfigurationElement[] typeElements = config.getChildren(RegistryConstants.TAG_TYPE);
         for (IConfigurationElement typeElement : typeElements) {
-            String typeName = typeElement.getAttribute("name");
+            String typeName = typeElement.getAttribute(RegistryConstants.ATTR_NAME);
             if (typeName != null) {
                 supportedTypes.add(typeName.toLowerCase());
             } else {
-                typeName = typeElement.getAttribute("standard");
+                typeName = typeElement.getAttribute(RegistryConstants.ATTR_STANDARD);
                 if (typeName == null) {
                     log.warn("Type element without name or standard type reference");
                     continue;
@@ -82,9 +82,9 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
             }
         }
 
-        IConfigurationElement[] dsElements = config.getChildren("datasource");
+        IConfigurationElement[] dsElements = config.getChildren(RegistryConstants.TAG_DATASOURCE);
         for (IConfigurationElement dsElement : dsElements) {
-            String dsId = dsElement.getAttribute("id");
+            String dsId = dsElement.getAttribute(RegistryConstants.ATTR_ID);
             if (dsId == null) {
                 log.warn("Datasource reference with null ID");
                 continue;

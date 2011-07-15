@@ -38,7 +38,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 {
     static final Log log = LogFactory.getLog(DataSourceRegistry.class);
 
-    public static final String CONFIG_FILE_NAME = "data-sources.xml";
+    public static final String CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
     private final String projectId;
 
@@ -491,8 +491,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 if (!CommonUtils.isEmpty(logineDate)) {
                     curDataSource.setLoginDate(new Date(Long.parseLong(logineDate)));
                 }
-                curDataSource.setSavePassword("true".equals(atts.getValue("save-password")));
-                curDataSource.setShowSystemObjects("true".equals(atts.getValue("show-system-objects")));
+                curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue("save-password")));
+                curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue("show-system-objects")));
                 curDataSource.setCatalogFilter(atts.getValue("filter-catalog"));
                 curDataSource.setSchemaFilter(atts.getValue("filter-schema"));
 

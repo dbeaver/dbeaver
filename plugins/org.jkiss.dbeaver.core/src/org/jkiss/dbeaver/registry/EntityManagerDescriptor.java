@@ -24,8 +24,8 @@ public class EntityManagerDescriptor extends AbstractDescriptor
     {
         super(config.getContributor());
 
-        this.id = this.className = config.getAttribute("class");
-        this.objectType = config.getAttribute("objectType");
+        this.id = this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.objectType = config.getAttribute(RegistryConstants.ATTR_OBJECT_TYPE);
     }
 
     void dispose()

@@ -29,7 +29,7 @@ public class DataFormatterRegistry
 {
     static final Log log = LogFactory.getLog(DataFormatterRegistry.class);
 
-    public static final String CONFIG_FILE_NAME = "dataformat-profiles.xml";
+    public static final String CONFIG_FILE_NAME = "dataformat-profiles.xml"; //$NON-NLS-1$
 
     private final List<DataFormatterDescriptor> dataFormatterList = new ArrayList<DataFormatterDescriptor>();
     private final Map<String, DataFormatterDescriptor> dataFormatterMap = new HashMap<String, DataFormatterDescriptor>();
@@ -72,7 +72,9 @@ public class DataFormatterRegistry
     public synchronized DBDDataFormatterProfile getGlobalProfile()
     {
         if (globalProfile == null) {
-            globalProfile = new DataFormatterProfile("Global", DBeaverCore.getInstance().getGlobalPreferenceStore());
+            globalProfile = new DataFormatterProfile(
+                "Global",
+                DBeaverCore.getInstance().getGlobalPreferenceStore());
         }
         return globalProfile;
     }
@@ -141,17 +143,17 @@ public class DataFormatterRegistry
             try {
                 XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET);
                 xml.setButify(true);
-                xml.startElement("profiles");
+                xml.startElement(RegistryConstants.TAG_PROFILES);
                 for (DBDDataFormatterProfile profile : customProfiles) {
-                    xml.startElement("profile");
-                    xml.addAttribute("name", profile.getProfileName());
+                    xml.startElement(RegistryConstants.TAG_PROFILE);
+                    xml.addAttribute(RegistryConstants.ATTR_NAME, profile.getProfileName());
                     AbstractPreferenceStore store = (AbstractPreferenceStore) profile.getPreferenceStore();
                     Map<String, String> props = store.getProperties();
                     if (props != null) {
                         for (Map.Entry<String,String> entry : props.entrySet()) {
-                            xml.startElement("property");
-                            xml.addAttribute("name", entry.getKey());
-                            xml.addAttribute("value", entry.getValue());
+                            xml.startElement(RegistryConstants.TAG_PROPERTY);
+                            xml.addAttribute(RegistryConstants.ATTR_NAME, entry.getKey());
+                            xml.addAttribute(RegistryConstants.ATTR_VALUE, entry.getValue());
                             xml.endElement();
                         }
                     }
@@ -206,12 +208,14 @@ public class DataFormatterRegistry
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
             throws XMLException
         {
-            if (localName.equals("profile")) {
+            if (localName.equals(RegistryConstants.TAG_PROFILE)) {
                 curStore = new CustomProfileStore();
-                profileName = atts.getValue("name");
-            } else if (localName.equals("property")) {
+                profileName = atts.getValue(RegistryConstants.ATTR_NAME);
+            } else if (localName.equals(RegistryConstants.TAG_PROPERTY)) {
                 if (curStore != null) {
-                    curStore.setValue(atts.getValue("name"), atts.getValue("value"));
+                    curStore.setValue(
+                        atts.getValue(RegistryConstants.ATTR_NAME),
+                        atts.getValue(RegistryConstants.ATTR_VALUE));
                 }
             }
         }
@@ -224,7 +228,7 @@ public class DataFormatterRegistry
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName)
             throws XMLException
         {
-            if (localName.equals("profile")) {
+            if (localName.equals(RegistryConstants.TAG_PROFILE)) {
                 DataFormatterProfile profile = new DataFormatterProfile(profileName, curStore);
                 customProfiles.add(profile);
             }

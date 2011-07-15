@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class DataFormatterDescriptor extends AbstractDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataFormatter";
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataFormatter"; //$NON-NLS-1$
 
     private String id;
     private String className;
@@ -31,16 +31,16 @@ public class DataFormatterDescriptor extends AbstractDescriptor
     {
         super(config.getContributor());
 
-        this.id = config.getAttribute("id");
-        this.className = config.getAttribute("class");
-        this.name = config.getAttribute("label");
-        this.description = config.getAttribute("description");
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
 
         IConfigurationElement[] propElements = config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
         for (IConfigurationElement prop : propElements) {
             properties.addAll(PropertyDescriptorEx.extractProperties(prop));
         }
-        Class<?> objectClass = getObjectClass(config.getAttribute("sampleClass"));
+        Class<?> objectClass = getObjectClass(config.getAttribute(RegistryConstants.ATTR_SAMPLE_CLASS));
         try {
             sample = (DBDDataFormatterSample)objectClass.newInstance();
         } catch (Exception e) {

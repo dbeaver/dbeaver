@@ -46,9 +46,9 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 	}
 
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Project Export Wizard"); //NON-NLS-1
+        setWindowTitle("Project Export Wizard");
         setNeedsProgressMonitor(true);
-        mainPage = new ProjectExportWizardPage("Export project"); //NON-NLS-1
+        mainPage = new ProjectExportWizardPage("Export project");
     }
 
     public void addPages() {
@@ -137,7 +137,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             {
                 // Export drivers meta
                 monitor.beginTask("Export drivers information", 1);
-                exportData.meta.startElement(DataSourceConstants.TAG_DRIVERS);
+                exportData.meta.startElement(RegistryConstants.TAG_DRIVERS);
                 for (DriverDescriptor driver : exportData.usedDrivers) {
                     driver.serialize(exportData.meta, true);
                 }
@@ -195,7 +195,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
                         monitor.subTask(libFileName);
 
-                        exportData.meta.startElement(DataSourceConstants.TAG_FILE);
+                        exportData.meta.startElement(RegistryConstants.TAG_FILE);
                         exportData.meta.addAttribute(ExportConstants.ATTR_PATH, libPath);
                         exportData.meta.addAttribute(ExportConstants.ATTR_FILE, "drivers/" + libFileName);
                         exportData.meta.endElement();

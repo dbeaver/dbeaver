@@ -41,7 +41,7 @@ public class Activator extends AbstractUIPlugin {
 
         // Switch off D3D because of Sun XOR painting bug
         // See http://www.jgraph.com/forum/viewtopic.php?t=4066
-        System.setProperty("sun.java2d.d3d", "false");
+        System.setProperty("sun.java2d.d3d", Boolean.FALSE.toString()); //$NON-NLS-1$
 	}
 
     /*

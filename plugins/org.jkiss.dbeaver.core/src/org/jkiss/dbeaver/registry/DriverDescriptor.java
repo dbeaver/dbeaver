@@ -56,6 +56,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 {
     static final Log log = LogFactory.getLog(DriverDescriptor.class);
 
+    public static final String DRIVERS_FOLDER = "drivers"; //$NON-NLS-1$
+
+    public static final char URL_GROUP_START = '{';
+    public static final char URL_GROUP_END = '}';
+    public static final char URL_OPTIONAL_START = '[';
+    public static final char URL_OPTIONAL_END = ']';
+
     private DataSourceProviderDescriptor providerDescriptor;
     private String id;
     private String category;
@@ -110,32 +117,32 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         super(providerDescriptor.getContributor());
         this.providerDescriptor = providerDescriptor;
-        this.id = CommonUtils.getString(config.getAttribute(DataSourceConstants.ATTR_ID));
-        this.category = CommonUtils.getString(config.getAttribute(DataSourceConstants.ATTR_CATEGORY));
-        this.origName = this.name = CommonUtils.getString(config.getAttribute("label"));
-        this.origDescription = this.description = config.getAttribute(DataSourceConstants.ATTR_DESCRIPTION);
-        this.origClassName = this.driverClassName = config.getAttribute(DataSourceConstants.ATTR_CLASS);
-        if (!CommonUtils.isEmpty(config.getAttribute("defaultPort"))) {
+        this.id = CommonUtils.getString(config.getAttribute(RegistryConstants.ATTR_ID));
+        this.category = CommonUtils.getString(config.getAttribute(RegistryConstants.ATTR_CATEGORY));
+        this.origName = this.name = CommonUtils.getString(config.getAttribute(RegistryConstants.ATTR_LABEL));
+        this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        if (!CommonUtils.isEmpty(config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT))) {
             try {
-                this.origDefaultPort = this.driverDefaultPort = config.getAttribute("defaultPort");
+                this.origDefaultPort = this.driverDefaultPort = config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT);
             }
             catch (NumberFormatException ex) {
                 log.warn("Bad default port for driver '" + name + "' specified: " + ex.getMessage());
             }
         }
-        this.origSampleURL = this.sampleURL = config.getAttribute("sampleURL");
-        this.webURL = config.getAttribute("webURL");
-        this.supportsDriverProperties = !"false".equals(config.getAttribute("supportsDriverProperties"));
-        this.anonymousAccess = "true".equals(config.getAttribute("anonymous"));
+        this.origSampleURL = this.sampleURL = config.getAttribute(RegistryConstants.ATTR_SAMPLE_URL);
+        this.webURL = config.getAttribute(RegistryConstants.ATTR_WEB_URL);
+        this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
+        this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.custom = false;
         this.isLoaded = false;
 
-        for (IConfigurationElement lib : config.getChildren(DataSourceConstants.TAG_FILE)) {
+        for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE)) {
             this.files.add(new DriverFileDescriptor(this, lib));
         }
         this.origFiles.addAll(this.files);
 
-        String iconName = config.getAttribute("icon");
+        String iconName = config.getAttribute(RegistryConstants.ATTR_ICON);
         if (!CommonUtils.isEmpty(iconName)) {
             this.iconPlain = iconToImage(iconName);
         }
@@ -157,10 +164,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         {
             // Driver parameters
-            IConfigurationElement[] paramElements = config.getChildren(DataSourceConstants.TAG_PARAMETER);
+            IConfigurationElement[] paramElements = config.getChildren(RegistryConstants.TAG_PARAMETER);
             for (IConfigurationElement param : paramElements) {
-                String paramName = param.getAttribute(DataSourceConstants.ATTR_NAME);
-                String paramValue = param.getAttribute(DataSourceConstants.ATTR_VALUE);
+                String paramName = param.getAttribute(RegistryConstants.ATTR_NAME);
+                String paramValue = param.getAttribute(RegistryConstants.ATTR_VALUE);
                 if (CommonUtils.isEmpty(paramValue)) {
                     paramValue = param.getValue();
                 }
@@ -173,10 +180,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         {
             // Connection properties
-            IConfigurationElement[] propElements = config.getChildren(DataSourceConstants.TAG_PROPERTY);
+            IConfigurationElement[] propElements = config.getChildren(RegistryConstants.TAG_PROPERTY);
             for (IConfigurationElement param : propElements) {
-                String paramName = param.getAttribute(DataSourceConstants.ATTR_NAME);
-                String paramValue = param.getAttribute(DataSourceConstants.ATTR_VALUE);
+                String paramName = param.getAttribute(RegistryConstants.ATTR_NAME);
+                String paramValue = param.getAttribute(RegistryConstants.ATTR_VALUE);
                 if (CommonUtils.isEmpty(paramValue)) {
                     paramValue = param.getValue();
                 }
@@ -189,10 +196,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         {
             // Driver replacements
-            IConfigurationElement[] replaceElements = config.getChildren(DataSourceConstants.TAG_REPLACE);
+            IConfigurationElement[] replaceElements = config.getChildren(RegistryConstants.TAG_REPLACE);
             for (IConfigurationElement replace : replaceElements) {
-                String providerId = replace.getAttribute(DataSourceConstants.ATTR_PROVIDER);
-                String driverId = replace.getAttribute(DataSourceConstants.ATTR_DRIVER);
+                String providerId = replace.getAttribute(RegistryConstants.ATTR_PROVIDER);
+                String driverId = replace.getAttribute(RegistryConstants.ATTR_DRIVER);
                 if (!CommonUtils.isEmpty(providerId) && !CommonUtils.isEmpty(driverId)) {
                     driverReplacements.add(new ReplaceInfo(providerId, driverId));
                 }
@@ -489,7 +496,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public boolean isInternalDriver()
     {
-        return driverClassName != null && driverClassName.indexOf("sun.jdbc") != -1;
+        return
+            driverClassName != null &&
+            driverClassName.indexOf("sun.jdbc") != -1; //$NON-NLS-1$
     }
 
 /*
@@ -868,7 +877,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(10000);
         connection.setConnectTimeout(10000);
-        connection.setRequestMethod("GET");
+        connection.setRequestMethod("GET"); //$NON-NLS-1$
         connection.setInstanceFollowRedirects(true);
         connection.connect();
         if (connection.getResponseCode() != 200) {
@@ -953,39 +962,39 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public static File getDriversContribFolder() throws IOException
     {
-        return new File(Platform.getInstallLocation().getDataArea("drivers").toExternalForm());
+        return new File(Platform.getInstallLocation().getDataArea(DRIVERS_FOLDER).toExternalForm());
     }
 
     public void serialize(XMLBuilder xml, boolean export)
         throws IOException
     {
-        xml.startElement(DataSourceConstants.TAG_DRIVER);
+        xml.startElement(RegistryConstants.TAG_DRIVER);
         if (export) {
-            xml.addAttribute(DataSourceConstants.ATTR_PROVIDER, providerDescriptor.getId());
+            xml.addAttribute(RegistryConstants.ATTR_PROVIDER, providerDescriptor.getId());
         }
-        xml.addAttribute(DataSourceConstants.ATTR_ID, this.getId());
+        xml.addAttribute(RegistryConstants.ATTR_ID, this.getId());
         if (this.isDisabled()) {
-            xml.addAttribute(DataSourceConstants.ATTR_DISABLED, true);
+            xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
         }
         if (!CommonUtils.isEmpty(this.getCategory())) {
-            xml.addAttribute(DataSourceConstants.ATTR_CATEGORY, this.getCategory());
+            xml.addAttribute(RegistryConstants.ATTR_CATEGORY, this.getCategory());
         }
-        xml.addAttribute(DataSourceConstants.ATTR_CUSTOM, this.isCustom());
-        xml.addAttribute(DataSourceConstants.ATTR_NAME, this.getName());
-        xml.addAttribute(DataSourceConstants.ATTR_CLASS, this.getDriverClassName());
-        xml.addAttribute(DataSourceConstants.ATTR_URL, this.getSampleURL());
+        xml.addAttribute(RegistryConstants.ATTR_CUSTOM, this.isCustom());
+        xml.addAttribute(RegistryConstants.ATTR_NAME, this.getName());
+        xml.addAttribute(RegistryConstants.ATTR_CLASS, this.getDriverClassName());
+        xml.addAttribute(RegistryConstants.ATTR_URL, this.getSampleURL());
         if (this.getDefaultPort() != null) {
-            xml.addAttribute(DataSourceConstants.ATTR_PORT, this.getDefaultPort());
+            xml.addAttribute(RegistryConstants.ATTR_PORT, this.getDefaultPort());
         }
-        xml.addAttribute(DataSourceConstants.ATTR_DESCRIPTION, CommonUtils.getString(this.getDescription()));
+        xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.getString(this.getDescription()));
 
         // Libraries
         for (DriverFileDescriptor lib : this.getFiles()) {
             if ((export && !lib.isDisabled()) || lib.isCustom() || lib.isDisabled()) {
-                xml.startElement(DataSourceConstants.TAG_LIBRARY);
-                xml.addAttribute(DataSourceConstants.ATTR_PATH, lib.getPath());
+                xml.startElement(RegistryConstants.TAG_LIBRARY);
+                xml.addAttribute(RegistryConstants.ATTR_PATH, lib.getPath());
                 if (lib.getType() == DriverFileType.jar && lib.isDisabled()) {
-                    xml.addAttribute(DataSourceConstants.ATTR_DISABLED, true);
+                    xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
                 }
                 xml.endElement();
             }
@@ -993,21 +1002,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         // Path list
         for (DriverPathDescriptor path : this.getPathList()) {
-            xml.startElement(DataSourceConstants.TAG_PATH);
-            xml.addAttribute(DataSourceConstants.ATTR_PATH, path.getPath());
+            xml.startElement(RegistryConstants.TAG_PATH);
+            xml.addAttribute(RegistryConstants.ATTR_PATH, path.getPath());
             if (!CommonUtils.isEmpty(path.getComment())) {
-                xml.addAttribute(DataSourceConstants.ATTR_COMMENT, path.getComment());
+                xml.addAttribute(RegistryConstants.ATTR_COMMENT, path.getComment());
             }
-            xml.addAttribute(DataSourceConstants.ATTR_ENABLED, path.isEnabled());
+            xml.addAttribute(RegistryConstants.ATTR_ENABLED, path.isEnabled());
             xml.endElement();
         }
         
         // Parameters
         for (Map.Entry<Object, Object> paramEntry : customParameters.entrySet()) {
             if (!CommonUtils.equalObjects(paramEntry.getValue(), defaultParameters.get(paramEntry.getKey()))) {
-                xml.startElement(DataSourceConstants.TAG_PARAMETER);
-                xml.addAttribute(DataSourceConstants.ATTR_NAME, CommonUtils.toString(paramEntry.getKey()));
-                xml.addAttribute(DataSourceConstants.ATTR_VALUE, CommonUtils.toString(paramEntry.getValue()));
+                xml.startElement(RegistryConstants.TAG_PARAMETER);
+                xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(paramEntry.getKey()));
+                xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(paramEntry.getValue()));
                 xml.endElement();
             }
         }
@@ -1015,9 +1024,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         // Properties
         for (Map.Entry<Object, Object> propEntry : customConnectionProperties.entrySet()) {
             if (!CommonUtils.equalObjects(propEntry.getValue(), defaultConnectionProperties.get(propEntry.getKey()))) {
-                xml.startElement(DataSourceConstants.TAG_PROPERTY);
-                xml.addAttribute(DataSourceConstants.ATTR_NAME, CommonUtils.toString(propEntry.getKey()));
-                xml.addAttribute(DataSourceConstants.ATTR_VALUE, CommonUtils.toString(propEntry.getValue()));
+                xml.startElement(RegistryConstants.TAG_PROPERTY);
+                xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(propEntry.getKey()));
+                xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(propEntry.getValue()));
                 xml.endElement();
             }
         }
@@ -1033,10 +1042,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
             throws XMLException
         {
-            if (localName.equals(DataSourceConstants.TAG_PROVIDER)) {
+            if (localName.equals(RegistryConstants.TAG_PROVIDER)) {
                 curProvider = null;
                 curDriver = null;
-                String idAttr = atts.getValue(DataSourceConstants.ATTR_ID);
+                String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
                 if (CommonUtils.isEmpty(idAttr)) {
                     log.warn("No id for driver provider");
                     return;
@@ -1045,10 +1054,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 if (curProvider == null) {
                     log.warn("Datasource provider '" + idAttr + "' not found");
                 }
-            } else if (localName.equals(DataSourceConstants.TAG_DRIVER)) {
+            } else if (localName.equals(RegistryConstants.TAG_DRIVER)) {
                 curDriver = null;
                 if (curProvider == null) {
-                    String providerId = atts.getValue(DataSourceConstants.ATTR_PROVIDER);
+                    String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
                     if (!CommonUtils.isEmpty(providerId)) {
                         curProvider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(providerId);
                         if (curProvider == null) {
@@ -1060,59 +1069,59 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                         return;
                     }
                 }
-                String idAttr = atts.getValue(DataSourceConstants.ATTR_ID);
+                String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
                 curDriver = curProvider.getDriver(idAttr);
                 if (curDriver == null) {
                     curDriver = new DriverDescriptor(curProvider, idAttr);
                     curProvider.addDriver(curDriver);
                 }
-                curDriver.setCategory(atts.getValue(DataSourceConstants.ATTR_CATEGORY));
-                curDriver.setName(atts.getValue(DataSourceConstants.ATTR_NAME));
-                curDriver.setDescription(atts.getValue(DataSourceConstants.ATTR_DESCRIPTION));
-                curDriver.setDriverClassName(atts.getValue(DataSourceConstants.ATTR_CLASS));
-                curDriver.setSampleURL(atts.getValue(DataSourceConstants.ATTR_URL));
-                curDriver.setDriverDefaultPort(atts.getValue(DataSourceConstants.ATTR_PORT));
+                curDriver.setCategory(atts.getValue(RegistryConstants.ATTR_CATEGORY));
+                curDriver.setName(atts.getValue(RegistryConstants.ATTR_NAME));
+                curDriver.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
+                curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
+                curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
+                curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
                 curDriver.setModified(true);
-                String disabledAttr = atts.getValue(DataSourceConstants.ATTR_DISABLED);
-                if ("true".equals(disabledAttr)) {
+                String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
+                if (CommonUtils.getBoolean(disabledAttr)) {
                     curDriver.setDisabled(true);
                 }
-            } else if (localName.equals(DataSourceConstants.TAG_FILE) || localName.equals(DataSourceConstants.TAG_LIBRARY)) {
+            } else if (localName.equals(RegistryConstants.TAG_FILE) || localName.equals(RegistryConstants.TAG_LIBRARY)) {
                 if (curDriver == null) {
                     log.warn("File outside of driver");
                     return;
                 }
-                String path = atts.getValue(DataSourceConstants.ATTR_PATH);
+                String path = atts.getValue(RegistryConstants.ATTR_PATH);
                 DriverFileDescriptor lib = curDriver.getLibrary(path);
-                String disabledAttr = atts.getValue(DataSourceConstants.ATTR_DISABLED);
-                if (lib != null && "true".equals(disabledAttr)) {
+                String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
+                if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
                     lib.setDisabled(true);
                 } else if (lib == null) {
                     curDriver.addLibrary(path);
                 }
-            } else if (localName.equals(DataSourceConstants.TAG_PATH)) {
+            } else if (localName.equals(RegistryConstants.TAG_PATH)) {
                 DriverPathDescriptor path = new DriverPathDescriptor();
-                path.setPath(atts.getValue(DataSourceConstants.ATTR_PATH));
-                path.setComment(atts.getValue(DataSourceConstants.ATTR_COMMENT));
-                path.setEnabled("true".equals(atts.getValue(DataSourceConstants.ATTR_ENABLED)));
+                path.setPath(atts.getValue(RegistryConstants.ATTR_PATH));
+                path.setComment(atts.getValue(RegistryConstants.ATTR_COMMENT));
+                path.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
                 curDriver.addPath(path);
-            } else if (localName.equals(DataSourceConstants.TAG_PARAMETER)) {
+            } else if (localName.equals(RegistryConstants.TAG_PARAMETER)) {
                 if (curDriver == null) {
                     log.warn("Parameter outside of driver");
                     return;
                 }
-                final String paramName = atts.getValue(DataSourceConstants.ATTR_NAME);
-                final String paramValue = atts.getValue(DataSourceConstants.ATTR_VALUE);
+                final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
+                final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
                 if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
                     curDriver.setDriverParameter(paramName, paramValue);
                 }
-            } else if (localName.equals(DataSourceConstants.TAG_PROPERTY)) {
+            } else if (localName.equals(RegistryConstants.TAG_PROPERTY)) {
                 if (curDriver == null) {
                     log.warn("Property outside of driver");
                     return;
                 }
-                final String paramName = atts.getValue(DataSourceConstants.ATTR_NAME);
-                final String paramValue = atts.getValue(DataSourceConstants.ATTR_VALUE);
+                final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
+                final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
                 if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
                     curDriver.setConnectionProperty(paramName, paramValue);
                 }
@@ -1162,20 +1171,20 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         MetaURL metaURL = new MetaURL();
         int offsetPos = 0;
         for (; ;) {
-            int divPos = sampleURL.indexOf('{', offsetPos);
+            int divPos = sampleURL.indexOf(URL_GROUP_START, offsetPos);
             if (divPos == -1) {
                 break;
             }
-            int divPos2 = sampleURL.indexOf('}', divPos);
+            int divPos2 = sampleURL.indexOf(URL_GROUP_END, divPos);
             if (divPos2 == -1) {
                 throw new DBException("Bad sample URL: " + sampleURL);
             }
             String propName = sampleURL.substring(divPos + 1, divPos2);
             boolean isOptional = false;
-            int optDiv1 = sampleURL.lastIndexOf('[', divPos);
-            int optDiv1c = sampleURL.lastIndexOf(']', divPos);
-            int optDiv2 = sampleURL.indexOf(']', divPos2);
-            int optDiv2c = sampleURL.indexOf('[', divPos2);
+            int optDiv1 = sampleURL.lastIndexOf(URL_OPTIONAL_START, divPos);
+            int optDiv1c = sampleURL.lastIndexOf(URL_OPTIONAL_END, divPos);
+            int optDiv2 = sampleURL.indexOf(URL_OPTIONAL_END, divPos2);
+            int optDiv2c = sampleURL.indexOf(URL_OPTIONAL_START, divPos2);
             if (optDiv1 != -1 && optDiv2 != -1 && (optDiv1c == -1 || optDiv1c < optDiv1) && (optDiv2c == -1 || optDiv2c > optDiv2)) {
                 divPos = optDiv1;
                 divPos2 = optDiv2;

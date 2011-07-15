@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class DataExporterDescriptor extends AbstractDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataExportProvider";
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataExportProvider"; //$NON-NLS-1$
 
     private String id;
     private String className;
@@ -36,20 +36,20 @@ public class DataExporterDescriptor extends AbstractDescriptor
     {
         super(config.getContributor());
 
-        this.id = config.getAttribute("id");
-        this.className = config.getAttribute("class");
-        this.name = config.getAttribute("label");
-        this.description = config.getAttribute("description");
-        this.fileExtension = config.getAttribute("extension");
-        String iconPath = config.getAttribute("icon");
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.fileExtension = config.getAttribute(RegistryConstants.ATTR_EXTENSION);
+        String iconPath = config.getAttribute(RegistryConstants.ATTR_ICON);
         if (!CommonUtils.isEmpty(iconPath)) {
             this.icon = iconToImage(iconPath);
         }
 
-        IConfigurationElement[] typesCfg = config.getChildren("sourceType");
+        IConfigurationElement[] typesCfg = config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE);
         if (typesCfg != null) {
             for (IConfigurationElement typeCfg : typesCfg) {
-                String objectType = typeCfg.getAttribute("type");
+                String objectType = typeCfg.getAttribute(RegistryConstants.ATTR_TYPE);
                 if (objectType != null) {
                     sourceTypes.add(objectType);
                 }

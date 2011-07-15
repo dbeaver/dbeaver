@@ -22,11 +22,11 @@ public class DataSourceViewDescriptor
     public DataSourceViewDescriptor(DataSourceProviderDescriptor provider, IConfigurationElement config)
     {
         this.provider = provider;
-        this.id = config.getAttribute("id");
-        this.targetID = config.getAttribute("targetID");
-        this.label = config.getAttribute("label");
-        this.viewClassName = config.getAttribute("class");
-        this.icon = config.getAttribute("icon");
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.targetID = config.getAttribute(RegistryConstants.ATTR_TARGET_ID);
+        this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.viewClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.icon = config.getAttribute(RegistryConstants.ATTR_ICON);
     }
 
     public DataSourceProviderDescriptor getProvider()

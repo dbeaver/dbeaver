@@ -45,12 +45,12 @@ public class DriverFileDescriptor
     DriverFileDescriptor(DriverDescriptor driver, IConfigurationElement config)
     {
         this.driver = driver;
-        this.type = DriverFileType.valueOf(config.getAttribute("type"));
-        this.os = config.getAttribute("os");
-        this.osArch = config.getAttribute("arch");
-        this.path = config.getAttribute("path");
-        this.description = config.getAttribute("description");
-        this.externalURL = config.getAttribute("url");
+        this.type = DriverFileType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE));
+        this.os = config.getAttribute(RegistryConstants.ATTR_OS);
+        this.osArch = config.getAttribute(RegistryConstants.ATTR_ARCH);
+        this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.externalURL = config.getAttribute(RegistryConstants.ATTR_URL);
         this.custom = false;
     }
 
@@ -111,7 +111,7 @@ public class DriverFileDescriptor
 
     public boolean isLocal()
     {
-        return path.startsWith("drivers");
+        return path.startsWith(DriverDescriptor.DRIVERS_FOLDER);
     }
 
     File getLocalFile()

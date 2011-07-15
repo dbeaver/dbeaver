@@ -143,6 +143,16 @@ public class CommonUtils {
 		return value == null ? "" : value;
 	}
 
+    public static boolean getBoolean(String value)
+    {
+        return Boolean.parseBoolean(value);
+    }
+
+    public static boolean getBoolean(String value, boolean defaultValue)
+    {
+        return isEmpty(value) ? defaultValue : Boolean.parseBoolean(value);
+    }
+
     public static String getLineSeparator()
     {
         String lineSeparator = System.getProperty("line.separator");

@@ -13,21 +13,21 @@ package org.jkiss.dbeaver.ui;
  */
 public final class ICommandIds
 {
-    public static final String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special";
+    public static final String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special"; //$NON-NLS-1$
 
-    public static final String CMD_OBJECT_OPEN = "org.jkiss.dbeaver.core.object.open";
-    public static final String CMD_OBJECT_CREATE = "org.jkiss.dbeaver.core.object.create";
-    public static final String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete";
-    //public static final String CMD_OBJECT_RENAME = "org.jkiss.dbeaver.core.object.rename";
-    public static final String CMD_OBJECT_FIND = "org.jkiss.dbeaver.core.object.find";
+    public static final String CMD_OBJECT_OPEN = "org.jkiss.dbeaver.core.object.open"; //$NON-NLS-1$
+    public static final String CMD_OBJECT_CREATE = "org.jkiss.dbeaver.core.object.create"; //$NON-NLS-1$
+    public static final String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete"; //$NON-NLS-1$
+    //public static final String CMD_OBJECT_RENAME = "org.jkiss.dbeaver.core.object.rename"; //$NON-NLS-1$
+    public static final String CMD_OBJECT_FIND = "org.jkiss.dbeaver.core.object.find"; //$NON-NLS-1$
 
-    public static final String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement";
-    public static final String CMD_EXECUTE_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.run.script";
-    public static final String CMD_EXPLAIN_PLAN = "org.jkiss.dbeaver.ui.editors.sql.run.explain";
-    public static final String CMD_ANALYSE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.analyse";
-    public static final String CMD_VALIDATE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.validate";
-    public static final String CMD_OPEN_FILE = "org.jkiss.dbeaver.ui.editors.sql.open.file";
-    public static final String CMD_SAVE_FILE = "org.jkiss.dbeaver.ui.editors.sql.save.file";
+    public static final String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement"; //$NON-NLS-1$
+    public static final String CMD_EXECUTE_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.run.script"; //$NON-NLS-1$
+    public static final String CMD_EXPLAIN_PLAN = "org.jkiss.dbeaver.ui.editors.sql.run.explain"; //$NON-NLS-1$
+    public static final String CMD_ANALYSE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.analyse"; //$NON-NLS-1$
+    public static final String CMD_VALIDATE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.validate"; //$NON-NLS-1$
+    public static final String CMD_OPEN_FILE = "org.jkiss.dbeaver.ui.editors.sql.open.file"; //$NON-NLS-1$
+    public static final String CMD_SAVE_FILE = "org.jkiss.dbeaver.ui.editors.sql.save.file"; //$NON-NLS-1$
 
-    public static final String CMD_CONTENT_FORMAT = "org.jkiss.dbeaver.ui.editors.text.content.format";
+    public static final String CMD_CONTENT_FORMAT = "org.jkiss.dbeaver.ui.editors.text.content.format"; //$NON-NLS-1$
 }

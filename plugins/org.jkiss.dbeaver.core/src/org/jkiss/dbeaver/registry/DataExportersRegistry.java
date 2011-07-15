@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class DataExportersRegistry {
 
-    private static final String CFG_EXPORT = "export";
+    private static final String CFG_EXPORT = "export"; //$NON-NLS-1$
 
     private List<DataExporterDescriptor> dataExporters = new ArrayList<DataExporterDescriptor>();
 

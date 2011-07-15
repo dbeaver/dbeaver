@@ -71,9 +71,9 @@ public class DataSourceProviderRegistry
         }
 
         // Load drivers
-        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), DataSourceConstants.DRIVERS_FILE_NAME);
+        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), RegistryConstants.DRIVERS_FILE_NAME);
         if (!driversConfig.exists()) {
-            driversConfig = new File(RuntimeUtils.getBetaDir(), DataSourceConstants.DRIVERS_FILE_NAME);
+            driversConfig = new File(RuntimeUtils.getBetaDir(), RegistryConstants.DRIVERS_FILE_NAME);
             if (driversConfig.exists()) {
                 loadDrivers(driversConfig);
                 saveDrivers();
@@ -205,16 +205,16 @@ public class DataSourceProviderRegistry
 
     public void saveDrivers()
     {
-        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), DataSourceConstants.DRIVERS_FILE_NAME);
+        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), RegistryConstants.DRIVERS_FILE_NAME);
         try {
             OutputStream os = new FileOutputStream(driversConfig);
             try {
                 XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET);
                 xml.setButify(true);
-                xml.startElement(DataSourceConstants.TAG_DRIVERS);
+                xml.startElement(RegistryConstants.TAG_DRIVERS);
                 for (DataSourceProviderDescriptor provider : this.dataSourceProviders) {
-                    xml.startElement(DataSourceConstants.TAG_PROVIDER);
-                    xml.addAttribute(DataSourceConstants.ATTR_ID, provider.getId());
+                    xml.startElement(RegistryConstants.TAG_PROVIDER);
+                    xml.addAttribute(RegistryConstants.ATTR_ID, provider.getId());
                     for (DriverDescriptor driver : provider.getDrivers()) {
                         if (driver.isModified()) {
                             driver.serialize(xml, false);

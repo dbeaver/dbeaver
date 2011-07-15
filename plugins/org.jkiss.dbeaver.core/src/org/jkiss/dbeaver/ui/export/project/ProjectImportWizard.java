@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export.project;
 
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.XMLException;
@@ -23,7 +24,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.DataSourceConstants;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -111,7 +111,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     // Read libraries map
                     final Element libsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_LIBRARIES);
                     if (libsElement != null) {
-                        final Element[] libList = XMLUtils.getChildElementList(libsElement, DataSourceConstants.TAG_FILE);
+                        final Element[] libList = XMLUtils.getChildElementList(libsElement, RegistryConstants.TAG_FILE);
                         monitor.beginTask("Load driver libraries", libList.length);
                         for (Element libElement : libList) {
                             libMap.put(
@@ -125,9 +125,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
                 {
                     // Collect drivers to import
-                    final Element driversElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), DataSourceConstants.TAG_DRIVERS);
+                    final Element driversElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), RegistryConstants.TAG_DRIVERS);
                     if (driversElement != null) {
-                        final Element[] driverList = XMLUtils.getChildElementList(driversElement, DataSourceConstants.TAG_DRIVER);
+                        final Element[] driverList = XMLUtils.getChildElementList(driversElement, RegistryConstants.TAG_DRIVER);
                         monitor.beginTask("Import drivers", driverList.length);
                         for (Element driverElement : driverList) {
                             if (monitor.isCanceled()) {
@@ -181,15 +181,15 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         Map<String, String> libMap,
         Map<String, String> driverMap) throws IOException, DBException
     {
-        String providerId = driverElement.getAttribute(DataSourceConstants.ATTR_PROVIDER);
-        String driverId = driverElement.getAttribute(DataSourceConstants.ATTR_ID);
-        boolean isCustom = "true".equals(driverElement.getAttribute(DataSourceConstants.ATTR_CUSTOM));
-        String driverCategory = driverElement.getAttribute(DataSourceConstants.ATTR_CATEGORY);
-        String driverName = driverElement.getAttribute(DataSourceConstants.ATTR_NAME);
-        String driverClass = driverElement.getAttribute(DataSourceConstants.ATTR_CLASS);
-        String driverURL = driverElement.getAttribute(DataSourceConstants.ATTR_URL);
-        String driverDefaultPort = driverElement.getAttribute(DataSourceConstants.ATTR_PORT);
-        String driverDescription = driverElement.getAttribute(DataSourceConstants.ATTR_DESCRIPTION);
+        String providerId = driverElement.getAttribute(RegistryConstants.ATTR_PROVIDER);
+        String driverId = driverElement.getAttribute(RegistryConstants.ATTR_ID);
+        boolean isCustom = CommonUtils.getBoolean(driverElement.getAttribute(RegistryConstants.ATTR_CUSTOM));
+        String driverCategory = driverElement.getAttribute(RegistryConstants.ATTR_CATEGORY);
+        String driverName = driverElement.getAttribute(RegistryConstants.ATTR_NAME);
+        String driverClass = driverElement.getAttribute(RegistryConstants.ATTR_CLASS);
+        String driverURL = driverElement.getAttribute(RegistryConstants.ATTR_URL);
+        String driverDefaultPort = driverElement.getAttribute(RegistryConstants.ATTR_PORT);
+        String driverDescription = driverElement.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
 
         DataSourceProviderDescriptor dataSourceProvider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(providerId);
         if (dataSourceProvider == null) {
@@ -246,23 +246,23 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
 
         // Parameters and properties
-        for (Element libElement : XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_PARAMETER)) {
+        for (Element libElement : XMLUtils.getChildElementList(driverElement, RegistryConstants.TAG_PARAMETER)) {
             driver.setDriverParameter(
-                libElement.getAttribute(DataSourceConstants.ATTR_NAME),
-                libElement.getAttribute(DataSourceConstants.ATTR_VALUE));
+                libElement.getAttribute(RegistryConstants.ATTR_NAME),
+                libElement.getAttribute(RegistryConstants.ATTR_VALUE));
         }
-        for (Element libElement : XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_PROPERTY)) {
+        for (Element libElement : XMLUtils.getChildElementList(driverElement, RegistryConstants.TAG_PROPERTY)) {
             driver.setConnectionProperty(
-                libElement.getAttribute(DataSourceConstants.ATTR_NAME),
-                libElement.getAttribute(DataSourceConstants.ATTR_VALUE));
+                libElement.getAttribute(RegistryConstants.ATTR_NAME),
+                libElement.getAttribute(RegistryConstants.ATTR_VALUE));
         }
 
         // Add libraries (only for managable drivers with empty library list)
         if (CommonUtils.isEmpty(driver.getFiles())) {
             List<String> libraryList = new ArrayList<String>();
-            final Element[] libList = XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_FILE);
+            final Element[] libList = XMLUtils.getChildElementList(driverElement, RegistryConstants.TAG_FILE);
             for (Element libElement : libList) {
-                libraryList.add(libElement.getAttribute(DataSourceConstants.ATTR_PATH));
+                libraryList.add(libElement.getAttribute(RegistryConstants.ATTR_PATH));
             }
 
             for (String libPath : libraryList) {
@@ -378,7 +378,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     {
         for (Element childElement : XMLUtils.getChildElementList(resourceElement, ExportConstants.TAG_RESOURCE)) {
             String childName = childElement.getAttribute(ExportConstants.ATTR_NAME);
-            boolean isDirectory = "true".equals(childElement.getAttribute(ExportConstants.ATTR_DIRECTORY));
+            boolean isDirectory = CommonUtils.getBoolean(childElement.getAttribute(ExportConstants.ATTR_DIRECTORY));
             String entryPath = containerPath + childName;
             if (isDirectory) {
                 entryPath += "/";

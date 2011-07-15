@@ -189,7 +189,7 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
         "UPDATE",
         "INTO",
         "TABLE"
-    };
+    }; //$NON-NLS-1$
 
     private static final String[] COLUMN_KEYWORDS = {
         "SELECT",
