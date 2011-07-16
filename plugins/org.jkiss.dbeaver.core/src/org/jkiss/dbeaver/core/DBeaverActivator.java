@@ -54,9 +54,9 @@ public class DBeaverActivator extends AbstractUIPlugin
 
         instance = this;
 
-        LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", DBeaverLogger.class.getName()); // $NON-NLS-1$"
+        LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", DBeaverLogger.class.getName()); //$NON-NLS-1$
         try {
-            resourceBundle = ResourceBundle.getBundle("org.jkiss.dbeaver.core.DBeaverResources");  // $NON-NLS-1$"
+            resourceBundle = ResourceBundle.getBundle("org.jkiss.dbeaver.core.DBeaverResources");  //$NON-NLS-1$
         } catch (MissingResourceException x) {
             resourceBundle = null;
         }
@@ -82,10 +82,10 @@ public class DBeaverActivator extends AbstractUIPlugin
     {
         if (debugWriter == null) {
             File rootPath = Platform.getLocation().toFile();
-            File debugLogFile = new File(rootPath, "debug.log"); // $NON-NLS-1$
+            File debugLogFile = new File(rootPath, "debug.log"); //$NON-NLS-1$
             if (debugLogFile.exists()) {
                 if (!debugLogFile.delete()) {
-                    System.err.println("Could not delete debug log file"); // $NON-NLS-1$
+                    System.err.println("Could not delete debug log file"); //$NON-NLS-1$
                 }
             }
             try {

@@ -71,12 +71,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     protected void fillMenuBar(IMenuManager menuBar)
     {
-        MenuManager fileMenu = new MenuManager("&File", IWorkbenchActionConstants.M_FILE);
-        MenuManager editMenu = new MenuManager("&Edit", IWorkbenchActionConstants.M_EDIT);
-        MenuManager navigateMenu = new MenuManager("&Navigate", IWorkbenchActionConstants.M_NAVIGATE);
-        MenuManager databaseMenu = new MenuManager("&Database", IActionConstants.M_DATABASE);
-        MenuManager windowMenu = new MenuManager("&Window", IWorkbenchActionConstants.M_WINDOW);
-        MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
+        MenuManager fileMenu = new MenuManager(CoreMessages.actions_menu_file, IWorkbenchActionConstants.M_FILE);
+        MenuManager editMenu = new MenuManager(CoreMessages.actions_menu_edit, IWorkbenchActionConstants.M_EDIT);
+        MenuManager navigateMenu = new MenuManager(CoreMessages.actions_menu_navigate, IWorkbenchActionConstants.M_NAVIGATE);
+        MenuManager databaseMenu = new MenuManager(CoreMessages.actions_menu_database, IActionConstants.M_DATABASE);
+        MenuManager windowMenu = new MenuManager(CoreMessages.actions_menu_window, IWorkbenchActionConstants.M_WINDOW);
+        MenuManager helpMenu = new MenuManager(CoreMessages.actions_menu_help, IWorkbenchActionConstants.M_HELP);
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
@@ -90,7 +90,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         // File
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(new Separator(IWorkbenchActionConstants.FILE_END));
-        fileMenu.add(ViewUtils.makeAction(emergentExitAction, null, null, "Emergency Exit", null, null));
+        fileMenu.add(ViewUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
 
         // Edit
 /*
@@ -141,7 +141,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 */
 
         // Help
-        helpMenu.add(ViewUtils.makeAction(aboutAction, null, null, "About", null, null));
+        helpMenu.add(ViewUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));
         helpMenu.add(showHelpAction);
         helpMenu.add(searchHelpAction);
         helpMenu.add(dynamicHelpAction);

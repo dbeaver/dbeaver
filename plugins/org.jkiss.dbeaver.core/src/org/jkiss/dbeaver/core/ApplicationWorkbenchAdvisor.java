@@ -37,7 +37,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 {
     static final Log log = LogFactory.getLog(ApplicationWorkbenchAdvisor.class);
 
-    private static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; // $NON-NLS-1$
+    private static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
 
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
     {
