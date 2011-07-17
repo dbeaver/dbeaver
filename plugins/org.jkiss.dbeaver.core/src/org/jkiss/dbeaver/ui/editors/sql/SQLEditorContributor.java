@@ -4,27 +4,15 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.util.ResourceBundle;
@@ -34,6 +22,9 @@ import java.util.ResourceBundle;
  */
 public class SQLEditorContributor extends BasicTextEditorActionContributor
 {
+    static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal"; //$NON-NLS-1$
+    static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip"; //$NON-NLS-1$
+    static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal"; //$NON-NLS-1$
     private boolean isNestedEditor = false;
     private SQLEditorBase activeEditorPart;
 
@@ -48,6 +39,11 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         createActions();
     }
 
+    static String getActionResourcePrefix(String actionId)
+    {
+        return "actions_" + actionId + "_";//$NON-NLS-1$
+    }
+
     public void setNestedEditor(boolean nestedEditor)
     {
         isNestedEditor = nestedEditor;
@@ -57,11 +53,11 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     {
         // Init custom actions
         ResourceBundle bundle = DBeaverActivator.getResourceBundle();
-        contentAssistProposal = new RetargetTextEditorAction(bundle, "ContentAssistProposal.");
+        contentAssistProposal = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_PROPOSAL));
         contentAssistProposal.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
-        contentFormatProposal = new RetargetTextEditorAction(bundle, "ContentFormatProposal.");
+        contentFormatProposal = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_FORMAT_PROPOSAL));
         contentFormatProposal.setActionDefinitionId(ICommandIds.CMD_CONTENT_FORMAT);
-        contentAssistTip = new RetargetTextEditorAction(bundle, "ContentAssistTip.");
+        contentAssistTip = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_TIP));
         contentAssistTip.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
     }
 
@@ -83,9 +79,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
 
         if (activeEditorPart != null) {
             // Update editor actions
-            contentAssistProposal.setAction(getAction(activeEditorPart, SQLEditor.ACTION_CONTENT_ASSIST_PROPOSAL)); //$NON-NLS-1$
-            contentAssistTip.setAction(getAction(activeEditorPart, SQLEditor.ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
-            contentFormatProposal.setAction(getAction(activeEditorPart, SQLEditor.ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
+            contentAssistProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_PROPOSAL)); //$NON-NLS-1$
+            contentAssistTip.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
+            contentFormatProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
         }
     }
 
@@ -134,6 +130,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         super.contributeToStatusLine(statusLineManager);
     }
 
+/*
     private Menu createScriptMenu(final Menu parent, final Shell shell, final SQLEditor editor)
     {
         final Menu menu = parent == null ? new Menu(shell, SWT.POP_UP) : new Menu(parent);
@@ -160,5 +157,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         });
         return menu;
     }
+*/
 
 }

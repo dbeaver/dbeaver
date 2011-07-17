@@ -51,7 +51,7 @@ public class DBeaverApplication implements IApplication
         } catch (Throwable e) {
             // Just skip it
             // Error may occur if -data parameter was specified at startup
-            System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$
+            System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
 /*
         try {
@@ -62,8 +62,8 @@ public class DBeaverApplication implements IApplication
             e.printStackTrace();
         }
 */
-        System.out.println("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$
-        System.out.println("Workspace path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$
+        System.out.println("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+        System.out.println("Workspace path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         try {
             int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
             if (returnCode == PlatformUI.RETURN_RESTART) {

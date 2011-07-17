@@ -100,7 +100,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         }
         catch (Throwable e) {
             // do nothing
-            log.debug("Internal error during shutdown process", e);
+            log.debug("Internal error during shutdown process", e); //$NON-NLS-1$
         }
         finally {
             core.setClosing(false);
@@ -118,7 +118,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                 DBeaverCore.getInstance().dispose();
             }
         } catch (Throwable e) {
-            log.debug("Internal error after shutdown process", e);
+            log.debug("Internal error after shutdown process", e); //$NON-NLS-1$
         }
     }
 
@@ -146,7 +146,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     }
 */
                 } catch (CoreException ex) {
-                    log.error("Can't obtain editor storage", ex);
+                    log.error("Can't obtain editor storage", ex); //$NON-NLS-1$
                 }
             }
             // Save all other editors
@@ -201,7 +201,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                 }
             }
         } catch (CoreException ex) {
-            log.warn("Error deleting temp lob file", ex);
+            log.warn("Error deleting temp lob file", ex); //$NON-NLS-1$
         }
     }
 

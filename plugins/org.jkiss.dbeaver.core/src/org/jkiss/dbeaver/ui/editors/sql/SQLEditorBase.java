@@ -49,11 +49,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 {
     static final Log log = LogFactory.getLog(SQLEditorBase.class);
 
-    static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
-    static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip";
-    static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal";
-    //private static final String ACTION_DEFINE_FOLDING_REGION = "DefineFoldingRegion";
-
     private SQLSyntaxManager syntaxManager;
 
     private ProjectionSupport projectionSupport;
@@ -109,8 +104,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             viewer,
             getAnnotationAccess(),
             getSharedColors());
-        projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.error");
-        projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning");
+        projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.error"); //$NON-NLS-1$
+        projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning"); //$NON-NLS-1$
         projectionSupport.install();
 
         viewer.doOperation(ProjectionViewer.TOGGLE);
@@ -231,17 +226,29 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
         ResourceBundle bundle = DBeaverActivator.getResourceBundle();
 
-        IAction a = new TextOperationAction(bundle, "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS);
+        IAction a = new TextOperationAction(
+            bundle,
+            SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL),
+            this,
+            ISourceViewer.CONTENTASSIST_PROPOSALS);
         a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
-        setAction(ACTION_CONTENT_ASSIST_PROPOSAL, a);
+        setAction(SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL, a);
 
-        a = new TextOperationAction(bundle, "ContentAssistTip.", this, ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION);
+        a = new TextOperationAction(
+            bundle,
+            SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP),
+            this,
+            ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION);
         a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
-        setAction(ACTION_CONTENT_ASSIST_TIP, a);
+        setAction(SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP, a);
 
-        a = new TextOperationAction(bundle, "ContentFormatProposal.", this, ISourceViewer.FORMAT);
+        a = new TextOperationAction(
+            bundle,
+            SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL),
+            this,
+            ISourceViewer.FORMAT);
         a.setActionDefinitionId(ICommandIds.CMD_CONTENT_FORMAT);
-        setAction(ACTION_CONTENT_FORMAT_PROPOSAL, a);
+        setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, a);
 
 /*
         // Add the task action to the Edit pulldown menu (bookmark action is  'free')
@@ -256,10 +263,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     {
         super.editorContextMenuAboutToShow(menu);
 
-        menu.add(new Separator("content"));
-        addAction(menu, ACTION_CONTENT_ASSIST_PROPOSAL);
-        addAction(menu, ACTION_CONTENT_ASSIST_TIP);
-        addAction(menu, ACTION_CONTENT_FORMAT_PROPOSAL);
+        menu.add(new Separator("content"));//$NON-NLS-1$
+        addAction(menu, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
+        addAction(menu, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
+        addAction(menu, SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
         //addAction(menu, ACTION_DEFINE_FOLDING_REGION);
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
     }
@@ -289,7 +296,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                     projectionViewer.reinitializeProjection();
                 } catch (Throwable ex) {
                     // We can catch OutOfMemory here for too big/complex documents
-                    log.warn("Can't initialize SQL syntax projection", ex);
+                    log.warn("Can't initialize SQL syntax projection", ex); //$NON-NLS-1$
                 }
             }
         }
@@ -409,7 +416,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                     statementInfo.setLength(tokenOffset - statementStart);
                     return statementInfo;
                 } catch (BadLocationException ex) {
-                    log.warn("Can't extract query", ex);
+                    log.warn("Can't extract query", ex); //$NON-NLS-1$
                     return null;
                 }
             }

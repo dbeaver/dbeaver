@@ -1257,7 +1257,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
-        <scheme id="org.jkiss.dbeaver.defaultKeyScheme" name="DBeaver" description="DBeaver scheme"/>
+        <scheme id="org.jkiss.dbeaver.defaultKeyScheme" name="%productName" description="%productName"/>
 
         <key commandId="org.jkiss.dbeaver.core.resultset.toggleMode" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="TAB"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.first" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_LEFT"/>
@@ -1388,11 +1388,11 @@
     </extension>
 
     <extension id="product" point="org.eclipse.core.runtime.products">
-        <product application="org.jkiss.dbeaver.core.application" description="Universal Database Manager" name="DBeaver">
-            <property name="aboutText" value="DBeaver - Universal Database Manager"/>
+        <product application="org.jkiss.dbeaver.core.application" description="Universal Database Manager" name="%productName">
+            <property name="aboutText" value="%productTitle"/>
             <property name="windowImages" value="icons/dbeaver.png"/>
             <property name="aboutImage" value="product_lg.gif"/>
-            <property name="appName" value="DBeaver"/>
+            <property name="appName" value="%productName"/>
             <property name="startupForegroundColor" value="000000"/>
             <property name="startupMessageRect" value="25,25,200,15"/>
             <property name="startupProgressRect" value="25,45,150,15"/>

@@ -52,6 +52,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,7 +64,7 @@ import java.util.List;
 class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener, ISelectionListener {
     static final Log log = LogFactory.getLog(ApplicationToolbarDataSources.class);
 
-    public static final String EMPTY_SELECTION_TEXT = "<None>";
+    public static final String EMPTY_SELECTION_TEXT = CoreMessages.toolbar_datasource_selector_empty;
 
     private IWorkbenchWindow workbenchWindow;
     private IWorkbenchPart activePart;
@@ -83,7 +84,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
 
         public DatabaseListReader(DBPDataSource dataSource)
         {
-            super("Load database list", null, dataSource);
+            super(CoreMessages.toolbar_datasource_selector_action_read_databases, null, dataSource);
             this.databasesInfo = new CurrentDatabasesInfo();
             this.enabled = false;
         }
@@ -92,7 +93,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         {
             DBSEntityContainer entityContainer = (DBSEntityContainer) getDataSource();
             try {
-                monitor.beginTask("Obtain database list", 1);
+                monitor.beginTask(CoreMessages.toolbar_datasource_selector_action_read_databases, 1);
                 Class<? extends DBSEntity> childType = entityContainer.getChildType(monitor);
                 if (childType == null || !DBSEntityContainer.class.isAssignableFrom(childType)) {
                     enabled = false;
@@ -268,7 +269,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
     public void fillToolBar(IToolBarManager manager)
     {
         // Connection related actions
-        manager.add(new ControlContribution("Database Context")
+        manager.add(new ControlContribution("datasource_selector_control") //$NON-NLS-1$
         {
             protected Control createControl(Composite parent)
             {
@@ -283,7 +284,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 gd.widthHint = 120;
                 connectionCombo.setLayoutData(gd);
                 connectionCombo.setVisibleItemCount(15);
-                connectionCombo.setToolTipText("Active datasource");
+                connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
                 connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
                 connectionCombo.select(0);
                 fillDataSourceList(true);
@@ -305,7 +306,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 gd.widthHint = 120;
                 databaseCombo.setLayoutData(gd);
                 databaseCombo.setVisibleItemCount(15);
-                databaseCombo.setToolTipText("Active catalog/schema");
+                databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
                 databaseCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
                 databaseCombo.select(0);
                 databaseCombo.addSelectionListener(new SelectionListener() {
@@ -326,7 +327,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 gd = new GridData();
                 gd.widthHint = 30;
 
-                resultSetSize.setToolTipText("Maximum result-set size");
+                resultSetSize.setToolTipText(CoreMessages.toolbar_datasource_selector_resultset_segment_size);
                 final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
                 if (dataSourceContainer != null) {
                     resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS)));
@@ -443,7 +444,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         if (resultSetSize != null && !resultSetSize.isDisposed()) {
             if (dataSourceContainer == null) {
                 resultSetSize.setEnabled(false);
-                resultSetSize.setText("");
+                resultSetSize.setText(""); //$NON-NLS-1$
             } else {
                 resultSetSize.setEnabled(true);
                 resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS)));
@@ -461,7 +462,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         if (dsContainer != null) {
             String rsSize = resultSetSize.getText();
             if (rsSize.length() == 0) {
-                rsSize = "1";
+                rsSize = "1"; //$NON-NLS-1$
             }
             IPreferenceStore store = dsContainer.getPreferenceStore();
             store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, rsSize);
@@ -600,7 +601,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 }
                 dataSourceUpdater.setDataSourceContainer(null);
             } else if (curIndex > dataSources.size()) {
-                log.warn("Connection combo index out of bounds (" + curIndex + ")");
+                log.warn("Connection combo index out of bounds (" + curIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$
                 return;
             } else {
                 // Change data source
@@ -637,10 +638,10 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                                 if (newChild != null) {
                                     ((DBSEntitySelector) dataSource).selectEntity(monitor, newChild);
                                 } else {
-                                    throw new DBException("Could not find database '" + newName + "'");
+                                    throw new DBException(MessageFormat.format(CoreMessages.toolbar_datasource_selector_error_database_not_found, newName));
                                 }
                             } else {
-                                throw new DBException("Active database change is not supported");
+                                throw new DBException(CoreMessages.toolbar_datasource_selector_error_database_change_not_supported);
                             }
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
@@ -648,7 +649,11 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                     }
                 });
             } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Change active database", "Can't change active database", e.getTargetException());
+                UIUtils.showErrorDialog(
+                    workbenchWindow.getShell(),
+                    CoreMessages.toolbar_datasource_selector_error_change_database_title,
+                    CoreMessages.toolbar_datasource_selector_error_change_database_message,
+                    e.getTargetException());
             } catch (InterruptedException e) {
                 // skip
             }

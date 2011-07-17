@@ -56,7 +56,7 @@ public class DBeaverActivator extends AbstractUIPlugin
 
         LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", DBeaverLogger.class.getName()); //$NON-NLS-1$
         try {
-            resourceBundle = ResourceBundle.getBundle("org.jkiss.dbeaver.core.DBeaverResources");  //$NON-NLS-1$
+            resourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
         } catch (MissingResourceException x) {
             resourceBundle = null;
         }

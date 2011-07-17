@@ -25,7 +25,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     public static final String RES_KEY_TITLE = "title"; //$NON-NLS-1$
     public static final String RES_KEY_MESSAGE = "message"; //$NON-NLS-1$
     public static final String RES_KEY_TOGGLE_MESSAGE = "toggleMessage"; //$NON-NLS-1$
-    public static final String RES_CONFIRM_PREFIX = "Confirm.";
+    public static final String RES_CONFIRM_PREFIX = "confirm_"; //$NON-NLS-1$
 
     public ConfirmationDialog(
         Shell parentShell,
@@ -135,6 +135,6 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
     public static String getResourceKey(String id, String key)
     {
-        return RES_CONFIRM_PREFIX + id + "." + key;  //$NON-NLS-1$
+        return RES_CONFIRM_PREFIX + id + "_" + key;  //$NON-NLS-1$
     }
 }

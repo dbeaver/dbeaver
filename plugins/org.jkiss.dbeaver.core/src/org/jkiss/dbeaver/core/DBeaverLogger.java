@@ -93,7 +93,7 @@ public class DBeaverLogger implements Log, Serializable
         if (debugWriter != null) {
             synchronized (DBeaverLogger.class) {
                 debugWriter.print(new Date());
-                debugWriter.print(" - ");
+                debugWriter.print(" - "); //$NON-NLS-1$
                 if (t == null) {
                     debugWriter.println(message);
                 } else {

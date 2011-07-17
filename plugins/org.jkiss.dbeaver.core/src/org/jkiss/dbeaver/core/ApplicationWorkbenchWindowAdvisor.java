@@ -133,7 +133,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     private void updateWindowTitle()
     {
         IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        String title = DBeaverActivator.getResourceBundle().getString("productName"); //$NON-NLS-1$
+        String title = CoreMessages.productName;
         if (activeProject != null) {
             title += " - " + activeProject.getName(); //$NON-NLS-1$
         }
