@@ -8,10 +8,10 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -90,7 +90,7 @@ public class NewConnectionWizard extends ConnectionWizard
                     monitor.beginTask("Load data sources", providers.size());
                     for (DataSourceProviderDescriptor provider : providers) {
                         monitor.subTask(provider.getName());
-                        DataSourceViewDescriptor view = provider.getView(DBeaverExtensions.NEW_CONNECTION_POINT);
+                        DataSourceViewDescriptor view = provider.getView(IActionConstants.NEW_CONNECTION_POINT);
                         if (view == null) {
                             continue;
                         }

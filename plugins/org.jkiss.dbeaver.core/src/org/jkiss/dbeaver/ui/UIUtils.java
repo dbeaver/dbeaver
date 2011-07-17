@@ -27,6 +27,7 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -53,43 +54,36 @@ public class UIUtils {
     public static final VerifyListener INTEGER_VERIFY_LISTENER = new VerifyListener() {
         public void verifyText(VerifyEvent e)
         {
-            e.doit = isValidInteger(e.text);
+            for (int i = 0; i < e.text.length(); i++) {
+                char ch = e.text.charAt(i);
+                if (!Character.isDigit(ch) && ch != '-' && ch != '+') {
+                    e.doit = false;
+                    return;
+                }
+            }
+            e.doit = true;
         }
     };
 
     public static final VerifyListener NUMBER_VERIFY_LISTENER = new VerifyListener() {
         public void verifyText(VerifyEvent e)
         {
-            e.doit = isValidNumber(e.text);
+            for (int i = 0; i < e.text.length(); i++) {
+                char ch = e.text.charAt(i);
+                if (!Character.isDigit(ch) && ch != '.' && ch != '-' && ch != 'e' && ch != 'E') {
+                    e.doit = false;
+                    return;
+                }
+            }
+            e.doit = true;
         }
     };
-
-    public static boolean isValidInteger(String value)
-    {
-        for (int i = 0; i < value.length(); i++) {
-            char ch = value.charAt(i);
-            if (!Character.isDigit(ch) && ch != '-' && ch != '+') {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static boolean isValidNumber(String value)
-    {
-        for (int i = 0; i < value.length(); i++) {
-            char ch = value.charAt(i);
-            if (!Character.isDigit(ch) && ch != '.' && ch != '-' && ch != 'e' && ch != 'E') {
-                return false;
-            }
-        }
-        return true;
-    }
+    private static final String CHECK_TEXT_PARAMETER = "check"; //$NON-NLS-1$
 
     public static Object makeStringForUI(Object object)
     {
         if (object == null) {
-            return "";
+            return ""; //$NON-NLS-1$
         }
         if (object instanceof Number) {
             return NumberFormat.getInstance().format(object);
@@ -433,7 +427,7 @@ public class UIUtils {
     public static Label createControlLabel(Composite parent, String label)
     {
         Label textLabel = new Label(parent, SWT.NONE);
-        textLabel.setText(label + ": ");
+        textLabel.setText(label + ": "); //$NON-NLS-1$
 
         return textLabel;
     }
@@ -551,7 +545,7 @@ public class UIUtils {
             gd.widthHint = 200;
         }
         text.setLayoutData(gd);
-        text.setData("check", checkbox);
+        text.setData(CHECK_TEXT_PARAMETER, checkbox);
 
         checkbox.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -567,7 +561,7 @@ public class UIUtils {
     public static void enableCheckText(Text text, boolean enable)
     {
         if (text != null) {
-            final Button checkbox = (Button) text.getData("check");
+            final Button checkbox = (Button) text.getData(CHECK_TEXT_PARAMETER);
             if (checkbox != null) {
                 checkbox.setEnabled(enable);
                 text.setEnabled(enable && checkbox.getSelection());
@@ -692,7 +686,7 @@ public class UIUtils {
         if (defIndex >= 0) {
             encodingCombo.select(defIndex);
         } else {
-            log.warn("Charset '" + curCharset + "' is not recognized");
+            log.warn("Charset '" + curCharset + "' is not recognized"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return encodingCombo;
     }
@@ -862,7 +856,7 @@ public class UIUtils {
     public static String formatMessage(String message, Object... args)
     {
         if (message == null) {
-            return "";
+            return ""; //$NON-NLS-1$
         } else {
             return MessageFormat.format(message, args);
         }
@@ -887,7 +881,7 @@ public class UIUtils {
         final String helpContextID)
     {
         Button help = new Button(parent, SWT.PUSH);
-        help.setText("Help");
+        help.setText(CoreMessages.ui_common_button_help);
         Image img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
         help.setImage(img);
 
@@ -899,7 +893,7 @@ public class UIUtils {
                 if (dialog.getTray() != null) {
                     dialog.closeTray();
                 } else {
-                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(pluginId + "." + helpContextID);
+                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(pluginId + "." + helpContextID); //$NON-NLS-1$
                 }
             }
         });
@@ -910,7 +904,7 @@ public class UIUtils {
     {
         PlatformUI.getWorkbench().getHelpSystem().setHelp(
             control,
-            pluginId + "." + helpContextID);
+            pluginId + "." + helpContextID); //$NON-NLS-1$
     }
 
     public static void setHelp(Control control, String helpContextID)
@@ -920,4 +914,10 @@ public class UIUtils {
             DBeaverConstants.PLUGIN_ID,
             helpContextID);
     }
+
+    public static String makeAnchor(String text)
+    {
+    	return "<a>" + text + "</a>"; //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
 }

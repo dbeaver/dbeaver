@@ -25,7 +25,7 @@ public class TableToolTip {
     public void applyCustomTolTips()
     {
         // Disable native tooltip
-        table.setToolTipText ("");
+        table.setToolTipText (""); //$NON-NLS-1$
 
         // Implement a "fake" tooltip
         final Listener labelListener = new Listener () {

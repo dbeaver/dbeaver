@@ -32,29 +32,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
 
-    public static final String TREE_NODE_TYPE_FOLDER = "folder"; //$NON-NLS-1$
-    public static final String TREE_NODE_TYPE_ITEMS = "items"; //$NON-NLS-1$
-    public static final String TREE_NODE_TYPE_OBJECT = "object"; //$NON-NLS-1$
-
-    public static final String TREE_ATTR_ID = "id"; //$NON-NLS-1$
-    public static final String TREE_ATTR_REF = "ref"; //$NON-NLS-1$
-    public static final String TREE_ATTR_PATH = "path"; //$NON-NLS-1$
-    public static final String TREE_ATTR_VISIBLE_IF = "visibleIf"; //$NON-NLS-1$
-    public static final String TREE_ATTR_TYPE = "type"; //$NON-NLS-1$
-    public static final String TREE_ATTR_LABEL = "label"; //$NON-NLS-1$
-    public static final String TREE_ATTR_NAVIGABLE = "navigable"; //$NON-NLS-1$
-    public static final String TREE_ATTR_DESCRIPTION = "description"; //$NON-NLS-1$
-    public static final String TREE_ATTR_ITEM_LABEL = "itemLabel"; //$NON-NLS-1$
-    public static final String TREE_ATTR_PROPERTY = "property"; //$NON-NLS-1$
-    public static final String TREE_ATTR_OPTIONAL = "optional"; //$NON-NLS-1$
-    public static final String TREE_ATTR_VIRTUAL = "virtual"; //$NON-NLS-1$
-    public static final String TREE_ATTR_INLINE = "inline"; //$NON-NLS-1$
-    public static final String TREE_ATTR_EDITOR = "editor"; //$NON-NLS-1$
-    public static final String TREE_ATTR_ICON = "icon"; //$NON-NLS-1$
-    public static final String TREE_ATTR_ICON_ID = "iconId"; //$NON-NLS-1$
-    public static final String TREE_ATTR_IF = "if"; //$NON-NLS-1$
-    public static final String TREE_ATTR_DEFAULT = "default"; //$NON-NLS-1$
-
     private DataSourceProviderRegistry registry;
     private String id;
     private String implClassName;
@@ -74,11 +51,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         super(config.getContributor());
         this.registry = registry;
 
-        this.id = config.getAttribute("id");
-        this.implClassName = config.getAttribute("class");
-        this.name = config.getAttribute(TREE_ATTR_LABEL);
-        this.description = config.getAttribute(TREE_ATTR_DESCRIPTION);
-        String iconName = config.getAttribute(TREE_ATTR_ICON);
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.implClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        String iconName = config.getAttribute(RegistryConstants.ATTR_ICON);
         if (!CommonUtils.isEmpty(iconName)) {
             this.icon = iconToImage(iconName);
         }
@@ -87,13 +64,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         }
 
         // Load tree structure
-        IConfigurationElement[] trees = config.getChildren("tree");
+        IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
         if (!CommonUtils.isEmpty(trees)) {
             this.treeDescriptor = this.loadTreeInfo(trees[0]);
         }
 
         // Load driver properties
-        IConfigurationElement[] driverPropsGroup = config.getChildren("driver-properties");
+        IConfigurationElement[] driverPropsGroup = config.getChildren(RegistryConstants.TAG_DRIVER_PROPERTIES);
         if (!CommonUtils.isEmpty(driverPropsGroup)) {
             for (IConfigurationElement propsElement : driverPropsGroup) {
                 IConfigurationElement[] propElements = propsElement.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
@@ -104,12 +81,12 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         }
 
         // Load supplied drivers
-        IConfigurationElement[] driversGroup = config.getChildren("drivers");
+        IConfigurationElement[] driversGroup = config.getChildren(RegistryConstants.TAG_DRIVERS);
         if (!CommonUtils.isEmpty(driversGroup)) {
             for (IConfigurationElement driversElement : driversGroup) {
-                this.driversManagable = driversElement.getAttribute("managable") == null ||
-                    CommonUtils.getBoolean(driversElement.getAttribute("managable"));
-                IConfigurationElement[] driverList = driversElement.getChildren("driver");
+                this.driversManagable = driversElement.getAttribute(RegistryConstants.ATTR_MANAGABLE) == null ||
+                    CommonUtils.getBoolean(driversElement.getAttribute(RegistryConstants.ATTR_MANAGABLE));
+                IConfigurationElement[] driverList = driversElement.getChildren(RegistryConstants.TAG_DRIVER);
                 if (!CommonUtils.isEmpty(driverList)) {
                     for (IConfigurationElement driverElement : driverList) {
                         this.drivers.add(loadDriver(driverElement));
@@ -119,10 +96,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         }
 
         // Load views
-        IConfigurationElement[] viewsGroup = config.getChildren("views");
+        IConfigurationElement[] viewsGroup = config.getChildren(RegistryConstants.TAG_VIEWS);
         if (!CommonUtils.isEmpty(viewsGroup)) {
             for (IConfigurationElement viewsElement : viewsGroup) {
-                IConfigurationElement[] viewList = viewsElement.getChildren("view");
+                IConfigurationElement[] viewList = viewsElement.getChildren(RegistryConstants.TAG_VIEW);
                 if (!CommonUtils.isEmpty(viewList)) {
                     for (IConfigurationElement viewElement : viewList) {
                         this.views.add(
@@ -285,16 +262,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         DBXTreeItem treeRoot = new DBXTreeItem(
             this,
             null,
-            config.getAttribute(TREE_ATTR_ID),
+            config.getAttribute(RegistryConstants.ATTR_ID),
             "Connection",
             "Connection",
-            config.getAttribute(TREE_ATTR_PATH),
+            config.getAttribute(RegistryConstants.ATTR_PATH),
             null,
             false,
             false,
             true,
             false,
-            config.getAttribute(TREE_ATTR_VISIBLE_IF));
+            config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
         loadTreeChildren(config, treeRoot);
         loadTreeIcon(treeRoot, config);
         return treeRoot;
@@ -313,7 +290,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private void loadTreeNode(DBXTreeNode parent, IConfigurationElement config)
     {
         DBXTreeNode child = null;
-        final String refId = config.getAttribute(TREE_ATTR_REF);
+        final String refId = config.getAttribute(RegistryConstants.ATTR_REF);
         if (!CommonUtils.isEmpty(refId)) {
             child = treeNodeMap.get(refId);
             if (child != null) {
@@ -323,40 +300,40 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             }
         } else {
             String nodeType = config.getName();
-            if (nodeType.equals(TREE_NODE_TYPE_FOLDER)) {
+            if (nodeType.equals(RegistryConstants.TAG_FOLDER)) {
                 DBXTreeFolder folder = new DBXTreeFolder(
                     this,
                     parent,
-                    config.getAttribute(TREE_ATTR_ID),
-                    config.getAttribute(TREE_ATTR_TYPE),
-                    config.getAttribute(TREE_ATTR_LABEL),
-                    CommonUtils.getBoolean(config.getAttribute(TREE_ATTR_NAVIGABLE), true),
-                    config.getAttribute(TREE_ATTR_VISIBLE_IF));
-                folder.setDescription(config.getAttribute(TREE_ATTR_DESCRIPTION));
+                    config.getAttribute(RegistryConstants.ATTR_ID),
+                    config.getAttribute(RegistryConstants.ATTR_TYPE),
+                    config.getAttribute(RegistryConstants.ATTR_LABEL),
+                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
+                    config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
+                folder.setDescription(config.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
                 child = folder;
-            } else if (nodeType.equals(TREE_NODE_TYPE_ITEMS)) {
+            } else if (nodeType.equals(RegistryConstants.TAG_ITEMS)) {
                 child = new DBXTreeItem(
                     this,
                     parent,
-                    config.getAttribute(TREE_ATTR_ID),
-                    config.getAttribute(TREE_ATTR_LABEL),
-                    config.getAttribute(TREE_ATTR_ITEM_LABEL),
-                    config.getAttribute(TREE_ATTR_PATH),
-                    config.getAttribute(TREE_ATTR_PROPERTY),
-                    CommonUtils.getBoolean(config.getAttribute(TREE_ATTR_OPTIONAL)),
-                    CommonUtils.getBoolean(config.getAttribute(TREE_ATTR_VIRTUAL)),
-                    CommonUtils.getBoolean(config.getAttribute(TREE_ATTR_NAVIGABLE), true),
-                    CommonUtils.getBoolean(config.getAttribute(TREE_ATTR_INLINE)),
-                    config.getAttribute(TREE_ATTR_VISIBLE_IF));
-            } else if (nodeType.equals(TREE_NODE_TYPE_OBJECT)) {
+                    config.getAttribute(RegistryConstants.ATTR_ID),
+                    config.getAttribute(RegistryConstants.ATTR_LABEL),
+                    config.getAttribute(RegistryConstants.ATTR_ITEM_LABEL),
+                    config.getAttribute(RegistryConstants.ATTR_PATH),
+                    config.getAttribute(RegistryConstants.ATTR_PROPERTY),
+                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL)),
+                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
+                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
+                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INLINE)),
+                    config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
+            } else if (nodeType.equals(RegistryConstants.TAG_OBJECT)) {
                 child = new DBXTreeObject(
                     this,
                     parent,
-                    config.getAttribute(TREE_ATTR_ID),
-                    config.getAttribute(TREE_ATTR_VISIBLE_IF),
-                    config.getAttribute(TREE_ATTR_LABEL),
-                    config.getAttribute(TREE_ATTR_DESCRIPTION),
-                    config.getAttribute(TREE_ATTR_EDITOR));
+                    config.getAttribute(RegistryConstants.ATTR_ID),
+                    config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
+                    config.getAttribute(RegistryConstants.ATTR_LABEL),
+                    config.getAttribute(RegistryConstants.ATTR_DESCRIPTION),
+                    config.getAttribute(RegistryConstants.ATTR_EDITOR));
             } else {
                 // Unknown node type
                 //log.warn("Unknown node type: " + nodeType);
@@ -374,19 +351,19 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     private void loadTreeIcon(DBXTreeNode node, IConfigurationElement config)
     {
-        String defaultIcon = config.getAttribute(TREE_ATTR_ICON);
+        String defaultIcon = config.getAttribute(RegistryConstants.ATTR_ICON);
         if (defaultIcon == null) {
-            defaultIcon = config.getAttribute(TREE_ATTR_ICON_ID);
+            defaultIcon = config.getAttribute(RegistryConstants.ATTR_ICON_ID);
         }
-        IConfigurationElement[] iconElements = config.getChildren(TREE_ATTR_ICON);
+        IConfigurationElement[] iconElements = config.getChildren(RegistryConstants.ATTR_ICON);
         if (!CommonUtils.isEmpty(iconElements)) {
             for (IConfigurationElement iconElement : iconElements) {
-                String icon = iconElement.getAttribute(TREE_ATTR_ICON);
+                String icon = iconElement.getAttribute(RegistryConstants.ATTR_ICON);
                 if (icon == null) {
-                    icon = iconElement.getAttribute(TREE_ATTR_ICON_ID);
+                    icon = iconElement.getAttribute(RegistryConstants.ATTR_ICON_ID);
                 }
-                String expr = iconElement.getAttribute(TREE_ATTR_IF);
-                boolean isDefault = CommonUtils.getBoolean(iconElement.getAttribute(TREE_ATTR_DEFAULT));
+                String expr = iconElement.getAttribute(RegistryConstants.ATTR_IF);
+                boolean isDefault = CommonUtils.getBoolean(iconElement.getAttribute(RegistryConstants.ATTR_DEFAULT));
                 if (isDefault && CommonUtils.isEmpty(expr)) {
                     defaultIcon = icon;
                 } else {

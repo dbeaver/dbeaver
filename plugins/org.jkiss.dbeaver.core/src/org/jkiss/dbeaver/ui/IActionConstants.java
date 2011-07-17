@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui;
 
 /**
@@ -22,4 +26,7 @@ public final class IActionConstants {
     public static final String MB_ADDITIONS_END = "additions_end"; //$NON-NLS-1$
     public static final String MB_ADDITIONS_PROPS = "additions_props"; //$NON-NLS-1$
     public static final String MB_ADDITIONS_START = "additions_start"; //$NON-NLS-1$
+
+    public static final String NEW_CONNECTION_POINT = "org.jkiss.dbeaver.ext.ui.newConnectionWizard"; //$NON-NLS-1$
+    public static final String EDIT_CONNECTION_POINT = "org.jkiss.dbeaver.ext.ui.editConnectionDialog"; //$NON-NLS-1$
 }

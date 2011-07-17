@@ -24,22 +24,21 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * About box
  */
 public class AboutBoxDialog extends Dialog
 {
-    private static final String STR_AUTHOR_INFO = "(C) JKISS project, 2011";
-    private static final String STR_SITE_URL = "<a>http://dbeaver.jkiss.org/</a>";
-    private static final String STR_EMAIL_URL = "<a>serge@jkiss.org</a>";
     private final Font TITLE_FONT;
 
     public AboutBoxDialog(Shell shell)
     {
         super(shell);
-        TITLE_FONT = new Font(shell.getDisplay(), "SansSerif", 20, SWT.NORMAL);
+        TITLE_FONT = new Font(shell.getDisplay(), CoreMessages.dialog_about_font, 20, SWT.NORMAL);
     }
 
     @Override
@@ -50,7 +49,7 @@ public class AboutBoxDialog extends Dialog
 
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText("About DBeaver");
+        newShell.setText(CoreMessages.dialog_about_title);
     }
 
     protected boolean isResizable()
@@ -73,17 +72,16 @@ public class AboutBoxDialog extends Dialog
 
         GridData gd;
 
-        String productDesc = "", productVersion = "";
+        String productVersion = ""; //$NON-NLS-1$
         IProduct product = Platform.getProduct();
         if (product != null) {
-			productDesc = product.getDescription();
             productVersion = product.getDefiningBundle().getVersion().toString();
 		}
 
         Label titleLabel = new Label(group, SWT.NONE);
         titleLabel.setBackground(background);
         titleLabel.setFont(TITLE_FONT);
-        titleLabel.setText(productDesc);
+        titleLabel.setText(CoreMessages.productSubTitle);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         titleLabel.setLayoutData(gd);
@@ -98,7 +96,7 @@ public class AboutBoxDialog extends Dialog
                         IHandlerService service = (IHandlerService) workbenchWindow.getService(IHandlerService.class);
                         if (service != null) {
                             try {
-                                service.executeCommand("org.eclipse.ui.help.installationDialog", null);
+                                service.executeCommand("org.eclipse.ui.help.installationDialog", null); //$NON-NLS-1$
                             } catch (Exception e1) {
                                 // just ignore error
                             }
@@ -120,20 +118,20 @@ public class AboutBoxDialog extends Dialog
 
         Label versionLabel = new Label(group, SWT.NONE);
         versionLabel.setBackground(background);
-        versionLabel.setText("Version " + productVersion);
+        versionLabel.setText(CoreMessages.dialog_about_label_version + productVersion);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         versionLabel.setLayoutData(gd);
 
         Label authorLabel = new Label(group, SWT.NONE);
         authorLabel.setBackground(background);
-        authorLabel.setText(STR_AUTHOR_INFO);
+        authorLabel.setText(CoreMessages.productCopyright);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         authorLabel.setLayoutData(gd);
 
         Link siteLink = new Link(group, SWT.NONE);
-        siteLink.setText(STR_SITE_URL);
+        siteLink.setText(UIUtils.makeAnchor(CoreMessages.productWebsite));
         siteLink.setBackground(background);
         siteLink.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
@@ -145,11 +143,11 @@ public class AboutBoxDialog extends Dialog
         siteLink.setLayoutData(gd);
 
         Link emailLink = new Link(group, SWT.NONE);
-        emailLink.setText(STR_EMAIL_URL);
+        emailLink.setText(UIUtils.makeAnchor(CoreMessages.productEmail));
         emailLink.setBackground(background);
         emailLink.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
-                Program.launch("mailto:" + e.text);
+                Program.launch("mailto:" + e.text); //$NON-NLS-1$
             }
         });
         gd = new GridData();

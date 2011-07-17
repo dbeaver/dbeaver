@@ -53,6 +53,7 @@ public class RegistryConstants {
     public static final String ATTR_ANONYMOUS = "anonymous"; //$NON-NLS-1$
 
     public static final String ATTR_ICON = "icon"; //$NON-NLS-1$
+    public static final String ATTR_ICON_ID = "iconId"; //$NON-NLS-1$
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
@@ -66,4 +67,25 @@ public class RegistryConstants {
     public static final String ATTR_EXTENSION = "extension"; //$NON-NLS-1$
     public static final String ATTR_SAMPLE_CLASS = "sampleClass"; //$NON-NLS-1$
     public static final String ATTR_SOURCE_TYPE = "sourceType"; //$NON-NLS-1$
+    public static final String TAG_FOLDER = "folder"; //$NON-NLS-1$
+    public static final String TAG_ITEMS = "items"; //$NON-NLS-1$
+    public static final String TAG_OBJECT = "object"; //$NON-NLS-1$
+    static final String TAG_TREE = "tree"; //$NON-NLS-1$
+    static final String TAG_DRIVER_PROPERTIES = "driver-properties"; //$NON-NLS-1$
+    static final String TAG_VIEWS = "views"; //$NON-NLS-1$
+    static final String TAG_VIEW = "view"; //$NON-NLS-1$
+
+    public static final String ATTR_REF = "ref"; //$NON-NLS-1$
+    public static final String ATTR_VISIBLE_IF = "visibleIf"; //$NON-NLS-1$
+    public static final String ATTR_NAVIGABLE = "navigable"; //$NON-NLS-1$
+    public static final String ATTR_ITEM_LABEL = "itemLabel"; //$NON-NLS-1$
+    public static final String ATTR_PROPERTY = "property"; //$NON-NLS-1$
+    public static final String ATTR_OPTIONAL = "optional"; //$NON-NLS-1$
+    public static final String ATTR_VIRTUAL = "virtual"; //$NON-NLS-1$
+    public static final String ATTR_INLINE = "inline"; //$NON-NLS-1$
+    public static final String ATTR_EDITOR = "editor"; //$NON-NLS-1$
+    public static final String ATTR_IF = "if"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT = "default"; //$NON-NLS-1$
+    static final String ATTR_MANAGABLE = "managable"; //$NON-NLS-1$
+
 }

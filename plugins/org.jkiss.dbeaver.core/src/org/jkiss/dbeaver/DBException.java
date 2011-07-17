@@ -4,7 +4,9 @@
 
 package org.jkiss.dbeaver;
 
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.SQLUtils;
 
 import java.sql.SQLException;
@@ -79,18 +81,18 @@ public class DBException extends Exception
 
     private static String makeMessage(SQLException ex)
     {
-        StringBuilder msg = new StringBuilder("SQL Error");
+        StringBuilder msg = new StringBuilder(CoreMessages.common_error_sql);
         if (ex.getErrorCode() > 0) {
-            msg.append(" [").append(ex.getErrorCode()).append("]");
+            msg.append(" [").append(ex.getErrorCode()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         if (!CommonUtils.isEmpty(ex.getSQLState())) {
-            msg.append(" [").append(ex.getSQLState()).append("]");
+            msg.append(" [").append(ex.getSQLState()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         if (!CommonUtils.isEmpty(ex.getMessage())) {
-            msg.append(": ").append(SQLUtils.stripTransformations(ex.getMessage()));
+            msg.append(": ").append(SQLUtils.stripTransformations(ex.getMessage())); //$NON-NLS-1$
         }
         if (ex.getNextException() != null) {
-            msg.append("\n").append(makeMessage(ex.getNextException()));
+            msg.append(ContentUtils.getDefaultLineSeparator()).append(makeMessage(ex.getNextException()));
         }
         return msg.toString();
     }

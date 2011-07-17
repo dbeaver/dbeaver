@@ -6,11 +6,11 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.IActionConstants;
 
 import java.util.Date;
 
@@ -56,7 +56,7 @@ public class EditConnectionWizard extends ConnectionWizard
      */
     public void addPages()
     {
-        DataSourceViewDescriptor view = dataSource.getDriver().getProviderDescriptor().getView(DBeaverExtensions.EDIT_CONNECTION_POINT);
+        DataSourceViewDescriptor view = dataSource.getDriver().getProviderDescriptor().getView(IActionConstants.EDIT_CONNECTION_POINT);
         if (view != null) {
             pageSettings = new ConnectionPageSettings(this, view, dataSource);
             addPage(pageSettings);

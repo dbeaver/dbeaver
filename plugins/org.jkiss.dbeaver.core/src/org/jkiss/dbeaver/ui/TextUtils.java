@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.graphics.GC;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Text utils
@@ -33,22 +38,15 @@ public class TextUtils {
      */
     public static String getShortText(GC gc, String t, int width)
     {
-        if (t == null)
-        {
-            return null;
-        }
-
-        if (t.equals(""))
-        {
-            return "";
-        }
-
-        if (width >= gc.textExtent(t).x)
-        {
+        if (CommonUtils.isEmpty(t)) {
             return t;
         }
 
-        int w = gc.textExtent("...").x;
+        if (width >= gc.textExtent(t).x) {
+            return t;
+        }
+
+        int w = gc.textExtent("...").x; //$NON-NLS-1$
         String text = t;
         int l = text.length();
         int pivot = l / 2;
@@ -63,7 +61,7 @@ public class TextUtils {
             int l2 = gc.textExtent(s2).x;
             if (l1 + w + l2 < width)
             {
-                text = s1 + "..." + s2;
+                text = s1 + "..." + s2; //$NON-NLS-1$
                 break;
             }
             s--;
@@ -72,7 +70,7 @@ public class TextUtils {
 
         if (s == 0 || e == l)
         {
-            text = text.substring(0, 1) + "..." + text.substring(l - 1, l);
+            text = text.substring(0, 1) + "..." + text.substring(l - 1, l); //$NON-NLS-1$
         }
 
         return text;
@@ -84,7 +82,7 @@ public class TextUtils {
      * to the end of the string. The width is computed using the
      * {@link org.eclipse.swt.graphics.GC#stringExtent(String)}.
      *
-     * Text shorten removed due to awfull aglorythm (it works really slow on long strings).
+     * Text shorten removed due to awful algorithm (it works really slow on long strings).
      * TODO: make something better
      *
      * @param gc GC used to perform calculation.
@@ -94,13 +92,12 @@ public class TextUtils {
      */
     public static String getShortString(GC gc, String t, int width)
     {
-        if (t == null)
-        {
-            return null;
+        if (CommonUtils.isEmpty(t)) {
+            return t;
         }
 
-        if (t.equals("") || width <= 0) {
-            return "";
+        if (width <= 0) {
+            return ""; //$NON-NLS-1$
         }
         int avgCharWidth = gc.getFontMetrics().getAverageCharWidth();
         float length = t.length();
