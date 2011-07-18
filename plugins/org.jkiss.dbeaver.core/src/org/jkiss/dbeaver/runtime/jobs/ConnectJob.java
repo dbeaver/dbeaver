@@ -17,6 +17,8 @@ import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 
+import java.text.MessageFormat;
+
 /**
  * ConnectJob
  */
@@ -42,13 +44,17 @@ public class ConnectJob extends AbstractJob
         try {
             connectThread = getThread();
             String oldName = connectThread.getName();
-            connectThread.setName("Connect to datasource '" + container.getName() + "'");
+            if (connectThread != null) {
+                connectThread.setName("Connect to datasource '" + container.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+            }
 
             try {
                 container.connect(monitor);
             } finally {
-                connectThread.setName(oldName);
-                connectThread = null;
+                if (connectThread != null) {
+                    connectThread.setName(oldName);
+                    connectThread = null;
+                }
             }
 
             return new Status(
@@ -59,7 +65,7 @@ public class ConnectJob extends AbstractJob
         catch (Throwable ex) {
             log.debug(ex);
             return RuntimeUtils.makeExceptionStatus(
-                "Error connecting to datasource '" + container.getName() + "'",
+                MessageFormat.format("Error connecting to datasource ''{0}''", container.getName()),
                 ex);
         }
     }

@@ -96,7 +96,7 @@
                 class="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"
                 allowMultiple="false"
                 icon="icons/databases.png"
-                name="Database Navigator">
+                name="%view_database_navigator_title">
         </view>
         <view
                 id="org.jkiss.dbeaver.core.projectNavigator"
@@ -104,7 +104,7 @@
                 class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView"
                 allowMultiple="false"
                 icon="icons/projects.png"
-                name="Projects">
+                name="%view_project_navigator_title">
         </view>
         <view
                 id="org.jkiss.dbeaver.core.projectExplorer"
@@ -112,7 +112,7 @@
                 class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView"
                 allowMultiple="false"
                 icon="icons/project.png"
-                name="Project Explorer">
+                name="%view_project_explorer_title">
         </view>
         <view
                 id="org.jkiss.dbeaver.core.queryManager"
@@ -120,7 +120,7 @@
                 class="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"
                 allowMultiple="false"
                 icon="icons/misc/sql.png"
-                name="Query Manager">
+                name="%view_query_manager_title">
         </view>
         <view
                 id="org.jkiss.dbeaver.core.findObjects"
@@ -163,7 +163,7 @@
 
         <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnect" name="Disconnect" description="Disconnect from database" categoryId="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate/Reconnect" description="Invalidate database connection" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate/Reconnect" description="Invalidate/reconnect database connection" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.commit" name="Commit changes" description="Commit changes in SQL Session" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.rollback" name="Rollback changes" description="Rollback changes in SQL Session" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.autocommit" name="Transactional mode" description="Changes transactional mode of active session" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -1388,9 +1388,13 @@
     </extension>
 
     <extension id="product" point="org.eclipse.core.runtime.products">
-        <product application="org.jkiss.dbeaver.core.application" description="Universal Database Manager" name="%productName">
+        <product application="org.jkiss.dbeaver.core.application" description="%productSubTitle" name="%productName">
             <property name="aboutText" value="%productTitle"/>
-            <property name="windowImages" value="icons/dbeaver.png"/>
+            <property name="copyright" value="%productCopyright"/>
+            <property name="subTitle" value="%productSubTitle"/>
+            <property name="website" value="%productWebsite"/>
+            <property name="email" value="%productEmail"/>
+            <property name="windowImages" value="%productIcon"/>
             <property name="aboutImage" value="product_lg.gif"/>
             <property name="appName" value="%productName"/>
             <property name="startupForegroundColor" value="000000"/>

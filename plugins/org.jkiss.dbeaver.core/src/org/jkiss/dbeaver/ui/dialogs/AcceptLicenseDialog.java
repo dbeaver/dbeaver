@@ -53,8 +53,8 @@ public class AcceptLicenseDialog extends Dialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        createButton(parent, IDialogConstants.OK_ID, "Accept", true);
-        createButton(parent, IDialogConstants.CANCEL_ID, "Decline", false);
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.YES_LABEL, true);
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.NO_LABEL, false);
     }
 
     public static boolean acceptLicense(Shell parentShell, String title, String license)

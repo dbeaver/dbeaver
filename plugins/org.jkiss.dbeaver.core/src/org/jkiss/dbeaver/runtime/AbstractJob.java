@@ -11,10 +11,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Abstract Database Job
@@ -23,7 +21,7 @@ public abstract class AbstractJob extends Job
 {
     static final Log log = LogFactory.getLog(AbstractJob.class);
 
-    public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 1*1000;
+    public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 1 * 1000;
 
     private DBRProgressMonitor progressMonitor;
     private boolean finished = false;
@@ -99,7 +97,7 @@ public abstract class AbstractJob extends Job
 */
         // do it only on second request
         if (!blockCanceled) {
-            Job cancelJob = new Job("Cancel block") {
+            Job cancelJob = new Job("Cancel block") { //$NON-NLS-1$
                 @Override
                 protected IStatus run(IProgressMonitor monitor)
                 {
@@ -109,7 +107,7 @@ public abstract class AbstractJob extends Job
                             try {
                                 block.cancelBlock();
                             } catch (DBException e) {
-                                log.error("Could not interrupt operation" + block, e);
+                                log.error("Can't interrupt operation " + block, e); //$NON-NLS-1$
                             }
                             blockCanceled = true;
                         }

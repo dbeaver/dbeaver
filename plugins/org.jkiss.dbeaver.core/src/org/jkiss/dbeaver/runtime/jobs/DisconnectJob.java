@@ -13,6 +13,8 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
+import java.text.MessageFormat;
+
 /**
  * DisconnectJob
  */
@@ -39,7 +41,7 @@ public class DisconnectJob extends AbstractJob
         }
         catch (Exception ex) {
             return RuntimeUtils.makeExceptionStatus(
-                "Error disconnecting from datasource '" + container.getName() + "'",
+                MessageFormat.format("Error disconnecting from datasource ''{0}''", container.getName()),
                 ex);
         }
     }

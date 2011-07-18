@@ -9,15 +9,6 @@ import org.eclipse.osgi.util.NLS;
 public class CoreMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.DBeaverResources"; //$NON-NLS-1$
 
-	public static String productCopyright;
-
-	public static String productEmail;
-
-	public static String productName;
-	public static String productTitle;
-	public static String productSubTitle;
-
-	public static String productWebsite;
 	public static String actions_menu_about;
 	public static String actions_menu_database;
 	public static String actions_menu_edit;

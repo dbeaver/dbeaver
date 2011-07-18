@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * RuntimeUtils
@@ -127,7 +128,7 @@ public class RuntimeUtils
                 log.warn(e);
             }
         } else {
-            log.debug("Could not save prefernce store '" + store + "' - not a persistent one");
+            log.debug("Could not save preference store '" + store + "' - not a persistent one"); //$NON-NLS-1$
         }
     }
 
@@ -244,7 +245,7 @@ public class RuntimeUtils
 
     public static File getUserHomeDir()
     {
-        String userHome = System.getProperty("user.home");
+        String userHome = System.getProperty("user.home"); //$NON-NLS-1$
         if (userHome == null) {
             userHome = ".";
         }
@@ -253,12 +254,12 @@ public class RuntimeUtils
 
     public static File getBetaDir()
     {
-        return new File(getUserHomeDir(), ".dbeaver-beta/");
+        return new File(getUserHomeDir(), ".dbeaver-beta/"); //$NON-NLS-1$
     }
 
     public static String getCurrentDate()
     {
-        return new SimpleDateFormat("yyyyMMdd").format(new Date());
+        return new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
 /*
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
@@ -270,7 +271,7 @@ public class RuntimeUtils
 
     public static String getCurrentTimeStamp()
     {
-        return new SimpleDateFormat("yyyyMMddhhmm").format(new Date());
+        return new SimpleDateFormat("yyyyMMddhhmm", Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
 /*
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
@@ -347,7 +348,7 @@ public class RuntimeUtils
                     saveableName = ((IWorkbenchPart) saveable).getTitle();
                 } else {
                     shell = DBeaverCore.getActiveWorkbenchShell();
-                    saveableName = "Object";
+                    saveableName = CommonUtils.toString(saveable);
                 }
                 int confirmResult = ConfirmationDialog.showConfirmDialog(
                     shell,

@@ -72,7 +72,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     public synchronized void endBlock()
     {
         if (blocks == null || blocks.isEmpty()) {
-            log.warn("End block invoked while no blocking objects are in stack");
+            log.warn("End block invoked while no blocking objects are in stack"); //$NON-NLS-1$
             return;
         }
         //if (blocks.size() == 1) {

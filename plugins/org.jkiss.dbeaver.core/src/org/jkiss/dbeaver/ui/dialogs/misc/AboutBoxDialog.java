@@ -26,6 +26,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -72,16 +73,13 @@ public class AboutBoxDialog extends Dialog
 
         GridData gd;
 
-        String productVersion = ""; //$NON-NLS-1$
         IProduct product = Platform.getProduct();
-        if (product != null) {
-            productVersion = product.getDefiningBundle().getVersion().toString();
-		}
+        String productVersion = product.getDefiningBundle().getVersion().toString();
 
         Label titleLabel = new Label(group, SWT.NONE);
         titleLabel.setBackground(background);
         titleLabel.setFont(TITLE_FONT);
-        titleLabel.setText(CoreMessages.productSubTitle);
+        titleLabel.setText(product.getProperty(DBeaverConstants.PRODUCT_PROP_SUB_TITLE));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         titleLabel.setLayoutData(gd);
@@ -125,13 +123,13 @@ public class AboutBoxDialog extends Dialog
 
         Label authorLabel = new Label(group, SWT.NONE);
         authorLabel.setBackground(background);
-        authorLabel.setText(CoreMessages.productCopyright);
+        authorLabel.setText(product.getProperty(DBeaverConstants.PRODUCT_PROP_COPYRIGHT));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         authorLabel.setLayoutData(gd);
 
         Link siteLink = new Link(group, SWT.NONE);
-        siteLink.setText(UIUtils.makeAnchor(CoreMessages.productWebsite));
+        siteLink.setText(UIUtils.makeAnchor(product.getProperty(DBeaverConstants.PRODUCT_PROP_WEBSITE)));
         siteLink.setBackground(background);
         siteLink.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
@@ -143,7 +141,7 @@ public class AboutBoxDialog extends Dialog
         siteLink.setLayoutData(gd);
 
         Link emailLink = new Link(group, SWT.NONE);
-        emailLink.setText(UIUtils.makeAnchor(CoreMessages.productEmail));
+        emailLink.setText(UIUtils.makeAnchor(product.getProperty(DBeaverConstants.PRODUCT_PROP_EMAIL)));
         emailLink.setBackground(background);
         emailLink.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {

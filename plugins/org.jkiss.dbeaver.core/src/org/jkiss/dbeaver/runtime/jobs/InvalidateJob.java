@@ -10,6 +10,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
+import java.text.MessageFormat;
+
 /**
  * InvalidateJob
  */
@@ -32,7 +34,9 @@ public class InvalidateJob extends DataSourceJob
         }
         catch (Exception ex) {
             return RuntimeUtils.makeExceptionStatus(
-                "Error invalidating datasource '" + getDataSource().getContainer().getName() + "'",
+                MessageFormat.format(
+                    "Error invalidating datasource ''{0}''",
+                    getDataSource().getContainer().getName()),
                 ex);
         }
     }
