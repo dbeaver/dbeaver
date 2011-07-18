@@ -83,9 +83,9 @@ public class DBNProject extends DBNResource implements IAdaptable
         return DBIcon.PROJECT.getImage();
     }
 
-    public String getDefaultCommandId()
+    public boolean allowsOpen()
     {
-        return null;
+        return false;
     }
 
     public Object getAdapter(Class adapter) {

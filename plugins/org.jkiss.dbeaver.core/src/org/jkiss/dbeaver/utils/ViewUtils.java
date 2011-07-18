@@ -4,7 +4,9 @@
 
 package org.jkiss.dbeaver.utils;
 
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -184,11 +186,6 @@ public class ViewUtils
 
     public static void addContextMenu(final IWorkbenchPart workbenchPart, final ISelectionProvider selectionProvider, final Control control, final IMenuListener menuListener)
     {
-        if (workbenchPart == null) {
-            // No menu for such views (e.g. control embedded in some dialog)
-            return;
-        }
-
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
         menu.addMenuListener(new MenuListener()
@@ -201,16 +198,14 @@ public class ViewUtils
             {
                 Menu m = (Menu)e.widget;
                 DBNNode node = ViewUtils.getSelectedNode(selectionProvider.getSelection());
-                if (node != null && !node.isLocked()) {
-                    String defaultCommandId = node.getDefaultCommandId();
-
+                if (node != null && !node.isLocked() && node.allowsOpen()) {
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
                     for (MenuItem item : m.getItems()) {
                         Object itemData = item.getData();
                         if (itemData instanceof IContributionItem) {
                             String contribId = ((IContributionItem)itemData).getId();
-                            if (contribId != null && defaultCommandId != null && contribId.equals(defaultCommandId)) {
+                            if (contribId != null && contribId.equals(ICommandIds.CMD_OBJECT_OPEN)) {
                                 m.setDefaultItem(item);
                             }
                         }
@@ -232,20 +227,22 @@ public class ViewUtils
 
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
-                // Add "Set active object" menu
-                if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
-                    final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
-                        DBSEntitySelector.class, ((DBNDatabaseNode)selectedNode).getObject());
-                    if (activeContainer != null && activeContainer.supportsEntitySelect()) {
-                        DBSObject activeChild;
-                        activeChild = activeContainer.getSelectedEntity();
-                        if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
-                            DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
-                            if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
-                                String text = "Set Active " + databaseNode.getNodeType();
-                                IAction action = makeAction(new NavigatorActionSetActiveObject(), workbenchPart, selection, text, null, null);
+                if (workbenchPart != null) {
+                    // Add "Set active object" menu
+                    if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
+                        final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
+                            DBSEntitySelector.class, ((DBNDatabaseNode)selectedNode).getObject());
+                        if (activeContainer != null && activeContainer.supportsEntitySelect()) {
+                            DBSObject activeChild;
+                            activeChild = activeContainer.getSelectedEntity();
+                            if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
+                                DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
+                                if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
+                                    String text = "Set Active " + databaseNode.getNodeType();
+                                    IAction action = makeAction(new NavigatorActionSetActiveObject(), workbenchPart, selection, text, null, null);
 
-                                manager.add(action);
+                                    manager.add(action);
+                                }
                             }
                         }
                     }
@@ -254,16 +251,22 @@ public class ViewUtils
                 manager.add(new Separator());
                 manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
 
+                IServiceLocator serviceLocator;
+                if (workbenchPart != null) {
+                    serviceLocator = workbenchPart.getSite();
+                } else {
+                    serviceLocator = DBeaverCore.getActiveWorkbenchWindow();
+                }
                 // Add properties button
                 if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
                     //propertyDialogAction.selectionChanged(selection);
                     //manager.add(propertyDialogAction);
-                    manager.add(makeCommandContribution(workbenchPart.getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES));
+                    manager.add(makeCommandContribution(serviceLocator, IWorkbenchCommandConstants.FILE_PROPERTIES));
                 }
 
                 if (selectedNode.isPersisted()) {
                     // Add refresh button
-                    manager.add(makeCommandContribution(workbenchPart.getSite(), IWorkbenchCommandConstants.FILE_REFRESH));
+                    manager.add(makeCommandContribution(serviceLocator, IWorkbenchCommandConstants.FILE_REFRESH));
                 }
             }
         });
@@ -273,7 +276,9 @@ public class ViewUtils
 
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
-        workbenchPart.getSite().registerContextMenu(menuMgr, selectionProvider);
+        if (workbenchPart != null) {
+            workbenchPart.getSite().registerContextMenu(menuMgr, selectionProvider);
+        }
     }
 
     public static void addDragAndDropSupport(final Viewer viewer)
@@ -454,16 +459,16 @@ public class ViewUtils
         return false;
     }
 
-    public static void runCommand(String commandId, IWorkbenchPart part)
+    public static void runCommand(String commandId, IServiceLocator serviceLocator)
     {
         if (commandId != null) {
             try {
                 //Command cmd = new Command();
-                ICommandService commandService = (ICommandService)part.getSite().getService(ICommandService.class);
+                ICommandService commandService = (ICommandService)serviceLocator.getService(ICommandService.class);
                 if (commandService != null) {
                     Command command = commandService.getCommand(commandId);
                     if (command != null && command.isEnabled()) {
-                        IHandlerService handlerService = (IHandlerService) part.getSite().getService(IHandlerService.class);
+                        IHandlerService handlerService = (IHandlerService) serviceLocator.getService(IHandlerService.class);
                         handlerService.executeCommand(commandId, null);
                     }
                 }

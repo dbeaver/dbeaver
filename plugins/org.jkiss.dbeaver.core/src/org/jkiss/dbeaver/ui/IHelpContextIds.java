@@ -26,4 +26,6 @@ public final class IHelpContextIds
     public static final String CTX_CON_WIZARD_DRIVER = "con-wizard-driver"; //$NON-NLS-1$
     public static final String CTX_CON_WIZARD_SETTINGS = "con-wizard-settings"; //$NON-NLS-1$
     public static final String CTX_CON_WIZARD_FINAL = "con-wizard-final"; //$NON-NLS-1$
+
+    public static final String CTX_SEARCH_OBJECTS = "search-objects"; //$NON-NLS-1$
 }

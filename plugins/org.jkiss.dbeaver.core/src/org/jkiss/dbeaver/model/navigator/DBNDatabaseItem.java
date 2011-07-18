@@ -72,12 +72,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode
         return object != null && object.isPersisted();
     }
 
-    public String getDefaultCommandId()
-    {
-        return ICommandIds.CMD_OBJECT_OPEN;
-    }
-
-    public final boolean isManagable() 
+    public final boolean isManagable()
     {
         return true;
     }

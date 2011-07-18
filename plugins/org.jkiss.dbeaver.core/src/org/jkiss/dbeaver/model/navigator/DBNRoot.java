@@ -87,9 +87,9 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         return projects;
     }
 
-    public String getDefaultCommandId()
+    public boolean allowsOpen()
     {
-        return null;
+        return false;
     }
 
     public DBNProject getProject(IProject project)

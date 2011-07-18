@@ -105,9 +105,9 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
         return dataSources;
     }
 
-    public String getDefaultCommandId()
+    public boolean allowsOpen()
     {
-        return null;
+        return false;
     }
 
     private DBNDataSource addDataSource(DataSourceDescriptor descriptor, boolean reflect)

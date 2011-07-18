@@ -88,11 +88,6 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     }
 
 
-    public String getDefaultCommandId()
-    {
-        return ICommandIds.CMD_OBJECT_OPEN;
-    }
-
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {

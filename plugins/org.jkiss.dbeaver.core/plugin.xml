@@ -123,15 +123,6 @@
                 name="%view_query_manager_title">
         </view>
         <view
-                id="org.jkiss.dbeaver.core.findObjects"
-                category="org.jkiss.dbeaver.core.category"
-                class="org.jkiss.dbeaver.ui.views.search.SearchObjectsView"
-                allowMultiple="true"
-                icon="icons/misc/find.png"
-                name="Search">
-        </view>
-        <!--stickyView id="org.jkiss.dbeaver.core.findObjects" closeable="true" moveable="true" location="TOP"/-->
-        <view
                 name="Background Tasks"
                 icon="icons/progress_view.png"
                 category="org.eclipse.ui"

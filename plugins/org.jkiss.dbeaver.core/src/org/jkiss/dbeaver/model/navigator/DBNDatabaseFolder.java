@@ -100,11 +100,6 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return getParentNode() != null && getParentNode().isPersisted();
     }
 
-    public String getDefaultCommandId()
-    {
-        return ICommandIds.CMD_OBJECT_OPEN;
-    }
-
     public Class<? extends DBSObject> getChildrenClass()
     {
         String itemsType = CommonUtils.toString(meta.getType());

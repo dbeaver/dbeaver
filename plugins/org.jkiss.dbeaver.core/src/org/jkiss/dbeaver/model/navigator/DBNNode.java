@@ -169,7 +169,10 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         }
     }
     
-    public abstract String getDefaultCommandId();
+    public boolean allowsOpen()
+    {
+        return true;
+    }
 
     public final boolean isChildOf(DBNNode node)
     {

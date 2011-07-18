@@ -2,9 +2,10 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.views.search;
+package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -13,7 +14,6 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
@@ -32,9 +33,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-public class SearchObjectsView extends ViewPart {
-
-    public static final String VIEW_ID = "org.jkiss.dbeaver.core.findObjects"; //$NON-NLS-1$
+public class SearchObjectsDialog extends HelpEnabledDialog {
 
     private static final int MATCH_INDEX_STARTS_WITH = 0;
     private static final int MATCH_INDEX_CONTAINS = 1;
@@ -46,6 +45,9 @@ public class SearchObjectsView extends ViewPart {
     private static final String PROP_HISTORY = "search-view.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search-view.object-type"; //$NON-NLS-1$
 
+    private volatile static SearchObjectsDialog instance;
+
+    private DBSDataSourceContainer currentDataSource;
     private Composite searchGroup;
     private Table typesTable;
     private Combo searchText;
@@ -60,8 +62,11 @@ public class SearchObjectsView extends ViewPart {
     private Set<String> searchHistory = new LinkedHashSet<String>();
     private Set<String> savedTypeNames = new HashSet<String>();
 
-    public SearchObjectsView()
+    private SearchObjectsDialog(Shell shell, DBSDataSourceContainer currentDataSource)
     {
+        super(shell, IHelpContextIds.CTX_SQL_EDITOR);
+        setShellStyle(SWT.DIALOG_TRIM | SWT.MAX | SWT.RESIZE | getDefaultOrientation());
+        this.currentDataSource = currentDataSource;
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
         nameMask = store.getString(PROP_MASK);
@@ -85,8 +90,7 @@ public class SearchObjectsView extends ViewPart {
         }
     }
 
-    @Override
-    public void dispose()
+    public void saveState()
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
@@ -113,28 +117,26 @@ public class SearchObjectsView extends ViewPart {
             }
             store.setValue(PROP_OBJECT_TYPE, typesString.toString());
         }
-
-        super.dispose();
     }
 
-    public void setCurrentDataSource(DBSDataSourceContainer currentDataSource)
+    @Override
+    protected Control createButtonBar(Composite parent)
     {
-        DBNNode selNode = DBeaverCore.getInstance().getNavigatorModel().findNode(currentDataSource);
-        if (selNode != null) {
-            dataSourceTree.getViewer().setSelection(new StructuredSelection(selNode), true);
-        } else {
-            dataSourceTree.getViewer().setSelection(new StructuredSelection());
-        }
-        fillObjectTypes();
+        return null;
     }
 
-    public void createPartControl(Composite parent)
+    protected Control createDialogArea(Composite parent)
     {
-        setPartName("Find database objects");
-        setTitleImage(DBIcon.FIND.getImage());
+        Shell shell = getShell();
+
+        shell.setText("Find database objects");
+        shell.setImage(DBIcon.FIND.getImage());
 
         //Composite divider = UIUtils.createPlaceholder(parent, 1, 5);
-        SashForm divider = UIUtils.createPartDivider(this, parent, SWT.VERTICAL | SWT.SMOOTH);
+        SashForm divider = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 600;
+        divider.setLayoutData(gd);
 
         {
             searchGroup = new Composite(divider, SWT.NONE);
@@ -160,7 +162,7 @@ public class SearchObjectsView extends ViewPart {
             searchButton = new Button(searchGroup, SWT.PUSH);
             searchButton.setText("Search");
             searchButton.setImage(DBIcon.FIND.getImage());
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             //gd.horizontalSpan = 2;
             searchButton.setLayoutData(gd);
             searchButton.addSelectionListener(new SelectionAdapter() {
@@ -307,22 +309,52 @@ public class SearchObjectsView extends ViewPart {
             itemList = new SearchResultsControl(divider);
             itemList.createProgressPanel();
             itemList.setInfo("You have to set search query");
-            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 700;
             gd.heightHint = 500;
             itemList.setLayoutData(gd);
-            getSite().setSelectionProvider(itemList.getSelectionProvider());
             //itemList.addFocusListener(new ItemsFocusListener());
         }
 
-        divider.setWeights(new int[]{30, 70});
-    }
+        divider.setWeights(new int[]{40, 60});
 
-    public void afterCreate()
-    {
-        Shell shell = getSite().getShell();
         shell.addShellListener(new ShellListener());
         shell.setDefaultButton(searchButton);
+
+        if (currentDataSource != null) {
+            // Set active datasource
+            DBNNode selNode = DBeaverCore.getInstance().getNavigatorModel().findNode(currentDataSource);
+            if (selNode != null) {
+                dataSourceTree.getViewer().setSelection(new StructuredSelection(selNode), true);
+            } else {
+                dataSourceTree.getViewer().setSelection(new StructuredSelection());
+            }
+            fillObjectTypes();
+        }
+
+        return divider;
+    }
+
+    public static void open(Shell shell, DBSDataSourceContainer currentDataSource)
+    {
+        if (instance != null) {
+            instance.getShell().setActive();
+            return;
+        }
+        SearchObjectsDialog dialog = new SearchObjectsDialog(shell, currentDataSource);
+        instance = dialog;
+        try {
+            dialog.open();
+        } finally {
+            instance = null;
+        }
+    }
+
+    @Override
+    public boolean close()
+    {
+        saveState();
+        return super.close();
     }
 
     private DBNNode getSelectedNode()
@@ -403,18 +435,10 @@ public class SearchObjectsView extends ViewPart {
         itemList.loadData();
     }
 
-    @Override
-    public void setFocus()
-    {
-        if (searchText != null && !searchText.isDisposed()) {
-            searchText.setFocus();
-        }
-    }
-
     private class SearchResultsControl extends NodeListControl {
         public SearchResultsControl(Composite resultsGroup)
         {
-            super(resultsGroup, SWT.BORDER, SearchObjectsView.this, DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
+            super(resultsGroup, SWT.BORDER, null, DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
         }
 
         @Override
@@ -427,7 +451,7 @@ public class SearchObjectsView extends ViewPart {
             closeButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    SearchObjectsView.this.getSite().getWorkbenchWindow().getActivePage().hideView(SearchObjectsView.this);
+                    SearchObjectsDialog.this.close();
                 }
             });
             return panel;
@@ -466,7 +490,7 @@ public class SearchObjectsView extends ViewPart {
             DBPDataSource dataSource = getSelectedDataSource();
             DBSStructureAssistant assistant = getSelectedStructureAssistant();
             if (dataSource == null || assistant == null) {
-                return null;
+                throw new IllegalStateException("No active datasource");
             }
             java.util.List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
             for (TableItem item : typesTable.getItems()) {
@@ -560,7 +584,7 @@ public class SearchObjectsView extends ViewPart {
         public void shellActivated(ShellEvent e)
         {
             if (searchButton != null && !searchButton.isDisposed()) {
-                getSite().getShell().setDefaultButton(searchButton);
+                getShell().setDefaultButton(searchButton);
             }
         }
 

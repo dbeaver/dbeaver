@@ -176,11 +176,6 @@ public class DBNResource extends DBNNode
         }
     }
 
-    public String getDefaultCommandId()
-    {
-        return ICommandIds.CMD_OBJECT_OPEN;
-    }
-
     public boolean isManagable()
     {
         return true;

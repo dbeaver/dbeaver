@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -90,11 +91,14 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             {
                 IStructuredSelection selection = (IStructuredSelection)tree.getViewer().getSelection();
                 if (selection.size() == 1) {
-                    DBNNode dbmNode = (DBNNode)selection.getFirstElement();
-                    if (dbmNode == null) {
+                    DBNNode node = (DBNNode)selection.getFirstElement();
+                    if (!(node instanceof DBNDatabaseNode) || !node.allowsOpen()) {
                         return;
                     }
-                    ViewUtils.runCommand(dbmNode.getDefaultCommandId(), NavigatorViewBase.this);
+                    NavigatorHandlerObjectOpen.openEntityEditor(
+                        (DBNDatabaseNode) node,
+                        null,
+                        getSite().getWorkbenchWindow());
                 }
             }
 

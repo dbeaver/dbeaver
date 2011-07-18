@@ -67,24 +67,28 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         this.nodeMeta = nodeMeta;
         this.selectionProvider = new NodeSelectionProvider(super.getSelectionProvider());
 
-        if (workbenchPart != null) {
-            // Add context menu
-            ViewUtils.addContextMenu(workbenchPart, getSelectionProvider(), getItemsViewer().getControl(), this);
-            // Add drag and drop support
-            ViewUtils.addDragAndDropSupport(getItemsViewer());
+        // Add context menu
+        ViewUtils.addContextMenu(workbenchPart, getSelectionProvider(), getItemsViewer().getControl(), this);
 
-            setDoubleClickHandler(new IDoubleClickListener() {
-                public void doubleClick(DoubleClickEvent event)
-                {
-                    // Run default node action
-                    DBNNode dbmNode = ViewUtils.getSelectedNode(getItemsViewer());
-                    if (dbmNode == null) {
-                        return;
-                    }
-                    ViewUtils.runCommand(dbmNode.getDefaultCommandId(), workbenchPart);
+        setDoubleClickHandler(new IDoubleClickListener() {
+            public void doubleClick(DoubleClickEvent event)
+            {
+                // Run default node action
+                DBNNode dbmNode = ViewUtils.getSelectedNode(getItemsViewer());
+                if (!(dbmNode instanceof DBNDatabaseNode) || !dbmNode.allowsOpen()) {
+                    return;
                 }
-            });
-        }
+                NavigatorHandlerObjectOpen.openEntityEditor(
+                    (DBNDatabaseNode)dbmNode,
+                    null,
+                    workbenchPart != null ?
+                        workbenchPart.getSite().getWorkbenchWindow() :
+                        DBeaverCore.getActiveWorkbenchWindow());
+            }
+        });
+
+        // Add drag and drop support
+        ViewUtils.addDragAndDropSupport(getItemsViewer());
 
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
 
