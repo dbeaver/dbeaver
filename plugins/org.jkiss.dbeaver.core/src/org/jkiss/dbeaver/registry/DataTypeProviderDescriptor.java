@@ -25,8 +25,6 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
     private String id;
     private String className;
-    private String name;
-    private String description;
     private Set<Object> supportedTypes = new HashSet<Object>();
     private Set<DataSourceProviderDescriptor> supportedDataSources = new HashSet<DataSourceProviderDescriptor>();
 
@@ -38,8 +36,6 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
-        this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
-        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
 
         if (className == null) {
             log.error("Empty class name of data type provider '" + this.id + "'");
@@ -106,16 +102,6 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
     public String getClassName()
     {
         return className;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public String getDescription()
-    {
-        return description;
     }
 
     public DBDValueHandlerProvider getInstance()
