@@ -38,17 +38,17 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
         this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
 
         if (className == null) {
-            log.error("Empty class name of data type provider '" + this.id + "'");
+            log.error("Empty class name of data type provider '" + this.id + "'"); //$NON-NLS-1$
         } else {
             Class<?> providerClass = super.getObjectClass(className);
             if (providerClass == null) {
-                log.error("Could not find data type provider class '" + this.className + "'");
+                log.error("Could not find data type provider class '" + this.className + "'"); //$NON-NLS-1$
             } else {
                 try {
                     this.instance = (DBDValueHandlerProvider) providerClass.newInstance();
                 }
                 catch (Exception e) {
-                    log.error("Can't instantiate data type provider '" + this.id + "'", e);
+                    log.error("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
                 }
             }
         }
@@ -61,7 +61,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
             } else {
                 typeName = typeElement.getAttribute(RegistryConstants.ATTR_STANDARD);
                 if (typeName == null) {
-                    log.warn("Type element without name or standard type reference");
+                    log.warn("Type element without name or standard type reference"); //$NON-NLS-1$
                     continue;
                 }
                 try {
@@ -70,10 +70,10 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
                     supportedTypes.add(typeNumber);
                 }
                 catch (NoSuchFieldException e) {
-                    log.warn("Standard type '" + typeName + "' not found in " + java.sql.Types.class.getName(), e);
+                    log.warn("Standard type '" + typeName + "' not found in " + java.sql.Types.class.getName(), e); //$NON-NLS-1$
                 }
                 catch (IllegalAccessException e) {
-                    log.warn("Standard type '" + typeName + "' cannot be accessed", e);
+                    log.warn("Standard type '" + typeName + "' cannot be accessed", e); //$NON-NLS-1$
                 }
             }
         }
@@ -82,12 +82,12 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
         for (IConfigurationElement dsElement : dsElements) {
             String dsId = dsElement.getAttribute(RegistryConstants.ATTR_ID);
             if (dsId == null) {
-                log.warn("Datasource reference with null ID");
+                log.warn("Datasource reference with null ID"); //$NON-NLS-1$
                 continue;
             }
             DataSourceProviderDescriptor dsProvider = registry.getDataSourceProvider(dsId);
             if (dsProvider == null) {
-                log.warn("Datasource provider '" + dsId + "' not found");
+                log.warn("Datasource provider '" + dsId + "' not found"); //$NON-NLS-1$
                 continue;
             }
             supportedDataSources.add(dsProvider);
