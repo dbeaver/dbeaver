@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.navigator;
 
+import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateProvider;
@@ -38,11 +39,11 @@ class DiagramCreateWizardPage extends WizardPage {
 
     protected DiagramCreateWizardPage(EntityDiagram diagram)
     {
-        super("Create new diagram");
+        super(ERDMessages.create_new_diagram);
         this.diagram = diagram;
 
-        setTitle("Create new diagram");
-        setDescription("Manage diagram content.");
+        setTitle(ERDMessages.create_new_diagram);
+        setDescription(ERDMessages.manage_diagram_content);
     }
 
     @Override
@@ -54,9 +55,9 @@ class DiagramCreateWizardPage extends WizardPage {
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        Composite configGroup = UIUtils.createControlGroup(placeholder, "Settings", 2, GridData.FILL_BOTH, 0);
+        Composite configGroup = UIUtils.createControlGroup(placeholder, ERDMessages.settings, 2, GridData.FILL_BOTH, 0);
 
-        final Text projectNameText = UIUtils.createLabelText(configGroup, "Name", "");
+        final Text projectNameText = UIUtils.createLabelText(configGroup, ERDMessages.name, "");
         projectNameText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {
@@ -65,7 +66,7 @@ class DiagramCreateWizardPage extends WizardPage {
             }
         });
 
-        Label contentLabel = UIUtils.createControlLabel(configGroup, "Initial content (optional)");
+        Label contentLabel = UIUtils.createControlLabel(configGroup, ERDMessages.initial_content_optional);
         GridData gd = new GridData(GridData.BEGINNING);
         gd.horizontalSpan = 2;
         contentLabel.setLayoutData(gd);

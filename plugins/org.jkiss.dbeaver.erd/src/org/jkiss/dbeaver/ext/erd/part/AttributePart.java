@@ -17,6 +17,7 @@ import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
@@ -187,7 +188,7 @@ public class AttributePart extends PropertyAwarePart
     @Override
     public String toString()
     {
-        return "Column " + getColumn().getLabelText();
+        return ERDMessages.column_ + getColumn().getLabelText();
     }
 
 

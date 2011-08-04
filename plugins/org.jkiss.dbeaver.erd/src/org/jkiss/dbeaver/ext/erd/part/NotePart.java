@@ -14,6 +14,7 @@ import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
+import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.policy.NoteEditPolicy;
@@ -63,7 +64,7 @@ public class NotePart extends NodePart
 			performDirectEdit();
 */
 		} else if (request.getType() == RequestConstants.REQ_OPEN) {
-            final String newText = EditTextDialog.editText(getViewer().getControl().getShell(), "Note", getNote().getObject());
+            final String newText = EditTextDialog.editText(getViewer().getControl().getShell(), ERDMessages.note, getNote().getObject());
             if (newText != null) {
                 getNote().setObject(newText);
                 ((NoteFigure)getFigure()).setText(newText);

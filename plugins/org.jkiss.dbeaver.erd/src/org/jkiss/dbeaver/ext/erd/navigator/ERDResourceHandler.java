@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.navigator;
 
+import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -35,7 +36,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ERDResourceHandler extends AbstractResourceHandler {
 
-    private static final String ERD_DIR = "Diagrams";
+    private static final String ERD_DIR = ERDMessages.diagrams;
     private static final String ERD_EXT = "erd"; //$NON-NLS-1$
 
     public static final String RES_TYPE_DIAGRAMS = "erd"; //$NON-NLS-1$
@@ -61,9 +62,9 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     public String getTypeName(IResource resource)
     {
         if (resource instanceof IFolder) {
-            return "diagram folder";
+            return ERDMessages.diagram_folder;
         } else {
-            return "diagram";
+            return ERDMessages.diagram;
         }
     }
 

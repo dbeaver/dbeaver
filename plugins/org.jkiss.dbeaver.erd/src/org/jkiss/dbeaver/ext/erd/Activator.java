@@ -12,6 +12,9 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.osgi.framework.BundleContext;
 
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
 /**
  * The activator class controls the plug-in life cycle
  */
@@ -23,6 +26,8 @@ public class Activator extends AbstractUIPlugin {
 	// The shared instance
 	private static Activator plugin;
 	
+    private static ResourceBundle resourceBundle;
+
 	/**
 	 * The constructor
 	 */
@@ -38,6 +43,11 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;
 
         initDefaultPreferences();
+        try {
+            resourceBundle = ResourceBundle.getBundle(ERDMessages.BUNDLE_NAME);
+        } catch (MissingResourceException x) {
+            resourceBundle = null;
+        }
 
         // Switch off D3D because of Sun XOR painting bug
         // See http://www.jgraph.com/forum/viewtopic.php?t=4066
@@ -88,4 +98,27 @@ public class Activator extends AbstractUIPlugin {
         RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_GRID_HEIGHT, 20);
     }
 
+
+    /**
+     * Returns the plugin's resource bundle,
+     * @return core resource bundle
+     */
+    public static ResourceBundle getResourceBundle()
+    {
+        return resourceBundle;
+    }
+
+    /**
+     * Returns the string from the plugin's resource bundle, or 'key' if not
+     * found.
+     */
+    public static String getResourceString(String key)
+    {
+        ResourceBundle bundle = getResourceBundle();
+        try {
+            return bundle.getString(key);
+        } catch (MissingResourceException e) {
+            return key;
+        }
+    }
 }
