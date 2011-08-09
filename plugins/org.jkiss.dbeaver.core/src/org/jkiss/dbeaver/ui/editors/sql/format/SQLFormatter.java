@@ -6,8 +6,8 @@ package org.jkiss.dbeaver.ui.editors.sql.format;
 
 import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * SQL formatter
@@ -16,7 +16,7 @@ public class SQLFormatter {
     private final SQLParser fParser;
 
     private SQLFormatterConfiguration formatterCfg = null;
-    private Stack<Boolean> functionBracket = new Stack<Boolean>();
+    private List<Boolean> functionBracket = new ArrayList<Boolean>();
 
     public SQLFormatter(final SQLFormatterConfiguration cfg) {
         formatterCfg = cfg;
@@ -122,22 +122,22 @@ public class SQLFormatter {
         }
 
         int indent = 0;
-        final Stack<Integer> bracketIndent = new Stack<Integer>();
+        final List<Integer> bracketIndent = new ArrayList<Integer>();
         SQLFormatterToken prev = new SQLFormatterToken(SQLFormatterConstants.SPACE, " "); //$NON-NLS-1$
         boolean encounterBetween = false;
         for (int index = 0; index < argList.size(); index++) {
             token = argList.get(index);
             if (token.getType() == SQLFormatterConstants.SYMBOL) {
                 if (token.getString().equals("(")) { //$NON-NLS-1$
-                    functionBracket.push(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
-                    bracketIndent.push(indent);
+                    functionBracket.add(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
+                    bracketIndent.add(indent);
                     indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
                 }
                 else if (token.getString().equals(")")) { //$NON-NLS-1$
-                    indent = bracketIndent.pop();
+                    indent = bracketIndent.remove(bracketIndent.size() - 1);
                     index += insertReturnAndIndent(argList, index, indent);
-                    functionBracket.pop();
+                    functionBracket.remove(functionBracket.size() - 1);
                 }
                 else if (token.getString().equals(",")) { //$NON-NLS-1$
                     index += insertReturnAndIndent(argList, index + 1, indent);
@@ -148,7 +148,8 @@ public class SQLFormatter {
             } else if (token.getType() == SQLFormatterConstants.KEYWORD) {
                 if (token.getString().equalsIgnoreCase("DELETE") //$NON-NLS-1$
                         || token.getString().equalsIgnoreCase("SELECT") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("UPDATE")) { //$NON-NLS-1$
+                        || token.getString().equalsIgnoreCase("UPDATE")) //$NON-NLS-1$
+                {
                     indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
                 }
@@ -240,7 +241,10 @@ public class SQLFormatter {
             prev = argList.get(index - 1);
             token = argList.get(index);
 
-            if (prev.getType() != SQLFormatterConstants.SPACE && token.getType() != SQLFormatterConstants.SPACE) {
+            if (prev.getType() != SQLFormatterConstants.SPACE &&
+                token.getType() != SQLFormatterConstants.SPACE &&
+                token.getType() != SQLFormatterConstants.SYMBOL)
+            {
                 if (prev.getString().equals(",")) { //$NON-NLS-1$
                     continue;
                 }

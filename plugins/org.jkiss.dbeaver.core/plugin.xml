@@ -1373,15 +1373,15 @@
     </extension>
 
     <extension id="product" point="org.eclipse.core.runtime.products">
-        <product application="org.jkiss.dbeaver.core.application" description="%productSubTitle" name="%productName">
-            <property name="aboutText" value="%productTitle"/>
+        <product application="org.jkiss.dbeaver.core.application" description="%productSubTitle" name="DBeaver">
+            <property name="aboutText" value="DBeaver - Universal Database Manager"/>
             <property name="copyright" value="%productCopyright"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
-            <property name="windowImages" value="%productIcon"/>
+            <property name="windowImages" value="icons/dbeaver.png"/>
             <property name="aboutImage" value="product_lg.gif"/>
-            <property name="appName" value="%productName"/>
+            <property name="appName" value="DBeaver"/>
             <property name="startupForegroundColor" value="000000"/>
             <property name="startupMessageRect" value="25,25,200,15"/>
             <property name="startupProgressRect" value="25,45,150,15"/>
