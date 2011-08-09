@@ -134,21 +134,43 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                 </driver>
+
                 <driver
                     id="mssql"
-                    label="MS SQL Server"
+                    label="jTDS driver"
+                    category="MS SQL Server"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
                     defaultPort="1433"
                     webURL="http://jtds.sourceforge.net/"
-                    description="MS SQL Server JTDS driver">
+                    description="jTDS SQL Server driver">
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use ?"/>
                     <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x86/ntlmauth.dll"/>
-                    <file type="lib" os="win32" arch="x86_x64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x64/ntlmauth.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x64/ntlmauth.dll"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/LICENSE.txt"/>
                 </driver>
+
+                <driver
+                    id="mssql_ms"
+                    label="Microsoft Driver"
+                    category="MS SQL Server"
+                    class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                    sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                    defaultPort="1433"
+                    webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
+                    description="Microsoft JDBC Driver for SQL Server ">
+                    <parameter name="query-get-active-db" value="select db_name()"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
+                    <file type="jar" path="drivers/mssql/sqljdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/sqljdbc4.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/auth/x86/sqljdbc_auth.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/auth/x64/sqljdbc_auth.dll"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/xa/x86/sqljdbc_xa.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/xa/x86/sqljdbc_xa.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/xa/x64/sqljdbc_xa.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/xa/x64/sqljdbc_xa.dll"/>
+                    <file type="license" path="drivers/mssql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/LICENSE.txt"/>
+                </driver>
+
                 <driver
                     id="sybase"
                     label="Sybase"

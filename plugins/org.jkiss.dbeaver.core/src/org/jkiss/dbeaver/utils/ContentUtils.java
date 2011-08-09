@@ -384,12 +384,13 @@ public class ContentUtils {
 
     public static String readFileToString(File file) throws IOException
     {
-        FileReader reader = new FileReader(file);
+        InputStream fileStream = new FileInputStream(file);
         try {
+            UnicodeReader unicodeReader = new UnicodeReader(fileStream, ContentUtils.DEFAULT_FILE_CHARSET);
             StringBuilder result = new StringBuilder((int) file.length());
             char[] buffer = new char[4000];
             for (;;) {
-                int count = reader.read(buffer);
+                int count = unicodeReader.read(buffer);
                 if (count <= 0) {
                     break;
                 }
@@ -397,7 +398,7 @@ public class ContentUtils {
             }
             return result.toString();
         } finally {
-            ContentUtils.close(reader);
+            ContentUtils.close(fileStream);
         }
     }
 
