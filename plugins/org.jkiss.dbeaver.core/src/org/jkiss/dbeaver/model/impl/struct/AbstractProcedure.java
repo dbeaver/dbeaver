@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
@@ -18,20 +19,22 @@ import org.jkiss.dbeaver.model.struct.DBSProcedure;
 public abstract class AbstractProcedure<
     DATASOURCE extends DBPDataSource,
     CONTAINER extends DBSEntityContainer>
-    implements DBSProcedure
+    implements DBSProcedure, DBPSaveableObject
 {
     private CONTAINER container;
     private String name;
     private String description;
+    private boolean persisted;
 
-    protected AbstractProcedure(CONTAINER container)
+    protected AbstractProcedure(CONTAINER container, boolean persisted)
     {
         this.container = container;
+        this.persisted = persisted;
     }
 
-    protected AbstractProcedure(CONTAINER container, String name, String description)
+    protected AbstractProcedure(CONTAINER container, boolean persisted, String name, String description)
     {
-        this(container);
+        this(container, persisted);
         this.name = name;
         this.description = description;
     }
@@ -47,7 +50,7 @@ public abstract class AbstractProcedure<
         return name;
     }
 
-    protected void setName(String tableName)
+    public void setName(String tableName)
     {
         this.name = tableName;
     }
@@ -58,7 +61,7 @@ public abstract class AbstractProcedure<
         return description;
     }
 
-    protected void setDescription(String description)
+    public void setDescription(String description)
     {
         this.description = description;
     }
@@ -70,7 +73,12 @@ public abstract class AbstractProcedure<
 
     public boolean isPersisted()
     {
-        return true;
+        return persisted;
+    }
+
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
     }
 
     public DBSObject getParentObject()

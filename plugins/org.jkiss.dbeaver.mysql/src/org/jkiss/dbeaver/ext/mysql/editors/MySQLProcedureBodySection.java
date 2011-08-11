@@ -26,7 +26,7 @@ public class MySQLProcedureBodySection extends SourceEditSection {
     @Override
     protected boolean isReadOnly()
     {
-        return true;
+        return false;
     }
 
     @Override
@@ -41,4 +41,9 @@ public class MySQLProcedureBodySection extends SourceEditSection {
         return procedure.getBody();
     }
 
+    @Override
+    protected void updateSources(String source)
+    {
+        getEditor().getEditorInput().getPropertySource().setPropertyValue("body", source);
+    }
 }

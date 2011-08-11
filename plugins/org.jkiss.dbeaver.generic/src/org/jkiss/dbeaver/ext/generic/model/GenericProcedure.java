@@ -46,7 +46,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         String description,
         DBSProcedureType procedureType)
     {
-        super(container, procedureName, description);
+        super(container, true, procedureName, description);
         this.procedureType = procedureType;
         this.specificName = specificName;
     }

@@ -243,7 +243,7 @@ public class SQLFormatter {
 
             if (prev.getType() != SQLFormatterConstants.SPACE &&
                 token.getType() != SQLFormatterConstants.SPACE &&
-                token.getType() != SQLFormatterConstants.SYMBOL)
+                !token.getString().startsWith("("))
             {
                 if (prev.getString().equals(",")) { //$NON-NLS-1$
                     continue;

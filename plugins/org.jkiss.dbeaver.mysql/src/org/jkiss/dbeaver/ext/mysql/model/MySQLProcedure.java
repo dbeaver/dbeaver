@@ -30,11 +30,16 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     private String charset;
     private List<MySQLProcedureColumn> columns;
 
+    public MySQLProcedure(MySQLCatalog catalog)
+    {
+        super(catalog, false);
+    }
+
     public MySQLProcedure(
         MySQLCatalog catalog,
         ResultSet dbResult)
     {
-        super(catalog);
+        super(catalog, true);
         loadInfo(dbResult);
     }
 
@@ -67,10 +72,15 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return bodyType;
     }
 
-    //@Property(name = "Body", order = 4)
+    @Property(name = "Body", hidden = true, editable = true, updatable = true, order = -1)
     public String getBody()
     {
         return body;
+    }
+
+    public void setBody(String body)
+    {
+        this.body = body;
     }
 
     //@Property(name = "Client Charset", order = 4)
@@ -104,4 +114,5 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
             getContainer(),
             this);
     }
+
 }
