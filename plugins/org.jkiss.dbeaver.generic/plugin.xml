@@ -397,6 +397,17 @@
                     <file type="jar" path="drivers/sqlite/werner/sqlite.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/werner/sqlite.jar"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/sqlite/werner/sqlite_jni.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/werner/sqlite_jni.dll"/>
                 </driver>
+                <driver
+                    id="teradata"
+                    label="Teradata"
+                    class="com.ncr.teradata.TeraDriver"
+                    sampleURL="jdbc:teradata://{host}/{database}"
+                    defaultPort=""
+                    description="Teradata JDBC driver">
+                    <file type="jar" path="drivers/teradata/terajdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/drivers/teradata/terajdbc4.jar"/>
+                    <file type="jar" path="drivers/teradata/tdgssconfig.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/drivers/teradata/tdgssconfig.jar"/>
+                    <file type="license" path="drivers/teradata/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/teradata/LICENSE.txt"/>
+                </driver>
             </drivers>
 
             <views>
