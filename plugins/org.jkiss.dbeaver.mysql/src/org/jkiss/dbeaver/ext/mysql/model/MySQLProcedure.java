@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,6 +36,10 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     public MySQLProcedure(MySQLCatalog catalog)
     {
         super(catalog, false);
+        this.procedureType = DBSProcedureType.PROCEDURE;
+        this.body = "BEGIN" + ContentUtils.getDefaultLineSeparator() + "END";
+        this.bodyType = "SQL";
+        this.resultType = "";
     }
 
     public MySQLProcedure(
@@ -56,10 +61,15 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         this.charset = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARACTER_SET_CLIENT);
     }
 
-    @Property(name = "Procedure Type", order = 2)
+    @Property(name = "Procedure Type", editable = true, order = 2)
     public DBSProcedureType getProcedureType()
     {
         return procedureType ;
+    }
+
+    public void setProcedureType(DBSProcedureType procedureType)
+    {
+        this.procedureType = procedureType;
     }
 
     @Property(name = "Result Type", order = 2)
@@ -123,6 +133,9 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         throws DBException
     {
         if (columns == null) {
+            if (!isPersisted()) {
+                columns = new ArrayList<MySQLProcedureColumn>();
+            }
             getContainer().proceduresCache.loadChildren(monitor, getContainer(), this);
         }
         return columns;
