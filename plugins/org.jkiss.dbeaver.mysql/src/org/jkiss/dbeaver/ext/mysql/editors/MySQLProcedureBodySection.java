@@ -38,12 +38,12 @@ public class MySQLProcedureBodySection extends SourceEditSection {
     @Override
     protected String loadSources(DBRProgressMonitor monitor) throws DBException
     {
-        return procedure.getBody();
+        return procedure.getClientBody(monitor);
     }
 
     @Override
     protected void updateSources(String source)
     {
-        getEditor().getEditorInput().getPropertySource().setPropertyValue("body", source);
+        getEditor().getEditorInput().getPropertySource().setPropertyValue("clientBody", source);
     }
 }

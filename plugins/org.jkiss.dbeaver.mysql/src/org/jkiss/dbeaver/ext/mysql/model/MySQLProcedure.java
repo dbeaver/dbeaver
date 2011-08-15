@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -27,6 +28,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     private String resultType;
     private String bodyType;
     private String body;
+    private transient String clientBody;
     private String charset;
     private List<MySQLProcedureColumn> columns;
 
@@ -78,9 +80,37 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return body;
     }
 
-    public void setBody(String body)
+    @Property(name = "ClientBody", hidden = true, editable = true, updatable = true, order = -1)
+    public String getClientBody(DBRProgressMonitor monitor)
+        throws DBException
     {
-        this.body = body;
+        if (clientBody == null) {
+            StringBuilder cb = new StringBuilder(body.length() + 100);
+            cb.append(procedureType).append(' ').append(getFullQualifiedName()).append(" (");
+
+            int colIndex = 0;
+            for (MySQLProcedureColumn column : getColumns(monitor)) {
+                if (colIndex > 0) {
+                    cb.append(", ");
+                }
+                cb.append(column.getColumnType()).append(' ').append(column.getName()).append(' ').append(column.getTypeName());
+                colIndex++;
+            }
+            cb.append(")").append(ContentUtils.getDefaultLineSeparator());
+            cb.append(body);
+            clientBody = cb.toString();
+        }
+        return clientBody;
+    }
+
+    public String getClientBody()
+    {
+        return clientBody;
+    }
+
+    public void setClientBody(String clientBody)
+    {
+        this.clientBody = clientBody;
     }
 
     //@Property(name = "Client Charset", order = 4)

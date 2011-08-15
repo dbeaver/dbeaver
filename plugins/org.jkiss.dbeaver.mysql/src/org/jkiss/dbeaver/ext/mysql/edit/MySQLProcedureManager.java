@@ -77,12 +77,9 @@ public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQ
 
     private IDatabasePersistAction[] createOrReplaceProcedureQuery(MySQLProcedure procedure)
     {
-        StringBuilder decl = new StringBuilder(200);
-        final String lineSeparator = ContentUtils.getDefaultLineSeparator();
-        decl.append("CREATE PROCEDURE ").append(procedure.getFullQualifiedName()).append(lineSeparator);
-        decl.append(procedure.getBody());
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Create procedure", decl.toString())
+            new AbstractDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName()),
+            new AbstractDatabasePersistAction("Create procedure", "CREATE " + procedure.getClientBody())
         };
     }
 

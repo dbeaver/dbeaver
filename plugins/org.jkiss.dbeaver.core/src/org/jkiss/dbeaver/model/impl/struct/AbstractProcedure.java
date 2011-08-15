@@ -21,10 +21,10 @@ public abstract class AbstractProcedure<
     CONTAINER extends DBSEntityContainer>
     implements DBSProcedure, DBPSaveableObject
 {
-    private CONTAINER container;
-    private String name;
-    private String description;
-    private boolean persisted;
+    protected CONTAINER container;
+    protected String name;
+    protected String description;
+    protected boolean persisted;
 
     protected AbstractProcedure(CONTAINER container, boolean persisted)
     {
