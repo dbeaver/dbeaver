@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.texteditor.StatusTextEditor;
@@ -51,10 +52,13 @@ public abstract class BaseTextEditor extends StatusTextEditor {
     public void enableUndoManager(boolean enable)
     {
         TextViewer textViewer = getTextViewer();
-        if (!enable) {
-            textViewer.getUndoManager().disconnect();
-        } else {
-            textViewer.getUndoManager().connect(textViewer);
+        final IUndoManager undoManager = textViewer.getUndoManager();
+        if (undoManager != null) {
+            if (!enable) {
+                undoManager.disconnect();
+            } else {
+                undoManager.connect(textViewer);
+            }
         }
     }
 
