@@ -199,11 +199,11 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
         if (sqlViewer == null) {
             createEditor();
         }
-        sqlViewer.enableUndoManager(true);
+        //sqlViewer.enableUndoManager(true);
 
-        editor.getSite().setSelectionProvider(selectionProvider);
+        //editor.getSite().setSelectionProvider(selectionProvider);
 
-        selectionProvider.setSelection(new StructuredSelection());
+        //selectionProvider.setSelection(new StructuredSelection());
 
         actionContributor.setActiveEditor(sqlViewer);
         activateSectionSite(true);
@@ -216,7 +216,7 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
         activateSectionSite(false);
         actionContributor.setActiveEditor(null);
         if (sqlViewer != null) {
-            sqlViewer.enableUndoManager(false);
+            //sqlViewer.enableUndoManager(false);
         }
     }
 

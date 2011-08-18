@@ -634,6 +634,15 @@
                 </with>
             </activeWhen>
         </handler>
+        <!--handler commandId="org.eclipse.ui.file.save" class="org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.entity.dirty"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler-->
         <handler commandId="org.eclipse.ui.edit.text.contentAssist.proposals" class="org.jkiss.dbeaver.ui.editors.entity.handlers.PreviewChangesHandler">
             <activeWhen>
                 <with variable="activeEditor">
