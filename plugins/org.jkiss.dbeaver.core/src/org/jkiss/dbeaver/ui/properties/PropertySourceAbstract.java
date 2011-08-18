@@ -183,8 +183,8 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
                         }
                     }
                     // Return dummy string for now
-                    lazyValues.put(prop.getId(), PropertySheetLoadService.TEXT_LOADING);
-                    return PropertySheetLoadService.TEXT_LOADING;
+                    lazyValues.put(prop.getId(), null);
+                    return null;
                 }
             } else {
                 return prop.readValue(object, null);
