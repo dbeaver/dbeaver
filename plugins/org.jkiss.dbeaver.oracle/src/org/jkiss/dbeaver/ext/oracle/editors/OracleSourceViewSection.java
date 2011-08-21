@@ -34,6 +34,12 @@ public class OracleSourceViewSection extends SourceEditSection {
     }
 
     @Override
+    protected boolean isReadOnly()
+    {
+        return true;
+    }
+
+    @Override
     protected String loadSources(DBRProgressMonitor monitor) throws DBException
     {
         return OracleUtils.getSource(monitor, sourceObject, body);
