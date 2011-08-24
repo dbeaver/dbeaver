@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -23,12 +24,22 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
 
     protected DBDContent getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column, int columnIndex) throws DBCException, SQLException
     {
-        //final Object object = resultSet.getObject(columnIndex);
-        SQLXML xml = resultSet.getSQLXML(columnIndex);
-        if (xml == null) {
+        Object object = null;
+        boolean hasError = false;
+        try {
+            object = resultSet.getObject(columnIndex);
+        } catch (SQLException e) {
+            hasError = true;
+        }
+        if (hasError || !(object instanceof SQLXML)) {
+            object = resultSet.getSQLXML(columnIndex);
+        }
+        if (object == null) {
             return createValueObject(context, column);
+        } else if (object instanceof SQLXML) {
+            return new OracleContentXML((SQLXML) object);
         } else {
-            return new OracleContentXML(xml);
+            throw new DBCException("Unsupported object type: " + object.getClass().getName());
         }
     }
 
