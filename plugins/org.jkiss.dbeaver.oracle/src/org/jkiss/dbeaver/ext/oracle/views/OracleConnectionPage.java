@@ -446,17 +446,24 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         } else {
             url.append("thin");
         }
-        url.append(":@//");
-        if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-            url.append(connectionInfo.getHostName());
-        }
-        url.append(":");
-        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-            url.append(connectionInfo.getHostPort());
-        }
-        url.append("/");
-        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+        url.append(":@");
+        if (CommonUtils.isEmpty(connectionInfo.getHostName()) && !CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            // TNS name specified
             url.append(connectionInfo.getDatabaseName());
+        } else {
+            // Basic connection info specified
+            url.append("//");
+            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+                url.append(connectionInfo.getHostName());
+            }
+            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                url.append(":");
+                url.append(connectionInfo.getHostPort());
+            }
+            url.append("/");
+            if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                url.append(connectionInfo.getDatabaseName());
+            }
         }
         connectionInfo.setUrl(url.toString());
     }
