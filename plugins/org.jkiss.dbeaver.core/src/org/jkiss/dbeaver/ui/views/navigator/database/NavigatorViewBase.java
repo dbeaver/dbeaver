@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
@@ -15,10 +16,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
@@ -92,13 +89,16 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 IStructuredSelection selection = (IStructuredSelection)tree.getViewer().getSelection();
                 if (selection.size() == 1) {
                     DBNNode node = (DBNNode)selection.getFirstElement();
-                    if (!(node instanceof DBNDatabaseNode) || !node.allowsOpen()) {
-                        return;
+                    if (node instanceof DBNResource) {
+                        NavigatorHandlerObjectOpen.openResource(
+                            ((DBNResource) node).getResource(),
+                            getSite().getWorkbenchWindow());
+                    } else if (node instanceof DBNDatabaseNode && node.allowsOpen()) {
+                        NavigatorHandlerObjectOpen.openEntityEditor(
+                            (DBNDatabaseNode) node,
+                            null,
+                            getSite().getWorkbenchWindow());
                     }
-                    NavigatorHandlerObjectOpen.openEntityEditor(
-                        (DBNDatabaseNode) node,
-                        null,
-                        getSite().getWorkbenchWindow());
                 }
             }
 
