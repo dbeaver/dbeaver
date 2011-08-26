@@ -383,12 +383,11 @@ public class Spreadsheet extends Composite implements Listener {
             }
 */
             case SWT.KeyDown:
-                switch (event.keyCode) {
-                    case SWT.CR:
-                        openCellViewer(true);
-                        break;
-                    default:
-                        return;
+                if (event.keyCode == SWT.CR ||
+                    (event.keyCode >= 'a' && event.keyCode <= 'z') ||
+                    (event.keyCode >= '0' && event.keyCode <= '9'))
+                {
+                    openCellViewer(true);
                 }
                 break;
             case SWT.MouseDoubleClick:
