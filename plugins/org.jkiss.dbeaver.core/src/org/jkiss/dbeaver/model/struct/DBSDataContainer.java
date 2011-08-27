@@ -36,7 +36,8 @@ public interface DBSDataContainer extends DBSObject {
         throws DBException;
 
     long readDataCount(
-        DBCExecutionContext context)
+        DBCExecutionContext context,
+        DBDDataFilter dataFilter)
         throws DBException;
 
     long insertData(

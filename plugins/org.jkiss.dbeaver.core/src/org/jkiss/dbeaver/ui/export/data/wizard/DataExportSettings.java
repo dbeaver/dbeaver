@@ -11,7 +11,6 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -50,7 +49,7 @@ public class DataExportSettings {
 
     private static final int DEFAULT_THREADS_NUM = 1;
 
-    private List<DBSDataContainer> dataProviders;
+    private List<DataExportProvider> dataProviders;
     private DataExporterDescriptor dataExporter;
 
     private ExtractType extractType = ExtractType.SINGLE_QUERY;
@@ -77,17 +76,17 @@ public class DataExportSettings {
     private transient boolean folderOpened = false;
     private transient int curProviderNum = 0;
 
-    public DataExportSettings(List<DBSDataContainer> dataProviders)
+    public DataExportSettings(List<DataExportProvider> dataProviders)
     {
         this.dataProviders = dataProviders;
     }
 
-    public List<DBSDataContainer> getDataProviders()
+    public List<DataExportProvider> getDataProviders()
     {
         return dataProviders;
     }
 
-    public synchronized DBSDataContainer acquireDataProvider()
+    public synchronized DataExportProvider acquireDataProvider()
     {
         if (curProviderNum >= dataProviders.size()) {
             if (!folderOpened) {
@@ -101,7 +100,7 @@ public class DataExportSettings {
             }
             return null;
         }
-        DBSDataContainer result = dataProviders.get(curProviderNum);
+        DataExportProvider result = dataProviders.get(curProviderNum);
 
         curProviderNum++;
         return result;

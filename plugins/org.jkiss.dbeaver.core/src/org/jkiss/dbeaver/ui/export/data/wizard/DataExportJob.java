@@ -59,7 +59,7 @@ public class DataExportJob extends AbstractJob {
     {
 
         for (; ;) {
-            DBSDataContainer dataProvider = settings.acquireDataProvider();
+            DataExportProvider dataProvider = settings.acquireDataProvider();
             if (dataProvider == null) {
                 break;
             }
@@ -69,14 +69,15 @@ public class DataExportJob extends AbstractJob {
         return Status.OK_STATUS;
     }
 
-    private void extractData(DBRProgressMonitor monitor, DBSDataContainer dataProvider)
+    private void extractData(DBRProgressMonitor monitor, DataExportProvider dataProvider)
     {
-        setName("Export data from \"" + dataProvider.getName() + "\"");
+        final DBSDataContainer dataContainer = dataProvider.getDataContainer();
+        setName("Export data from \"" + dataContainer.getName() + "\"");
 
         String contextTask = "Export data";
         DBCExecutionContext context = settings.isOpenNewConnections() ?
-            dataProvider.getDataSource().openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
-            dataProvider.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, contextTask);
+            dataContainer.getDataSource().openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
+            dataContainer.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, contextTask);
         try {
             if (settings.getFormatterProfile() != null) {
                 context.setDataFormatterProfile(settings.getFormatterProfile());
@@ -95,7 +96,7 @@ public class DataExportJob extends AbstractJob {
 
         private static final String LOB_DIRECTORY_NAME = "files";
 
-        private DBSDataContainer dataProvider;
+        private DataExportProvider dataProvider;
         private IDataExporter dataExporter;
         private OutputStream outputStream;
         private PrintWriter writer;
@@ -105,14 +106,14 @@ public class DataExportJob extends AbstractJob {
         private long lobCount;
         private File outputFile;
 
-        private ExporterSite(DBSDataContainer dataProvider)
+        private ExporterSite(DataExportProvider dataProvider)
         {
             this.dataProvider = dataProvider;
         }
 
         public DBPNamedObject getSource()
         {
-            return dataProvider;
+            return dataProvider.getDataContainer();
         }
 
         public Map<Object, Object> getProperties()
@@ -304,9 +305,9 @@ public class DataExportJob extends AbstractJob {
                     }
 
                     long totalRows = 0;
-                    if (settings.isQueryRowCount() && (dataProvider.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+                    if (settings.isQueryRowCount() && (dataProvider.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                         monitor.beginTask("Retrieve row count", 1);
-                        totalRows = dataProvider.readDataCount(context);
+                        totalRows = dataProvider.getDataContainer().readDataCount(context, dataProvider.getDataFilter());
                         monitor.done();
                     }
 
@@ -318,13 +319,14 @@ public class DataExportJob extends AbstractJob {
                     // Perform export
                     if (settings.getExtractType() == DataExportSettings.ExtractType.SINGLE_QUERY) {
                         // Just do it in single query
-                        this.dataProvider.readData(context, this, null, -1, -1);
+                        this.dataProvider.getDataContainer().readData(context, this, dataProvider.getDataFilter(), -1, -1);
                     } else {
                         // Read all data by segments
                         long offset = 0;
                         int segmentSize = settings.getSegmentSize();
                         for (;;) {
-                            long rowCount = this.dataProvider.readData(context, this, null, offset, segmentSize);
+                            long rowCount = this.dataProvider.getDataContainer().readData(
+                                context, this, dataProvider.getDataFilter(), offset, segmentSize);
                             if (rowCount < segmentSize) {
                                 // Done
                                 break;

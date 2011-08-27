@@ -87,51 +87,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         StringBuilder query = new StringBuilder(100);
         query.append("SELECT * FROM ").append(getFullQualifiedName());
-        if (dataFilter != null) {
-            // Construct WHERE
-            if (!CommonUtils.isEmpty(dataFilter.getFilters()) || !CommonUtils.isEmpty(dataFilter.getWhere())) {
-                query.append(" WHERE ");
-                boolean hasWhere = false;
-                if (!CommonUtils.isEmpty(dataFilter.getFilters())) {
-                    for (DBQCondition filter : dataFilter.getFilters()) {
-                        if (hasWhere) query.append(" AND ");
-                        hasWhere = true;
-                        query
-                            .append(DBUtils.getQuotedIdentifier(getDataSource(), filter.getColumnName()));
-
-                        final String condition = filter.getCondition();
-                        final char firstChar = condition.trim().charAt(0);
-                        if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
-                            query.append('=').append(condition);
-                        } else {
-                            query.append(' ').append(condition);
-                        }
-                    }
-                }
-                if (!CommonUtils.isEmpty(dataFilter.getWhere())) {
-                    if (hasWhere) query.append(" AND ");
-                    query.append(dataFilter.getWhere());
-                }
-            }
-
-            // Construct ORDER BY
-            if (!CommonUtils.isEmpty(dataFilter.getOrderColumns()) || !CommonUtils.isEmpty(dataFilter.getOrder())) {
-                query.append(" ORDER BY ");
-                boolean hasOrder = false;
-                for (DBQOrderColumn co : dataFilter.getOrderColumns()) {
-                    if (hasOrder) query.append(',');
-                    query.append(DBUtils.getQuotedIdentifier(getDataSource(), co.getColumnName()));
-                    if (co.isDescending()) {
-                        query.append(" DESC");
-                    }
-                    hasOrder = true;
-                }
-                if (!CommonUtils.isEmpty(dataFilter.getOrder())) {
-                    if (hasOrder) query.append(',');
-                    query.append(dataFilter.getOrder());
-                }
-            }
-        }
+        appendQueryConditions(query, dataFilter);
+        appendQueryOrder(query, dataFilter);
 
         monitor.subTask("Fetch table data");
         DBCStatement dbStat = DBUtils.prepareStatement(context, query.toString(), firstRow, maxRows);
@@ -182,7 +139,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
-    public long readDataCount(DBCExecutionContext context) throws DBException
+    public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
     {
         if (!(context instanceof JDBCExecutionContext)) {
             throw new IllegalArgumentException("Bad execution context");
@@ -190,9 +147,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         JDBCExecutionContext jdbcContext = (JDBCExecutionContext)context;
         DBRProgressMonitor monitor = context.getProgressMonitor();
 
-        String query = "SELECT COUNT(*) FROM " + getFullQualifiedName();
+        StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM ");
+        query.append(getFullQualifiedName());
+        appendQueryConditions(query, dataFilter);
         monitor.subTask("Fetch table row count");
-        JDBCStatement dbStat = jdbcContext.prepareStatement(DBCStatementType.QUERY, query, false, false, false);
+        JDBCStatement dbStat = jdbcContext.prepareStatement(
+            DBCStatementType.QUERY, query.toString(), false, false, false);
         try {
             dbStat.setDataContainer(this);
             if (!dbStat.executeStatement()) {
@@ -371,6 +331,60 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         finally {
             dbStat.close();
+        }
+    }
+
+    private void appendQueryConditions(StringBuilder query, DBDDataFilter dataFilter)
+    {
+        if (dataFilter != null) {
+            // Construct WHERE
+            if (!CommonUtils.isEmpty(dataFilter.getFilters()) || !CommonUtils.isEmpty(dataFilter.getWhere())) {
+                query.append(" WHERE ");
+                boolean hasWhere = false;
+                if (!CommonUtils.isEmpty(dataFilter.getFilters())) {
+                    for (DBQCondition filter : dataFilter.getFilters()) {
+                        if (hasWhere) query.append(" AND ");
+                        hasWhere = true;
+                        query
+                            .append(DBUtils.getQuotedIdentifier(getDataSource(), filter.getColumnName()));
+
+                        final String condition = filter.getCondition();
+                        final char firstChar = condition.trim().charAt(0);
+                        if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
+                            query.append('=').append(condition);
+                        } else {
+                            query.append(' ').append(condition);
+                        }
+                    }
+                }
+                if (!CommonUtils.isEmpty(dataFilter.getWhere())) {
+                    if (hasWhere) query.append(" AND ");
+                    query.append(dataFilter.getWhere());
+                }
+            }
+        }
+    }
+
+    private void appendQueryOrder(StringBuilder query, DBDDataFilter dataFilter)
+    {
+        if (dataFilter != null) {
+            // Construct ORDER BY
+            if (!CommonUtils.isEmpty(dataFilter.getOrderColumns()) || !CommonUtils.isEmpty(dataFilter.getOrder())) {
+                query.append(" ORDER BY ");
+                boolean hasOrder = false;
+                for (DBQOrderColumn co : dataFilter.getOrderColumns()) {
+                    if (hasOrder) query.append(',');
+                    query.append(DBUtils.getQuotedIdentifier(getDataSource(), co.getColumnName()));
+                    if (co.isDescending()) {
+                        query.append(" DESC");
+                    }
+                    hasOrder = true;
+                }
+                if (!CommonUtils.isEmpty(dataFilter.getOrder())) {
+                    if (hasOrder) query.append(',');
+                    query.append(dataFilter.getOrder());
+                }
+            }
         }
     }
 

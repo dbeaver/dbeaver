@@ -111,10 +111,10 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
     }
 
     private void loadExporters() {
-        List<DBSDataContainer> dataProviders = getWizard().getSettings().getDataProviders();
+        List<DataExportProvider> dataProviders = getWizard().getSettings().getDataProviders();
         List<Class> rsSources = new ArrayList<Class>();
-        for (DBSDataContainer provider : dataProviders) {
-            rsSources.add(provider.getClass());
+        for (DataExportProvider provider : dataProviders) {
+            rsSources.add(provider.getDataContainer().getClass());
         }
 
         DataExportersRegistry registry = DBeaverCore.getInstance().getDataExportersRegistry();

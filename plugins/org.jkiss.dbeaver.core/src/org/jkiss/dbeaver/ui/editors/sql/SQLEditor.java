@@ -16,8 +16,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -757,7 +755,7 @@ public class SQLEditor extends SQLEditorBase
             }
         }
 
-        public long readDataCount(DBCExecutionContext context) throws DBException
+        public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
         {
             throw new DBException("Not Implemented");
         }

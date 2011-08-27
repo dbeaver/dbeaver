@@ -67,11 +67,11 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
     public void activatePage()
     {
         resultTable.removeAll();
-        List<DBSDataContainer> dataProviders = getWizard().getSettings().getDataProviders();
-        for (DBSDataContainer provider : dataProviders) {
+        List<DataExportProvider> dataProviders = getWizard().getSettings().getDataProviders();
+        for (DataExportProvider provider : dataProviders) {
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, provider.getName());
-            File outputFile = getWizard().getSettings().makeOutputFile(provider);
+            item.setText(0, provider.getDataContainer().getName());
+            File outputFile = getWizard().getSettings().makeOutputFile(provider.getDataContainer());
             item.setText(1, outputFile.getAbsolutePath());
             if (outputFile.exists()) {
                 item.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));

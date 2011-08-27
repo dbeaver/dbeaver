@@ -14,6 +14,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.export.data.wizard.DataExportProvider;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportWizard;
 
 import java.util.ArrayList;
@@ -29,13 +30,13 @@ public class DataExportHandler extends AbstractHandler {
             return null;
         }
         IStructuredSelection ss = (IStructuredSelection)selection;
-        final List<DBSDataContainer> dataProviders = new ArrayList<DBSDataContainer>();
+        final List<DataExportProvider> dataProviders = new ArrayList<DataExportProvider>();
         for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
             Object object = iter.next();
 
             final DBSDataContainer adapted = (DBSDataContainer)Platform.getAdapterManager().getAdapter(object, DBSDataContainer.class);
             if (adapted != null) {
-                dataProviders.add(adapted);
+                dataProviders.add(new DataExportProvider(adapted));
             }
         }
 

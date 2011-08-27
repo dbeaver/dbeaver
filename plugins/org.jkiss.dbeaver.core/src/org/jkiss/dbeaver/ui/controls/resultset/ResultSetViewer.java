@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
+import org.jkiss.dbeaver.ui.export.data.wizard.DataExportProvider;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -882,7 +883,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     ActiveWizardDialog dialog = new ActiveWizardDialog(
                         site.getWorkbenchWindow(),
                         new DataExportWizard(
-                            Collections.singletonList(getDataContainer())),
+                            Collections.singletonList(
+                                new DataExportProvider(getDataContainer(), getDataFilter()))),
                         getSelection());
                     dialog.open();
                 }

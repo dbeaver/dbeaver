@@ -20,7 +20,7 @@ public class DataExportWizard extends Wizard implements IExportWizard {
 
     private DataExportSettings settings;
 
-    public DataExportWizard(List<DBSDataContainer> dataContainers) {
+    public DataExportWizard(List<DataExportProvider> dataContainers) {
         this.settings = new DataExportSettings(dataContainers);
         IDialogSettings workbenchSettings = DBeaverActivator.getInstance().getDialogSettings();
         IDialogSettings section = workbenchSettings.getSection(RS_EXPORT_WIZARD_DIALOG_SETTINGS);//$NON-NLS-1$
