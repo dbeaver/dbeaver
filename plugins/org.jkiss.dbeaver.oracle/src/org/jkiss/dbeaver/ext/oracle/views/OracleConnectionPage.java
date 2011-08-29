@@ -23,6 +23,15 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Properties;
+
 /**
  * OracleConnectionPage
  */
@@ -194,6 +203,39 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         tnsNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         tnsNameCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         tnsNameCombo.addModifyListener(controlModifyListener);
+
+        String oraHome = System.getenv("ORA_HOME");
+        if (oraHome != null) {
+            String sep = System.getProperty("file.separator");
+            if (!oraHome.endsWith(sep)) {
+                oraHome += sep;
+            }
+            String tnsnamesPath = oraHome + "Network" + sep + "Admin" + sep + "TNSNAMES.ORA";
+            File tnsnamesOra = new File (tnsnamesPath);
+            if (tnsnamesOra != null && tnsnamesOra.exists()) {
+                try {
+                    BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
+                    String line;
+                    ArrayList<String> aliases = new ArrayList<String>();
+                    while ((line = reader.readLine()) != null) {
+                        if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("#") && line.contains(" =")) {
+                            aliases.add(line.substring(0, line.indexOf(" =")));
+                        }
+                    }
+                    Collections.sort(aliases);
+                    for (String alias : aliases) {
+                        tnsNameCombo.add(alias);
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            else {
+                // TODO do nothing?
+            }
+        }
     }
 
     private void createCustomConnectionControls(CTabFolder protocolFolder)
