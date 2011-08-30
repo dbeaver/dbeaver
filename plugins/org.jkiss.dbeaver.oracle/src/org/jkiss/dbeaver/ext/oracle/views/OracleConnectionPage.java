@@ -40,10 +40,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private IDataSourceConnectionEditorSite site;
     private Text hostText;
     private Text portText;
-    private Text sidText;
-    private Button sidRadio;
     private Combo serviceNameCombo;
-    private Button serviceNameRadio;
     private Text userNameText;
     private Combo userRoleCombo;
     private Text passwordText;
@@ -180,18 +177,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
         portText.addModifyListener(controlModifyListener);
 
-        sidRadio = new Button(targetContainer, SWT.RADIO);
-        sidRadio.setText("SID");
-
-        sidText = new Text(targetContainer, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
-        sidText.setLayoutData(gd);
-        sidText.addModifyListener(controlModifyListener);
-
-        serviceNameRadio = new Button(targetContainer, SWT.RADIO);
-        serviceNameRadio.addSelectionListener(controlModifyListener);
-        serviceNameRadio.setText("Service");
+        UIUtils.createControlLabel(targetContainer, "SID/Service");
 
         serviceNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -393,8 +379,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     {
         switch (connectionType) {
             case BASIC:
-                return sidRadio.getSelection() && !CommonUtils.isEmpty(sidText.getText()) ||
-                       serviceNameRadio.getSelection() && !CommonUtils.isEmpty(serviceNameCombo.getText());
+                return !CommonUtils.isEmpty(serviceNameCombo.getText());
             case TNS:
                 return !CommonUtils.isEmpty(tnsNameCombo.getText());
             case CUSTOM:
@@ -427,23 +412,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                         portText.setText(String.valueOf(OracleConstants.DEFAULT_PORT));
                     }
 
-                    final Object conTargetProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TARGET);
-                    OracleConstants.ConnectionTarget connectionTarget;
-                    if (conTargetProperty != null) {
-                        connectionTarget = OracleConstants.ConnectionTarget.valueOf(CommonUtils.toString(conTargetProperty));
-                    } else {
-                        connectionTarget = OracleConstants.ConnectionTarget.SID;
-                    }
-                    if (connectionTarget == null || connectionTarget == OracleConstants.ConnectionTarget.SID) {
-                        sidRadio.setSelection(true);
-                        serviceNameCombo.setEnabled(false);
-                        sidText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
-                    }
-                    else {
-                        serviceNameRadio.setSelection(true);
-                        sidText.setEnabled(false);
-                        serviceNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
-                    }
+                    serviceNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
                     break;
                 case TNS:
                     tnsNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
@@ -508,10 +477,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 case BASIC:
                     connectionInfo.setHostName(hostText.getText());
                     connectionInfo.setHostPort(portText.getText());
-                    boolean isSidTarget = sidRadio.getSelection();
-                    connectionInfo.getProperties().put(OracleConstants.PROP_CONNECTION_TARGET,
-                            isSidTarget ? OracleConstants.ConnectionTarget.SID : OracleConstants.ConnectionTarget.SERVICE);
-                    connectionInfo.setDatabaseName(isSidTarget ? sidText.getText() : serviceNameCombo.getText());
+                    connectionInfo.setDatabaseName(serviceNameCombo.getText());
                     generateConnectionURL(connectionInfo);
                     break;
                 case TNS:
@@ -576,9 +542,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         if (testButton != null) {
             testButton.setEnabled(this.isComplete());
         }
-        boolean isSidTarget = sidRadio.getSelection();
-        sidText.setEnabled(isSidTarget);
-        serviceNameCombo.setEnabled(!isSidTarget);
     }
 
     private class ControlsListener implements ModifyListener, SelectionListener {
