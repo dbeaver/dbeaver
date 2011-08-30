@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * OracleConnectionPage
@@ -204,9 +205,25 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         tnsNameCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         tnsNameCombo.addModifyListener(controlModifyListener);
 
+        String sep = System.getProperty("file.separator");
         String oraHome = System.getenv("ORA_HOME");
+        if (oraHome == null) {
+            String path = System.getenv("PATH");
+            if (path != null) {
+                for (String token : path.split(System.getProperty("path.separator"))) {
+                    if (token.toLowerCase().contains("oracle")) {
+                        if (token.endsWith(sep)) {
+                            token = token.substring(0, token.length() - 1);
+                        }
+                        if (token.toLowerCase().endsWith("bin")) {
+                            oraHome = token.substring(0, token.length() - 3);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         if (oraHome != null) {
-            String sep = System.getProperty("file.separator");
             if (!oraHome.endsWith(sep)) {
                 oraHome += sep;
             }
