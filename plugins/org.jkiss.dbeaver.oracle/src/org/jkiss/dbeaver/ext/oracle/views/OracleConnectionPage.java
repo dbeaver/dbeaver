@@ -30,8 +30,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.Map;
 
 /**
  * OracleConnectionPage
@@ -41,7 +40,10 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private IDataSourceConnectionEditorSite site;
     private Text hostText;
     private Text portText;
-    private Text serviceNameText;
+    private Text sidText;
+    private Button sidRadio;
+    private Combo serviceNameCombo;
+    private Button serviceNameRadio;
     private Text userNameText;
     private Combo userRoleCombo;
     private Text passwordText;
@@ -49,7 +51,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private Button testButton;
     private PropertySourceCustom propertySource;
 
-    private ModifyListener controlModifyListener;
+    private ControlsListener controlModifyListener;
     //private Button ociDriverCheck;
     private Text connectionUrlText;
     private Button osAuthCheck;
@@ -71,13 +73,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         //group.setLayout(new GridLayout(1, true));
         super.setImageDescriptor(logoImage);
 
-        controlModifyListener = new ModifyListener()
-        {
-            public void modifyText(ModifyEvent e)
-            {
-                updateButtons();
-            }
-        };
+        controlModifyListener = new ControlsListener();
 
         TabFolder optionsFolder = new TabFolder(composite, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -115,6 +111,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private Composite createGeneralTab(Composite parent)
     {
+        boolean isOCI = OracleConstants.DRIVER_TYPE_OCI.equals(
+            site.getConnectionInfo().getProperties().get(OracleConstants.PROP_DRIVER_TYPE));
+
         Composite addrGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 10;
@@ -132,7 +131,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         //connectionTypeFolder.setTopRight(ociDriverCheck);
 
         createBasicConnectionControls(connectionTypeFolder);
-        createTNSConnectionControls(connectionTypeFolder);
+        if (isOCI) {
+            createTNSConnectionControls(connectionTypeFolder);
+        }
         createCustomConnectionControls(connectionTypeFolder);
         connectionTypeFolder.setSelection(connectionType.ordinal());
         connectionTypeFolder.addSelectionListener(new SelectionAdapter() {
@@ -179,13 +180,27 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
         portText.addModifyListener(controlModifyListener);
 
-        UIUtils.createControlLabel(targetContainer, "SID/Service");
+        sidRadio = new Button(targetContainer, SWT.RADIO);
+        sidRadio.setText("SID");
 
-        serviceNameText = new Text(targetContainer, SWT.BORDER);
+        sidText = new Text(targetContainer, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
-        serviceNameText.setLayoutData(gd);
-        serviceNameText.addModifyListener(controlModifyListener);
+        sidText.setLayoutData(gd);
+        sidText.addModifyListener(controlModifyListener);
+
+        serviceNameRadio = new Button(targetContainer, SWT.RADIO);
+        serviceNameRadio.addSelectionListener(controlModifyListener);
+        serviceNameRadio.setText("Service");
+
+        serviceNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        serviceNameCombo.setLayoutData(gd);
+        serviceNameCombo.addModifyListener(controlModifyListener);
+        for (String alias : getOraServiceNames()) {
+            serviceNameCombo.add(alias);
+        }
     }
 
     private void createTNSConnectionControls(CTabFolder protocolFolder)
@@ -204,7 +219,15 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         tnsNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         tnsNameCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         tnsNameCombo.addModifyListener(controlModifyListener);
+        for (String alias : getOraServiceNames()) {
+            tnsNameCombo.add(alias);
+        }
+    }
 
+    private ArrayList<String> getOraServiceNames() {
+        ArrayList<String> aliases = new ArrayList<String>();
+
+        // read system environment variables
         String sep = System.getProperty("file.separator");
         String oraHome = System.getenv("ORA_HOME");
         if (oraHome == null) {
@@ -223,6 +246,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 }
             }
         }
+
+        // parse TNSNAMES.ORA file
         if (oraHome != null) {
             if (!oraHome.endsWith(sep)) {
                 oraHome += sep;
@@ -233,26 +258,23 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 try {
                     BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
                     String line;
-                    ArrayList<String> aliases = new ArrayList<String>();
                     while ((line = reader.readLine()) != null) {
                         if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("#") && line.contains(" =")) {
                             aliases.add(line.substring(0, line.indexOf(" =")));
                         }
                     }
-                    Collections.sort(aliases);
-                    for (String alias : aliases) {
-                        tnsNameCombo.add(alias);
-                    }
                 } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    // do nothing
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // do nothing
                 }
             }
             else {
-                // TODO do nothing?
+                // do nothing
             }
         }
+        Collections.sort(aliases);
+        return aliases;
     }
 
     private void createCustomConnectionControls(CTabFolder protocolFolder)
@@ -371,7 +393,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     {
         switch (connectionType) {
             case BASIC:
-                return !CommonUtils.isEmpty(serviceNameText.getText());
+                return sidRadio.getSelection() && !CommonUtils.isEmpty(sidText.getText()) ||
+                       serviceNameRadio.getSelection() && !CommonUtils.isEmpty(serviceNameCombo.getText());
             case TNS:
                 return !CommonUtils.isEmpty(tnsNameCombo.getText());
             case CUSTOM:
@@ -386,7 +409,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
-            final Object conTypeProperty = connectionInfo.getProperties().get(OracleConstants.PROP_CONNECTION_TYPE);
+            Map<Object,Object> connectionProperties = connectionInfo.getProperties();
+            final Object conTypeProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TYPE);
             if (conTypeProperty != null) {
                 connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
             } else {
@@ -403,7 +427,23 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                         portText.setText(String.valueOf(OracleConstants.DEFAULT_PORT));
                     }
 
-                    serviceNameText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                    final Object conTargetProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TARGET);
+                    OracleConstants.ConnectionTarget connectionTarget;
+                    if (conTargetProperty != null) {
+                        connectionTarget = OracleConstants.ConnectionTarget.valueOf(CommonUtils.toString(conTargetProperty));
+                    } else {
+                        connectionTarget = OracleConstants.ConnectionTarget.SID;
+                    }
+                    if (connectionTarget == null || connectionTarget == OracleConstants.ConnectionTarget.SID) {
+                        sidRadio.setSelection(true);
+                        serviceNameCombo.setEnabled(false);
+                        sidText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                    }
+                    else {
+                        serviceNameRadio.setSelection(true);
+                        sidText.setEnabled(false);
+                        serviceNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                    }
                     break;
                 case TNS:
                     tnsNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
@@ -423,7 +463,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 osAuthCheck.setSelection(false);
             }
 
-            final Object roleName = connectionInfo.getProperties().get(OracleConstants.PROP_INTERNAL_LOGON);
+            final Object roleName = connectionProperties.get(OracleConstants.PROP_INTERNAL_LOGON);
             if (roleName != null) {
                 userRoleCombo.setText(roleName.toString().toUpperCase());
             }
@@ -468,7 +508,10 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 case BASIC:
                     connectionInfo.setHostName(hostText.getText());
                     connectionInfo.setHostPort(portText.getText());
-                    connectionInfo.setDatabaseName(serviceNameText.getText());
+                    boolean isSidTarget = sidRadio.getSelection();
+                    connectionInfo.getProperties().put(OracleConstants.PROP_CONNECTION_TARGET,
+                            isSidTarget ? OracleConstants.ConnectionTarget.SID : OracleConstants.ConnectionTarget.SERVICE);
+                    connectionInfo.setDatabaseName(isSidTarget ? sidText.getText() : serviceNameCombo.getText());
                     generateConnectionURL(connectionInfo);
                     break;
                 case TNS:
@@ -533,6 +576,20 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         if (testButton != null) {
             testButton.setEnabled(this.isComplete());
         }
+        boolean isSidTarget = sidRadio.getSelection();
+        sidText.setEnabled(isSidTarget);
+        serviceNameCombo.setEnabled(!isSidTarget);
     }
 
+    private class ControlsListener implements ModifyListener, SelectionListener {
+        public void modifyText(ModifyEvent e) {
+            updateButtons();
+        }
+        public void widgetSelected(SelectionEvent e) {
+            updateButtons();
+        }
+        public void widgetDefaultSelected(SelectionEvent e) {
+            updateButtons();
+        }
+    }
 }
