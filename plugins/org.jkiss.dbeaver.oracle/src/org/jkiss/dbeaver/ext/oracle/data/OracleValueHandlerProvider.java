@@ -30,6 +30,8 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
             return OracleXMLValueHandler.INSTANCE;
         } else if (type.getValueType() == java.sql.Types.STRUCT) {
             return OracleObjectValueHandler.INSTANCE;
+        } else if (type.getTypeName().indexOf("TIMESTAMP") != -1) {
+            return new OracleTimestampValueHandler(context.getDataFormatterProfile());
         } else {
             return null;
         }
