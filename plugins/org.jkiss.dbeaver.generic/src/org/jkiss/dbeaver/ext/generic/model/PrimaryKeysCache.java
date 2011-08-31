@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -78,9 +79,9 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         return new GenericConstraintColumn(object, tableColumn, keySeq);
     }
 
-    protected boolean isObjectsCached(GenericTable parent)
+    protected Collection<GenericPrimaryKey> getObjectsCache(GenericTable parent)
     {
-        return parent.isConstraintsCached();
+        return parent.getConstraintsCache();
     }
 
     protected void cacheObjects(GenericTable parent, List<GenericPrimaryKey> primaryKeys)

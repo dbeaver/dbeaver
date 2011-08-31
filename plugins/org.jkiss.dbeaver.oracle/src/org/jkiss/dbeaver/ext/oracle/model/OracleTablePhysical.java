@@ -94,9 +94,9 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return DBUtils.findObject(getIndexes(monitor), name);
     }
 
-    boolean isIndexesCached()
+    Collection<OracleIndex> getIndexesCache()
     {
-        return indexes != null;
+        return indexes;
     }
 
     void setIndexes(List<OracleIndex> indexes)

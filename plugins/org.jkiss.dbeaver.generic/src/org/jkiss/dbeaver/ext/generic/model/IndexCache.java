@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -101,9 +102,9 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             !"D".equalsIgnoreCase(ascOrDesc));
     }
 
-    protected boolean isObjectsCached(GenericTable parent)
+    protected Collection<GenericIndex> getObjectsCache(GenericTable parent)
     {
-        return parent.isIndexesCached();
+        return parent.getIndexesCache();
     }
 
     protected void cacheObjects(GenericTable parent, List<GenericIndex> indexes)

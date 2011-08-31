@@ -69,7 +69,7 @@ public abstract class JDBCCompositeCache<
     abstract protected ROW_REF fetchObjectRow(JDBCExecutionContext context, PARENT parent, OBJECT forObject, ResultSet resultSet)
         throws SQLException, DBException;
 
-    abstract protected boolean isObjectsCached(PARENT parent);
+    abstract protected Collection<OBJECT> getObjectsCache(PARENT parent);
     
     abstract protected void cacheObjects(PARENT parent, List<OBJECT> objects);
 
@@ -167,7 +167,7 @@ public abstract class JDBCCompositeCache<
         throws DBException
     {
         if ((forParent == null && isCached()) ||
-            (forParent != null && (!forParent.isPersisted() || isObjectsCached(forParent))))
+            (forParent != null && (!forParent.isPersisted() || getObjectsCache(forParent) != null)))
         {
             return;
         }
@@ -179,6 +179,7 @@ public abstract class JDBCCompositeCache<
         }
 
         Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<PARENT, Map<String, ObjectInfo>>();
+        List<OBJECT> precachedObjects = new ArrayList<OBJECT>();
 
         // Load index columns
         JDBCExecutionContext context = (JDBCExecutionContext) owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load composite objects");
@@ -208,9 +209,11 @@ public abstract class JDBCCompositeCache<
                                 continue;
                             }
                         }
-                        if (isObjectsCached(parent)) {
+                        final Collection<OBJECT> objectsCache = getObjectsCache(parent);
+                        if (objectsCache != null) {
                             // Already read
                             parentObjectMap.put(parent, PRECACHED_MARK);
+                            precachedObjects.addAll(objectsCache);
                             continue;
                         }
                         // Add to map
@@ -268,6 +271,11 @@ public abstract class JDBCCompositeCache<
                             objectList.add(info.object);
                             objectMap.put(info.object.getName(), info.object);
                         }
+                    }
+                    // Add precached objects to global cache too
+                    for (OBJECT object : precachedObjects) {
+                        objectList.add(object);
+                        objectMap.put(object.getName(), object);
                     }
                 }
             }

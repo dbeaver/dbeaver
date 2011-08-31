@@ -129,9 +129,9 @@ public class OracleTable extends OracleTablePhysical
         this.foreignKeys = constraints;
     }
 
-    boolean isForeignKeysCached()
+    List<OracleForeignKey> getForeignKeysCache()
     {
-        return foreignKeys != null;
+        return foreignKeys;
     }
 
 //    public OracleForeignKey getForeignKey(DBRProgressMonitor monitor, String fkName)

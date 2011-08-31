@@ -365,9 +365,9 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
                 nullable);
         }
 
-        protected boolean isObjectsCached(MySQLTable parent)
+        protected Collection<MySQLIndex> getObjectsCache(MySQLTable parent)
         {
-            return parent.isIndexesCached();
+            return parent.getIndexesCache();
         }
 
         protected void cacheObjects(MySQLTable parent, List<MySQLIndex> indexes)
@@ -441,9 +441,9 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
                 ordinalPosition);
         }
 
-        protected boolean isObjectsCached(MySQLTable parent)
+        protected Collection<MySQLConstraint> getObjectsCache(MySQLTable parent)
         {
-            return parent.uniqueKeysCached();
+            return parent.getUniqueKeysCache();
         }
 
         protected void cacheObjects(MySQLTable parent, List<MySQLConstraint> constraints)

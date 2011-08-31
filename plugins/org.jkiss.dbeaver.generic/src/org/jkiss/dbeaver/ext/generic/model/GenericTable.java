@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * GenericTable
@@ -183,9 +180,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         this.indexes = indexes;
     }
 
-    boolean isIndexesCached()
+    Collection<GenericIndex> getIndexesCache()
     {
-        return this.indexes != null;
+        return this.indexes;
     }
 
     public List<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
@@ -248,14 +245,14 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return description;
     }
 
-    public boolean isForeignKeysCached()
+    public Collection<GenericForeignKey> getForeignKeysCache()
     {
-        return foreignKeys != null;
+        return foreignKeys;
     }
 
-    public boolean isConstraintsCached()
+    public Collection<GenericPrimaryKey> getConstraintsCache()
     {
-        return uniqueKeys != null;
+        return uniqueKeys;
     }
 
 /*

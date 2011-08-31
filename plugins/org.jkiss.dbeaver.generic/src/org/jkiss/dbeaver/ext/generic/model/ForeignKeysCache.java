@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,9 +152,9 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         return new GenericForeignKeyColumn(foreignKey, fkColumn, keySeq, pkColumn.getTableColumn());
     }
 
-    protected boolean isObjectsCached(GenericTable parent)
+    protected Collection<GenericForeignKey> getObjectsCache(GenericTable parent)
     {
-        return parent.isForeignKeysCached();
+        return parent.getForeignKeysCache();
     }
 
     protected void cacheObjects(GenericTable parent, List<GenericForeignKey> foreignKeys)

@@ -122,9 +122,9 @@ public class MySQLTable extends MySQLTableBase
         return indexes;
     }
 
-    boolean isIndexesCached()
+    Collection<MySQLIndex> getIndexesCache()
     {
-        return indexes != null;
+        return indexes;
     }
 
     void setIndexes(List<MySQLIndex> indexes)
@@ -310,9 +310,9 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
-    boolean uniqueKeysCached()
+    List<MySQLConstraint> getUniqueKeysCache()
     {
-        return this.constraints != null;
+        return this.constraints;
     }
 
     void cacheUniqueKeys(List<MySQLConstraint> constraints)

@@ -281,6 +281,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         return null;
     }
 
+    @Override
+    public String toString()
+    {
+        return "Schema " + name;
+    }
+
     protected static OracleTableColumn getTableColumn(JDBCExecutionContext context, OracleTableBase parent, ResultSet dbResult) throws DBException
     {
         String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
@@ -428,9 +434,9 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
                 JDBCUtils.safeGetInt(dbResult, "POSITION"));
         }
 
-        protected boolean isObjectsCached(OracleTableBase parent)
+        protected Collection<OracleConstraint> getObjectsCache(OracleTableBase parent)
         {
-            return parent.isConstraintsCached();
+            return parent.getConstraintsCache();
         }
 
         protected void cacheObjects(OracleTableBase parent, List<OracleConstraint> constraints)
@@ -502,9 +508,9 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
                 JDBCUtils.safeGetInt(dbResult, "POSITION"));
         }
 
-        protected boolean isObjectsCached(OracleTable parent)
+        protected Collection<OracleForeignKey> getObjectsCache(OracleTable parent)
         {
-            return parent.isForeignKeysCached();
+            return parent.getForeignKeysCache();
         }
 
         protected void cacheObjects(OracleTable parent, List<OracleForeignKey> constraints)
@@ -582,9 +588,9 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
                 isAscending);
         }
 
-        protected boolean isObjectsCached(OracleTablePhysical parent)
+        protected Collection<OracleIndex> getObjectsCache(OracleTablePhysical parent)
         {
-            return parent.isIndexesCached();
+            return parent.getIndexesCache();
         }
 
         protected void cacheObjects(OracleTablePhysical parent, List<OracleIndex> indexes)

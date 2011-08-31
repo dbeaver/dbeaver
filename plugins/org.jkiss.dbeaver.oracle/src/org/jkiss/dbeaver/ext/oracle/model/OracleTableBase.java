@@ -148,9 +148,9 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         this.constraints = constraints;
     }
 
-    boolean isConstraintsCached()
+    List<OracleConstraint> getConstraintsCache()
     {
-        return constraints != null;
+        return constraints;
     }
 
     public List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
