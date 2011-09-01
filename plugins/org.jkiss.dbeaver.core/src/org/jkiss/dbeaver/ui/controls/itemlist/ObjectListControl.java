@@ -513,7 +513,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (objectValue == null) {
             return null;
         }
-        ObjectPropertyDescriptor prop = column.propMap.get(objectValue.getClass());
+        ObjectPropertyDescriptor prop = getPropertyByObject(column, objectValue);
         if (prop == null) {
             return null;
         }
@@ -544,6 +544,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return DEF_LAZY_VALUE;
         }
         return listPropertySource.getPropertyValue(objectValue, prop);
+    }
+
+    private static ObjectPropertyDescriptor getPropertyByObject(ObjectColumn column, Object objectValue)
+    {
+        ObjectPropertyDescriptor prop = null;
+        for (Class valueClass = objectValue.getClass(); prop == null && valueClass != Object.class; valueClass = valueClass.getSuperclass()) {
+            prop = column.propMap.get(valueClass);
+        }
+        return prop;
     }
 
     protected Class<?>[] getListBaseTypes()
@@ -734,7 +743,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         public ObjectPropertyDescriptor getProperty(Object element)
         {
-            return propMap.get(element.getClass());
+            return getPropertyByObject(this, element);
         }
     }
 
@@ -830,7 +839,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             addLazyObject(object, objectColumn);
                         }
                     } else if (cellValue != null ) {
-                        ObjectPropertyDescriptor prop = objectColumn.propMap.get(objectValue.getClass());
+                        ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
                         if (prop != null) {
                             renderer.paintCell(event, object, event.index, prop.isEditable(objectValue));
                         }
@@ -878,7 +887,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     if (monitor.isCanceled() || isDisposed()) {
                         break;
                     }
-                    ObjectPropertyDescriptor prop = column.propMap.get(object.getClass());
+                    ObjectPropertyDescriptor prop = getPropertyByObject(column, object);
                     if (prop != null) {
                         try {
                             synchronized (lazyCache) {

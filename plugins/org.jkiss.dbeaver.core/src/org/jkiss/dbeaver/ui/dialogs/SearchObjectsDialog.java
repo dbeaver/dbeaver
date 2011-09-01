@@ -266,7 +266,9 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                                             Display.getDefault().asyncExec(new Runnable() {
                                                 public void run()
                                                 {
-                                                    fillObjectTypes();
+                                                    if (!dataSourceTree.isDisposed()) {
+                                                        fillObjectTypes();
+                                                    }
                                                 }
                                             });
                                         }
