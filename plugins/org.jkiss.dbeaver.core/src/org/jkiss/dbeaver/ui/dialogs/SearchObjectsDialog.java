@@ -432,6 +432,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
 
     private void performSearch()
     {
+        itemList.clearListData();
         itemList.loadData();
     }
 

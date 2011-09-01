@@ -535,6 +535,9 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                                     UIUtils.runInUI(null, new Runnable() {
                                         public void run()
                                         {
+                                            if (databaseCombo.isDisposed()) {
+                                                return;
+                                            }
                                             if (job.databasesInfo.list != null && !job.databasesInfo.list.isEmpty()) {
                                                 DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                                                 for (DBSObject database : job.databasesInfo.list) {
