@@ -141,14 +141,11 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                         continue;
                     }
                     OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
-                    if (objectType != null && objectType.isBrowsable()) {
+                    if (objectType != null && objectType != OracleObjectType.SYNONYM && objectType.isBrowsable() && CommonUtils.contains(objectTypes, objectType))
+                    {
                         DBSObject object = objectType.findObject(context.getProgressMonitor(), tableSchema, objectName);
                         if (object == null) {
                             log.debug(objectTypeName + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
-                            continue;
-                        }
-                        if (objectType == OracleObjectType.SYNONYM && !CommonUtils.contains(objectTypes, ((OracleSynonym)object).getObjectType())) {
-                            // Synonym on wrong object type
                             continue;
                         }
                         objects.add(object);
