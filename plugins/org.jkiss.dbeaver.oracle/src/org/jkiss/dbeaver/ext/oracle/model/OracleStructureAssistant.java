@@ -97,11 +97,18 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         throws SQLException, DBException
     {
         StringBuilder objectTypeClause = new StringBuilder(100);
+        List<OracleObjectType> oracleObjectTypes = new ArrayList<OracleObjectType>(objectTypes.length + 2);
         for (DBSObjectType objectType : objectTypes) {
             if (objectType instanceof OracleObjectType) {
-                if (objectTypeClause.length() > 0) objectTypeClause.append(",");
-                objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
+                oracleObjectTypes.add((OracleObjectType) objectType);
+                if (objectType == OracleObjectType.PROCEDURE) {
+                    oracleObjectTypes.add(OracleObjectType.FUNCTION);
+                }
             }
+        }
+        for (OracleObjectType objectType : oracleObjectTypes) {
+            if (objectTypeClause.length() > 0) objectTypeClause.append(",");
+            objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
         }
         if (objectTypeClause.length() == 0) {
             return;
@@ -141,7 +148,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                         continue;
                     }
                     OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
-                    if (objectType != null && objectType != OracleObjectType.SYNONYM && objectType.isBrowsable() && CommonUtils.contains(objectTypes, objectType))
+                    if (objectType != null && objectType != OracleObjectType.SYNONYM && objectType.isBrowsable() && oracleObjectTypes.contains(objectType))
                     {
                         DBSObject object = objectType.findObject(context.getProgressMonitor(), tableSchema, objectName);
                         if (object == null) {
