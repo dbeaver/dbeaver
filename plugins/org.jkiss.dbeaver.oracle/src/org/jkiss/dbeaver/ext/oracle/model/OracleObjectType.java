@@ -22,10 +22,12 @@ import java.util.Map;
 public enum OracleObjectType implements DBSObjectType {
 
 	CLUSTER("CLUSTER", null, DBSObject.class, null),
+    CONSTRAINT ("CONSTRAINT", DBIcon.TREE_CONSTRAINT.getImage(), OracleConstraint.class, null), // fake object
 	CONSUMER_GROUP("CONSUMER GROUP", null, DBSObject.class, null),
 	CONTEXT("CONTEXT", null, DBSObject.class, null),
 	DIRECTORY("DIRECTORY", null, DBSObject.class, null),
 	EVALUATION_CONTEXT("EVALUATION CONTEXT", null, DBSObject.class, null),
+    FOREIGN_KEY ("FOREIGN KEY", DBIcon.TREE_FOREIGN_KEY.getImage(), OracleForeignKey.class, null), // fake object
 	FUNCTION("FUNCTION", DBIcon.TREE_PROCEDURE.getImage(), OracleProcedureStandalone.class, new ObjectFinder() {
         public OracleProcedureStandalone findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {

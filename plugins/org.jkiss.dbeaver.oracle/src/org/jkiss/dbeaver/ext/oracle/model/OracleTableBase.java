@@ -153,6 +153,11 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return constraints;
     }
 
+    public DBSForeignKey getForeignKey(DBRProgressMonitor monitor, String ukName) throws DBException
+    {
+        return DBUtils.findObject(getForeignKeys(monitor), ukName);
+    }
+
     public List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
     {
         return null;

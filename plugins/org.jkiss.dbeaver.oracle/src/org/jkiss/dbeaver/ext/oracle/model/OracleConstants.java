@@ -59,6 +59,11 @@ public class OracleConstants {
     public static final String PROP_SOURCE_DEFINITION = "sourceDefinition";
     public static final String PROP_SOURCE_DECLARATION = "sourceDeclaration";
 
+    public static final String COL_OWNER = "OWNER";
+    public static final String COL_TABLE_NAME = "TABLE_NAME";
+    public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
+    public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+
     /**
      * Connection type
      */

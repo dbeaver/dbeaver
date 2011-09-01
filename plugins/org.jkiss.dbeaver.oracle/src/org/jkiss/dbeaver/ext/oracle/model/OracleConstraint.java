@@ -99,22 +99,22 @@ public class OracleConstraint extends JDBCConstraint<OracleTableBase> {
             this);
     }
 
-    public static DBSConstraintType getConstraintType(String type)
+    public static DBSConstraintType getConstraintType(String code)
     {
-        if ("C".equals(type)) {
+        if ("C".equals(code)) {
             return DBSConstraintType.CHECK;
-        } else if ("P".equals(type)) {
+        } else if ("P".equals(code)) {
             return DBSConstraintType.PRIMARY_KEY;
-        } else if ("U".equals(type)) {
+        } else if ("U".equals(code)) {
             return DBSConstraintType.UNIQUE_KEY;
-        } else if ("R".equals(type)) {
+        } else if ("R".equals(code)) {
             return DBSConstraintType.FOREIGN_KEY;
-        } else if ("V".equals(type)) {
+        } else if ("V".equals(code)) {
             return OracleView.CONSTRAINT_WITH_CHECK_OPTION;
-        } else if ("O".equals(type)) {
+        } else if ("O".equals(code)) {
             return OracleView.CONSTRAINT_WITH_READ_ONLY;
         } else {
-            log.debug("Unsupported constraint type: " + type);
+            log.debug("Unsupported constraint type: " + code);
             return DBSConstraintType.CHECK;
         }
     }

@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +22,7 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,6 +44,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant
     {
         return new DBSObjectType[] {
             OracleObjectType.TABLE,
+            OracleObjectType.CONSTRAINT,
+            OracleObjectType.FOREIGN_KEY,
             OracleObjectType.INDEX,
             OracleObjectType.PROCEDURE,
             OracleObjectType.TRIGGER,
@@ -82,6 +86,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             searchAllObjects(context, schema, objectNameMask, objectTypes, maxResults, objects);
 
             // Search constraints
+            findConstraintsByMask(context, schema, objectNameMask, objectTypes, maxResults, objects);
 
             return objects;
         }
@@ -90,6 +95,77 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         }
         finally {
             context.close();
+        }
+    }
+
+    private void findConstraintsByMask(
+//            DBRProgressMonitor monitor,
+            JDBCExecutionContext context,
+            OracleSchema schema,
+            String constrNameMask,
+            DBSObjectType[] objectTypes,
+            int maxResults,
+            List<DBSObject> objects)
+        throws SQLException, DBException
+    {
+        DBRProgressMonitor monitor = context.getProgressMonitor();
+
+        List<DBSObjectType> objectTypesList = Arrays.asList(objectTypes);
+        boolean hasFK = objectTypesList.contains(OracleObjectType.FOREIGN_KEY);
+        boolean hasConstraints = objectTypesList.contains(OracleObjectType.CONSTRAINT);
+
+        // Load tables
+        JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT \n" +
+                "OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE, SEARCH_CONDITION, STATUS\n" +
+                "FROM SYS.ALL_CONSTRAINTS\n" +
+                "WHERE CONSTRAINT_NAME like ?" + (!hasFK ? " AND CONSTRAINT_TYPE<>'R'" : "") +
+                (schema != null ? " AND OWNER=?" : ""));
+        try {
+            dbStat.setString(1, constrNameMask);
+            if (schema != null) {
+                dbStat.setString(2, schema.getName());
+            }
+            JDBCResultSet dbResult = dbStat.executeQuery();
+            try {
+                int tableNum = maxResults;
+                while (dbResult.next() && tableNum-- > 0) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
+                    String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OWNER);
+                    String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
+                    String constrName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME);
+                    String constrType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_TYPE);
+                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
+                    if (tableSchema == null) {
+                        log.debug("Constraint schema '" + schemaName + "' not found");
+                        continue;
+                    }
+                    OracleTable table = tableSchema.getTable(monitor, tableName);
+                    if (table == null) {
+                        log.debug("Constraint table '" + tableName + "' not found in catalog '" + tableSchema.getName() + "'");
+                        continue;
+                    }
+                    DBSObject constraint = null;
+                    if (hasFK && OracleConstraint.getConstraintType(constrType) == DBSConstraintType.FOREIGN_KEY) {
+                        constraint = table.getForeignKey(monitor, constrName);
+                    }
+                    if (hasConstraints && OracleConstraint.getConstraintType(constrType) != DBSConstraintType.FOREIGN_KEY) {
+                        constraint = table.getConstraint(monitor, constrName);
+                    }
+                    if (constraint == null) {
+                        log.debug("Constraint '" + constrName + "' not found in table '" + table.getFullQualifiedName() + "'");
+                    } else {
+                        objects.add(constraint);
+                    }
+                }
+            }
+            finally {
+                dbResult.close();
+            }
+        } finally {
+            dbStat.close();
         }
     }
 
