@@ -18,6 +18,8 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSIndex;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -26,7 +28,7 @@ import java.util.List;
 /**
  * OracleTable base
  */
-public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema> implements DBPNamedObject2
+public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema> implements DBPNamedObject2, DBSObjectStateful
 {
     static final Log log = LogFactory.getLog(OracleTableBase.class);
 
@@ -47,6 +49,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     protected abstract String getTableTypeName();
 
+    private boolean valid;
     private String comment;
     private List<OracleTableColumn> columns;
     private List<OracleConstraint> constraints;
@@ -60,6 +63,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     {
         super(oracleSchema, true);
         setName(JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
+        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
         this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 
@@ -172,6 +176,11 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         throws DBException
     {
         return OracleUtils.getDDL(monitor, getTableTypeName(), this);
+    }
+
+    public DBSObjectState getObjectState()
+    {
+        return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
     }
 
     public static OracleTableBase findTable(DBRProgressMonitor monitor, OracleDataSource dataSource, String ownerName, String tableName) throws DBException
