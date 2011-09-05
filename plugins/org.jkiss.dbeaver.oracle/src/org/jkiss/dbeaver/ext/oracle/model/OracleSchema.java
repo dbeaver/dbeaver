@@ -311,7 +311,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
                 "SELECT /*+ USE_NL(tc)*/ tab.*,tc.COMMENTS FROM (\n" +
                     "SELECT /*+ USE_NL(mv)*/ t.OWNER,\n" +
                     "NVL(mv.MVIEW_NAME,t.TABLE_NAME) as TABLE_NAME,\n" +
-                    "CASE WHEN mv.MVIEW_NAME IS NULL THEN 'TABLE' ELSE 'MVIEW' END as OBJECT_TYPE,t.STATUS," +
+                    "CASE WHEN mv.MVIEW_NAME IS NULL THEN 'TABLE' ELSE 'MVIEW' END as OBJECT_TYPE,CASE WHEN mv.MVIEW_NAME IS NULL THEN 'VALID' ELSE mv.COMPILE_STATE END as STATUS," +
                     "t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
                     "FROM SYS.ALL_ALL_TABLES t\n" +
                     "LEFT OUTER JOIN SYS.ALL_MVIEWS mv ON mv.OWNER=t.OWNER AND mv.CONTAINER_NAME=t.TABLE_NAME \n" +
