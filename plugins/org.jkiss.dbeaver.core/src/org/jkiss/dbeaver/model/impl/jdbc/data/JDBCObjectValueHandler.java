@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -17,6 +18,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.dialogs.data.CursorViewDialog;
+import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.ResultSet;
@@ -94,6 +97,15 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
+        if (controller.isInlineEdit()) {
+            return false;
+        }
+        final Object value = controller.getValue();
+        if (value instanceof DBDCursor) {
+            CursorViewDialog dialog = new CursorViewDialog(controller);
+            dialog.open();
+            return true;
+        }
         return false;
     }
 
