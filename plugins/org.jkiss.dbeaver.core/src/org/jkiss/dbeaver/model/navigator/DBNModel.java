@@ -4,6 +4,10 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,10 +23,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DBNModel.
@@ -35,6 +36,8 @@ import java.util.Map;
  */
 public class DBNModel implements IResourceChangeListener {
     static final Log log = LogFactory.getLog(DBNModel.class);
+
+    private static Map<Image, Map<DBSObjectState, Image>> overlayImageCache = new IdentityHashMap<Image, Map<DBSObjectState, Image>>();
 
     private DBNRoot root;
     private final List<IDBNListener> listeners = new ArrayList<IDBNListener>();
@@ -80,6 +83,10 @@ public class DBNModel implements IResourceChangeListener {
         }
         this.listeners.clear();
         this.listenersCopy = null;
+
+        synchronized (DBNModel.class) {
+            overlayImageCache.clear();
+        }
     }
 
     public DBNAdapterFactory getNodesAdapter()
@@ -369,4 +376,32 @@ public class DBNModel implements IResourceChangeListener {
             }
         }
     }
+
+    public static synchronized Image getStateOverlayImage(Image image, DBSObjectState state)
+    {
+        if (state == null) {
+            // Empty state
+            return image;
+        }
+        final ImageDescriptor overlayImage = state.getOverlayImage();
+        if (overlayImage == null) {
+            // No overlay
+            return image;
+        }
+        Map<DBSObjectState, Image> stateOverlays = overlayImageCache.get(image);
+        if (stateOverlays == null) {
+            stateOverlays = new IdentityHashMap<DBSObjectState, Image>();
+            overlayImageCache.put(image, stateOverlays);
+        }
+        Image result = stateOverlays.get(state);
+        if (result == null) {
+            OverlayImageDescriptor oid = new OverlayImageDescriptor(image.getImageData());
+            oid.setBottomRight(new ImageDescriptor[] {overlayImage} );
+            result = oid.createImage();
+            stateOverlays.put(state, result);
+        }
+        return result;
+    }
+
+
 }

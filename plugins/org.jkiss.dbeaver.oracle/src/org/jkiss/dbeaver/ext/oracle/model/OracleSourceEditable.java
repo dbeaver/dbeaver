@@ -4,10 +4,12 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
+
 /**
  * Stored code interface
  */
-public interface OracleSourceEditable extends OracleSourceObject {
+public interface OracleSourceEditable extends OracleSourceObject, DBSObjectStateful {
 
     boolean isSourceValid();
 

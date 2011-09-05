@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 
 import java.sql.ResultSet;
@@ -76,4 +77,8 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         return "ALTER " + getSourceType().name() + " " + getFullQualifiedName() + " COMPILE";
     }
 
+    public DBSObjectState getObjectState()
+    {
+        return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
+    }
 }

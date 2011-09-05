@@ -4,13 +4,11 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISaveablePart;
@@ -30,19 +28,20 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.utils.CommonUtils;
 
 import java.text.DateFormat;
 import java.util.*;
@@ -50,7 +49,7 @@ import java.util.*;
 /**
  * DataSourceDescriptor
  */
-public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImageProvider, IAdaptable, DBEPrivateObjectEditor
+public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImageProvider, IAdaptable, DBEPrivateObjectEditor, DBSObjectStateful
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
 
@@ -74,9 +73,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private DBPDataSource dataSource;
 
     private final List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
-    private Image iconNormal;
-    private Image iconConnected;
-    private Image iconError;
 
     private DataSourceKeywordManager keywordManager;
 
@@ -108,15 +104,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     public void dispose()
     {
         users.clear();
-        iconNormal = null;
-        if (iconConnected != null) {
-            iconConnected.dispose();
-            iconConnected = null;
-        }
-        if (iconError != null) {
-            iconError.dispose();
-            iconError = null;
-        }
         if (driver != null) {
             driver.removeUser(this);
             driver = null;
@@ -555,27 +542,17 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     public Image getObjectImage()
     {
-        if (iconNormal == null) {
-            iconNormal = driver.getPlainIcon();
+        return driver.getPlainIcon();
+    }
 
-            // Create overlay image for connected icon
-            {
-                OverlayImageDescriptor connectedDescriptor = new OverlayImageDescriptor(iconNormal.getImageData());
-                connectedDescriptor.setBottomRight(new ImageDescriptor[] {DBIcon.OVER_SUCCESS.getImageDescriptor()} );
-                iconConnected = new Image(iconNormal.getDevice(), connectedDescriptor.getImageData());
-            }
-            {
-                OverlayImageDescriptor failedDescriptor = new OverlayImageDescriptor(iconNormal.getImageData());
-                failedDescriptor.setBottomRight(new ImageDescriptor[] {DBIcon.OVER_ERROR.getImageDescriptor()} );
-                iconError = new Image(iconNormal.getDevice(), failedDescriptor.getImageData());
-            }
-        }
+    public DBSObjectState getObjectState()
+    {
         if (isConnected()) {
-            return iconConnected;
+            return DBSObjectState.ACTIVE;
         } else if (connectFailed) {
-            return iconError;
+            return DBSObjectState.INVALID;
         } else {
-            return iconNormal;
+            return DBSObjectState.NORMAL;
         }
     }
 

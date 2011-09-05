@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,7 +15,9 @@ import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DBNNode
@@ -183,6 +186,5 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         }
         return false;
     }
-
 
 }

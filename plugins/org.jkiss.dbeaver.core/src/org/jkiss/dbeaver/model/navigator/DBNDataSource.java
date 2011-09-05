@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 
 /**

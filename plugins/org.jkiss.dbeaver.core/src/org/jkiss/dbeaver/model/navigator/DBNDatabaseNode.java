@@ -80,17 +80,22 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public Image getNodeIcon()
     {
-        if (getObject() instanceof IObjectImageProvider) {
-            Image image = ((IObjectImageProvider) getObject()).getObjectImage();
-            if (image != null) {
-                return image;
+        Image image = null;
+        final DBSObject object = getObject();
+        if (object instanceof IObjectImageProvider) {
+            image = ((IObjectImageProvider) object).getObjectImage();
+        }
+        if (image == null) {
+            DBXTreeNode meta = getMeta();
+            if (meta != null) {
+                image = meta.getIcon(this);
             }
         }
-        DBXTreeNode meta = getMeta();
-        if (meta != null) {
-            return meta.getIcon(this);
+        if (image != null && object instanceof DBSObjectStateful) {
+            return DBNModel.getStateOverlayImage(image, ((DBSObjectStateful) object).getObjectState());
+        } else {
+            return image;
         }
-        return null;
     }
 
     public boolean allowsChildren()
