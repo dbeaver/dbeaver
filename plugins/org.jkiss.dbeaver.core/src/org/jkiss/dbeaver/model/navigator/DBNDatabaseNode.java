@@ -72,6 +72,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             return super.getNodePathName();
         }
     }
+
     public String getNodeDescription()
     {
         return getObject() == null ? null : getObject().getDescription();
