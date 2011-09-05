@@ -7,12 +7,12 @@ package org.jkiss.dbeaver.ui.export.data.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportProvider;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportWizard;
@@ -34,7 +34,7 @@ public class DataExportHandler extends AbstractHandler {
         for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
             Object object = iter.next();
 
-            final DBSDataContainer adapted = (DBSDataContainer)Platform.getAdapterManager().getAdapter(object, DBSDataContainer.class);
+            final DBSDataContainer adapted = RuntimeUtils.getObjectAdapter(object, DBSDataContainer.class);
             if (adapted != null) {
                 dataProviders.add(new DataExportProvider(adapted));
             }

@@ -4,13 +4,13 @@
 
 package org.jkiss.dbeaver.ui.properties.tabbed;
 
-import org.jkiss.utils.CommonUtils;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.*;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Iterator;
 
@@ -103,14 +103,14 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
             for (PropertySourceCache cache : curSelection) {
                 if (cache.object == object) {
                     if (!cache.cached) {
-                        cache.propertySource = (IPropertySource) Platform.getAdapterManager().getAdapter(object, IPropertySource.class);
+                        cache.propertySource = RuntimeUtils.getObjectAdapter(object, IPropertySource.class);
                         cache.cached = true;
                     }
                     return cache.propertySource;
                 }
             }
         }
-        return (IPropertySource) Platform.getAdapterManager().getAdapter(object, IPropertySource.class);
+        return RuntimeUtils.getObjectAdapter(object, IPropertySource.class);
     }
 
 }

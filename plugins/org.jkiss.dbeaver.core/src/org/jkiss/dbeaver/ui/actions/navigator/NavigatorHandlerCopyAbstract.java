@@ -8,7 +8,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -25,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
@@ -59,13 +59,13 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                         if (objectValue == null) {
                             continue;
                         }
-                        DBNNode node = (DBNNode)Platform.getAdapterManager().getAdapter(object, DBNNode.class);
+                        DBNNode node = RuntimeUtils.getObjectAdapter(object, DBNNode.class);
                         DBPNamedObject dbObject = null;
                         if (node instanceof DBNDatabaseNode) {
                             dbObject = ((DBNDatabaseNode)node).getObject();
                         }
                         if (dbObject == null) {
-                            dbObject = (DBPNamedObject)Platform.getAdapterManager().getAdapter(object, DBPNamedObject.class);
+                            dbObject = RuntimeUtils.getObjectAdapter(object, DBPNamedObject.class);
                         }
                         if (node != null) {
                             selectedNodes.add(node);

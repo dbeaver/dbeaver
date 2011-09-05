@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
@@ -56,7 +57,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 } else if (element instanceof DBNDatabaseNode) {
                     node = (DBNDatabaseNode)element;
                 } else {
-                    DBSObject object = (DBSObject) Platform.getAdapterManager().getAdapter(element, DBSObject.class);
+                    DBSObject object = RuntimeUtils.getObjectAdapter(element, DBSObject.class);
                     if (object != null) {
                         node = getNodeByObject(object);
                     }

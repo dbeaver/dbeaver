@@ -78,7 +78,7 @@ class ProjectExportWizardPage extends WizardPage {
         if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
             for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
-                IResource resource = (IResource) Platform.getAdapterManager().getAdapter(element, IResource.class);
+                IResource resource = RuntimeUtils.getObjectAdapter(element, IResource.class);
                 if (resource != null) {
                     projectList.add(resource.getProject());
                 }

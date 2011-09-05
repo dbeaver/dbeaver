@@ -4,24 +4,18 @@
 
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ViewUtils;
-
-import java.util.Map;
 
 public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
 
     @Override
     protected String getObjectDisplayString(Object object)
     {
-        Object adapted = Platform.getAdapterManager().getAdapter(object, DBPNamedObject.class);
+        DBPNamedObject adapted = RuntimeUtils.getObjectAdapter(object, DBPNamedObject.class);
         if (adapted != null) {
             return ViewUtils.convertObjectToString(adapted);
         } else {

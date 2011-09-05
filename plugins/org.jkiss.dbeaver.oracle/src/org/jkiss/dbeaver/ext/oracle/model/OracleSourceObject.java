@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**

@@ -7,8 +7,8 @@ package org.jkiss.dbeaver.ui.editors.entity.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 
 
@@ -17,7 +17,7 @@ public class PreviewChangesHandler extends AbstractHandler
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        EntityEditor editor = (EntityEditor)Platform.getAdapterManager().getAdapter(HandlerUtil.getActiveEditor(event), EntityEditor.class);
+        EntityEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), EntityEditor.class);
         if (editor != null) {
             editor.showChanges(false);
         }

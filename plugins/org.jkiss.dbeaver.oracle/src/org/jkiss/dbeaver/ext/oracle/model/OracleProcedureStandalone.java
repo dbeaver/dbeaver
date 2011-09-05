@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 
 import java.sql.ResultSet;
@@ -15,7 +14,7 @@ import java.sql.ResultSet;
 /**
  * GenericProcedure
  */
-public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
+public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema> implements OracleSourceEditable
 {
 
     private boolean valid;
@@ -60,6 +59,21 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         return DBUtils.getFullQualifiedName(getDataSource(),
             getSourceOwner(),
             this);
+    }
+
+    public boolean isSourceValid()
+    {
+        return valid;
+    }
+
+    public void setSourceValid(boolean valid)
+    {
+        this.valid = valid;
+    }
+
+    public String getCompileQuery()
+    {
+        return "ALTER " + getSourceType().name() + " " + getFullQualifiedName() + " COMPILE";
     }
 
 }

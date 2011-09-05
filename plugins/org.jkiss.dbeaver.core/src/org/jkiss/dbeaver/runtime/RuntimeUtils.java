@@ -4,16 +4,12 @@
 
 package org.jkiss.dbeaver.runtime;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.JexlException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -30,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +45,12 @@ public class RuntimeUtils
     static final Log log = LogFactory.getLog(RuntimeUtils.class);
 
     private static JexlEngine jexlEngine;
+
+    @SuppressWarnings("unchecked")
+    public static <T> T getObjectAdapter(Object adapter, Class<T> objectType)
+    {
+        return (T) Platform.getAdapterManager().getAdapter(adapter, objectType);
+    }
 
     public static IStatus makeExceptionStatus(Throwable ex)
     {

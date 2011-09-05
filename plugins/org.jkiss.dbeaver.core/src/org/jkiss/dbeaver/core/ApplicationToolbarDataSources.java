@@ -724,7 +724,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         if (part == activePart && selection instanceof IStructuredSelection) {
             final Object element = ((IStructuredSelection) selection).getFirstElement();
             if (element != null) {
-                if (element instanceof DBNNode || Platform.getAdapterManager().getAdapter(element, DBSObject.class) != null) {
+                if (element instanceof DBNNode || RuntimeUtils.getObjectAdapter(element, DBSObject.class) != null) {
                     updateControls(false);
                 }
             }
