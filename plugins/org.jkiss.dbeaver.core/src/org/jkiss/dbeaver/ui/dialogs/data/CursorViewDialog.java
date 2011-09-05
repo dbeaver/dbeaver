@@ -10,7 +10,10 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
@@ -77,7 +80,41 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
 
         public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
         {
-            return 0;
+            DBRProgressMonitor monitor = context.getProgressMonitor();
+            DBCResultSet dbResult = value;
+            try {
+                dataReceiver.fetchStart(context, dbResult);
+                long rowCount;
+                try {
+                    rowCount = 0;
+                    while (dbResult.nextRow()) {
+                        if (monitor.isCanceled()) {
+                            // Fetch not more than max rows
+                            break;
+                        }
+                        dataReceiver.fetchRow(context, dbResult);
+                        rowCount++;
+                        if (rowCount >= maxRows) {
+                            break;
+                        }
+                        if (rowCount % 100 == 0) {
+                            monitor.subTask(rowCount + " rows fetched");
+                            monitor.worked(100);
+                        }
+
+                    }
+                } finally {
+                    try {
+                        dataReceiver.fetchEnd(context);
+                    } catch (DBCException e) {
+                        log.error("Error while finishing result set fetch", e);
+                    }
+                }
+                return rowCount;
+            }
+            finally {
+                //dbResult.close();
+            }
         }
 
         public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
@@ -112,7 +149,8 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
 
         public DBPDataSource getDataSource()
         {
-            return getValueController().getDataSource();
+            final DBDValueController valueController = getValueController();
+            return valueController == null ? null : valueController.getDataSource();
         }
 
         public String getName()

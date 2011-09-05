@@ -10,6 +10,7 @@ package org.jkiss.dbeaver.ui.preferences;
 public final class PrefConstants
 {
     public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
+    public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
     public static final String QUERY_ROLLBACK_ON_ERROR = "query.rollback-on-error"; //$NON-NLS-1$
 
     public static final String SCRIPT_COMMIT_TYPE = "script.commit.type"; //$NON-NLS-1$

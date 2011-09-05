@@ -137,6 +137,19 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         }
     }
 
+    public boolean moveTo(int position) throws DBCException
+    {
+        if (this.original == null) {
+            return false;
+        }
+        try {
+            return this.absolute(position);
+        }
+        catch (SQLException e) {
+            throw new DBCException(e);
+        }
+    }
+
     public DBCResultSetMetaData getResultSetMetaData()
         throws DBCException
     {

@@ -48,6 +48,7 @@ public class SQLQueryJob extends DataSourceJob
     private long rowCount;
 
     private DBCStatement curStatement;
+    private DBCResultSet curResultSet;
     //private boolean statementCancel = false;
     private boolean statementCanceled = false;
     private Throwable lastError = null;
@@ -269,6 +270,7 @@ public class SQLQueryJob extends DataSourceJob
 
         try {
             // Prepare statement
+            closeStatement();
             curStatement = DBUtils.prepareStatement(context, sqlQuery, rsOffset, rsMaxRows);
             curStatement.setUserData(dataReceiver);
 
@@ -299,9 +301,8 @@ public class SQLQueryJob extends DataSourceJob
             }
             finally {
                 //monitor.subTask("Close query");
-                if (curStatement != null) {
-                    curStatement.close();
-                    curStatement = null;
+                if (!keepStatementOpen()) {
+                    closeStatement();
                 }
 
                 // Release parameters
@@ -341,14 +342,15 @@ public class SQLQueryJob extends DataSourceJob
         }
         DBRProgressMonitor monitor = context.getProgressMonitor();
         monitor.subTask("Fetch result set");
-        DBCResultSet resultSet = curStatement.openResultSet();
-        if (resultSet != null) {
+        closeResultSet();
+        curResultSet = curStatement.openResultSet();
+        if (curResultSet != null) {
             rowCount = 0;
 
-            dataReceiver.fetchStart(context, resultSet);
+            dataReceiver.fetchStart(context, curResultSet);
 
             try {
-                while ((!hasLimits() || rowCount < rsMaxRows) && resultSet.nextRow()) {
+                while ((!hasLimits() || rowCount < rsMaxRows) && curResultSet.nextRow()) {
                     if (monitor.isCanceled()) {
                         break;
                     }
@@ -359,11 +361,13 @@ public class SQLQueryJob extends DataSourceJob
                         monitor.worked(100);
                     }
 
-                    dataReceiver.fetchRow(context, resultSet);
+                    dataReceiver.fetchRow(context, curResultSet);
                 }
             }
             finally {
-                resultSet.close();
+                if (!keepStatementOpen()) {
+                    closeResultSet();
+                }
 
                 try {
                     dataReceiver.fetchEnd(context);
@@ -375,6 +379,30 @@ public class SQLQueryJob extends DataSourceJob
 
             result.setRowCount(rowCount);
             monitor.subTask(rowCount + " rows fetched");
+        }
+    }
+
+    private boolean keepStatementOpen()
+    {
+        // Only in single query mode and if pref option set to true
+        return queries.size() == 1 &&
+            getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.KEEP_STATEMENT_OPEN);
+    }
+
+    private void closeStatement()
+    {
+        closeResultSet();
+        if (curStatement != null) {
+            curStatement.close();
+            curStatement = null;
+        }
+    }
+
+    private void closeResultSet()
+    {
+        if (curResultSet != null) {
+            curResultSet.close();
+            curResultSet = null;
         }
     }
 
@@ -415,6 +443,11 @@ public class SQLQueryJob extends DataSourceJob
             }
         }
         return rowCount;
+    }
+
+    public void close()
+    {
+        closeStatement();
     }
 
 }

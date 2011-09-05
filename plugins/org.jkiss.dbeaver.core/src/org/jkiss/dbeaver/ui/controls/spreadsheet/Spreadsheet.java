@@ -111,7 +111,7 @@ public class Spreadsheet extends Composite implements Listener {
 
     public static Spreadsheet getFromGrid(LightGrid grid)
     {
-        return grid != null && grid.getParent() instanceof Spreadsheet ? (Spreadsheet)grid.getParent() : null;
+        return grid != null && !grid.isDisposed() && grid.getParent() instanceof Spreadsheet ? (Spreadsheet)grid.getParent() : null;
     }
 
     public LightGrid getGrid()

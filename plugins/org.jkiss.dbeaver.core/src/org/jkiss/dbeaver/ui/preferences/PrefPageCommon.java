@@ -22,6 +22,7 @@ public class PrefPageCommon extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common";
 
     private Button autoCommitCheck;
+    private Button keepStatementOpenCheck;
     private Button rollbackOnErrorCheck;
     private Spinner resultSetSize;
     private Spinner memoryContentSize;
@@ -41,6 +42,7 @@ public class PrefPageCommon extends TargetPrefPage
             store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
             store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(PrefConstants.DEFAULT_AUTO_COMMIT) ||
+            store.contains(PrefConstants.KEEP_STATEMENT_OPEN) ||
             store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE) ||
             store.contains(PrefConstants.READ_EXPENSIVE_PROPERTIES) ||
             store.contains(PrefConstants.META_CASE_SENSITIVE)
@@ -63,6 +65,7 @@ public class PrefPageCommon extends TargetPrefPage
             txnGroup.setLayout(new GridLayout(2, false));
 
             autoCommitCheck = UIUtils.createLabelCheckbox(txnGroup, "Auto-commit by default", false);
+            keepStatementOpenCheck = UIUtils.createLabelCheckbox(txnGroup, "Keep open cursors in SQL editor", false);
             rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, "Rollback on error", false);
         }
 
@@ -105,6 +108,7 @@ public class PrefPageCommon extends TargetPrefPage
     {
         try {
             autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
+            keepStatementOpenCheck.setSelection(store.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN));
             rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
             resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
             memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
@@ -119,6 +123,7 @@ public class PrefPageCommon extends TargetPrefPage
     {
         try {
             store.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommitCheck.getSelection());
+            store.setValue(PrefConstants.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
             store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
@@ -133,6 +138,7 @@ public class PrefPageCommon extends TargetPrefPage
     protected void clearPreferences(IPreferenceStore store)
     {
         store.setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
+        store.setToDefault(PrefConstants.KEEP_STATEMENT_OPEN);
         store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
         store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);

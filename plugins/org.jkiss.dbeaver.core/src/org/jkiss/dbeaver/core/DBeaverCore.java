@@ -459,6 +459,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         // Common
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.KEEP_STATEMENT_OPEN, false);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.QUERY_ROLLBACK_ON_ERROR, false);
 
         // SQL execution

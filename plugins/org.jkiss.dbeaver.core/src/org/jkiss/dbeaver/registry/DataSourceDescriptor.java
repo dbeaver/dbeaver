@@ -378,10 +378,14 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             for (DBPDataSourceUser user : usersStamp) {
                 if (user instanceof Job) {
                     jobCount++;
-                } else if (user instanceof ISaveablePart) {
+                }
+                if (user instanceof ISaveablePart) {
                     if (!RuntimeUtils.validateAndSave(monitor, (ISaveablePart) user)) {
                         return false;
                     }
+                }
+                if (user instanceof DBPDataSourceHandler) {
+                    ((DBPDataSourceHandler)user).beforeDisconnect();
                 }
             }
             if (jobCount > 0) {
@@ -464,14 +468,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                 this,
                 false);
             firePropertyChange();
-        }
-
-        // Clear users
-        synchronized (users) {
-            if (!users.isEmpty()) {
-                log.debug(users.size() + " users still present in datasource '" + getName() + "' after disconnect");
-            }
-            users.clear();
         }
 
         return true;

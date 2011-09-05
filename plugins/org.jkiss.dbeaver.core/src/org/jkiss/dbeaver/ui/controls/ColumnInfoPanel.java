@@ -42,7 +42,7 @@ public class ColumnInfoPanel extends Composite {
             infoItem.addProperty("Key", "Key", new CellKeyInfo(valueController) );
         }
 
-        GridData gd = new GridData(GridData.FILL_BOTH);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
         this.setLayoutData(gd);

@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceUser;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -74,7 +71,8 @@ import java.util.List;
  * SQL Executor
  */
 public class SQLEditor extends SQLEditorBase
-    implements IResourceChangeListener, IDataSourceContainerProviderEx, DBPEventListener, ISaveablePart2, ResultSetProvider, DBPDataSourceUser
+    implements IResourceChangeListener, IDataSourceContainerProviderEx,
+    DBPEventListener, ISaveablePart2, ResultSetProvider, DBPDataSourceUser, DBPDataSourceHandler
 {
 
     static final int PAGE_INDEX_RESULTSET = 0;
@@ -142,7 +140,7 @@ public class SQLEditor extends SQLEditorBase
             curContainer.release(this);
         }
 
-        closeSession();
+        closeJob();
         getEditorInput().setDataSourceContainer(container);
         checkConnected();
 
@@ -515,6 +513,7 @@ public class SQLEditor extends SQLEditorBase
                     });
                 }
             });
+            closeJob();
             if (isSingleQuery) {
                 curJob = job;
                 resultsView.refresh();
@@ -532,9 +531,10 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
-    private void closeSession()
+    private void closeJob()
     {
         if (curJob != null) {
+            curJob.close();
             curJob = null;
         }
     }
@@ -561,6 +561,16 @@ public class SQLEditor extends SQLEditorBase
         reloadSyntaxRules();
     }
 
+
+    public void beforeConnect()
+    {
+    }
+
+    public void beforeDisconnect()
+    {
+        closeJob();
+    }
+
     public void dispose()
     {
         // Acquire ds container
@@ -581,7 +591,7 @@ public class SQLEditor extends SQLEditorBase
                 }
             }
         }
-        closeSession();
+        closeJob();
 
         IProject project = getEditorInput().getProject();
         if (project != null) {
@@ -619,13 +629,6 @@ public class SQLEditor extends SQLEditorBase
                 new Runnable() {
                     public void run() {
                         switch (event.getAction()) {
-                            case OBJECT_UPDATE:
-                                if (event.getEnabled() != null) {
-                                    if (!event.getEnabled()) {
-                                        closeSession();
-                                    }
-                                }
-                                break;
                             case OBJECT_REMOVE:
                                 getSite().getWorkbenchWindow().getActivePage().closeEditor(SQLEditor.this, false);
                                 break;

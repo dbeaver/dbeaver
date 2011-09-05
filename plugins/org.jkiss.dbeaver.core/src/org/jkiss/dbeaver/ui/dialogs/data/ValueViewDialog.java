@@ -104,6 +104,18 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     @Override
     protected Control createDialogArea(Composite parent)
     {
+/*
+        SashForm sash = new SashForm(parent, SWT.VERTICAL);
+        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite dialogGroup = (Composite)super.createDialogArea(sash);
+        dialogGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());
+        Composite editorGroup = (Composite) super.createDialogArea(sash);
+        editorGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        //editorGroup.setLayout(new GridLayout(1, false));
+        return editorGroup;
+
+*/
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
         new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());

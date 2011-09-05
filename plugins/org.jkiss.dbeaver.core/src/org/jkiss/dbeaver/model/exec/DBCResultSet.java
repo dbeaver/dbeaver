@@ -19,6 +19,8 @@ public interface DBCResultSet extends DBPObject
 
     boolean nextRow() throws DBCException;
 
+    boolean moveTo(int position) throws DBCException;
+
     DBCResultSetMetaData getResultSetMetaData() throws DBCException;
 
     void close();
