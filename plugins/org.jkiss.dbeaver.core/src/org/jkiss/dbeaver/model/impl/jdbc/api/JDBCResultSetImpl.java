@@ -43,7 +43,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         return new JDBCResultSetImpl(context, original, description);
     }
 
-    private JDBCResultSetImpl(JDBCExecutionContext context, ResultSet original, String description)
+    protected JDBCResultSetImpl(JDBCExecutionContext context, ResultSet original, String description)
     {
         this.context = context;
         this.original = original;

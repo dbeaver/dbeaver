@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
@@ -15,12 +14,12 @@ import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -361,7 +360,7 @@ public final class DBUtils {
             typeHandler = typeProvider.getInstance().getHandler(context, column);
         }
         if (typeHandler == null) {
-            typeHandler = DBCDefaultValueHandler.INSTANCE;
+            typeHandler = context.getDefaultValueHandler();
         }
         return typeHandler;
     }
@@ -656,6 +655,20 @@ public final class DBUtils {
                 return o1.getName().compareTo(o2.getName());
             }
         });
+    }
+
+    public static String getDefaultValueDisplayString(Object value)
+    {
+        if (value == null) {
+            return DBConstants.NULL_VALUE_LABEL;
+        }
+        String className = value.getClass().getName();
+        if (className.startsWith("java.lang") || className.startsWith("java.util")) {
+            // Standard types just use toString
+            return value.toString();
+        }
+        // Unknown types prinyt their class name
+        return "[" + value.getClass().getSimpleName() + "]";
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {

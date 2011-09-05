@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -67,6 +68,11 @@ public interface DBCExecutionContext {
         boolean updatable,
         boolean returnGeneratedKeys) throws DBCException;
 
+    /**
+     * Default value handler for this context
+     * @return value handler instance
+     */
+    DBDValueHandler getDefaultValueHandler();
     /**
      * Closes context. No exceptions could be throws from this method.
      */
