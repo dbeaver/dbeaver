@@ -17,6 +17,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
+import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerDialog;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,7 +32,11 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
     {
         List<OracleCompileUnit> objects = getSelectedObjects(event);
         if (!objects.isEmpty()) {
-
+            OracleCompilerDialog dialog = new OracleCompilerDialog(
+                HandlerUtil.getActiveShell(event),
+                objects
+            );
+            dialog.open();
         }
         return null;
     }
