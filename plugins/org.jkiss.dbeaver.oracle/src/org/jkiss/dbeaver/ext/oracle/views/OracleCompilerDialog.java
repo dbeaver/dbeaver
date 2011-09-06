@@ -4,8 +4,10 @@
 
 package org.jkiss.dbeaver.ext.oracle.views;
 
+import com.sun.javaws.OperaSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -14,6 +16,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -25,7 +28,8 @@ import org.jkiss.dbeaver.registry.DriverPathDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 
-import java.util.ArrayList;
+import java.util.*;
+import java.util.List;
 
 /**
  * DriverEditDialog
@@ -34,12 +38,17 @@ public class OracleCompilerDialog extends TrayDialog
 {
     static final Log log = LogFactory.getLog(OracleCompilerDialog.class);
 
+    private static final int COMPILE_ID = 1000;
+    private static final int COMPILE_ALL_ID = 1001;
+
     private java.util.List<OracleCompileUnit> compileUnits;
     private TableViewer unitTable;
+    private TableViewer infoTable;
 
     private java.util.List<DriverPathDescriptor> homeDirs = new ArrayList<DriverPathDescriptor>();
 
     private String curFolder = null;
+    private ListViewer logList;
 
     public OracleCompilerDialog(Shell shell, java.util.List<OracleCompileUnit> compileUnits)
     {
@@ -57,23 +66,25 @@ public class OracleCompilerDialog extends TrayDialog
         getShell().setText("Compile object(s)");
 
         GridData gd;
-        Composite libsGroup = new Composite(parent, SWT.NONE);
-        libsGroup.setLayout(new GridLayout(2, false));
-        libsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(new GridLayout(2, false));
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite libsListGroup = new Composite(libsGroup, SWT.NONE);
+            Composite unitsGroup = new Composite(composite, SWT.NONE);
             gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = 300;
+            gd.widthHint = 250;
             gd.heightHint = 200;
-            libsListGroup.setLayoutData(gd);
-            libsListGroup.setLayout(new GridLayout(2, false));
+            gd.verticalIndent = 0;
+            gd.horizontalIndent = 0;
+            unitsGroup.setLayoutData(gd);
+            unitsGroup.setLayout(new GridLayout(1, false));
 
-            unitTable = new TableViewer(libsListGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
+            unitTable = new TableViewer(unitsGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
 
             {
                 final Table table = unitTable.getTable();
-                table.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+                table.setLayoutData(new GridData(GridData.FILL_BOTH));
                 table.setLinesVisible(true);
                 table.setHeaderVisible(true);
             }
@@ -99,12 +110,82 @@ public class OracleCompilerDialog extends TrayDialog
                     cell.setText(node.getNodeType());
                 }
             });
+            unitTable.addSelectionChangedListener(new ISelectionChangedListener() {
+                public void selectionChanged(SelectionChangedEvent event)
+                {
+                    IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+                    selectUnit(selection.isEmpty() ? null : (OracleCompileUnit)selection.getFirstElement());
+                }
+            });
             unitTable.setContentProvider(new ListContentProvider());
             unitTable.setInput(compileUnits);
             UIUtils.packColumns(unitTable.getTable());
         }
 
-        return libsGroup;
+        {
+            Composite infoGroup = new Composite(composite, SWT.NONE);
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.widthHint = 400;
+            gd.heightHint = 200;
+            gd.verticalIndent = 0;
+            gd.horizontalIndent = 0;
+            infoGroup.setLayoutData(gd);
+            infoGroup.setLayout(new GridLayout(1, false));
+
+            infoTable = new TableViewer(infoGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+
+            {
+                final Table table = infoTable.getTable();
+                table.setLayoutData(new GridData(GridData.FILL_BOTH));
+                table.setLinesVisible(true);
+            }
+            final TableViewerColumn titleColumn = UIUtils.createTableViewerColumn(infoTable, SWT.NONE, "Title");
+            titleColumn.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell)
+                {
+                    IDatabasePersistAction action = (IDatabasePersistAction) cell.getElement();
+                    cell.setText(action.getTitle());
+                }
+            });
+            final TableViewerColumn sqlColumn = UIUtils.createTableViewerColumn(infoTable, SWT.NONE, "SQL");
+            sqlColumn.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell)
+                {
+                    IDatabasePersistAction action = (IDatabasePersistAction) cell.getElement();
+                    cell.setText(action.getScript());
+                }
+            });
+
+            infoTable.setContentProvider(new ListContentProvider());
+            UIUtils.packColumns(infoTable.getTable());
+
+            logList = new ListViewer(infoGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+            logList.setLabelProvider(new ColumnLabelProvider() {
+
+            });
+            logList.getList().setLayoutData(new GridData(GridData.FILL_BOTH));
+            logList.setContentProvider(new ListContentProvider());
+        }
+
+        return composite;
+    }
+
+    private void selectUnit(OracleCompileUnit unit)
+    {
+        infoTable.setInput(Arrays.asList(unit.getCompileActions()));
+        UIUtils.packColumns(infoTable.getTable());
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(Composite parent)
+    {
+		// create OK and Cancel buttons by default
+        createButton(parent, COMPILE_ID, "Compi&le", false).setEnabled(false);
+		createButton(parent, COMPILE_ALL_ID, "Compile &All", true);
+		createButton(parent, IDialogConstants.CANCEL_ID,
+            IDialogConstants.CLOSE_LABEL, false);
     }
 
     protected void okPressed()

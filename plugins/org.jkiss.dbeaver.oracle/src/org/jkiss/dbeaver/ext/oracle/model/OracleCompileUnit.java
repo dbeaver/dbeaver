@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 
 /**
@@ -11,6 +12,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
  */
 public interface OracleCompileUnit extends DBSObjectStateful {
 
-    String getCompileQuery();
+    IDatabasePersistAction[] getCompileActions();
 
 }

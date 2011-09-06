@@ -5,8 +5,10 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -87,9 +89,13 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
         return true;
     }
 
-    public String getCompileQuery()
+    public IDatabasePersistAction[] getCompileActions()
     {
-        return "";
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction(
+                "Compile package",
+                "ALTER PACKAGE " + getFullQualifiedName() + " COMPILE"
+            )};
     }
 
     public DBSObjectState getObjectState()
