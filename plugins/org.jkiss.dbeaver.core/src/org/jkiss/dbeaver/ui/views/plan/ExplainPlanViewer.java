@@ -172,7 +172,14 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         if (planner == null) {
             throw new DBCException("This datasource doesn't support execution plans");
         }
-
+        if (planTree.isLoading()) {
+            UIUtils.showMessageBox(
+                getControl().getShell(),
+                "Can't explain plan",
+                "Explain plan already running",
+                SWT.ICON_ERROR);
+            return;
+        }
         sqlText.setText(query);
         planTree.init(planner, query);
         planTree.loadData();

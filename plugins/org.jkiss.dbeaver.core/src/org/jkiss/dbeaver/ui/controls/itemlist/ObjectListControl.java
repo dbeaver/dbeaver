@@ -171,9 +171,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected boolean cancelProgress()
     {
-        if (loadingJob != null) {
-            loadingJob.cancel();
-            return true;
+        synchronized (this) {
+            if (loadingJob != null) {
+                loadingJob.cancel();
+                return true;
+            }
         }
         return false;
     }
@@ -223,13 +225,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public void dispose()
     {
         //PropertiesContributor.getInstance().removeLazyListener(this);
-        if (loadingJob != null) {
-            // Cancel running job
-            loadingJob.cancel();
-            loadingJob = null;
+        synchronized (this) {
+            if (loadingJob != null) {
+                // Cancel running job
+                loadingJob.cancel();
+                loadingJob = null;
+            }
         }
         renderer.dispose();
         super.dispose();
+    }
+
+    public synchronized boolean isLoading()
+    {
+        return loadingJob != null;
     }
 
     public void loadData()
@@ -260,15 +269,17 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         if (lazy) {
             // start loading service
-            this.loadingJob = createLoadService();
-            this.loadingJob.addJobChangeListener(new JobChangeAdapter() {
-                @Override
-                public void done(IJobChangeEvent event)
-                {
-                    loadingJob = null;
-                }
-            });
-            this.loadingJob.schedule(LAZY_LOAD_DELAY);
+            synchronized (this) {
+                this.loadingJob = createLoadService();
+                this.loadingJob.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event)
+                    {
+                        loadingJob = null;
+                    }
+                });
+                this.loadingJob.schedule(LAZY_LOAD_DELAY);
+            }
         } else {
             // Load data synchronously
             final LoadingJob<Collection<OBJECT_TYPE>> loadService = createLoadService();
