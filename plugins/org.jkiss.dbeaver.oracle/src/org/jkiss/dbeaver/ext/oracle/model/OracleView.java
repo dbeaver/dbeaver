@@ -25,7 +25,7 @@ import java.sql.SQLException;
 /**
  * OracleView
  */
-public class OracleView extends OracleTableBase
+public class OracleView extends OracleTableBase implements OracleCompileUnit
 {
 
     public static final DBSConstraintType CONSTRAINT_WITH_CHECK_OPTION = new DBSConstraintType("V", "With Check Option", false);
@@ -151,6 +151,11 @@ public class OracleView extends OracleTableBase
         finally {
             context.close();
         }
+    }
+
+    public String getCompileQuery()
+    {
+        return "";
     }
 
 }

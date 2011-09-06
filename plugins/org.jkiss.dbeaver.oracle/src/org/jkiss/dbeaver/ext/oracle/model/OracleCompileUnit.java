@@ -7,13 +7,9 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 
 /**
- * Stored code interface
+ * Compile unit
  */
-public interface OracleSourceEditable extends OracleSourceObject, DBSObjectStateful {
-
-    boolean isSourceValid();
-
-    void setSourceValid(boolean valid);
+public interface OracleCompileUnit extends DBSObjectStateful {
 
     String getCompileQuery();
 

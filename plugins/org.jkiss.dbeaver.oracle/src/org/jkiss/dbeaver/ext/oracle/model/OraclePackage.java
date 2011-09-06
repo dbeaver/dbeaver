@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,7 +26,7 @@ import java.util.Map;
 /**
  * GenericProcedure
  */
-public class OraclePackage extends OracleSchemaObject implements OracleSourceObject,DBSEntityContainer
+public class OraclePackage extends OracleSchemaObject implements OracleSourceObject,OracleCompileUnit,DBSEntityContainer
 {
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;
@@ -84,6 +85,16 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
     {
         proceduresCache.clearCache();
         return true;
+    }
+
+    public String getCompileQuery()
+    {
+        return "";
+    }
+
+    public DBSObjectState getObjectState()
+    {
+        return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
     }
 
     static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackaged> {

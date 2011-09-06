@@ -15,7 +15,7 @@ import java.sql.ResultSet;
 /**
  * GenericProcedure
  */
-public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema> implements OracleSourceEditable
+public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema> implements OracleCompileUnit
 {
 
     private boolean valid;
@@ -60,16 +60,6 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         return DBUtils.getFullQualifiedName(getDataSource(),
             getSourceOwner(),
             this);
-    }
-
-    public boolean isSourceValid()
-    {
-        return valid;
-    }
-
-    public void setSourceValid(boolean valid)
-    {
-        this.valid = valid;
     }
 
     public String getCompileQuery()

@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.actions;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSourceEditable;
+import org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -21,7 +21,7 @@ public class OracleObjectAdapter implements IAdapterFactory {
     }
 
     public Object getAdapter(Object adaptableObject, Class adapterType) {
-        if (OracleSourceObject.class.isAssignableFrom(adapterType)) {
+        if (OracleCompileUnit.class.isAssignableFrom(adapterType) || OracleSourceObject.class.isAssignableFrom(adapterType)) {
             DBSObject dbObject = null;
             if (adaptableObject instanceof DBNDatabaseNode) {
                 dbObject = ((DBNDatabaseNode) adaptableObject).getObject();
@@ -38,6 +38,6 @@ public class OracleObjectAdapter implements IAdapterFactory {
     }
 
     public Class[] getAdapterList() {
-        return new Class[] { OracleSourceObject.class, OracleSourceEditable.class };
+        return new Class[] { OracleSourceObject.class, OracleCompileUnit.class };
     }
 }
