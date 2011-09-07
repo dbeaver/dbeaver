@@ -116,6 +116,17 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         }
     }
 
+    public Object getColumnValue(String name) throws DBCException
+    {
+        checkNotEmpty();
+        try {
+            return original.getObject(name);
+        }
+        catch (SQLException e) {
+            throw new DBCException(e);
+        }
+    }
+
     private void checkNotEmpty()
     {
         if (original == null) {

@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -67,7 +66,9 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     public IDatabasePersistAction[] getCompileActions()
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+            new OracleObjectPersistAction(
+                getProcedureType() == DBSProcedureType.PROCEDURE ?
+                    OracleObjectType.PROCEDURE : OracleObjectType.FUNCTION,
                 "Compile procedure",
                 "ALTER " + getSourceType().name() + " " + getFullQualifiedName() + " COMPILE"
             )};

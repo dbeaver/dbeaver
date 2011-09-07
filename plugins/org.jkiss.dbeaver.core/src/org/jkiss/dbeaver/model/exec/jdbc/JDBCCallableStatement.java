@@ -9,7 +9,7 @@ import java.sql.CallableStatement;
 /**
  * JDBC statement
  */
-public interface JDBCCallableStatement extends CallableStatement, JDBCStatement {
+public interface JDBCCallableStatement extends CallableStatement, JDBCPreparedStatement {
 
     void close();
 

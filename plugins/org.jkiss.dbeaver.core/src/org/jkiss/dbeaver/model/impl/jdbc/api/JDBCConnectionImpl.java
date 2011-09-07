@@ -123,7 +123,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
         dataFormatterProfile = formatterProfile;
     }
 
-    public JDBCStatement prepareStatement(
+    public JDBCPreparedStatement prepareStatement(
         DBCStatementType type,
         String sqlQuery,
         boolean scrollable,

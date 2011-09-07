@@ -158,7 +158,8 @@ public class OracleView extends OracleTableBase implements OracleCompileUnit
     public IDatabasePersistAction[] getCompileActions()
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+            new OracleObjectPersistAction(
+                OracleObjectType.VIEW,
                 "Compile view",
                 "ALTER VIEW " + getFullQualifiedName() + " COMPILE"
             )};

@@ -17,6 +17,8 @@ public interface DBCResultSet extends DBPObject
 
     Object getColumnValue(int index) throws DBCException;
 
+    Object getColumnValue(String name) throws DBCException;
+
     boolean nextRow() throws DBCException;
 
     boolean moveTo(int position) throws DBCException;

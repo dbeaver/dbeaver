@@ -92,7 +92,8 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
     public IDatabasePersistAction[] getCompileActions()
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+            new OracleObjectPersistAction(
+                OracleObjectType.PACKAGE,
                 "Compile package",
                 "ALTER PACKAGE " + getFullQualifiedName() + " COMPILE"
             )};
