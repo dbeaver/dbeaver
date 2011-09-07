@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -159,6 +160,11 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
             partitionCache.clearCache();
         }
         return true;
+    }
+
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    {
+        this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.TABLE);
     }
 
     private static class PartitionCache extends JDBCStructCache<OracleTablePhysical, OracleTablePartition, OracleTablePartition> {

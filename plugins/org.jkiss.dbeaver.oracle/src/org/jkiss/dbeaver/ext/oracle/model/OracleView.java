@@ -112,6 +112,11 @@ public class OracleView extends OracleTableBase implements OracleCompileUnit
         return true;
     }
 
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    {
+        this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.VIEW);
+    }
+
     private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBException
     {
         if (!isPersisted()) {

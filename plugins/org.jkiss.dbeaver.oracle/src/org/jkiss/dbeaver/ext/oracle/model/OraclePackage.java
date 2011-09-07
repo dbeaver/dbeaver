@@ -6,9 +6,9 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -87,6 +87,11 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
     {
         proceduresCache.clearCache();
         return true;
+    }
+
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    {
+        this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE);
     }
 
     public IDatabasePersistAction[] getCompileActions()

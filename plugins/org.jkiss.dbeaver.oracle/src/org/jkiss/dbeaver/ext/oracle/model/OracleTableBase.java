@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -49,7 +50,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     protected abstract String getTableTypeName();
 
-    private boolean valid;
+    protected boolean valid;
     private String comment;
     private List<OracleTableColumn> columns;
     private List<OracleConstraint> constraints;

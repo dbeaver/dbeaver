@@ -6,8 +6,10 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 
@@ -78,4 +80,12 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     {
         return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
     }
+
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    {
+        this.valid = OracleUtils.getObjectStatus(monitor, this,
+            getProcedureType() == DBSProcedureType.PROCEDURE ?
+                    OracleObjectType.PROCEDURE : OracleObjectType.FUNCTION);
+    }
+
 }

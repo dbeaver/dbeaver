@@ -15,10 +15,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.SQLException;
 
@@ -165,6 +162,45 @@ public class OracleUtils {
             }
         } else {
             return reference;
+        }
+    }
+
+    public static boolean getObjectStatus(
+        DBRProgressMonitor monitor,
+        DBSObjectStateful object,
+        OracleObjectType objectType)
+        throws DBCException
+    {
+        final JDBCExecutionContext context = (JDBCExecutionContext)object.getDataSource().openContext(
+            monitor,
+            DBCExecutionPurpose.META,
+            "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'");
+        try {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OBJECT_NAME=?");
+            try {
+                dbStat.setString(1, objectType.getTypeName());
+                dbStat.setString(2, object.getName());
+                final JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    if (dbResult.next()) {
+                        return "VALID".equals(dbResult.getString("STATUS"));
+                    } else {
+                        log.warn(objectType.getTypeName() + " '" + object.getName() + "' not found in system dictionary");
+                        return false;
+                    }
+                }
+                finally {
+                    dbResult.close();
+                }
+            }
+            finally {
+                dbStat.close();
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e);
+        } finally {
+            context.close();
         }
     }
 

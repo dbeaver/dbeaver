@@ -556,6 +556,11 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         }
     }
 
+    public void refreshObjectState(DBRProgressMonitor monitor)
+    {
+        // just do nothing
+    }
+
     public static String generateNewId(DriverDescriptor driver)
     {
         return driver.getId() + "-" + System.currentTimeMillis() + "-" + new Random().nextInt();

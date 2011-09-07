@@ -57,6 +57,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
         argumentsCache.clearCache();
+        //getSourceOwner().proceduresCache.fetchObject()
         return true;
     }
 
