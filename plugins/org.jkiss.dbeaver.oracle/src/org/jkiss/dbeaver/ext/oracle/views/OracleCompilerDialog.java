@@ -7,32 +7,41 @@ package org.jkiss.dbeaver.ext.oracle.views;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.impl.SimpleLog;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -47,7 +56,7 @@ public class OracleCompilerDialog extends TrayDialog
 
     private java.util.List<OracleCompileUnit> compileUnits;
     private TableViewer unitTable;
-    private TableViewer infoTable;
+    private Table infoTable;
 
     private final CompileLog compileLog = new CompileLog();
     
@@ -64,10 +73,10 @@ public class OracleCompilerDialog extends TrayDialog
             UIUtils.runInUI(getShell(), new Runnable() {
                 public void run()
                 {
-                    if (infoTable == null || infoTable.getTable().isDisposed()) {
+                    if (infoTable == null || infoTable.isDisposed()) {
                         return;
                     }
-                    final TableItem item = new TableItem(infoTable.getTable(), SWT.NONE);
+                    final TableItem item = new TableItem(infoTable, SWT.NONE);
                     item.setText(CommonUtils.toString(message));
                     int color = -1;
                     switch (type) {
@@ -88,9 +97,9 @@ public class OracleCompilerDialog extends TrayDialog
                             break;
                     }
                     if (color != -1) {
-                        item.setForeground(infoTable.getTable().getDisplay().getSystemColor(color));
+                        item.setForeground(infoTable.getDisplay().getSystemColor(color));
                     }
-                    infoTable.getTable().showItem(item);
+                    infoTable.showItem(item);
                     if (t != null) {
                         String prevMessage = null;
                         for (Throwable error = t; error != null; error = error.getCause()) {
@@ -99,10 +108,10 @@ public class OracleCompilerDialog extends TrayDialog
                                 continue;
                             }
                             prevMessage = errorMessage;
-                            TableItem stackItem = new TableItem(infoTable.getTable(), SWT.NONE);
+                            TableItem stackItem = new TableItem(infoTable, SWT.NONE);
                             stackItem.setText(errorMessage);
-                            stackItem.setForeground(infoTable.getTable().getDisplay().getSystemColor(SWT.COLOR_RED));
-                            infoTable.getTable().showItem(stackItem);
+                            stackItem.setForeground(infoTable.getDisplay().getSystemColor(SWT.COLOR_RED));
+                            infoTable.showItem(stackItem);
                         }
                     }
                 }
@@ -157,8 +166,12 @@ public class OracleCompilerDialog extends TrayDialog
                 {
                     DBSObject unit = (DBSObject) cell.getElement();
                     final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(unit);
-                    cell.setText(node.getNodeName());
-                    cell.setImage(node.getNodeIconDefault());
+                    if (node != null) {
+                        cell.setText(node.getNodeName());
+                        cell.setImage(node.getNodeIconDefault());
+                    } else {
+                        cell.setText(unit.toString());
+                    }
                 }
             });
             final TableViewerColumn versionColumn = UIUtils.createTableViewerColumn(unitTable, SWT.NONE, "Type");
@@ -168,7 +181,11 @@ public class OracleCompilerDialog extends TrayDialog
                 {
                     DBSObject unit = (DBSObject) cell.getElement();
                     final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(unit);
-                    cell.setText(node.getNodeType());
+                    if (node != null) {
+                        cell.setText(node.getNodeType());
+                    } else {
+                        cell.setText("???");
+                    }
                 }
             });
             unitTable.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -177,6 +194,16 @@ public class OracleCompilerDialog extends TrayDialog
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                     getButton(COMPILE_ID).setEnabled(!selection.isEmpty());
 
+                }
+            });
+            unitTable.addDoubleClickListener(new IDoubleClickListener() {
+                public void doubleClick(DoubleClickEvent event)
+                {
+                    IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+                    if (!selection.isEmpty()) {
+                        OracleCompileUnit unit = (OracleCompileUnit) selection.getFirstElement();
+                        NavigatorHandlerObjectOpen.openEntityEditor(unit);
+                    }
                 }
             });
             unitTable.setContentProvider(new ListContentProvider());
@@ -194,20 +221,9 @@ public class OracleCompilerDialog extends TrayDialog
             infoGroup.setLayoutData(gd);
             infoGroup.setLayout(new GridLayout(1, false));
 
-            infoTable = new TableViewer(infoGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
-
-            {
-                final Table table = infoTable.getTable();
-                table.setLayoutData(new GridData(GridData.FILL_BOTH));
-            }
-
-            infoTable.setContentProvider(new ListContentProvider());
-            infoTable.setLabelProvider(new CellLabelProvider() {
-                @Override
-                public void update(ViewerCell cell)
-                {
-                }
-            });
+            infoTable = new Table(infoGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
+            infoTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+            createContextMenu();
         }
 
         return composite;
@@ -256,6 +272,65 @@ public class OracleCompilerDialog extends TrayDialog
         } else {
             super.buttonPressed(buttonId);
         }
+    }
+
+    private void createContextMenu()
+    {
+        MenuManager menuMgr = new MenuManager();
+        Menu menu = menuMgr.createContextMenu(infoTable);
+        menuMgr.addMenuListener(new IMenuListener() {
+            public void menuAboutToShow(IMenuManager manager)
+            {
+                IAction copyAction = new Action("Copy") {
+                    public void run()
+                    {
+                        copySelectionToClipboard();
+                    }
+                };
+                copyAction.setEnabled(infoTable.getSelectionCount() > 0);
+                copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
+
+                IAction selectAllAction = new Action("Select All") {
+                    public void run()
+                    {
+                        infoTable.selectAll();
+                    }
+                };
+                selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
+
+                IAction clearLogAction = new Action("Clear Log") {
+                    public void run()
+                    {
+                        infoTable.removeAll();
+                    }
+                };
+
+                manager.add(copyAction);
+                manager.add(selectAllAction);
+                manager.add(clearLogAction);
+                //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+            }
+        });
+        menuMgr.setRemoveAllWhenShown(true);
+        infoTable.setMenu(menu);
+    }
+
+    public void copySelectionToClipboard()
+    {
+        final TableItem[] selection = infoTable.getSelection();
+        if (CommonUtils.isEmpty(selection)) {
+            return;
+        }
+        StringBuilder tdt = new StringBuilder();
+        for (TableItem item : selection) {
+            tdt.append(item.getText())
+                .append(ContentUtils.getDefaultLineSeparator());
+        }
+        TextTransfer textTransfer = TextTransfer.getInstance();
+        Clipboard clipboard = new Clipboard(infoTable.getDisplay());
+        clipboard.setContents(
+            new Object[]{tdt.toString()},
+            new Transfer[]{textTransfer});
     }
 
     private void performCompilation(DBRProgressMonitor monitor, List<OracleCompileUnit> units)
