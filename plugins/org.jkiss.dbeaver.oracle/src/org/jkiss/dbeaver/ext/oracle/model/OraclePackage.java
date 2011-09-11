@@ -28,10 +28,12 @@ import java.util.Map;
 /**
  * GenericProcedure
  */
-public class OraclePackage extends OracleSchemaObject implements OracleCompileUnit, DBSEntityContainer
+public class OraclePackage extends OracleSchemaObject implements OracleSourceObjectEx, OracleCompileUnit, DBSEntityContainer
 {
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;
+    private String sourceDeclaration;
+    private String sourceDefinition;
 
     public OraclePackage(
         OracleSchema schema,
@@ -50,6 +52,32 @@ public class OraclePackage extends OracleSchemaObject implements OracleCompileUn
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.PACKAGE;
+    }
+
+    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
+    {
+        if (sourceDeclaration == null) {
+            sourceDeclaration = OracleUtils.getSource(monitor, this, false);
+        }
+        return sourceDeclaration;
+    }
+
+    public void setSourceDeclaration(String sourceDeclaration)
+    {
+        this.sourceDeclaration = sourceDeclaration;
+    }
+
+    public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
+    {
+        if (sourceDefinition == null) {
+            sourceDefinition = OracleUtils.getSource(monitor, this, true);
+        }
+        return sourceDefinition;
+    }
+
+    public void setSourceDefinition(String source)
+    {
+        this.sourceDefinition = source;
     }
 
     @Association
@@ -80,7 +108,9 @@ public class OraclePackage extends OracleSchemaObject implements OracleCompileUn
 
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
-        proceduresCache.clearCache();
+        this.proceduresCache.clearCache();
+        this.sourceDeclaration = null;
+        this.sourceDefinition = null;
         return true;
     }
 

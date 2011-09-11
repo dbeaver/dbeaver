@@ -91,6 +91,16 @@ public class OracleView extends OracleTableBase implements OracleCompileUnit
         return OracleSourceType.VIEW;
     }
 
+    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
+    {
+        return getAdditionalInfo(monitor).getText();
+    }
+
+    public void setSourceDeclaration(String source)
+    {
+
+    }
+
     public AdditionalInfo getAdditionalInfo()
     {
         return additionalInfo;

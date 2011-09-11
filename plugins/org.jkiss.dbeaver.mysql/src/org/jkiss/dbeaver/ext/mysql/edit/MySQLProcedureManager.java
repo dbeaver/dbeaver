@@ -62,10 +62,10 @@ public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQ
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
-        MySQLProcedure newCatalog = new MySQLProcedure(parent);
-        newCatalog.setProcedureType(dialog.getProcedureType());
-        newCatalog.setName(dialog.getProcedureName());
-        return newCatalog;
+        MySQLProcedure newProcedure = new MySQLProcedure(parent);
+        newProcedure.setProcedureType(dialog.getProcedureType());
+        newProcedure.setName(dialog.getProcedureName());
+        return newProcedure;
     }
 
     @Override

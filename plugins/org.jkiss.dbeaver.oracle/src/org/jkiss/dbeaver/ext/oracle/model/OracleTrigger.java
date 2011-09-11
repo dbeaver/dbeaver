@@ -61,6 +61,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     private String description;
     private ActionType actionType;
     private List<OracleTriggerColumn> columns;
+    private String sourceDeclaration;
 
     public OracleTrigger(
         OracleSchema schema,
@@ -168,6 +169,27 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.TRIGGER;
+    }
+
+    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
+    {
+        if (sourceDeclaration == null) {
+            sourceDeclaration = OracleUtils.getSource(monitor, this, false);
+        }
+        return sourceDeclaration;
+    }
+
+    public void setSourceDeclaration(String source)
+    {
+        this.sourceDeclaration = source;
+    }
+
+    @Override
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    {
+        this.sourceDeclaration = null;
+        this.columns = null;
+        return true;
     }
 
 }

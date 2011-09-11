@@ -11,15 +11,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * Stored code interface
  */
-public interface OracleSourceObject extends DBSObject {
+public interface OracleSourceObjectEx extends OracleSourceObject {
 
-    OracleSchema getSchema();
-
-    OracleSourceType getSourceType();
-
-    String getSourceDeclaration(DBRProgressMonitor monitor)
+    String getSourceDefinition(DBRProgressMonitor monitor)
         throws DBException;
 
-    void setSourceDeclaration(String source);
+    void setSourceDefinition(String source);
 
 }

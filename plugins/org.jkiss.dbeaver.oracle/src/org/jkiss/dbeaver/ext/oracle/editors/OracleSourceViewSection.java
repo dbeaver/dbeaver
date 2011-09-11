@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObjectEx;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.properties.tabbed.SourceEditSection;
@@ -42,7 +43,10 @@ public class OracleSourceViewSection extends SourceEditSection {
     @Override
     protected String loadSources(DBRProgressMonitor monitor) throws DBException
     {
-        return OracleUtils.getSource(monitor, sourceObject, body);
+        if (body && sourceObject instanceof OracleSourceObjectEx) {
+            return ((OracleSourceObjectEx) sourceObject).getSourceDefinition(monitor);
+        }
+        return sourceObject.getSourceDeclaration(monitor);
     }
 
     protected void updateSources(String source)

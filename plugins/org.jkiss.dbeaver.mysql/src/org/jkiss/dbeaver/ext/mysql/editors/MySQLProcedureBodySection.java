@@ -46,4 +46,5 @@ public class MySQLProcedureBodySection extends SourceEditSection {
     {
         getEditor().getEditorInput().getPropertySource().setPropertyValue("clientBody", source);
     }
+
 }

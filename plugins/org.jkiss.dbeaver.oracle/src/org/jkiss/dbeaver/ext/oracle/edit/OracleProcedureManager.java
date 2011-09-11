@@ -8,6 +8,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.oracle.editors.OracleProcedureBodySection;
 import org.jkiss.dbeaver.ext.oracle.editors.OracleSourceViewSection;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
@@ -33,7 +34,7 @@ public class OracleProcedureManager extends JDBCObjectManager<OracleProcedureSta
                 new SectionDescriptor("default", "Body") {
                     public ISection getSectionClass()
                     {
-                        return new OracleSourceViewSection(activeEditor, false);
+                        return new OracleProcedureBodySection(activeEditor);
                     }
                 })
         };

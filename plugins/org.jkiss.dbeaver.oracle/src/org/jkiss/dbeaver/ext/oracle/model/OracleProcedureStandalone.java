@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -22,6 +23,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
 {
 
     private boolean valid;
+    private String sourceDeclaration;
 
     public OracleProcedureStandalone(
         OracleSchema schema,
@@ -65,6 +67,19 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
             this);
     }
 
+    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
+    {
+        if (sourceDeclaration == null) {
+            sourceDeclaration = OracleUtils.getSource(monitor, this, false);
+        }
+        return sourceDeclaration;
+    }
+
+    public void setSourceDeclaration(String sourceDeclaration)
+    {
+        this.sourceDeclaration = sourceDeclaration;
+    }
+
     public IDatabasePersistAction[] getCompileActions()
     {
         return new IDatabasePersistAction[] {
@@ -74,6 +89,13 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
                 "Compile procedure",
                 "ALTER " + getSourceType().name() + " " + getFullQualifiedName() + " COMPILE"
             )};
+    }
+
+    @Override
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    {
+        this.sourceDeclaration = null;
+        return super.refreshEntity(monitor);
     }
 
     public DBSObjectState getObjectState()

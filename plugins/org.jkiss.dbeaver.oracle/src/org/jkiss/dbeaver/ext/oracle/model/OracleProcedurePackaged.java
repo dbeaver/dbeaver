@@ -53,7 +53,7 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
 
     public String getUniqueName()
     {
-        return overload <= 1 ? getName() : getName() + "#" + overload;
+        return overload == null || overload <= 1 ? getName() : getName() + "#" + overload;
     }
 
 }

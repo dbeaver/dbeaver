@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
@@ -31,7 +32,7 @@ import java.util.Map;
 /**
  * Oracle data type
  */
-public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSourceObject {
+public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSourceObjectEx {
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 
@@ -117,6 +118,8 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
     private TypeDesc typeDesc;
     private int precision = 0;
     private int valueType = java.sql.Types.OTHER;
+    private String sourceDeclaration;
+    private String sourceDefinition;
 
     private boolean persisted;
 
@@ -206,6 +209,32 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.TYPE;
+    }
+
+    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
+    {
+        if (sourceDeclaration == null) {
+            sourceDeclaration = OracleUtils.getSource(monitor, this, false);
+        }
+        return sourceDeclaration;
+    }
+
+    public void setSourceDeclaration(String sourceDeclaration)
+    {
+        this.sourceDeclaration = sourceDeclaration;
+    }
+
+    public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
+    {
+        if (sourceDefinition == null) {
+            sourceDefinition = OracleUtils.getSource(monitor, this, true);
+        }
+        return sourceDefinition;
+    }
+
+    public void setSourceDefinition(String source)
+    {
+        this.sourceDefinition = source;
     }
 
     public boolean isPersisted()

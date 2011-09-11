@@ -13,32 +13,20 @@ import org.jkiss.dbeaver.ui.properties.tabbed.SourceEditSection;
 /**
  * OracleProcedureBodySection
  */
-public class OracleProcedureBodySection extends SourceEditSection {
+public class OracleProcedureBodySection extends OracleSourceViewSection {
 
     private OracleProcedureStandalone procedure;
 
     public OracleProcedureBodySection(IDatabaseNodeEditor editor)
     {
-        super(editor);
+        super(editor, false);
         this.procedure = (OracleProcedureStandalone) editor.getEditorInput().getDatabaseObject();
     }
 
     @Override
     protected boolean isReadOnly()
     {
-        return true;
-    }
-
-    @Override
-    protected boolean isSourceRead()
-    {
-        return true;
-    }
-
-    @Override
-    protected String loadSources(DBRProgressMonitor monitor) throws DBException
-    {
-        return "";
+        return false;
     }
 
 }
