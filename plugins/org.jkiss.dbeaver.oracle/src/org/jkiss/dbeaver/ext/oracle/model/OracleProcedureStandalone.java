@@ -40,7 +40,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         return valid;
     }
 
-    public OracleSchema getSourceOwner()
+    public OracleSchema getSchema()
     {
         return getParentObject();
     }
@@ -61,7 +61,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getSourceOwner(),
+            getSchema(),
             this);
     }
 

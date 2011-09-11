@@ -81,6 +81,16 @@ public class OracleView extends OracleTableBase implements OracleCompileUnit
         return true;
     }
 
+    public OracleSchema getSchema()
+    {
+        return getContainer();
+    }
+
+    public OracleSourceType getSourceType()
+    {
+        return OracleSourceType.VIEW;
+    }
+
     public AdditionalInfo getAdditionalInfo()
     {
         return additionalInfo;

@@ -9,10 +9,22 @@ package org.jkiss.dbeaver.ext.oracle.model;
  */
 public enum OracleSourceType {
 
-    TYPE,
-    PROCEDURE,
-    FUNCTION,
-    PACKAGE,
-    TRIGGER
+    TYPE(false),
+    PROCEDURE(false),
+    FUNCTION(false),
+    PACKAGE(false),
+    TRIGGER(false),
+    VIEW(true);
 
+    private final boolean isCustom;
+
+    OracleSourceType(boolean custom)
+    {
+        isCustom = custom;
+    }
+
+    public boolean isCustom()
+    {
+        return isCustom;
+    }
 }

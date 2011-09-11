@@ -116,7 +116,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember {
                 "SELECT PARAM_NAME,PARAM_NO,PARAM_MODE,PARAM_TYPE_OWNER,PARAM_TYPE_NAME,PARAM_TYPE_MOD " +
                 "FROM ALL_METHOD_PARAMS " +
                 "WHERE OWNER=? AND TYPE_NAME=? AND METHOD_NAME=? AND METHOD_NO=?");
-            dbStat.setString(1, getDataType().getSourceOwner().getName());
+            dbStat.setString(1, getDataType().getSchema().getName());
             dbStat.setString(2, getDataType().getName());
             dbStat.setString(3, getName());
             dbStat.setInt(4, getNumber());

@@ -30,19 +30,14 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getSourceOwner(),
+            getSchema(),
             getParentObject(),
             this);
     }
 
-    public OracleSchema getSourceOwner()
+    public OracleSchema getSchema()
     {
         return getParentObject().getSchema();
-    }
-
-    public OracleSourceType getSourceType()
-    {
-        return OracleSourceType.PACKAGE;
     }
 
     @Override

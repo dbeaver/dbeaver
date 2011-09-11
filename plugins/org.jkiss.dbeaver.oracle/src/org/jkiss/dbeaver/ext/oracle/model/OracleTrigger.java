@@ -165,11 +165,6 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         this.columns = columns;
     }
 
-    public OracleSchema getSourceOwner()
-    {
-        return getSchema();
-    }
-
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.TRIGGER;

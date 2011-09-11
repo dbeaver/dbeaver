@@ -24,6 +24,11 @@ public abstract class OracleSchemaObject extends OracleObject<OracleSchema> impl
         super(schema, name, persisted);
     }
 
+    public OracleSchema getSchema()
+    {
+        return getParentObject();
+    }
+
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -36,9 +41,5 @@ public abstract class OracleSchemaObject extends OracleObject<OracleSchema> impl
         return false;
     }
 
-    public OracleSchema getSchema()
-    {
-        return getParentObject();
-    }
 
 }

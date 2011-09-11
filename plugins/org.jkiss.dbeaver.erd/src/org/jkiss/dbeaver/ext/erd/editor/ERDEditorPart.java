@@ -754,11 +754,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private class ConfigPropertyListener implements IPropertyChangeListener {
         public void propertyChange(PropertyChangeEvent event)
         {
-            if (event.getProperty().equals(ERDConstants.PREF_GRID_ENABLED)) {
-                boolean enabled = (Boolean)event.getNewValue();
+            if (ERDConstants.PREF_GRID_ENABLED.equals(event.getProperty())) {
+                Boolean enabled = (Boolean)event.getNewValue();
                 getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, enabled);
                 getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, enabled);
-            } else if (event.getProperty().equals(ERDConstants.PREF_GRID_WIDTH) || event.getProperty().equals(ERDConstants.PREF_GRID_HEIGHT)) {
+            } else if (ERDConstants.PREF_GRID_WIDTH.equals(event.getProperty()) || ERDConstants.PREF_GRID_HEIGHT.equals(event.getProperty())) {
                 final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
                 getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
                     store.getInt(ERDConstants.PREF_GRID_WIDTH),

@@ -295,7 +295,7 @@ skipFetch=true
 logExtension=.log
 
 # Whether or not to include debug info in the output jars
-javacDebugInfo=false 
+javacDebugInfo=true
 
 # Whether or not to fail the build if there are compiler errors
 javacFailOnError=true

@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 /**
  * Compile unit
  */
-public interface OracleCompileUnit extends DBSObjectStateful {
+public interface OracleCompileUnit extends OracleSourceObject, DBSObjectStateful {
 
     IDatabasePersistAction[] getCompileActions();
 

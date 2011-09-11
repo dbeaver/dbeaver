@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * GenericProcedure
  */
-public class OraclePackage extends OracleSchemaObject implements OracleSourceObject,OracleCompileUnit,DBSEntityContainer
+public class OraclePackage extends OracleSchemaObject implements OracleCompileUnit, DBSEntityContainer
 {
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;
@@ -45,11 +45,6 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
     public boolean isValid()
     {
         return valid;
-    }
-
-    public OracleSchema getSourceOwner()
-    {
-        return getSchema();
     }
 
     public OracleSourceType getSourceType()

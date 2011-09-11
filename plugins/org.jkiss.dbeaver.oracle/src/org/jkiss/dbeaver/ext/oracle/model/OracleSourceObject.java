@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface OracleSourceObject extends DBSObject {
 
-    OracleSchema getSourceOwner();
+    OracleSchema getSchema();
 
     OracleSourceType getSourceType();
 

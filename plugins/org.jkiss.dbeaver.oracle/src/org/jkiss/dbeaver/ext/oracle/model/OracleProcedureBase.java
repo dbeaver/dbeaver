@@ -20,7 +20,7 @@ import java.util.*;
 /**
  * GenericProcedure
  */
-public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> extends OracleObject<PARENT> implements DBSProcedure, OracleSourceObject
+public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> extends OracleObject<PARENT> implements DBSProcedure
 {
     //static final Log log = LogFactory.getLog(OracleProcedure.class);
 
@@ -47,6 +47,8 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
         return getParentObject();
     }
 
+    public abstract OracleSchema getSchema();
+
     public abstract Integer getOverloadNumber();
 
     public Collection<? extends DBSProcedureColumn> getColumns(DBRProgressMonitor monitor) throws DBException
@@ -57,7 +59,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
         argumentsCache.clearCache();
-        //getSourceOwner().proceduresCache.fetchObject()
+        //getSchema().proceduresCache.fetchObject()
         return true;
     }
 
@@ -73,7 +75,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
                 (procedure.getOverloadNumber() != null ? "AND OVERLOAD=? " : "AND OVERLOAD IS NULL ") +
                 "\nORDER BY SEQUENCE");
             int paramNum = 1;
-            dbStat.setString(paramNum++, procedure.getSourceOwner().getName());
+            dbStat.setString(paramNum++, procedure.getSchema().getName());
             dbStat.setString(paramNum++, procedure.getName());
             if (procedure.getContainer() instanceof OraclePackage) {
                 dbStat.setString(paramNum++, procedure.getContainer().getName());

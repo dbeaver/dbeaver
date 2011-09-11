@@ -198,7 +198,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         }
     }
 
-    public OracleSchema getSourceOwner()
+    public OracleSchema getSchema()
     {
         return owner instanceof OracleSchema ? (OracleSchema)owner : null;
     }

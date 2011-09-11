@@ -84,8 +84,11 @@ public class OracleUtils {
 
     public static String getSource(DBRProgressMonitor monitor, OracleSourceObject sourceObject, boolean body) throws DBCException
     {
+        if (sourceObject.getSourceType().isCustom()) {
+            return "???? CUSTOM";
+        }
         final String sourceType = sourceObject.getSourceType().name();
-        final OracleSchema sourceOwner = sourceObject.getSourceOwner();
+        final OracleSchema sourceOwner = sourceObject.getSchema();
         if (sourceOwner == null) {
             log.warn("No source owner for object '" + sourceObject.getName() + "'");
             return null;

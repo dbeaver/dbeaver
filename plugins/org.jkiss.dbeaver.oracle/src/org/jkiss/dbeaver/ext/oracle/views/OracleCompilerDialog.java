@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.OracleCompileError;
 import org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
@@ -43,6 +44,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * DriverEditDialog
@@ -76,8 +78,6 @@ public class OracleCompilerDialog extends TrayDialog
                     if (infoTable == null || infoTable.isDisposed()) {
                         return;
                     }
-                    final TableItem item = new TableItem(infoTable, SWT.NONE);
-                    item.setText(CommonUtils.toString(message));
                     int color = -1;
                     switch (type) {
                         case LOG_LEVEL_TRACE:
@@ -96,10 +96,15 @@ public class OracleCompilerDialog extends TrayDialog
                         default:
                             break;
                     }
-                    if (color != -1) {
-                        item.setForeground(infoTable.getDisplay().getSystemColor(color));
+                    StringTokenizer st = new StringTokenizer(CommonUtils.toString(message), "\n");
+                    while (st.hasMoreTokens()) {
+                        final TableItem item = new TableItem(infoTable, SWT.NONE);
+                        item.setText(st.nextToken());
+                        if (color != -1) {
+                            item.setForeground(infoTable.getDisplay().getSystemColor(color));
+                        }
+                        infoTable.showItem(item);
                     }
-                    infoTable.showItem(item);
                     if (t != null) {
                         String prevMessage = null;
                         for (Throwable error = t; error != null; error = error.getCause()) {
@@ -401,22 +406,26 @@ public class OracleCompilerDialog extends TrayDialog
         try {
             final PreparedStatement dbStat = context.prepareStatement(
                 DBCStatementType.QUERY,
-                "SELECT * FROM SYS.USER_ERRORS where NAME=? AND TYPE=? ORDER BY SEQUENCE",
+                "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE",
                 false, false, false);
             try {
-                dbStat.setString(1, unit.getName());
-                dbStat.setString(2, objectType.getTypeName());
+                dbStat.setString(1, unit.getSchema().getName());
+                dbStat.setString(2, unit.getName());
+                dbStat.setString(3, objectType.getTypeName());
                 final ResultSet dbResult = dbStat.executeQuery();
                 try {
                     boolean hasErrors = false;
                     while (dbResult.next()) {
-                        final String attribute = dbResult.getString("ATTRIBUTE");
-                        final String text = dbResult.getString("TEXT");
+                        OracleCompileError error = new OracleCompileError(
+                            "ERROR".equals(dbResult.getString("ATTRIBUTE")),
+                            dbResult.getString("TEXT"),
+                            dbResult.getInt("LINE"),
+                            dbResult.getInt("POSITION"));
                         hasErrors = true;
-                        if ("ERROR".equals(attribute)) {
-                            compileLog.error(text);
+                        if (error.isError()) {
+                            compileLog.error(error);
                         } else {
-                            compileLog.warn(text);
+                            compileLog.warn(error);
                         }
                     }
                     return hasErrors;
