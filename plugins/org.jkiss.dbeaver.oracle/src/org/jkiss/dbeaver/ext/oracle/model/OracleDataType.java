@@ -211,6 +211,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         return OracleSourceType.TYPE;
     }
 
+    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null) {
@@ -224,6 +225,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         this.sourceDeclaration = sourceDeclaration;
     }
 
+    @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null) {

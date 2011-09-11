@@ -4,15 +4,19 @@
 
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.editors.OracleProcedureBodySection;
-import org.jkiss.dbeaver.ext.oracle.editors.OracleSourceViewSection;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
@@ -21,7 +25,7 @@ import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
 /**
  * OracleProcedureManager
  */
-public class OracleProcedureManager extends JDBCObjectManager<OracleProcedureStandalone> implements DBEObjectTabProvider<OracleProcedureStandalone> {
+public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStandalone, OracleSchema> implements DBEObjectTabProvider<OracleProcedureStandalone> {
 
     public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseNodeEditor activeEditor, final OracleProcedureStandalone object)
     {
@@ -39,5 +43,27 @@ public class OracleProcedureManager extends JDBCObjectManager<OracleProcedureSta
                 })
         };
     }
-}
 
+    @Override
+    protected OracleProcedureStandalone createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    {
+        return new OracleProcedureStandalone(parent, "NEWPROCEDURE", DBSProcedureType.PROCEDURE);
+    }
+
+    @Override
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
+    {
+        return new IDatabasePersistAction[0];
+    }
+
+    @Override
+    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
+    {
+        return new IDatabasePersistAction[0];
+    }
+
+    public long getMakerOptions()
+    {
+        return FEATURE_EDITOR_ON_CREATE;
+    }
+}

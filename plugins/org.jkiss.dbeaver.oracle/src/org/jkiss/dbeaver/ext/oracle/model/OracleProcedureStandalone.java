@@ -36,6 +36,11 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
     }
 
+    public OracleProcedureStandalone(OracleSchema oracleSchema, String name, DBSProcedureType procedureType)
+    {
+        super(oracleSchema, name, procedureType);
+    }
+
     @Property(name = "Valid", viewable = true, order = 3)
     public boolean isValid()
     {
@@ -67,6 +72,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
             this);
     }
 
+    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null) {

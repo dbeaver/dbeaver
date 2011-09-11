@@ -6,13 +6,14 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Abstract oracle object
  */
-public abstract class OracleObject<PARENT extends DBSObject> implements DBSObject
+public abstract class OracleObject<PARENT extends DBSObject> implements DBSObject, DBPSaveableObject
 {
     static final Log log = LogFactory.getLog(OracleObject.class);
 
@@ -56,5 +57,10 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
     public boolean isPersisted()
     {
         return persisted;
+    }
+
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
     }
 }

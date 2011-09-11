@@ -54,6 +54,7 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
         return OracleSourceType.PACKAGE;
     }
 
+    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null) {
@@ -67,6 +68,7 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
         this.sourceDeclaration = sourceDeclaration;
     }
 
+    @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null) {

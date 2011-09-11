@@ -171,6 +171,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         return OracleSourceType.TRIGGER;
     }
 
+    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDeclaration == null) {
