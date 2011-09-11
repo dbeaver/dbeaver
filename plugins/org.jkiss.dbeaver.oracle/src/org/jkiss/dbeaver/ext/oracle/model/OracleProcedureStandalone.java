@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.ResultSet;
 
@@ -39,6 +40,11 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     public OracleProcedureStandalone(OracleSchema oracleSchema, String name, DBSProcedureType procedureType)
     {
         super(oracleSchema, name, procedureType);
+        sourceDeclaration =
+            procedureType.name() + " " + name + ContentUtils.getDefaultLineSeparator() +
+            "IS" + ContentUtils.getDefaultLineSeparator() +
+            "BEGIN" + ContentUtils.getDefaultLineSeparator() +
+            "END " + name + ";" + ContentUtils.getDefaultLineSeparator();
     }
 
     @Property(name = "Valid", viewable = true, order = 3)
