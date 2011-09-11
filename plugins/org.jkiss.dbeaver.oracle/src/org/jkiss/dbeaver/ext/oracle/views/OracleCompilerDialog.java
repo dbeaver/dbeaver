@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleCompileError;
 import org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -400,7 +402,11 @@ public class OracleCompilerDialog extends TrayDialog
                     }
                 }
             }
+            final DBSObjectState oldState = unit.getObjectState();
             unit.refreshObjectState(monitor);
+            if (unit.getObjectState() != oldState) {
+                unit.getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, unit));
+            }
 
             return success;
         } finally {

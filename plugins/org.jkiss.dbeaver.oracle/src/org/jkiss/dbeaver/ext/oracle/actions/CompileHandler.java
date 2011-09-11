@@ -82,8 +82,10 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     StringBuilder fullMessage = new StringBuilder();
                     for (OracleCompileError oce : compileLog.errorStack) {
                         fullMessage.append(oce.toString()).append(ContentUtils.getDefaultLineSeparator());
-                        line = oce.getLine();
-                        position = oce.getPosition();
+                        if (line < 0) {
+                            line = oce.getLine();
+                            position = oce.getPosition();
+                        }
                     }
                     // If compiled object is currently open in editor - try to position on error line
                     final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
@@ -93,7 +95,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                         if (textEditor != null) {
                             try {
                                 final IRegion lineInfo = textEditor.getTextViewer().getDocument().getLineInformation(line - 1);
-                                final int offset = lineInfo.getOffset() + position;
+                                final int offset = lineInfo.getOffset() + position - 1;
                                 textEditor.selectAndReveal(offset, 0);
                                 //textEditor.setFocus();
                             } catch (BadLocationException e) {
