@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.properties.tabbed;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -42,7 +43,7 @@ import java.util.List;
 /**
  * SourceEditSection
  */
-public abstract class SourceEditSection extends AbstractPropertySection implements ISectionEditorContributor, IRefreshablePart {
+public abstract class SourceEditSection extends AbstractPropertySection implements ISectionEditorContributor, IRefreshablePart, IAdaptable {
 
     static final Log log = LogFactory.getLog(SourceEditSection.class);
 
@@ -263,4 +264,15 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
         }
     }
 
+    public Object getAdapter(Class adapter)
+    {
+        if (sqlViewer != null) {
+            if (adapter.isAssignableFrom(sqlViewer.getClass())) {
+                return sqlViewer;
+            } else {
+                return sqlViewer.getAdapter(adapter);
+            }
+        }
+        return null;
+    }
 }

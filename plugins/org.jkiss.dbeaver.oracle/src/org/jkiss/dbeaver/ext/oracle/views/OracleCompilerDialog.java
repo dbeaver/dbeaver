@@ -341,65 +341,76 @@ public class OracleCompilerDialog extends TrayDialog
     private void performCompilation(DBRProgressMonitor monitor, List<OracleCompileUnit> units)
     {
         for (OracleCompileUnit unit : units) {
-            final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(unit);
-            if (node == null) {
-                log.warn("Can't find node for object '" + unit + "'");
-            }
             if (monitor.isCanceled()) {
                 break;
             }
-            final String message = "Compile " + node.getNodeType() + " '" + unit.getName() + "' ...";
+            final String message = "Compile " + unit.getSourceType().name() + " '" + unit.getName() + "' ...";
             compileLog.info(message);
-
-            final IDatabasePersistAction[] compileActions = unit.getCompileActions();
-            if (CommonUtils.isEmpty(compileActions)) {
-                continue;
-            }
-
-            final JDBCExecutionContext context = (JDBCExecutionContext)unit.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, message);
+            boolean success = false;
             try {
-                boolean hasErrors = false;
-                for (IDatabasePersistAction action : compileActions) {
-                    final String script = action.getScript();
-                    compileLog.trace(script);
-
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    try {
-                        final DBCStatement dbStat = context.prepareStatement(
-                            DBCStatementType.QUERY,
-                            script,
-                            false, false, false);
-                        try {
-                            dbStat.executeStatement();
-                        } finally {
-                            dbStat.close();
-                        }
-                        action.handleExecute(null);
-                    } catch (DBCException e) {
-                        log.error("Compile error", e);
-                        action.handleExecute(e);
-                    }
-                    if (action instanceof OracleObjectPersistAction) {
-                        final boolean actionFailed = logObjectErrors(context, compileLog, unit, ((OracleObjectPersistAction) action).getObjectType());
-                        if (actionFailed) {
-                            hasErrors = true;
-                        }
-                    }
-                }
-                compileLog.info(hasErrors ? "Compilation errors occurred" : "Successfully compiled");
-                compileLog.info("");
-            } finally {
-                context.close();
+                success = compileUnit(monitor, compileLog, unit);
+            } catch (DBCException e) {
+                log.error("Compile error", e);
             }
+
+            compileLog.info(!success ? "Compilation errors occurred" : "Successfully compiled");
+            compileLog.info("");
         }
 
     }
 
-    private boolean logObjectErrors(
+    public static boolean compileUnit(DBRProgressMonitor monitor, Log compileLog, OracleCompileUnit unit) throws DBCException
+    {
+        final IDatabasePersistAction[] compileActions = unit.getCompileActions();
+        if (CommonUtils.isEmpty(compileActions)) {
+            return true;
+        }
+
+        final JDBCExecutionContext context = (JDBCExecutionContext)unit.getDataSource().openContext(
+            monitor,
+            DBCExecutionPurpose.UTIL,
+            "Compile '" + unit.getName() + "'");
+        try {
+            boolean success = true;
+            for (IDatabasePersistAction action : compileActions) {
+                final String script = action.getScript();
+                compileLog.trace(script);
+
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                try {
+                    final DBCStatement dbStat = context.prepareStatement(
+                        DBCStatementType.QUERY,
+                        script,
+                        false, false, false);
+                    try {
+                        dbStat.executeStatement();
+                    } finally {
+                        dbStat.close();
+                    }
+                    action.handleExecute(null);
+                } catch (DBCException e) {
+                    action.handleExecute(e);
+                    throw e;
+                }
+                if (action instanceof OracleObjectPersistAction) {
+                    if (!logObjectErrors(context, compileLog, unit, ((OracleObjectPersistAction) action).getObjectType())) {
+                        success = false;
+                    }
+                }
+            }
+            unit.refreshObjectState(monitor);
+
+            return success;
+        } finally {
+            context.close();
+        }
+    }
+
+    private static boolean logObjectErrors(
         JDBCExecutionContext context,
-        CompileLog log,
+        Log compileLog,
         OracleCompileUnit unit,
         OracleObjectType objectType)
     {
@@ -428,7 +439,7 @@ public class OracleCompilerDialog extends TrayDialog
                             compileLog.warn(error);
                         }
                     }
-                    return hasErrors;
+                    return !hasErrors;
                 } finally {
                     dbResult.close();
                 }
@@ -437,7 +448,7 @@ public class OracleCompilerDialog extends TrayDialog
             }
         } catch (Exception e) {
             log.error("Can't read user errors", e);
-            return true;
+            return false;
         }
     }
 

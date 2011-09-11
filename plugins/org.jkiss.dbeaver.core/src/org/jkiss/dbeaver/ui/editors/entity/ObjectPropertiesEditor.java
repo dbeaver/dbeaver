@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.ui.properties.tabbed.ISectionEditorContributor;
 import org.jkiss.utils.CommonUtils;
@@ -375,4 +376,20 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         }
     }
 
+    @Override
+    public Object getAdapter(Class adapter)
+    {
+        Object result = super.getAdapter(adapter);
+        if (result == null) {
+            final Object activeFolder = getActiveFolder();
+            if (activeFolder != null) {
+                if (adapter.isAssignableFrom(activeFolder.getClass())) {
+                    result = activeFolder;
+                } else if (activeFolder instanceof IAdaptable) {
+                    result = ((IAdaptable) activeFolder).getAdapter(adapter);
+                }
+            }
+        }
+        return result;
+    }
 }
