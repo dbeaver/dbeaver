@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ext.oracle.views;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -32,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
+import java.util.List;
 
 /**
  * OracleConnectionPage
@@ -56,11 +56,12 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png");
+    private Combo oraHomeCombo;
     private Combo tnsNameCombo;
 	private CTabFolder connectionTypeFolder;
-	private boolean isOCI;
+    private boolean isOCI;
 
-	@Override
+    @Override
     public void dispose()
     {
         super.dispose();
@@ -135,13 +136,16 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         connectionTypeFolder.setSelection(connectionType.ordinal());
         connectionTypeFolder.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection().getData();
                 updateButtons();
             }
         });
 
+        Control oraHomeSelector = createOraHomeSelector(connectionTypeFolder);
+        connectionTypeFolder.setTopRight(oraHomeSelector, SWT.RIGHT);
+        connectionTypeFolder.setTabHeight(
+                Math.max(oraHomeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, connectionTypeFolder.getTabHeight()));
         final Group securityGroup = UIUtils.createControlGroup(addrGroup, "Security", 4, GridData.FILL_HORIZONTAL, 0);
         createSecurityGroup(securityGroup);
 
@@ -184,9 +188,44 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         gd.horizontalSpan = 3;
         serviceNameCombo.setLayoutData(gd);
         serviceNameCombo.addModifyListener(controlModifyListener);
-        for (String alias : getOraServiceNames()) {
-            serviceNameCombo.add(alias);
+        List<String> oraHomes = findOraHomes();
+        if (!oraHomes.isEmpty()) {
+            for (String alias : getOraServiceNames(oraHomes.get(0))) {
+                serviceNameCombo.add(alias);
+            }
         }
+    }
+
+    private Control createOraHomeSelector(CTabFolder protocolFolder)
+    {
+        Composite selectorContainer = new Composite(protocolFolder, SWT.NONE);
+        selectorContainer.setLayout(new GridLayout(2, false));
+        selectorContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+//        UIUtils.createControlLabel(selectorContainer, "Ora Home");
+//        Composite oraHomeSelectorContainer = new Composite(selectorContainer, SWT.NONE);
+//        oraHomeSelectorContainer.setLayout(new GridLayout(2, false));
+        oraHomeCombo = new Combo(selectorContainer, SWT.DROP_DOWN);
+        for (String alias : findOraHomes()) {
+            oraHomeCombo.add(alias);
+        }
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        oraHomeCombo.setLayoutData(gd);
+//        oraHomeText.addModifyListener(controlModifyListener);
+        final DirectoryDialog directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
+        Button selectDirectory = new Button(selectorContainer, SWT.PUSH);
+        selectDirectory.setText(" ... ");
+        final String[] path = new String[1];
+        selectDirectory.addSelectionListener(new SelectionListener() {
+            public void widgetSelected(SelectionEvent e) {
+                oraHomeCombo.setText(directoryDialog.open());
+            }
+
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        });
+        return selectorContainer;
     }
 
     private void createTNSConnectionControls(CTabFolder protocolFolder)
@@ -200,41 +239,49 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         targetContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         protocolTabTNS.setControl(targetContainer);
 
-        UIUtils.createControlLabel(targetContainer, "Network Alias");
-
         tnsNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         tnsNameCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         tnsNameCombo.addModifyListener(controlModifyListener);
-        for (String alias : getOraServiceNames()) {
-            tnsNameCombo.add(alias);
+        List<String> oraHomes = findOraHomes();
+        if (!oraHomes.isEmpty()) {
+            for (String alias : getOraServiceNames(oraHomes.get(0))) {
+                tnsNameCombo.add(alias);
+            }
         }
     }
 
-    private ArrayList<String> getOraServiceNames() {
-        ArrayList<String> aliases = new ArrayList<String>();
-
-        // read system environment variables
+    // read system environment variables
+    private java.util.List<String> findOraHomes() {
+        java.util.List<String> homes = new ArrayList<String>();
         String sep = System.getProperty("file.separator");
+
         String oraHome = System.getenv("ORA_HOME");
-        if (oraHome == null) {
-            String path = System.getenv("PATH");
-            if (path != null) {
-                for (String token : path.split(System.getProperty("path.separator"))) {
-                    if (token.toLowerCase().contains("oracle")) {
-                        if (token.endsWith(sep)) {
-                            token = token.substring(0, token.length() - 1);
-                        }
-                        if (token.toLowerCase().endsWith("bin")) {
-                            oraHome = token.substring(0, token.length() - 3);
-                            break;
-                        }
+        if (oraHome != null) {
+            homes.add(oraHome);
+        }
+        String path = System.getenv("PATH");
+        if (path != null) {
+            for (String token : path.split(System.getProperty("path.separator"))) {
+                if (token.toLowerCase().contains("oracle")) {
+                    if (token.endsWith(sep)) {
+                        token = token.substring(0, token.length() - 1);
+                    }
+                    if (token.toLowerCase().endsWith("bin")) {
+                        oraHome = token.substring(0, token.length() - 3);
+                        homes.add(oraHome);
                     }
                 }
             }
         }
+        return homes;
+    }
+
+    private ArrayList<String> getOraServiceNames(String oraHome) {
+        ArrayList<String> aliases = new ArrayList<String>();
 
         // parse TNSNAMES.ORA file
         if (oraHome != null) {
+            String sep = System.getProperty("file.separator");
             if (!oraHome.endsWith(sep)) {
                 oraHome += sep;
             }
@@ -263,7 +310,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         return aliases;
     }
 
-    private void createCustomConnectionControls(CTabFolder protocolFolder)
+	private void createCustomConnectionControls(CTabFolder protocolFolder)
     {
         CTabItem protocolTabCustom = new CTabItem(protocolFolder, SWT.NONE);
         protocolTabCustom.setText("Custom");
