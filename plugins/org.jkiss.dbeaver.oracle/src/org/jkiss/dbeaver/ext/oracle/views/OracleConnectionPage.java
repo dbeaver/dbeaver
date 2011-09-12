@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.views;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -56,9 +57,10 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png");
     private Combo tnsNameCombo;
-    private CTabFolder connectionTypeFolder;
+	private CTabFolder connectionTypeFolder;
+	private boolean isOCI;
 
-    @Override
+	@Override
     public void dispose()
     {
         super.dispose();
@@ -128,9 +130,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         //connectionTypeFolder.setTopRight(ociDriverCheck);
 
         createBasicConnectionControls(connectionTypeFolder);
-        if (isOCI) {
-            createTNSConnectionControls(connectionTypeFolder);
-        }
+		createTNSConnectionControls(connectionTypeFolder);
         createCustomConnectionControls(connectionTypeFolder);
         connectionTypeFolder.setSelection(connectionType.ordinal());
         connectionTypeFolder.addSelectionListener(new SelectionAdapter() {
@@ -391,7 +391,10 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     public void loadSettings()
     {
-        // Load values from new connection info
+	    isOCI = site.getDriver().getName().toUpperCase().contains(OracleConstants.DRIVER_TYPE_OCI);
+	    tnsNameCombo.setEnabled(isOCI);
+
+	    // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
             Map<Object,Object> connectionProperties = connectionInfo.getProperties();
@@ -470,7 +473,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             }
 
             connectionInfo.getProperties().put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
-            connectionInfo.getProperties().put(OracleConstants.PROP_DRIVER_TYPE, OracleConstants.DRIVER_TYPE_THIN);
+            connectionInfo.getProperties().put(
+		            OracleConstants.PROP_DRIVER_TYPE, isOCI ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
 //            connectionInfo.getProperties().put(OracleConstants.PROP_DRIVER_TYPE,
 //                ociDriverCheck.getSelection() ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
             switch (connectionType) {
