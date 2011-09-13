@@ -4,11 +4,7 @@
 
 package org.jkiss.utils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.StringTokenizer;
 
 /**
@@ -163,7 +159,7 @@ public class BeanUtils {
 	{
 		if (type instanceof ParameterizedType) {
 			ParameterizedType pt = (ParameterizedType)type;
-			if (pt.getActualTypeArguments().length == 1 && pt.getActualTypeArguments()[0] instanceof Class) {
+			if (pt.getActualTypeArguments().length == 1) {
 				return true;
 			}
 		}
@@ -174,8 +170,20 @@ public class BeanUtils {
 	{
 		if (type instanceof ParameterizedType) {
 			ParameterizedType pt = (ParameterizedType)type;
-			if (pt.getActualTypeArguments().length == 1 && pt.getActualTypeArguments()[0] instanceof Class) {
-				return (Class)pt.getActualTypeArguments()[0];
+			if (pt.getActualTypeArguments().length == 1) {
+                final Type argType = pt.getActualTypeArguments()[0];
+                if (argType instanceof Class) {
+				    return (Class)argType;
+                } else if (argType instanceof WildcardType) {
+                    final Type[] upperBounds = ((WildcardType) argType).getUpperBounds();
+                    if (upperBounds.length > 0 && upperBounds[0] instanceof Class) {
+                        return (Class) upperBounds[0];
+                    }
+                    final Type[] lowerBounds = ((WildcardType) argType).getLowerBounds();
+                    if (lowerBounds.length > 0 && lowerBounds[0] instanceof Class) {
+                        return (Class) lowerBounds[0];
+                    }
+                }
 			}
 		}
 		return null;

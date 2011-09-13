@@ -50,7 +50,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         this.propInfo = propInfo;
         final String propertyName = BeanUtils.getPropertyNameFromGetter(getter.getName());
         Class<?> searchClass = getter.getDeclaringClass();
-        while (setter == null && searchClass != Object.class) {
+        while (setter == null && searchClass != Object.class && searchClass != null) {
             this.setter = BeanUtils.getSetMethod(
                 searchClass,
                 propertyName);

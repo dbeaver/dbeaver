@@ -52,7 +52,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
 
     public abstract Integer getOverloadNumber();
 
-    public Collection<? extends DBSProcedureColumn> getColumns(DBRProgressMonitor monitor) throws DBException
+    public Collection<OracleProcedureArgument> getColumns(DBRProgressMonitor monitor) throws DBException
     {
         return argumentsCache.getObjects(monitor, this);
     }
