@@ -74,8 +74,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         //group.setLayout(new GridLayout(1, true));
         super.setImageDescriptor(logoImage);
 
-        isOCI = OracleConstants.DRIVER_TYPE_OCI.equals(
-            site.getConnectionInfo().getProperties().get(OracleConstants.PROP_DRIVER_TYPE));
+        isOCI = site.getDriver().getName().toUpperCase().contains(OracleConstants.DRIVER_TYPE_OCI);
 
         controlModifyListener = new ControlsListener();
 
