@@ -38,6 +38,7 @@ import java.util.List;
  */
 public class OracleConnectionPage extends DialogPage implements IDataSourceConnectionEditor
 {
+    public static final String BROWSE = "Browse...";
     private IDataSourceConnectionEditorSite site;
     private Text hostText;
     private Text portText;
@@ -72,6 +73,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
         super.setImageDescriptor(logoImage);
+
+        isOCI = OracleConstants.DRIVER_TYPE_OCI.equals(
+            site.getConnectionInfo().getProperties().get(OracleConstants.PROP_DRIVER_TYPE));
 
         controlModifyListener = new ControlsListener();
 
@@ -111,9 +115,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private Composite createGeneralTab(Composite parent)
     {
-        boolean isOCI = OracleConstants.DRIVER_TYPE_OCI.equals(
-            site.getConnectionInfo().getProperties().get(OracleConstants.PROP_DRIVER_TYPE));
-
         Composite addrGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 10;
@@ -142,10 +143,13 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             }
         });
 
-        Control oraHomeSelector = createOraHomeSelector(connectionTypeFolder);
-        connectionTypeFolder.setTopRight(oraHomeSelector, SWT.RIGHT);
-        connectionTypeFolder.setTabHeight(
-                Math.max(oraHomeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, connectionTypeFolder.getTabHeight()));
+        if (isOCI) {
+            Control oraHomeSelector = createOraHomeSelector(connectionTypeFolder);
+            connectionTypeFolder.setTopRight(oraHomeSelector, SWT.RIGHT);
+            connectionTypeFolder.setTabHeight(
+                    Math.max(oraHomeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, connectionTypeFolder.getTabHeight()));
+        }
+
         final Group securityGroup = UIUtils.createControlGroup(addrGroup, "Security", 4, GridData.FILL_HORIZONTAL, 0);
         createSecurityGroup(securityGroup);
 
@@ -202,29 +206,33 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         selectorContainer.setLayout(new GridLayout(2, false));
         selectorContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-//        UIUtils.createControlLabel(selectorContainer, "Ora Home");
-//        Composite oraHomeSelectorContainer = new Composite(selectorContainer, SWT.NONE);
-//        oraHomeSelectorContainer.setLayout(new GridLayout(2, false));
+        UIUtils.createControlLabel(selectorContainer, "Ora Home");
         oraHomeCombo = new Combo(selectorContainer, SWT.DROP_DOWN);
         for (String alias : findOraHomes()) {
             oraHomeCombo.add(alias);
         }
+        oraHomeCombo.add(BROWSE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         oraHomeCombo.setLayoutData(gd);
-//        oraHomeText.addModifyListener(controlModifyListener);
         final DirectoryDialog directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
-        Button selectDirectory = new Button(selectorContainer, SWT.PUSH);
-        selectDirectory.setText(" ... ");
-        final String[] path = new String[1];
-        selectDirectory.addSelectionListener(new SelectionListener() {
+        oraHomeCombo.addSelectionListener(new SelectionListener() {
             public void widgetSelected(SelectionEvent e) {
-                oraHomeCombo.setText(directoryDialog.open());
+                if (BROWSE.equals(oraHomeCombo.getText())) {
+                    String dir = directoryDialog.open();
+                    if (dir != null) {
+                        oraHomeCombo.setText(dir);
+                    }
+                    else {
+                        oraHomeCombo.setText("");
+                    }
+                }
+                populateTnsNameCombo();
             }
 
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
+            public void widgetDefaultSelected(SelectionEvent e) {}
         });
+        oraHomeCombo.addModifyListener(controlModifyListener);
         return selectorContainer;
     }
 
@@ -241,10 +249,24 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
         tnsNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         tnsNameCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        populateTnsNameCombo();
         tnsNameCombo.addModifyListener(controlModifyListener);
-        List<String> oraHomes = findOraHomes();
-        if (!oraHomes.isEmpty()) {
-            for (String alias : getOraServiceNames(oraHomes.get(0))) {
+    }
+
+    private void populateTnsNameCombo() {
+        tnsNameCombo.removeAll();
+        String oraHome = null;
+        if (oraHomeCombo != null) {
+            oraHome = oraHomeCombo.getText();
+        }
+        if (CommonUtils.isEmpty(oraHome)) {
+            List<String> oraHomes = findOraHomes();
+            if (!oraHomes.isEmpty()) {
+                oraHome = oraHomes.get(0);
+            }
+        }
+        if (!CommonUtils.isEmpty(oraHome)) {
+            for (String alias : getOraServiceNames(oraHome)) {
                 tnsNameCombo.add(alias);
             }
         }
@@ -424,6 +446,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     public boolean isComplete()
     {
+        if (isOCI && oraHomeCombo.getText().isEmpty()) {
+            return false;
+        }
         switch (connectionType) {
             case BASIC:
                 return !CommonUtils.isEmpty(serviceNameCombo.getText());
@@ -438,13 +463,26 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     public void loadSettings()
     {
-	    isOCI = site.getDriver().getName().toUpperCase().contains(OracleConstants.DRIVER_TYPE_OCI);
 	    tnsNameCombo.setEnabled(isOCI);
 
 	    // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
             Map<Object,Object> connectionProperties = connectionInfo.getProperties();
+
+            if (isOCI) {
+                Object oraHome = connectionProperties.get(OracleConstants.PROP_ORA_HOME);
+                if (oraHome != null) {
+                    oraHomeCombo.setText(oraHome.toString());
+                }
+                else {
+                    List<String> oraHomes = findOraHomes();
+                    if (!oraHomes.isEmpty()) {
+                        oraHomeCombo.setText(oraHomes.get(0));
+                    }
+                }
+            }
+
             final Object conTypeProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TYPE);
             if (conTypeProperty != null) {
                 connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
@@ -515,13 +553,24 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo != null) {
+            Map<Object, Object> connectionProperties = connectionInfo.getProperties();
             if (propertySource != null) {
-                connectionInfo.getProperties().putAll(propertySource.getProperties());
+                connectionProperties.putAll(propertySource.getProperties());
             }
 
-            connectionInfo.getProperties().put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
-            connectionInfo.getProperties().put(
-		            OracleConstants.PROP_DRIVER_TYPE, isOCI ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
+            if (isOCI) {
+                String oraHome = oraHomeCombo.getText();
+                if (!BROWSE.equals(oraHome) && !oraHome.isEmpty()) {
+                    connectionProperties.put(OracleConstants.PROP_ORA_HOME, oraHome);
+                }
+                else {
+                    connectionProperties.remove(OracleConstants.PROP_ORA_HOME);
+                }
+            }
+
+            connectionProperties.put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
+            connectionProperties.put(
+                    OracleConstants.PROP_DRIVER_TYPE, isOCI ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
 //            connectionInfo.getProperties().put(OracleConstants.PROP_DRIVER_TYPE,
 //                ociDriverCheck.getSelection() ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
             switch (connectionType) {
@@ -547,9 +596,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 connectionInfo.setUserPassword(passwordText.getText());
             }
             if (userRoleCombo.getSelectionIndex() > 0) {
-                connectionInfo.getProperties().put(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase());
+                connectionProperties.put(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase());
             } else {
-                connectionInfo.getProperties().remove(OracleConstants.PROP_INTERNAL_LOGON);
+                connectionProperties.remove(OracleConstants.PROP_INTERNAL_LOGON);
             }
         }
     }
