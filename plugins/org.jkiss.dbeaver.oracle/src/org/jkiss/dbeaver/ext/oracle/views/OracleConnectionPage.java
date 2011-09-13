@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.views;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -74,8 +75,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         //group.setLayout(new GridLayout(1, true));
         super.setImageDescriptor(logoImage);
 
-        isOCI = site.getDriver().getName().toUpperCase().contains(OracleConstants.DRIVER_TYPE_OCI);
-
         controlModifyListener = new ControlsListener();
 
         TabFolder optionsFolder = new TabFolder(composite, SWT.NONE);
@@ -141,13 +140,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 updateButtons();
             }
         });
-
-        if (isOCI) {
-            Control oraHomeSelector = createOraHomeSelector(connectionTypeFolder);
-            connectionTypeFolder.setTopRight(oraHomeSelector, SWT.RIGHT);
-            connectionTypeFolder.setTabHeight(
-                    Math.max(oraHomeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, connectionTypeFolder.getTabHeight()));
-        }
 
         final Group securityGroup = UIUtils.createControlGroup(addrGroup, "Security", 4, GridData.FILL_HORIZONTAL, 0);
         createSecurityGroup(securityGroup);
@@ -462,6 +454,15 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     public void loadSettings()
     {
+
+        isOCI = site.getDriver().getName().toUpperCase().contains(OracleConstants.DRIVER_TYPE_OCI);
+        if (isOCI && oraHomeCombo == null) {
+            Control oraHomeSelector = createOraHomeSelector(connectionTypeFolder);
+            connectionTypeFolder.setTopRight(oraHomeSelector, SWT.RIGHT);
+            connectionTypeFolder.setTabHeight(
+                    Math.max(oraHomeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, connectionTypeFolder.getTabHeight()));
+        }
+
 	    tnsNameCombo.setEnabled(isOCI);
 
 	    // Load values from new connection info
