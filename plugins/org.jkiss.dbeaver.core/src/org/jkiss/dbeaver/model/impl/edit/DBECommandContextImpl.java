@@ -4,6 +4,9 @@
 
 package org.jkiss.dbeaver.model.impl.edit;
 
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -141,6 +144,18 @@ public class DBECommandContextImpl implements DBECommandContext {
             // There were no exceptions during save so we assume that everything went well
             commands.clear();
             userParams.clear();
+
+            // Refresh object states
+            for (CommandQueue queue : commandQueues) {
+                if (queue.getObject() instanceof DBSObjectStateful) {
+                    try {
+                        ((DBSObjectStateful) queue.getObject()).refreshObjectState(monitor);
+                    } catch (DBCException e) {
+                        // Just report an error
+                        log.error(e);
+                    }
+                }
+            }
         }
         finally {
             try {

@@ -15,8 +15,10 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
@@ -53,17 +55,35 @@ public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStan
     @Override
     protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
     {
-        return new IDatabasePersistAction[0];
+        return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
     }
 
     @Override
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
     {
-        return new IDatabasePersistAction[0];
+        final OracleProcedureStandalone object = objectDeleteCommand.getObject();
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction("Drop procedure",
+                "DROP " + object.getProcedureType().name() + " " + object.getFullQualifiedName())
+        };
+    }
+
+    @Override
+    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
+    {
+        return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
     }
 
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
+
+    private IDatabasePersistAction[] createOrReplaceProcedureQuery(OracleProcedureStandalone procedure)
+    {
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + procedure.getSQLDeclaration())
+        };
+    }
+
 }

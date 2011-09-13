@@ -24,6 +24,7 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
     {
         super(ownerPackage,
             JDBCUtils.safeGetString(dbResult, "PROCEDURE_NAME"),
+            0l,
             DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "PROCEDURE_TYPE")));
     }
 

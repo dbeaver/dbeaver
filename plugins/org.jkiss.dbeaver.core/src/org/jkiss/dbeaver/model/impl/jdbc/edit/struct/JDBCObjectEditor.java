@@ -240,6 +240,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         @Override
         public void updateModel()
         {
+            super.updateModel();
             if (!getObject().isPersisted()) {
                 getObject().setPersisted(true);
                 DBUtils.fireObjectUpdate(getObject());

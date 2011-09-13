@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.ResultSet;
+import java.util.regex.Matcher;
 
 /**
  * GenericProcedure
@@ -33,13 +34,14 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         super(
             schema,
             JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"),
+            JDBCUtils.safeGetLong(dbResult, "OBJECT_ID"),
             DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE")));
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
     }
 
     public OracleProcedureStandalone(OracleSchema oracleSchema, String name, DBSProcedureType procedureType)
     {
-        super(oracleSchema, name, procedureType);
+        super(oracleSchema, name, 0l, procedureType);
         sourceDeclaration =
             procedureType.name() + " " + name + ContentUtils.getDefaultLineSeparator() +
             "IS" + ContentUtils.getDefaultLineSeparator() +
@@ -76,6 +78,22 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         return DBUtils.getFullQualifiedName(getDataSource(),
             getSchema(),
             this);
+    }
+
+    public String getSQLDeclaration()
+    {
+        if (sourceDeclaration == null) {
+            return null;
+        }
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(getProcedureType().name() + "\\s+([\\w\\.]+)[\\s\\(]+", java.util.regex.Pattern.CASE_INSENSITIVE);
+        final Matcher matcher = pattern.matcher(sourceDeclaration);
+        if (matcher.find()) {
+            String procedureName = matcher.group(1);
+            if (procedureName.indexOf('.') == -1) {
+                return sourceDeclaration.substring(0, matcher.start(1)) + getSchema().getName() + "." + procedureName + sourceDeclaration.substring(matcher.end(1));
+            }
+        }
+        return sourceDeclaration;
     }
 
     @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)

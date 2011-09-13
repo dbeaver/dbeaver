@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -21,6 +22,19 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
     protected final PARENT parent;
     protected String name;
     private boolean persisted;
+    private long objectId;
+
+    protected OracleObject(
+        PARENT parent,
+        String name,
+        long objectId,
+        boolean persisted)
+    {
+        this.parent = parent;
+        this.name = name;
+        this.objectId = objectId;
+        this.persisted = persisted;
+    }
 
     protected OracleObject(
         PARENT parent,
@@ -29,7 +43,6 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
     {
         this.parent = parent;
         this.name = name;
-
         this.persisted = persisted;
     }
 
@@ -52,6 +65,11 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
     public String getName()
     {
         return name;
+    }
+
+    public long getObjectId()
+    {
+        return objectId;
     }
 
     public boolean isPersisted()

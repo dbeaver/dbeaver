@@ -30,9 +30,10 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
     public OracleProcedureBase(
         PARENT parent,
         String name,
+        long objectId,
         DBSProcedureType procedureType)
     {
-        super(parent, name, true);
+        super(parent, name, objectId, true);
         this.procedureType = procedureType;
     }
 
@@ -70,15 +71,17 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_ARGUMENTS " +
-                "WHERE OWNER=? AND OBJECT_NAME=? " +
-                (procedure.getContainer() instanceof OraclePackage ? "AND PACKAGE_NAME=? " : "AND PACKAGE_NAME IS NULL ") +
+                "WHERE " +
+                (procedure.getObjectId() <= 0  ? "OWNER=? AND OBJECT_NAME=? AND PACKAGE_NAME=? " : "OBJECT_ID=? ") +
                 (procedure.getOverloadNumber() != null ? "AND OVERLOAD=? " : "AND OVERLOAD IS NULL ") +
                 "\nORDER BY SEQUENCE");
             int paramNum = 1;
-            dbStat.setString(paramNum++, procedure.getSchema().getName());
-            dbStat.setString(paramNum++, procedure.getName());
-            if (procedure.getContainer() instanceof OraclePackage) {
+            if (procedure.getObjectId() <= 0) {
+                dbStat.setString(paramNum++, procedure.getSchema().getName());
+                dbStat.setString(paramNum++, procedure.getName());
                 dbStat.setString(paramNum++, procedure.getContainer().getName());
+            } else {
+                dbStat.setLong(paramNum++, procedure.getObjectId());
             }
             if (procedure.getOverloadNumber() != null) {
                 dbStat.setInt(paramNum, procedure.getOverloadNumber());
