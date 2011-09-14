@@ -68,6 +68,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private Combo tnsNameCombo;
 	private CTabFolder connectionTypeFolder;
     private boolean isOCI;
+    private Composite bottomControls;
+    private Control oraHomeSelector;
 
     @Override
     public void dispose()
@@ -132,11 +134,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         connectionTypeFolder = new CTabFolder(protocolGroup, SWT.TOP | SWT.MULTI);
         connectionTypeFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Control oraHomeSelector = createOraHomeSelector(connectionTypeFolder);
-        connectionTypeFolder.setTopRight(oraHomeSelector, SWT.RIGHT);
-        connectionTypeFolder.setTabHeight(
-                Math.max(oraHomeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, connectionTypeFolder.getTabHeight()));
-
         createBasicConnectionControls(connectionTypeFolder);
 		createTNSConnectionControls(connectionTypeFolder);
         createCustomConnectionControls(connectionTypeFolder);
@@ -152,7 +149,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         final Group securityGroup = UIUtils.createControlGroup(addrGroup, "Security", 4, GridData.FILL_HORIZONTAL, 0);
         createSecurityGroup(securityGroup);
 
-        final Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 1);
+        bottomControls = UIUtils.createPlaceholder(addrGroup, 2);
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createBottomGroup(bottomControls);
         return addrGroup;
@@ -199,13 +196,13 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         }
     }
 
-    private Control createOraHomeSelector(CTabFolder protocolFolder)
+    private Control createOraHomeSelector(Composite parent)
     {
-        Composite selectorContainer = new Composite(protocolFolder, SWT.NONE);
+        Composite selectorContainer = new Composite(parent, SWT.NONE);
         selectorContainer.setLayout(new GridLayout(2, false));
         selectorContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Label label = UIUtils.createControlLabel(selectorContainer, "Oracle Home");
+        Label label = UIUtils.createControlLabel(selectorContainer, "  Oracle Home");
         label.setFont(UIUtils.makeBoldFont(label.getFont()));
         oraHomeCombo = new Combo(selectorContainer, SWT.DROP_DOWN);
         for (String alias : OCIUtils.findOraHomes()) {
@@ -404,10 +401,15 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     public void loadSettings()
     {
         isOCI = site.getDriver().getName().toUpperCase().contains(OracleConstants.DRIVER_TYPE_OCI);
+        if (isOCI) {
+            oraHomeSelector = createOraHomeSelector(bottomControls);
+        }
+        else {
+            if (oraHomeSelector != null) {
+                oraHomeSelector.dispose();
+            }
+        }
 
-        oraHomeCombo.setEnabled(isOCI); // for some reason connectionTypeFolder.setTopRight(null)
-                                        // sometimes doesn't remove a control from top-right,
-                                        // so I'm just disabling it
         tnsNameCombo.setEnabled(isOCI);
 
         // Load values from new connection info
