@@ -4,35 +4,41 @@
 
 package org.jkiss.dbeaver.ext.oracle.views;
 
-import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.oracle.Activator;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
+import org.jkiss.utils.CommonUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
  * OracleConnectionPage
@@ -183,9 +189,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         gd.horizontalSpan = 3;
         serviceNameCombo.setLayoutData(gd);
         serviceNameCombo.addModifyListener(controlModifyListener);
-        List<String> oraHomes = findOraHomes();
+        List<String> oraHomes = OCIUtils.findOraHomes();
         if (!oraHomes.isEmpty()) {
-            for (String alias : getOraServiceNames(oraHomes.get(0))) {
+            for (String alias : OCIUtils.getOraServiceNames(oraHomes.get(0))) {
                 serviceNameCombo.add(alias);
             }
         }
@@ -199,7 +205,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
         UIUtils.createControlLabel(selectorContainer, "Ora Home");
         oraHomeCombo = new Combo(selectorContainer, SWT.DROP_DOWN);
-        for (String alias : findOraHomes()) {
+        for (String alias : OCIUtils.findOraHomes()) {
             oraHomeCombo.add(alias);
         }
         oraHomeCombo.add(BROWSE);
@@ -251,79 +257,19 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             oraHome = oraHomeCombo.getText();
         }
         if (CommonUtils.isEmpty(oraHome)) {
-            List<String> oraHomes = findOraHomes();
+            List<String> oraHomes = OCIUtils.findOraHomes();
             if (!oraHomes.isEmpty()) {
                 oraHome = oraHomes.get(0);
             }
         }
         if (!CommonUtils.isEmpty(oraHome)) {
-            for (String alias : getOraServiceNames(oraHome)) {
+            for (String alias : OCIUtils.getOraServiceNames(oraHome)) {
                 tnsNameCombo.add(alias);
             }
         }
     }
 
-    // read system environment variables
-    private java.util.List<String> findOraHomes() {
-        java.util.List<String> homes = new ArrayList<String>();
-        String sep = System.getProperty("file.separator");
-
-        String oraHome = System.getenv("ORA_HOME");
-        if (oraHome != null) {
-            homes.add(oraHome);
-        }
-        String path = System.getenv("PATH");
-        if (path != null) {
-            for (String token : path.split(System.getProperty("path.separator"))) {
-                if (token.toLowerCase().contains("oracle")) {
-                    if (token.endsWith(sep)) {
-                        token = token.substring(0, token.length() - 1);
-                    }
-                    if (token.toLowerCase().endsWith("bin")) {
-                        oraHome = token.substring(0, token.length() - 3);
-                        homes.add(oraHome);
-                    }
-                }
-            }
-        }
-        return homes;
-    }
-
-    private ArrayList<String> getOraServiceNames(String oraHome) {
-        ArrayList<String> aliases = new ArrayList<String>();
-
-        // parse TNSNAMES.ORA file
-        if (oraHome != null) {
-            String sep = System.getProperty("file.separator");
-            if (!oraHome.endsWith(sep)) {
-                oraHome += sep;
-            }
-            String tnsnamesPath = oraHome + "Network" + sep + "Admin" + sep + "TNSNAMES.ORA";
-            File tnsnamesOra = new File (tnsnamesPath);
-            if (tnsnamesOra != null && tnsnamesOra.exists()) {
-                try {
-                    BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("#") && line.contains(" =")) {
-                            aliases.add(line.substring(0, line.indexOf(" =")));
-                        }
-                    }
-                } catch (FileNotFoundException e) {
-                    // do nothing
-                } catch (IOException e) {
-                    // do nothing
-                }
-            }
-            else {
-                // do nothing
-            }
-        }
-        Collections.sort(aliases);
-        return aliases;
-    }
-
-	private void createCustomConnectionControls(CTabFolder protocolFolder)
+    private void createCustomConnectionControls(CTabFolder protocolFolder)
     {
         CTabItem protocolTabCustom = new CTabItem(protocolFolder, SWT.NONE);
         protocolTabCustom.setText("Custom");
@@ -454,7 +400,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     public void loadSettings()
     {
-
         isOCI = site.getDriver().getName().toUpperCase().contains(OracleConstants.DRIVER_TYPE_OCI);
         if (isOCI && oraHomeCombo == null) {
             Control oraHomeSelector = createOraHomeSelector(connectionTypeFolder);
@@ -463,9 +408,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                     Math.max(oraHomeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, connectionTypeFolder.getTabHeight()));
         }
 
-	    tnsNameCombo.setEnabled(isOCI);
+        tnsNameCombo.setEnabled(isOCI);
 
-	    // Load values from new connection info
+        // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
             Map<Object,Object> connectionProperties = connectionInfo.getProperties();
@@ -476,7 +421,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                     oraHomeCombo.setText(oraHome.toString());
                 }
                 else {
-                    List<String> oraHomes = findOraHomes();
+                    List<String> oraHomes = OCIUtils.findOraHomes();
                     if (!oraHomes.isEmpty()) {
                         oraHomeCombo.setText(oraHomes.get(0));
                     }
