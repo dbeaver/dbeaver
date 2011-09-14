@@ -145,6 +145,7 @@ public class DBECommandContextImpl implements DBECommandContext {
             commands.clear();
             userParams.clear();
 
+/*
             // Refresh object states
             for (CommandQueue queue : commandQueues) {
                 if (queue.getObject() instanceof DBSObjectStateful) {
@@ -156,6 +157,7 @@ public class DBECommandContextImpl implements DBECommandContext {
                     }
                 }
             }
+*/
         }
         finally {
             try {

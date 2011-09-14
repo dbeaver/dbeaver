@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.tabbed.ISection;
@@ -17,9 +18,8 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
-import org.jkiss.dbeaver.model.struct.DBSProcedureType;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
 import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
@@ -49,7 +49,14 @@ public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStan
     @Override
     protected OracleProcedureStandalone createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
-        return new OracleProcedureStandalone(parent, "NEWPROCEDURE", DBSProcedureType.PROCEDURE);
+        CreateProcedureDialog dialog = new CreateProcedureDialog(workbenchWindow.getShell(), parent.getDataSource());
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+        return new OracleProcedureStandalone(
+            parent,
+            dialog.getProcedureName(),
+            dialog.getProcedureType());
     }
 
     @Override

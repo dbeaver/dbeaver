@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -160,13 +162,24 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         int previewResult = showChanges(true);
         monitor.done();
 
+        final DefaultProgressMonitor monitorWrapper = new DefaultProgressMonitor(monitor);
+
         if (previewResult == IDialogConstants.PROCEED_ID) {
             Throwable error = null;
             try {
-                getCommandContext().saveChanges(new DefaultProgressMonitor(monitor));
+                getCommandContext().saveChanges(monitorWrapper);
             } catch (DBException e) {
                 error = e;
             }
+            if (getDatabaseObject() instanceof DBSObjectStateful) {
+                try {
+                    ((DBSObjectStateful) getDatabaseObject()).refreshObjectState(monitorWrapper);
+                } catch (DBCException e) {
+                    // Just report an error
+                    log.error(e);
+                }
+            }
+
             if (error == null) {
                 // Refresh underlying node
                 // It'll refresh database object and all it's descendants
