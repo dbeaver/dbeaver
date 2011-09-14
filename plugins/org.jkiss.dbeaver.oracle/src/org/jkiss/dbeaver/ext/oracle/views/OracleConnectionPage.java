@@ -132,8 +132,10 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         connectionTypeFolder = new CTabFolder(protocolGroup, SWT.TOP | SWT.MULTI);
         connectionTypeFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        //ociDriverCheck = UIUtils.createCheckbox(connectionTypeFolder, "OCI Driver", false);
-        //connectionTypeFolder.setTopRight(ociDriverCheck);
+        Control oraHomeSelector = createOraHomeSelector(connectionTypeFolder);
+        connectionTypeFolder.setTopRight(oraHomeSelector, SWT.RIGHT);
+        connectionTypeFolder.setTabHeight(
+                Math.max(oraHomeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, connectionTypeFolder.getTabHeight()));
 
         createBasicConnectionControls(connectionTypeFolder);
 		createTNSConnectionControls(connectionTypeFolder);
@@ -203,7 +205,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         selectorContainer.setLayout(new GridLayout(2, false));
         selectorContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createControlLabel(selectorContainer, "Ora Home");
+        Label label = UIUtils.createControlLabel(selectorContainer, "Oracle Home");
+        label.setFont(UIUtils.makeBoldFont(label.getFont()));
         oraHomeCombo = new Combo(selectorContainer, SWT.DROP_DOWN);
         for (String alias : OCIUtils.findOraHomes()) {
             oraHomeCombo.add(alias);
@@ -401,13 +404,10 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     public void loadSettings()
     {
         isOCI = site.getDriver().getName().toUpperCase().contains(OracleConstants.DRIVER_TYPE_OCI);
-        if (isOCI && oraHomeCombo == null) {
-            Control oraHomeSelector = createOraHomeSelector(connectionTypeFolder);
-            connectionTypeFolder.setTopRight(oraHomeSelector, SWT.RIGHT);
-            connectionTypeFolder.setTabHeight(
-                    Math.max(oraHomeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, connectionTypeFolder.getTabHeight()));
-        }
 
+        oraHomeCombo.setEnabled(isOCI); // for some reason connectionTypeFolder.setTopRight(null)
+                                        // sometimes doesn't remove a control from top-right,
+                                        // so I'm just disabling it
         tnsNameCombo.setEnabled(isOCI);
 
         // Load values from new connection info
