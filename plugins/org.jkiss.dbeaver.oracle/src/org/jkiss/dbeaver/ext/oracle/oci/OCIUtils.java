@@ -7,11 +7,22 @@ package org.jkiss.dbeaver.ext.oracle.oci;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.utils.WinRegistry;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class OCIUtils {
+
+    public static final String WIN_32 = "win32";
 
     private static void addOraHome(List<String> homes, String oraHome) {
         String sep = System.getProperty("file.separator");
@@ -19,7 +30,7 @@ public class OCIUtils {
             oraHome = oraHome.substring(0, oraHome.length() - 1);
         }
         // file name case insensitivity on Windows platform
-        if (Platform.getOS().equals("win32")|| Platform.getOS().equals("win64")) {
+        if (Platform.getOS().equals(WIN_32)) {
             List<String> list = new ArrayList<String>();
             for (String s : homes) {
                 list.add(s.toLowerCase());
@@ -63,7 +74,7 @@ public class OCIUtils {
         }
 
         // find Oracle homes in Windows registry
-        if (Platform.getOS().equals("win32")|| Platform.getOS().equals("win64")) {
+        if (Platform.getOS().equals(WIN_32)) {
             try {
                 List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\ORACLE");
                 for (String oracleKey : oracleKeys) {
