@@ -143,4 +143,14 @@ public class OCIUtils {
     public static boolean isOciDriver(DBPDriver driver) {
         return "oracle_oci".equals(driver.getId());
     }
+
+    public static List<String> getLibraries(String oraHome) {
+        String sep = System.getProperty("file.separator");
+        if (!oraHome.endsWith(sep)) {
+            oraHome = oraHome + sep;
+        }
+        List<String> list = new ArrayList<String>();
+        list.add(oraHome + sep + "jdbc" + sep + "lib" + sep + "ojdbc14.jar");
+        return list;
+    }
 }

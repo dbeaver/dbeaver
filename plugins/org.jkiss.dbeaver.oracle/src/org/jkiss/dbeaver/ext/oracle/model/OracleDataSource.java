@@ -11,6 +11,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
+import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
+import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -28,8 +30,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -126,6 +132,34 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     public Collection<OracleRecycledObject> getUserRecycledObjects(DBRProgressMonitor monitor) throws DBException
     {
         return publicSchema.getRecycledObjects(monitor);
+    }
+
+    @Override
+    protected Driver getDriverInstance() throws DBException {
+        DBSDataSourceContainer container = getContainer();
+        DBPDriver driver = container.getDriver();
+        boolean ociDriver = OCIUtils.isOciDriver(driver);
+        if (ociDriver) {
+            Map<Object, Object> connectionProperties = container.getConnectionInfo().getProperties();
+            Object ora_home = connectionProperties.get(OracleConstants.PROP_ORA_HOME);
+            if (ora_home != null) {
+                DriverDescriptor driverDescriptor = (DriverDescriptor) driver;
+                List<DriverFileDescriptor> files = driverDescriptor.getFiles();
+                for (String library : OCIUtils.getLibraries((String)ora_home)) {
+                    boolean contains = false;
+                    for (DriverFileDescriptor file : files) {
+                        if (file.getPath().equals(library)) {
+                            contains = true;
+                            break;
+                        }
+                    }
+                    if (!contains) {
+                        files.add(new DriverFileDescriptor(driverDescriptor, library));
+                    }
+                }
+            }
+        }
+        return super.getDriverInstance();
     }
 
     public void initialize(DBRProgressMonitor monitor)
