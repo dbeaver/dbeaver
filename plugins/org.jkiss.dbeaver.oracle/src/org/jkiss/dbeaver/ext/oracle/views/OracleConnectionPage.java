@@ -56,20 +56,20 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private ConnectionPropertiesControl connectionProps;
     private Button testButton;
     private PropertySourceCustom propertySource;
-
-    private ControlsListener controlModifyListener;
-    //private Button ociDriverCheck;
-    private Text connectionUrlText;
-    private Button osAuthCheck;
-    private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
-
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png");
     private Combo oraHomeCombo;
     private Combo tnsNameCombo;
 	private CTabFolder connectionTypeFolder;
-    private boolean isOCI;
     private Composite bottomControls;
     private Control oraHomeSelector;
+    //private Button ociDriverCheck;
+    private Text connectionUrlText;
+    private Button osAuthCheck;
+
+    private ControlsListener controlModifyListener;
+    private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
+    private boolean isOCI;
+
+    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png");
 
     @Override
     public void dispose()
@@ -400,7 +400,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     public void loadSettings()
     {
-        isOCI = site.getDriver().getName().toUpperCase().contains(OracleConstants.DRIVER_TYPE_OCI);
+        isOCI = OCIUtils.isOciDriver(site.getDriver());
         if (isOCI) {
             oraHomeSelector = createOraHomeSelector(bottomControls);
         }
@@ -552,8 +552,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private void generateConnectionURL(DBPConnectionInfo connectionInfo)
     {
-        boolean isOCI = OracleConstants.DRIVER_TYPE_OCI.equals(
-            connectionInfo.getProperties().get(OracleConstants.PROP_DRIVER_TYPE));
         StringBuilder url = new StringBuilder(100);
         url.append("jdbc:oracle:");
         if (isOCI) {

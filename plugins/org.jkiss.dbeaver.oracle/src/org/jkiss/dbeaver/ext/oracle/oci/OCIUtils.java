@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.oci;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.utils.WinRegistry;
 
 import java.io.BufferedReader;
@@ -137,5 +138,9 @@ public class OCIUtils {
         }
         Collections.sort(aliases);
         return aliases;
+    }
+
+    public static boolean isOciDriver(DBPDriver driver) {
+        return "oracle_oci".equals(driver.getId());
     }
 }
