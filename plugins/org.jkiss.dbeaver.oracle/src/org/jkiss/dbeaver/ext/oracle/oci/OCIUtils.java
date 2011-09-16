@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.oci;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.utils.WinRegistry;
 
@@ -178,5 +179,25 @@ public class OCIUtils {
             }
         }
         return urls;
+    }
+
+    public static Integer getOracleVersion(String oraHome) {
+        String sep = System.getProperty("file.separator");
+        if (!oraHome.endsWith(sep)) {
+            oraHome = oraHome + sep;
+        }
+        File binFolder = new File(oraHome + sep + "BIN");
+        if (binFolder != null && binFolder.exists()) {
+            for (int counter = 1; counter <= 12; counter++) {
+                File oraclient_dll = new File(binFolder, "oraclient" + counter +".dll");
+                if (oraclient_dll != null && oraclient_dll.exists()) {
+                    return counter;
+                }
+            }
+        }
+        else {
+            log.warn("BIN folder isn't found in Oracle home " + oraHome);
+        }
+        return null;
     }
 }

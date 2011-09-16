@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
@@ -70,6 +71,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private boolean isOCI;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png");
+    private Label oracleVersionLabel;
 
     @Override
     public void dispose()
@@ -142,7 +144,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             @Override
             public void widgetSelected(SelectionEvent e) {
                 connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection().getData();
-                updateButtons();
+                updateUI();
             }
         });
 
@@ -199,7 +201,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private Control createOraHomeSelector(Composite parent)
     {
         Composite selectorContainer = new Composite(parent, SWT.NONE);
-        selectorContainer.setLayout(new GridLayout(2, false));
+        selectorContainer.setLayout(new GridLayout(3, false));
         selectorContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Label label = UIUtils.createControlLabel(selectorContainer, "  Oracle Home");
@@ -230,6 +232,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         oraHomeCombo.addModifyListener(controlModifyListener);
+        oracleVersionLabel = new Label(selectorContainer, SWT.NONE);
+        oracleVersionLabel.setText("    ");
         return selectorContainer;
     }
 
@@ -581,8 +585,16 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         connectionInfo.setUrl(url.toString());
     }
 
-    private void updateButtons()
+    private void updateUI()
     {
+        Integer oracleVersion = OCIUtils.getOracleVersion(oraHomeCombo.getText());
+        if (oracleVersion != null) {
+            oracleVersionLabel.setText("v." + oracleVersion);
+        }
+        else {
+            oracleVersionLabel.setText("");
+        }
+
         site.updateButtons();
         if (testButton != null) {
             testButton.setEnabled(this.isComplete());
@@ -591,13 +603,13 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private class ControlsListener implements ModifyListener, SelectionListener {
         public void modifyText(ModifyEvent e) {
-            updateButtons();
+            updateUI();
         }
         public void widgetSelected(SelectionEvent e) {
-            updateButtons();
+            updateUI();
         }
         public void widgetDefaultSelected(SelectionEvent e) {
-            updateButtons();
+            updateUI();
         }
     }
 }
