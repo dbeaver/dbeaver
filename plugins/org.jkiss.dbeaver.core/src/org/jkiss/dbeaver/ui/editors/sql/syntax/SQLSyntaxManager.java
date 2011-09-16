@@ -17,6 +17,9 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPKeywordManager;
 import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLParameterToken;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
 
 import java.util.*;

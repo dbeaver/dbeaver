@@ -33,9 +33,12 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementParameter;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLParameterToken;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
@@ -377,10 +380,25 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         // Parse range
         SQLSyntaxManager syntaxManager = getSyntaxManager();
         syntaxManager.setRange(document, startPos, endPos - startPos);
+        List<SQLStatementParameter> parameters = new ArrayList<SQLStatementParameter>();
         int statementStart = startPos;
         for (;;) {
             IToken token = syntaxManager.nextToken();
             int tokenOffset = syntaxManager.getTokenOffset();
+            final int tokenLength = syntaxManager.getTokenLength();
+            if (token instanceof SQLParameterToken && tokenLength > 0) {
+                try {
+                    parameters.add(
+                        new SQLStatementParameter(
+                            null,
+                            null,
+                            parameters.size() + 1,
+                            document.get(tokenOffset, tokenLength),
+                            null));
+                } catch (BadLocationException e) {
+                    log.warn("Can't extract query parameter", e);
+                }
+            }
             if (token.isEOF() ||
                 (token instanceof SQLDelimiterToken && tokenOffset >= currentPos)||
                 tokenOffset > endPos)
@@ -392,7 +410,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
                 if (tokenOffset >= document.getLength()) {
                     // Sometimes (e.g. when comment finishing script text)
-                    // last token offset is beyon document range
+                    // last token offset is beyond document range
                     tokenOffset = document.getLength();
                 }
                 assert (tokenOffset >= currentPos);
@@ -411,7 +429,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                         queryText = queryText.substring(0, queryText.length() - syntaxManager.getStatementDelimiter().length());
                     }
                     // make script line
-                    SQLStatementInfo statementInfo = new SQLStatementInfo(queryText.trim());
+                    SQLStatementInfo statementInfo = new SQLStatementInfo(queryText.trim(), parameters);
                     statementInfo.setOffset(statementStart);
                     statementInfo.setLength(tokenOffset - statementStart);
                     return statementInfo;
@@ -421,7 +439,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                 }
             }
             if (token instanceof SQLDelimiterToken) {
-                statementStart = tokenOffset + syntaxManager.getTokenLength();
+                statementStart = tokenOffset + tokenLength;
             }
             if (token.isEOF()) {
                 return null;

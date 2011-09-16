@@ -4,6 +4,10 @@
 
 package org.jkiss.dbeaver.runtime.sql;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -247,20 +251,20 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(DBCExecutionContext context, SQLStatementInfo query, boolean fireEvents)
+    private boolean executeSingleQuery(DBCExecutionContext context, SQLStatementInfo sqlStatement, boolean fireEvents)
     {
         lastError = null;
 
         if (fireEvents) {
             // Notify query start
             for (ISQLQueryListener listener : queryListeners) {
-                listener.onStartQuery(query);
+                listener.onStartQuery(sqlStatement);
             }
         }
 
         long startTime = System.currentTimeMillis();
-        String sqlQuery = query.getQuery();
-        SQLQueryResult result = new SQLQueryResult(query);
+        String sqlQuery = sqlStatement.getQuery();
+        SQLQueryResult result = new SQLQueryResult(sqlStatement);
         if (rsOffset > 0) {
             result.setRowOffset(rsOffset);
         }
@@ -275,14 +279,27 @@ public class SQLQueryJob extends DataSourceJob
             curStatement.setUserData(dataReceiver);
 
             // Bind parameters
-            if (!CommonUtils.isEmpty(query.getParameters())) {
-                for (SQLStatementParameter param : query.getParameters()) {
-                    param.getValueHandler().bindValueObject(
-                        context,
-                        curStatement,
-                        param.getParamType(),
-                        param.getIndex(),
-                        param.getValue());
+            if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
+                List<SQLStatementParameter> unresolvedParams = new ArrayList<SQLStatementParameter>();
+                for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                    if (!param.isResolved()) {
+                        unresolvedParams.add(param);
+                    }
+                }
+                if (!CommonUtils.isEmpty(unresolvedParams)) {
+                    if (!bindStatementParameters(unresolvedParams)) {
+                        return false;
+                    }
+                }
+                for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                    if (param.isResolved()) {
+                        param.getValueHandler().bindValueObject(
+                            context,
+                            curStatement,
+                            param.getParamType(),
+                            param.getIndex(),
+                            param.getValue());
+                    }
                 }
             }
 
@@ -306,9 +323,11 @@ public class SQLQueryJob extends DataSourceJob
                 }
 
                 // Release parameters
-                if (!CommonUtils.isEmpty(query.getParameters())) {
-                    for (SQLStatementParameter param : query.getParameters()) {
-                        param.getValueHandler().releaseValueObject(param.getValue());
+                if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
+                    for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                        if (param.isResolved()) {
+                            param.getValueHandler().releaseValueObject(param.getValue());
+                        }
                     }
                 }
             }
@@ -331,6 +350,22 @@ public class SQLQueryJob extends DataSourceJob
         }
         // Success
         return true;
+    }
+
+    private boolean bindStatementParameters(final List<SQLStatementParameter> parameters)
+    {
+        final Shell shell = DBeaverCore.getActiveWorkbenchShell();
+        final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
+            public void run()
+            {
+                SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
+                    shell,
+                    parameters);
+                result = (dialog.open() == IDialogConstants.OK_ID);
+            }
+        };
+        UIUtils.runInUI(shell, binder);
+        return binder.getResult();
     }
 
     private void fetchQueryData(SQLQueryResult result, DBCExecutionContext context)

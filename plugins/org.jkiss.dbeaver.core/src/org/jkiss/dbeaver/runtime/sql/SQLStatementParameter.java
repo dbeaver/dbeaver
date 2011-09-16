@@ -14,28 +14,45 @@ public class SQLStatementParameter {
     private DBDValueHandler valueHandler;
     DBSTypedObject paramType;
     private int index;
+    private String name;
     private Object value;
 
-    public SQLStatementParameter(DBDValueHandler valueHandler, DBSTypedObject paramType, int index, Object value) {
+    public SQLStatementParameter(DBDValueHandler valueHandler, DBSTypedObject paramType, int index, String name, Object value)
+    {
         this.valueHandler = valueHandler;
         this.paramType = paramType;
         this.index = index;
+        this.name = name;
         this.value = value;
     }
 
-    public DBDValueHandler getValueHandler() {
+    public boolean isResolved()
+    {
+        return valueHandler != null;
+    }
+
+    public DBDValueHandler getValueHandler()
+    {
         return valueHandler;
     }
 
-    public DBSTypedObject getParamType() {
+    public DBSTypedObject getParamType()
+    {
         return paramType;
     }
 
-    public int getIndex() {
+    public int getIndex()
+    {
         return index;
     }
 
-    public Object getValue() {
+    public String getName()
+    {
+        return name;
+    }
+
+    public Object getValue()
+    {
         return value;
     }
 

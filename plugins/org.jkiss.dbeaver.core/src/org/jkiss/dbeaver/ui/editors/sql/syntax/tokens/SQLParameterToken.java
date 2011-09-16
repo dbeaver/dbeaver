@@ -2,18 +2,18 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax;
+package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
 
 import org.eclipse.jface.text.rules.Token;
 
 /**
- * SQLDelimiterToken
+ * SQLParameterToken
  *
  * @author Serge Rieder
  */
-public class SQLDelimiterToken extends Token {
+public class SQLParameterToken extends Token {
 
-    public SQLDelimiterToken(Object data)
+    public SQLParameterToken(Object data)
     {
         super(data);
     }

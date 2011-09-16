@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax;
+package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
 
 import org.eclipse.jface.text.rules.Token;
 
