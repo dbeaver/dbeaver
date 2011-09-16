@@ -38,6 +38,7 @@ import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     private String activeSchemaName;
     private boolean isAdmin;
     private String planTableName;
+    private static Map<String, ClassLoader> ociClassLoadersCache = new HashMap<String, ClassLoader>();
 
     public OracleDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -143,10 +145,14 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
             Object ora_home = connectionProperties.get(OracleConstants.PROP_ORA_HOME);
             if (ora_home != null) {
                 DriverDescriptor driverDescriptor = (DriverDescriptor) driver;
-                ClassLoader cl = new OCIClassLoader((String)ora_home, getClass().getClassLoader());
+                ClassLoader ociClassLoader = ociClassLoadersCache.get((String)ora_home);
+                if (ociClassLoader == null) {
+                    ociClassLoader = new OCIClassLoader((String)ora_home, getClass().getClassLoader());
+                    ociClassLoadersCache.put((String)ora_home, ociClassLoader);
+                }
                 String driverClassName = driverDescriptor.getDriverClassName();
                 try {
-                    final Class<?> driverClass = cl.loadClass(driverClassName);
+                    final Class<?> driverClass = ociClassLoader.loadClass(driverClassName);
                     return (Driver) driverClass.newInstance();
                 } catch (ClassNotFoundException ex) {
                     throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
