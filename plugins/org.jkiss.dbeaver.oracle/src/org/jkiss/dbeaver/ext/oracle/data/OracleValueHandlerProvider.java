@@ -6,9 +6,9 @@ package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -22,15 +22,14 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
         return JDBCUtils.getDataIcon(type).getImage();
     }
 
-    public DBDValueHandler getHandler(DBCExecutionContext context, DBSTypedObject type)
+    public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
     {
-        String typeName = type.getTypeName();
         if (OracleConstants.TYPE_NAME_XML.equals(typeName) || OracleConstants.TYPE_FQ_XML.equals(typeName)) {
             return OracleXMLValueHandler.INSTANCE;
-        } else if (type.getValueType() == java.sql.Types.STRUCT) {
+        } else if (valueType == java.sql.Types.STRUCT) {
             return OracleObjectValueHandler.INSTANCE;
-        } else if (type.getTypeName().indexOf("TIMESTAMP") != -1) {
-            return new OracleTimestampValueHandler(context.getDataFormatterProfile());
+        } else if (typeName.indexOf("TIMESTAMP") != -1) {
+            return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
         } else {
             return null;
         }

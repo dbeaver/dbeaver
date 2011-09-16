@@ -6,13 +6,14 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Execution context
  */
-public interface DBCExecutionContext {
+public interface DBCExecutionContext extends DBDPreferences {
 
     String getTaskTitle();
 
@@ -48,17 +49,6 @@ public interface DBCExecutionContext {
     DBCExecutionPurpose getPurpose();
 
     /**
-     * Gets current context's data formatter profile
-     * @return profile
-     */
-    DBDDataFormatterProfile getDataFormatterProfile();
-
-    /**
-     * Sets current context's data formatter profile
-     */
-    void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile);
-
-    /**
      * Prepares statements
      */
     DBCStatement prepareStatement(
@@ -68,11 +58,6 @@ public interface DBCExecutionContext {
         boolean updatable,
         boolean returnGeneratedKeys) throws DBCException;
 
-    /**
-     * Default value handler for this context
-     * @return value handler instance
-     */
-    DBDValueHandler getDefaultValueHandler();
     /**
      * Closes context. No exceptions could be throws from this method.
      */

@@ -106,11 +106,8 @@ public class SQLStatementInfo {
                     }
                     parameters.add(
                         new SQLStatementParameter(
-                            null,
-                            null,
-                            parameters.size() + 1,
-                            document.get(tokenOffset, tokenLength),
-                            null));
+                            parameters.size(),
+                            document.get(tokenOffset, tokenLength)));
                 } catch (BadLocationException e) {
                     log.warn("Can't extract query parameter", e);
                 }

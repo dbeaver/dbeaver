@@ -15,8 +15,6 @@ public interface DBDValueHandlerProvider
 {
     Image getTypeImage(DBSTypedObject type);
 
-    DBDValueHandler getHandler(
-        DBCExecutionContext context,
-        DBSTypedObject type);
+    DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType);
 
 }

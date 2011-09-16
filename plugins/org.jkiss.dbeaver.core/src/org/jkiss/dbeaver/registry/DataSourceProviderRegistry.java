@@ -16,7 +16,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPRegistryListener;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -137,7 +136,7 @@ public class DataSourceProviderRegistry
         return dataTypeProviders;
     }
 
-    public DataTypeProviderDescriptor getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject type)
+    public DataTypeProviderDescriptor getDataTypeProvider(DBPDataSource dataSource, String typeName, int valueType)
     {
         DBPDriver driver = dataSource.getContainer().getDriver();
         if (!(driver instanceof DriverDescriptor)) {
@@ -148,14 +147,14 @@ public class DataSourceProviderRegistry
 
         // First try to find type provider for specific datasource type
         for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
-            if (!dtProvider.isDefault() && dtProvider.supportsDataSource(dsProvider) && dtProvider.supportsType(type)) {
+            if (!dtProvider.isDefault() && dtProvider.supportsDataSource(dsProvider) && dtProvider.supportsType(typeName, valueType)) {
                 return dtProvider;
             }
         }
 
         // Find in default providers
         for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
-            if (dtProvider.isDefault() && dtProvider.supportsType(type)) {
+            if (dtProvider.isDefault() && dtProvider.supportsType(typeName, valueType)) {
                 return dtProvider;
             }
         }

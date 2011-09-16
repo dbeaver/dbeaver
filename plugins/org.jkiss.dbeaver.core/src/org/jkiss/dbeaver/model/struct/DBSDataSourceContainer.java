@@ -8,6 +8,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -15,7 +16,7 @@ import java.util.Collection;
 /**
  * DBSDataSourceContainer
  */
-public interface DBSDataSourceContainer extends DBSEntity
+public interface DBSDataSourceContainer extends DBSEntity, DBDPreferences
 {
     /**
      * Container unique ID
@@ -83,12 +84,6 @@ public interface DBSDataSourceContainer extends DBSEntity
     void release(DBPDataSourceUser user);
 
     void fireEvent(DBPEvent event);
-
-    /**
-     * Date formatter profile
-     * @return profile
-     */
-    DBDDataFormatterProfile getDataFormatterProfile();
 
     /**
      * Preference store associated with this datasource

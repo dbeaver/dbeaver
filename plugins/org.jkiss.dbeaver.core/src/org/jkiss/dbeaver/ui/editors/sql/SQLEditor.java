@@ -754,7 +754,7 @@ public class SQLEditor extends SQLEditorBase
         public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
         {
             if (curJob != null) {
-                curJob.setDataReciever(dataReceiver);
+                curJob.setDataReceiver(dataReceiver);
                 curJob.setResultSetLimit(firstRow, maxRows);
                 return curJob.extractData(context);
             } else {

@@ -9,10 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.data.DBDColumnBinding;
-import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueLocator;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -354,13 +351,19 @@ public final class DBUtils {
 
     public static DBDValueHandler getColumnValueHandler(DBCExecutionContext context, DBSTypedObject column)
     {
+        return findValueHandler(context.getDataSource(), context, column.getTypeName(), column.getValueType());
+    }
+
+    public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBDPreferences preferences, String typeName, int valueType)
+    {
         DBDValueHandler typeHandler = null;
-        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(context.getDataSource(), column);
+        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(
+            dataSource, typeName, valueType);
         if (typeProvider != null) {
-            typeHandler = typeProvider.getInstance().getHandler(context, column);
+            typeHandler = typeProvider.getInstance().getHandler(preferences, typeName, valueType);
         }
         if (typeHandler == null) {
-            typeHandler = context.getDefaultValueHandler();
+            typeHandler = preferences.getDefaultValueHandler();
         }
         return typeHandler;
     }
@@ -645,6 +648,18 @@ public final class DBUtils {
         } else {
             return object.getName();
         }
+    }
+
+    public static DBSDataType findBestDataType(Collection<? extends DBSDataType> allTypes, String ... typeNames)
+    {
+        for (String testType : typeNames) {
+            for (DBSDataType dataType : allTypes) {
+                if (dataType.getName().equalsIgnoreCase(testType)) {
+                    return dataType;
+                }
+            }
+        }
+        return null;
     }
 
     public static <T extends DBPNamedObject> void orderObjects(List<T> objects)

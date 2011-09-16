@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.runtime.sql;
 
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -13,18 +14,15 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class SQLStatementParameter implements DBSTypedObject {
     private DBDValueHandler valueHandler;
-    DBSDataType paramType;
+    private DBSDataType paramType;
     private int index;
     private String name;
     private Object value;
 
-    public SQLStatementParameter(DBDValueHandler valueHandler, DBSDataType paramType, int index, String name, Object value)
+    public SQLStatementParameter(int index, String name)
     {
-        this.valueHandler = valueHandler;
-        this.paramType = paramType;
         this.index = index;
         this.name = name;
-        this.value = value;
     }
 
     public boolean isResolved()
@@ -32,11 +30,16 @@ public class SQLStatementParameter implements DBSTypedObject {
         return valueHandler != null;
     }
 
-    public void resolve(DBDValueHandler valueHandler, DBSDataType paramType, Object value)
+    public void resolve()
     {
-        this.valueHandler = valueHandler;
-        this.paramType = paramType;
-        this.value = value;
+        if (paramType == null) {
+            return;
+        }
+        this.valueHandler = DBUtils.findValueHandler(
+            paramType.getDataSource(),
+            paramType.getDataSource().getContainer(),
+            paramType.getName(),
+            paramType.getValueType());
     }
 
     public DBDValueHandler getValueHandler()
@@ -47,6 +50,11 @@ public class SQLStatementParameter implements DBSTypedObject {
     public DBSDataType getParamType()
     {
         return paramType;
+    }
+
+    public void setParamType(DBSDataType paramType)
+    {
+        this.paramType = paramType;
     }
 
     public int getIndex()
@@ -64,6 +72,11 @@ public class SQLStatementParameter implements DBSTypedObject {
         return value;
     }
 
+    public void setValue(Object value)
+    {
+        this.value = value;
+    }
+
     @Override
     public String toString()
     {
@@ -72,9 +85,6 @@ public class SQLStatementParameter implements DBSTypedObject {
 
     public String getTitle()
     {
-        if (name == null) {
-            return String.valueOf(index);
-        }
         if (name.startsWith(":")) {
             return name.substring(1);
         } else {

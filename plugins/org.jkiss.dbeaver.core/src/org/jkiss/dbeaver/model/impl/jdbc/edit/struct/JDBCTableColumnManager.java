@@ -143,12 +143,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     protected static DBSDataType findBestDataType(DBPDataSource dataSource, String ... typeNames)
     {
         if (dataSource instanceof DBPDataTypeProvider) {
-            for (String testType : typeNames) {
-                final DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getDataType(testType);
-                if (dataType != null) {
-                    return dataType;
-                }
-            }
+            return DBUtils.findBestDataType(((DBPDataTypeProvider) dataSource).getDataTypes(), typeNames);
         }
         return null;
     }

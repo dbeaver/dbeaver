@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -218,6 +219,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                 this.selectedCategory = ((DriverTreeControl.DriverCategory) selectedObject).getName();
             }
         }
+        //super.updateStatus(new Status(Status.INFO, DBeaverConstants.PLUGIN_ID, selectedDriver == null ? "" : selectedDriver.getDescription()));
         this.updateButtons();
     }
 

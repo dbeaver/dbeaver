@@ -51,9 +51,9 @@ public class JDBCArrayType implements DBSTypedObject {
 
     boolean resolveHandler(DBCExecutionContext context)
     {
-        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(context.getDataSource(), this);
+        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(context.getDataSource(), typeName, valueType);
         if (typeProvider != null) {
-            valueHandler = typeProvider.getInstance().getHandler(context, this);
+            valueHandler = typeProvider.getInstance().getHandler(context, typeName, valueType);
         }
         return valueHandler != null;
     }

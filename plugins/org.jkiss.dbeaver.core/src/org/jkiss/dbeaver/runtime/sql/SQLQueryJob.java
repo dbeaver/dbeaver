@@ -87,7 +87,7 @@ public class SQLQueryJob extends DataSourceJob
         return queries.isEmpty() ? null : queries.get(0);
     }
 
-    public void setDataReciever(DBDDataReceiver dataReceiver)
+    public void setDataReceiver(DBDDataReceiver dataReceiver)
     {
         this.dataReceiver = dataReceiver;
     }
@@ -360,6 +360,7 @@ public class SQLQueryJob extends DataSourceJob
             {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
                     shell,
+                    getDataSource(),
                     parameters);
                 result = (dialog.open() == IDialogConstants.OK_ID);
             }

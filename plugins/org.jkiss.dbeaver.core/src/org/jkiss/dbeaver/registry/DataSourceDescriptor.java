@@ -18,11 +18,13 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -518,6 +520,16 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             this.formatterProfile = new DataFormatterProfile(getId(), preferenceStore);
         }
         return this.formatterProfile;
+    }
+
+    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile)
+    {
+        this.formatterProfile = formatterProfile;
+    }
+
+    public DBDValueHandler getDefaultValueHandler()
+    {
+        return DBCDefaultValueHandler.INSTANCE;
     }
 
     public AbstractPreferenceStore getPreferenceStore()

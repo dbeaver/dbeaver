@@ -141,7 +141,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
         boolean autoIncrement = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.IS_AUTOINCREMENT));
         if (!CommonUtils.isEmpty(typeName)) {
             // Try to determine value type from type name
-            valueType = JDBCUtils.getDataTypeByName(valueType, typeName);
+            valueType = JDBCUtils.getValueTypeByTypeName(typeName, valueType);
         }
         // Check for identity modifier [DBSPEC: MS SQL]
         if (typeName.toUpperCase().endsWith(GenericConstants.TYPE_MODIFIER_IDENTITY)) {

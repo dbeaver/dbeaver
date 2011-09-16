@@ -6,9 +6,9 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -22,9 +22,8 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
         return JDBCUtils.getDataIcon(type).getImage();
     }
 
-    public DBDValueHandler getHandler(DBCExecutionContext context, DBSTypedObject type)
+    public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
     {
-        String typeName = type.getTypeName();
         if (MySQLConstants.TYPE_NAME_ENUM.equalsIgnoreCase(typeName)) {
             return MySQLEnumValueHandler.INSTANCE;
         } else if (MySQLConstants.TYPE_NAME_SET.equalsIgnoreCase(typeName)) {

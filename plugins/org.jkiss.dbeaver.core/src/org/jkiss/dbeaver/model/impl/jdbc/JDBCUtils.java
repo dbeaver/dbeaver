@@ -204,7 +204,7 @@ public class JDBCUtils {
         }
     }
 
-    public static int getDataTypeByName(int valueType, String typeName)
+    public static int getValueTypeByTypeName(String typeName, int valueType)
     {
         // [JDBC: SQLite driver uses VARCHAR value type for all LOBs]
         if (valueType == java.sql.Types.OTHER || valueType == java.sql.Types.VARCHAR) {
@@ -221,7 +221,12 @@ public class JDBCUtils {
 
     public static DBSDataKind getDataKind(DBSTypedObject type)
     {
-        switch (getDataTypeByName(type.getValueType(), type.getTypeName())) {
+        return getDataKind(type.getTypeName(), type.getValueType());
+    }
+
+    public static DBSDataKind getDataKind(String typeName, int valueType)
+    {
+        switch (getValueTypeByTypeName(typeName, valueType)) {
             case java.sql.Types.BOOLEAN:
                 return DBSDataKind.BOOLEAN;
             case java.sql.Types.CHAR:
@@ -242,7 +247,7 @@ public class JDBCUtils {
                 return DBSDataKind.NUMERIC;
             case java.sql.Types.BIT:
             case java.sql.Types.TINYINT:
-                if (type.getTypeName().toLowerCase().contains("bool")) {
+                if (typeName.toLowerCase().contains("bool")) {
                     // Declared as numeric but actually it's a boolean
                     return DBSDataKind.BOOLEAN;
                 } else {
