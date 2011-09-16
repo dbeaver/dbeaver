@@ -7,12 +7,16 @@ package org.jkiss.dbeaver.runtime.sql;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
@@ -109,4 +113,69 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
         return composite;
     }
+
+    private class ParametersMouseListener implements MouseListener {
+        private final TableEditor tableEditor;
+        private final Table columnsTable;
+
+        public ParametersMouseListener(TableEditor tableEditor, Table columnsTable)
+        {
+            this.tableEditor = tableEditor;
+            this.columnsTable = columnsTable;
+        }
+
+        private void disposeOldEditor()
+        {
+            Control oldEditor = tableEditor.getEditor();
+            if (oldEditor != null) oldEditor.dispose();
+        }
+
+        public void mouseDoubleClick(MouseEvent e)
+        {
+            //handleColumnClick(e, true);
+        }
+
+        public void mouseDown(MouseEvent e)
+        {
+        }
+
+        public void mouseUp(MouseEvent e)
+        {
+            handleColumnClick(e);
+        }
+
+        private void handleColumnClick(MouseEvent e) {
+            // Clean up any previous editor control
+            disposeOldEditor();
+
+            TableItem item = columnsTable.getItem(new Point(e.x, e.y));
+            if (item == null) {
+                return;
+            }
+            int columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
+            if (columnIndex <= 0) {
+                return;
+            }
+            if (columnIndex == 1) {
+                showTypeSelector(item);
+            } else if (columnIndex == 2) {
+                showEditor(item);
+            }
+        }
+
+        private void showTypeSelector(TableItem item)
+        {
+        }
+
+        private void showEditor(final TableItem item) {
+            SQLStatementParameter param = (SQLStatementParameter)item.getData();
+            if (!param.isResolved()) {
+                return;
+            }
+            final DBDValueHandler valueHandler = param.getValueHandler();
+            //valueHandler.editValue()
+            //tableEditor.setEditor(control, item, 2);
+        }
+    }
+
 }
