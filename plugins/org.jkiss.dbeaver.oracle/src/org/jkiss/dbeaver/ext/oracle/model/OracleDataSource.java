@@ -150,9 +150,14 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
                         getClass().getClassLoader());
                 String driverClassName = driverDescriptor.getDriverClassName();
                 try {
-                    cl.loadClass(driverClassName);
+                    final Class<?> driverClass = cl.loadClass(driverClassName);
+                    return (Driver) driverClass.newInstance();
                 } catch (ClassNotFoundException ex) {
                     throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
+                } catch (InstantiationException ex) {
+                    throw new DBException("Can't create driver class '" + driverClassName + "'", ex);
+                } catch (IllegalAccessException ex) {
+                    throw new DBException("Can't create driver class '" + driverClassName + "'", ex);
                 }
             }
         }
