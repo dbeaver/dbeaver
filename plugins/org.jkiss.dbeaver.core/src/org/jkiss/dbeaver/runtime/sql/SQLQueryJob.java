@@ -8,6 +8,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,6 +42,7 @@ public class SQLQueryJob extends DataSourceJob
     private static final int SUBTASK_COUNT = 5;
     //private static final int DEFAULT_MAX_ROWS = 500;
 
+    private SQLEditorBase editor;
     private List<SQLStatementInfo> queries;
     private DBDDataReceiver dataReceiver;
 
@@ -61,14 +63,15 @@ public class SQLQueryJob extends DataSourceJob
 
     public SQLQueryJob(
         String name,
-        DBPDataSource dataSource,
+        SQLEditorBase editor,
         List<SQLStatementInfo> queries,
         DBDDataReceiver dataReceiver)
     {
         super(
             name,
             DBIcon.SQL_SCRIPT_EXECUTE.getImageDescriptor(),
-            dataSource);
+            editor.getDataSource());
+        this.editor = editor;
         this.queries = queries;
         this.dataReceiver = dataReceiver;
 
@@ -359,7 +362,7 @@ public class SQLQueryJob extends DataSourceJob
             public void run()
             {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                    shell,
+                    editor.getSite(),
                     getDataSource(),
                     parameters);
                 result = (dialog.open() == IDialogConstants.OK_ID);

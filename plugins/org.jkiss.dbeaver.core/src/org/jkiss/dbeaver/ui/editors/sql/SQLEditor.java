@@ -425,7 +425,7 @@ public class SQLEditor extends SQLEditorBase
             final boolean isSingleQuery = (queries.size() == 1);
             final SQLQueryJob job = new SQLQueryJob(
                 isSingleQuery ? "Execute query" : "Execute script",
-                getDataSource(),
+                this,
                 queries,
                 resultsView.getDataReceiver());
             job.addQueryListener(new ISQLQueryListener() {

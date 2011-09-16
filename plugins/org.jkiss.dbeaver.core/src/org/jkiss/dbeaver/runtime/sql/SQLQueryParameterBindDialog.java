@@ -14,6 +14,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
@@ -21,7 +22,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -38,13 +38,17 @@ import java.util.List;
  */
 public class SQLQueryParameterBindDialog extends StatusDialog {
 
+    private IWorkbenchPartSite ownerSite;
     private DBPDataSource dataSource;
     private List<SQLStatementParameter> parameters;
     private List<DBSDataType> validDataTypes = new ArrayList<DBSDataType>();
+    private TableEditor tableEditor;
+    private Table paramTable;
 
-    protected SQLQueryParameterBindDialog(Shell shell, DBPDataSource dataSource, List<SQLStatementParameter> parameters)
+    protected SQLQueryParameterBindDialog(IWorkbenchPartSite ownerSite, DBPDataSource dataSource, List<SQLStatementParameter> parameters)
     {
-        super(shell);
+        super(ownerSite.getShell());
+        this.ownerSite = ownerSite;
         this.dataSource = dataSource;
         this.parameters = parameters;
 
@@ -85,7 +89,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         getShell().setText("Bind parameter(s)");
         final Composite composite = (Composite)super.createDialogArea(parent);
 
-        Table paramTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        paramTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         gd.heightHint = 200;
@@ -93,7 +97,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         paramTable.setHeaderVisible(true);
         paramTable.setLinesVisible(true);
 
-        TableEditor tableEditor = new TableEditor(paramTable);
+        tableEditor = new TableEditor(paramTable);
         tableEditor.horizontalAlignment = SWT.LEFT;
         tableEditor.verticalAlignment = SWT.TOP;
         tableEditor.grabHorizontal = true;
@@ -118,24 +122,18 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
         }
 
+        paramTable.addMouseListener(new ParametersMouseListener());
+
         return composite;
     }
 
+    private void disposeOldEditor()
+    {
+        Control oldEditor = tableEditor.getEditor();
+        if (oldEditor != null) oldEditor.dispose();
+    }
+
     private class ParametersMouseListener implements MouseListener {
-        private final TableEditor tableEditor;
-        private final Table columnsTable;
-
-        public ParametersMouseListener(TableEditor tableEditor, Table columnsTable)
-        {
-            this.tableEditor = tableEditor;
-            this.columnsTable = columnsTable;
-        }
-
-        private void disposeOldEditor()
-        {
-            Control oldEditor = tableEditor.getEditor();
-            if (oldEditor != null) oldEditor.dispose();
-        }
 
         public void mouseDoubleClick(MouseEvent e)
         {
@@ -155,17 +153,17 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             // Clean up any previous editor control
             disposeOldEditor();
 
-            TableItem item = columnsTable.getItem(new Point(e.x, e.y));
+            TableItem item = paramTable.getItem(new Point(e.x, e.y));
             if (item == null) {
                 return;
             }
             int columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
-            if (columnIndex <= 0) {
+            if (columnIndex <= 1) {
                 return;
             }
-            if (columnIndex == 1) {
+            if (columnIndex == 2) {
                 showTypeSelector(item);
-            } else if (columnIndex == 2) {
+            } else if (columnIndex == 3) {
                 showEditor(item);
             }
         }
@@ -180,18 +178,33 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 return;
             }
             final DBDValueHandler valueHandler = param.getValueHandler();
-            //valueHandler.editValue()
-            //tableEditor.setEditor(control, item, 2);
+            Composite placeholder = UIUtils.createPlaceholder(paramTable, 1);
+            ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
+            try {
+                if (valueHandler.editValue(valueController)) {
+                    tableEditor.setEditor(placeholder, item, 3);
+                } else {
+                    // No editor was created so just drop placeholder
+                    placeholder.dispose();
+                }
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(getShell(), "Can't open editor", null, e);
+                placeholder.dispose();
+            }
         }
     }
 
     private class ParameterValueController implements DBDValueController {
 
         private final SQLStatementParameter parameter;
+        private final Composite placeholder;
+        private final TableItem item;
 
-        private ParameterValueController(SQLStatementParameter parameter)
+        private ParameterValueController(SQLStatementParameter parameter, Composite placeholder, TableItem item)
         {
             this.parameter = parameter;
+            this.placeholder = placeholder;
+            this.item = item;
         }
 
         public DBPDataSource getDataSource()
@@ -212,6 +225,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         public void updateValue(Object value)
         {
             parameter.setValue(value);
+            item.setText(3, getValueHandler().getValueDisplayString(parameter, value));
         }
 
         public DBDValueHandler getValueHandler()
@@ -231,16 +245,17 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
         public IWorkbenchPartSite getValueSite()
         {
-            return null;
+            return ownerSite;
         }
 
         public Composite getInlinePlaceholder()
         {
-            return null;
+            return placeholder;
         }
 
         public void closeInlineEditor()
         {
+            disposeOldEditor();
         }
 
         public void nextInlineEditor(boolean next)
