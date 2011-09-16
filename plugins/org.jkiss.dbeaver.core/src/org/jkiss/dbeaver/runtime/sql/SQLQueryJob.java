@@ -296,7 +296,7 @@ public class SQLQueryJob extends DataSourceJob
                         param.getValueHandler().bindValueObject(
                             context,
                             curStatement,
-                            param.getParamType(),
+                            param,
                             param.getIndex(),
                             param.getValue());
                     }

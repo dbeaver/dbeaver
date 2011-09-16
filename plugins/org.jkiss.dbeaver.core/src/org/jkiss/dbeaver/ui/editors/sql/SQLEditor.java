@@ -383,6 +383,10 @@ public class SQLEditor extends SQLEditorBase
                 hasValuableTokens = true;
             }
         }
+        // Parse parameters
+        for (SQLStatementInfo statementInfo : queryList) {
+            statementInfo.parseParameters(getDocument(), getSyntaxManager());
+        }
         return queryList;
     }
 
