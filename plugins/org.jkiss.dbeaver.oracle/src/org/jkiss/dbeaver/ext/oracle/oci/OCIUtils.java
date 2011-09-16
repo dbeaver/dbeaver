@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.oracle.oci;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.utils.WinRegistry;
 
@@ -15,10 +14,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -26,12 +27,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class OCIUtils {
+public class OCIUtils
+{
     static final Log log = LogFactory.getLog(OCIUtils.class);
 
     public static final String WIN_32 = "win32";
 
-    private static void addOraHome(List<String> homes, String oraHome) {
+    private static void addOraHome(List<String> homes, String oraHome)
+    {
         String sep = System.getProperty("file.separator");
         if (oraHome.endsWith(sep)) {
             oraHome = oraHome.substring(0, oraHome.length() - 1);
@@ -55,7 +58,8 @@ public class OCIUtils {
      * Searches Oracle home locations.
      * @return a list of Oracle home locations pathes
      */
-    public static List<String> findOraHomes() {
+    public static List<String> findOraHomes()
+    {
         List<String> homes = new ArrayList<String>();
         String sep = System.getProperty("file.separator");
 
@@ -112,7 +116,8 @@ public class OCIUtils {
      * @param oraHome path of Oracle home location
      * @return TNS aliases list
      */
-    public static ArrayList<String> getOraServiceNames(String oraHome) {
+    public static ArrayList<String> getOraServiceNames(String oraHome)
+    {
         ArrayList<String> aliases = new ArrayList<String>();
 
         // parse TNSNAMES.ORA file
@@ -146,27 +151,62 @@ public class OCIUtils {
         return aliases;
     }
 
-    public static boolean isOciDriver(DBPDriver driver) {
+    public static boolean isOciDriver(DBPDriver driver)
+    {
         return "oracle_oci".equals(driver.getId());
     }
 
-    public static List<String> getLibraries(String oraHome) {
+    private static List<String> getRequiredJars(String oraHome)
+    {
         String sep = System.getProperty("file.separator");
         if (!oraHome.endsWith(sep)) {
             oraHome = oraHome + sep;
         }
         List<String> list = new ArrayList<String>();
-        list.add(oraHome + sep + "jdbc" + sep + "lib" + sep + "ojdbc14.jar");
+        Integer oracleVersion = getOracleVersion(oraHome);
+        String jdbcDriverJar;
+        switch (oracleVersion) {
+            case 8:
+                list.add(oraHome + "jdbc/lib/classes12.zip"); // JDBC drivers to connect to a 9i database. (JDK 1.2.x)
+                list.add(oraHome + "jdbc/lib/nls_charset12.zip"); // Additional National Language character set support 
+                break;
+            case 9:
+                list.add(oraHome + "jdbc/lib/ojdbc14.jar"); // JDBC classes (JDK 1.4)
+                list.add(oraHome + "jdbc/lib/ocrs12.jar "); // Additional RowSet support  
+                break;
+            case 10:
+                list.add(oraHome + "jdbc/lib/ojdbc14.jar"); // JDBC classes (JDK 1.4 and 1.5)
+                list.add(oraHome + "lib/xml.jar");
+                list.add(oraHome + "lib/xmlcomp.jar");
+                list.add(oraHome + "lib/xmlcomp2.jar");
+                list.add(oraHome + "lib/xmlmesg.jar");
+                list.add(oraHome + "lib/xmlparserv2.jar");
+                break;
+            case 11:
+                list.add(oraHome + "jdbc/lib/ojdbc6.jar"); // Classes for use with JDK 1.6. It contains the JDBC driver classes except classes for NLS support in Oracle Object and Collection types.
+                //addDriverJar2list(list, oraHome, "ojdbc5.zip"); // Classes for use with JDK 1.5. It contains the JDBC driver classes, except classes for NLS support in Oracle Object and Collection types.
+                list.add(oraHome + "jdbc/lib/orai18n.jar"); //NLS classes for use with JDK 1.5, and 1.6. It contains classes for NLS support in Oracle Object and Collection types. This jar file replaces the old nls_charset jar/zip files.
+                list.add(oraHome + "lib/xml.jar");
+                list.add(oraHome + "lib/xmlcomp.jar");
+                list.add(oraHome + "lib/xmlcomp2.jar");
+                list.add(oraHome + "lib/xmlmesg.jar");
+                list.add(oraHome + "lib/xmlparserv2.jar");
+                break;
+        }
         return list;
     }
 
-    public static URL[] getLibrariesArray(String oraHome) {
-        List<String> libraries = getLibraries(oraHome);
+    public static URL[] getLibraries(String oraHome)
+    {
+        List<String> libraries = getRequiredJars(oraHome);
         List<File> files = new ArrayList<File>();
         for (String library : libraries) {
             File file  = new File(library);
             if (file != null && file.exists()) {
                 files.add(file);
+            }
+            else {
+                log.warn("Driver file '" + library + "' doesn't exist.");
             }
         }
         int i = 0;
@@ -181,7 +221,8 @@ public class OCIUtils {
         return urls;
     }
 
-    public static Integer getOracleVersion(String oraHome) {
+    public static Integer getOracleVersion(String oraHome)
+    {
         String sep = System.getProperty("file.separator");
         if (!oraHome.endsWith(sep)) {
             oraHome = oraHome + sep;
@@ -200,4 +241,5 @@ public class OCIUtils {
         }
         return null;
     }
+
 }
