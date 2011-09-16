@@ -42,7 +42,7 @@ public class OCIClassLoader extends URLClassLoader
     {
         String nativeName = System.mapLibraryName(libname);
         for (File library : oraHomeLibraries) {
-            if (library.getName().equalsIgnoreCase(libname)) {
+            if (library.getName().equalsIgnoreCase(nativeName)) {
                 return library.getAbsolutePath();
             }
         }
