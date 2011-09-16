@@ -10,6 +10,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.data.DBDColumnController;
 import org.jkiss.dbeaver.model.data.DBDRowController;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
@@ -28,10 +29,12 @@ public class ColumnInfoPanel extends Composite {
 
     public ColumnInfoPanel(Composite parent, int style, DBDValueController valueController) {
         super(parent, style);
-        this.createPanel(valueController);
+        if (valueController instanceof DBDColumnController) {
+            this.createPanel((DBDColumnController) valueController);
+        }
     }
 
-    protected void createPanel(DBDValueController valueController)
+    protected void createPanel(DBDColumnController valueController)
     {
         PropertyCollector infoItem = new PropertyCollector(valueController.getColumnMetaData(), false);
         infoItem.addProperty("Table_Name", "Table Name", valueController.getColumnMetaData().getTableName());
@@ -78,9 +81,9 @@ public class ColumnInfoPanel extends Composite {
     }
 
     public static class CellKeyInfo implements DBPObject {
-        private DBDValueController valueController;
+        private DBDColumnController valueController;
 
-        private CellKeyInfo(DBDValueController valueController)
+        private CellKeyInfo(DBDColumnController valueController)
         {
             this.valueController = valueController;
         }

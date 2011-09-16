@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -180,28 +177,29 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        DBCColumnMetaData meta = valueController.getColumnMetaData();
-        shell.setText(meta.getTableName() + "." + meta.getName());
+        DBSColumnBase meta = valueController.getColumnMetaData();
+        shell.setText(meta.getName());
     }
 
     protected abstract Object getEditorValue();
 
     private DBSForeignKey getEnumerableConstraint()
     {
-        DBSForeignKey constraint = DBUtils.getUniqueForeignConstraint(valueController.getColumnMetaData());
-        if (constraint != null &&
-            constraint.getReferencedKey() instanceof DBSConstraintEnumerable &&
-            ((DBSConstraintEnumerable)constraint.getReferencedKey()).supportsEnumeration())
-        {
-            return constraint;
-        } else {
-            return null;
+        if (valueController instanceof DBDColumnController) {
+            DBSForeignKey constraint = DBUtils.getUniqueForeignConstraint(((DBDColumnController)valueController).getColumnMetaData());
+            if (constraint != null &&
+                constraint.getReferencedKey() instanceof DBSConstraintEnumerable &&
+                ((DBSConstraintEnumerable)constraint.getReferencedKey()).supportsEnumeration())
+            {
+                return constraint;
+            }
         }
+        return null;
     }
 
     protected void createEditorSelector(Composite parent, Text control)
     {
-        if (getValueController().isReadOnly()) {
+        if (!(valueController instanceof DBDColumnController) || valueController.isReadOnly()) {
             return;
         }
         refConstraint = getEnumerableConstraint();
@@ -306,7 +304,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         {
             final Map<Object, String> keyValues = new TreeMap<Object, String>();
             try {
-                final DBSForeignKeyColumn fkColumn = (DBSForeignKeyColumn)refConstraint.getColumn(monitor, valueController.getColumnMetaData().getTableColumn(monitor));
+                DBDColumnController columnController = (DBDColumnController)valueController;
+                final DBSForeignKeyColumn fkColumn = (DBSForeignKeyColumn)refConstraint.getColumn(monitor, columnController.getColumnMetaData().getTableColumn(monitor));
                 if (fkColumn == null) {
                     return Status.OK_STATUS;
                 }
@@ -322,10 +321,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                                 // Enough
                                 break;
                             }
-                            DBCColumnMetaData precMeta = valueController.getRow().getColumnMetaData(
-                                valueController.getColumnMetaData().getTable(), precColumn.getTableColumn().getName());
+                            DBCColumnMetaData precMeta = columnController.getRow().getColumnMetaData(
+                                columnController.getColumnMetaData().getTable(), precColumn.getTableColumn().getName());
                             if (precMeta != null) {
-                                Object precValue = valueController.getRow().getColumnValue(precMeta);
+                                Object precValue = columnController.getRow().getColumnValue(precMeta);
                                 preceedingKeys.add(new DBDColumnValue(precColumn.getTableColumn(), precValue));
                             }
                         }
@@ -346,7 +345,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                     if (monitor.isCanceled()) {
                         return Status.CANCEL_STATUS;
                     }
-                    valueController.getValueSite().getShell().getDisplay().syncExec(new Runnable() {
+                    getShell().getDisplay().syncExec(new Runnable() {
                         public void run()
                         {
                             DBDValueHandler colHandler = DBUtils.getColumnValueHandler(context, fkColumn.getReferencedColumn());

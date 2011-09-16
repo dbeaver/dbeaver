@@ -258,7 +258,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
         // Open LOB editor
         Object value = controller.getValue();
-        if (value instanceof DBDContent) {
+        if (value instanceof DBDContent && controller instanceof DBDColumnController) {
             DBDContent content = (DBDContent)value;
             boolean isText = ContentUtils.isTextContent(content);
             List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
@@ -273,7 +273,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 parts.add(new ContentImageEditorPart());
             }
             return ContentEditor.openEditor(
-                controller,
+                (DBDColumnController)controller,
                 parts.toArray(new IContentEditorPart[parts.size()]) );
         } else {
             controller.showMessage("Unsupported content value type", true);

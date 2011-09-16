@@ -1437,7 +1437,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return -1;
     }
 
-    private class ResultSetValueController implements DBDValueController, DBDRowController {
+    private class ResultSetValueController implements DBDColumnController, DBDRowController {
 
         private DBDColumnBinding[] columns;
         private Object[] curRow;

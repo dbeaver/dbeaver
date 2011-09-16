@@ -11,8 +11,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -44,7 +44,7 @@ public class DateTimeViewDialog extends ValueViewDialog {
             style |= SWT.READ_ONLY;
         }
 
-        DBCColumnMetaData column = getValueController().getColumnMetaData();
+        DBSColumnBase column = getValueController().getColumnMetaData();
         boolean isDate = column.getValueType() == java.sql.Types.DATE;
         boolean isTime = column.getValueType() == java.sql.Types.TIME;
         boolean isTimeStamp = column.getValueType() == java.sql.Types.TIMESTAMP;

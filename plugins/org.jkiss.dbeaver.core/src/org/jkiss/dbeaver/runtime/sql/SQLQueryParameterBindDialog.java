@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.runtime.sql;
 
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
@@ -12,14 +13,20 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueLocator;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -175,6 +182,82 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             final DBDValueHandler valueHandler = param.getValueHandler();
             //valueHandler.editValue()
             //tableEditor.setEditor(control, item, 2);
+        }
+    }
+
+    private class ParameterValueController implements DBDValueController {
+
+        private final SQLStatementParameter parameter;
+
+        private ParameterValueController(SQLStatementParameter parameter)
+        {
+            this.parameter = parameter;
+        }
+
+        public DBPDataSource getDataSource()
+        {
+            return dataSource;
+        }
+
+        public DBSColumnBase getColumnMetaData()
+        {
+            return parameter;
+        }
+
+        public Object getValue()
+        {
+            return parameter.getValue();
+        }
+
+        public void updateValue(Object value)
+        {
+            parameter.setValue(value);
+        }
+
+        public DBDValueHandler getValueHandler()
+        {
+            return parameter.getValueHandler();
+        }
+
+        public boolean isInlineEdit()
+        {
+            return true;
+        }
+
+        public boolean isReadOnly()
+        {
+            return false;
+        }
+
+        public IWorkbenchPartSite getValueSite()
+        {
+            return null;
+        }
+
+        public Composite getInlinePlaceholder()
+        {
+            return null;
+        }
+
+        public void closeInlineEditor()
+        {
+        }
+
+        public void nextInlineEditor(boolean next)
+        {
+        }
+
+        public void registerEditor(DBDValueEditor editor)
+        {
+        }
+
+        public void unregisterEditor(DBDValueEditor editor)
+        {
+        }
+
+        public void showMessage(String message, boolean error)
+        {
+            updateStatus(new Status(error ? Status.ERROR : Status.INFO, DBeaverConstants.PLUGIN_ID, message));
         }
     }
 

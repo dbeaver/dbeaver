@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.content;
 
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,13 +21,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
-import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -41,15 +37,13 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
 {
     static final Log log = LogFactory.getLog(ContentEditorInput.class);
 
-    private DBDValueController valueController;
+    private DBDColumnController valueController;
     private IContentEditorPart[] editorParts;
     private IFile contentFile;
     private boolean contentDetached = false;
 
-    private DBNDatabaseNode databaseNode;
-
     ContentEditorInput(
-        DBDValueController valueController,
+        DBDColumnController valueController,
         IContentEditorPart[] editorParts,
         DBRProgressMonitor monitor)
         throws DBException

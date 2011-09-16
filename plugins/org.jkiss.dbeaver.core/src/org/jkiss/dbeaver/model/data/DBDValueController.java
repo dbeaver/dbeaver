@@ -8,6 +8,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * DBD Value Controller
@@ -22,22 +24,10 @@ public interface DBDValueController
     DBPDataSource getDataSource();
 
     /**
-     * Row controller
-     * @return row controller
-     */
-    DBDRowController getRow();
-
-    /**
      * Column meta data
      * @return meta data
      */
-    DBCColumnMetaData getColumnMetaData();
-
-    /**
-     * Column unique ID string
-     * @return string
-     */
-    String getColumnId();
+    DBSColumnBase getColumnMetaData();
 
     /**
      * Column value
@@ -50,8 +40,6 @@ public interface DBDValueController
      * @param value value
      */
     void updateValue(Object value);
-
-    DBDValueLocator getValueLocator();
 
     DBDValueHandler getValueHandler();
 

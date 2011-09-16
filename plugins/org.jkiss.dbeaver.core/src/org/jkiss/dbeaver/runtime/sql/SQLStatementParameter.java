@@ -6,13 +6,14 @@ package org.jkiss.dbeaver.runtime.sql;
 
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * SQL statement parameter info
  */
-public class SQLStatementParameter implements DBSTypedObject {
+public class SQLStatementParameter implements DBSColumnBase {
     private DBDValueHandler valueHandler;
     private DBSDataType paramType;
     private int index;
@@ -65,6 +66,16 @@ public class SQLStatementParameter implements DBSTypedObject {
     public String getName()
     {
         return name;
+    }
+
+    public boolean isNotNull()
+    {
+        return false;
+    }
+
+    public long getMaxLength()
+    {
+        return 0;
     }
 
     public Object getValue()
