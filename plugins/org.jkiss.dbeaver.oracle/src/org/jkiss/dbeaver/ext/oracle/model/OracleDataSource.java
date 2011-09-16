@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URLClassLoader;
 import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -144,18 +145,14 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
             Object ora_home = connectionProperties.get(OracleConstants.PROP_ORA_HOME);
             if (ora_home != null) {
                 DriverDescriptor driverDescriptor = (DriverDescriptor) driver;
-                List<DriverFileDescriptor> files = driverDescriptor.getFiles();
-                for (String library : OCIUtils.getLibraries((String)ora_home)) {
-                    boolean contains = false;
-                    for (DriverFileDescriptor file : files) {
-                        if (file.getPath().equals(library)) {
-                            contains = true;
-                            break;
-                        }
-                    }
-                    if (!contains) {
-                        files.add(new DriverFileDescriptor(driverDescriptor, library));
-                    }
+                ClassLoader cl = new URLClassLoader(
+                        OCIUtils.getLibrariesArray((String)ora_home),
+                        getClass().getClassLoader());
+                String driverClassName = driverDescriptor.getDriverClassName();
+                try {
+                    cl.loadClass(driverClassName);
+                } catch (ClassNotFoundException ex) {
+                    throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
                 }
             }
         }

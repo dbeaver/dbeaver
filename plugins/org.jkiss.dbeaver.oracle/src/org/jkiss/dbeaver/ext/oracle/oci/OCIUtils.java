@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ext.oracle.oci;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.utils.WinRegistry;
@@ -14,6 +16,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -22,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class OCIUtils {
+    static final Log log = LogFactory.getLog(OCIUtils.class);
 
     public static final String WIN_32 = "win32";
 
@@ -152,5 +157,26 @@ public class OCIUtils {
         List<String> list = new ArrayList<String>();
         list.add(oraHome + sep + "jdbc" + sep + "lib" + sep + "ojdbc14.jar");
         return list;
+    }
+
+    public static URL[] getLibrariesArray(String oraHome) {
+        List<String> libraries = getLibraries(oraHome);
+        List<File> files = new ArrayList<File>();
+        for (String library : libraries) {
+            File file  = new File(library);
+            if (file != null && file.exists()) {
+                files.add(file);
+            }
+        }
+        int i = 0;
+        URL[] urls = new URL[files.size()];
+        for (File file : files) {
+            try {
+                urls[i++] = file.toURI().toURL();
+            } catch (MalformedURLException e) {
+                log.warn("File '" + file.getAbsolutePath() + "' can't be converted to url.");
+            }
+        }
+        return urls;
     }
 }
