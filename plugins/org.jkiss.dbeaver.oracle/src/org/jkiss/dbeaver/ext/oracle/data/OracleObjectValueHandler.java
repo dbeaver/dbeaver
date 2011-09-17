@@ -47,6 +47,11 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
         throw new DBCException("Parameter bind is not implemented");
     }
 
+    public int getFeatures()
+    {
+        return FEATURE_NONE;
+    }
+
     public Class getValueObjectType()
     {
         return java.lang.Object.class;

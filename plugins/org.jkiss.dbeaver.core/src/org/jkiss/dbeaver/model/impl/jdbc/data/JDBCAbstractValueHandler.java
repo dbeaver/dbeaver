@@ -100,7 +100,6 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         final T control,
         final ValueExtractor<T> extractor)
     {
-        control.setLayoutData(new GridData(GridData.FILL_BOTH));
         control.setFont(controller.getInlinePlaceholder().getFont());
         control.addTraverseListener(new TraverseListener() {
             public void keyTraversed(TraverseEvent e)

@@ -458,7 +458,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
             for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
                 if (getCachedObject(predefinedType.getKey()) == null) {
                     cacheObject(
-                        new OracleDataType(null, predefinedType.getKey(), true));
+                        new OracleDataType(owner, predefinedType.getKey(), true));
                 }
             }
         }

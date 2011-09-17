@@ -215,6 +215,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    public int getFeatures()
+    {
+        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
+    }
+
     public Class getValueObjectType()
     {
         return Number.class;

@@ -61,6 +61,11 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
         throw new DBCException("Unsupported value type: " + value);
     }
 
+    public int getFeatures()
+    {
+        return FEATURE_NONE;
+    }
+
     public Class getValueObjectType()
     {
         return Struct.class;

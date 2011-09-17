@@ -103,7 +103,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             boolean isTime = controller.getColumnMetaData().getValueType() == java.sql.Types.TIME;
             boolean isTimeStamp = controller.getColumnMetaData().getValueType() == java.sql.Types.TIMESTAMP;
 
-            final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.DATE | SWT.LONG | SWT.DROP_DOWN) : null;
+            final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN) : null;
             final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.TIME | SWT.LONG) : null;
 
             if (dateEditor != null) {
@@ -155,6 +155,11 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         default:
             return getFormatter(TYPE_NAME_TIMESTAMP).formatValue(value);
         }
+    }
+
+    public int getFeatures()
+    {
+        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
     }
 
     public Class getValueObjectType()

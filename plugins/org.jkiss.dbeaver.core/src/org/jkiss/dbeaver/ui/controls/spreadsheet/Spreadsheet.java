@@ -6,7 +6,10 @@ package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
@@ -20,14 +23,13 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.swt.IFocusService;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -607,12 +609,7 @@ public class Spreadsheet extends Composite implements Listener {
 
             placeholder = new Composite(grid, SWT.NONE);
             placeholder.setFont(grid.getFont());
-            GridLayout layout = new GridLayout(1, true);
-            layout.marginWidth = 0;
-            layout.marginHeight = 0;
-            layout.horizontalSpacing = 0;
-            layout.verticalSpacing = 0;
-            placeholder.setLayout(layout);
+            placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
 
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalIndent = 0;
@@ -653,8 +650,8 @@ public class Spreadsheet extends Composite implements Listener {
         Control oldEditor = tableEditor.getEditor();
         if (oldEditor != null) {
             oldEditor.dispose();
-            this.setFocus();
             tableEditor.setEditor(null);
+            this.getGrid().setFocus();
         }
     }
 

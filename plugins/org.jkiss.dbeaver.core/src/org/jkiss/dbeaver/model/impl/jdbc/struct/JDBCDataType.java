@@ -73,39 +73,7 @@ public class JDBCDataType implements DBSDataType
 
     public DBSDataKind getDataKind()
     {
-        switch (valueType) {
-            case java.sql.Types.BOOLEAN:
-                return DBSDataKind.BOOLEAN;
-            case java.sql.Types.CHAR:
-            case java.sql.Types.VARCHAR:
-            case java.sql.Types.LONGVARCHAR:
-                return DBSDataKind.STRING;
-            case java.sql.Types.BIGINT:
-            case java.sql.Types.BIT:
-            case java.sql.Types.DECIMAL:
-            case java.sql.Types.DOUBLE:
-            case java.sql.Types.FLOAT:
-            case java.sql.Types.INTEGER:
-            case java.sql.Types.NUMERIC:
-            case java.sql.Types.REAL:
-            case java.sql.Types.SMALLINT:
-            case java.sql.Types.TINYINT:
-                return DBSDataKind.NUMERIC;
-            case java.sql.Types.DATE:
-            case java.sql.Types.TIME:
-            case java.sql.Types.TIMESTAMP:
-                return DBSDataKind.DATETIME;
-            case java.sql.Types.BLOB:
-            case java.sql.Types.CLOB:
-            case java.sql.Types.VARBINARY:
-            case java.sql.Types.LONGVARBINARY:
-                return DBSDataKind.LOB;
-            case java.sql.Types.STRUCT:
-                return DBSDataKind.STRUCT;
-            case java.sql.Types.ARRAY:
-                return DBSDataKind.ARRAY;
-        }
-        return DBSDataKind.UNKNOWN;
+        return getDataKind(valueType);
     }
 
     public boolean isUnsigned()
@@ -142,4 +110,42 @@ public class JDBCDataType implements DBSDataType
     {
         return true;
     }
+
+    public static DBSDataKind getDataKind(int valueType)
+    {
+        switch (valueType) {
+            case java.sql.Types.BOOLEAN:
+                return DBSDataKind.BOOLEAN;
+            case java.sql.Types.CHAR:
+            case java.sql.Types.VARCHAR:
+            case java.sql.Types.LONGVARCHAR:
+                return DBSDataKind.STRING;
+            case java.sql.Types.BIGINT:
+            case java.sql.Types.BIT:
+            case java.sql.Types.DECIMAL:
+            case java.sql.Types.DOUBLE:
+            case java.sql.Types.FLOAT:
+            case java.sql.Types.INTEGER:
+            case java.sql.Types.NUMERIC:
+            case java.sql.Types.REAL:
+            case java.sql.Types.SMALLINT:
+            case java.sql.Types.TINYINT:
+                return DBSDataKind.NUMERIC;
+            case java.sql.Types.DATE:
+            case java.sql.Types.TIME:
+            case java.sql.Types.TIMESTAMP:
+                return DBSDataKind.DATETIME;
+            case java.sql.Types.BLOB:
+            case java.sql.Types.CLOB:
+            case java.sql.Types.VARBINARY:
+            case java.sql.Types.LONGVARBINARY:
+                return DBSDataKind.LOB;
+            case java.sql.Types.STRUCT:
+                return DBSDataKind.STRUCT;
+            case java.sql.Types.ARRAY:
+                return DBSDataKind.ARRAY;
+        }
+        return DBSDataKind.UNKNOWN;
+    }
+
 }

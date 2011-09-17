@@ -66,6 +66,11 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         throw new DBCException("Unsupported value type: " + value);
     }
 
+    public int getFeatures()
+    {
+        return FEATURE_VIEWER;
+    }
+
     public Class getValueObjectType()
     {
         return Object.class;

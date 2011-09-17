@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -251,7 +252,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
 
     public DBSDataKind getDataKind()
     {
-        return DBSDataKind.UNKNOWN;
+        return JDBCDataType.getDataKind(valueType);
     }
 
     public int getPrecision()

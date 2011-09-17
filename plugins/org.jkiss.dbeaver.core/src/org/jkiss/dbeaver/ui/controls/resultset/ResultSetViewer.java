@@ -809,6 +809,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             // No inline editors for readonly columns
             return false;
         }
+        final int handlerFeatures = metaColumn.getValueHandler().getFeatures();
+        if (handlerFeatures == DBDValueHandler.FEATURE_NONE) {
+            return false;
+        }
         ResultSetValueController valueController = new ResultSetValueController(
             curRows.get(rowIndex),
             columnIndex,

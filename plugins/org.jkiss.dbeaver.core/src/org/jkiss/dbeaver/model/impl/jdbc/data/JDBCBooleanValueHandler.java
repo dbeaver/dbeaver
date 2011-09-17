@@ -47,6 +47,11 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    public int getFeatures()
+    {
+        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
+    }
+
     public Class getValueObjectType()
     {
         return Boolean.class;

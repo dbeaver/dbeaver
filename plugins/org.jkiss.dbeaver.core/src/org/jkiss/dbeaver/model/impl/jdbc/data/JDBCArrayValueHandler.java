@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDArray;
-import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -61,6 +60,11 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         throws DBCException, SQLException
     {
         throw new DBCException("Unsupported value type: " + value);
+    }
+
+    public int getFeatures()
+    {
+        return FEATURE_NONE;
     }
 
     public Class getValueObjectType()

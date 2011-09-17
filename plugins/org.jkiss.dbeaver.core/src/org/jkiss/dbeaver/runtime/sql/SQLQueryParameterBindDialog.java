@@ -7,10 +7,14 @@ package org.jkiss.dbeaver.runtime.sql;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -23,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
@@ -54,22 +59,21 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
         if (dataSource instanceof DBPDataTypeProvider) {
             for (DBSDataType dataType : ((DBPDataTypeProvider)dataSource).getDataTypes()) {
-                switch (dataType.getDataKind()) {
-                    case UNKNOWN:
-                    case LOB:
-                    case BINARY:
-                        continue;
+                if (dataType.getDataKind() == DBSDataKind.UNKNOWN) {
+                    continue;
                 }
                 final DataTypeProviderDescriptor dataTypeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(dataSource, dataType.getName(), dataType.getValueType());
                 if (dataTypeProvider != null) {
-                    validDataTypes.add(dataType);
+                    final DBDValueHandler handler = dataTypeProvider.getInstance().getHandler(dataSource.getContainer(), dataType.getName(), dataType.getValueType());
+                    if (handler != null && (handler.getFeatures() & DBDValueHandler.FEATURE_INLINE_EDITOR) != 0) {
+                        validDataTypes.add(dataType);
+                    }
                 }
-                //dataTypeProvider.getInstance().getHandler(dataType.getName(), dataType.getValueType());
             }
         }
 
         for (SQLStatementParameter param : this.parameters) {
-            final DBSDataType dataType = DBUtils.findBestDataType(((DBPDataTypeProvider) dataSource).getDataTypes(), DBConstants.DEFAULT_DATATYPE_NAMES);
+            final DBSDataType dataType = DBUtils.findBestDataType(validDataTypes, DBConstants.DEFAULT_DATATYPE_NAMES);
             if (dataType != null) {
                 param.setParamType(dataType);
                 param.resolve();
@@ -98,9 +102,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         paramTable.setLinesVisible(true);
 
         tableEditor = new TableEditor(paramTable);
-        tableEditor.horizontalAlignment = SWT.LEFT;
+        tableEditor.horizontalAlignment = SWT.RIGHT;
         tableEditor.verticalAlignment = SWT.TOP;
         tableEditor.grabHorizontal = true;
+        tableEditor.grabVertical = true;
 
         final TableColumn indexColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "#");
         indexColumn.setWidth(30);
@@ -118,8 +123,6 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             item.setText(1, param.getTitle());
             item.setText(2, CommonUtils.toString(param.getTypeName()));
             item.setText(3, CommonUtils.toString(param.getValue()));
-
-
         }
 
         paramTable.addMouseListener(new ParametersMouseListener());
@@ -168,8 +171,30 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             }
         }
 
-        private void showTypeSelector(TableItem item)
+        private void showTypeSelector(final TableItem item)
         {
+            final SQLStatementParameter param = (SQLStatementParameter)item.getData();
+            final CCombo typeSelector = new CCombo(paramTable, SWT.DROP_DOWN | SWT.READ_ONLY);
+            int selectionIndex = 0;
+            for (DBSDataType dataType : validDataTypes) {
+                typeSelector.add(dataType.getName());
+                if (param.getParamType() == dataType) {
+                    selectionIndex = typeSelector.getItemCount() - 1;
+                }
+            }
+            typeSelector.select(selectionIndex);
+            typeSelector.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    final DBSDataType paramType = validDataTypes.get(typeSelector.getSelectionIndex());
+                    param.setParamType(paramType);
+                    item.setText(2, paramType.getName());
+                    param.resolve();
+                }
+            });
+
+            tableEditor.setEditor(typeSelector, item, 2);
         }
 
         private void showEditor(final TableItem item) {
@@ -178,7 +203,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 return;
             }
             final DBDValueHandler valueHandler = param.getValueHandler();
-            Composite placeholder = UIUtils.createPlaceholder(paramTable, 1);
+            Composite placeholder = new Composite(paramTable, SWT.NONE);
+            placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
             ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
             try {
                 if (valueHandler.editValue(valueController)) {

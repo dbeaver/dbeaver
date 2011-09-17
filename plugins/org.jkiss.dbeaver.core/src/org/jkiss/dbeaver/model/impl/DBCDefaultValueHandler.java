@@ -24,6 +24,11 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     public static final DBCDefaultValueHandler INSTANCE = new DBCDefaultValueHandler();
 
+    public int getFeatures()
+    {
+        return FEATURE_NONE;
+    }
+
     public Class getValueObjectType()
     {
         return Object.class;

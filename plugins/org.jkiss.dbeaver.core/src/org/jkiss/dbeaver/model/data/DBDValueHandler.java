@@ -16,11 +16,19 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
  */
 public interface DBDValueHandler 
 {
+
+    public static final int FEATURE_NONE = 0;
+    public static final int FEATURE_VIEWER = 1;
+    public static final int FEATURE_EDITOR = 2;
+    public static final int FEATURE_INLINE_EDITOR = 4;
+
+    int getFeatures();
+
     /**
      * Gets value object's type.
      * May return base interface of object's type -
      * it is not required to return exact implementation class
-     * (moreover it may be unknown before certin value is extracted)
+     * (moreover it may be unknown before certain value is extracted)
      * @return value object type
      */
     Class getValueObjectType();
@@ -123,7 +131,7 @@ public interface DBDValueHandler
      * must register themselves within value controller. On close they must unregister themselves within
      * value controller.
      * @param controller value controller  @return true if editor was successfully opened.
-     * makes sence only for inline editors, otherwise return value is ignored.
+     * makes since only for inline editors, otherwise return value is ignored.
      * @return true on success
      * @throws org.jkiss.dbeaver.DBException on error
      */
