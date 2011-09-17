@@ -587,12 +587,14 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private void updateUI()
     {
-        Integer oracleVersion = OCIUtils.getOracleVersion(oraHomeCombo.getText());
-        if (oracleVersion != null) {
-            oracleVersionLabel.setText("v." + oracleVersion);
-        }
-        else {
-            oracleVersionLabel.setText("");
+        if (oraHomeCombo != null) {
+            Integer oracleVersion = OCIUtils.getOracleVersion(oraHomeCombo.getText());
+            if (oracleVersion != null) {
+                oracleVersionLabel.setText("v." + oracleVersion);
+            }
+            else {
+                oracleVersionLabel.setText("");
+            }
         }
 
         site.updateButtons();
