@@ -204,7 +204,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             }
             final DBDValueHandler valueHandler = param.getValueHandler();
             Composite placeholder = new Composite(paramTable, SWT.NONE);
-            placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
+            placeholder.setLayout(new FillLayout());
+            //placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
             ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
             try {
                 if (valueHandler.editValue(valueController)) {

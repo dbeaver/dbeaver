@@ -609,7 +609,7 @@ public class Spreadsheet extends Composite implements Listener {
 
             placeholder = new Composite(grid, SWT.NONE);
             placeholder.setFont(grid.getFont());
-            placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
+            placeholder.setLayout(new FillLayout());
 
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalIndent = 0;

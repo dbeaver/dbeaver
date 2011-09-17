@@ -7,8 +7,12 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -20,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
 
 import java.sql.SQLException;
@@ -97,12 +102,18 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         if (controller.isInlineEdit()) {
             Object value = controller.getValue();
 
-            Composite dateTimeGroup = controller.getInlinePlaceholder();
+            final Composite dateTimeGroup = controller.getInlinePlaceholder();
 
             boolean isDate = controller.getColumnMetaData().getValueType() == java.sql.Types.DATE;
             boolean isTime = controller.getColumnMetaData().getValueType() == java.sql.Types.TIME;
             boolean isTimeStamp = controller.getColumnMetaData().getValueType() == java.sql.Types.TIMESTAMP;
 
+/*
+            // HEre is a bug in windows. First time date control gain focus it renders cell editor incorrectly
+            // Create fake placeholder - it should gain focus instead of datetime control
+            final Composite placeholder = new Composite(dateTimeGroup, SWT.NONE);
+            placeholder.setLayout(new FillLayout());
+*/
             final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN) : null;
             final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.TIME | SWT.LONG) : null;
 
@@ -132,7 +143,12 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                     }
                 });
             }
-            dateTimeGroup.setFocus();
+            dateTimeGroup.getDisplay().asyncExec(new Runnable() {
+                public void run()
+                {
+                    dateTimeGroup.setFocus();
+                }
+            });
             return true;
         } else {
             DateTimeViewDialog dialog = new DateTimeViewDialog(controller);
