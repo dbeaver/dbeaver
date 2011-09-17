@@ -108,12 +108,6 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             boolean isTime = controller.getColumnMetaData().getValueType() == java.sql.Types.TIME;
             boolean isTimeStamp = controller.getColumnMetaData().getValueType() == java.sql.Types.TIMESTAMP;
 
-/*
-            // HEre is a bug in windows. First time date control gain focus it renders cell editor incorrectly
-            // Create fake placeholder - it should gain focus instead of datetime control
-            final Composite placeholder = new Composite(dateTimeGroup, SWT.NONE);
-            placeholder.setLayout(new FillLayout());
-*/
             final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN) : null;
             final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.TIME | SWT.LONG) : null;
 
@@ -143,6 +137,11 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                     }
                 });
             }
+
+/*
+            // There is a bug in windows. First time date control gain focus it renders cell editor incorrectly.
+            // Let's focus on it in async mode
+*/
             dateTimeGroup.getDisplay().asyncExec(new Runnable() {
                 public void run()
                 {
