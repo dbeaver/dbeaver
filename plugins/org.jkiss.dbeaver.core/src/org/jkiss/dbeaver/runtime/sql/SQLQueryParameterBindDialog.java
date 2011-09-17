@@ -122,7 +122,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             item.setText(0, String.valueOf(param.getIndex() + 1));
             item.setText(1, param.getTitle());
             item.setText(2, CommonUtils.toString(param.getTypeName()));
-            item.setText(3, CommonUtils.toString(param.getValue()));
+            item.setText(3, param.getValueHandler() == null ? "" : param.getValueHandler().getValueDisplayString(param, param.getValue()));
         }
 
         paramTable.addMouseListener(new ParametersMouseListener());
@@ -188,8 +188,12 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 public void widgetSelected(SelectionEvent e)
                 {
                     final DBSDataType paramType = validDataTypes.get(typeSelector.getSelectionIndex());
+                    if (param.getParamType() == null || param.getParamType().getDataKind() != paramType.getDataKind()) {
+                        param.setValue(null);
+                    }
                     param.setParamType(paramType);
                     item.setText(2, paramType.getName());
+                    item.setText(3, param.getValueHandler() == null ? "" : param.getValueHandler().getValueDisplayString(param, param.getValue()));
                     param.resolve();
                 }
             });
@@ -253,6 +257,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         {
             parameter.setValue(value);
             item.setText(3, getValueHandler().getValueDisplayString(parameter, value));
+            updateStatus(Status.OK_STATUS);
         }
 
         public DBDValueHandler getValueHandler()
