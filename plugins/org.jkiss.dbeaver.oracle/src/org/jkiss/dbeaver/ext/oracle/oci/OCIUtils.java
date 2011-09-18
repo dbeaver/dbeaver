@@ -45,18 +45,20 @@ public class OCIUtils
     public static OracleHomeDescriptor getOraHome(String oraHome) {
         for (OracleHomeDescriptor home : oraHomes) {
             // file name case insensitivity on Windows platform
-            if (Platform.getOS().equals(WIN_32)) {
-                if (home.getOraHome().equalsIgnoreCase(oraHome)) {
-                    return home;
-                }
-            }
-            else {
-                if (home.getOraHome().equals(oraHome)) {
-                    return home;
-                }
+            if (equalsFileName(home.getOraHome(), oraHome)) {
+                return home;
             }
         }
         return null;
+    }
+
+    private static boolean equalsFileName(String file1, String file2) {
+        if (Platform.getOS().equals(WIN_32)) {
+            return file1.equalsIgnoreCase(file2);
+        }
+        else {
+            return file1.equals(file2);
+        }
     }
 
     public static void addOraHome(String oraHome)
@@ -66,17 +68,9 @@ public class OCIUtils
         boolean contains = false;
         for (OracleHomeDescriptor home : oraHomes) {
             // file name case insensitivity on Windows platform
-            if (Platform.getOS().equals(WIN_32)) {
-                if (home.getOraHome().equalsIgnoreCase(oraHome)) {
-                    contains = true;
-                    break;
-                }
-            }
-            else {
-                if (home.getOraHome().equals(oraHome)) {
-                    contains = true;
-                    break;
-                }
+            if (equalsFileName(home.getOraHome(), oraHome)) {
+                contains = true;
+                break;
             }
         }
         if (!contains) {
