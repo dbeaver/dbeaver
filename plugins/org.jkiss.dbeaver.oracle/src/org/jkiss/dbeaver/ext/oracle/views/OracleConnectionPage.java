@@ -600,12 +600,17 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private void updateUI()
     {
         if (oraHomeCombo != null && !oraHomeCombo.isDisposed()) {
-            Integer oracleVersion = OCIUtils.getOracleVersion(oraHomeCombo.getText());
-            if (oracleVersion != null) {
-                oracleVersionLabel.setText("v." + oracleVersion);
+            OracleHomeDescriptor oraHome = OCIUtils.getOraHome(oraHomeCombo.getText());
+            if (oraHome.getFullOraVersion() != null) {
+                oracleVersionLabel.setText(oraHome.getFullOraVersion());
             }
             else {
-                oracleVersionLabel.setText("");
+                if (oraHome.getOraVersion() != null) {
+                    oracleVersionLabel.setText("v." + oraHome.getOraVersion());
+                }
+                else {
+                    oracleVersionLabel.setText("");
+                }
             }
         }
 

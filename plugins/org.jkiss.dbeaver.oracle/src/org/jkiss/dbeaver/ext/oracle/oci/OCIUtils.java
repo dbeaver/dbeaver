@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,6 +36,10 @@ public class OCIUtils
 
     public static final String WIN_32 = "win32";
 
+    /**
+     * A list of Oracle client homes found in the system.
+     * The first one is always a current Oracle home (from PATH) 
+     */
     public static final List<OracleHomeDescriptor> oraHomes =
             new ArrayList<OracleHomeDescriptor>();
 
@@ -61,7 +66,7 @@ public class OCIUtils
         }
     }
 
-    public static void addOraHome(String oraHome)
+    public static void addOraHome(String oraHome, boolean isDefault)
     {
         oraHome = CommonUtils.removeSplashFileName(oraHome);
 
@@ -74,7 +79,7 @@ public class OCIUtils
             }
         }
         if (!contains) {
-            oraHomes.add(new OracleHomeDescriptor(oraHome));
+            oraHomes.add(new OracleHomeDescriptor(oraHome, isDefault));
         }
     }
 
@@ -91,7 +96,7 @@ public class OCIUtils
                 if (token.toLowerCase().contains("oracle")) {
                     token = CommonUtils.removeSplashFileName(token);
                     if (token.toLowerCase().endsWith("bin")) {
-                        addOraHome(token.substring(0, token.length() - 3));
+                        addOraHome(token.substring(0, token.length() - 3), true);
                     }
                 }
             }
@@ -99,7 +104,7 @@ public class OCIUtils
 
         String oraHome = System.getenv("ORA_HOME");
         if (oraHome != null) {
-            addOraHome(oraHome);
+            addOraHome(oraHome, false);
         }
 
         // find Oracle homes in Windows registry
@@ -110,7 +115,7 @@ public class OCIUtils
                     Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\ORACLE\\" + oracleKey);
                     for (String key : valuesMap.keySet()) {
                         if ("ORACLE_HOME".equals(key)) {
-                            addOraHome(valuesMap.get(key));
+                            addOraHome(valuesMap.get(key), false);
                             break;
                         }
                     }
@@ -146,4 +151,28 @@ public class OCIUtils
         return null;
     }
 
+    /**
+     * Returns an installed Oracle client full version (ora home is from PATH)
+     * @return
+     */
+    public static String getOracleClientVersion()
+    {
+        String version = null;
+        try {
+            String line;
+            Process p = Runtime.getRuntime().exec("sqlplus.exe -version");
+            BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            while ((line = input.readLine()) != null) {
+                if (line.startsWith("SQL*Plus: Release ") && line.endsWith(" - Production")) {
+                    version = line.substring(18, line.length() - 13);
+                    break;
+                }
+            }
+            input.close();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return version;
+    }
 }

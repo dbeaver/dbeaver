@@ -25,12 +25,15 @@ public class OracleHomeDescriptor
 
     private String oraHome;
     private Integer oraVersion;
-    private String fullOraVersion; // TODO
+    private String fullOraVersion;
 
-    public OracleHomeDescriptor(String oraHome)
+    public OracleHomeDescriptor(String oraHome, boolean isDefault)
     {
         this.oraHome = CommonUtils.removeSplashFileName(oraHome);
         this.oraVersion = OCIUtils.getOracleVersion(oraHome);
+        if (isDefault) {
+            fullOraVersion = OCIUtils.getOracleClientVersion();
+        }
     }
 
     public String getOraHome()
@@ -41,6 +44,11 @@ public class OracleHomeDescriptor
     public Integer getOraVersion()
     {
         return oraVersion;
+    }
+
+    public String getFullOraVersion()
+    {
+        return fullOraVersion;
     }
 
     /**
