@@ -13,15 +13,15 @@ import java.net.URLClassLoader;
  */
 public class OCIClassLoader extends URLClassLoader
 {
-    private String oraHome;
+    private OracleHomeDescriptor oracleHomeDescriptor;
     private File[] oraHomeLibraries;
 
-    public OCIClassLoader(String oraHome, ClassLoader parent)
+    public OCIClassLoader(OracleHomeDescriptor oracleHomeDescriptor, ClassLoader parent)
     {
-        super(OCIUtils.getLibraries(oraHome), parent);
-        this.oraHome = oraHome;
+        super(oracleHomeDescriptor.getLibraries(), parent);
+        this.oracleHomeDescriptor = oracleHomeDescriptor;
 
-        File oraHomeFile = new File(oraHome);
+        File oraHomeFile = new File(oracleHomeDescriptor.getOraHome());
         File binFolder = new File(oraHomeFile, "BIN");
         if (binFolder != null && binFolder.exists()) {
             oraHomeLibraries = binFolder.listFiles(new FilenameFilter()
@@ -33,7 +33,7 @@ public class OCIClassLoader extends URLClassLoader
             });
         }
         else {
-            OCIUtils.log.warn("BIN folder isn't found in Oracle home " + oraHome);
+            OCIUtils.log.warn("BIN folder isn't found in Oracle home " + oracleHomeDescriptor.getOraHome());
         }
     }
 

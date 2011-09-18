@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
+import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -190,9 +191,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         gd.horizontalSpan = 3;
         serviceNameCombo.setLayoutData(gd);
         serviceNameCombo.addModifyListener(controlModifyListener);
-        List<String> oraHomes = OCIUtils.findOraHomes();
-        if (!oraHomes.isEmpty()) {
-            for (String alias : OCIUtils.getOraServiceNames(oraHomes.get(0))) {
+
+        if (!OCIUtils.oraHomes.isEmpty()) {
+            for (String alias : OCIUtils.oraHomes.get(0).getOraServiceNames()) {
                 serviceNameCombo.add(alias);
             }
         }
@@ -207,8 +208,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         Label label = UIUtils.createControlLabel(selectorContainer, "  Oracle Home");
         label.setFont(UIUtils.makeBoldFont(label.getFont()));
         oraHomeCombo = new Combo(selectorContainer, SWT.DROP_DOWN);
-        for (String alias : OCIUtils.findOraHomes()) {
-            oraHomeCombo.add(alias);
+        for (OracleHomeDescriptor home : OCIUtils.oraHomes) {
+            oraHomeCombo.add(home.getOraHome());
         }
         oraHomeCombo.add(BROWSE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -261,14 +262,16 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             oraHome = oraHomeCombo.getText();
         }
         if (CommonUtils.isEmpty(oraHome)) {
-            List<String> oraHomes = OCIUtils.findOraHomes();
-            if (!oraHomes.isEmpty()) {
-                oraHome = oraHomes.get(0);
+            if (!OCIUtils.oraHomes.isEmpty()) {
+                oraHome = OCIUtils.oraHomes.get(0).getOraHome();
             }
         }
         if (!CommonUtils.isEmpty(oraHome)) {
-            for (String alias : OCIUtils.getOraServiceNames(oraHome)) {
-                tnsNameCombo.add(alias);
+            OracleHomeDescriptor home = OCIUtils.getOraHome(oraHome);
+            if (home != null) {
+                for (String alias : home.getOraServiceNames()) {
+                    tnsNameCombo.add(alias);
+                }
             }
         }
     }
@@ -427,9 +430,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                     oraHomeCombo.setText(oraHome.toString());
                 }
                 else {
-                    List<String> oraHomes = OCIUtils.findOraHomes();
-                    if (!oraHomes.isEmpty()) {
-                        oraHomeCombo.setText(oraHomes.get(0));
+                    if (!OCIUtils.oraHomes.isEmpty()) {
+                        oraHomeCombo.setText(OCIUtils.oraHomes.get(0).getOraHome());
                     }
                 }
             }

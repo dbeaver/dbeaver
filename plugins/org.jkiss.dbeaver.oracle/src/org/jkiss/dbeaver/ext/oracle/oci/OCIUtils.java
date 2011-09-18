@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,24 +34,55 @@ public class OCIUtils
 
     public static final String WIN_32 = "win32";
 
-    private static void addOraHome(List<String> homes, String oraHome)
+    public static final List<OracleHomeDescriptor> oraHomes =
+            new ArrayList<OracleHomeDescriptor>();
+
+    static {
+        findOraHomes();
+    }
+
+    public static OracleHomeDescriptor getOraHome(String oraHome) {
+        for (OracleHomeDescriptor home : oraHomes) {
+            // file name case insensitivity on Windows platform
+            if (Platform.getOS().equals(WIN_32)) {
+                if (home.getOraHome().equalsIgnoreCase(oraHome)) {
+                    return home;
+                }
+            }
+            else {
+                if (home.getOraHome().equals(oraHome)) {
+                    return home;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void addOraHome(String oraHome)
     {
         String sep = System.getProperty("file.separator");
         if (oraHome.endsWith(sep)) {
             oraHome = oraHome.substring(0, oraHome.length() - 1);
         }
-        // file name case insensitivity on Windows platform
-        if (Platform.getOS().equals(WIN_32)) {
-            List<String> list = new ArrayList<String>();
-            for (String s : homes) {
-                list.add(s.toLowerCase());
+
+        boolean contains = false;
+        for (OracleHomeDescriptor home : oraHomes) {
+            // file name case insensitivity on Windows platform
+            if (Platform.getOS().equals(WIN_32)) {
+                if (home.getOraHome().equalsIgnoreCase(oraHome)) {
+                    contains = true;
+                    break;
+                }
             }
-            if (!list.contains(oraHome.toLowerCase())) {
-                homes.add(oraHome);
+            else {
+                if (home.getOraHome().equals(oraHome)) {
+                    contains = true;
+                    break;
+                }
             }
         }
-        else {
-            homes.add(oraHome);
+        if (!contains) {
+            oraHomes.add(new OracleHomeDescriptor(oraHome));
         }
     }
 
@@ -58,15 +90,14 @@ public class OCIUtils
      * Searches Oracle home locations.
      * @return a list of Oracle home locations pathes
      */
-    public static List<String> findOraHomes()
+    private static void findOraHomes()
     {
-        List<String> homes = new ArrayList<String>();
         String sep = System.getProperty("file.separator");
 
         // read system environment variables
         String oraHome = System.getenv("ORA_HOME");
         if (oraHome != null) {
-            addOraHome(homes, oraHome);
+            addOraHome(oraHome);
         }
 
         String path = System.getenv("PATH");
@@ -78,7 +109,7 @@ public class OCIUtils
                     }
                     if (token.toLowerCase().endsWith("bin")) {
                         oraHome = token.substring(0, token.length() - 3);
-                        addOraHome(homes, oraHome);
+                        addOraHome(oraHome);
                     }
                 }
             }
@@ -92,7 +123,7 @@ public class OCIUtils
                     Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\ORACLE\\" + oracleKey);
                     for (String key : valuesMap.keySet()) {
                         if ("ORACLE_HOME".equals(key)) {
-                            addOraHome(homes, valuesMap.get(key));
+                            addOraHome(valuesMap.get(key));
                             break;
                         }
                     }
@@ -103,122 +134,11 @@ public class OCIUtils
                 // do nothing
             }
         }
-        // remove duplicate entries
-        Set<String> s = new LinkedHashSet<String>(homes);
-        homes.clear();
-        homes.addAll(s);
-
-        return homes;
-    }
-
-    /**
-     * Reads TNS aliaces from TNSNAMES.ORA in specified Oracle home.
-     * @param oraHome path of Oracle home location
-     * @return TNS aliases list
-     */
-    public static ArrayList<String> getOraServiceNames(String oraHome)
-    {
-        ArrayList<String> aliases = new ArrayList<String>();
-
-        // parse TNSNAMES.ORA file
-        if (oraHome != null) {
-            String sep = System.getProperty("file.separator");
-            if (!oraHome.endsWith(sep)) {
-                oraHome += sep;
-            }
-            String tnsnamesPath = oraHome + "Network" + sep + "Admin" + sep + "TNSNAMES.ORA";
-            File tnsnamesOra = new File (tnsnamesPath);
-            if (tnsnamesOra != null && tnsnamesOra.exists()) {
-                try {
-                    BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("#") && line.contains(" =")) {
-                            aliases.add(line.substring(0, line.indexOf(" =")));
-                        }
-                    }
-                } catch (FileNotFoundException e) {
-                    // do nothing
-                } catch (IOException e) {
-                    // do nothing
-                }
-            }
-            else {
-                // do nothing
-            }
-        }
-        Collections.sort(aliases);
-        return aliases;
     }
 
     public static boolean isOciDriver(DBPDriver driver)
     {
         return "oracle_oci".equals(driver.getId());
-    }
-
-    private static List<String> getRequiredJars(String oraHome)
-    {
-        String sep = System.getProperty("file.separator");
-        if (!oraHome.endsWith(sep)) {
-            oraHome = oraHome + sep;
-        }
-        List<String> list = new ArrayList<String>();
-        Integer oracleVersion = getOracleVersion(oraHome);
-        String jdbcDriverJar;
-        switch (oracleVersion) {
-            case 8:
-                list.add(oraHome + "jdbc/lib/classes12.zip"); // JDBC drivers to connect to a 9i database. (JDK 1.2.x)
-                list.add(oraHome + "jdbc/lib/nls_charset12.zip"); // Additional National Language character set support 
-                break;
-            case 9:
-                list.add(oraHome + "jdbc/lib/ojdbc14.jar"); // JDBC classes (JDK 1.4)
-                list.add(oraHome + "jdbc/lib/ocrs12.jar "); // Additional RowSet support  
-                break;
-            case 10:
-                list.add(oraHome + "jdbc/lib/ojdbc14.jar"); // JDBC classes (JDK 1.4 and 1.5)
-                list.add(oraHome + "lib/xml.jar");
-                list.add(oraHome + "lib/xmlcomp.jar");
-                list.add(oraHome + "lib/xmlcomp2.jar");
-                list.add(oraHome + "lib/xmlmesg.jar");
-                list.add(oraHome + "lib/xmlparserv2.jar");
-                break;
-            case 11:
-                list.add(oraHome + "jdbc/lib/ojdbc6.jar"); // Classes for use with JDK 1.6. It contains the JDBC driver classes except classes for NLS support in Oracle Object and Collection types.
-                //addDriverJar2list(list, oraHome, "ojdbc5.zip"); // Classes for use with JDK 1.5. It contains the JDBC driver classes, except classes for NLS support in Oracle Object and Collection types.
-                list.add(oraHome + "jdbc/lib/orai18n.jar"); //NLS classes for use with JDK 1.5, and 1.6. It contains classes for NLS support in Oracle Object and Collection types. This jar file replaces the old nls_charset jar/zip files.
-                list.add(oraHome + "lib/xml.jar");
-                list.add(oraHome + "lib/xmlcomp.jar");
-                list.add(oraHome + "lib/xmlcomp2.jar");
-                list.add(oraHome + "lib/xmlmesg.jar");
-                list.add(oraHome + "lib/xmlparserv2.jar");
-                break;
-        }
-        return list;
-    }
-
-    public static URL[] getLibraries(String oraHome)
-    {
-        List<String> libraries = getRequiredJars(oraHome);
-        List<File> files = new ArrayList<File>();
-        for (String library : libraries) {
-            File file  = new File(library);
-            if (file != null && file.exists()) {
-                files.add(file);
-            }
-            else {
-                log.warn("Driver file '" + library + "' doesn't exist.");
-            }
-        }
-        int i = 0;
-        URL[] urls = new URL[files.size()];
-        for (File file : files) {
-            try {
-                urls[i++] = file.toURI().toURL();
-            } catch (MalformedURLException e) {
-                log.warn("File '" + file.getAbsolutePath() + "' can't be converted to url.");
-            }
-        }
-        return urls;
     }
 
     public static Integer getOracleVersion(String oraHome)

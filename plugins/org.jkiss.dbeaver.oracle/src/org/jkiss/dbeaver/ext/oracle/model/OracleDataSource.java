@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIClassLoader;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
+import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
@@ -147,7 +148,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
                 DriverDescriptor driverDescriptor = (DriverDescriptor) driver;
                 ClassLoader ociClassLoader = ociClassLoadersCache.get((String)ora_home);
                 if (ociClassLoader == null) {
-                    ociClassLoader = new OCIClassLoader((String)ora_home, getClass().getClassLoader());
+                    ociClassLoader = new OCIClassLoader(new OracleHomeDescriptor((String) ora_home), getClass().getClassLoader());
                     ociClassLoadersCache.put((String)ora_home, ociClassLoader);
                 }
                 String driverClassName = driverDescriptor.getDriverClassName();
