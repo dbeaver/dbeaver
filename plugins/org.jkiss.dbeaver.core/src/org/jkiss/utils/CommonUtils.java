@@ -98,6 +98,22 @@ public class CommonUtils {
         return res.toString();
     }
 
+    public static String addSplashFileName(String str)
+    {
+        if (!str.endsWith("/")) {
+            str += "/";
+        }
+        return str;
+    }
+
+    public static String removeSplashFileName(String str)
+    {
+        if (str.endsWith("/") || str.endsWith("\\")) {
+            str = str.substring(0, str.length() - 1);
+        }
+        return str;
+    }
+
 	public static String capitalizeWord(String str) {
 		if (isEmpty(str) || Character.isUpperCase(str.charAt(0))) {
 			return str;

@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.utils.WinRegistry;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,10 +61,7 @@ public class OCIUtils
 
     public static void addOraHome(String oraHome)
     {
-        String sep = System.getProperty("file.separator");
-        if (oraHome.endsWith(sep)) {
-            oraHome = oraHome.substring(0, oraHome.length() - 1);
-        }
+        oraHome = CommonUtils.removeSplashFileName(oraHome);
 
         boolean contains = false;
         for (OracleHomeDescriptor home : oraHomes) {
@@ -92,8 +90,6 @@ public class OCIUtils
      */
     private static void findOraHomes()
     {
-        String sep = System.getProperty("file.separator");
-
         // read system environment variables
         String oraHome = System.getenv("ORA_HOME");
         if (oraHome != null) {
@@ -104,9 +100,7 @@ public class OCIUtils
         if (path != null) {
             for (String token : path.split(System.getProperty("path.separator"))) {
                 if (token.toLowerCase().contains("oracle")) {
-                    if (token.endsWith(sep)) {
-                        token = token.substring(0, token.length() - 1);
-                    }
+                    token = CommonUtils.removeSplashFileName(token);
                     if (token.toLowerCase().endsWith("bin")) {
                         oraHome = token.substring(0, token.length() - 3);
                         addOraHome(oraHome);
@@ -143,11 +137,8 @@ public class OCIUtils
 
     public static Integer getOracleVersion(String oraHome)
     {
-        String sep = System.getProperty("file.separator");
-        if (!oraHome.endsWith(sep)) {
-            oraHome = oraHome + sep;
-        }
-        File binFolder = new File(oraHome + sep + "BIN");
+        oraHome = CommonUtils.addSplashFileName(oraHome);
+        File binFolder = new File(oraHome + "/BIN");
         if (binFolder != null && binFolder.exists()) {
             for (int counter = 1; counter <= 12; counter++) {
                 File oraclient_dll = new File(binFolder, "oraclient" + counter +".dll");

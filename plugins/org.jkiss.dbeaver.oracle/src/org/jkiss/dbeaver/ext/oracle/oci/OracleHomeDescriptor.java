@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.oci;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,7 +29,7 @@ public class OracleHomeDescriptor
 
     public OracleHomeDescriptor(String oraHome)
     {
-        this.oraHome = oraHome;
+        this.oraHome = CommonUtils.removeSplashFileName(oraHome);
         this.oraVersion = OCIUtils.getOracleVersion(oraHome);
     }
 
@@ -53,11 +54,7 @@ public class OracleHomeDescriptor
 
         // parse TNSNAMES.ORA file
         if (oraHome != null) {
-            String sep = System.getProperty("file.separator");
-            if (!oraHome.endsWith(sep)) {
-                oraHome += sep;
-            }
-            String tnsnamesPath = oraHome + "Network" + sep + "Admin" + sep + "TNSNAMES.ORA";
+            String tnsnamesPath = oraHome + "/Network/Admin/TNSNAMES.ORA";
             File tnsnamesOra = new File (tnsnamesPath);
             if (tnsnamesOra != null && tnsnamesOra.exists()) {
                 try {
@@ -84,38 +81,34 @@ public class OracleHomeDescriptor
 
     private List<String> getRequiredJars()
     {
-        String sep = System.getProperty("file.separator");
-        if (!oraHome.endsWith(sep)) {
-            oraHome = oraHome + sep;
-        }
         List<String> list = new ArrayList<String>();
         String jdbcDriverJar;
         switch (oraVersion) {
             case 8:
-                list.add(oraHome + "jdbc/lib/classes12.zip"); // JDBC drivers to connect to a 9i database. (JDK 1.2.x)
-                list.add(oraHome + "jdbc/lib/nls_charset12.zip"); // Additional National Language character set support 
+                list.add(oraHome + "/jdbc/lib/classes12.zip"); // JDBC drivers to connect to a 9i database. (JDK 1.2.x)
+                list.add(oraHome + "/jdbc/lib/nls_charset12.zip"); // Additional National Language character set support 
                 break;
             case 9:
-                list.add(oraHome + "jdbc/lib/ojdbc14.jar"); // JDBC classes (JDK 1.4)
-                list.add(oraHome + "jdbc/lib/ocrs12.jar "); // Additional RowSet support  
+                list.add(oraHome + "/jdbc/lib/ojdbc14.jar"); // JDBC classes (JDK 1.4)
+                list.add(oraHome + "/jdbc/lib/ocrs12.jar"); // Additional RowSet support  
                 break;
             case 10:
-                list.add(oraHome + "jdbc/lib/ojdbc14.jar"); // JDBC classes (JDK 1.4 and 1.5)
-                list.add(oraHome + "lib/xml.jar");
-                list.add(oraHome + "lib/xmlcomp.jar");
-                list.add(oraHome + "lib/xmlcomp2.jar");
-                list.add(oraHome + "lib/xmlmesg.jar");
-                list.add(oraHome + "lib/xmlparserv2.jar");
+                list.add(oraHome + "/jdbc/lib/ojdbc14.jar"); // JDBC classes (JDK 1.4 and 1.5)
+                list.add(oraHome + "/lib/xml.jar");
+                list.add(oraHome + "/lib/xmlcomp.jar");
+                list.add(oraHome + "/lib/xmlcomp2.jar");
+                list.add(oraHome + "/lib/xmlmesg.jar");
+                list.add(oraHome + "/lib/xmlparserv2.jar");
                 break;
             case 11:
-                list.add(oraHome + "jdbc/lib/ojdbc6.jar"); // Classes for use with JDK 1.6. It contains the JDBC driver classes except classes for NLS support in Oracle Object and Collection types.
-                //addDriverJar2list(list, oraHome, "ojdbc5.zip"); // Classes for use with JDK 1.5. It contains the JDBC driver classes, except classes for NLS support in Oracle Object and Collection types.
-                list.add(oraHome + "jdbc/lib/orai18n.jar"); //NLS classes for use with JDK 1.5, and 1.6. It contains classes for NLS support in Oracle Object and Collection types. This jar file replaces the old nls_charset jar/zip files.
-                list.add(oraHome + "lib/xml.jar");
-                list.add(oraHome + "lib/xmlcomp.jar");
-                list.add(oraHome + "lib/xmlcomp2.jar");
-                list.add(oraHome + "lib/xmlmesg.jar");
-                list.add(oraHome + "lib/xmlparserv2.jar");
+                list.add(oraHome + "/jdbc/lib/ojdbc6.jar"); // Classes for use with JDK 1.6. It contains the JDBC driver classes except classes for NLS support in Oracle Object and Collection types.
+                //addDriverJar2list(/list, oraHome, "ojdbc5.zip"); // Classes for use with JDK 1.5. It contains the JDBC driver classes, except classes for NLS support in Oracle Object and Collection types.
+                list.add(oraHome + "/jdbc/lib/orai18n.jar"); //NLS classes for use with JDK 1.5, and 1.6. It contains classes for NLS support in Oracle Object and Collection types. This jar file replaces the old nls_charset jar/zip files.
+                list.add(oraHome + "/lib/xml.jar");
+                list.add(oraHome + "/lib/xmlcomp.jar");
+                list.add(oraHome + "/lib/xmlcomp2.jar");
+                list.add(oraHome + "/lib/xmlmesg.jar");
+                list.add(oraHome + "/lib/xmlparserv2.jar");
                 break;
         }
         return list;
