@@ -415,7 +415,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     {
         isOCI = OCIUtils.isOciDriver(site.getDriver());
         if (isOCI) {
-            oraHomeSelector = createOraHomeSelector(bottomControls);
+            if (oraHomeSelector == null || oraHomeSelector.isDisposed()) {
+                oraHomeSelector = createOraHomeSelector(bottomControls);
+            }
         }
         else {
             if (oraHomeSelector != null) {
@@ -597,7 +599,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private void updateUI()
     {
-        if (oraHomeCombo != null) {
+        if (oraHomeCombo != null && !oraHomeCombo.isDisposed()) {
             Integer oracleVersion = OCIUtils.getOracleVersion(oraHomeCombo.getText());
             if (oracleVersion != null) {
                 oracleVersionLabel.setText("v." + oracleVersion);
