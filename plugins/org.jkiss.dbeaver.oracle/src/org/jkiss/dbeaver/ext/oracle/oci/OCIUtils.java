@@ -85,22 +85,21 @@ public class OCIUtils
     private static void findOraHomes()
     {
         // read system environment variables
-        String oraHome = System.getenv("ORA_HOME");
-        if (oraHome != null) {
-            addOraHome(oraHome);
-        }
-
         String path = System.getenv("PATH");
         if (path != null) {
             for (String token : path.split(System.getProperty("path.separator"))) {
                 if (token.toLowerCase().contains("oracle")) {
                     token = CommonUtils.removeSplashFileName(token);
                     if (token.toLowerCase().endsWith("bin")) {
-                        oraHome = token.substring(0, token.length() - 3);
-                        addOraHome(oraHome);
+                        addOraHome(token.substring(0, token.length() - 3));
                     }
                 }
             }
+        }
+
+        String oraHome = System.getenv("ORA_HOME");
+        if (oraHome != null) {
+            addOraHome(oraHome);
         }
 
         // find Oracle homes in Windows registry
