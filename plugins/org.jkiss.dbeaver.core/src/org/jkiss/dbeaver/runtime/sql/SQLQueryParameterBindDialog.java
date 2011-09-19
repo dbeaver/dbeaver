@@ -31,11 +31,14 @@ import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -71,6 +74,12 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 }
             }
         }
+        Collections.sort(validDataTypes, new Comparator<DBSDataType>() {
+            public int compare(DBSDataType o1, DBSDataType o2)
+            {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
 
         for (SQLStatementParameter param : this.parameters) {
             final DBSDataType dataType = DBUtils.findBestDataType(validDataTypes, DBConstants.DEFAULT_DATATYPE_NAMES);
@@ -102,8 +111,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         paramTable.setLinesVisible(true);
 
         tableEditor = new TableEditor(paramTable);
-        tableEditor.horizontalAlignment = SWT.RIGHT;
         tableEditor.verticalAlignment = SWT.TOP;
+        tableEditor.horizontalAlignment = SWT.RIGHT;
         tableEditor.grabHorizontal = true;
         tableEditor.grabVertical = true;
 
@@ -119,6 +128,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         for (SQLStatementParameter param : parameters) {
             TableItem item = new TableItem(paramTable, SWT.NONE);
             item.setData(param);
+            item.setImage(DBIcon.TREE_ATTRIBUTE.getImage());
             item.setText(0, String.valueOf(param.getIndex() + 1));
             item.setText(1, param.getTitle());
             item.setText(2, CommonUtils.toString(param.getTypeName()));
@@ -174,7 +184,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         private void showTypeSelector(final TableItem item)
         {
             final SQLStatementParameter param = (SQLStatementParameter)item.getData();
-            final CCombo typeSelector = new CCombo(paramTable, SWT.DROP_DOWN | SWT.READ_ONLY);
+            final CCombo typeSelector = new CCombo(paramTable, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            typeSelector.setListVisible(true);
+            typeSelector.setVisibleItemCount(15);
             int selectionIndex = 0;
             for (DBSDataType dataType : validDataTypes) {
                 typeSelector.add(dataType.getName());
@@ -198,6 +210,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 }
             });
 
+            tableEditor.minimumHeight = typeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
             tableEditor.setEditor(typeSelector, item, 2);
         }
 
@@ -213,6 +226,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
             try {
                 if (valueHandler.editValue(valueController)) {
+                    tableEditor.minimumHeight = placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
                     tableEditor.setEditor(placeholder, item, 3);
                 } else {
                     // No editor was created so just drop placeholder

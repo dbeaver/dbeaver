@@ -218,6 +218,14 @@ public class SQLSyntaxManager extends RuleBasedScanner {
                 public IToken evaluate(ICharacterScanner scanner)
                 {
                     int column = scanner.getColumn();
+                    if (column  <= 0) {
+                        return Token.UNDEFINED;
+                    }
+                    scanner.unread();
+                    int prevChar = scanner.read();
+                    if (Character.isJavaIdentifierPart(prevChar)) {
+                        return Token.UNDEFINED;
+                    }
                     int c = scanner.read();
                     if (c != ICharacterScanner.EOF && (c == '?' || c == ':')) {
                         buffer.setLength(0);
