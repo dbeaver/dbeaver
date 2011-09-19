@@ -45,6 +45,10 @@ public class OracleCompileError {
     @Override
     public String toString()
     {
-        return "[" + line + ":" + position + "] " + message;
+        if (line <= 0) {
+            return message;
+        } else {
+            return "[" + line + ":" + position + "] " + message;
+        }
     }
 }

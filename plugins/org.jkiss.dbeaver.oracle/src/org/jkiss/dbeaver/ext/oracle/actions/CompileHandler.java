@@ -92,7 +92,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     final OracleCompileUnit sourceObject = RuntimeUtils.getObjectAdapter(activePart, OracleCompileUnit.class);
                     if (sourceObject == unit) {
                         BaseTextEditor textEditor = (BaseTextEditor)activePart.getAdapter(BaseTextEditor.class);
-                        if (textEditor != null) {
+                        if (textEditor != null && line > 0 && position > 0) {
                             try {
                                 final IRegion lineInfo = textEditor.getTextViewer().getDocument().getLineInformation(line - 1);
                                 final int offset = lineInfo.getOffset() + position - 1;
