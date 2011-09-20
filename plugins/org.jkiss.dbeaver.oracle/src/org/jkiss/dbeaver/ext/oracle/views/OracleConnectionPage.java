@@ -208,16 +208,10 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         Label label = UIUtils.createControlLabel(selectorContainer, "  Oracle Home");
         label.setFont(UIUtils.makeBoldFont(label.getFont()));
         oraHomeCombo = new Combo(selectorContainer, SWT.DROP_DOWN);
-/* only one ORA HOME (from PATH) is used for now
         for (OracleHomeDescriptor home : OCIUtils.oraHomes) {
             oraHomeCombo.add(home.getOraHome());
         }
         oraHomeCombo.add(BROWSE);
-*/
-        if (!OCIUtils.oraHomes.isEmpty()) {
-            oraHomeCombo.setText(OCIUtils.oraHomes.get(0).getOraHome());
-        }
-        oraHomeCombo.setEnabled(false);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         oraHomeCombo.setLayoutData(gd);
@@ -433,7 +427,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             Map<Object,Object> connectionProperties = connectionInfo.getProperties();
 
             if (isOCI) {
-/* only one ORA HOME (from PATH) is used for now
                 Object oraHome = connectionProperties.get(OracleConstants.PROP_ORA_HOME);
                 if (oraHome != null) {
                     oraHomeCombo.setText(oraHome.toString());
@@ -443,7 +436,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                         oraHomeCombo.setText(OCIUtils.oraHomes.get(0).getOraHome());
                     }
                 }
-*/
             }
 
             final Object conTypeProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TYPE);
