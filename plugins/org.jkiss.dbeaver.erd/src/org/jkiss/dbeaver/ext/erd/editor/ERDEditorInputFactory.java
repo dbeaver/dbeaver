@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -23,6 +24,9 @@ public class ERDEditorInputFactory implements IElementFactory
         // Get the file name.
         String fileName = memento.getString(TAG_PATH);
         if (!CommonUtils.isEmpty(fileName)) {
+            // Make sure that core is initialized
+            DBeaverCore.getInstance();
+
             IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(fileName));
             if (file != null) {
                 return new ERDEditorInput(file);

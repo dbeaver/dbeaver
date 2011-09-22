@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.io.ByteArrayInputStream;
 
@@ -38,6 +39,8 @@ public class SQLEditorInputFactory implements IElementFactory
         if (fileName == null) {
             return null;
         }
+        // Make sure that core is initialized
+        DBeaverCore.getInstance();
 
         // Get a handle to the IFile...which can be a handle
         // to a resource that does not exist in workspace
