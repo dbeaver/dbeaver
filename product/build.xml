@@ -3,25 +3,25 @@
   -->
 
 <project name="dbeaver" default="build">
-	<!--sets the path of the properties file-->
-	<property file="local.properties" />
-	<property file="../plugins/org.jkiss.dbeaver.core/META-INF/MANIFEST.MF" />
-	<property name="productVersion" value="${Bundle-Version}"/>
-	<property name="buildId" value="dbeaver-${productVersion}"/>
-	<property name="buildLabel" value="${buildId}"/>
-	<property name="readmeFile" value="build/readme.txt"/>
+    <!--sets the path of the properties file-->
+    <property file="local.properties" />
+    <property file="../plugins/org.jkiss.dbeaver.core/META-INF/MANIFEST.MF" />
+    <property name="productVersion" value="${Bundle-Version}"/>
+    <property name="buildId" value="dbeaver-${productVersion}"/>
+    <property name="buildLabel" value="${buildId}"/>
+    <property name="readmeFile" value="build/readme.txt"/>
     <property name="distDirectory" value="dist"/>
-	<tstamp>
-		<format property="current-date" pattern="dd MMM yyyy" locale="en"/>
-	</tstamp>
+    <tstamp>
+        <format property="current-date" pattern="dd MMM yyyy" locale="en"/>
+    </tstamp>
 
-	<target name="clean">
+    <target name="clean">
         <delete dir="${distDirectory}" />
-		<delete dir="${buildDirectory}" />
+        <delete dir="${buildDirectory}" />
         <delete file="build.properties" />
-	</target>
+    </target>
 
-	<target name="init">
+    <target name="init">
         <filter filtersFile="local.properties"/>
         <filter token="productVersion" value="${productVersion}"/>
         <filter token="buildId" value="${buildId}"/>
@@ -33,21 +33,22 @@
 
         <echo message="Build ${productName} ${productVersion}"/>
 
-		<mkdir dir="${buildDirectory}" />
-		<mkdir dir="${buildDirectory}/plugins" />
-		<mkdir dir="${buildDirectory}/features" />
-		<copy todir="${buildDirectory}/plugins">
-			<fileset dir="../plugins">
-				<include name="**" />
+        <mkdir dir="${buildDirectory}" />
+        <mkdir dir="${buildDirectory}/plugins" />
+        <mkdir dir="${buildDirectory}/features" />
+        <copy todir="${buildDirectory}/plugins">
+            <fileset dir="../plugins">
+                <include name="**" />
                 <exclude name="**/.svn" />
-			</fileset>
-		</copy>
+				<exclude name="**/*.class" />
+            </fileset>
+        </copy>
         <mkdir dir="${distDirectory}" />
-		<antcall target="readme"/>
-	</target>
+        <antcall target="readme"/>
+    </target>
 
     <target name="readme">
-		<echo message="Generate ${readmeFile}"/>
+        <echo message="Generate ${readmeFile}"/>
         <filter filtersFile="local.properties"/>
         <filter token="build.version" value="${productVersion}"/>
         <filter token="build.date" value="${current-date}"/>
@@ -64,55 +65,55 @@
         </copy>
     </target>
 
-	<!--
-		This target actually executes the PDE Build process by launching the 
-		Eclipse antRunner application.
-	-->
-	<target name="pde-build" depends="init">
-		<java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
-			<arg value="-application" />
-			<arg value="org.eclipse.ant.core.antRunner" />
-			<arg value="-buildfile" />
-			<arg value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml" />
-			<arg value="-Dtimestamp=${timestamp}" />
-			<classpath>
-				<pathelement location="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar" />
-			</classpath>
-		</java>
-	</target>
+    <!--
+        This target actually executes the PDE Build process by launching the 
+        Eclipse antRunner application.
+    -->
+    <target name="pde-build" depends="init">
+        <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
+            <arg value="-application" />
+            <arg value="org.eclipse.ant.core.antRunner" />
+            <arg value="-buildfile" />
+            <arg value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml" />
+            <arg value="-Dtimestamp=${timestamp}" />
+            <classpath>
+                <pathelement location="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar" />
+            </classpath>
+        </java>
+    </target>
 
-	<target name="driver-pack">
-		<zip destfile="${distDirectory}/driver-pack-${productVersion}.zip" basedir="../contrib/drivers" excludes="*.svn">
+    <target name="driver-pack">
+        <zip destfile="${distDirectory}/driver-pack-${productVersion}.zip" basedir="../contrib/drivers" excludes="*.svn">
 
-		</zip>
-	</target>
+        </zip>
+    </target>
 
-	<!--This target defines the run-order of the targets-->
-	<target name="build" depends="pde-build,driver-pack" />
+    <!--This target defines the run-order of the targets-->
+    <target name="build" depends="pde-build,driver-pack" />
 
     <target name="nsis">
-		<unzip 
-			src="${buildDirectory}/${buildId}/${buildId}-win32.win32.${arch}.zip"
-			dest="${buildDirectory}/installer/raw/win32.${arch}"
-			overwrite="true"
-			/>
-		<filter filtersfile="build.properties"/>
+        <unzip 
+            src="${buildDirectory}/${buildId}/${buildId}-win32.win32.${arch}.zip"
+            dest="${buildDirectory}/installer/raw/win32.${arch}"
+            overwrite="true"
+            />
+        <filter filtersfile="build.properties"/>
         <filter token="arch" value="${arch}"/>
         <filter token="product.dir" value="..\..\.."/>
-		<copy todir="${buildDirectory}/installer/${arch}" filtering="true">
-			<fileset dir="installer/nsis">
-				<include name="*.ns*" />
-			</fileset>
-		</copy>
+        <copy todir="${buildDirectory}/installer/${arch}" filtering="true">
+            <fileset dir="installer/nsis">
+                <include name="*.ns*" />
+            </fileset>
+        </copy>
 
-		<exec executable="${nsisDirectory}/makensis" dir="${buildDirectory}/installer/${arch}">
-			<arg value="DBeaver.nsi"/>
-		</exec>
+        <exec executable="${nsisDirectory}/makensis" dir="${buildDirectory}/installer/${arch}">
+            <arg value="DBeaver.nsi"/>
+        </exec>
     </target>
     
-	<target name="dist-win">
-		<mkdir dir="${buildDirectory}/installer" />
-		<mkdir dir="${buildDirectory}/installer/raw" />
+    <target name="dist-win">
+        <mkdir dir="${buildDirectory}/installer" />
+        <mkdir dir="${buildDirectory}/installer/raw" />
 
         <antcall target="nsis">
             <param name="arch" value="x86"/>
@@ -121,28 +122,28 @@
             <param name="arch" value="x86_64"/>
         </antcall>
 
-		<!--delete dir="${buildDirectory}/installer" /-->
-	</target>
+        <!--delete dir="${buildDirectory}/installer" /-->
+    </target>
 
-	<target name="dist-deb">
-		<path id="ant-deb.classpath">
-			<fileset dir="lib" includes="*.jar"/>
-		</path>
-		<taskdef resource="ant_deb_task.properties" classpathref="ant-deb.classpath"/>
+    <target name="dist-deb">
+        <path id="ant-deb.classpath">
+            <fileset dir="lib" includes="*.jar"/>
+        </path>
+        <taskdef resource="ant_deb_task.properties" classpathref="ant-deb.classpath"/>
 
-		<property name="packageName" value="${archivePrefix}"/>
-		<property name="debDirectory" value="build/deb"/>
+        <property name="packageName" value="${archivePrefix}"/>
+        <property name="debDirectory" value="build/deb"/>
 
-		<echo message="Build ${productName} deb package"/>
+        <echo message="Build ${productName} deb package"/>
 
-		<delete dir="${debDirectory}" />
-		<mkdir dir="${debDirectory}" />
-		<unzip 
-			src="build/${buildId}/${buildId}-linux.gtk.x86.zip"
-			dest="${debDirectory}"
-			overwrite="true"
-			/>
-		
+        <delete dir="${debDirectory}" />
+        <mkdir dir="${debDirectory}" />
+        <unzip 
+            src="build/${buildId}/${buildId}-linux.gtk.x86.zip"
+            dest="${debDirectory}"
+            overwrite="true"
+            />
+        
         <desktopentry
             name="${productName}"
             toFile="${debDirectory}/dbeaver.desktop"
@@ -161,12 +162,12 @@
             homepage="http://dbeaver.jkiss.org"
             suggests="dbeaver"
             architecture="i386">
-			<maintainer name="Serge Rieder" email="serge@jkiss.org"/>
-			<description synopsis="DBeaver">Universal Database Manager</description>
-			<tarfileset file="${debDirectory}/dbeaver/dbeaver" prefix="usr/share/${packageName}" filemode="755"/>
-			<tarfileset dir="${debDirectory}/dbeaver" prefix="usr/share/${packageName}" includes="**">
-				<exclude name="dbeaver"/>
-			</tarfileset>
+            <maintainer name="Serge Rieder" email="serge@jkiss.org"/>
+            <description synopsis="DBeaver">Universal Database Manager</description>
+            <tarfileset file="${debDirectory}/dbeaver/dbeaver" prefix="usr/share/${packageName}" filemode="755"/>
+            <tarfileset dir="${debDirectory}/dbeaver" prefix="usr/share/${packageName}" includes="**">
+                <exclude name="dbeaver"/>
+            </tarfileset>
             <tarfileset file="${debDirectory}/dbeaver.desktop" prefix="usr/share/applications"/>
         </deb>
 
@@ -177,30 +178,30 @@
     </target>
 
     <target name="dist-rpm">
-		<path id="ant-rpm.classpath">
-			<fileset dir="lib" includes="*.jar"/>
-		</path>
+        <path id="ant-rpm.classpath">
+            <fileset dir="lib" includes="*.jar"/>
+        </path>
         <taskdef name="rpm" classname="org.redline_rpm.RedlineTask"  classpathref="ant-rpm.classpath"/>
 
         <property name="rpmDirectory" value="build/rpm"/>
         
         <echo message="Make RPM in ${rpmDirectory}"/>
         
-		<delete dir="${rpmDirectory}" />
-		<mkdir dir="${rpmDirectory}" />
+        <delete dir="${rpmDirectory}" />
+        <mkdir dir="${rpmDirectory}" />
         <mkdir dir="${rpmDirectory}/SOURCES" />
         <mkdir dir="${rpmDirectory}/SPECS" />
 
-		<filter filtersfile="build.properties"/>
-		<copy todir="${rpmDirectory}/SPECS" filtering="true">
-			<fileset dir="installer/rpm">
-				<include name="*.spec" />
-			</fileset>
-		</copy>
+        <filter filtersfile="build.properties"/>
+        <copy todir="${rpmDirectory}/SPECS" filtering="true">
+            <fileset dir="installer/rpm">
+                <include name="*.spec" />
+            </fileset>
+        </copy>
 
-		<!--copy
-			file="build/${buildId}/${buildId}-linux.gtk.x86.zip"
-			todir="${rpmDirectory}/SOURCES"/-->
+        <!--copy
+            file="build/${buildId}/${buildId}-linux.gtk.x86.zip"
+            todir="${rpmDirectory}/SOURCES"/-->
 
         <rpm 
             name="${productName}" 
@@ -221,12 +222,12 @@
         </rpm>
 
             
-		<!--exec executable="rpm">
-			<arg value="-bb"/>
+        <!--exec executable="rpm">
+            <arg value="-bb"/>
             <arg value="- -buildroot"/>
             <arg value="${rpmDirectory}"/>
             <arg value="dbeaver.spec"/>
-		</exec-->
+        </exec-->
 
         <!--rpm
             specFile="dbeaver.spec"
@@ -241,27 +242,27 @@
     </target>
 
     <target name="copy-release" depends="init">
-		<mkdir dir="${releaseFilesDirectory}" />
-		<copy todir="${releaseFilesDirectory}">
-			<fileset dir="${buildDirectory}/${buildId}">
-				<include name="*.zip" />
-			</fileset>
-			<fileset dir="${distDirectory}">
-				<include name="**" />
-			</fileset>
-		</copy>
+        <mkdir dir="${releaseFilesDirectory}" />
+        <copy todir="${releaseFilesDirectory}">
+            <fileset dir="${buildDirectory}/${buildId}">
+                <include name="*.zip" />
+            </fileset>
+            <fileset dir="${distDirectory}">
+                <include name="**" />
+            </fileset>
+        </copy>
     </target>
-	
+    
     <target name="copy-ea" depends="init">
-		<mkdir dir="${releaseFilesDirectory}/ea" />
-		<copy todir="${releaseFilesDirectory}/ea">
-			<fileset dir="${buildDirectory}/${buildId}">
-				<include name="*.zip" />
-			</fileset>
-			<fileset dir="${distDirectory}">
-				<include name="**" />
-			</fileset>
-		</copy>
+        <mkdir dir="${releaseFilesDirectory}/ea" />
+        <copy todir="${releaseFilesDirectory}/ea">
+            <fileset dir="${buildDirectory}/${buildId}">
+                <include name="*.zip" />
+            </fileset>
+            <fileset dir="${distDirectory}">
+                <include name="**" />
+            </fileset>
+        </copy>
     </target>
 
 

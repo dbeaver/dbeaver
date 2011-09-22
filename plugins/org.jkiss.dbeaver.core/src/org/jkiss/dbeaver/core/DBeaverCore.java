@@ -96,6 +96,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     static DBeaverCore createInstance(DBeaverActivator plugin)
     {
+        log.debug("Initializing DBeaver");
+        log.debug("Host plugin: " + plugin.getBundle().getSymbolicName() + " " + plugin.getBundle().getVersion());
+
         instance = new DBeaverCore(plugin);
         instance.initialize();
         return instance;
