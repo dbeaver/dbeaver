@@ -6,27 +6,26 @@ package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.bindings.Scheme;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.keys.IBindingService;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -55,17 +54,25 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         super.initialize(configurer);
         configurer.setSaveAndRestore(true);
 
-        // Initialize DBeaver Core
-        DBeaverCore.createInstance(DBeaverActivator.getInstance());
-
         TrayDialog.setDialogHelpAvailable(true);
+
+        // Disable all schemas except our own
+        final IBindingService bindingService = (IBindingService)configurer.getWorkbench().getService(IBindingService.class);
+//        for (Binding binding : bindingService.getBindings()) {
+//            System.out.println("binding:" + binding);
+//        }
+        for (Scheme scheme : bindingService.getDefinedSchemes()) {
+            if (!scheme.getId().equals(DBeaverConstants.DBEAVER_SCHEME_NAME)) {
+                scheme.undefine();
+            }
+        }
+
     }
 
     @Override
     public void preStartup()
     {
         super.preStartup();
-        cleanupLobFiles(new NullProgressMonitor());
     }
 
     public boolean preShutdown()
@@ -111,15 +118,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     public void postShutdown()
     {
         super.postShutdown();
-
-        try {
-// Dispose core
-            if (DBeaverCore.getInstance() != null) {
-                DBeaverCore.getInstance().dispose();
-            }
-        } catch (Throwable e) {
-            log.debug("Internal error after shutdown process", e); //$NON-NLS-1$
-        }
     }
 
     private boolean saveAndCleanup()
@@ -180,29 +178,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         }
 */
         return true;
-    }
-
-    private void cleanupLobFiles(IProgressMonitor monitor)
-    {
-        IFolder tempFolder;
-        try {
-            tempFolder = DBeaverCore.getInstance().getLobFolder(monitor);
-        }
-        catch (IOException e) {
-            log.error(e);
-            return;
-        }
-        try {
-            IResource[] tempResources = tempFolder.members();
-            for (IResource tempResource : tempResources) {
-                if (tempResource instanceof IFile) {
-                    IFile tempFile = (IFile)tempResource;
-                    tempFile.delete(true, false, monitor);
-                }
-            }
-        } catch (CoreException ex) {
-            log.warn("Error deleting temp lob file", ex); //$NON-NLS-1$
-        }
     }
 
 }

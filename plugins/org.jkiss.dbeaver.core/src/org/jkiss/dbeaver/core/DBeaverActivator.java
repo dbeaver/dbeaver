@@ -5,8 +5,10 @@
 package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -15,6 +17,7 @@ import org.osgi.framework.BundleContext;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -69,6 +72,8 @@ public class DBeaverActivator extends AbstractUIPlugin
     public void stop(BundleContext context)
         throws Exception
     {
+        this.shutdownCore();
+
         if (debugWriter != null) {
             debugWriter.close();
             debugWriter = null;
@@ -136,6 +141,24 @@ public class DBeaverActivator extends AbstractUIPlugin
      */
     public static IWorkspace getWorkspace() {
         return ResourcesPlugin.getWorkspace();
+    }
+
+    private void shutdownCore()
+    {
+        try {
+// Dispose core
+            if (DBeaverCore.getInstance() != null) {
+                DBeaverCore.getInstance().dispose();
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+            logMessage("Internal error after shutdown process:" + e.getMessage()); //$NON-NLS-1$
+        }
+    }
+
+    private void logMessage(String message)
+    {
+        getDebugWriter().print(message);
     }
 
 }

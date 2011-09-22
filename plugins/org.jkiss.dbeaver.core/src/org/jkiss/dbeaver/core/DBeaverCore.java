@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
-import org.eclipse.jface.bindings.Scheme;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -20,7 +19,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -35,7 +33,6 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
-import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
@@ -84,6 +81,16 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     public static DBeaverCore getInstance()
     {
+        if (instance == null) {
+            synchronized (DBeaverCore.class) {
+                if (instance == null) {
+                    // Initialize DBeaver Core
+                    DBeaverCore.createInstance(DBeaverActivator.getInstance());
+
+                    instance.cleanupLobFiles(new NullProgressMonitor());
+                }
+            }
+        }
         return instance;
     }
 
@@ -111,17 +118,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     private void initialize()
     {
-        // Disable all schemas except our own
-        final IBindingService bindingService = (IBindingService)plugin.getWorkbench().getService(IBindingService.class);
-//        for (Binding binding : bindingService.getBindings()) {
-//            System.out.println("binding:" + binding);
-//        }
-        for (Scheme scheme : bindingService.getDefinedSchemes()) {
-            if (!scheme.getId().equals(DBeaverConstants.DBEAVER_SCHEME_NAME)) {
-                scheme.undefine();
-            }
-        }
-
         //progressProvider = new DBeaverProgressProvider();
         this.sharedTextColors = new SharedTextColors();
 
@@ -546,4 +542,28 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         }
         return result;
     }
+
+    private void cleanupLobFiles(IProgressMonitor monitor)
+    {
+        IFolder tempFolder;
+        try {
+            tempFolder = getLobFolder(monitor);
+        }
+        catch (IOException e) {
+            log.error(e);
+            return;
+        }
+        try {
+            IResource[] tempResources = tempFolder.members();
+            for (IResource tempResource : tempResources) {
+                if (tempResource instanceof IFile) {
+                    IFile tempFile = (IFile)tempResource;
+                    tempFile.delete(true, false, monitor);
+                }
+            }
+        } catch (CoreException ex) {
+            log.error("Error deleting temp lob file", ex); //$NON-NLS-1$
+        }
+    }
+
 }
