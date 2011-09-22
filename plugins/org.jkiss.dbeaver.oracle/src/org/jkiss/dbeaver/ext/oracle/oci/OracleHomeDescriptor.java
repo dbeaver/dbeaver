@@ -120,10 +120,11 @@ public class OracleHomeDescriptor
                 //addDriverJar2list(/list, oraHome, "ojdbc5.zip"); // Classes for use with JDK 1.5. It contains the JDBC driver classes, except classes for NLS support in Oracle Object and Collection types.
                 list.add(oraHome + jdbcPathPrefix + "orai18n.jar"); //NLS classes for use with JDK 1.5, and 1.6. It contains classes for NLS support in Oracle Object and Collection types. This jar file replaces the old nls_charset jar/zip files.
                 list.add(oraHome + libPathPrefix + "xml.jar");
-                list.add(oraHome + libPathPrefix + "xmlcomp.jar");
                 list.add(oraHome + libPathPrefix + "xmlcomp2.jar");
                 list.add(oraHome + libPathPrefix + "xmlmesg.jar");
                 list.add(oraHome + libPathPrefix + "xmlparserv2.jar");
+                list.add(oraHome + libPathPrefix + "xschema.jar");
+                list.add(oraHome + libPathPrefix + "xsu12.jar");
                 break;
         }
         return list;
