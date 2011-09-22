@@ -77,6 +77,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private SharedTextColors sharedTextColors;
     private ProjectRegistry projectRegistry;
 
+    private boolean standalone = false;
     private boolean isClosing;
 
     public static DBeaverCore getInstance()
@@ -117,6 +118,16 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     void setClosing(boolean closing)
     {
         isClosing = closing;
+    }
+
+    public boolean isStandalone()
+    {
+        return standalone;
+    }
+
+    void setStandalone(boolean standalone)
+    {
+        this.standalone = standalone;
     }
 
     private void initialize()

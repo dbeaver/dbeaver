@@ -17,6 +17,7 @@ public class GlobalPropertyTester extends PropertyTester
     //static final Log log = LogFactory.getLog(ObjectPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.global";
+    public static final String PROP_STANDALONE = "standalone";
     public static final String PROP_HAS_MULTI_PROJECTS = "hasMultipleProjects";
 
     public GlobalPropertyTester() {
@@ -26,6 +27,8 @@ public class GlobalPropertyTester extends PropertyTester
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (property.equals(PROP_HAS_MULTI_PROJECTS)) {
             return DBeaverCore.getInstance().getLiveProjects().size() > 1;
+        } else if (property.equals(PROP_STANDALONE)) {
+            return DBeaverCore.getInstance().isStandalone();
         }
         return false;
     }

@@ -74,14 +74,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         MenuManager fileMenu = new MenuManager(CoreMessages.actions_menu_file, IWorkbenchActionConstants.M_FILE);
         MenuManager editMenu = new MenuManager(CoreMessages.actions_menu_edit, IWorkbenchActionConstants.M_EDIT);
         MenuManager navigateMenu = new MenuManager(CoreMessages.actions_menu_navigate, IWorkbenchActionConstants.M_NAVIGATE);
-        MenuManager databaseMenu = new MenuManager(CoreMessages.actions_menu_database, IActionConstants.M_DATABASE);
         MenuManager windowMenu = new MenuManager(CoreMessages.actions_menu_window, IWorkbenchActionConstants.M_WINDOW);
         MenuManager helpMenu = new MenuManager(CoreMessages.actions_menu_help, IWorkbenchActionConstants.M_HELP);
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
         menuBar.add(navigateMenu);
-        menuBar.add(databaseMenu);
+
         // Add a group marker indicating where action set menus will appear.
         menuBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         menuBar.add(windowMenu);
@@ -106,13 +105,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         navigateMenu.add(new Separator(IWorkbenchActionConstants.SHOW_EXT));
         navigateMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_END));
-
-        // Database
-        databaseMenu.add(new Separator(IActionConstants.M_DRIVER_GROUP));
-        databaseMenu.add(new Separator(IActionConstants.M_CONNECTION_GROUP));
-        databaseMenu.add(new Separator(IActionConstants.M_TOOLS_GROUP));
-        databaseMenu.add(new Separator(IActionConstants.M_SESSION_GROUP));
-        databaseMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         //editMenu.add(ActionFactory.PROPERTIES);
         //editMenu.add(viewPropertiesAction);

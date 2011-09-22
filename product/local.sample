@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+#
+
 buildDirectory=D:/Devel/my/DBeaver/product/build
 baseLocation=D:/Java/eclipse-build
 nsisDirectory=C:/Program Files/NSIS
@@ -5,7 +9,7 @@ equinoxLauncherPluginVersion=1.1.0.v20100507
 pdeBuildPluginVersion=3.6.0.v20100603
 releaseFilesDirectory=d:/temp
 
-configs = *, *, *
+#configs = *, *, *
 
 #configs=win32, win32, x86
 
