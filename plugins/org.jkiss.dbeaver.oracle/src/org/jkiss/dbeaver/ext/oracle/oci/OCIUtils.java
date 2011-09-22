@@ -66,7 +66,7 @@ public class OCIUtils
         }
     }
 
-    public static void addOraHome(String oraHome, boolean isDefault)
+    public static OracleHomeDescriptor addOraHome(String oraHome)
     {
         oraHome = CommonUtils.removeSplashFileName(oraHome);
 
@@ -79,8 +79,11 @@ public class OCIUtils
             }
         }
         if (!contains) {
-            oraHomes.add(new OracleHomeDescriptor(oraHome, isDefault));
+            OracleHomeDescriptor homeDescriptor = new OracleHomeDescriptor(oraHome);
+            oraHomes.add(homeDescriptor);
+            return homeDescriptor;
         }
+        return null;
     }
 
     /**
@@ -96,7 +99,7 @@ public class OCIUtils
                 if (token.toLowerCase().contains("oracle")) {
                     token = CommonUtils.removeSplashFileName(token);
                     if (token.toLowerCase().endsWith("bin")) {
-                        addOraHome(token.substring(0, token.length() - 3), true);
+                        addOraHome(token.substring(0, token.length() - 3));
                     }
                 }
             }
@@ -104,7 +107,7 @@ public class OCIUtils
 
         String oraHome = System.getenv("ORA_HOME");
         if (oraHome != null) {
-            addOraHome(oraHome, false);
+            addOraHome(oraHome);
         }
 
         // find Oracle homes in Windows registry
@@ -115,7 +118,7 @@ public class OCIUtils
                     Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\ORACLE\\" + oracleKey);
                     for (String key : valuesMap.keySet()) {
                         if ("ORACLE_HOME".equals(key)) {
-                            addOraHome(valuesMap.get(key), false);
+                            addOraHome(valuesMap.get(key));
                             break;
                         }
                     }
@@ -133,38 +136,41 @@ public class OCIUtils
         return "oracle_oci".equals(driver.getId());
     }
 
-    public static Integer getOracleVersion(String oraHome)
+    public static Integer getOracleVersion(String oraHome, boolean isInstantClient)
     {
         oraHome = CommonUtils.addSplashFileName(oraHome);
-        File binFolder = new File(oraHome + "/BIN");
-        if (binFolder != null && binFolder.exists()) {
-            for (int counter = 1; counter <= 12; counter++) {
-                File oraclient_dll = new File(binFolder, "oraclient" + counter +".dll");
-                if (oraclient_dll != null && oraclient_dll.exists()) {
-                    return counter;
-                }
+        File folder = new File(isInstantClient ? oraHome : oraHome + "/BIN");
+        for (int counter = 1; counter <= 12; counter++) {
+            String dllName = System.mapLibraryName((isInstantClient ? "oraociei" : "oraclient") + counter);
+            File oraclient_dll = new File(folder, dllName);
+            if (oraclient_dll.exists()) {
+                return counter;
             }
         }
-        else {
-            log.warn("BIN folder isn't found in Oracle home " + oraHome);
-        }
         return null;
+    }
+
+    public static boolean isInstatntClient(String oraHome) {
+        File root = new File(System.mapLibraryName(CommonUtils.addSplashFileName(oraHome) + "oci"));
+        File bin = new File(System.mapLibraryName(CommonUtils.addSplashFileName(oraHome) + "BIN/" + "oci"));
+        return root.exists() && !bin.exists();
     }
 
     /**
      * Returns an installed Oracle client full version (ora home is from PATH)
      * @return
      */
-    public static String getOracleClientVersion()
+    public static String getOracleClientVersion(String oraHome, boolean isInstantClient)
     {
         String version = null;
         try {
-            String line;
-            Process p = Runtime.getRuntime().exec("sqlplus.exe -version");
+            String path = isInstantClient ? CommonUtils.addSplashFileName(oraHome) : CommonUtils.addSplashFileName(oraHome) + "BIN/";
+            Process p = Runtime.getRuntime().exec(path + "sqlplus -version");
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line;
             while ((line = input.readLine()) != null) {
-                if (line.startsWith("SQL*Plus: Release ") && line.endsWith(" - Production")) {
-                    version = line.substring(18, line.length() - 13);
+                if (line.startsWith("SQL*Plus: Release ")) {
+                    version = line.substring(18, line.indexOf(" ", 19));
                     break;
                 }
             }

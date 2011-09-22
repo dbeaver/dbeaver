@@ -23,17 +23,17 @@ public class OracleHomeDescriptor
 {
     static final Log log = LogFactory.getLog(OracleHomeDescriptor.class);
 
-    private String oraHome;
-    private Integer oraVersion;
+    private String oraHome; // without slash at the end
+    private Integer oraVersion; // short version (9, 10, 11...)
     private String fullOraVersion;
+    private boolean isInstantClient;
 
-    public OracleHomeDescriptor(String oraHome, boolean isDefault)
+    public OracleHomeDescriptor(String oraHome)
     {
         this.oraHome = CommonUtils.removeSplashFileName(oraHome);
-        this.oraVersion = OCIUtils.getOracleVersion(oraHome);
-        if (isDefault) {
-            fullOraVersion = OCIUtils.getOracleClientVersion();
-        }
+        this.isInstantClient = OCIUtils.isInstatntClient(oraHome);
+        this.oraVersion = OCIUtils.getOracleVersion(oraHome, isInstantClient);
+        this.fullOraVersion = OCIUtils.getOracleClientVersion(oraHome, isInstantClient);
     }
 
     public String getOraHome()
@@ -51,6 +51,11 @@ public class OracleHomeDescriptor
         return fullOraVersion;
     }
 
+    public boolean isInstantClient()
+    {
+        return isInstantClient;
+    }
+
     /**
      * Reads TNS aliaces from TNSNAMES.ORA in specified Oracle home.
      * @param oraHome path of Oracle home location
@@ -64,7 +69,7 @@ public class OracleHomeDescriptor
         if (oraHome != null) {
             String tnsnamesPath = oraHome + "/Network/Admin/TNSNAMES.ORA";
             File tnsnamesOra = new File (tnsnamesPath);
-            if (tnsnamesOra != null && tnsnamesOra.exists()) {
+            if (tnsnamesOra.exists()) {
                 try {
                     BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
                     String line;
@@ -91,32 +96,34 @@ public class OracleHomeDescriptor
     {
         List<String> list = new ArrayList<String>();
         String jdbcDriverJar;
+        String jdbcPathPrefix = isInstantClient ? "/" : "/jdbc/lib/";
+        String libPathPrefix = isInstantClient ? "/" : "/lib/";
         switch (oraVersion) {
             case 8:
-                list.add(oraHome + "/jdbc/lib/classes12.zip"); // JDBC drivers to connect to a 9i database. (JDK 1.2.x)
-                list.add(oraHome + "/jdbc/lib/nls_charset12.zip"); // Additional National Language character set support 
+                list.add(oraHome + jdbcPathPrefix + "classes12.zip"); // JDBC drivers to connect to a 9i database. (JDK 1.2.x)
+                list.add(oraHome + jdbcPathPrefix + "nls_charset12.zip"); // Additional National Language character set support 
                 break;
             case 9:
-                list.add(oraHome + "/jdbc/lib/ojdbc14.jar"); // JDBC classes (JDK 1.4)
-                list.add(oraHome + "/jdbc/lib/ocrs12.jar"); // Additional RowSet support  
+                list.add(oraHome + jdbcPathPrefix + "ojdbc14.jar"); // JDBC classes (JDK 1.4)
+                list.add(oraHome + jdbcPathPrefix + "ocrs12.jar"); // Additional RowSet support  
                 break;
             case 10:
-                list.add(oraHome + "/jdbc/lib/ojdbc14.jar"); // JDBC classes (JDK 1.4 and 1.5)
-                list.add(oraHome + "/lib/xml.jar");
-                list.add(oraHome + "/lib/xmlcomp.jar");
-                list.add(oraHome + "/lib/xmlcomp2.jar");
-                list.add(oraHome + "/lib/xmlmesg.jar");
-                list.add(oraHome + "/lib/xmlparserv2.jar");
+                list.add(oraHome + jdbcPathPrefix + "ojdbc14.jar"); // JDBC classes (JDK 1.4 and 1.5)
+                list.add(oraHome + libPathPrefix + "xml.jar");
+                list.add(oraHome + libPathPrefix + "xmlcomp.jar");
+                list.add(oraHome + libPathPrefix + "xmlcomp2.jar");
+                list.add(oraHome + libPathPrefix + "xmlmesg.jar");
+                list.add(oraHome + libPathPrefix + "xmlparserv2.jar");
                 break;
             case 11:
-                list.add(oraHome + "/jdbc/lib/ojdbc6.jar"); // Classes for use with JDK 1.6. It contains the JDBC driver classes except classes for NLS support in Oracle Object and Collection types.
+                list.add(oraHome + jdbcPathPrefix + "ojdbc6.jar"); // Classes for use with JDK 1.6. It contains the JDBC driver classes except classes for NLS support in Oracle Object and Collection types.
                 //addDriverJar2list(/list, oraHome, "ojdbc5.zip"); // Classes for use with JDK 1.5. It contains the JDBC driver classes, except classes for NLS support in Oracle Object and Collection types.
-                list.add(oraHome + "/jdbc/lib/orai18n.jar"); //NLS classes for use with JDK 1.5, and 1.6. It contains classes for NLS support in Oracle Object and Collection types. This jar file replaces the old nls_charset jar/zip files.
-                list.add(oraHome + "/lib/xml.jar");
-                list.add(oraHome + "/lib/xmlcomp.jar");
-                list.add(oraHome + "/lib/xmlcomp2.jar");
-                list.add(oraHome + "/lib/xmlmesg.jar");
-                list.add(oraHome + "/lib/xmlparserv2.jar");
+                list.add(oraHome + jdbcPathPrefix + "orai18n.jar"); //NLS classes for use with JDK 1.5, and 1.6. It contains classes for NLS support in Oracle Object and Collection types. This jar file replaces the old nls_charset jar/zip files.
+                list.add(oraHome + libPathPrefix + "xml.jar");
+                list.add(oraHome + libPathPrefix + "xmlcomp.jar");
+                list.add(oraHome + libPathPrefix + "xmlcomp2.jar");
+                list.add(oraHome + libPathPrefix + "xmlmesg.jar");
+                list.add(oraHome + libPathPrefix + "xmlparserv2.jar");
                 break;
         }
         return list;
@@ -131,7 +138,7 @@ public class OracleHomeDescriptor
         List<File> files = new ArrayList<File>();
         for (String library : libraries) {
             File file  = new File(library);
-            if (file != null && file.exists()) {
+            if (file.exists()) {
                 files.add(file);
             }
             else {

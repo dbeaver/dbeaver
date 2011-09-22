@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
@@ -39,7 +38,6 @@ import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -73,6 +71,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png");
     private Label oracleVersionLabel;
+    private SelectionListener oraHomeSelectionListener;
 
     @Override
     public void dispose()
@@ -208,34 +207,43 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         Label label = UIUtils.createControlLabel(selectorContainer, "  Oracle Home");
         label.setFont(UIUtils.makeBoldFont(label.getFont()));
         oraHomeCombo = new Combo(selectorContainer, SWT.DROP_DOWN);
-        for (OracleHomeDescriptor home : OCIUtils.oraHomes) {
-            oraHomeCombo.add(home.getOraHome());
-        }
-        oraHomeCombo.add(BROWSE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        oraHomeCombo.setLayoutData(gd);
         final DirectoryDialog directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
-        oraHomeCombo.addSelectionListener(new SelectionListener() {
-            public void widgetSelected(SelectionEvent e) {
+        oraHomeSelectionListener = new SelectionListener()
+        {
+            public void widgetSelected(SelectionEvent e)
+            {
                 if (BROWSE.equals(oraHomeCombo.getText())) {
                     String dir = directoryDialog.open();
                     if (dir != null) {
                         oraHomeCombo.setText(dir);
-                    }
-                    else {
+                    } else {
                         oraHomeCombo.setText("");
                     }
                 }
                 populateTnsNameCombo();
             }
 
-            public void widgetDefaultSelected(SelectionEvent e) {}
-        });
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+            }
+        };
+        populateOraHomeCombo();
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        oraHomeCombo.setLayoutData(gd);
+        oraHomeCombo.addSelectionListener(oraHomeSelectionListener);
         oraHomeCombo.addModifyListener(controlModifyListener);
         oracleVersionLabel = new Label(selectorContainer, SWT.NONE);
         oracleVersionLabel.setText("    ");
         return selectorContainer;
+    }
+
+    private void populateOraHomeCombo()
+    {
+        for (OracleHomeDescriptor home : OCIUtils.oraHomes) {
+            oraHomeCombo.add(home.getOraHome());
+        }
+        oraHomeCombo.add(BROWSE);
     }
 
     private void createTNSConnectionControls(CTabFolder protocolFolder)
@@ -592,7 +600,12 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private void updateUI()
     {
         if (oraHomeCombo != null && !oraHomeCombo.isDisposed()) {
-            OracleHomeDescriptor oraHome = OCIUtils.getOraHome(oraHomeCombo.getText());
+            String oraHomeComboText = oraHomeCombo.getText();
+            OracleHomeDescriptor oraHome = OCIUtils.getOraHome(oraHomeComboText);
+            if (oraHome == null && !oraHomeComboText.equals(BROWSE)) {
+                oraHome = OCIUtils.addOraHome(oraHomeComboText);
+                oraHomeCombo.add(oraHomeComboText, 0);
+            }
             if (oraHome != null) {
                 if (oraHome.getFullOraVersion() != null) {
                     oracleVersionLabel.setText(oraHome.getFullOraVersion());
