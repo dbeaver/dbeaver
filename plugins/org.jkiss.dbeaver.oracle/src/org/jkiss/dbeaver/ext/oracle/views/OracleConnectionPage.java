@@ -56,7 +56,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private ConnectionPropertiesControl connectionProps;
     private Button testButton;
     private PropertySourceCustom propertySource;
-    private Combo oraHomeCombo;
+    private Combo oraHomeNameCombo;
     private Combo tnsNameCombo;
 	private CTabFolder connectionTypeFolder;
     private Composite bottomControls;
@@ -103,6 +103,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         connectionProps = new ConnectionPropertiesControl(placeholder, SWT.NONE);
         propsTab.setControl(placeholder);
 
+/*
         optionsFolder.addSelectionListener(
             new SelectionListener()
             {
@@ -118,6 +119,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 }
             }
         );
+*/
         setControl(optionsFolder);
     }
 
@@ -206,20 +208,32 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
         Label label = UIUtils.createControlLabel(selectorContainer, "  Oracle Home");
         label.setFont(UIUtils.makeBoldFont(label.getFont()));
-        oraHomeCombo = new Combo(selectorContainer, SWT.DROP_DOWN);
+        oraHomeNameCombo = new Combo(selectorContainer, SWT.READ_ONLY);
         final DirectoryDialog directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
         oraHomeSelectionListener = new SelectionListener()
         {
             public void widgetSelected(SelectionEvent e)
             {
-                if (BROWSE.equals(oraHomeCombo.getText())) {
+                if (BROWSE.equals(oraHomeNameCombo.getText())) {
                     String dir = directoryDialog.open();
                     if (dir != null) {
-                        oraHomeCombo.setText(dir);
+                        OracleHomeDescriptor oraHome = OCIUtils.getOraHome(dir);
+                        if (oraHome == null) {
+                            // add new Ora home
+                            oraHome = OCIUtils.addOraHome(dir);
+                            populateOraHomeCombo();
+                        }
+                        if (oraHome != null) {
+                            oraHomeNameCombo.setText(oraHome.getOraHomeName());
+                        }
+                        else {
+                            oraHomeNameCombo.setText("");
+                        }
                     } else {
-                        oraHomeCombo.setText("");
+                        oraHomeNameCombo.setText("");
                     }
                 }
+                displayClientVersion();
                 populateTnsNameCombo();
             }
 
@@ -230,20 +244,38 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         populateOraHomeCombo();
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        oraHomeCombo.setLayoutData(gd);
-        oraHomeCombo.addSelectionListener(oraHomeSelectionListener);
-        oraHomeCombo.addModifyListener(controlModifyListener);
+        oraHomeNameCombo.setLayoutData(gd);
+        oraHomeNameCombo.addSelectionListener(oraHomeSelectionListener);
         oracleVersionLabel = new Label(selectorContainer, SWT.NONE);
-        oracleVersionLabel.setText("    ");
+        oracleVersionLabel.setText("                  ");
         return selectorContainer;
+    }
+
+    private void displayClientVersion() {
+        OracleHomeDescriptor oraHome = OCIUtils.getOraHomeByName(oraHomeNameCombo.getText());
+        if (oraHome != null) {
+            // display Ora client version
+            if (oraHome.getFullOraVersion() != null) {
+                oracleVersionLabel.setText(oraHome.getFullOraVersion());
+            } else {
+                if (oraHome.getOraVersion() != null) {
+                    oracleVersionLabel.setText("v." + oraHome.getOraVersion());
+                } else {
+                    oracleVersionLabel.setText("");
+                }
+            }
+        } else {
+            oracleVersionLabel.setText("");
+        }
     }
 
     private void populateOraHomeCombo()
     {
+        oraHomeNameCombo.removeAll();
         for (OracleHomeDescriptor home : OCIUtils.oraHomes) {
-            oraHomeCombo.add(home.getOraHome());
+            oraHomeNameCombo.add(home.getOraHomeName());
         }
-        oraHomeCombo.add(BROWSE);
+        oraHomeNameCombo.add(BROWSE);
     }
 
     private void createTNSConnectionControls(CTabFolder protocolFolder)
@@ -266,16 +298,16 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private void populateTnsNameCombo() {
         tnsNameCombo.removeAll();
         String oraHome = null;
-        if (oraHomeCombo != null) {
-            oraHome = oraHomeCombo.getText();
+        if (oraHomeNameCombo != null) {
+            oraHome = oraHomeNameCombo.getText();
         }
         if (CommonUtils.isEmpty(oraHome)) {
             if (!OCIUtils.oraHomes.isEmpty()) {
-                oraHome = OCIUtils.oraHomes.get(0).getOraHome();
+                oraHome = OCIUtils.oraHomes.get(0).getOraHomeName();
             }
         }
         if (!CommonUtils.isEmpty(oraHome)) {
-            OracleHomeDescriptor home = OCIUtils.getOraHome(oraHome);
+            OracleHomeDescriptor home = OCIUtils.getOraHomeByName(oraHome);
             if (home != null) {
                 for (String alias : home.getOraServiceNames()) {
                     tnsNameCombo.add(alias);
@@ -398,7 +430,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     public boolean isComplete()
     {
-        if (isOCI && oraHomeCombo.getText().isEmpty()) {
+        if (isOCI && oraHomeNameCombo.getText().isEmpty()) {
             return false;
         }
         switch (connectionType) {
@@ -437,13 +469,14 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             if (isOCI) {
                 Object oraHome = connectionProperties.get(OracleConstants.PROP_ORA_HOME);
                 if (oraHome != null) {
-                    oraHomeCombo.setText(oraHome.toString());
+                    oraHomeNameCombo.setText(oraHome.toString());
                 }
                 else {
                     if (!OCIUtils.oraHomes.isEmpty()) {
-                        oraHomeCombo.setText(OCIUtils.oraHomes.get(0).getOraHome());
+                        oraHomeNameCombo.setText(OCIUtils.oraHomes.get(0).getOraHome());
                     }
                 }
+                displayClientVersion();
             }
 
             final Object conTypeProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TYPE);
@@ -522,7 +555,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             }
 
             if (isOCI) {
-                String oraHome = oraHomeCombo.getText();
+                String oraHome = oraHomeNameCombo.getText();
                 if (!BROWSE.equals(oraHome) && !oraHome.isEmpty()) {
                     connectionProperties.put(OracleConstants.PROP_ORA_HOME, oraHome);
                 }
@@ -605,28 +638,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private void updateUI()
     {
-        if (oraHomeCombo != null && !oraHomeCombo.isDisposed()) {
-            String oraHomeComboText = oraHomeCombo.getText();
-            OracleHomeDescriptor oraHome = OCIUtils.getOraHome(oraHomeComboText);
-            if (oraHome == null && !oraHomeComboText.equals(BROWSE)) {
-                oraHome = OCIUtils.addOraHome(oraHomeComboText);
-                oraHomeCombo.add(oraHomeComboText, 0);
-            }
-            if (oraHome != null) {
-                if (oraHome.getFullOraVersion() != null) {
-                    oracleVersionLabel.setText(oraHome.getFullOraVersion());
-                }
-                else {
-                    if (oraHome.getOraVersion() != null) {
-                        oracleVersionLabel.setText("v." + oraHome.getOraVersion());
-                    }
-                    else {
-                        oracleVersionLabel.setText("");
-                    }
-                }
-            }
-        }
-
         site.updateButtons();
         if (testButton != null) {
             testButton.setEnabled(this.isComplete());

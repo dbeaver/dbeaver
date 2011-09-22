@@ -35,13 +35,15 @@ public class OCIUtils
     static final Log log = LogFactory.getLog(OCIUtils.class);
 
     public static final String WIN_32 = "win32";
+    public static final String WIN_REG_ORACLE = "SOFTWARE\\ORACLE";
+    public static final String WIN_REG_ORA_HOME = "ORACLE_HOME";
+    public static final String WIN_REG_ORA_HOME_NAME = "ORACLE_HOME_NAME";
 
     /**
      * A list of Oracle client homes found in the system.
      * The first one is always a current Oracle home (from PATH) 
      */
-    public static final List<OracleHomeDescriptor> oraHomes =
-            new ArrayList<OracleHomeDescriptor>();
+    public static final List<OracleHomeDescriptor> oraHomes = new ArrayList<OracleHomeDescriptor>();
 
     static {
         findOraHomes();
@@ -51,6 +53,16 @@ public class OCIUtils
         for (OracleHomeDescriptor home : oraHomes) {
             // file name case insensitivity on Windows platform
             if (equalsFileName(home.getOraHome(), oraHome)) {
+                return home;
+            }
+        }
+        return null;
+    }
+
+    public static OracleHomeDescriptor getOraHomeByName(String oraHomeName) {
+        for (OracleHomeDescriptor home : oraHomes) {
+            // file name case insensitivity on Windows platform
+            if (equalsFileName(home.getOraHomeName(), oraHomeName)) {
                 return home;
             }
         }
@@ -80,7 +92,7 @@ public class OCIUtils
         }
         if (!contains) {
             OracleHomeDescriptor homeDescriptor = new OracleHomeDescriptor(oraHome);
-            oraHomes.add(homeDescriptor);
+            oraHomes.add(0, homeDescriptor);
             return homeDescriptor;
         }
         return null;
@@ -113,11 +125,11 @@ public class OCIUtils
         // find Oracle homes in Windows registry
         if (Platform.getOS().equals(WIN_32)) {
             try {
-                List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\ORACLE");
+                List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
                 for (String oracleKey : oracleKeys) {
-                    Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, "SOFTWARE\\ORACLE\\" + oracleKey);
+                    Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey);
                     for (String key : valuesMap.keySet()) {
-                        if ("ORACLE_HOME".equals(key)) {
+                        if (WIN_REG_ORA_HOME.equals(key)) {
                             addOraHome(valuesMap.get(key));
                             break;
                         }
@@ -129,6 +141,28 @@ public class OCIUtils
                 // do nothing
             }
         }
+    }
+
+    public static String readWinRegistry(String oraHome, String name) {
+        if (Platform.getOS().equals(WIN_32)) {
+            try {
+                List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
+                for (String oracleKey : oracleKeys) {
+                    String home = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, WIN_REG_ORA_HOME);
+                    if (oraHome.equals(home)) {
+                        String value = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, name);
+                        if (value != null) {
+                            return value;
+                        }
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                // do nothing
+            } catch (InvocationTargetException e) {
+                // do nothing
+            }
+        }
+        return null;
     }
 
     public static boolean isOciDriver(DBPDriver driver)
@@ -150,17 +184,11 @@ public class OCIUtils
         return null;
     }
 
-    public static boolean isInstatntClient(String oraHome) {
-        File root = new File(System.mapLibraryName(CommonUtils.addSplashFileName(oraHome) + "oci"));
-        File bin = new File(System.mapLibraryName(CommonUtils.addSplashFileName(oraHome) + "BIN/" + "oci"));
-        return root.exists() && !bin.exists();
-    }
-
     /**
-     * Returns an installed Oracle client full version (ora home is from PATH)
+     * Returns an installed Oracle client full version
      * @return
      */
-    public static String getOracleClientVersion(String oraHome, boolean isInstantClient)
+    public static String getFullOraVersion(String oraHome, boolean isInstantClient)
     {
         String version = null;
         try {
@@ -180,5 +208,11 @@ public class OCIUtils
             ex.printStackTrace();
         }
         return version;
+    }
+
+    public static boolean isInstatntClient(String oraHome) {
+        File root = new File(System.mapLibraryName(CommonUtils.addSplashFileName(oraHome) + "oci"));
+        File bin = new File(System.mapLibraryName(CommonUtils.addSplashFileName(oraHome) + "BIN/" + "oci"));
+        return root.exists() && !bin.exists();
     }
 }

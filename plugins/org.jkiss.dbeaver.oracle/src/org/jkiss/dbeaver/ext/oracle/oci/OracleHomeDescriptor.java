@@ -27,13 +27,15 @@ public class OracleHomeDescriptor
     private Integer oraVersion; // short version (9, 10, 11...)
     private String fullOraVersion;
     private boolean isInstantClient;
+    private String oraHomeName;
 
     public OracleHomeDescriptor(String oraHome)
     {
         this.oraHome = CommonUtils.removeSplashFileName(oraHome);
         this.isInstantClient = OCIUtils.isInstatntClient(oraHome);
         this.oraVersion = OCIUtils.getOracleVersion(oraHome, isInstantClient);
-        this.fullOraVersion = OCIUtils.getOracleClientVersion(oraHome, isInstantClient);
+        this.fullOraVersion = OCIUtils.getFullOraVersion(oraHome, isInstantClient);
+        this.oraHomeName = OCIUtils.readWinRegistry(oraHome, OCIUtils.WIN_REG_ORA_HOME_NAME);
     }
 
     public String getOraHome()
@@ -54,6 +56,16 @@ public class OracleHomeDescriptor
     public boolean isInstantClient()
     {
         return isInstantClient;
+    }
+
+    public String getOraHomeName()
+    {
+        if (oraHomeName != null) {
+            return oraHomeName;
+        }
+        else {
+            return oraHome;
+        }
     }
 
     /**
