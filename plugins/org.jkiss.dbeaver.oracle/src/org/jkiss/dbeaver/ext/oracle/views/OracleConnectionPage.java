@@ -581,7 +581,9 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             url.append(connectionInfo.getDatabaseName());
         } else {
             // Basic connection info specified
-            url.append("//");
+            if (!isOCI) {
+                url.append("//");
+            }
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 url.append(connectionInfo.getHostName());
             }
@@ -589,7 +591,11 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 url.append(":");
                 url.append(connectionInfo.getHostPort());
             }
-            url.append("/");
+            if (isOCI) {
+                url.append(":");
+            } else {
+                url.append("/");
+            }
             if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
                 url.append(connectionInfo.getDatabaseName());
             }
