@@ -844,7 +844,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private int downloadLibraryFile(final DriverFileDescriptor file)
     {
         try {
-            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+            DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {

@@ -331,7 +331,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return plugin.getPreferenceStore();
     }
 
-    public void runInProgressDialog(final DBRRunnableWithProgress runnable)
+    public void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InterruptedException, InvocationTargetException
     {
         try {
             IRunnableContext runnableContext;
@@ -348,9 +348,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                     runnable.run(RuntimeUtils.makeMonitor(monitor));
                 }
             });
-        }
-        catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
         }
         catch (InterruptedException e) {
             // do nothing

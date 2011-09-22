@@ -7,16 +7,16 @@ package org.jkiss.dbeaver.ext.test.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.IHandler;
-import org.eclipse.core.commands.IHandlerListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -28,15 +28,21 @@ public class HandlerObjectValidate extends AbstractHandler {
         if (selection instanceof IStructuredSelection) {
             final Object element = ((IStructuredSelection) selection).getFirstElement();
             if (element instanceof DBNNode) {
-                validateNode((DBNNode)element);
+                validateNode(HandlerUtil.getActiveShell(event), (DBNNode)element);
             }
         }
         return null;
     }
 
-    private void validateNode(DBNNode element)
+    private void validateNode(Shell shell, DBNNode element)
     {
-        DBeaverCore.getInstance().runInProgressDialog(new NodeValidator(element));
+        try {
+            DBeaverCore.getInstance().runInProgressDialog(new NodeValidator(element));
+        } catch (InterruptedException e) {
+            // skip
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(shell, "Validation failed", null, e.getTargetException());
+        }
     }
 
     private static class NodeValidator implements DBRRunnableWithProgress {

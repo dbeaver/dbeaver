@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
-
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -715,23 +714,29 @@ public class SQLEditor extends SQLEditorBase
         }
         final File saveFile = new File(fileName);
 
-        DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
-            public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
-                getSite().getShell().getDisplay().syncExec(new Runnable() {
-                    public void run()
-                    {
-                        doSave(monitor.getNestedMonitor());
-                    }
-                });
+        try {
+            DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
+                public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    getSite().getShell().getDisplay().syncExec(new Runnable() {
+                        public void run()
+                        {
+                            doSave(monitor.getNestedMonitor());
+                        }
+                    });
 
-                try {
-                    ContentUtils.saveContentToFile(getEditorInput().getFile().getContents(), saveFile, monitor);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                    try {
+                        ContentUtils.saveContentToFile(getEditorInput().getFile().getContents(), saveFile, monitor);
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
                 }
-            }
-        });
+            });
+        } catch (InterruptedException e) {
+            // do nothing
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(getSite().getShell(), "Save failed", null, e.getTargetException());
+        }
     }
 
     public DBSDataContainer getDataContainer()
