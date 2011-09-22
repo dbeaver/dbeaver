@@ -69,9 +69,7 @@
         This target actually executes the PDE Build process by launching the 
         Eclipse antRunner application.
     -->
-    <target name="pde-build" depends="init">
-        <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
-        <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
+    <target name="pde-dbeaver">
         <!-- Build standard product -->
         <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
             <arg value="-application" />
@@ -85,6 +83,9 @@
                 <pathelement location="${launcherLibLocation}" />
             </classpath>
         </java>
+    </target>
+
+    <target name="pde-dbeaver-icu" if="configs.icu">
         <!-- Build product with ICU library -->
         <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
             <arg value="-application" />
@@ -98,6 +99,13 @@
                 <pathelement location="${launcherLibLocation}" />
             </classpath>
         </java>
+    </target>
+
+    <target name="pde-build" depends="init">
+        <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
+        <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
+        <antcall target="pde-dbeaver"/>
+        <antcall target="pde-dbeaver-icu"/>
     </target>
 
     <target name="driver-pack">

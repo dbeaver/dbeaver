@@ -1386,16 +1386,16 @@
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
-        <page id="org.jkiss.dbeaver.preferences.main" class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon" name="Database Management"/>
+        <page id="org.jkiss.dbeaver.preferences.main" class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon" name="Database Configuration"/>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="Data Formats"/>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.misc.qm" class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" name="Query Manager"/>
 
-        <page id="org.jkiss.dbeaver.preferences.editors" class="org.eclipse.ui.ExtensionFactory:editorsPreferencePage" name="Editors"/>
+        <page id="org.jkiss.dbeaver.preferences.editors" class="org.eclipse.ui.ExtensionFactory:editorsPreferencePage" name="Database Editors"/>
         <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="SQL Editor"/>
         <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.contenteditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor" name="Content Editor"/>
         <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="Binary Editor"/>
 
-        <page id="org.jkiss.dbeaver.preferences.general" class="org.eclipse.ui.ExtensionFactory:workbenchPreferencePage" name="General"/>
+        <page id="org.jkiss.dbeaver.preferences.general" class="org.eclipse.ui.ExtensionFactory:workbenchPreferencePage" name="Database UI"/>
         <page category="org.jkiss.dbeaver.preferences.general" id="org.jkiss.dbeaver.preferences.appearance" class="org.eclipse.ui.ExtensionFactory:appearancePreferencePage" name="Appearance"/>
         <page category="org.jkiss.dbeaver.preferences.appearance" id="org.eclipse.ui.preferencePages.ColorsAndFonts" class="org.eclipse.ui.ExtensionFactory:colorsAndFontsPreferencePage" name="Colors and fonts"/>
 
