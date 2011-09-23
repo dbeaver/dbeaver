@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.oci;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
@@ -78,7 +79,7 @@ public class OCIUtils
         }
     }
 
-    public static OracleHomeDescriptor addOraHome(String oraHome)
+    public static OracleHomeDescriptor addOraHome(String oraHome) throws DBException
     {
         oraHome = CommonUtils.removeSplashFileName(oraHome);
 
@@ -111,7 +112,12 @@ public class OCIUtils
                 if (token.toLowerCase().contains("oracle")) {
                     token = CommonUtils.removeSplashFileName(token);
                     if (token.toLowerCase().endsWith("bin")) {
-                        addOraHome(token.substring(0, token.length() - 3));
+                        String oraHome = token.substring(0, token.length() - 3);
+                        try {
+                            addOraHome(oraHome);
+                        } catch (DBException ex) {
+                            log.warn("Wrong Oracle client home " + oraHome, ex);
+                        }
                     }
                 }
             }
@@ -119,7 +125,11 @@ public class OCIUtils
 
         String oraHome = System.getenv("ORA_HOME");
         if (oraHome != null) {
-            addOraHome(oraHome);
+            try {
+                addOraHome(oraHome);
+            } catch (DBException ex) {
+                log.warn("Wrong Oracle client home " + oraHome, ex);
+            }
         }
 
         // find Oracle homes in Windows registry
@@ -130,7 +140,12 @@ public class OCIUtils
                     Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey);
                     for (String key : valuesMap.keySet()) {
                         if (WIN_REG_ORA_HOME.equals(key)) {
-                            addOraHome(valuesMap.get(key));
+                            try {
+                                oraHome = valuesMap.get(key);
+                                addOraHome(oraHome);
+                            } catch (DBException ex) {
+                                log.warn("Wrong Oracle client home " + oraHome, ex);
+                            }
                             break;
                         }
                     }

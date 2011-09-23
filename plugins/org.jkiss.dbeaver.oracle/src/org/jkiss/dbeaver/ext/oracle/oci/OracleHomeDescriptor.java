@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.oci;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.BufferedReader;
@@ -29,11 +30,14 @@ public class OracleHomeDescriptor
     private boolean isInstantClient;
     private String oraHomeName;
 
-    public OracleHomeDescriptor(String oraHome)
+    public OracleHomeDescriptor(String oraHome) throws DBException
     {
         this.oraHome = CommonUtils.removeSplashFileName(oraHome);
         this.isInstantClient = OCIUtils.isInstatntClient(oraHome);
         this.oraVersion = OCIUtils.getOracleVersion(oraHome, isInstantClient);
+        if (oraVersion == null) {
+            throw new DBException("Unrecognized Oracle client version");
+        }
         this.fullOraVersion = OCIUtils.getFullOraVersion(oraHome, isInstantClient);
         this.oraHomeName = OCIUtils.readWinRegistry(oraHome, OCIUtils.WIN_REG_ORA_HOME_NAME);
     }

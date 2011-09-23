@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ext.oracle.views;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -26,6 +28,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
@@ -45,6 +48,8 @@ import java.util.Map;
  */
 public class OracleConnectionPage extends DialogPage implements IDataSourceConnectionEditor
 {
+    static final Log log = LogFactory.getLog(OracleConnectionPage.class);
+
     public static final String BROWSE = "Browse...";
     private IDataSourceConnectionEditorSite site;
     private Text hostText;
@@ -220,8 +225,20 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                         OracleHomeDescriptor oraHome = OCIUtils.getOraHome(dir);
                         if (oraHome == null) {
                             // add new Ora home
-                            oraHome = OCIUtils.addOraHome(dir);
-                            populateOraHomeCombo();
+                            try {
+                                oraHome = OCIUtils.addOraHome(dir);
+                                populateOraHomeCombo();
+                            } catch (DBException ex) {
+                                log.warn("Wrong Oracle client home " + oraHome, ex);
+                                UIUtils.showMessageBox(getShell(), "Select Oracle home", ex.getMessage(), SWT.ICON_ERROR);
+
+                                // restore the previous home
+                                String home = (String) site.getConnectionInfo().getProperties().get(OracleConstants.PROP_ORA_HOME);
+                                if (!CommonUtils.isEmpty(home)) {
+                                    oraHomeNameCombo.setText(home);
+                                }
+                                return;
+                            }
                         }
                         if (oraHome != null) {
                             oraHomeNameCombo.setText(oraHome.getOraHomeName());
