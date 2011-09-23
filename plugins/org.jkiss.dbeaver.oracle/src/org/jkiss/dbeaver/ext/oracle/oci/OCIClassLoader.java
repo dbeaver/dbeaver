@@ -4,6 +4,9 @@
 
 package org.jkiss.dbeaver.ext.oracle.oci;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URLClassLoader;
@@ -13,6 +16,8 @@ import java.net.URLClassLoader;
  */
 public class OCIClassLoader extends URLClassLoader
 {
+    static final Log log = LogFactory.getLog(OCIClassLoader.class);
+
     private OracleHomeDescriptor oracleHomeDescriptor;
     private File[] oraHomeLibraries;
 
@@ -31,9 +36,27 @@ public class OCIClassLoader extends URLClassLoader
                     return name.toLowerCase().endsWith(".dll"); // TODO win32 ONLY!!!
                 }
             });
+/*
+            System.loadLibrary("KERNEL32");
+            System.loadLibrary("USER32");
+            System.loadLibrary("WINMM");
+            System.loadLibrary("WS2_32");
+            System.loadLibrary("PSAPI");
+            System.loadLibrary("OLE32");
+            System.loadLibrary("ADVAPI32");
+            System.loadLibrary("MSVCRT");
+            System.load(dllFolder.getAbsolutePath() + "/OCI.DLL");
+            System.load(dllFolder.getAbsolutePath() + "/MSVCR80.DLL");
+            System.load(dllFolder.getAbsolutePath() + "/ORACORE11.DLL");
+            System.load(dllFolder.getAbsolutePath() + "/ORAUNLS11.DLL");
+            System.load(dllFolder.getAbsolutePath() + "/ORAUTS.DLL");
+            System.load(dllFolder.getAbsolutePath() + "/ORANLS11.DLL");
+            System.load(dllFolder.getAbsolutePath() + "/ORAUTS.DLL");
+            System.load(dllFolder.getAbsolutePath() + "/ADVAPI32.DLL");
+*/
         }
         else {
-            OCIUtils.log.warn("BIN folder isn't found in Oracle home " + oracleHomeDescriptor.getOraHome());
+            log.warn("Binary folder isn't found in Oracle home " + oracleHomeDescriptor.getOraHome());
         }
     }
 
