@@ -145,17 +145,21 @@ public class OCIUtils
         if (Platform.getOS().equals(WIN_32)) {
             try {
                 List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
-                for (String oracleKey : oracleKeys) {
-                    Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey);
-                    for (String key : valuesMap.keySet()) {
-                        if (WIN_REG_ORA_HOME.equals(key)) {
-                            try {
-                                oraHome = valuesMap.get(key);
-                                addOraHome(oraHome);
-                            } catch (DBException ex) {
-                                log.warn("Wrong Oracle client home " + oraHome, ex);
+                if (oracleKeys != null) {
+                    for (String oracleKey : oracleKeys) {
+                        Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey);
+                        if (valuesMap != null) {
+                            for (String key : valuesMap.keySet()) {
+                                if (WIN_REG_ORA_HOME.equals(key)) {
+                                    try {
+                                        oraHome = valuesMap.get(key);
+                                        addOraHome(oraHome);
+                                    } catch (DBException ex) {
+                                        log.warn("Wrong Oracle client home " + oraHome, ex);
+                                    }
+                                    break;
+                                }
                             }
-                            break;
                         }
                     }
                 }
