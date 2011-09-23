@@ -175,12 +175,14 @@ public class OCIUtils
         if (Platform.getOS().equals(WIN_32)) {
             try {
                 List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
-                for (String oracleKey : oracleKeys) {
-                    String home = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, WIN_REG_ORA_HOME);
-                    if (oraHome.equals(home)) {
-                        String value = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, name);
-                        if (value != null) {
-                            return value;
+                if (oracleKeys != null) {
+                    for (String oracleKey : oracleKeys) {
+                        String home = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, WIN_REG_ORA_HOME);
+                        if (oraHome.equals(home)) {
+                            String value = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, name);
+                            if (value != null) {
+                                return value;
+                            }
                         }
                     }
                 }
