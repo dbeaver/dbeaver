@@ -203,7 +203,7 @@
 
     </target>
 
-    <target name="dist-rpm">
+    <target name="dist-rpm" depends="init">
         <path id="ant-rpm.classpath">
             <fileset dir="lib" includes="*.jar"/>
         </path>
@@ -230,7 +230,7 @@
             todir="${rpmDirectory}/SOURCES"/-->
 
         <rpm 
-            name="${productName}" 
+            name="${archivePrefix}" 
             version="${productVersion}" 
             group="Applications/Databases" 
             url="http://dbeaver.jkiss.org"
@@ -263,7 +263,20 @@
 
     </target>
 
-    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,driver-pack">
+    <target name="dist-plugin">
+        <unzip 
+            src="${buildDirectory}/${buildId}/${buildId}-win32.win32.x86.zip"
+            dest="${buildDirectory}/dbeaver-plugin"
+            overwrite="true"
+            />
+        <zip destfile="${distDirectory}/dbeaver-${productVersion}-plugin.zip">
+            <fileset dir="${buildDirectory}/dbeaver-plugin/dbeaver/plugins">
+                <include name="org.jkiss.dbeaver*.jar" />
+            </fileset>
+        </zip>
+    </target>
+
+    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,dist-plugin,driver-pack">
 
     </target>
 
