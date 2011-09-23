@@ -51,6 +51,9 @@ public class OCIUtils
     }
 
     public static OracleHomeDescriptor getOraHome(String oraHome) {
+        if (CommonUtils.isEmpty(oraHome)) {
+            return null;
+        }
         for (OracleHomeDescriptor home : oraHomes) {
             // file name case insensitivity on Windows platform
             if (equalsFileName(home.getOraHome(), oraHome)) {
@@ -61,6 +64,9 @@ public class OCIUtils
     }
 
     public static OracleHomeDescriptor getOraHomeByName(String oraHomeName) {
+        if (CommonUtils.isEmpty(oraHomeName)) {
+            return null;
+        }
         for (OracleHomeDescriptor home : oraHomes) {
             // file name case insensitivity on Windows platform
             if (equalsFileName(home.getOraHomeName(), oraHomeName)) {
@@ -192,6 +198,9 @@ public class OCIUtils
     {
         oraHome = CommonUtils.addSplashFileName(oraHome);
         File folder = new File(isInstantClient ? oraHome : oraHome + "/BIN");
+        if (!folder.exists()) {
+            return null;
+        }
         for (int counter = 1; counter <= 12; counter++) {
             String dllName = System.mapLibraryName((isInstantClient ? "oraociei" : "oraclient") + counter);
             File oraclient_dll = new File(folder, dllName);
@@ -209,9 +218,11 @@ public class OCIUtils
     public static String getFullOraVersion(String oraHome, boolean isInstantClient)
     {
         String version = null;
+        String sqlplus = 
+                (isInstantClient ? CommonUtils.addSplashFileName(oraHome) : CommonUtils.addSplashFileName(oraHome) + "BIN/") + 
+                        "sqlplus -version";
         try {
-            String path = isInstantClient ? CommonUtils.addSplashFileName(oraHome) : CommonUtils.addSplashFileName(oraHome) + "BIN/";
-            Process p = Runtime.getRuntime().exec(path + "sqlplus -version");
+            Process p = Runtime.getRuntime().exec(sqlplus);
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String line;
             while ((line = input.readLine()) != null) {
@@ -223,7 +234,7 @@ public class OCIUtils
             input.close();
         }
         catch (Exception ex) {
-            ex.printStackTrace();
+            log.warn("Error reading Oracle client version from " + sqlplus, ex);
         }
         return version;
     }
