@@ -81,6 +81,9 @@ public class OCIUtils
 
     public static OracleHomeDescriptor addOraHome(String oraHome) throws DBException
     {
+        if (CommonUtils.isEmpty(oraHome)) {
+            return null;
+        }
         oraHome = CommonUtils.removeSplashFileName(oraHome);
 
         boolean contains = false;
@@ -151,9 +154,9 @@ public class OCIUtils
                     }
                 }
             } catch (IllegalAccessException e) {
-                // do nothing
+                log.warn("Error reading Windows registry", e);
             } catch (InvocationTargetException e) {
-                // do nothing
+                log.warn("Error reading Windows registry", e);
             }
         }
     }
@@ -172,9 +175,9 @@ public class OCIUtils
                     }
                 }
             } catch (IllegalAccessException e) {
-                // do nothing
+                log.warn("Error reading Windows registry", e);
             } catch (InvocationTargetException e) {
-                // do nothing
+                log.warn("Error reading Windows registry", e);
             }
         }
         return null;
