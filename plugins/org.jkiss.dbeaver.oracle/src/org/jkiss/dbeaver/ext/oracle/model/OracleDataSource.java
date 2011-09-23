@@ -148,7 +148,11 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
                 DriverDescriptor driverDescriptor = (DriverDescriptor) driver;
                 ClassLoader ociClassLoader = ociClassLoadersCache.get((String)ora_home);
                 if (ociClassLoader == null) {
-                    ociClassLoader = new OCIClassLoader(OCIUtils.getOraHomeByName((String) ora_home), getClass().getClassLoader());
+                    OracleHomeDescriptor homeDescriptor = OCIUtils.getOraHomeByName((String) ora_home);
+                    if (homeDescriptor == null) {
+                        throw new DBException("Can't load driver from '" + ora_home + "'");
+                    }
+                    ociClassLoader = new OCIClassLoader(homeDescriptor, getClass().getClassLoader());
                     ociClassLoadersCache.put((String)ora_home, ociClassLoader);
                 }
                 String driverClassName = driverDescriptor.getDriverClassName();
