@@ -306,8 +306,8 @@ public class WinRegistry {
                 new Object[]{new Integer(handles[0])});
 
         int count = info[2]; // count  
-        int maxlen = 11; // value length max
-            // 11 is hardcoded value to pass ORACLE_HOME variable
+        int maxlen = 256; // value length max
+            // 256 is hardcoded value
             // initially info[3] was here
         for (int index = 0; index < count; index++) {
             byte[] name = (byte[]) regEnumValue.invoke(
@@ -338,11 +338,14 @@ public class WinRegistry {
 
         int count = info[2]; // count  
         int maxlen = info[3]; // value length max
-        for (int index = 0; index < count; index++) {
+        for (int index = 0; index < Integer.MAX_VALUE; index++) {
             byte[] name = (byte[]) regEnumKeyEx.invoke(root, new Object[]{
                     new Integer
                             (handles[0]), new Integer(index), new Integer(maxlen + 1)
             });
+            if (name == null) {
+                break;
+            }
             results.add(new String(name).trim());
         }
         regCloseKey.invoke(root, new Object[]{new Integer(handles[0])});
