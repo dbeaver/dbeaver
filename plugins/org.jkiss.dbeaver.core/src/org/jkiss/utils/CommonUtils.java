@@ -98,7 +98,7 @@ public class CommonUtils {
         return res.toString();
     }
 
-    public static String addSplashFileName(String str)
+    public static String makeDirectoryName(String str)
     {
         if (!str.endsWith("/")) {
             str += "/";
@@ -106,9 +106,9 @@ public class CommonUtils {
         return str;
     }
 
-    public static String removeSplashFileName(String str)
+    public static String removeTrailingSlash(String str)
     {
-        if (str.endsWith("/") || str.endsWith("\\")) {
+        while (str.endsWith("/") || str.endsWith("\\")) {
             str = str.substring(0, str.length() - 1);
         }
         return str;

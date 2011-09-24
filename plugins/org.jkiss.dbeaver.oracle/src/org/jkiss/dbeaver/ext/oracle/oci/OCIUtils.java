@@ -79,7 +79,7 @@ public class OCIUtils
         if (CommonUtils.isEmpty(oraHome)) {
             return null;
         }
-        oraHome = CommonUtils.removeSplashFileName(oraHome);
+        oraHome = CommonUtils.removeTrailingSlash(oraHome);
 
         boolean contains = false;
         for (OracleHomeDescriptor home : oraHomes) {
@@ -108,7 +108,7 @@ public class OCIUtils
         if (path != null) {
             for (String token : path.split(System.getProperty("path.separator"))) {
                 if (token.toLowerCase().contains("oracle")) {
-                    token = CommonUtils.removeSplashFileName(token);
+                    token = CommonUtils.removeTrailingSlash(token);
                     if (token.toLowerCase().endsWith("bin")) {
                         String oraHome = token.substring(0, token.length() - 3);
                         try {
@@ -191,7 +191,7 @@ public class OCIUtils
 
     public static Integer getOracleVersion(String oraHome, boolean isInstantClient)
     {
-        oraHome = CommonUtils.addSplashFileName(oraHome);
+        oraHome = CommonUtils.makeDirectoryName(oraHome);
         File folder = new File(isInstantClient ? oraHome : oraHome + "/BIN");
         if (!folder.exists()) {
             return null;
@@ -214,7 +214,7 @@ public class OCIUtils
     {
         String version = null;
         String sqlplus = 
-                (isInstantClient ? CommonUtils.addSplashFileName(oraHome) : CommonUtils.addSplashFileName(oraHome) + "BIN/") + 
+                (isInstantClient ? CommonUtils.makeDirectoryName(oraHome) : CommonUtils.makeDirectoryName(oraHome) + "BIN/") +
                         "sqlplus -version";
         try {
             Process p = Runtime.getRuntime().exec(sqlplus);
@@ -235,8 +235,8 @@ public class OCIUtils
     }
 
     public static boolean isInstatntClient(String oraHome) {
-        File root = new File(System.mapLibraryName(CommonUtils.addSplashFileName(oraHome) + "oci"));
-        File bin = new File(System.mapLibraryName(CommonUtils.addSplashFileName(oraHome) + "BIN/" + "oci"));
+        File root = new File(System.mapLibraryName(CommonUtils.makeDirectoryName(oraHome) + "oci"));
+        File bin = new File(System.mapLibraryName(CommonUtils.makeDirectoryName(oraHome) + "BIN/" + "oci"));
         return root.exists() && !bin.exists();
     }
 }

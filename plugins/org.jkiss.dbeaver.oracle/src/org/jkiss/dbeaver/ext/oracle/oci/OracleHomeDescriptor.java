@@ -32,7 +32,7 @@ public class OracleHomeDescriptor
 
     public OracleHomeDescriptor(String oraHome) throws DBException
     {
-        this.oraHome = CommonUtils.removeSplashFileName(oraHome);
+        this.oraHome = CommonUtils.removeTrailingSlash(oraHome);
         this.isInstantClient = OCIUtils.isInstatntClient(oraHome);
         this.oraVersion = OCIUtils.getOracleVersion(oraHome, isInstantClient);
         if (oraVersion == null) {
