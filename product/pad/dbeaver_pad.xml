@@ -23,7 +23,7 @@
     </Contact_Info>
     <Support_Info>
       <Sales_Email>serge@jkiss.org</Sales_Email>
-      <Support_Email>serge@jkiss.org</Support_Email>
+      <Support_Email>support@jkiss.org</Support_Email>
       <General_Email>serge@jkiss.org</General_Email>
       <Sales_Phone>+7-962-728-16-88</Sales_Phone>
       <Support_Phone>+7-962-728-16-88</Support_Phone>
@@ -33,9 +33,9 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.3.4</Program_Version>
-    <Program_Release_Month>08</Program_Release_Month>
-    <Program_Release_Day>29</Program_Release_Day>
+    <Program_Version>1.4.0</Program_Version>
+    <Program_Release_Month>09</Program_Release_Month>
+    <Program_Release_Day>26</Program_Release_Day>
     <Program_Release_Year>2011</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -44,16 +44,26 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-- Oracle XML type support fix
-- Data export fix (added support of filters)
-- UI bug fixes
-	</Program_Change_Info>
+- Oracle
+	* OCI driver support
+	* Constraints &amp; foreign keys search
+	* Timestamp &amp; cursor datatypes support
+	* Procedures, packages &amp; views compilation support
+	* Edit of stored procedures
+- Parameters/variables binding
+- Mac OS X - startup freeze fix
+- Eclipse plugin - test version
+- UI fixes
+	Objects search fix
+	Inline editor of timestamp
+- Minor bugfixes
+    </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
     <File_Info>
-      <File_Size_Bytes>22855234</File_Size_Bytes>
-      <File_Size_K>22319</File_Size_K>
-      <File_Size_M>21.8</File_Size_M>
+      <File_Size_Bytes>24458976</File_Size_Bytes>
+      <File_Size_K>23885</File_Size_K>
+      <File_Size_M>23.3</File_Size_M>
       <Filename_Versioned></Filename_Versioned>
       <Filename_Previous></Filename_Previous>
       <Filename_Generic></Filename_Generic>
@@ -87,7 +97,7 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.3.4-x86-setup.exe</Primary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.4.0-x86-setup.exe</Primary_Download_URL>
       <Secondary_Download_URL></Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
@@ -100,7 +110,7 @@ This software is provided "as is" without express or implied warranty.</EULA>
   </Permissions>
   <Program_Descriptions>
     <English>
-      <Keywords>sql,database manager,database client,mysql,postgresql,mssql,db2,oracle,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc,sqlite</Keywords>
+      <Keywords>sql,database manager,database client,java,mysql,postgresql,mssql,db2,oracle,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc,sqlite,ingres,linter,teradata</Keywords>
       <Char_Desc_45>Universal Database Manager and SQL Client</Char_Desc_45>
       <Char_Desc_80>Free Universal Database Manager and SQL Client</Char_Desc_80>
       <Char_Desc_250>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite and any database which has JDBC driver.</Char_Desc_250>
