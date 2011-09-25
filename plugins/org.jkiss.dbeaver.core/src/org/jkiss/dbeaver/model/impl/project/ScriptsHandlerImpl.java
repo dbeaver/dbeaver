@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.project;
 
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,15 +42,22 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     public static final String RES_TYPE_SCRIPTS = "scripts"; //$NON-NLS-1$
     public static final String SCRIPT_FILE_EXTENSION = "sql";
 
-    public static IFolder getScriptsFolder(IProject project)
+    public static IFolder getScriptsFolder(IProject project, boolean forceCreate) throws CoreException
     {
-        return project.getFolder(SCRIPTS_DIR);
+        final IFolder scriptsFolder = project.getFolder(SCRIPTS_DIR);
+        if (!scriptsFolder.exists() && forceCreate) {
+            scriptsFolder.create(true, true, new NullProgressMonitor());
+        }
+        if (scriptsFolder.exists()) {
+            scriptsFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_SCRIPTS);
+        }
+        return scriptsFolder;
     }
 
-    public static IFile findRecentScript(IProject project, DBSDataSourceContainer container)
+    public static IFile findRecentScript(IProject project, DBSDataSourceContainer container) throws CoreException
     {
         List<IFile> scripts = new ArrayList<IFile>();
-        findRecentScripts(ScriptsHandlerImpl.getScriptsFolder(project), container, scripts);
+        findRecentScripts(ScriptsHandlerImpl.getScriptsFolder(project, false), container, scripts);
         long recentTimestamp = 0l;
         IFile recentFile = null;
         for (IFile file : scripts) {
@@ -87,7 +95,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         // Get folder
         IFolder scriptsFolder = folder;
         if (scriptsFolder == null) {
-            scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(project);
+            scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(project, true);
             if (dataSourceContainer != null && dataSourceContainer.getPreferenceStore().getBoolean(PrefConstants.SCRIPT_AUTO_FOLDERS)) {
                 IFolder dbFolder = scriptsFolder.getFolder(CommonUtils.escapeFileName(dataSourceContainer.getName()));
                 if (dbFolder != null) {
@@ -146,11 +154,9 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     @Override
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
-        final IFolder scriptsFolder = getScriptsFolder(project);
-        if (!scriptsFolder.exists()) {
-            scriptsFolder.create(true, true, monitor);
+        if (DBeaverCore.getInstance().isStandalone()) {
+            getScriptsFolder(project, true);
         }
-        scriptsFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_SCRIPTS);
     }
 
     @Override

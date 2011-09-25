@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.navigator;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IFile;
@@ -41,9 +42,16 @@ public class ERDResourceHandler extends AbstractResourceHandler {
 
     public static final String RES_TYPE_DIAGRAMS = "erd"; //$NON-NLS-1$
 
-    public static IFolder getDiagramsFolder(IProject project)
+    public static IFolder getDiagramsFolder(IProject project, boolean forceCreate) throws CoreException
     {
-        return project.getFolder(ERD_DIR);
+        final IFolder diagramsFolder = project.getFolder(ERD_DIR);
+        if (!diagramsFolder.exists() && forceCreate) {
+            diagramsFolder.create(true, true, new NullProgressMonitor());
+        }
+        if (diagramsFolder.exists()) {
+            diagramsFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_DIAGRAMS);
+        }
+        return diagramsFolder;
     }
 
     @Override
@@ -71,11 +79,9 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     @Override
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
-        final IFolder diagramsFolder = getDiagramsFolder(project);
-        if (!diagramsFolder.exists()) {
-            diagramsFolder.create(true, true, monitor);
+        if (DBeaverCore.getInstance().isStandalone()) {
+            getDiagramsFolder(project, true);
         }
-        diagramsFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_DIAGRAMS);
     }
 
     @Override
@@ -109,7 +115,11 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         throws DBException
     {
         if (folder == null) {
-            folder = getDiagramsFolder(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
+            try {
+                folder = getDiagramsFolder(DBeaverCore.getInstance().getProjectRegistry().getActiveProject(), true);
+            } catch (CoreException e) {
+                throw new DBException("Can't obtain folder for diagram", e);
+            }
         }
         if (folder == null) {
             throw new DBException("Can't detect folder for diagram");

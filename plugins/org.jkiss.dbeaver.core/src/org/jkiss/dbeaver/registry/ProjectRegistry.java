@@ -151,8 +151,12 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public DBPResourceHandler getResourceHandler(IResource resource)
     {
-        if (resource == null || !resource.isAccessible() || resource.isHidden() || resource.isPhantom()) {
+        if (resource == null || !resource.isAccessible() || resource.isPhantom()) {
             // Skip not accessible hidden and phantom resources
+            return null;
+        }
+        if (resource instanceof IContainer && resource.isHidden()) {
+            // Skip hidden folders and projects
             return null;
         }
         DBPResourceHandler handler = null;
@@ -253,11 +257,13 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     private IProject createGeneralProject(IWorkspace workspace, IProgressMonitor monitor) throws CoreException
     {
-        final IProject project = workspace.getRoot().getProject("General");
+        final IProject project = workspace.getRoot().getProject(
+            DBeaverCore.getInstance().isStandalone() ?
+                "General" : "DBeaver");
         project.create(monitor);
         project.open(monitor);
         final IProjectDescription description = workspace.newProjectDescription(project.getName());
-        description.setComment("General project");
+        description.setComment("General DBeaver project");
         project.setDescription(description, monitor);
         project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, SecurityUtils.generateGUID(false));
 

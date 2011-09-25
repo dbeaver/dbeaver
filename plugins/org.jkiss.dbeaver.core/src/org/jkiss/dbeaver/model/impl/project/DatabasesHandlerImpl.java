@@ -38,6 +38,7 @@ public class DatabasesHandlerImpl extends AbstractResourceHandler {
         final IFile configFile = project.getFile(CONFIG_FILE);
         if (!configFile.exists()) {
             configFile.create(new ByteArrayInputStream(CONFIG_EMPTY.getBytes()), true, monitor);
+            configFile.setHidden(true);
         }
         configFile.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_DATABASES);
     }

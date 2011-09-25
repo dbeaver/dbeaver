@@ -40,9 +40,16 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
     public static final String RES_TYPE_BOOKMARKS = "bookmarks"; //$NON-NLS-1$
 
-    public static IFolder getBookmarksFolder(IProject project)
+    public static IFolder getBookmarksFolder(IProject project, boolean forceCreate) throws CoreException
     {
-        return project.getFolder(BOOKMARKS_DIR);
+        final IFolder bookmarksFolder = project.getFolder(BOOKMARKS_DIR);
+        if (!bookmarksFolder.exists() && forceCreate) {
+            bookmarksFolder.create(true, true, new NullProgressMonitor());
+        }
+        if (bookmarksFolder.exists()) {
+            bookmarksFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_BOOKMARKS);
+        }
+        return bookmarksFolder;
     }
 
     @Override
@@ -70,11 +77,9 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     @Override
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
-        final IFolder bookmarksFolder = getBookmarksFolder(project);
-        if (!bookmarksFolder.exists()) {
-            bookmarksFolder.create(true, true, monitor);
+        if (DBeaverCore.getInstance().isStandalone()) {
+            getBookmarksFolder(project, true);
         }
-        bookmarksFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_BOOKMARKS);
     }
 
     @Override
@@ -186,7 +191,11 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         if (folder == null) {
             for (DBNNode parent = node.getParentNode(); parent != null; parent = parent.getParentNode()) {
                 if (parent instanceof DBNProject) {
-                    folder = getBookmarksFolder(((DBNProject)parent).getProject());
+                    try {
+                        folder = getBookmarksFolder(((DBNProject)parent).getProject(), true);
+                    } catch (CoreException e) {
+                        throw new DBException("Can't obtain folder for bookmark", e);
+                    }
                     break;
                 }
             }

@@ -125,7 +125,7 @@ public class DBNResource extends DBNNode
                 //final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
                 List<DBNNode> result = new ArrayList<DBNNode>();
                 try {
-                    IResource[] members = ((IContainer) resource).members();
+                    IResource[] members = ((IContainer) resource).members(IContainer.INCLUDE_HIDDEN);
                     for (IResource member : members) {
                         DBNNode newChild = makeNode(member);
                         if (newChild != null) {
@@ -317,13 +317,22 @@ public class DBNResource extends DBNNode
         for (IResourceDelta childDelta : delta.getAffectedChildren()) {
             DBNResource childResource = getChild(childDelta.getResource());
             if (childResource == null) {
-                if (childDelta.getKind() == IResourceDelta.ADDED) {
-                    // New child
+                if (childDelta.getKind() == IResourceDelta.ADDED || childDelta.getKind() == IResourceDelta.CHANGED) {
+                    // New child or new "grand-child"
                     DBNNode newChild = makeNode(childDelta.getResource());
                     if (newChild != null) {
                         children.add(newChild);
                         sortChildren(children);
                         getModel().fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.ADD, newChild));
+
+                        if (childDelta.getKind() == IResourceDelta.CHANGED) {
+                            // Notify just created resource
+                            // This may happen (e.g.) when first script created in just created script folder
+                            childResource = getChild(childDelta.getResource());
+                            if (childResource != null) {
+                                childResource.handleResourceChange(childDelta);
+                            }
+                        }
                     }
                 } else {
                     //log.warn("Can't find resource '" + childDelta.getResource().getName() + "' in navigator model");
