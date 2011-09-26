@@ -77,6 +77,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png");
     private Label oracleVersionLabel;
     private SelectionListener oraHomeSelectionListener;
+    private DirectoryDialog directoryDialog;
 
     @Override
     public void dispose()
@@ -214,50 +215,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         Label label = UIUtils.createControlLabel(selectorContainer, "  Oracle Home");
         label.setFont(UIUtils.makeBoldFont(label.getFont()));
         oraHomeNameCombo = new Combo(selectorContainer, SWT.READ_ONLY);
-        final DirectoryDialog directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
-        oraHomeSelectionListener = new SelectionListener()
-        {
-            public void widgetSelected(SelectionEvent e)
-            {
-                if (BROWSE.equals(oraHomeNameCombo.getText())) {
-                    String dir = directoryDialog.open();
-                    if (dir != null) {
-                        OracleHomeDescriptor oraHome = OCIUtils.getOraHome(dir);
-                        if (oraHome == null) {
-                            // add new Ora home
-                            try {
-                                oraHome = OCIUtils.addOraHome(dir);
-                                populateOraHomeCombo();
-                            } catch (DBException ex) {
-                                log.warn("Wrong Oracle client home " + oraHome, ex);
-                                UIUtils.showMessageBox(getShell(), "Select Oracle home", ex.getMessage(), SWT.ICON_ERROR);
-
-                                // restore the previous home
-                                String home = (String) site.getConnectionInfo().getProperties().get(OracleConstants.PROP_ORA_HOME);
-                                if (!CommonUtils.isEmpty(home)) {
-                                    oraHomeNameCombo.setText(home);
-                                }
-                                return;
-                            }
-                        }
-                        if (oraHome != null) {
-                            oraHomeNameCombo.setText(oraHome.getOraHomeName());
-                        }
-                        else {
-                            oraHomeNameCombo.setText("");
-                        }
-                    } else {
-                        oraHomeNameCombo.setText("");
-                    }
-                }
-                displayClientVersion();
-                populateTnsNameCombo();
-            }
-
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        };
+        directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
+        oraHomeSelectionListener = new OraHomeSelectionListener();
         populateOraHomeCombo();
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
@@ -490,13 +449,13 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 }
                 else {
                     if (!OCIUtils.oraHomes.isEmpty()) {
-                        oraHomeNameCombo.setText(OCIUtils.oraHomes.get(0).getOraHome());
+                        oraHomeNameCombo.setText(OCIUtils.oraHomes.get(0).getOraHomeName());
                     }
                 }
                 displayClientVersion();
             }
 
-            final Object conTypeProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TYPE);
+            Object conTypeProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TYPE);
             if (conTypeProperty != null) {
                 connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
             } else {
@@ -670,6 +629,54 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         }
         public void widgetDefaultSelected(SelectionEvent e) {
             updateUI();
+        }
+    }
+
+    private class OraHomeSelectionListener implements SelectionListener
+    {
+        public OraHomeSelectionListener()
+        {
+        }
+
+        public void widgetSelected(SelectionEvent e)
+        {
+            if (BROWSE.equals(oraHomeNameCombo.getText())) {
+                String dir = directoryDialog.open();
+                if (dir != null) {
+                    OracleHomeDescriptor oraHome = OCIUtils.getOraHome(dir);
+                    if (oraHome == null) {
+                        // add new Ora home
+                        try {
+                            oraHome = OCIUtils.addOraHome(dir);
+                            populateOraHomeCombo();
+                        } catch (DBException ex) {
+                            log.warn("Wrong Oracle client home " + oraHome, ex);
+                            UIUtils.showMessageBox(getShell(), "Select Oracle home", ex.getMessage(), SWT.ICON_ERROR);
+
+                            // restore the previous home
+                            String home = (String) site.getConnectionInfo().getProperties().get(OracleConstants.PROP_ORA_HOME);
+                            if (!CommonUtils.isEmpty(home)) {
+                                oraHomeNameCombo.setText(home);
+                            }
+                            return;
+                        }
+                    }
+                    if (oraHome != null) {
+                        oraHomeNameCombo.setText(oraHome.getOraHomeName());
+                    }
+                    else {
+                        oraHomeNameCombo.setText("");
+                    }
+                } else {
+                    oraHomeNameCombo.setText("");
+                }
+            }
+            displayClientVersion();
+            populateTnsNameCombo();
+        }
+
+        public void widgetDefaultSelected(SelectionEvent e)
+        {
         }
     }
 }
