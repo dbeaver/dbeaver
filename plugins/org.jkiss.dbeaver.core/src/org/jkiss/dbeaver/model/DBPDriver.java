@@ -42,6 +42,8 @@ public interface DBPDriver extends DBPObject
 
     boolean isAnonymousAccess();
 
+    boolean isCustomDriverLoader();
+
     Collection<IPropertyDescriptor> getConnectionPropertyDescriptors();
 
     Map<Object, Object> getDefaultConnectionProperties();

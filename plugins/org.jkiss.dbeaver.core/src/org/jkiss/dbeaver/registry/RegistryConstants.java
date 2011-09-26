@@ -51,6 +51,7 @@ public class RegistryConstants {
     public static final String ATTR_WEB_URL = "webURL"; //$NON-NLS-1$
     public static final String ATTR_SUPPORTS_DRIVER_PROPERTIES = "supportsDriverProperties"; //$NON-NLS-1$
     public static final String ATTR_ANONYMOUS = "anonymous"; //$NON-NLS-1$
+    public static final String ATTR_CUSTOM_DRIVER_LOADER = "customDriverLoader"; //$NON-NLS-1$
 
     public static final String ATTR_ICON = "icon"; //$NON-NLS-1$
     public static final String ATTR_ICON_ID = "iconId"; //$NON-NLS-1$

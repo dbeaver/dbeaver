@@ -77,6 +77,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private Image iconError;
     private boolean supportsDriverProperties;
     private boolean anonymousAccess;
+    private boolean customDriverLoader;
     private boolean custom;
     private boolean modified;
     private boolean disabled;
@@ -489,6 +490,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.anonymousAccess = anonymousAccess;
     }
 
+    public boolean isCustomDriverLoader()
+    {
+        return customDriverLoader;
+    }
+
+    public void setLoadedByConnection(boolean loadedByConnection)
+    {
+        this.customDriverLoader = loadedByConnection;
+    }
+
     public boolean isManagable()
     {
         return getProviderDescriptor().isDriversManagable();
@@ -680,26 +691,28 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         loadLibraries();
 
         try {
-            try {
-                if (this.isInternalDriver()) {
-                    // Use system class loader
-                    driverClass = Class.forName(driverClassName);
-                } else {
-                    // Load driver classes into core module using plugin class loader
-                    driverClass = Class.forName(driverClassName, true, classLoader);
+            if (!isCustomDriverLoader()) {
+                try {
+                    if (this.isInternalDriver()) {
+                        // Use system class loader
+                        driverClass = Class.forName(driverClassName);
+                    } else {
+                        // Load driver classes into core module using plugin class loader
+                        driverClass = Class.forName(driverClassName, true, classLoader);
+                    }
                 }
+                catch (Throwable ex) {
+                    throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
+                }
+    
+                // Create driver instance
+                if (!this.isInternalDriver()) {
+                    driverInstance = createDriverInstance();
+                }
+    
+                isLoaded = true;
+                isFailed = false;
             }
-            catch (Throwable ex) {
-                throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
-            }
-
-            // Create driver instance
-            if (!this.isInternalDriver()) {
-                driverInstance = createDriverInstance();
-            }
-
-            isLoaded = true;
-            isFailed = false;
         } catch (DBException e) {
             isFailed = true;
             throw e;
@@ -987,6 +1000,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             xml.addAttribute(RegistryConstants.ATTR_PORT, this.getDefaultPort());
         }
         xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.getString(this.getDescription()));
+        if (this.isCustomDriverLoader()) {
+            xml.addAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER, this.isCustomDriverLoader());
+        }
 
         // Libraries
         for (DriverFileDescriptor lib : this.getFiles()) {
@@ -1081,6 +1097,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
                 curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
                 curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
+                String loadedByConnection = atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER);
+                if (loadedByConnection != null) {
+                    curDriver.setLoadedByConnection(Boolean.valueOf(loadedByConnection));
+                }
                 curDriver.setModified(true);
                 String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                 if (CommonUtils.getBoolean(disabledAttr)) {

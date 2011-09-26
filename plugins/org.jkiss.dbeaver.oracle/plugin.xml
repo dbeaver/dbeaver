@@ -316,6 +316,7 @@
                     class="oracle.jdbc.OracleDriver"
                     sampleURL="jdbc:oracle:oci:@{database}"
                     defaultPort="1521"
+                    customDriverLoader="true"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle OCI driver. Requires Oracle client.">
                 </driver>
