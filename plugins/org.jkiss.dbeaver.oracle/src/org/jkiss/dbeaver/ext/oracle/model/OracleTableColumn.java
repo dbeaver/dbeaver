@@ -8,17 +8,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSHiddenObject;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.sql.ResultSet;
+import java.util.Collection;
 
 /**
  * OracleTableColumn
@@ -78,10 +78,15 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return getTable().getDataSource();
     }
 
-    @Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20, description = "Datatype of the column")
+    @Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnDataTypeListProvider.class, description = "Data type of the column")
     public DBSDataType getType()
     {
         return type;
+    }
+
+    public void setType(OracleDataType type)
+    {
+        this.type = type;
     }
 
     @Property(name = "Type Mod", viewable = true, order = 30, description = "Datatype modifier of the column")
@@ -161,6 +166,20 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             return DBIcon.TYPE_XML.getImage();
         }
         return super.getObjectImage();
+    }
+
+    public static class ColumnDataTypeListProvider implements IPropertyValueListProvider<OracleTableColumn> {
+
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+
+        public Object[] getPossibleValues(OracleTableColumn column)
+        {
+            final Collection<? extends DBSDataType> dataTypes = column.getTable().getDataSource().getDataTypes();
+            return dataTypes.toArray(new DBSDataType[dataTypes.size()]);
+        }
     }
 
 }

@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -43,10 +45,11 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
 
     protected OracleTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent, Object copyFrom)
     {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar");
+        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2");
 
         final OracleTableColumn column = new OracleTableColumn(parent);
         column.setName(JDBCObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
+        column.setType((OracleDataType) columnType);
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBSDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getValueType());
