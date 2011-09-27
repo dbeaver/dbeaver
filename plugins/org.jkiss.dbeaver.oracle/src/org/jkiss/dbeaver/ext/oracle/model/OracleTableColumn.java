@@ -157,7 +157,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
 
     public Image getObjectImage()
     {
-        if (type.getName().equals(OracleConstants.TYPE_NAME_XML)) {
+        if (type != null && type.getName().equals(OracleConstants.TYPE_NAME_XML)) {
             return DBIcon.TYPE_XML.getImage();
         }
         return super.getObjectImage();
