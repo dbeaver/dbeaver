@@ -435,8 +435,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             }
         }
 
-        tnsNameCombo.setEnabled(isOCI);
-
         // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
@@ -585,7 +583,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             url.append("thin");
         }
         url.append(":@");
-        if (CommonUtils.isEmpty(connectionInfo.getHostName()) && !CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+        if ((connectionType == OracleConstants.ConnectionType.TNS || CommonUtils.isEmpty(connectionInfo.getHostName())) && !CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             // TNS name specified
             url.append(connectionInfo.getDatabaseName());
         } else {
