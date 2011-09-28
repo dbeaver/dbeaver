@@ -41,13 +41,7 @@ public class OracleHomeDescriptor
         }
         this.fullOraVersion = OCIUtils.getFullOraVersion(oraHome, isInstantClient);
         this.oraHomeName = OCIUtils.readWinRegistry(oraHome, OCIUtils.WIN_REG_ORA_HOME_NAME);
-        String tnsAdmin = System.getenv("TNS_ADMIN");
-        File tnsNamesFile = new File (tnsAdmin);
-        if (!tnsNamesFile.exists() && this.oraHome != null) {
-            tnsNamesFile = new File (this.oraHome + "/Network/Admin/TNSNAMES.ORA");
-        }
-        // Reads TNS aliaces from TNSNAMES.ORA in specified Oracle home or TNS_ADMIN.
-        tnsNames = OCIUtils.readTnsNames(tnsNamesFile.getAbsolutePath());
+        tnsNames = OCIUtils.readTnsNames(this.oraHome, true);
     }
 
     public String getOraHome()
