@@ -14,9 +14,13 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -234,7 +238,38 @@ public class OCIUtils
         return version;
     }
 
-    public static boolean isInstatntClient(String oraHome) {
+    /**
+     * Reads TNS names from a specified file.
+     */
+    public static ArrayList<String> readTnsNames(String tnsnamesPath)
+    {
+        ArrayList<String> aliases = new ArrayList<String>();
+
+        File tnsnamesOra = new File (tnsnamesPath);
+        if (tnsnamesOra.exists()) {
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("#") && line.contains(" =")) {
+                        aliases.add(line.substring(0, line.indexOf(" =")));
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                // do nothing
+            } catch (IOException e) {
+                // do nothing
+            }
+        }
+        else {
+            // do nothing
+        }
+        Collections.sort(aliases);
+        return aliases;
+    }
+
+    public static boolean isInstatntClient(String oraHome)
+    {
         File root = new File(System.mapLibraryName(CommonUtils.makeDirectoryName(oraHome) + "oci"));
         File bin = new File(System.mapLibraryName(CommonUtils.makeDirectoryName(oraHome) + "BIN/" + "oci"));
         return root.exists() && !bin.exists();

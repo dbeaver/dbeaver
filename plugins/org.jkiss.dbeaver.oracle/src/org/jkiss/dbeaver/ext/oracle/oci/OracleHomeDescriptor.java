@@ -29,6 +29,7 @@ public class OracleHomeDescriptor
     private String fullOraVersion;
     private boolean isInstantClient;
     private String oraHomeName;
+    private ArrayList<String> tnsNames;
 
     public OracleHomeDescriptor(String oraHome) throws DBException
     {
@@ -40,6 +41,13 @@ public class OracleHomeDescriptor
         }
         this.fullOraVersion = OCIUtils.getFullOraVersion(oraHome, isInstantClient);
         this.oraHomeName = OCIUtils.readWinRegistry(oraHome, OCIUtils.WIN_REG_ORA_HOME_NAME);
+        String tnsAdmin = System.getenv("TNS_ADMIN");
+        File tnsNamesFile = new File (tnsAdmin);
+        if (!tnsNamesFile.exists() && this.oraHome != null) {
+            tnsNamesFile = new File (this.oraHome + "/Network/Admin/TNSNAMES.ORA");
+        }
+        // Reads TNS aliaces from TNSNAMES.ORA in specified Oracle home or TNS_ADMIN.
+        tnsNames = OCIUtils.readTnsNames(tnsNamesFile.getAbsolutePath());
     }
 
     public String getOraHome()
@@ -72,40 +80,9 @@ public class OracleHomeDescriptor
         }
     }
 
-    /**
-     * Reads TNS aliaces from TNSNAMES.ORA in specified Oracle home.
-     * @param oraHome path of Oracle home location
-     * @return TNS aliases list
-     */
     public ArrayList<String> getOraServiceNames()
     {
-        ArrayList<String> aliases = new ArrayList<String>();
-
-        // parse TNSNAMES.ORA file
-        if (oraHome != null) {
-            String tnsnamesPath = oraHome + "/Network/Admin/TNSNAMES.ORA";
-            File tnsnamesOra = new File (tnsnamesPath);
-            if (tnsnamesOra.exists()) {
-                try {
-                    BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("#") && line.contains(" =")) {
-                            aliases.add(line.substring(0, line.indexOf(" =")));
-                        }
-                    }
-                } catch (FileNotFoundException e) {
-                    // do nothing
-                } catch (IOException e) {
-                    // do nothing
-                }
-            }
-            else {
-                // do nothing
-            }
-        }
-        Collections.sort(aliases);
-        return aliases;
+        return tnsNames;
     }
 
     private List<String> getRequiredJars()
