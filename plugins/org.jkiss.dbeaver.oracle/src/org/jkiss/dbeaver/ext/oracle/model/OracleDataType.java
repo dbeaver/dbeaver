@@ -406,14 +406,18 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
 
     public static OracleDataType resolveDataType(DBRProgressMonitor monitor, OracleDataSource dataSource, String typeOwner, String typeName)
     {
-        if (typeName.endsWith(")")) {
-            // Type name includes length, scale or precision
-            int divPos = typeName.lastIndexOf('(');
-            if (divPos != -1) {
-                typeName = typeName.substring(0, divPos);
+        for (;;) {
+            int modIndex = typeName.indexOf('(');
+            if (modIndex == -1) {
+                break;
             }
+            int modEnd = typeName.indexOf(')', modIndex);
+            if (modEnd == -1) {
+                break;
+            }
+            typeName = typeName.substring(0, modIndex) +
+                (modEnd == typeName.length() - 1 ? "" : typeName.substring(modEnd + 1));
         }
-
         OracleSchema typeSchema = null;
         OracleDataType type = null;
         if (typeOwner != null) {
