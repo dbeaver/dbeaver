@@ -129,7 +129,11 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
 
     public int getUpdateRowCount() throws DBCException
     {
-        return getUpdateCount();
+        try {
+            return getUpdateCount();
+        } catch (SQLException e) {
+            throw new DBCException(e);
+        }
     }
 
     public void setLimit(long offset, long limit) throws DBCException
@@ -495,9 +499,12 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
         return makeResultSet(getOriginal().getResultSet());
     }
 
-    public int getUpdateCount()
+    public int getUpdateCount() throws SQLException
     {
-        return updateCount;//getOriginal().getUpdateCount();
+        if (updateCount >= 0) {
+            return updateCount;
+        }
+        return getOriginal().getUpdateCount();
     }
 
     public boolean getMoreResults()
