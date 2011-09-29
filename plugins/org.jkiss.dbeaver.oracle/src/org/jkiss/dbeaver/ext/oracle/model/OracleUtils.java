@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -184,7 +184,7 @@ public class OracleUtils {
                 "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OBJECT_NAME=?");
             try {
                 dbStat.setString(1, objectType.getTypeName());
-                dbStat.setString(2, JDBCObjectNameCaseTransformer.transformName(object, object.getName()));
+                dbStat.setString(2, DBObjectNameCaseTransformer.transformName(object, object.getName()));
                 final JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     if (dbResult.next()) {

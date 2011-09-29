@@ -13,13 +13,12 @@ import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.editors.OracleTableDDLSection;
 import org.jkiss.dbeaver.ext.oracle.model.*;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
@@ -42,7 +41,7 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     protected OracleTable createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         final OracleTable table = new OracleTable(parent);
-        table.setName(JDBCObjectNameCaseTransformer.transformName(parent, "NewTable"));
+        table.setName(DBObjectNameCaseTransformer.transformName(parent, "NewTable"));
 
         return table;
     }

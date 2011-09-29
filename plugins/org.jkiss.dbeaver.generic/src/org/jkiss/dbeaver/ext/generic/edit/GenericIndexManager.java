@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
@@ -13,7 +14,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericIndexColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
@@ -64,7 +64,7 @@ public class GenericIndexManager extends JDBCIndexManager<GenericIndex, GenericT
                     true));
         }
         idxName.append("_IDX");
-        index.setName(JDBCObjectNameCaseTransformer.transformName(index, idxName.toString()));
+        index.setName(DBObjectNameCaseTransformer.transformName(index, idxName.toString()));
         return index;
     }
 

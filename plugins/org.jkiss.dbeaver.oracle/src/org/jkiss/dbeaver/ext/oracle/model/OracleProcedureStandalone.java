@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -93,7 +93,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
             String procedureName = matcher.group(1);
             if (procedureName.indexOf('.') == -1) {
                 if (!procedureName.equalsIgnoreCase(this.name)) {
-                    this.name = JDBCObjectNameCaseTransformer.transformName(this, procedureName);
+                    this.name = DBObjectNameCaseTransformer.transformName(this, procedureName);
                     this.getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this));
                 }
                 return sourceDeclaration.substring(0, matcher.start(1)) + getSchema().getName() + "." + procedureName + sourceDeclaration.substring(matcher.end(1));

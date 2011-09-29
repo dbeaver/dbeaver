@@ -12,7 +12,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -69,6 +69,6 @@ public class CreateProcedureDialog extends TrayDialog {
 
     public String getProcedureName()
     {
-        return JDBCObjectNameCaseTransformer.transformName(dataSource, name);
+        return DBObjectNameCaseTransformer.transformName(dataSource, name);
     }
 }

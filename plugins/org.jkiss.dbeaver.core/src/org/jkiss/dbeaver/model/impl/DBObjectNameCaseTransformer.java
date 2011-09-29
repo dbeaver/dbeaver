@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.impl.jdbc;
+package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 /**
  * Object name case transformer
  */
-public class JDBCObjectNameCaseTransformer implements IPropertyValueTransformer<DBSObject, String> {
+public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DBSObject, String> {
 
     public String transform(DBSObject object, String value)
     {

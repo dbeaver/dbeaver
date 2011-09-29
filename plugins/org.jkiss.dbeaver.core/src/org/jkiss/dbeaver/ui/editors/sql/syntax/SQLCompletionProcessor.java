@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -18,14 +19,12 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 
 import java.lang.reflect.InvocationTargetException;
@@ -203,7 +202,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
             // Get next structure container
             try {
-                String objectName = JDBCObjectNameCaseTransformer.transformName(dataSource, token);
+                String objectName = DBObjectNameCaseTransformer.transformName(dataSource, token);
                 childObject = sc.getChild(monitor, objectName);
                 if (childObject == null) {
                     if (i == 0) {
@@ -335,7 +334,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
         for (int i = 0; i < nameList.size(); i++) {
             nameList.set(i,
-                JDBCObjectNameCaseTransformer.transformName(sc.getDataSource(), nameList.get(i)));
+                    DBObjectNameCaseTransformer.transformName(sc.getDataSource(), nameList.get(i)));
         }
 
         try {

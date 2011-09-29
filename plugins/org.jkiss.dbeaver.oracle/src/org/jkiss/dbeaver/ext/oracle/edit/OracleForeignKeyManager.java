@@ -10,7 +10,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCForeignKeyManager;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
@@ -43,9 +43,9 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeign
             null,
             (OracleConstraint) editDialog.getUniqueConstraint(),
             editDialog.getOnDeleteRule());
-        foreignKey.setName(JDBCObjectNameCaseTransformer.transformName(foreignKey,
-            CommonUtils.escapeIdentifier(table.getName()) + "_" +
-            CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK"));
+        foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey,
+                CommonUtils.escapeIdentifier(table.getName()) + "_" +
+                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK"));
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(

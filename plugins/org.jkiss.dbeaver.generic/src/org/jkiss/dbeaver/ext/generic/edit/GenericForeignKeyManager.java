@@ -4,13 +4,13 @@
 
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCForeignKeyManager;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
@@ -48,9 +48,9 @@ public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericForei
             editDialog.getOnUpdateRule(),
             DBSConstraintDefferability.NOT_DEFERRABLE,
             false);
-        foreignKey.setName(JDBCObjectNameCaseTransformer.transformName(foreignKey,
-            CommonUtils.escapeIdentifier(table.getName()) + "_" +
-            CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK"));
+        foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey,
+                CommonUtils.escapeIdentifier(table.getName()) + "_" +
+                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK"));
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(

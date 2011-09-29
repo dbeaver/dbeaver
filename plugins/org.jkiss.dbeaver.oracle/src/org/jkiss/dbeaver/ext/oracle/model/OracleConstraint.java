@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -54,7 +54,7 @@ public class OracleConstraint extends JDBCConstraint<OracleTableBase> {
         return getTable().getDataSource();
     }
 
-    @Property(name = "Type", viewable = true, editable = true, valueTransformer = JDBCObjectNameCaseTransformer.class, order = 3)
+    @Property(name = "Type", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 3)
     @Override
     public DBSConstraintType getConstraintType()
     {
