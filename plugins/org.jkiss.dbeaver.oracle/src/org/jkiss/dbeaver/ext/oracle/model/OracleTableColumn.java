@@ -87,6 +87,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     public void setType(OracleDataType type)
     {
         this.type = type;
+        this.typeName = type == null ? "" : type.getName();
     }
 
     @Property(name = "Type Mod", viewable = true, order = 30, description = "Datatype modifier of the column")
