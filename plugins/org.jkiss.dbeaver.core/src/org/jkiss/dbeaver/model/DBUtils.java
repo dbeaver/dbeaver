@@ -677,13 +677,30 @@ public final class DBUtils {
         if (value == null) {
             return DBConstants.NULL_VALUE_LABEL;
         }
+        if (value.getClass().isArray()) {
+            if (value.getClass().getComponentType() == Byte.TYPE) {
+                byte[] bytes = (byte[]) value;
+                return CommonUtils.toHexString(bytes, 0, 2000);
+            }
+        }
         String className = value.getClass().getName();
         if (className.startsWith("java.lang") || className.startsWith("java.util")) {
             // Standard types just use toString
             return value.toString();
         }
-        // Unknown types prinyt their class name
-        return "[" + value.getClass().getSimpleName() + "]";
+        // Unknown types print their class name
+        boolean hasToString;
+        try {
+            hasToString = value.getClass().getMethod("toString").getDeclaringClass() != Object.class;
+        } catch (Throwable e) {
+            log.debug(e);
+            hasToString = false;
+        }
+        if (hasToString) {
+            return value.toString();
+        } else {
+            return "[" + value.getClass().getSimpleName() + "]";
+        }
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {

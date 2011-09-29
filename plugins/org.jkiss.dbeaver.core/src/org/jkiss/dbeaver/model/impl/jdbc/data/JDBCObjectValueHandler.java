@@ -21,8 +21,10 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.CursorViewDialog;
 import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.RowId;
 import java.sql.SQLException;
 import java.sql.Struct;
 
@@ -86,6 +88,9 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     {
         if (value instanceof DBDValue) {
             return value.toString();
+        }
+        if (value instanceof RowId) {
+            return CommonUtils.toHexString(((RowId) value).getBytes());
         }
         return DBUtils.getDefaultValueDisplayString(value);
     }

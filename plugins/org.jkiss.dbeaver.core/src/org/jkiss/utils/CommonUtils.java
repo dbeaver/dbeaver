@@ -367,6 +367,25 @@ public class CommonUtils {
         }
     }
 
+    public static String toHexString(byte[] bytes)
+    {
+        return bytes == null ? "" : toHexString(bytes, 0, bytes.length);
+    }
+
+    public static String toHexString(byte[] bytes, int offset, int length)
+    {
+        if (bytes == null || bytes.length == 0) {
+            return "";
+        }
+        StringBuilder buffer = new StringBuilder(length * 2 + 2);
+        buffer.append("0x");
+        for (int i = offset; i < offset + length && i < bytes.length; i++) {
+            if (bytes[i] < 16) buffer.append('0');
+            buffer.append(Integer.toHexString(bytes[i]));
+        }
+        return buffer.toString().toUpperCase();
+    }
+
     public static List<String> splitString(String str, char delimiter)
     {
         if (CommonUtils.isEmpty(str)) {
