@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -641,6 +642,14 @@ public class SQLEditor extends SQLEditorBase
                 }
             );
         }
+    }
+
+    @Override
+    public void doSave(IProgressMonitor progressMonitor) {
+        if (resultsView.isDirty()) {
+            resultsView.doSave(progressMonitor);
+        }
+        super.doSave(progressMonitor);
     }
 
     public int promptToSaveOnClose()

@@ -67,6 +67,7 @@ import org.jkiss.dbeaver.ui.dialogs.ViewTextDialog;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ViewUtils;
+import sun.plugin.util.UIUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -685,29 +686,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.updateGridCursor(-1, -1);
     }
 
-    public boolean allowDiscardData()
-    {
-        if (!isDirty()) {
-            return true;
-        } else {
-            switch (promptToSaveOnClose()) {
-                case ISaveablePart2.YES:
-                case ISaveablePart2.NO:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-    }
-
     public int promptToSaveOnClose()
     {
+        if (!isDirty()) {
+            return ISaveablePart2.YES;
+        }
         int result = ConfirmationDialog.showConfirmDialog(
             spreadsheet.getShell(),
             PrefConstants.CONFIRM_RS_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL);
         if (result == IDialogConstants.YES_ID) {
-            applyChanges();
             return ISaveablePart2.YES;
         } else if (result == IDialogConstants.NO_ID) {
             rejectChanges();
@@ -989,9 +977,31 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void refresh()
     {
-        if (!allowDiscardData()) {
-            return;
+        // Check if we are dirty
+        if (isDirty()) {
+            switch (promptToSaveOnClose()) {
+                case ISaveablePart2.CANCEL:
+                    return;
+                case ISaveablePart2.YES:
+                    // Apply changes
+                    applyChanges(new DBDValueListener() {
+                        public void onUpdate(boolean success) {
+                            if (success) {
+                                getControl().getDisplay().asyncExec(new Runnable() {
+                                    public void run() {
+                                        refresh();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    return;
+                default:
+                    // Just ignore previous RS values
+                    break;
+            }
         }
+
         int oldRowNum = curRowNum;
         int oldColNum = curColNum;
 
@@ -1194,8 +1204,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void applyChanges()
     {
+        applyChanges(null);
+    }
+
+    public void applyChanges(DBDValueListener listener)
+    {
         try {
-            new DataUpdater().applyChanges(null);
+            new DataUpdater().applyChanges(listener);
         } catch (DBException e) {
             log.error("Could not obtain result set meta data", e);
         }
@@ -1981,10 +1996,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 try {
                     final Throwable error = executeStatements(monitor);
 
-                    if (this.listener != null) {
-                        this.listener.onUpdate(error == null);
-                    }
-
                     ResultSetViewer.this.site.getShell().getDisplay().syncExec(new Runnable() {
                         public void run()
                         {
@@ -2005,6 +2016,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             }
                         }
                     });
+                    if (this.listener != null) {
+                        this.listener.onUpdate(error == null);
+                    }
+
                 }
                 finally {
                     ResultSetViewer.this.updateInProgress = false;
