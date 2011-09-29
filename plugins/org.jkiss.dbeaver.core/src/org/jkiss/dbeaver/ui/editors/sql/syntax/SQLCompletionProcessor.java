@@ -263,7 +263,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (activeQuery == null) {
             activeQuery = editor.extractQueryAtPos(documentOffset).getQuery() + " ";
         }
-        activeQuery = activeQuery.toUpperCase();
+        //activeQuery = activeQuery.toUpperCase();
         if (token == null) {
 
         }
@@ -275,7 +275,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             token = "";
         }
 
-        token = token.toUpperCase();
+        //token = token.toUpperCase();
         //SQLQueryInfo queryInfo = new SQLQueryInfo(activeQuery);
         //List<SQLQueryInfo.TableRef> refList = queryInfo.getTableRefs();
         Matcher matcher;
@@ -333,6 +333,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (nameList.isEmpty()) {
             return null;
         }
+        for (int i = 0; i < nameList.size(); i++) {
+            nameList.set(i,
+                JDBCObjectNameCaseTransformer.transformName(sc.getDataSource(), nameList.get(i)));
+        }
+
         try {
             DBSObject childObject = DBUtils.findNestedObject(monitor, sc, nameList);
             if (childObject == null && nameList.size() <= 1) {

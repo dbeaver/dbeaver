@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -26,6 +27,9 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     private Map<String, OBJECT> objectMap;
     private boolean caseSensitive = true;
     private Comparator<OBJECT> listOrderComparator;
+
+    protected JDBCObjectCache() {
+    }
 
     public void setCaseSensitive(boolean caseSensitive)
     {
@@ -82,15 +86,16 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
 
     public OBJECT getCachedObject(String name)
     {
-        //synchronized (this) {
+        synchronized (this) {
             return objectMap == null ? null : objectMap.get(caseSensitive ? name : name.toUpperCase());
-        //}
+        }
     }
 
     public void cacheObject(OBJECT object)
     {
         synchronized (this) {
             if (this.objectList != null) {
+                detectCaseSensitivity(object);
                 this.objectList.add(object);
                 this.objectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
             }
@@ -165,6 +170,8 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         }
 
         synchronized (this) {
+            detectCaseSensitivity(owner);
+
             this.objectList = tmpObjectList;
             this.objectMap = new LinkedHashMap<String, OBJECT>();
             for (OBJECT object : tmpObjectList) {
@@ -174,6 +181,12 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         }
         if (listOrderComparator != null) {
             Collections.sort(tmpObjectList, listOrderComparator);
+        }
+    }
+
+    private void detectCaseSensitivity(DBSObject object) {
+        if (this.caseSensitive && object.getDataSource().getInfo().storesUnquotedCase() == DBPIdentifierCase.MIXED) {
+            this.caseSensitive = false;
         }
     }
 
