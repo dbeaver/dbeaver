@@ -66,10 +66,8 @@ public final class DBUtils {
             return str;
         }
 
-        final String strUpper = str.toUpperCase();
-
         // Check for keyword conflict
-        boolean hasBadChars = dataSource.getContainer().getKeywordManager().getKeywordType(strUpper) == DBPKeywordType.KEYWORD;
+        boolean hasBadChars = dataSource.getContainer().getKeywordManager().getKeywordType(str) == DBPKeywordType.KEYWORD;
 
         if (caseSensitiveNames) {
             // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
@@ -77,7 +75,7 @@ public final class DBUtils {
                 // See how unquoted idents are stored
                 // If passed identifier case differs from unquoted then we need to escape it
                 if (info.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
-                    hasBadChars = !str.equals(strUpper);
+                    hasBadChars = !str.equals(str.toUpperCase());
                 } else if (info.storesUnquotedCase() == DBPIdentifierCase.LOWER) {
                     hasBadChars = !str.equals(str.toLowerCase());
                 }

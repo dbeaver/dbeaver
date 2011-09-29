@@ -73,7 +73,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
         StringBuilder newContent = new StringBuilder();
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
-            DBPKeywordType type = sqlSyntax.getKeywordManager().getKeywordType(token.toUpperCase());
+            DBPKeywordType type = sqlSyntax.getKeywordManager().getKeywordType(token);
             if (type == DBPKeywordType.KEYWORD) {
                 token = token.toUpperCase();
             }

@@ -111,7 +111,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        if (syntaxManager.getKeywordManager().getKeywordType(identifier.toUpperCase()) == DBPKeywordType.KEYWORD) {
+        if (syntaxManager.getKeywordManager().getKeywordType(identifier) == DBPKeywordType.KEYWORD) {
             // Skip keywords
             return null;
         }
@@ -120,7 +120,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        String tableName = word.toUpperCase();
+        String tableName = word;
         TableLookupCache tlc = linksCache.get(tableName);
         if (tlc == null) {
             // Start new word finder job

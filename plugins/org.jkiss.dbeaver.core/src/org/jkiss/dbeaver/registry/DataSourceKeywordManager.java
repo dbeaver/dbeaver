@@ -54,7 +54,7 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
 
     public DBPKeywordType getKeywordType(String word)
     {
-        return allKeywords.get(word);
+        return allKeywords.get(word.toUpperCase());
     }
 
     public List<String> getMatchedKeywords(String word)

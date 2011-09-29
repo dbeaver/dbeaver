@@ -38,7 +38,7 @@ public class SQLQueryInfo
 
     public static final String ALIAS_PATTERN = "FROM\\s+(([\\w\\.\\\"]+)\\s+[as\\s+]?(\\w+)[\\s\\,]+)+WHERE?";
     //public static final String ALIAS_PATTERN_2 = "(\\w+)\\s+(\\w+)[\\s\\,]+";
-    public Pattern aliasPattern = Pattern.compile(ALIAS_PATTERN);
+    public Pattern aliasPattern = Pattern.compile(ALIAS_PATTERN, Pattern.CASE_INSENSITIVE);
 
     private List<TableRef> tableRefs = new ArrayList<TableRef>();
 
@@ -46,7 +46,7 @@ public class SQLQueryInfo
     {
         parseDTT(query);
         List<TableRef> tableRefs = new ArrayList<TableRef>();
-        Matcher matcher = aliasPattern.matcher(query.toUpperCase());
+        Matcher matcher = aliasPattern.matcher(query);
         int pos = 0;
         while (matcher.find(pos)) {
             TableRef newRef = new TableRef(matcher.group(2), matcher.group(3));
