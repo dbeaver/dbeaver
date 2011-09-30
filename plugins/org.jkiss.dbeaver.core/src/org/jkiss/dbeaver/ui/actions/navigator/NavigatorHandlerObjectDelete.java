@@ -37,10 +37,10 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
@@ -273,7 +273,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
                     element.setText("Delete Objects");
                 } else {
-                    DBNNode node = ViewUtils.getSelectedNode(selection);
+                    DBNNode node = NavigatorUtils.getSelectedNode(selection);
                     if (node != null) {
                         element.setText("Delete " + node.getNodeType()/* + " '" + node.getNodeName() + "'"*/);
                     }

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.editors.entity.ObjectPropertiesEditor;
 import org.jkiss.utils.CommonUtils;
@@ -12,7 +13,6 @@ import org.eclipse.core.runtime.IContributor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.DBeaverConstants;
 
 import java.util.ArrayList;
 import java.util.List;

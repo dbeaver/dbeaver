@@ -2,12 +2,12 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.ui.help;
 
 /**
  * Help context IDs
  */
-public final class IHelpContextIds
+public interface IHelpContextIds
 {
 
     public static final String CTX_DRIVER_MANAGER = "driver-manager"; //$NON-NLS-1$

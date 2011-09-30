@@ -1763,7 +1763,7 @@
     </extension>
 
     <extension point="org.eclipse.help.contentProducer">
-       <contentProducer producer="org.jkiss.dbeaver.ui.HelpContentProducer">
+       <contentProducer producer="org.jkiss.dbeaver.ui.help.HelpContentProducer">
        </contentProducer>
     </extension>
 

@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -84,7 +83,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 Display.getDefault().asyncExec(new Runnable() {
                     public void run()
                     {
-                        DatabaseNavigatorView view = ViewUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
+                        DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
                         if (view != null) {
                             view.showNode(newChild);
                         }

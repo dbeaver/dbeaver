@@ -14,9 +14,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
 
@@ -24,7 +24,7 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-            final DBNNode node = ViewUtils.getSelectedNode((IStructuredSelection) selection);
+            final DBNNode node = NavigatorUtils.getSelectedNode((IStructuredSelection) selection);
             if (node instanceof DBNDatabaseNode) {
                 try {
                     final String title = EnterNameDialog.chooseName(activeShell, "Bookmark Name", node.getNodeName());

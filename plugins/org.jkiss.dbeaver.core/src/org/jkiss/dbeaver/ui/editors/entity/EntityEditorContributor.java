@@ -18,10 +18,10 @@ import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.common.ContextSearchAction;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 /**
  * Entity Editor contributor
@@ -74,17 +74,17 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
     {
         super.contributeToToolBar(manager);
         final IWorkbenchWindow workbenchWindow = getPage().getWorkbenchWindow();
-        manager.add(ViewUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_SAVE, "Save", DBIcon.SAVE_TO_DATABASE.getImageDescriptor(), "View/Persist Changes", true));
-        manager.add(ViewUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_REVERT, "Revert", DBIcon.RESET.getImageDescriptor(), "Revert changes", true));
-        manager.add(ViewUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_UNDO));
-        manager.add(ViewUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_REDO));
+        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_SAVE, "Save", DBIcon.SAVE_TO_DATABASE.getImageDescriptor(), "View/Persist Changes", true));
+        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_REVERT, "Revert", DBIcon.RESET.getImageDescriptor(), "Revert changes", true));
+        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_UNDO));
+        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_REDO));
 
         manager.add(new Separator());
-        manager.add(ViewUtils.makeCommandContribution(workbenchWindow, ICommandIds.CMD_OBJECT_CREATE));
-        manager.add(ViewUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_DELETE));
+        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, ICommandIds.CMD_OBJECT_CREATE));
+        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_DELETE));
 
         manager.add(new Separator());
-        manager.add(ViewUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_REFRESH));
+        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_REFRESH));
     }
 
     public static void registerSearchActions(IEditorPart activeEditor)

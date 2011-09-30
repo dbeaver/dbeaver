@@ -27,6 +27,7 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
@@ -920,4 +921,26 @@ public class UIUtils {
     	return "<a>" + text + "</a>"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    public static <T> T findView(IWorkbenchWindow workbenchWindow, Class<T> viewClass)
+    {
+        IViewReference[] references = workbenchWindow.getActivePage().getViewReferences();
+        for (IViewReference ref : references) {
+            IViewPart view = ref.getView(false);
+            if (view != null && viewClass.isAssignableFrom(view.getClass())) {
+                return viewClass.cast(view);
+            }
+        }
+        return null;
+    }
+
+    public static IViewPart findView(IWorkbenchWindow workbenchWindow, String viewId)
+    {
+        IViewReference[] references = workbenchWindow.getActivePage().getViewReferences();
+        for (IViewReference ref : references) {
+            if (ref.getId().equals(viewId)) {
+                return ref.getView(false);
+            }
+        }
+        return null;
+    }
 }

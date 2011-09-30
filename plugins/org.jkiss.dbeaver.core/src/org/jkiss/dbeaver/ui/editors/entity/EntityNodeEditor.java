@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 /**
  * EntityNodeEditor
@@ -73,9 +73,9 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         itemControl.createProgressPanel();
 
         // Hook context menu
-        ViewUtils.addContextMenu(this, itemControl.getSelectionProvider(), itemControl);
+        NavigatorUtils.addContextMenu(this, itemControl.getSelectionProvider(), itemControl);
         // Add drag and drop support
-        ViewUtils.addDragAndDropSupport(itemControl.getNavigatorViewer());
+        NavigatorUtils.addDragAndDropSupport(itemControl.getNavigatorViewer());
         //ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
     }

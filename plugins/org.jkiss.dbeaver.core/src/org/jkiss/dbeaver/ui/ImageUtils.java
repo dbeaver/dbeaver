@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.utils;
+package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;

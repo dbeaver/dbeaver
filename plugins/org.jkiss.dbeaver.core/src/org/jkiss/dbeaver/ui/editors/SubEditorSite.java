@@ -12,7 +12,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.services.IServiceLocator;
-import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.jkiss.dbeaver.DBeaverConstants;
 
 /**
 * Sub editor site

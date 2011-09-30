@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.action.IMenuListener;
@@ -37,7 +38,6 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,13 +68,13 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         this.selectionProvider = new NodeSelectionProvider(super.getSelectionProvider());
 
         // Add context menu
-        ViewUtils.addContextMenu(workbenchPart, getSelectionProvider(), getItemsViewer().getControl(), this);
+        NavigatorUtils.addContextMenu(workbenchPart, getSelectionProvider(), getItemsViewer().getControl(), this);
 
         setDoubleClickHandler(new IDoubleClickListener() {
             public void doubleClick(DoubleClickEvent event)
             {
                 // Run default node action
-                DBNNode dbmNode = ViewUtils.getSelectedNode(getItemsViewer());
+                DBNNode dbmNode = NavigatorUtils.getSelectedNode(getItemsViewer());
                 if (!(dbmNode instanceof DBNDatabaseNode) || !dbmNode.allowsOpen()) {
                     return;
                 }
@@ -88,7 +88,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         });
 
         // Add drag and drop support
-        ViewUtils.addDragAndDropSupport(getItemsViewer());
+        NavigatorUtils.addDragAndDropSupport(getItemsViewer());
 
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
 

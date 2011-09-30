@@ -15,6 +15,7 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.common.AboutBoxAction;
 import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
@@ -22,7 +23,6 @@ import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 /**
  * An action bar advisor is responsible for creating, adding, and disposing of the
@@ -89,7 +89,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         // File
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(new Separator(IWorkbenchActionConstants.FILE_END));
-        fileMenu.add(ViewUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
+        fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
 
         // Edit
 /*
@@ -133,7 +133,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 */
 
         // Help
-        helpMenu.add(ViewUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));
+        helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));
         helpMenu.add(showHelpAction);
         helpMenu.add(searchHelpAction);
         helpMenu.add(dynamicHelpAction);

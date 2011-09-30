@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
@@ -17,7 +18,6 @@ import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider
 {
@@ -105,9 +105,9 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         });
 
         // Hook context menu
-        ViewUtils.addContextMenu(this, navigatorTree.getViewer(), navigatorTree.getViewer().getControl());
+        NavigatorUtils.addContextMenu(this, navigatorTree.getViewer(), navigatorTree.getViewer().getControl());
         // Add drag and drop support
-        ViewUtils.addDragAndDropSupport(navigatorTree.getViewer());
+        NavigatorUtils.addDragAndDropSupport(navigatorTree.getViewer());
 
         return navigatorTree;
     }

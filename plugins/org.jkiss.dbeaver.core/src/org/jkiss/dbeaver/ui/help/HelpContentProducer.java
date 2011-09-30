@@ -1,4 +1,8 @@
-package org.jkiss.dbeaver.ui;
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
+package org.jkiss.dbeaver.ui.help;
 
 import java.io.InputStream;
 import java.util.Locale;

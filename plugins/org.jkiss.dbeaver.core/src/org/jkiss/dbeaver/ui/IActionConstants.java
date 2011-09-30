@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ui;
 /**
  * Action constants
  */
-public final class IActionConstants {
+public interface IActionConstants {
 
     public static final String LOG_VIEW_ID = "org.eclipse.pde.runtime.LogView"; //$NON-NLS-1$
     public static final String HELP_VIEW_ID = "org.eclipse.help.ui.HelpView"; //$NON-NLS-1$

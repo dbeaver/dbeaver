@@ -6,9 +6,10 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.utils.ViewUtils;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 
 public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
 
@@ -17,7 +18,7 @@ public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
     {
         DBPNamedObject adapted = RuntimeUtils.getObjectAdapter(object, DBPNamedObject.class);
         if (adapted != null) {
-            return ViewUtils.convertObjectToString(adapted);
+            return DBUtils.convertObjectToString(adapted);
         } else {
             return null;
         }
@@ -29,7 +30,7 @@ public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
         if (selection.size() > 1) {
             return "Copy Objects";
         }
-        DBNNode node = ViewUtils.getSelectedNode(selection);
+        DBNNode node = NavigatorUtils.getSelectedNode(selection);
         if (node != null) {
             return "Copy " + node.getNodeType();
         }

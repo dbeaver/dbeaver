@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -27,13 +26,13 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -151,7 +150,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
             if (selectionProvider != null) {
                 ISelection selection = selectionProvider.getSelection();
-                DBNNode node = ViewUtils.getSelectedNode(selection);
+                DBNNode node = NavigatorUtils.getSelectedNode(selection);
                 if (node != null) {
                     String actionName = "Open";
                     if (node instanceof DBNDatabaseNode) {

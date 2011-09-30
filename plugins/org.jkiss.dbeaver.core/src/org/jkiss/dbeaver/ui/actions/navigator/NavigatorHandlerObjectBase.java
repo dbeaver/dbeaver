@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.actions.navigator;
 
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -164,7 +164,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                 }
             }
         }
-        DatabaseNavigatorView view = ViewUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
+        DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
         if (view != null) {
             ViewSQLDialog dialog = new ViewSQLDialog(
                 view.getSite(),

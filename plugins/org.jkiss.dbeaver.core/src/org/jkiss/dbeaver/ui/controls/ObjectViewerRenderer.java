@@ -13,8 +13,8 @@ import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ImageUtils;
 
 import java.text.Collator;
 

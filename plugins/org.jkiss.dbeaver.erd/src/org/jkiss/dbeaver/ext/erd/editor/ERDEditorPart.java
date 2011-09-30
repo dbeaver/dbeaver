@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -80,8 +82,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.ImageUtils;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.io.FileOutputStream;
 import java.util.*;
@@ -860,16 +860,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             toolBarManager.add(new DiagramRefreshAction(ERDEditorPart.this));
             toolBarManager.add(new Separator());
             {
-                toolBarManager.add(ViewUtils.makeCommandContribution(
-                    getSite(),
-                    IWorkbenchCommandConstants.FILE_SAVE_AS,
-                    "Save diagram as image",
-                    DBIcon.PICTURE_SAVE.getImageDescriptor()));
-                toolBarManager.add(ViewUtils.makeCommandContribution(
-                    getSite(),
-                    IWorkbenchCommandConstants.FILE_PRINT,
-                    "Print Diagram",
-                    PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_PRINT_EDIT)));
+                toolBarManager.add(ActionUtils.makeCommandContribution(
+                        getSite(),
+                        IWorkbenchCommandConstants.FILE_SAVE_AS,
+                        "Save diagram as image",
+                        DBIcon.PICTURE_SAVE.getImageDescriptor()));
+                toolBarManager.add(ActionUtils.makeCommandContribution(
+                        getSite(),
+                        IWorkbenchCommandConstants.FILE_PRINT,
+                        "Print Diagram",
+                        PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_PRINT_EDIT)));
             }
             {
                 Action configAction = new Action("Configuration") {

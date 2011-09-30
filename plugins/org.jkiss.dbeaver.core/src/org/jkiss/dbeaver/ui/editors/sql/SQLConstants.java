@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.jkiss.dbeaver.DBeaverConstants;
 
 /**
  * SQL editor constants

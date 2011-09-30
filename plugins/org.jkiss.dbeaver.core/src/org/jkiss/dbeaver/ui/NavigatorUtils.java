@@ -2,17 +2,9 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.utils;
+package org.jkiss.dbeaver.ui;
 
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.commands.Command;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -24,14 +16,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.*;
-import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.menus.CommandContributionItem;
-import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -41,43 +32,17 @@ import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
 /**
- * NavigatorUtils
+ * Navigator utils
  */
-public class ViewUtils
-{
-    static final Log log = LogFactory.getLog(ViewUtils.class);
-
-    public static <T> T findView(IWorkbenchWindow workbenchWindow, Class<T> viewClass)
-    {
-        IViewReference[] references = workbenchWindow.getActivePage().getViewReferences();
-        for (IViewReference ref : references) {
-            IViewPart view = ref.getView(false);
-            if (view != null && viewClass.isAssignableFrom(view.getClass())) {
-                return viewClass.cast(view);
-            }
-        }
-        return null;
-    }
-
-    public static IViewPart findView(IWorkbenchWindow workbenchWindow, String viewId)
-    {
-        IViewReference[] references = workbenchWindow.getActivePage().getViewReferences();
-        for (IViewReference ref : references) {
-            if (ref.getId().equals(viewId)) {
-                return ref.getView(false);
-            }
-        }
-        return null;
-    }
-
+public class NavigatorUtils {
     public static DBNNode getSelectedNode(ISelectionProvider viewer)
     {
         if (viewer == null) {
@@ -115,70 +80,6 @@ public class ViewUtils
         }
     }
 
-    public static String convertObjectToString(Object object)
-    {
-        String strValue;
-        if (object instanceof DBPNamedObject) {
-            strValue = ((DBPNamedObject)object).getName();
-        } else {
-            strValue = String.valueOf(object);
-        }
-        return strValue;
-    }
-
-    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId)
-    {
-        return new CommandContributionItem(new CommandContributionItemParameter(
-            serviceLocator,
-            null,
-            commandId,
-            CommandContributionItem.STYLE_PUSH));
-    }
-
-    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, ImageDescriptor imageDescriptor)
-    {
-        return makeCommandContribution(serviceLocator, commandId, name, imageDescriptor, null, false);
-    }
-
-    public static ContributionItem makeActionContribution(
-        IAction action,
-        boolean showText)
-    {
-        ActionContributionItem item = new ActionContributionItem(action);
-        if (showText) {
-            item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-        }
-        return item;
-    }
-
-    public static CommandContributionItem makeCommandContribution(
-        IServiceLocator serviceLocator,
-        String commandId,
-        String name,
-        ImageDescriptor imageDescriptor,
-        String toolTip,
-        boolean showText)
-    {
-        final CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
-            serviceLocator,
-            null,
-            commandId,
-            null,
-            imageDescriptor,
-            null,
-            null,
-            name,
-            null,
-            toolTip,
-            CommandContributionItem.STYLE_PUSH,
-            null,
-            false);
-        if (showText) {
-            contributionParameters.mode = CommandContributionItem.MODE_FORCE_TEXT;
-        }
-        return new CommandContributionItem(contributionParameters);
-    }
-
     public static void addContextMenu(final IWorkbenchPart workbenchPart, final ISelectionProvider selectionProvider, final Control control)
     {
         addContextMenu(workbenchPart, selectionProvider, control, null);
@@ -197,7 +98,7 @@ public class ViewUtils
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
-                DBNNode node = ViewUtils.getSelectedNode(selectionProvider.getSelection());
+                DBNNode node = getSelectedNode(selectionProvider.getSelection());
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
@@ -219,7 +120,7 @@ public class ViewUtils
                 // Fill context menu
                 final IStructuredSelection selection = (IStructuredSelection)selectionProvider.getSelection();
 
-                final DBNNode selectedNode = ViewUtils.getSelectedNode(selectionProvider);
+                final DBNNode selectedNode = getSelectedNode(selectionProvider);
                 if (selectedNode == null || selectedNode.isLocked()) {
                     //manager.
                     return;
@@ -231,7 +132,7 @@ public class ViewUtils
                     // Add "Set active object" menu
                     if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
                         final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
-                            DBSEntitySelector.class, ((DBNDatabaseNode)selectedNode).getObject());
+                                DBSEntitySelector.class, ((DBNDatabaseNode) selectedNode).getObject());
                         if (activeContainer != null && activeContainer.supportsEntitySelect()) {
                             DBSObject activeChild;
                             activeChild = activeContainer.getSelectedEntity();
@@ -239,7 +140,7 @@ public class ViewUtils
                                 DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                                 if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
                                     String text = "Set Active " + databaseNode.getNodeType();
-                                    IAction action = makeAction(new NavigatorActionSetActiveObject(), workbenchPart, selection, text, null, null);
+                                    IAction action = ActionUtils.makeAction(new NavigatorActionSetActiveObject(), workbenchPart, selection, text, null, null);
 
                                     manager.add(action);
                                 }
@@ -261,12 +162,12 @@ public class ViewUtils
                 if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
                     //propertyDialogAction.selectionChanged(selection);
                     //manager.add(propertyDialogAction);
-                    manager.add(makeCommandContribution(serviceLocator, IWorkbenchCommandConstants.FILE_PROPERTIES));
+                    manager.add(ActionUtils.makeCommandContribution(serviceLocator, IWorkbenchCommandConstants.FILE_PROPERTIES));
                 }
 
                 if (selectedNode.isPersisted()) {
                     // Add refresh button
-                    manager.add(makeCommandContribution(serviceLocator, IWorkbenchCommandConstants.FILE_REFRESH));
+                    manager.add(ActionUtils.makeCommandContribution(serviceLocator, IWorkbenchCommandConstants.FILE_REFRESH));
                 }
             }
         });
@@ -427,75 +328,5 @@ public class ViewUtils
                 }
             }
         });
-    }
-
-    public static void initAction(IAction actionImpl, IActionDelegate action, IWorkbenchPart part, ISelection selection)
-    {
-        action.selectionChanged(actionImpl, selection);
-
-        if (part != null) {
-            if (action instanceof IObjectActionDelegate) {
-                ((IObjectActionDelegate)action).setActivePart(actionImpl, part);
-            } else if (action instanceof IWorkbenchWindowActionDelegate) {
-                ((IWorkbenchWindowActionDelegate)action).init(part.getSite().getWorkbenchWindow());
-            }
-        }
-    }
-
-    public static boolean isCommandEnabled(String commandId, IWorkbenchPart part)
-    {
-        if (commandId != null) {
-            try {
-                //Command cmd = new Command();
-                ICommandService commandService = (ICommandService)part.getSite().getService(ICommandService.class);
-                if (commandService != null) {
-                    Command command = commandService.getCommand(commandId);
-                    return command != null && command.isEnabled();
-                }
-            } catch (Exception e) {
-                log.error("Could not execute command '" + commandId + "'", e);
-            }
-        }
-        return false;
-    }
-
-    public static void runCommand(String commandId, IServiceLocator serviceLocator)
-    {
-        if (commandId != null) {
-            try {
-                //Command cmd = new Command();
-                ICommandService commandService = (ICommandService)serviceLocator.getService(ICommandService.class);
-                if (commandService != null) {
-                    Command command = commandService.getCommand(commandId);
-                    if (command != null && command.isEnabled()) {
-                        IHandlerService handlerService = (IHandlerService) serviceLocator.getService(IHandlerService.class);
-                        handlerService.executeCommand(commandId, null);
-                    }
-                }
-            } catch (Exception e) {
-                log.error("Could not execute command '" + commandId + "'", e);
-            }
-        }
-    }
-
-    public static IAction makeAction(final IActionDelegate actionDelegate, IWorkbenchPart part, ISelection selection, String text, ImageDescriptor image, String toolTip)
-    {
-        Action actionImpl = new Action() {
-            @Override
-            public void run() {
-                actionDelegate.run(this);
-            }
-        };
-        if (text != null) {
-            actionImpl.setText(text);
-        }
-        if (image != null) {
-            actionImpl.setImageDescriptor(image);
-        }
-        if (toolTip != null) {
-            actionImpl.setToolTipText(toolTip);
-        }
-        initAction(actionImpl, actionDelegate, part, selection);
-        return actionImpl;
     }
 }

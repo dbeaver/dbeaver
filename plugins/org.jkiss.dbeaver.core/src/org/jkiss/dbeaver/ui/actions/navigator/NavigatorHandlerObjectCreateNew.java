@@ -15,7 +15,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.utils.ViewUtils;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 
 import java.util.Map;
 
@@ -42,7 +42,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (partSite != null) {
             final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
             if (selectionProvider != null) {
-                DBNNode node = ViewUtils.getSelectedNode(selectionProvider.getSelection());
+                DBNNode node = NavigatorUtils.getSelectedNode(selectionProvider.getSelection());
                 if (node != null) {
                     String objectName;
                     if (node instanceof DBNContainer) {

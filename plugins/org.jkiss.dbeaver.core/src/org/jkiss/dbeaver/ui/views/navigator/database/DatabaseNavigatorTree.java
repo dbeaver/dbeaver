@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 public class DatabaseNavigatorTree extends Composite implements IDBNListener
 {
@@ -220,7 +220,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
             }
 
             if (!(newSelection.getData() instanceof DBNNode) ||
-                !(ViewUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActivePart()))) {
+                !(ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActivePart()))) {
                 curSelection = null;
                 return;
             }

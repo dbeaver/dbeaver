@@ -704,6 +704,17 @@ public final class DBUtils {
         }
     }
 
+    public static String convertObjectToString(Object object)
+    {
+        String strValue;
+        if (object instanceof DBPNamedObject) {
+            strValue = ((DBPNamedObject)object).getName();
+        } else {
+            strValue = String.valueOf(object);
+        }
+        return strValue;
+    }
+
     private static class RefColumnFinder implements DBRRunnableWithProgress {
         private DBCColumnMetaData column;
         private DBSForeignKey refConstraint;

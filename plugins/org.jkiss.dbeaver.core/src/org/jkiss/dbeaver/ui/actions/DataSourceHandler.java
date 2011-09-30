@@ -18,8 +18,8 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 public abstract class DataSourceHandler extends AbstractHandler {
 
@@ -44,7 +44,7 @@ public abstract class DataSourceHandler extends AbstractHandler {
         }
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (selection instanceof IStructuredSelection) {
-            DBSObject selectedObject = ViewUtils.getSelectedObject((IStructuredSelection) selection);
+            DBSObject selectedObject = NavigatorUtils.getSelectedObject((IStructuredSelection) selection);
             if (selectedObject instanceof DBSDataSourceContainer) {
                 return (DBSDataSourceContainer)selectedObject;
             } else if (selectedObject != null) {

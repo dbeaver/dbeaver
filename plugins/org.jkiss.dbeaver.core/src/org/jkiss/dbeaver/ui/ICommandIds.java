@@ -11,7 +11,7 @@ package org.jkiss.dbeaver.ui;
  *
  * @see org.eclipse.jface.action.IAction#setActionDefinitionId(String)
  */
-public final class ICommandIds
+public interface ICommandIds
 {
     public static final String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special"; //$NON-NLS-1$
 

@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.ext.ui.ISearchExecutor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ViewUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -224,11 +224,11 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 if (defaultToolbarManager == null) {
                     defaultToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
                     if (isSearchPossible() && isSearchEnabled()) {
-                        defaultToolbarManager.add(ViewUtils.makeCommandContribution(
-                            DBeaverCore.getInstance().getWorkbench(),
-                            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
-                            "Search item(s)",
-                            DBIcon.SEARCH.getImageDescriptor()));
+                        defaultToolbarManager.add(ActionUtils.makeCommandContribution(
+                                DBeaverCore.getInstance().getWorkbench(),
+                                IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
+                                "Search item(s)",
+                                DBIcon.SEARCH.getImageDescriptor()));
                     }
                 }
                 ToolBar toolbar = defaultToolbarManager.createControl(controlComposite);
@@ -334,16 +334,16 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         //ToolBar searchTools = new ToolBar(controlComposite, SWT.HORIZONTAL);
         if (searchToolbarManager == null) {
             searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-            searchToolbarManager.add(ViewUtils.makeCommandContribution(
-                DBeaverCore.getInstance().getWorkbench(),
-                IWorkbenchActionDefinitionIds.FIND_NEXT,
-                null,
-                DBIcon.ARROW_DOWN.getImageDescriptor()));
-            searchToolbarManager.add(ViewUtils.makeCommandContribution(
-                DBeaverCore.getInstance().getWorkbench(),
-                IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
-                null,
-                DBIcon.ARROW_UP.getImageDescriptor()));
+            searchToolbarManager.add(ActionUtils.makeCommandContribution(
+                    DBeaverCore.getInstance().getWorkbench(),
+                    IWorkbenchActionDefinitionIds.FIND_NEXT,
+                    null,
+                    DBIcon.ARROW_DOWN.getImageDescriptor()));
+            searchToolbarManager.add(ActionUtils.makeCommandContribution(
+                    DBeaverCore.getInstance().getWorkbench(),
+                    IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
+                    null,
+                    DBIcon.ARROW_UP.getImageDescriptor()));
             //ToolItem closeButton = new ToolItem(searchTools, SWT.PUSH);
             searchToolbarManager.add(new Action("Close search panel", PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
                 @Override

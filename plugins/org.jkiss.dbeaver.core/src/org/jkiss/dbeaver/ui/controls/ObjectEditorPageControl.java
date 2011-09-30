@@ -104,13 +104,13 @@ public class ObjectEditorPageControl extends ProgressPageControl {
         ToolBar toolBar = new ToolBar(toolsPanel, SWT.FLAT | SWT.HORIZONTAL);
 
         objectEditToolbarManager = new ToolBarManager(toolBar);
-        objectEditToolbarManager.add(ViewUtils.makeCommandContribution(
+        objectEditToolbarManager.add(ActionUtils.makeCommandContribution(
             DBeaverCore.getInstance().getWorkbench(),
             ICommandIds.CMD_OBJECT_CREATE));
-        objectEditToolbarManager.add(ViewUtils.makeCommandContribution(
+        objectEditToolbarManager.add(ActionUtils.makeCommandContribution(
             DBeaverCore.getInstance().getWorkbench(),
             ICommandIds.CMD_OBJECT_DELETE));
-        objectEditToolbarManager.add(ViewUtils.makeCommandContribution(
+        objectEditToolbarManager.add(ActionUtils.makeCommandContribution(
             DBeaverCore.getInstance().getWorkbench(),
             IWorkbenchCommandConstants.FILE_SAVE));
         objectEditToolbarManager.update(true);

@@ -10,7 +10,7 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.jkiss.dbeaver.DBeaverConstants;
 
 import java.util.ArrayList;
 import java.util.List;
