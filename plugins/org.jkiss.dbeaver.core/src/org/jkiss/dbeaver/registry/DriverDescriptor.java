@@ -749,6 +749,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public void validateFilesPresence()
     {
+        for (DriverFileDescriptor file : files) {
+            if (file.isCustom() && file.getFile().exists()) {
+                // there are custom files - not need to
+                return;
+            }
+        }
+
         final List<DriverFileDescriptor> downloadCandidates = new ArrayList<DriverFileDescriptor>();
         for (DriverFileDescriptor file : files) {
             if (file.isDisabled() || file.getExternalURL() == null || !file.isLocal()) {

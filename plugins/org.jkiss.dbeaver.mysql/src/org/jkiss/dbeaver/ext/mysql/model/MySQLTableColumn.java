@@ -89,7 +89,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         }
         setTypeName(typeName);
         setValueType(MySQLUtils.typeNameToValueType(typeName));
-        DBSDataType dataType = getDataSource().getDataType(typeName.toUpperCase());
+        DBSDataType dataType = getDataSource().getDataType(typeName);
         this.charLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_CHARACTER_MAXIMUM_LENGTH);
         if (this.charLength <= 0) {
             if (dataType != null) {

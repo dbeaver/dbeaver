@@ -98,7 +98,7 @@
                     defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
-                    <file type="jar" path="drivers/postgresql/postgresql-8.4-701.jdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/postgresql-8.4-701.jdbc4.jar"/>
+                    <file type="jar" path="drivers/postgresql/postgresql-9.1-901.jdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/postgresql-9.1-901.jdbc4.jar"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?"/>
