@@ -32,7 +32,11 @@ public final class SQLUtils {
 
     public static String stripTransformations(String query)
     {
-        return PATTERN_XFORM.matcher(query).replaceAll("");
+        if (query.indexOf(TOKEN_TRANSFORM_START) == -1) {
+            return query;
+        } else {
+            return PATTERN_XFORM.matcher(query).replaceAll("");
+        }
     }
 
     public static boolean isDataModifyQuery(String query)

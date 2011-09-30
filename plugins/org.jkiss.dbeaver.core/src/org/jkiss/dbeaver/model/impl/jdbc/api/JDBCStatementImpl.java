@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.api;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -51,9 +52,10 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     {
         this.connection.getProgressMonitor().startBlock(
             this,
-            this.description == null ?
-                (query == null ? "?" : JDBCUtils.limitQueryLength(query, 200))  :
-                this.description);
+            SQLUtils.stripTransformations(
+                this.description == null ?
+                    (query == null ? "?" : JDBCUtils.limitQueryLength(query, 200)) :
+                    this.description));
     }
 
     protected void endBlock()
