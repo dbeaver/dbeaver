@@ -33,7 +33,7 @@ public class OCIClassLoader extends URLClassLoader
             {
                 public boolean accept(File dir, String name)
                 {
-                    return name.toLowerCase().endsWith(".dll"); // TODO win32 ONLY!!!
+                    return name.toLowerCase().endsWith(System.mapLibraryName("")); // OS depenent library extension
                 }
             });
 /*
