@@ -67,7 +67,6 @@ import org.jkiss.dbeaver.ui.dialogs.ViewTextDialog;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ViewUtils;
-import sun.plugin.util.UIUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -137,6 +136,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private ResultSetDataPumpJob dataPumpJob;
     //private static final String RESULT_SET_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset";
 
+    private final List<ResultSetListener> listeners = new ArrayList<ResultSetListener>();
+
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
         super();
@@ -188,6 +189,20 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         applyThemeSettings();
     }
 
+    public void addListener(ResultSetListener listener)
+    {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeListener(ResultSetListener listener)
+    {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
     private void updateGridCursor(int col, int row)
     {
         if (mode == ResultSetMode.GRID) {
@@ -216,6 +231,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void refreshSpreadsheet(boolean rowsChanged)
     {
+        if (spreadsheet.isDisposed()) {
+            return;
+        }
         if (rowsChanged) {
             if (curRowNum >= curRows.size()) {
                 curRowNum = curRows.size() - 1;
@@ -1296,6 +1314,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         addedRows.add(new RowInfo(rowNum));
         refreshSpreadsheet(true);
+        fireResultSetChange();
     }
 
     private void shiftRows(int rowNum, int delta)
@@ -1334,7 +1353,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (addedRows.contains(rowInfo)) {
             // Remove just added row 
             addedRows.remove(rowInfo);
-            deleteRow(rowNum);
+            cleanupRow(rowNum);
 
             refreshSpreadsheet(true);
 
@@ -1349,16 +1368,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
         spreadsheet.redrawGrid();
         updateEditControls();
+        fireResultSetChange();
     }
 
-    private void deleteRow(int rowNum)
+    private void cleanupRow(int rowNum)
     {
         this.releaseRow(this.curRows.get(rowNum));
         this.curRows.remove(rowNum);
         this.shiftRows(rowNum, -1);
     }
 
-    private boolean deleteRows(Set<RowInfo> rows)
+    private boolean cleanupRows(Set<RowInfo> rows)
     {
         if (rows != null && !rows.isEmpty()) {
             // Remove rows (in descending order to prevent concurrent modification errors)
@@ -1367,7 +1387,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             for (RowInfo rowNum : rows) rowsToRemove[i++] = rowNum.row;
             Arrays.sort(rowsToRemove);
             for (i = rowsToRemove.length; i > 0; i--) {
-                deleteRow(rowsToRemove[i - 1]);
+                cleanupRow(rowsToRemove[i - 1]);
             }
             rows.clear();
             return true;
@@ -1541,6 +1561,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         }
                     });
                 }
+                fireResultSetChange();
             }
         }
 
@@ -1647,6 +1668,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 return new GridPos(columnIndex, rowIndex);
             } else {
                 return null;
+            }
+        }
+    }
+
+    private void fireResultSetChange() {
+        synchronized (listeners) {
+            if (!listeners.isEmpty()) {
+                for (ResultSetListener listener : listeners) {
+                    listener.handleResultSetChange();
+                }
             }
         }
     }
@@ -1896,13 +1927,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 }
                 editedValues.clear();
             }
-            boolean rowsChanged = deleteRows(addedRows);
+            boolean rowsChanged = cleanupRows(addedRows);
             // Remove deleted rows
             if (removedRows != null) {
                 removedRows.clear();
             }
 
             refreshSpreadsheet(rowsChanged);
+            fireResultSetChange();
         }
 
         // Reflect data changes in viewer
@@ -1940,7 +1972,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     RowInfo row = iter.next();
                     for (DataStatementInfo stat : deleteStatements) {
                         if (stat.executed && stat.row.equals(row)) {
-                            deleteRow(row.row);
+                            cleanupRow(row.row);
                             iter.remove();
                             rowsChanged = true;
                             break;
@@ -1997,23 +2029,25 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     final Throwable error = executeStatements(monitor);
 
                     ResultSetViewer.this.site.getShell().getDisplay().syncExec(new Runnable() {
-                        public void run()
-                        {
+                        public void run() {
                             boolean rowsChanged = false;
                             if (DataUpdaterJob.this.autocommit || error == null) {
                                 rowsChanged = reflectChanges();
                             }
-                            //releaseStatements();
-                            refreshSpreadsheet(rowsChanged);
-                            if (error == null) {
-                                setStatus(
-                                    "Instered: " + DataUpdaterJob.this.insertCount +
-                                    " / Deleted: " + DataUpdaterJob.this.deleteCount +
-                                    " / Updated: " + DataUpdaterJob.this.updateCount, false);
-                            } else {
-                                UIUtils.showErrorDialog(ResultSetViewer.this.site.getShell(), "Data error", "Error synchronizing data with database", error);
-                                setStatus(error.getMessage(), true);
+                            if (!getControl().isDisposed()) {
+                                //releaseStatements();
+                                refreshSpreadsheet(rowsChanged);
+                                if (error == null) {
+                                    setStatus(
+                                            "Instered: " + DataUpdaterJob.this.insertCount +
+                                                    " / Deleted: " + DataUpdaterJob.this.deleteCount +
+                                                    " / Updated: " + DataUpdaterJob.this.updateCount, false);
+                                } else {
+                                    UIUtils.showErrorDialog(ResultSetViewer.this.site.getShell(), "Data error", "Error synchronizing data with database", error);
+                                    setStatus(error.getMessage(), true);
+                                }
                             }
+                            fireResultSetChange();
                         }
                     });
                     if (this.listener != null) {

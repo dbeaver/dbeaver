@@ -6,7 +6,9 @@ package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
@@ -14,7 +16,7 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 /**
  * DatabaseDataEditor
  */
-public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer> implements ResultSetProvider
+public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer> implements ResultSetProvider,ResultSetListener
 {
 
     private ResultSetViewer resultSetView;
@@ -31,6 +33,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     {
         if (resultSetView == null) {
             resultSetView = new ResultSetViewer(parent, getSite(), this);
+            resultSetView.addListener(this);
             parent.layout();
         }
 
@@ -44,6 +47,15 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
 
     public void deactivatePart()
     {
+    }
+
+    @Override
+    public void dispose() {
+        if (resultSetView != null) {
+            resultSetView.removeListener(this);
+            resultSetView = null;
+        }
+        super.dispose();
     }
 
     public DBSDataContainer getDataContainer()
@@ -85,4 +97,8 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         }
     }
 
+    public void handleResultSetChange()
+    {
+        firePropertyChange(IEditorPart.PROP_DIRTY);
+    }
 }

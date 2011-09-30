@@ -71,7 +71,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
     private static final Map<String, EditorDefaults> defaultPageMap = new HashMap<String, EditorDefaults>();
 
-    private final Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
+    private final Map<String, IEditorPart> editorMap = new LinkedHashMap<String, IEditorPart>();
+    private IEditorPart activeEditor;
     private DBECommandAdapter commandListener;
     private IFolderListener folderListener;
 
@@ -104,7 +105,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     @Override
     public void dispose()
     {
-        final DBPDataSource dataSource = getDataSource();
+        //final DBPDataSource dataSource = getDataSource();
 
 //        if (getCommandContext() != null && getCommandContext().isDirty()) {
 //            getCommandContext().resetChanges();
@@ -124,19 +125,29 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 //                }
 //            }
         }
+        this.editorMap.clear();
+        this.activeEditor = null;
     }
 
     @Override
     public boolean isDirty()
     {
         final DBECommandContext commandContext = getCommandContext();
-        return commandContext != null && commandContext.isDirty();
+        if (commandContext != null && commandContext.isDirty()) {
+            return true;
+        }
+
+        for (IEditorPart editor : editorMap.values()) {
+            if (editor.isDirty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isSaveAsAllowed()
     {
-        IEditorPart activeEditor = getActiveEditor();
-        return activeEditor != null && activeEditor.isSaveAsAllowed();
+        return this.activeEditor != null && this.activeEditor.isSaveAsAllowed();
     }
 
     @Override
@@ -158,6 +169,20 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             return;
         }
 
+        final DBECommandContext commandContext = getCommandContext();
+        if (commandContext != null && commandContext.isDirty()) {
+            saveCommandContext(monitor);
+        }
+
+        for (IEditorPart editor : editorMap.values()) {
+            editor.doSave(monitor);
+        }
+
+        firePropertyChange(IEditorPart.PROP_DIRTY);
+    }
+
+    private void saveCommandContext(IProgressMonitor monitor)
+    {
         monitor.beginTask("Preview changes", 1);
         int previewResult = showChanges(true);
         monitor.done();
@@ -205,7 +230,6 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             if (error != null) {
                 UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + getDatabaseObject().getName() + "'", null, error);
             }
-            firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
@@ -398,7 +422,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 setActiveEditor(defEditorPage);
             }
         }
-        IEditorPart activeEditor = getActiveEditor();
+        this.activeEditor = getActiveEditor();
         if (activeEditor instanceof IFolderedPart) {
             String defFolderId = getEditorInput().getDefaultFolderId();
             if (defFolderId == null && editorDefaults != null) {
@@ -444,8 +468,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     protected void pageChange(int newPageIndex) {
         super.pageChange(newPageIndex);
 
-        IEditorPart editor = getEditor(newPageIndex);
-        String editorPageId = getEditorPageId(editor);
+        activeEditor = getEditor(newPageIndex);
+        String editorPageId = getEditorPageId(activeEditor);
         if (editorPageId != null) {
             updateEditorDefaults(editorPageId, null);
         }
@@ -513,9 +537,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
     public void switchFolder(String folderId)
     {
-        final int pageCount = getPageCount();
-        for (int i = 0; i < pageCount; i++) {
-            final IEditorPart editor = getEditor(i);
+        for (IEditorPart editor : editorMap.values()) {
             if (editor instanceof IFolderedPart) {
                 if (getActiveEditor() != editor) {
                     setActiveEditor(editor);
@@ -680,11 +702,9 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
         if (databaseObject != null && databaseObject.isPersisted()) {
             // Refresh visual content in parts
-            int pageCount = getPageCount();
-            for (int i = 0; i < pageCount; i++) {
-                IWorkbenchPart part = getEditor(i);
-                if (part instanceof IRefreshablePart) {
-                    ((IRefreshablePart)part).refreshPart(source);
+            for (IEditorPart editor : editorMap.values()) {
+                if (editor instanceof IRefreshablePart) {
+                    ((IRefreshablePart)editor).refreshPart(source);
                 }
             }
         }
