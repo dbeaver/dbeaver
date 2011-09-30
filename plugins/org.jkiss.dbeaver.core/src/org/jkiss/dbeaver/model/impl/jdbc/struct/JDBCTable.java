@@ -83,7 +83,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
         DBRProgressMonitor monitor = context.getProgressMonitor();
-        readRequiredMeta(monitor);
+        try {
+            readRequiredMeta(monitor);
+        } catch (DBException e) {
+            log.warn(e);
+        }
 
         StringBuilder query = new StringBuilder(100);
         query.append("SELECT * FROM ").append(getFullQualifiedName());

@@ -202,7 +202,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         List<DriverDescriptor> eDrivers = new ArrayList<DriverDescriptor>();
         for (DriverDescriptor driver : drivers) {
-            if (!driver.isDisabled() && driver.getReplacedBy() == null) {
+            if (!driver.isDisabled() && driver.getReplacedBy() == null && driver.isSupportedByLocalSystem()) {
                 eDrivers.add(driver);
             }
         }

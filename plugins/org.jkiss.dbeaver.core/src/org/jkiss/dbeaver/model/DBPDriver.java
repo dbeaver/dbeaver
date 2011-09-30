@@ -56,6 +56,8 @@ public interface DBPDriver extends DBPObject
 
     Collection<? extends DBPDriverLocalPath> getPathList();
 
+    boolean isSupportedByLocalSystem();
+
     ClassLoader getClassLoader();
 
     void loadDriver()

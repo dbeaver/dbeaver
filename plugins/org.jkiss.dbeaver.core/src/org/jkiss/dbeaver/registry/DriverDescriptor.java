@@ -85,6 +85,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private final List<DriverFileDescriptor> origFiles = new ArrayList<DriverFileDescriptor>();
     private final List<DriverPathDescriptor> pathList = new ArrayList<DriverPathDescriptor>();
     private final List<IPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<IPropertyDescriptor>();
+    private final List<OSDescriptor> supportedSystems = new ArrayList<OSDescriptor>();
 
     private final List<ReplaceInfo> driverReplacements = new ArrayList<ReplaceInfo>();
     private DriverDescriptor replacedBy;
@@ -151,6 +152,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             this.iconPlain = new Image(null, providerDescriptor.getIcon(), SWT.IMAGE_COPY);
         }
         makeIconExtensions();
+
+        {
+            // OSes
+            IConfigurationElement[] osElements = config.getChildren(RegistryConstants.TAG_OS);
+            for (IConfigurationElement os : osElements) {
+                supportedSystems.add(new OSDescriptor(
+                    os.getAttribute(RegistryConstants.ATTR_NAME),
+                    os.getAttribute(RegistryConstants.ATTR_ARCH)
+                ));
+            }
+        }
 
         {
             // Connection property groups
@@ -655,6 +667,26 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         customParameters.clear();
         customParameters.putAll(parameters);
+    }
+
+//    public List<OSDescriptor> getSupportedSystems()
+//    {
+//        return supportedSystems;
+//    }
+
+    public boolean isSupportedByLocalSystem()
+    {
+        if (supportedSystems.isEmpty()) {
+            // Multi-platform
+            return true;
+        }
+        OSDescriptor localSystem = DBeaverCore.getInstance().getLocalSystem();
+        for (OSDescriptor system : supportedSystems) {
+            if (system.matches(localSystem)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getLicense()

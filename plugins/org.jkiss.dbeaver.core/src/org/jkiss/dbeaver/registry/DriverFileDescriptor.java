@@ -24,8 +24,7 @@ public class DriverFileDescriptor
 
     private final DriverDescriptor driver;
     private final DriverFileType type;
-    private final String os;
-    private final String osArch;
+    private final OSDescriptor system;
     private String path;
     private String description;
     private String externalURL;
@@ -36,8 +35,7 @@ public class DriverFileDescriptor
     {
         this.driver = driver;
         this.type = DriverFileType.jar;
-        this.os = Platform.getOS();
-        this.osArch = Platform.getOSArch();
+        this.system = DBeaverCore.getInstance().getLocalSystem();
         this.path = path;
         this.custom = true;
     }
@@ -46,8 +44,11 @@ public class DriverFileDescriptor
     {
         this.driver = driver;
         this.type = DriverFileType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE));
-        this.os = config.getAttribute(RegistryConstants.ATTR_OS);
-        this.osArch = config.getAttribute(RegistryConstants.ATTR_ARCH);
+
+        String osName = config.getAttribute(RegistryConstants.ATTR_OS);
+        this.system = osName == null ? null : new OSDescriptor(
+            osName,
+            config.getAttribute(RegistryConstants.ATTR_ARCH));
         this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.externalURL = config.getAttribute(RegistryConstants.ATTR_URL);
@@ -64,14 +65,9 @@ public class DriverFileDescriptor
         return type;
     }
 
-    public String getOS()
+    public OSDescriptor getSystem()
     {
-        return os;
-    }
-
-    public String getOSArch()
-    {
-        return osArch;
+        return system;
     }
 
     public String getPath()
@@ -161,9 +157,6 @@ public class DriverFileDescriptor
 
     public boolean matchesCurrentPlatform()
     {
-        return !(
-            (os != null && !os.equals(Platform.getOS())) ||
-            (osArch != null && !osArch.equals(Platform.getOSArch()))
-            );
+        return system == null || system.matches(DBeaverCore.getInstance().getLocalSystem());
     }
 }

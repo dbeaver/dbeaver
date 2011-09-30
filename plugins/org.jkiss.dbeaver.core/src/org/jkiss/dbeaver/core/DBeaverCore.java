@@ -66,6 +66,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private IWorkbench workbench;
     private IPath rootPath;
     private IProject tempProject;
+    private OSDescriptor localSystem;
 
     private DataSourceProviderRegistry dataSourceProviderRegistry;
     private EntityEditorsRegistry editorsRegistry;
@@ -144,6 +145,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         this.workspace = ResourcesPlugin.getWorkspace();
         this.rootPath = Platform.getLocation();
+
+        this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
 
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
 
@@ -264,6 +267,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         instance = null;
     }
 
+    public Plugin getPlugin()
+    {
+        return plugin;
+    }
+
     public String getPluginID()
     {
         return plugin.getBundle().getSymbolicName();
@@ -272,11 +280,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public ILog getPluginLog()
     {
         return plugin.getLog();
-    }
-
-    public DBeaverActivator getPlugin()
-    {
-        return plugin;
     }
 
     public IWorkspace getWorkspace()
@@ -292,6 +295,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public ISharedTextColors getSharedTextColors()
     {
         return sharedTextColors;
+    }
+
+    public OSDescriptor getLocalSystem()
+    {
+        return localSystem;
     }
 
     public DBNModel getNavigatorModel()

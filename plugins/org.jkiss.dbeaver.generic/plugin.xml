@@ -241,6 +241,7 @@
                     sampleURL="jdbc:odbc:{database}"
                     webURL="http://sun.com"
                     description="ODBC bridge driver">
+                    <os name="win32"/>
                 </driver>
                 <driver
                     id="derby"
