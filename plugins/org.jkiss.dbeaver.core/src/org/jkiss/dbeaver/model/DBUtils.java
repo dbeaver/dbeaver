@@ -507,15 +507,18 @@ public final class DBUtils {
         long offset,
         long maxRows) throws DBCException
     {
-        boolean hasLimits = offset >= 0 && maxRows > 0;
+        final boolean dataModifyQuery = SQLUtils.isDataModifyQuery(query);
+        final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0;
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
-        DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, context.getDataSource());
-        if (transformProvider != null) {
-            if (hasLimits) {
-                limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
-            } else {
-                fetchAllTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.FETCH_ALL_TABLE);
+        if (!dataModifyQuery) {
+            DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, context.getDataSource());
+            if (transformProvider != null) {
+                if (hasLimits) {
+                    limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
+                } else {
+                    fetchAllTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.FETCH_ALL_TABLE);
+                }
             }
         }
 

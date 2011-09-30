@@ -35,6 +35,12 @@ public final class SQLUtils {
         return PATTERN_XFORM.matcher(query).replaceAll("");
     }
 
+    public static boolean isDataModifyQuery(String query)
+    {
+        query = query.trim().toUpperCase();
+        return query.startsWith("UPDATE") || query.startsWith("INSERT") || query.startsWith("DELETE");
+    }
+
     public static String stripComments(DBPDataSource dataSource, String query)
     {
         return stripComments(query, "/*", "*/", dataSource.getContainer().getKeywordManager().getSingleLineComments());
