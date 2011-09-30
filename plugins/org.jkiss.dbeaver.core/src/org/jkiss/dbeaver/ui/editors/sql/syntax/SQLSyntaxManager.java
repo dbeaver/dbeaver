@@ -223,7 +223,9 @@ public class SQLSyntaxManager extends RuleBasedScanner {
                     }
                     scanner.unread();
                     int prevChar = scanner.read();
-                    if (Character.isJavaIdentifierPart(prevChar)) {
+                    if (Character.isJavaIdentifierPart(prevChar) ||
+                        prevChar == ':' || prevChar == '?' || prevChar == '\\' || prevChar == '/')
+                    {
                         return Token.UNDEFINED;
                     }
                     int c = scanner.read();

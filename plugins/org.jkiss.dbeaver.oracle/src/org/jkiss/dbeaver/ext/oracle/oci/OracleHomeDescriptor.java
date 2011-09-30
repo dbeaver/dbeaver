@@ -29,7 +29,7 @@ public class OracleHomeDescriptor
     private String fullOraVersion;
     private boolean isInstantClient;
     private String oraHomeName;
-    private ArrayList<String> tnsNames;
+    private List<String> tnsNames;
 
     public OracleHomeDescriptor(String oraHome) throws DBException
     {
@@ -74,7 +74,7 @@ public class OracleHomeDescriptor
         }
     }
 
-    public ArrayList<String> getOraServiceNames()
+    public List<String> getOraServiceNames()
     {
         return tnsNames;
     }
