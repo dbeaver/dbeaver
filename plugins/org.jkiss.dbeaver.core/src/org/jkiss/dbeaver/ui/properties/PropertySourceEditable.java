@@ -62,11 +62,9 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (prop.getValueTransformer() != null) {
             newValue = prop.getValueTransformer().transform(editableValue, newValue);
         }
-        final Object oldValue = getPropertyValue(editableValue, prop);
-        if (CommonUtils.equalObjects(oldValue, newValue)) {
+        if (!updatePropertyValue(editableValue, prop, newValue, false)) {
             return;
         }
-        updatePropertyValue(editableValue, prop, newValue, false);
         if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop) {
             final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor();
             if (objectEditor == null) {
@@ -76,6 +74,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
                 (DBPObject)editableValue,
                 prop);
+            final Object oldValue = getPropertyValue(editableValue, prop);
             PropertyChangeCommand curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, oldValue, newValue);
             getCommandContext().addCommand(curCommand, commandReflector);
             lastCommand = curCommand;
@@ -91,7 +90,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 */
     }
 
-    private void updatePropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object value, boolean force)
+    private boolean updatePropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object value, boolean force)
     {
         // Write property value
         try {
@@ -111,16 +110,23 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
                     }
                 }
             }
+            final Object oldValue = getPropertyValue(editableValue, prop);
+            if (CommonUtils.equalObjects(oldValue, value)) {
+                return false;
+            }
+
             prop.writeValue(editableValue, value);
             // Fire object update event
             if (editableValue instanceof DBSObject) {
                 DBUtils.fireObjectUpdate((DBSObject) editableValue, prop);
             }
+            return true;
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException) e).getTargetException();
             }
             log.error("Can't write property '" + prop.getDisplayName() + "' value", e);
+            return false;
         }
     }
 

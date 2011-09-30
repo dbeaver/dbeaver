@@ -99,6 +99,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         PREDEFINED_TYPES.put("VARRAY", new TypeDesc(java.sql.Types.ARRAY, 0, 0, 0));
         PREDEFINED_TYPES.put("ROWID", new TypeDesc(java.sql.Types.ROWID, 0, 0, 0));
         PREDEFINED_TYPES.put("LONG", new TypeDesc(java.sql.Types.LONGVARBINARY, 0, 0, 0));
+        PREDEFINED_TYPES.put("RAW", new TypeDesc(java.sql.Types.LONGVARBINARY, 0, 0, 0));
         PREDEFINED_TYPES.put("LONG RAW", new TypeDesc(java.sql.Types.LONGVARBINARY, 0, 0, 0));
         PREDEFINED_TYPES.put("NVARCHAR2", new TypeDesc(java.sql.Types.NVARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("NCHAR", new TypeDesc(java.sql.Types.NCHAR, 0, 0, 0));

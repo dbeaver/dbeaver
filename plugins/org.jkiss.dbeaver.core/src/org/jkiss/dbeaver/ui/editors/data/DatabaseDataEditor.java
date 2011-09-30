@@ -92,7 +92,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     @Override
     public void doSave(IProgressMonitor monitor)
     {
-        if (resultSetView.isDirty()) {
+        if (resultSetView != null && resultSetView.isDirty()) {
             resultSetView.applyChanges();
         }
     }
