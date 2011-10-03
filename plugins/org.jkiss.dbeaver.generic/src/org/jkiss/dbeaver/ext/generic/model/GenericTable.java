@@ -132,7 +132,11 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             this.getContainer().getTableCache().loadChildren(monitor, getContainer(), this);
             if (columns != null && uniqueKeys == null) {
                 // Cache unique keys (they are used by columns to detect key flag)
-                getConstraints(monitor);
+                try {
+                    getConstraints(monitor);
+                } catch (DBException e) {
+                    log.warn(e);
+                }
             }
         }
         return columns;
