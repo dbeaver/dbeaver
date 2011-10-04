@@ -33,7 +33,7 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.4.0</Program_Version>
+    <Program_Version>1.4.1</Program_Version>
     <Program_Release_Month>09</Program_Release_Month>
     <Program_Release_Day>26</Program_Release_Day>
     <Program_Release_Year>2011</Program_Release_Year>
@@ -45,18 +45,18 @@
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
 - Oracle
-	* OCI driver support
-	* Constraints &amp; foreign keys search
-	* Timestamp &amp; cursor datatypes support
-	* Procedures, packages &amp; views compilation support
-	* Edit of stored procedures
-- Parameters/variables binding
-- Mac OS X - startup freeze fix
-- Eclipse plugin - test version
+    * Oracle home selection fix
+    * TNS_ADMIN environment variable usage fix
+    * TNS names are available for Thin driver
+    * Data type resolve fix (Timestamp and BigInteger)
+    * View/Materialized view search
+- MS SQL: UPDATE statement execution fix (do not use row count limit)
+- Auto complete fix for complex identifiers
+- Table/ResultSet editor fix
+- PostgreSQL: driver update
+- Driver manager fix (do not try to load redist libraries for drivers with custom libraries)
+- OS-dependent drivers
 - UI fixes
-	Objects search fix
-	Inline editor of timestamp
-- Minor bugfixes
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -97,7 +97,7 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.4.0-x86-setup.exe</Primary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.4.1-x86-setup.exe</Primary_Download_URL>
       <Secondary_Download_URL></Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
