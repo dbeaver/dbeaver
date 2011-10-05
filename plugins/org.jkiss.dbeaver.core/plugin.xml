@@ -1665,7 +1665,7 @@
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSTable"/>
             <propertyGroup label="General">
                 <property id="escape" label="Escape character" type="string" description="Character which escapes single quote character" defaultValue="\" required="true"/>
-                <property id="rowsInStatement" label="Data rows per statement" type="numeric" description="Number of data rows per single insert statement" defaultValue="10" required="true"/>
+                <property id="rowsInStatement" label="Data rows per statement" type="integer" description="Number of data rows per single insert statement" defaultValue="10" required="true"/>
             </propertyGroup>
         </export>
     </extension>

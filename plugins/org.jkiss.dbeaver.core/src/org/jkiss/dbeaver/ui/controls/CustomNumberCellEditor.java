@@ -22,8 +22,9 @@ public class CustomNumberCellEditor extends TextCellEditor {
 
     public CustomNumberCellEditor(Composite parent, Class<?> valueType)
     {
-        super(parent);
+        super();
         this.valueType = valueType;
+        create(parent);
     }
 
     @Override
