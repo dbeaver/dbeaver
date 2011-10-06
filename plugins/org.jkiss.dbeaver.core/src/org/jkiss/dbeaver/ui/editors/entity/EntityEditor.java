@@ -168,13 +168,13 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             return;
         }
 
+        for (IEditorPart editor : editorMap.values()) {
+            editor.doSave(monitor);
+        }
+
         final DBECommandContext commandContext = getCommandContext();
         if (commandContext != null && commandContext.isDirty()) {
             saveCommandContext(monitor);
-        }
-
-        for (IEditorPart editor : editorMap.values()) {
-            editor.doSave(monitor);
         }
 
         firePropertyChange(IEditorPart.PROP_DIRTY);

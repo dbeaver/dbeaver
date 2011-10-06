@@ -169,6 +169,7 @@ public enum DBIcon
     SQL_EXPLAIN_PLAN("sql_explain", "/icons/sql/sql_plan.png"), //$NON-NLS-1$ //$NON-NLS-2$
     SQL_VALIDATE("sql_validate", "/icons/sql/sql_validate.png"), //$NON-NLS-1$ //$NON-NLS-2$
     SQL_PREVIEW("sql_preview", "/icons/sql/sql_preview.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    SQL_TEXT("sql_text", "/icons/sql/sql_text.png"), //$NON-NLS-1$ //$NON-NLS-2$
     SAVE_TO_DATABASE("save_to_db", "/icons/sql/save_to_database.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     OVER_SUCCESS("over_success", "/icons/over/success_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$

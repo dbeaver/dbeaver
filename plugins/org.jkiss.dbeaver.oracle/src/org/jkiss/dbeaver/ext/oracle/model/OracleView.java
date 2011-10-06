@@ -90,6 +90,7 @@ public class OracleView extends OracleTableBase implements OracleCompileUnit
         return OracleSourceType.VIEW;
     }
 
+    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         return getAdditionalInfo(monitor).getText();
@@ -97,7 +98,11 @@ public class OracleView extends OracleTableBase implements OracleCompileUnit
 
     public void setSourceDeclaration(String source)
     {
-
+        if (source == null) {
+            getAdditionalInfo().loaded = false;
+        } else {
+            getAdditionalInfo().setText(source);
+        }
     }
 
     public AdditionalInfo getAdditionalInfo()

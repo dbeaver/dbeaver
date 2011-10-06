@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.tabbed.ISection;
@@ -16,17 +15,19 @@ import org.jkiss.dbeaver.ext.oracle.editors.OracleViewDefinitionSection;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleView;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.properties.tabbed.*;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
+import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * OracleViewManager
  */
-public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema> implements DBEObjectTabProvider<OracleView> {
+public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema> /*implements DBEObjectTabProvider<OracleView>*/ {
 
     public long getMakerOptions()
     {
