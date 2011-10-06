@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.osgi.util.NLS;
 
 public class CoreMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.DBeaverResources"; //$NON-NLS-1$
+	static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
 
 	public static String actions_menu_about;
 	public static String actions_menu_database;

@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ext.erd;
 import org.eclipse.osgi.util.NLS;
 
 public class ERDMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.erd.DBeaverResources"; //$NON-NLS-1$
+	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.erd.ERDResources"; //$NON-NLS-1$
 
 	static {
 		// initialize resource bundle
