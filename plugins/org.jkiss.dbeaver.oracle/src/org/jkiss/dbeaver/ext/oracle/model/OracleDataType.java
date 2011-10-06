@@ -132,7 +132,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         this.persisted = persisted;
         this.attributeCache = new AttributeCache();
         this.methodCache = new MethodCache();
-        if (owner == null) {
+        if (owner instanceof OracleDataSource) {
             findTypeDesc(typeName);
         }
     }
@@ -182,19 +182,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
             // Don't care about PL/SQL types
             return;
         }
-        for (;;) {
-            final int precBeginPos = typeName.indexOf('(');
-            if (precBeginPos == -1) {
-                break;
-            }
-            int precEndPos = typeName.indexOf(')', precBeginPos);
-            try {
-                precision = Integer.parseInt(typeName.substring(precBeginPos + 1, precEndPos));
-            } catch (NumberFormatException e) {
-                log.error(e);
-            }
-            typeName = typeName.substring(0, precBeginPos) + typeName.substring(precEndPos + 1);
-        }
+        typeName = normalizeTypeName(typeName);
         this.typeDesc = PREDEFINED_TYPES.get(typeName);
         if (this.typeDesc == null) {
             log.warn("Unknown predefined type: " + typeName);
@@ -407,18 +395,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
 
     public static OracleDataType resolveDataType(DBRProgressMonitor monitor, OracleDataSource dataSource, String typeOwner, String typeName)
     {
-        for (;;) {
-            int modIndex = typeName.indexOf('(');
-            if (modIndex == -1) {
-                break;
-            }
-            int modEnd = typeName.indexOf(')', modIndex);
-            if (modEnd == -1) {
-                break;
-            }
-            typeName = typeName.substring(0, modIndex) +
-                (modEnd == typeName.length() - 1 ? "" : typeName.substring(modEnd + 1));
-        }
+        typeName = normalizeTypeName(typeName);
         OracleSchema typeSchema = null;
         OracleDataType type = null;
         if (typeOwner != null) {
@@ -446,6 +423,22 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
             }
         }
         return type;
+    }
+
+    private static String normalizeTypeName(String typeName) {
+        for (;;) {
+            int modIndex = typeName.indexOf('(');
+            if (modIndex == -1) {
+                break;
+            }
+            int modEnd = typeName.indexOf(')', modIndex);
+            if (modEnd == -1) {
+                break;
+            }
+            typeName = typeName.substring(0, modIndex) +
+                (modEnd == typeName.length() - 1 ? "" : typeName.substring(modEnd + 1));
+        }
+        return typeName;
     }
 
     private class AttributeCache extends JDBCObjectCache<OracleDataType, OracleDataTypeAttribute> {
