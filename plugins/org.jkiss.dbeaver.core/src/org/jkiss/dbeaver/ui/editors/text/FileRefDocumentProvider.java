@@ -39,7 +39,7 @@ import java.nio.charset.CodingErrorAction;
 /**
  * FileRefDocumentProvider
  */
-public class FileRefDocumentProvider extends AbstractDocumentProvider {
+public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
     static final Log log = LogFactory.getLog(FileRefDocumentProvider.class);
 
@@ -88,17 +88,6 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
     protected void setupDocument(IDocument document)
     {
 
-    }
-
-    private Document createEmptyDocument()
-    {
-        return new Document();
-    }
-
-    @Override
-    protected IAnnotationModel createAnnotationModel(Object element) throws CoreException
-    {
-        return new ProjectionAnnotationModel();
     }
 
     @Override
@@ -193,17 +182,6 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
                 }
             }
         }
-    }
-
-    @Override
-    protected IRunnableContext getOperationRunner(final IProgressMonitor monitor)
-    {
-        return new IRunnableContext() {
-            public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
-            {
-                runnable.run(monitor);
-            }
-        };
     }
 
     protected boolean setDocumentContent(IDocument document, IStorage storage) throws CoreException

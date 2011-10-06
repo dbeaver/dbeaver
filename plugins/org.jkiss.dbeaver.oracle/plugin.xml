@@ -340,6 +340,10 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor id="source.declaration" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceEditor"
+            label="Declaration" description="Declaration source" icon="#sql_script" position="additions_start">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
+        </editor>
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleDataTypeManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleDataType"/>
