@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.Activator;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
@@ -50,7 +51,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 {
     static final Log log = LogFactory.getLog(OracleConnectionPage.class);
 
-    public static final String BROWSE = "Browse...";
+    public static final String BROWSE = OracleMessages.browse___;
     private IDataSourceConnectionEditorSite site;
     private Text hostText;
     private Text portText;
@@ -74,7 +75,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
     private boolean isOCI;
 
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png");
+    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png"); //$NON-NLS-1$
     private Label oracleVersionLabel;
     private SelectionListener oraHomeSelectionListener;
     private DirectoryDialog directoryDialog;
@@ -98,13 +99,13 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         optionsFolder.setLayoutData(gd);
 
         TabItem addrTab = new TabItem(optionsFolder, SWT.NONE);
-        addrTab.setText("General");
-        addrTab.setToolTipText("General connection properties");
+        addrTab.setText(OracleMessages.general);
+        addrTab.setToolTipText(OracleMessages.general_connection_properties);
         addrTab.setControl(createGeneralTab(optionsFolder));
 
         final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
-        propsTab.setText("Advanced");
-        propsTab.setToolTipText("Advanced/custom driver properties");
+        propsTab.setText(OracleMessages.advanced);
+        propsTab.setToolTipText(OracleMessages.advanced_custom_driver_properties_tooltip);
         final Composite placeholder = UIUtils.createPlaceholder(optionsFolder, 1);
         connectionProps = new ConnectionPropertiesControl(placeholder, SWT.NONE);
         propsTab.setControl(placeholder);
@@ -139,7 +140,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        final Group protocolGroup = UIUtils.createControlGroup(addrGroup, "Connection Type", 1, GridData.FILL_HORIZONTAL, 0);
+        final Group protocolGroup = UIUtils.createControlGroup(addrGroup, OracleMessages.connection_type, 1, GridData.FILL_HORIZONTAL, 0);
 
         connectionTypeFolder = new CTabFolder(protocolGroup, SWT.TOP | SWT.MULTI);
         connectionTypeFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -156,7 +157,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             }
         });
 
-        final Group securityGroup = UIUtils.createControlGroup(addrGroup, "Security", 4, GridData.FILL_HORIZONTAL, 0);
+        final Group securityGroup = UIUtils.createControlGroup(addrGroup, OracleMessages.security, 4, GridData.FILL_HORIZONTAL, 0);
         createSecurityGroup(securityGroup);
 
         bottomControls = UIUtils.createPlaceholder(addrGroup, 2);
@@ -168,7 +169,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private void createBasicConnectionControls(CTabFolder protocolFolder)
     {
         CTabItem protocolTabBasic = new CTabItem(protocolFolder, SWT.NONE);
-        protocolTabBasic.setText("Basic");
+        protocolTabBasic.setText(OracleMessages.basic);
         protocolTabBasic.setData(OracleConstants.ConnectionType.BASIC);
 
         Composite targetContainer = new Composite(protocolFolder, SWT.NONE);
@@ -176,13 +177,13 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         targetContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         protocolTabBasic.setControl(targetContainer);
 
-        UIUtils.createControlLabel(targetContainer, "Host");
+        UIUtils.createControlLabel(targetContainer, OracleMessages.host);
 
         hostText = new Text(targetContainer, SWT.BORDER);
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         hostText.addModifyListener(controlModifyListener);
 
-        UIUtils.createControlLabel(targetContainer, "Port");
+        UIUtils.createControlLabel(targetContainer, OracleMessages.port);
 
         portText = new Text(targetContainer, SWT.BORDER);
         GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
@@ -191,7 +192,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
         portText.addModifyListener(controlModifyListener);
 
-        UIUtils.createControlLabel(targetContainer, "SID/Service");
+        UIUtils.createControlLabel(targetContainer, OracleMessages.sid_service);
 
         serviceNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -212,7 +213,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         selectorContainer.setLayout(new GridLayout(3, false));
         selectorContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Label label = UIUtils.createControlLabel(selectorContainer, "  Oracle Home");
+        Label label = UIUtils.createControlLabel(selectorContainer, OracleMessages.oracle_home);
         label.setFont(UIUtils.makeBoldFont(label.getFont()));
         oraHomeNameCombo = new Combo(selectorContainer, SWT.READ_ONLY);
         directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
@@ -223,7 +224,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         oraHomeNameCombo.setLayoutData(gd);
         oraHomeNameCombo.addSelectionListener(oraHomeSelectionListener);
         oracleVersionLabel = new Label(selectorContainer, SWT.NONE);
-        oracleVersionLabel.setText("                  ");
+        oracleVersionLabel.setText("                  "); //$NON-NLS-1$
         return selectorContainer;
     }
 
@@ -235,13 +236,13 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 oracleVersionLabel.setText(oraHome.getFullOraVersion());
             } else {
                 if (oraHome.getOraVersion() != null) {
-                    oracleVersionLabel.setText("v." + oraHome.getOraVersion());
+                    oracleVersionLabel.setText(OracleMessages.v_ + oraHome.getOraVersion());
                 } else {
-                    oracleVersionLabel.setText("");
+                    oracleVersionLabel.setText(""); //$NON-NLS-1$
                 }
             }
         } else {
-            oracleVersionLabel.setText("");
+            oracleVersionLabel.setText(""); //$NON-NLS-1$
         }
     }
 
@@ -257,7 +258,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private void createTNSConnectionControls(CTabFolder protocolFolder)
     {
         CTabItem protocolTabTNS = new CTabItem(protocolFolder, SWT.NONE);
-        protocolTabTNS.setText("TNS");
+        protocolTabTNS.setText(OracleMessages.tns);
         protocolTabTNS.setData(OracleConstants.ConnectionType.TNS);
 
         Composite targetContainer = new Composite(protocolFolder, SWT.NONE);
@@ -295,7 +296,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private void createCustomConnectionControls(CTabFolder protocolFolder)
     {
         CTabItem protocolTabCustom = new CTabItem(protocolFolder, SWT.NONE);
-        protocolTabCustom.setText("Custom");
+        protocolTabCustom.setText(OracleMessages.custom);
         protocolTabCustom.setData(OracleConstants.ConnectionType.CUSTOM);
 
         Composite targetContainer = new Composite(protocolFolder, SWT.NONE);
@@ -303,7 +304,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         targetContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
         protocolTabCustom.setControl(targetContainer);
 
-        final Label urlLabel = UIUtils.createControlLabel(targetContainer, "JDBC URL");
+        final Label urlLabel = UIUtils.createControlLabel(targetContainer, OracleMessages.jdbc_url);
         urlLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         connectionUrlText = new Text(targetContainer, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
@@ -313,7 +314,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
     private void createSecurityGroup(Composite parent)
     {
-        Label userNameLabel = UIUtils.createControlLabel(parent, "User name");
+        Label userNameLabel = UIUtils.createControlLabel(parent, OracleMessages.user_name);
         userNameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         userNameText = new Text(parent, SWT.BORDER);
@@ -322,7 +323,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         userNameText.setLayoutData(gd);
         userNameText.addModifyListener(controlModifyListener);
 
-        Label userRoleLabel = UIUtils.createControlLabel(parent, "Role");
+        Label userRoleLabel = UIUtils.createControlLabel(parent, OracleMessages.role);
         userRoleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         userRoleCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -334,7 +335,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         userRoleCombo.add(OracleConstants.ConnectionRole.SYSOPER.getTitle());
         userRoleCombo.select(0);
 
-        Label passwordLabel = UIUtils.createControlLabel(parent, "Password");
+        Label passwordLabel = UIUtils.createControlLabel(parent, OracleMessages.password);
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         passwordText = new Text(parent, SWT.BORDER | SWT.PASSWORD);
@@ -342,7 +343,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(controlModifyListener);
 
-        osAuthCheck = UIUtils.createCheckbox(parent, "OS Authentication", false);
+        osAuthCheck = UIUtils.createCheckbox(parent, OracleMessages.os_authentication, false);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.horizontalSpan = 2;
         osAuthCheck.setLayoutData(gd);
@@ -382,7 +383,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 //        }
         {
             testButton = new Button(bottomControls, SWT.PUSH);
-            testButton.setText("Test Connection ... ");
+            testButton.setText(OracleMessages.test_connection____);
             testButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             testButton.addSelectionListener(new SelectionListener()
             {
@@ -560,7 +561,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             }
             if (osAuthCheck.getSelection()) {
                 connectionInfo.setUserName(OracleConstants.OS_AUTH_USER_NAME);
-                connectionInfo.setUserPassword("");
+                connectionInfo.setUserPassword(""); //$NON-NLS-1$
             } else {
                 connectionInfo.setUserName(userNameText.getText());
                 connectionInfo.setUserPassword(passwordText.getText());
@@ -576,32 +577,32 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private void generateConnectionURL(DBPConnectionInfo connectionInfo)
     {
         StringBuilder url = new StringBuilder(100);
-        url.append("jdbc:oracle:");
+        url.append("jdbc:oracle:"); //$NON-NLS-1$
         if (isOCI) {
-            url.append("oci");
+            url.append("oci"); //$NON-NLS-1$
         } else {
-            url.append("thin");
+            url.append("thin"); //$NON-NLS-1$
         }
-        url.append(":@");
+        url.append(":@"); //$NON-NLS-1$
         if ((connectionType == OracleConstants.ConnectionType.TNS || CommonUtils.isEmpty(connectionInfo.getHostName())) && !CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             // TNS name specified
             url.append(connectionInfo.getDatabaseName());
         } else {
             // Basic connection info specified
             if (!isOCI) {
-                url.append("//");
+                url.append("//"); //$NON-NLS-1$
             }
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 url.append(connectionInfo.getHostName());
             }
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                url.append(":");
+                url.append(":"); //$NON-NLS-1$
                 url.append(connectionInfo.getHostPort());
             }
             if (isOCI) {
-                url.append(":");
+                url.append(":"); //$NON-NLS-1$
             } else {
-                url.append("/");
+                url.append("/"); //$NON-NLS-1$
             }
             if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
                 url.append(connectionInfo.getDatabaseName());
@@ -648,8 +649,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                             oraHome = OCIUtils.addOraHome(dir);
                             populateOraHomeCombo();
                         } catch (DBException ex) {
-                            log.warn("Wrong Oracle client home " + oraHome, ex);
-                            UIUtils.showMessageBox(getShell(), "Select Oracle home", ex.getMessage(), SWT.ICON_ERROR);
+                            log.warn("Wrong Oracle client home " + oraHome, ex); //$NON-NLS-1$
+                            UIUtils.showMessageBox(getShell(), OracleMessages.select_oracle_home, ex.getMessage(), SWT.ICON_ERROR);
 
                             // restore the previous home
                             String home = (String) site.getConnectionInfo().getProperties().get(OracleConstants.PROP_ORA_HOME);
@@ -663,10 +664,10 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                         oraHomeNameCombo.setText(oraHome.getOraHomeName());
                     }
                     else {
-                        oraHomeNameCombo.setText("");
+                        oraHomeNameCombo.setText(""); //$NON-NLS-1$
                     }
                 } else {
-                    oraHomeNameCombo.setText("");
+                    oraHomeNameCombo.setText(""); //$NON-NLS-1$
                 }
             }
             displayClientVersion();
