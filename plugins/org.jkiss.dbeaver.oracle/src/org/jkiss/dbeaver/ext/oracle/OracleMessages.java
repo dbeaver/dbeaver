@@ -17,26 +17,25 @@ public class OracleMessages extends NLS {
 	private OracleMessages() {
 	}
 
-	public static String advanced;
-	public static String advanced_custom_driver_properties_tooltip;
-	public static String basic;
-	public static String browse___;
-	public static String connection_type;
-	public static String custom;
-	public static String general;
-	public static String general_connection_properties;
-	public static String host;
-	public static String jdbc_url;
-	public static String oracle_home;
-	public static String os_authentication;
-	public static String password;
-	public static String port;
-	public static String role;
-	public static String security;
-	public static String select_oracle_home;
-	public static String sid_service;
-	public static String test_connection____;
-	public static String tns;
-	public static String user_name;
-	public static String v_;
+	public static String dialog_connection_advanced_tab;
+	public static String dialog_connection_advanced_tab_tooltip;
+	public static String dialog_connection_basic_tab;
+	public static String dialog_connection_browse;
+	public static String dialog_connection_connection_type_group;
+	public static String dialog_connection_custom_tab;
+	public static String dialog_connection_general_tab;
+	public static String dialog_connection_general_tab_tooltip;
+	public static String dialog_connection_host;
+	public static String dialog_connection_ora_home;
+	public static String dialog_connection_os_authentication;
+	public static String dialog_connection_password;
+	public static String dialog_connection_port;
+	public static String dialog_connection_role;
+	public static String dialog_connection_security_group;
+	public static String dialog_connection_select_ora_home_msg;
+	public static String dialog_connection_sid_service;
+	public static String dialog_connection_test_connection;
+	public static String dialog_connection_tns_tab;
+	public static String dialog_connection_user_name;
+	public static String dialog_connection_ver;
 }
