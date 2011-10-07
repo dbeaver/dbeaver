@@ -51,7 +51,7 @@ import java.util.*;
  */
 public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider
 {
-    static final Log log = LogFactory.getLog(SQLEditorBase.class);
+    static protected final Log log = LogFactory.getLog(SQLEditorBase.class);
 
     private SQLSyntaxManager syntaxManager;
 

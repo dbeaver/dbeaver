@@ -16,6 +16,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
+import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
+import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -28,7 +30,9 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Oracle source editor
  */
-public class OracleSourceEditor extends SQLEditorBase {
+public class OracleSourceEditor extends SQLEditorBase implements IActiveWorkbenchPart, IRefreshablePart {
+
+    private IEditorInput lazyInput;
 
     public OracleSourceEditor() {
         super();
@@ -52,8 +56,34 @@ public class OracleSourceEditor extends SQLEditorBase {
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
-        super.init(site, input);
-        reloadSyntaxRules();
+        lazyInput = input;
+        setSite(site);
+    }
+
+    public void activatePart() {
+        if (lazyInput != null) {
+            try {
+                super.init(getEditorSite(), lazyInput);
+                reloadSyntaxRules();
+                lazyInput = null;
+            } catch (PartInitException e) {
+                log.error(e);
+            }
+        }
+    }
+
+    public void deactivatePart() {
+    }
+
+    public void refreshPart(Object source) {
+        if (lazyInput == null) {
+            try {
+                super.init(getEditorSite(), getEditorInput());
+                reloadSyntaxRules();
+            } catch (PartInitException e) {
+                log.error(e);
+            }
+        }
     }
 
     private class ObjectDocumentProvider extends BaseTextDocumentProvider {
@@ -70,6 +100,16 @@ public class OracleSourceEditor extends SQLEditorBase {
         @Override
         protected IDocument createDocument(Object element) throws CoreException {
             final Document document = new Document();
+/*
+            try {
+                String declaration = getObject().getSourceDeclaration(new DefaultProgressMonitor(getProgressMonitor()));
+                if (declaration != null) {
+                    document.set(declaration);
+                }
+            } catch (DBException e) {
+                throw new CoreException(RuntimeUtils.makeExceptionStatus(e));
+            }
+*/
             try {
                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
@@ -88,6 +128,7 @@ public class OracleSourceEditor extends SQLEditorBase {
             } catch (InterruptedException e) {
                 // just skip it
             }
+
             return document;
         }
 

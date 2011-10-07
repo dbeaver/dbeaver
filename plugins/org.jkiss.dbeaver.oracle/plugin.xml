@@ -343,6 +343,7 @@
         <editor id="source.declaration" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceEditor"
             label="Declaration" description="Declaration source" icon="#sql_text" position="additions_middle">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
         </editor>
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleDataTypeManager"
