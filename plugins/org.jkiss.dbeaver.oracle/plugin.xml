@@ -70,7 +70,7 @@
                   icon="icons/oracle_icon.png"
                   label="Oracle data source"
                   path="oracle">
-                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchema" label="Schemas" iconId="#folder_schema" description="Database schemas">
+                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchema" label="%tree.schemas.node.name" iconId="#folder_schema" description="Database schemas">
                     <items label="Schema" path="schema" property="schemas" iconId="#schema" optional="true">
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTable" label="Tables" iconId="#folder_table" description="Tables">
                             <items label="Table" path="table" property="tables" iconId="#table">
