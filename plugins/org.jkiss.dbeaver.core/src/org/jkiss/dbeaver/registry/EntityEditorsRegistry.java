@@ -9,7 +9,9 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * EntityEditorsRegistry
@@ -21,6 +23,7 @@ public class EntityEditorsRegistry {
 
     private EntityEditorDescriptor defaultEditor;
     private List<EntityEditorDescriptor> entityEditors = new ArrayList<EntityEditorDescriptor>();
+    private Map<String, List<EntityEditorDescriptor>> positionsMap = new HashMap<String, List<EntityEditorDescriptor>>();
     private List<EntityManagerDescriptor> entityManagers = new ArrayList<EntityManagerDescriptor>();
 
     public EntityEditorsRegistry(IExtensionRegistry registry)
@@ -33,6 +36,12 @@ public class EntityEditorsRegistry {
             if (TAG_EDITOR.equals(ext.getName())) {
                 EntityEditorDescriptor descriptor = new EntityEditorDescriptor(ext);
                 entityEditors.add(descriptor);
+                List<EntityEditorDescriptor> list = positionsMap.get(descriptor.getPosition());
+                if (list == null) {
+                    list = new ArrayList<EntityEditorDescriptor>();
+                    positionsMap.put(descriptor.getPosition(), list);
+                }
+                list.add(descriptor);
             } else if (TAG_MANAGER.equals(ext.getName())) {
                 EntityManagerDescriptor descriptor = new EntityManagerDescriptor(ext);
                 entityManagers.add(descriptor);
@@ -69,9 +78,12 @@ public class EntityEditorsRegistry {
     public List<EntityEditorDescriptor> getEntityEditors(Class objectType, String position)
     {
         List<EntityEditorDescriptor> editors = new ArrayList<EntityEditorDescriptor>();
-        for (EntityEditorDescriptor descriptor : entityEditors) {
-            if (descriptor.appliesToType(objectType) && (position == null || position.equalsIgnoreCase(descriptor.getPosition()))) {
-                editors.add(descriptor);
+        final List<EntityEditorDescriptor> positionList = positionsMap.get(position);
+        if (positionList != null) {
+            for (EntityEditorDescriptor descriptor : positionList) {
+                if (descriptor.appliesToType(objectType)) {
+                    editors.add(descriptor);
+                }
             }
         }
         return editors;

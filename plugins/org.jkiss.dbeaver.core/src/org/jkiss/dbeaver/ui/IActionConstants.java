@@ -25,6 +25,7 @@ public interface IActionConstants {
 
     public static final String MB_ADDITIONS_END = "additions_end"; //$NON-NLS-1$
     public static final String MB_ADDITIONS_PROPS = "additions_props"; //$NON-NLS-1$
+    public static final String MB_ADDITIONS_MIDDLE = "additions_middle"; //$NON-NLS-1$
     public static final String MB_ADDITIONS_START = "additions_start"; //$NON-NLS-1$
 
     public static final String NEW_CONNECTION_POINT = "org.jkiss.dbeaver.ext.ui.newConnectionWizard"; //$NON-NLS-1$

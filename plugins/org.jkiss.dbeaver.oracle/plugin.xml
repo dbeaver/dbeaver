@@ -341,7 +341,7 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor id="source.declaration" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceEditor"
-            label="Declaration" description="Declaration source" icon="#sql_text" position="additions_end">
+            label="Declaration" description="Declaration source" icon="#sql_text" position="additions_middle">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
         </editor>
         <manager

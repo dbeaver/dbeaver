@@ -404,6 +404,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_PROPS);
         addContributions(EntityEditorDescriptor.POSITION_START);
+        addContributions(EntityEditorDescriptor.POSITION_MIDDLE);
 
         // Add navigator tabs
         //addNavigatorTabs();

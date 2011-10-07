@@ -28,6 +28,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 
     public static final String POSITION_PROPS = IActionConstants.MB_ADDITIONS_PROPS;
     public static final String POSITION_START = IActionConstants.MB_ADDITIONS_START;
+    public static final String POSITION_MIDDLE = IActionConstants.MB_ADDITIONS_MIDDLE;
     public static final String POSITION_END = IActionConstants.MB_ADDITIONS_END;
 
     private String id;
