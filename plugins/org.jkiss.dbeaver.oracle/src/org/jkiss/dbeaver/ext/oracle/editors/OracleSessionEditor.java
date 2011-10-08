@@ -63,7 +63,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
         sessionsViewer.refreshSessions();
     }
 
-    public void refreshPart(Object source)
+    public void refreshPart(Object source, boolean force)
     {
         sessionsViewer.refreshSessions();
     }

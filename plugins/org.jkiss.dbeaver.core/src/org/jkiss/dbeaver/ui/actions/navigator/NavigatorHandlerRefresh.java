@@ -40,7 +40,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
         if (!(workbenchPart instanceof INavigatorModelView)) {
             // Try to refresh as refreshable part
             if (workbenchPart instanceof IRefreshablePart) {
-                ((IRefreshablePart) workbenchPart).refreshPart(this);
+                ((IRefreshablePart) workbenchPart).refreshPart(this, true);
             }
             return null;
         }
@@ -89,7 +89,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                         }
                         setName("Refresh '" + node.getNodeName() + "'...");
                         try {
-                            DBNNode refreshed = node.refreshNode(monitor);
+                            DBNNode refreshed = node.refreshNode(monitor, NavigatorHandlerRefresh.this);
                             if (refreshed != null) {
                                 refreshedSet.add(refreshed);
                             }

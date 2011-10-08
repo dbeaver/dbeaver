@@ -215,25 +215,27 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
      * Do not actually changes navigation tree. If some underlying object is refreshed it must fire DB model
      * event which will cause actual tree nodes refresh. Underlying object could present multiple times in
      * navigation model - each occurrence will be refreshed then.
+     *
      * @param monitor progress monitor
+     * @param source
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */
-    public DBNNode refreshNode(DBRProgressMonitor monitor) throws DBException
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
         if (isLocked()) {
             log.warn("Attempt to refresh locked node '" + getNodeName() + "'");
             return null;
         }
         if (getObject() instanceof DBSEntity && ((DBSEntity)getObject()).refreshEntity(monitor)) {
-            refreshNodeContent(monitor);
+            refreshNodeContent(monitor, source);
             return this;
         } else {
-            return super.refreshNode(monitor);
+            return super.refreshNode(monitor, source);
         }
     }
 
-    private void refreshNodeContent(final DBRProgressMonitor monitor)
+    private void refreshNodeContent(final DBRProgressMonitor monitor, Object source)
         throws DBException
     {
         if (isDisposed()) {
@@ -241,7 +243,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
         this.locked = true;
         try {
-            this.getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.LOCK);
+            this.getModel().fireNodeUpdate(source, this, DBNEvent.NodeChange.LOCK);
 
             try {
                 this.reloadChildren(monitor);
@@ -249,12 +251,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                 log.error(e);
             }
 
-            this.getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
+            this.getModel().fireNodeUpdate(source, this, DBNEvent.NodeChange.REFRESH);
         } finally {
             this.locked = false;
 
             // Unlock node
-            this.getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.UNLOCK);
+            this.getModel().fireNodeUpdate(source, this, DBNEvent.NodeChange.UNLOCK);
         }
         //new RefreshJob("Refresh node " + getNodeName()).schedule();
     }

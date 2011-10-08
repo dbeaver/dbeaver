@@ -82,11 +82,12 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> e
     public void deactivatePart() {
     }
 
-    public void refreshPart(Object source) {
-        if (lazyInput == null) {
+    public void refreshPart(Object source, boolean force) {
+        if (lazyInput == null && force) {
             try {
                 super.init(getEditorSite(), getEditorInput());
                 reloadSyntaxRules();
+                setFocus();
             } catch (PartInitException e) {
                 log.error(e);
             }

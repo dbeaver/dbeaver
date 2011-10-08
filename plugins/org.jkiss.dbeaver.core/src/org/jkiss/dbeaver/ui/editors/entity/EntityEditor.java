@@ -217,7 +217,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
                             try {
-                                treeNode.refreshNode(monitor);
+                                treeNode.refreshNode(monitor, getCommandContext());
                             } catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }
@@ -695,7 +695,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         }
     }
 
-    public void refreshPart(final Object source)
+    public void refreshPart(final Object source, boolean force)
     {
         // TODO: make smart content refresh
         // Lists and commands should be refreshed only if we make real refresh from remote storage
@@ -708,7 +708,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             // Refresh visual content in parts
             for (IEditorPart editor : editorMap.values()) {
                 if (editor instanceof IRefreshablePart) {
-                    ((IRefreshablePart)editor).refreshPart(source);
+                    ((IRefreshablePart)editor).refreshPart(source, force);
                 }
             }
         }

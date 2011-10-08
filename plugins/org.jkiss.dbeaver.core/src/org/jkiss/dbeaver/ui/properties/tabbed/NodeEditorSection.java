@@ -171,7 +171,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
         return itemControl.performSearch(searchType);
     }
 
-    public void refreshPart(Object source)
+    public void refreshPart(Object source, boolean force)
     {
         if (!activated || itemControl == null || itemControl.isDisposed()) {
             return;

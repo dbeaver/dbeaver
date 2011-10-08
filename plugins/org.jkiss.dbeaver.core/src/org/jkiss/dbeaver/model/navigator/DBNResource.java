@@ -15,7 +15,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.ICommandIds;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -182,7 +181,7 @@ public class DBNResource extends DBNNode
     }
 
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor) throws DBException
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
         try {
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());

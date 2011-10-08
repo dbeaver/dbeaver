@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,9 +14,7 @@ import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * DBNNode
@@ -159,14 +156,16 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
      * Do not actually changes navigation tree. If some underlying object is refreshed it must fire DB model
      * event which will cause actual tree nodes refresh. Underlying object could present multiple times in
      * navigation model - each occurrence will be refreshed then.
+     *
      * @param monitor progress monitor
+     * @param source
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */
-    public DBNNode refreshNode(DBRProgressMonitor monitor) throws DBException
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
         if (this.getParentNode() != null) {
-            return this.getParentNode().refreshNode(monitor);
+            return this.getParentNode().refreshNode(monitor, source);
         } else {
             return null;
         }

@@ -105,7 +105,7 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
     {
     }
 
-    public void refreshPart(Object source)
+    public void refreshPart(Object source, boolean force)
     {
         if (!activated) {
             return;

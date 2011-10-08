@@ -338,7 +338,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    public void refreshPart(Object source)
+    public void refreshPart(Object source, boolean force)
     {
         // do nothing
     }

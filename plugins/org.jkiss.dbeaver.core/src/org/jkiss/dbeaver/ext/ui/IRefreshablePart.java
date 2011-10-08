@@ -9,5 +9,5 @@ package org.jkiss.dbeaver.ext.ui;
  */
 public interface IRefreshablePart
 {
-    void refreshPart(Object source);
+    void refreshPart(Object source, boolean force);
 }

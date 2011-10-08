@@ -614,7 +614,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
-    public void refreshPart(Object source)
+    public void refreshPart(Object source, boolean force)
     {
         refreshDiagram();
     }

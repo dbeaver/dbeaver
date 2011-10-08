@@ -14,7 +14,6 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSession;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
@@ -79,7 +78,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
         return null;
     }
 
-    public void refreshPart(Object source)
+    public void refreshPart(Object source, boolean force)
     {
         sessionsViewer.refreshSessions();
     }

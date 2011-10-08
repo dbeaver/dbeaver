@@ -40,7 +40,7 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         return itemControl.getNavigatorViewer();
     }
 
-    public void refreshPart(Object source)
+    public void refreshPart(Object source, boolean force)
     {
         Display.getDefault().asyncExec(new Runnable() {
             public void run()

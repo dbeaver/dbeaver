@@ -10,7 +10,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusAdapter;
@@ -240,7 +239,7 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
         }
     }
 
-    public void refreshPart(Object source)
+    public void refreshPart(Object source, boolean force)
     {
         // Reload sources
         sqlViewer.setInput(makeSourcesInput());

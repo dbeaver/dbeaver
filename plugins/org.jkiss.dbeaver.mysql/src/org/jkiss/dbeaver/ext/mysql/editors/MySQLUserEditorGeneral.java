@@ -174,7 +174,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         privTable.fillGrants(grants);
     }
 
-    public void refreshPart(Object source)
+    public void refreshPart(Object source, boolean force)
     {
         // do nothing
     }

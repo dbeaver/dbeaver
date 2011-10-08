@@ -5,9 +5,6 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.ui.*;
-import org.jkiss.dbeaver.ui.properties.tabbed.ISectionEditorContributor;
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -21,6 +18,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
@@ -35,6 +33,8 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.properties.tabbed.ISectionEditorContributor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -368,10 +368,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         }
     }
 
-    public void refreshPart(Object source) {
+    public void refreshPart(Object source, boolean force) {
         synchronized (refreshClients) {
             for (IRefreshablePart part : refreshClients) {
-                part.refreshPart(source);
+                part.refreshPart(source, force);
             }
         }
     }

@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
 
 /**
  * DatabaseEditorListener
@@ -62,7 +63,10 @@ public class DatabaseEditorListener implements IDBNListener
                 {
                     if (getTreeNode() == event.getNode()) {
                         runner = new Runnable() { public void run() {
-                            databaseEditor.refreshPart(event);
+                            databaseEditor.refreshPart(
+                                event,
+                                event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
+                                event.getSource() instanceof NavigatorHandlerRefresh);
                         }};
                     }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
