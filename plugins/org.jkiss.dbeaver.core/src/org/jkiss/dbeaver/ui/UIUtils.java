@@ -232,9 +232,19 @@ public class UIUtils {
             final Rectangle clientArea = table.getClientArea();
             if (clientArea.width > 0 && totalWidth > clientArea.width) {
                 int extraSpace = totalWidth - clientArea.width;
+                for (TableColumn column : columns) {
+                    int colWidth = column.getWidth();
+                    if (colWidth > totalWidth / 3) {
+                        column.setWidth(totalWidth / 3);
+                        totalWidth -= colWidth;
+                        totalWidth += column.getWidth();
+                    }
+                }
+
                 for (TableColumn tc : columns) {
                     double ratio = (double) tc.getWidth() / totalWidth;
-                    tc.setWidth((int) (tc.getWidth() - extraSpace * ratio));
+                    int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
+                    tc.setWidth(newWidth);
                 }
             } else if (fit && totalWidth < clientArea.width) {
                 float extraSpace = (clientArea.width - totalWidth) / columns.length;

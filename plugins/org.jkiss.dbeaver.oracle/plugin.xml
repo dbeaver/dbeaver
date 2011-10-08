@@ -363,11 +363,11 @@
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn"/>
         <manager
-            class="org.jkiss.dbeaver.ext.oracle.edit.OracleConstraintManager"
-            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleConstraint"/>
-        <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleForeignKeyManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleForeignKey"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.oracle.edit.OracleConstraintManager"
+            objectType="org.jkiss.dbeaver.ext.oracle.model.OracleConstraint"/>
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleIndexManager"
             objectType="org.jkiss.dbeaver.ext.oracle.model.OracleIndex"/>
