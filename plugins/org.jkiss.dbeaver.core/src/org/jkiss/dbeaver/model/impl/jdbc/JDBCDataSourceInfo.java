@@ -147,7 +147,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             this.sqlKeywords = makeStringList(metaData.getSQLKeywords());
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.sqlKeywords = Collections.emptyList();
+            this.sqlKeywords = new ArrayList<String>();
         }
         try {
             this.numericFunctions = makeStringList(metaData.getNumericFunctions());
@@ -324,6 +324,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public Collection<String> getSQLKeywords()
     {
         return sqlKeywords;
+    }
+
+    public void addSQLKeyword(String keyword)
+    {
+        sqlKeywords.add(keyword);
     }
 
     public Collection<String> getNumericFunctions()

@@ -65,6 +65,10 @@ public class OracleConstants {
     public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
     public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
 
+    public static final String[] ADVANCED_KEYWORDS = {
+        "PACKAGE", "FUNCTION", "TYPE", "MATERIALIZED", "IF", "RETURN", "WRAPPED"
+    };
+
     /**
      * Connection type
      */

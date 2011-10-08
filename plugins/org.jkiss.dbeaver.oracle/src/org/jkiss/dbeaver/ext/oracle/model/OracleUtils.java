@@ -94,16 +94,16 @@ public class OracleUtils {
             }
             java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
                 object.getSourceType() + (body ? "\\s+BODY" : "") +
-                "\\s+([\\w$\\.]+)[\\s\\(]+", java.util.regex.Pattern.CASE_INSENSITIVE);
+                "\\s(\\s*)([\\w$\\.]+)[\\s\\(]+", java.util.regex.Pattern.CASE_INSENSITIVE);
             final Matcher matcher = pattern.matcher(source);
             if (matcher.find()) {
-                String objectName = matcher.group(1);
+                String objectName = matcher.group(2);
                 if (objectName.indexOf('.') == -1) {
                     if (!objectName.equalsIgnoreCase(object.getName())) {
                         object.setName(DBObjectNameCaseTransformer.transformName(object, objectName));
                         object.getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object));
                     }
-                    return source.substring(0, matcher.start(1)) + object.getSchema().getName() + "." + objectName + source.substring(matcher.end(1));
+                    return source.substring(0, matcher.start(1)) + object.getSchema().getName() + "." + objectName + source.substring(matcher.end(2));
                 }
             }
             return source;
