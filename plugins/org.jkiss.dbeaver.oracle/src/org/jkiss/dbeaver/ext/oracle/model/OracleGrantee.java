@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -55,7 +56,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
 
     static class RolePrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivRole> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleGrantee owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleGrantee owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM DBA_ROLE_PRIVS WHERE GRANTEE=? ORDER BY GRANTED_ROLE");
@@ -72,7 +73,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
 
     static class SystemPrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivSystem> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleGrantee owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleGrantee owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM DBA_SYS_PRIVS WHERE GRANTEE=? ORDER BY PRIVILEGE");
@@ -89,7 +90,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
 
     static class ObjectPrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivObject> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleGrantee owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleGrantee owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT p.*,o.OBJECT_TYPE\n" +

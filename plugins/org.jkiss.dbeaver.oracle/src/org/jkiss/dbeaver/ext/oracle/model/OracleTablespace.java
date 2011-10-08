@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -257,7 +258,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
 
     static class FileCache extends JDBCObjectCache<OracleTablespace, OracleDataFile> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.DBA_" +
@@ -276,7 +277,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
 
     static class SegmentCache extends JDBCObjectCache<OracleTablespace, OracleSegment<OracleTablespace>> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminViewPrefix(owner.getDataSource()) +

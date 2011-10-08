@@ -232,7 +232,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             super(JDBCConstants.TABLE_NAME);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException
         {
             return context.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(getDataSource(), getName()));
@@ -259,7 +259,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             table.setColumns(columns);
         }
 
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTableBase forTable)
+        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -295,7 +295,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -391,7 +391,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -468,7 +468,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
             super(JDBCConstants.PROCEDURE_NAME);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -549,7 +549,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     }
 
     class TriggerCache extends JDBCObjectCache<MySQLCatalog, MySQLTrigger> {
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException
         {
             return context.prepareStatement(

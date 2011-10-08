@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
@@ -175,7 +176,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablePhysical table) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablePhysical table) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TAB_PARTITIONS " +
@@ -193,7 +194,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         @Override
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleTablePhysical table, OracleTablePartition forObject) throws SQLException
+        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OracleTablePhysical table, OracleTablePartition forObject) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TAB_SUBPARTITIONS " +

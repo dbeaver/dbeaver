@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -143,7 +144,7 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
 
     static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackaged> {
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OraclePackage owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OraclePackage owner)
             throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(

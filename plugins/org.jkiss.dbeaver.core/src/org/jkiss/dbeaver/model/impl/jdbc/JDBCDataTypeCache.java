@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;

@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -422,10 +421,8 @@ public class OracleCompilerDialog extends TrayDialog
         OracleObjectType objectType)
     {
         try {
-            final JDBCPreparedStatement dbStat = (JDBCPreparedStatement)context.prepareStatement(
-                DBCStatementType.QUERY,
-                "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE",
-                false, false, false);
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE");
             try {
                 dbStat.setString(1, unit.getSchema().getName());
                 dbStat.setString(2, unit.getName());

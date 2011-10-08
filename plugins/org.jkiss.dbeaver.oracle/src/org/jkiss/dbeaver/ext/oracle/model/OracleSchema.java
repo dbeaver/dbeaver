@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -304,7 +305,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
             super("TABLE_NAME");
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -352,7 +353,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
             table.setColumns(columns);
         }
 
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleSchema owner, OracleTableBase forTable)
+        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OracleSchema owner, OracleTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -394,7 +395,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
             super(tableCache, OracleTableBase.class, "TABLE_NAME", "CONSTRAINT_NAME");
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTableBase forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -468,7 +469,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
             super.loadObjects(monitor, schema, forParent);
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -538,7 +539,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
             super(tableCache, OracleTablePhysical.class, "TABLE_NAME", "INDEX_NAME");
         }
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTablePhysical forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner, OracleTablePhysical forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -611,7 +612,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
      */
     static class DataTypeCache extends JDBCObjectCache<OracleSchema, OracleDataType> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner) throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPES WHERE OWNER=? ORDER BY TYPE_NAME");
@@ -631,7 +632,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
      */
     static class SequenceCache extends JDBCObjectCache<OracleSchema, OracleSequence> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_SEQUENCES WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
@@ -651,7 +652,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
      */
     static class ProceduresCache extends JDBCObjectCache<OracleSchema, OracleProcedureStandalone> {
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -672,7 +673,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
 
     static class PackageCache extends JDBCObjectCache<OracleSchema, OraclePackage> {
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(        
@@ -695,7 +696,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
      */
     static class SynonymCache extends JDBCObjectCache<OracleSchema, OracleSynonym> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner) throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT /*+ USE_NL(O)*/ s.*,O.OBJECT_TYPE \n" +
@@ -716,7 +717,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
 
     static class DBLinkCache extends JDBCObjectCache<OracleSchema, OracleDBLink> {
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(        
@@ -756,7 +757,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         }
 
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema oracleSchema) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema oracleSchema) throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT *\n" +
@@ -782,7 +783,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         }
 
         @Override
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleSchema oracleSchema, OracleTrigger forObject) throws SQLException
+        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OracleSchema oracleSchema, OracleTrigger forObject) throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT TRIGGER_NAME,TABLE_OWNER,TABLE_NAME,COLUMN_NAME,COLUMN_LIST,COLUMN_USAGE\n" +
@@ -831,7 +832,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
 
     static class JavaCache extends JDBCObjectCache<OracleSchema, OracleJavaClass> {
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -850,7 +851,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
 
     static class RecycleBin extends JDBCObjectCache<OracleSchema, OracleRecycledObject> {
 
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
             throws SQLException
         {
             final boolean isPublic = owner.isPublic();

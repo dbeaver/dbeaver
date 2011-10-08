@@ -21,10 +21,7 @@ import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -391,7 +388,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             List<String> schemaFilters = SQLUtils.splitFilter(owner.getContainer().getSchemaFilter());
             StringBuilder schemasQuery = new StringBuilder();
@@ -457,7 +454,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     static class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             return context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPES WHERE OWNER IS NULL ORDER BY TYPE_NAME");
@@ -483,7 +480,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     static class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             return context.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminViewPrefix(owner) + "TABLESPACES ORDER BY TABLESPACE_NAME");
@@ -498,7 +495,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     static class UserCache extends JDBCObjectCache<OracleDataSource, OracleUser> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             return context.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(owner) + "USERS ORDER BY USERNAME");
@@ -513,7 +510,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 
     static class RoleCache extends JDBCObjectCache<OracleDataSource, OracleRole> {
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             return context.prepareStatement(
                 "SELECT * FROM DBA_ROLES ORDER BY ROLE");
@@ -533,7 +530,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         }
 
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
             return context.prepareStatement(
                 "SELECT DISTINCT PROFILE FROM DBA_PROFILES ORDER BY PROFILE");
@@ -558,7 +555,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         }
 
         @Override
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OracleDataSource dataSource, OracleUserProfile forObject) throws SQLException
+        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OracleDataSource dataSource, OracleUserProfile forObject) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT RESOURCE_NAME,RESOURCE_TYPE,LIMIT FROM DBA_PROFILES " +

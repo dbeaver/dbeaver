@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.utils.CommonUtils;
@@ -12,10 +13,6 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -455,7 +452,7 @@ public class MySQLTable extends MySQLTableBase
     class PartitionCache extends JDBCObjectCache<MySQLTable, MySQLPartition> {
         Map<String, MySQLPartition> partitionMap = new HashMap<String, MySQLPartition>();
         @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable mySQLTable) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable mySQLTable) throws SQLException
         {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_PARTITIONS +
