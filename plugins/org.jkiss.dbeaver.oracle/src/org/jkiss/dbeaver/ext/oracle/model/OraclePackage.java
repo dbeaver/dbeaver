@@ -6,9 +6,11 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -24,6 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 /**
  * GenericProcedure
@@ -43,6 +46,11 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
     }
 
+    public OraclePackage(OracleSchema schema, String name)
+    {
+        super(schema, name, false);
+    }
+
     @Property(name = "Valid", viewable = true, order = 3)
     public boolean isValid()
     {
@@ -54,7 +62,7 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
         return OracleSourceType.PACKAGE;
     }
 
-    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(name = "Header", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null) {
@@ -63,17 +71,27 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
         return sourceDeclaration;
     }
 
+    public String getSourceDeclaration()
+    {
+        return sourceDeclaration;
+    }
+
     public void setSourceDeclaration(String sourceDeclaration)
     {
         this.sourceDeclaration = sourceDeclaration;
     }
 
-    @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(name = "Body", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null) {
             sourceDefinition = OracleUtils.getSource(monitor, this, true);
         }
+        return sourceDefinition;
+    }
+
+    public String getSourceDefinition()
+    {
         return sourceDefinition;
     }
 

@@ -4,19 +4,17 @@
 
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.views.properties.tabbed.ISection;
-import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.oracle.editors.OracleSourceViewSection;
-import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
-import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
-import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,37 +22,64 @@ import java.util.List;
 /**
  * OraclePackageManager
  */
-public class OraclePackageManager extends JDBCObjectManager<OraclePackage> implements DBEObjectTabProvider<OraclePackage> {
+public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, OracleSchema> {
 
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseNodeEditor activeEditor, final OraclePackage object)
+    @Override
+    protected OraclePackage createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
-        List<ITabDescriptor> tabs = new ArrayList<ITabDescriptor>();
-        tabs.add(
-            new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "type.declaration",
-                "Declaration",
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "Declaration") {
-                    public ISection getSectionClass()
-                    {
-                        return new OracleSourceViewSection(activeEditor, false);
-                    }
-                }));
-
-        tabs.add(new PropertyTabDescriptor(
-            PropertiesContributor.CATEGORY_INFO,
-            "type.definition",
-            "Body",
-            DBIcon.SOURCES.getImage(),
-            new SectionDescriptor("default", "Body") {
-                public ISection getSectionClass()
-                {
-                    return new OracleSourceViewSection(activeEditor, true);
-                }
-            }));
-
-        return tabs.toArray(new ITabDescriptor[tabs.size()]);
+        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(), "Package");
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+        return new OraclePackage(
+            parent,
+            dialog.getEntityName());
     }
+
+    @Override
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
+    {
+        return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
+    }
+
+    @Override
+    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
+    {
+        final OraclePackage object = objectDeleteCommand.getObject();
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction("Drop package",
+                "DROP PACKAGE " + object.getFullQualifiedName())
+        };
+    }
+
+    @Override
+    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
+    {
+        return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
+    }
+
+    public long getMakerOptions()
+    {
+        return FEATURE_EDITOR_ON_CREATE;
+    }
+
+    private IDatabasePersistAction[] createOrReplaceProcedureQuery(OraclePackage pack)
+    {
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        if (!CommonUtils.isEmpty(pack.getSourceDeclaration())) {
+            actions.add(
+                new AbstractDatabasePersistAction(
+                    "Create package header",
+                    "CREATE OR REPLACE " + pack.getSourceDeclaration()));
+        }
+        if (!CommonUtils.isEmpty(pack.getSourceDefinition())) {
+            actions.add(
+                new AbstractDatabasePersistAction(
+                    "Create package body",
+                    "CREATE OR REPLACE " + pack.getSourceDefinition()));
+        }
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+    }
+
 }
 

@@ -56,6 +56,7 @@ import java.util.*;
 public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorModelView, ISaveablePart2, IFolderedPart
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
+    private boolean hasPropertiesEditor;
 
     private static class EditorDefaults {
         String pageId;
@@ -375,11 +376,11 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
         // Add object editor page
         EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject.getClass());
-        boolean mainAdded = false;
+        hasPropertiesEditor = false;
         if (defaultEditor != null) {
-            mainAdded = addEditorTab(defaultEditor);
+            hasPropertiesEditor = addEditorTab(defaultEditor);
         }
-        if (mainAdded) {
+        if (hasPropertiesEditor) {
             DBNNode node = getEditorInput().getTreeNode();
             setPageText(0, "Properties");
             setPageToolTip(0, node.getNodeType() + " Properties");
@@ -711,6 +712,11 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
         setPartName(getEditorInput().getName());
         setTitleImage(getEditorInput().getImageDescriptor());
+
+        if (hasPropertiesEditor) {
+            // Update main editor image
+            setPageImage(0, getEditorInput().getTreeNode().getNodeIconDefault());
+        }
     }
 
     public DBNNode getRootNode() {

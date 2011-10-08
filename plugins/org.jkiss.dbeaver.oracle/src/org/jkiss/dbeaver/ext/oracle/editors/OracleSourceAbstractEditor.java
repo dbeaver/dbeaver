@@ -14,7 +14,6 @@ import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
-import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
@@ -30,11 +29,11 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Oracle source editor
  */
-public class OracleSourceEditor extends SQLEditorBase implements IActiveWorkbenchPart, IRefreshablePart {
+public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> extends SQLEditorBase implements IActiveWorkbenchPart, IRefreshablePart {
 
     private IEditorInput lazyInput;
 
-    public OracleSourceEditor() {
+    public OracleSourceAbstractEditor() {
         super();
 
         setDocumentProvider(new ObjectDocumentProvider());
@@ -45,9 +44,9 @@ public class OracleSourceEditor extends SQLEditorBase implements IActiveWorkbenc
         return (IDatabaseNodeEditorInput)super.getEditorInput();
     }
 
-    public OracleSourceObject getObject()
+    public T getObject()
     {
-        return (OracleSourceObject)getEditorInput().getDatabaseObject();
+        return (T)getEditorInput().getDatabaseObject();
     }
 
     public DBPDataSource getDataSource() {
@@ -58,6 +57,14 @@ public class OracleSourceEditor extends SQLEditorBase implements IActiveWorkbenc
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         lazyInput = input;
         setSite(site);
+    }
+
+    @Override
+    public void doSave(IProgressMonitor progressMonitor) {
+        if (lazyInput != null) {
+            return;
+        }
+        super.doSave(progressMonitor);
     }
 
     public void activatePart() {
@@ -114,9 +121,9 @@ public class OracleSourceEditor extends SQLEditorBase implements IActiveWorkbenc
                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
-                            String declaration = getObject().getSourceDeclaration(monitor);
-                            if (declaration != null) {
-                                document.set(declaration);
+                            String sourceText = getSourceText(monitor);
+                            if (sourceText != null) {
+                                document.set(sourceText);
                             }
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
@@ -134,10 +141,14 @@ public class OracleSourceEditor extends SQLEditorBase implements IActiveWorkbenc
 
         @Override
         protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException {
-            getEditorInput().getPropertySource().setPropertyValue(
-                OracleConstants.PROP_SOURCE_DECLARATION, document.get());
+            setSourceText(document.get());
         }
 
     }
+
+    protected abstract String getSourceText(DBRProgressMonitor monitor)
+        throws DBException;
+
+    protected abstract void setSourceText(String sourceText);
 
 }

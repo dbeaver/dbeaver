@@ -340,10 +340,15 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor id="source.declaration" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceEditor"
+        <editor id="source.declaration" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceDeclarationEditor"
             label="Declaration" description="Declaration source" icon="#sql_text" position="additions_middle">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
+        </editor>
+        <editor id="source.definition" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceDefinitionEditor"
+            label="Body" description="Body source" icon="#sql_text" position="additions_middle">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
         </editor>
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleDataTypeManager"
