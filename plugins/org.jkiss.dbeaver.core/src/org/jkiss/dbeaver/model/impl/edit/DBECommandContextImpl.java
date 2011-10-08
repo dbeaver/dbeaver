@@ -4,9 +4,6 @@
 
 package org.jkiss.dbeaver.model.impl.edit;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -99,21 +96,28 @@ public class DBECommandContextImpl implements DBECommandContext {
                         if (!CommonUtils.isEmpty(cmd.persistActions)) {
                             DBCExecutionContext context = openCommandPersistContext(monitor, dataSourceContainer.getDataSource(), cmd.command);
                             try {
+                                DBException error = null;
                                 for (PersistInfo persistInfo : cmd.persistActions) {
-                                    if (persistInfo.executed) {
+                                    IDatabasePersistAction.ActionType actionType = persistInfo.action.getType();
+                                    if (persistInfo.executed && actionType == IDatabasePersistAction.ActionType.NORMAL) {
                                         continue;
                                     }
                                     if (monitor.isCanceled()) {
                                         break;
                                     }
                                     try {
-                                        queue.objectManager.executePersistAction(context, cmd.command, persistInfo.action);
+                                        if (error == null || actionType == IDatabasePersistAction.ActionType.FINALIZER) {
+                                            queue.objectManager.executePersistAction(context, cmd.command, persistInfo.action);
+                                        }
                                         persistInfo.executed = true;
                                     } catch (DBException e) {
                                         persistInfo.error = e;
                                         persistInfo.executed = false;
-                                        throw e;
+                                        error = e;
                                     }
+                                }
+                                if (error != null) {
+                                    throw error;
                                 }
                             } finally {
                                 closePersistContext(context);

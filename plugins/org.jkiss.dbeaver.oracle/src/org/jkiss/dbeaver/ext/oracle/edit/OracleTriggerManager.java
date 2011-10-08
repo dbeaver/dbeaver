@@ -4,28 +4,18 @@
 
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.views.properties.tabbed.ISection;
-import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.oracle.editors.OracleSourceViewSection;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTrigger;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
-import org.jkiss.dbeaver.ext.oracle.model.OracleView;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
-import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -34,7 +24,7 @@ import java.util.List;
 /**
  * OracleTriggerManager
  */
-public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, OracleSchema> {
+public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, OracleTableBase> {
 
     public long getMakerOptions()
     {
@@ -50,9 +40,16 @@ public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, Oracle
     }
 
     @Override
-    protected OracleTrigger createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OracleTrigger createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent, Object copyFrom)
     {
-        OracleTrigger newTrigger = new OracleTrigger(parent, "NewTrigger");
+        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(), "Trigger");
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+        OracleTrigger newTrigger = new OracleTrigger(parent.getContainer(), parent, dialog.getEntityName());
+        newTrigger.setSourceDeclaration("TRIGGER " + dialog.getEntityName() + "\n" +
+            "BEGIN\n" +
+            "END;");
         return newTrigger;
     }
 

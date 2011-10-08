@@ -91,7 +91,9 @@ public class OracleUtils {
     public static String normalizeSourceName(OracleSourceObject object, boolean body)
     {
         try {
-            String source = body ? ((OracleSourceObjectEx)object).getSourceDefinition(null) : object.getSourceDeclaration(null);
+            String source = body ?
+                ((OracleSourceObjectEx)object).getSourceDefinition(null) :
+                object.getSourceDeclaration(null);
             if (source == null) {
                 return null;
             }
@@ -118,9 +120,15 @@ public class OracleUtils {
 
     public static void addSchemaChangeActions(List<IDatabasePersistAction> actions, OracleSourceObject object)
     {
-        actions.add(0, new AbstractDatabasePersistAction("Set target schema", "ALTER SESSION SET CURRENT_SCHEMA=" + object.getSchema().getName()));
+        actions.add(0, new AbstractDatabasePersistAction(
+            "Set target schema",
+            "ALTER SESSION SET CURRENT_SCHEMA=" + object.getSchema().getName(),
+            IDatabasePersistAction.ActionType.INITIALIZER));
         if (object.getSchema() != object.getDataSource().getSelectedEntity()) {
-            actions.add(new AbstractDatabasePersistAction("Set current schema", "ALTER SESSION SET CURRENT_SCHEMA=" + object.getDataSource().getSelectedEntity().getName()));
+            actions.add(new AbstractDatabasePersistAction(
+                "Set current schema",
+                "ALTER SESSION SET CURRENT_SCHEMA=" + object.getDataSource().getSelectedEntity().getName(),
+                IDatabasePersistAction.ActionType.FINALIZER));
         }
     }
 
@@ -136,7 +144,10 @@ public class OracleUtils {
             return null;
         }
         monitor.beginTask("Load sources for '" + sourceObject.getName() + "'...", 1);
-        final JDBCExecutionContext context = sourceOwner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load source code for " + sourceType + " '" + sourceObject.getName() + "'");
+        final JDBCExecutionContext context = sourceOwner.getDataSource().openContext(
+            monitor,
+            DBCExecutionPurpose.META,
+            "Load source code for " + sourceType + " '" + sourceObject.getName() + "'");
         try {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT TEXT FROM SYS.ALL_SOURCE " +
@@ -190,7 +201,12 @@ public class OracleUtils {
         return dataSource.isAdmin() ? "SYS.DBA_" : "SYS.ALL_";
     }
 
-    static <PARENT extends DBSObject> Object resolveLazyReference(DBRProgressMonitor monitor, PARENT parent, JDBCAbstractCache<PARENT,?> cache, DBSObjectLazy<?> referrer, Object propertyId)
+    static <PARENT extends DBSObject> Object resolveLazyReference(
+        DBRProgressMonitor monitor,
+        PARENT parent,
+        JDBCAbstractCache<PARENT,?> cache,
+        DBSObjectLazy<?> referrer,
+        Object propertyId)
         throws DBException
     {
         final Object reference = referrer.getLazyReference(propertyId);

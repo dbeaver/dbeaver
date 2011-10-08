@@ -66,9 +66,10 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     private List<OracleTriggerColumn> columns;
     private String sourceDeclaration;
 
-    public OracleTrigger(OracleSchema schema, String name)
+    public OracleTrigger(OracleSchema schema, OracleTableBase table, String name)
     {
         super(schema, name, false);
+        this.table = table;
     }
 
     public OracleTrigger(
