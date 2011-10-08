@@ -185,7 +185,7 @@
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.procedures.node.name" iconId="#procedures" description="Procedures">
-                            <items ref="%tree.procedure.node.name"/>
+                            <items ref="Procedure"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSynonym" label="%tree.synonyms.node.name" iconId="#synonyms" description="Synonyms">
                             <items label="%tree.synonym.node.name" path="synonym" property="synonyms" iconId="#synonym"/>
