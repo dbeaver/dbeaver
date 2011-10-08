@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
@@ -66,7 +67,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
 
     public String getChildrenType()
     {
-        return "Connection";
+        return CoreMessages.core_model_Connection;
     }
 
     public Class<DataSourceDescriptor> getChildrenClass()
@@ -76,12 +77,12 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
 
     public String getNodeName()
     {
-        return "Connections";
+        return CoreMessages.core_model_Connections;
     }
 
     public String getNodeDescription()
     {
-        return getResource().getProject().getName() + " connections";
+        return getResource().getProject().getName() + CoreMessages.core_model__connections;
     }
 
     public Image getNodeIcon()

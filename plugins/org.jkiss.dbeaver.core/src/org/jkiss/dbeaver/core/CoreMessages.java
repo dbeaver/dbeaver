@@ -73,6 +73,12 @@ public class CoreMessages extends NLS {
 	public static String confirm_entity_revert_message;
 	public static String confirm_entity_revert_toggleMessage;
 
+	public static String core_model__connections;
+
+	public static String core_model_Connection;
+
+	public static String core_model_Connections;
+
 	public static String dialog_about_font;
 
 	public static String dialog_about_label_version;
