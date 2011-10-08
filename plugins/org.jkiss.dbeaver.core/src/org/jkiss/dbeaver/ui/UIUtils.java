@@ -235,6 +235,8 @@ public class UIUtils {
                 for (TableColumn column : columns) {
                     int colWidth = column.getWidth();
                     if (colWidth > totalWidth / 3) {
+                        // If some columns is too big (more than 33% of total width)
+                        // Then shrink it to 30%
                         column.setWidth(totalWidth / 3);
                         totalWidth -= colWidth;
                         totalWidth += column.getWidth();

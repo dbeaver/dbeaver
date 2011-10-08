@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.ext.ui.IFolderListener;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -375,7 +376,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
 
         // Add object editor page
-        EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject.getClass());
+        EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject);
         hasPropertiesEditor = false;
         if (defaultEditor != null) {
             hasPropertiesEditor = addEditorTab(defaultEditor);
@@ -626,14 +627,14 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     {
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
         final DBSObject databaseObject = getEditorInput().getDatabaseObject();
-        Class objectClass;
+        DBPObject object;
         if (databaseObject instanceof DBSDataSourceContainer && databaseObject.getDataSource() != null) {
-            objectClass = databaseObject.getDataSource().getClass();
+            object = databaseObject.getDataSource();
         } else {
-            objectClass = databaseObject.getClass();
+            object = databaseObject;
         }
         List<EntityEditorDescriptor> descriptors = editorsRegistry.getEntityEditors(
-            objectClass,
+            object,
             position);
         for (EntityEditorDescriptor descriptor : descriptors) {
             addEditorTab(descriptor);

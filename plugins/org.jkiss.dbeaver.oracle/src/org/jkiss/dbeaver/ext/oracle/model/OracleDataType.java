@@ -133,6 +133,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         this.attributeCache = new AttributeCache();
         this.methodCache = new MethodCache();
         if (owner instanceof OracleDataSource) {
+            flagPredefined = true;
             findTypeDesc(typeName);
         }
     }
@@ -176,18 +177,20 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         }
     }
 
-    private void findTypeDesc(String typeName)
+    private boolean findTypeDesc(String typeName)
     {
         if (typeName.startsWith("PL/SQL")) {
             // Don't care about PL/SQL types
-            return;
+            return true;
         }
         typeName = normalizeTypeName(typeName);
         this.typeDesc = PREDEFINED_TYPES.get(typeName);
         if (this.typeDesc == null) {
             log.warn("Unknown predefined type: " + typeName);
+            return false;
         } else {
             this.valueType = this.typeDesc.valueType;
+            return true;
         }
     }
 

@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 
 import java.util.ArrayList;
@@ -65,23 +66,23 @@ public class EntityEditorsRegistry {
         return entityEditors;
     }
 
-    public EntityEditorDescriptor getMainEntityEditor(Class objectType)
+    public EntityEditorDescriptor getMainEntityEditor(DBPObject object)
     {
         for (EntityEditorDescriptor descriptor : entityEditors) {
-            if (descriptor.appliesToType(objectType) && descriptor.isMain()) {
+            if (descriptor.appliesTo(object) && descriptor.isMain()) {
                 return descriptor;
             }
         }
         return defaultEditor;
     }
 
-    public List<EntityEditorDescriptor> getEntityEditors(Class objectType, String position)
+    public List<EntityEditorDescriptor> getEntityEditors(DBPObject object, String position)
     {
         List<EntityEditorDescriptor> editors = new ArrayList<EntityEditorDescriptor>();
         final List<EntityEditorDescriptor> positionList = positionsMap.get(position);
         if (positionList != null) {
             for (EntityEditorDescriptor descriptor : positionList) {
-                if (descriptor.appliesToType(objectType)) {
+                if (descriptor.appliesTo(object)) {
                     editors.add(descriptor);
                 }
             }

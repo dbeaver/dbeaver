@@ -345,10 +345,12 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
         </editor>
         <editor id="source.definition" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceDefinitionEditor"
             label="Body" description="Body source" icon="#sql_text" position="additions_middle">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
         </editor>
         <manager
             class="org.jkiss.dbeaver.ext.oracle.edit.OracleDataTypeManager"

@@ -4,7 +4,13 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.apache.commons.jexl2.Expression;
+import org.apache.commons.jexl2.JexlContext;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.editors.entity.ObjectPropertiesEditor;
 import org.jkiss.utils.CommonUtils;
@@ -33,15 +39,77 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 
     private String id;
     private String className;
-    private List<String> objectTypes = new ArrayList<String>();
+    private List<ObjectType> objectTypes = new ArrayList<ObjectType>();
     private boolean main;
     private String name;
     private String description;
     private String position;
     private Image icon;
 
-    private List<Class<?>> objectClasses;
+    //private List<Class<?>> objectClasses;
     private Class<?> editorClass;
+
+    private class ObjectType {
+        String implName;
+        Class<?> implClass;
+        Expression expression;
+
+        private ObjectType(String implName)
+        {
+            this.implName = implName;
+        }
+
+        private ObjectType(IConfigurationElement cfg)
+        {
+            this.implName = cfg.getAttribute(RegistryConstants.ATTR_NAME);
+            String condition = cfg.getAttribute(RegistryConstants.ATTR_IF);
+            if (!CommonUtils.isEmpty(condition)) {
+                try {
+                    this.expression = RuntimeUtils.parseExpression(condition);
+                } catch (DBException ex) {
+                    log.warn("Can't parse object type expression: " + condition, ex);
+                }
+            }
+        }
+
+        public boolean appliesTo(DBPObject object)
+        {
+            if (implClass == null) {
+                implClass = getObjectClass(implName);
+            }
+            if (implClass == null) {
+                return false;
+            }
+            if (!implClass.isAssignableFrom(object.getClass())) {
+                return false;
+            }
+            if (expression != null) {
+                Object result = expression.evaluate(makeContext(object));
+                return Boolean.TRUE.equals(result);
+            }
+            return true;
+        }
+
+        private JexlContext makeContext(final DBPObject object)
+        {
+            return new JexlContext() {
+                public Object get(String name)
+                {
+                    return name.equals("object") ? object : null;
+                }
+
+                public void set(String name, Object value)
+                {
+                    log.warn("Set is not implemented");
+                }
+
+                public boolean has(String name)
+                {
+                    return name.equals("object") && object != null;
+                }
+            };
+        }
+    }
 
     EntityEditorDescriptor()
     {
@@ -52,7 +120,6 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         });
         this.id = DEFAULT_OBJECT_EDITOR_ID;
         this.className = ObjectPropertiesEditor.class.getName();
-        this.objectTypes = new ArrayList<String>();
         this.main = true;
         this.name = "Properties";
         this.description = "Object properties";
@@ -78,16 +145,13 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         {
             String objectType = config.getAttribute(RegistryConstants.ATTR_OBJECT_TYPE);
             if (objectType != null) {
-                objectTypes.add(objectType);
+                objectTypes.add(new ObjectType(objectType));
             }
         }
         IConfigurationElement[] typesCfg = config.getChildren(RegistryConstants.TAG_OBJECT_TYPE);
         if (typesCfg != null) {
             for (IConfigurationElement typeCfg : typesCfg) {
-                String objectType = typeCfg.getAttribute(RegistryConstants.ATTR_NAME);
-                if (objectType != null) {
-                    objectTypes.add(objectType);
-                }
+                objectTypes.add(new ObjectType(typeCfg));
             }
         }
     }
@@ -134,17 +198,17 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         return icon;
     }
 
-    public boolean appliesToType(Class objectType)
+    public boolean appliesTo(DBPObject object)
     {
-        List<Class<?>> objectClasses = this.getObjectClasses();
-        for (Class<?> clazz : objectClasses) {
-            if (clazz.isAssignableFrom(objectType)) {
+        for (ObjectType objectType : objectTypes) {
+            if (objectType.appliesTo(object)) {
                 return true;
             }
         }
         return false;
     }
 
+/*
     public List<Class<?>> getObjectClasses()
     {
         if (objectClasses == null) {
@@ -158,6 +222,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         }
         return objectClasses;
     }
+*/
 
     public Class getEditorClass()
     {

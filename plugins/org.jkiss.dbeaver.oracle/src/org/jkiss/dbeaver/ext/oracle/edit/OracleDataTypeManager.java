@@ -4,27 +4,15 @@
 
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.views.properties.tabbed.ISection;
-import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.oracle.editors.OracleSourceViewSection;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
-import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
-import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * OracleDataTypeManager
  */
-public class OracleDataTypeManager extends JDBCObjectManager<OracleDataType> implements DBEObjectTabProvider<OracleDataType> {
+public class OracleDataTypeManager extends JDBCObjectManager<OracleDataType> {
 
+/*
     public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseNodeEditor activeEditor, final OracleDataType object)
     {
         List<ITabDescriptor> tabs = new ArrayList<ITabDescriptor>();
@@ -58,5 +46,6 @@ public class OracleDataTypeManager extends JDBCObjectManager<OracleDataType> imp
         }
         return tabs.toArray(new ITabDescriptor[tabs.size()]);
     }
+*/
 }
 
