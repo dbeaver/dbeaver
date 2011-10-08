@@ -10,6 +10,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
@@ -81,8 +82,12 @@ public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStan
 
     private IDatabasePersistAction[] createOrReplaceProcedureQuery(OracleProcedureStandalone procedure)
     {
+        String source = OracleUtils.normalizeSourceName(procedure, false);
+        if (source == null) {
+            return null;
+        }
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + procedure.getSQLDeclaration())
+            new AbstractDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + source)
         };
     }
 

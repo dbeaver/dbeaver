@@ -121,7 +121,7 @@ public class OracleView extends OracleTableBase implements OracleCompileUnit
     public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException
     {
         synchronized (additionalInfo) {
-            if (!additionalInfo.loaded) {
+            if (!additionalInfo.loaded && monitor != null) {
                 loadAdditionalInfo(monitor);
             }
             return additionalInfo;

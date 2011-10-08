@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * Oracle data type
  */
-public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSourceObjectEx {
+public class OracleDataType extends OracleObject implements DBSDataType, DBSEntityQualified, OracleSourceObjectEx {
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 
@@ -106,8 +106,6 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         PREDEFINED_TYPES.put("NCLOB", new TypeDesc(java.sql.Types.NCLOB, 0, 0, 0));
     }
     
-    private DBSObject owner;
-    private String typeName;
     private String typeCode;
     private byte[] typeOID;
     private Object superType;
@@ -123,13 +121,9 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
     private String sourceDeclaration;
     private String sourceDefinition;
 
-    private boolean persisted;
-
     public OracleDataType(DBSObject owner, String typeName, boolean persisted)
     {
-        this.owner = owner;
-        this.typeName = typeName;
-        this.persisted = persisted;
+        super(owner, typeName, persisted);
         this.attributeCache = new AttributeCache();
         this.methodCache = new MethodCache();
         if (owner instanceof OracleDataSource) {
@@ -140,9 +134,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
 
     public OracleDataType(DBSObject owner, ResultSet dbResult)
     {
-        this.owner = owner;
-        this.persisted = true;
-        this.typeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
+        super(owner, JDBCUtils.safeGetString(dbResult, "TYPE_NAME"), true);
         this.typeCode = JDBCUtils.safeGetString(dbResult, "TYPECODE");
         this.typeOID = JDBCUtils.safeGetBytes(dbResult, "TYPE_OID");
         this.flagPredefined = JDBCUtils.safeGetBoolean(dbResult, "PREDEFINED", OracleConstants.YES);
@@ -167,7 +159,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         
         if (owner instanceof OracleDataSource && flagPredefined) {
             // Determine value type for predefined types
-            findTypeDesc(typeName);
+            findTypeDesc(name);
         } else {
             if ("COLLECTION".equals(this.typeCode)) {
                 this.valueType = java.sql.Types.ARRAY;
@@ -196,7 +188,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
 
     public OracleSchema getSchema()
     {
-        return owner instanceof OracleSchema ? (OracleSchema)owner : null;
+        return parent instanceof OracleSchema ? (OracleSchema)parent : null;
     }
 
     public OracleSourceType getSourceType()
@@ -207,7 +199,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
     @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
-        if (sourceDeclaration == null) {
+        if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = OracleUtils.getSource(monitor, this, false);
         }
         return sourceDeclaration;
@@ -218,10 +210,10 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         this.sourceDeclaration = sourceDeclaration;
     }
 
-    @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(name = "Body", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
-        if (sourceDefinition == null) {
+        if (sourceDefinition == null && monitor != null) {
             sourceDefinition = OracleUtils.getSource(monitor, this, true);
         }
         return sourceDefinition;
@@ -230,11 +222,6 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
     public void setSourceDefinition(String source)
     {
         this.sourceDefinition = source;
-    }
-
-    public boolean isPersisted()
-    {
-        return persisted;
     }
 
     public int getValueType()
@@ -265,29 +252,17 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
         return typeDesc == null ? 0 : typeDesc.maxScale;
     }
 
-    public String getDescription()
-    {
-        return null;
-    }
-
     public DBSObject getParentObject()
     {
-        return owner instanceof OracleSchema ?
-            owner :
-            owner instanceof OracleDataSource ? ((OracleDataSource) owner).getContainer() : null;
-    }
-
-    public OracleDataSource getDataSource()
-    {
-        return owner instanceof OracleSchema ?
-            ((OracleSchema)owner).getDataSource() :
-            owner instanceof OracleDataSource ? (OracleDataSource) owner : null;
+        return parent instanceof OracleSchema ?
+            parent :
+            parent instanceof OracleDataSource ? ((OracleDataSource) parent).getContainer() : null;
     }
 
     @Property(name = "Type Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
-        return typeName;
+        return name;
     }
 
     @Property(name = "Code", viewable = true, editable = true, order = 2)
@@ -380,9 +355,9 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
 
     public String getFullQualifiedName()
     {
-        return owner instanceof OracleSchema ?
-            DBUtils.getFullQualifiedName(getDataSource(), owner, this) :
-            typeName;
+        return parent instanceof OracleSchema ?
+            DBUtils.getFullQualifiedName(getDataSource(), parent, this) :
+            name;
     }
 
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
@@ -451,7 +426,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPE_ATTRS " +
                 "WHERE OWNER=? AND TYPE_NAME=? ORDER BY ATTR_NO");
-            dbStat.setString(1, OracleDataType.this.owner.getName());
+            dbStat.setString(1, OracleDataType.this.parent.getName());
             dbStat.setString(2, getName());
             return dbStat;
         }
@@ -472,7 +447,7 @@ public class OracleDataType implements DBSDataType, DBSEntityQualified, OracleSo
                 "LEFT OUTER JOIN SYS.ALL_METHOD_RESULTS r ON r.OWNER=m.OWNER AND r.TYPE_NAME=m.TYPE_NAME AND r.METHOD_NAME=m.METHOD_NAME AND r.METHOD_NO=m.METHOD_NO\n" +
                 "WHERE m.OWNER=? AND m.TYPE_NAME=?\n" +
                 "ORDER BY m.METHOD_NO");
-            dbStat.setString(1, OracleDataType.this.owner.getName());
+            dbStat.setString(1, OracleDataType.this.parent.getName());
             dbStat.setString(2, getName());
             return dbStat;
         }

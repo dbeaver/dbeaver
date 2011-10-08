@@ -10,6 +10,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
@@ -66,17 +67,19 @@ public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, Oracle
     private IDatabasePersistAction[] createOrReplaceProcedureQuery(OraclePackage pack)
     {
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        if (!CommonUtils.isEmpty(pack.getSourceDeclaration())) {
+        String header = OracleUtils.normalizeSourceName(pack, false);
+        if (!CommonUtils.isEmpty(header)) {
             actions.add(
                 new AbstractDatabasePersistAction(
                     "Create package header",
-                    "CREATE OR REPLACE " + pack.getSourceDeclaration()));
+                    "CREATE OR REPLACE " + header));
         }
-        if (!CommonUtils.isEmpty(pack.getSourceDefinition())) {
+        String body = OracleUtils.normalizeSourceName(pack, true);
+        if (!CommonUtils.isEmpty(body)) {
             actions.add(
                 new AbstractDatabasePersistAction(
                     "Create package body",
-                    "CREATE OR REPLACE " + pack.getSourceDefinition()));
+                    "CREATE OR REPLACE " + body));
         }
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }

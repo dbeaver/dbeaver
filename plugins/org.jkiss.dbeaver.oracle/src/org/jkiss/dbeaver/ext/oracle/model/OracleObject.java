@@ -67,6 +67,11 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
         return name;
     }
 
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
     public long getObjectId()
     {
         return objectId;

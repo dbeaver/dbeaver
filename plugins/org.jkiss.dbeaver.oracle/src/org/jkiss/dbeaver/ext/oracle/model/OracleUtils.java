@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -19,6 +20,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.SQLException;
+import java.util.regex.Matcher;
 
 /**
  * Oracle utils
@@ -80,6 +82,34 @@ public class OracleUtils {
         } finally {
             context.close();
             monitor.done();
+        }
+    }
+
+    public static String normalizeSourceName(OracleSourceObject object, boolean body)
+    {
+        try {
+            String source = body ? ((OracleSourceObjectEx)object).getSourceDefinition(null) : object.getSourceDeclaration(null);
+            if (source == null) {
+                return null;
+            }
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+                object.getSourceType() + (body ? "\\s+BODY" : "") +
+                "\\s+([\\w$\\.]+)[\\s\\(]+", java.util.regex.Pattern.CASE_INSENSITIVE);
+            final Matcher matcher = pattern.matcher(source);
+            if (matcher.find()) {
+                String objectName = matcher.group(1);
+                if (objectName.indexOf('.') == -1) {
+                    if (!objectName.equalsIgnoreCase(object.getName())) {
+                        object.setName(DBObjectNameCaseTransformer.transformName(object, objectName));
+                        object.getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object));
+                    }
+                    return source.substring(0, matcher.start(1)) + object.getSchema().getName() + "." + objectName + source.substring(matcher.end(1));
+                }
+            }
+            return source;
+        } catch (DBException e) {
+            log.error(e);
+            return null;
         }
     }
 

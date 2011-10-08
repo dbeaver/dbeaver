@@ -82,30 +82,10 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
             this);
     }
 
-    public String getSQLDeclaration()
-    {
-        if (sourceDeclaration == null) {
-            return null;
-        }
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(getProcedureType().name() + "\\s+([\\w]+)[\\s\\(]+", java.util.regex.Pattern.CASE_INSENSITIVE);
-        final Matcher matcher = pattern.matcher(sourceDeclaration);
-        if (matcher.find()) {
-            String procedureName = matcher.group(1);
-            if (procedureName.indexOf('.') == -1) {
-                if (!procedureName.equalsIgnoreCase(this.name)) {
-                    this.name = DBObjectNameCaseTransformer.transformName(this, procedureName);
-                    this.getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this));
-                }
-                return sourceDeclaration.substring(0, matcher.start(1)) + getSchema().getName() + "." + procedureName + sourceDeclaration.substring(matcher.end(1));
-            }
-        }
-        return sourceDeclaration;
-    }
-
     @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
-        if (sourceDeclaration == null) {
+        if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = OracleUtils.getSource(monitor, this, false);
         }
         return sourceDeclaration;

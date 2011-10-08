@@ -13,6 +13,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface OracleSourceObject extends DBSObject {
 
+    void setName(String name);
+
     OracleSchema getSchema();
 
     OracleSourceType getSourceType();

@@ -6,11 +6,9 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -26,7 +24,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.regex.Matcher;
 
 /**
  * GenericProcedure
@@ -65,14 +62,9 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
     @Property(name = "Header", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
-        if (sourceDeclaration == null) {
+        if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = OracleUtils.getSource(monitor, this, false);
         }
-        return sourceDeclaration;
-    }
-
-    public String getSourceDeclaration()
-    {
         return sourceDeclaration;
     }
 
@@ -84,14 +76,9 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
     @Property(name = "Body", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
-        if (sourceDefinition == null) {
+        if (sourceDefinition == null && monitor != null) {
             sourceDefinition = OracleUtils.getSource(monitor, this, true);
         }
-        return sourceDefinition;
-    }
-
-    public String getSourceDefinition()
-    {
         return sourceDefinition;
     }
 
