@@ -36,9 +36,9 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     private PartitionInfo partitionInfo;
     private PartitionCache partitionCache;
 
-    public OracleTablePhysical(OracleSchema schema)
+    public OracleTablePhysical(OracleSchema schema, String name)
     {
-        super(schema, false);
+        super(schema, name, false);
     }
 
     public OracleTablePhysical(

@@ -15,6 +15,8 @@ public interface OracleSourceObject extends DBSObject {
 
     void setName(String name);
 
+    OracleDataSource getDataSource();
+
     OracleSchema getSchema();
 
     OracleSourceType getSourceType();

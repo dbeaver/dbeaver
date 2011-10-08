@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -22,8 +23,9 @@ import java.sql.SQLException;
 /**
  * Oracle materialized view
  */
-public class OracleMaterializedView extends OracleTablePhysical
+public class OracleMaterializedView extends OracleTablePhysical implements OracleCompileUnit
 {
+
     public static class AdditionalInfo extends TableAdditionalInfo {
         private String text;
         private boolean updatable;
@@ -39,9 +41,9 @@ public class OracleMaterializedView extends OracleTablePhysical
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
-    public OracleMaterializedView(OracleSchema schema)
+    public OracleMaterializedView(OracleSchema schema, String name)
     {
-        super(schema);
+        super(schema, name);
     }
 
     public OracleMaterializedView(
@@ -57,7 +59,7 @@ public class OracleMaterializedView extends OracleTablePhysical
     }
 
     @Override
-    public TableAdditionalInfo getAdditionalInfo()
+    public AdditionalInfo getAdditionalInfo()
     {
         return additionalInfo;
     }
@@ -73,7 +75,7 @@ public class OracleMaterializedView extends OracleTablePhysical
     public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException
     {
         synchronized (additionalInfo) {
-            if (!additionalInfo.loaded) {
+            if (!additionalInfo.loaded && monitor != null) {
                 loadAdditionalInfo(monitor);
             }
             return additionalInfo;
@@ -114,6 +116,42 @@ public class OracleMaterializedView extends OracleTablePhysical
         finally {
             context.close();
         }
+    }
+
+
+    public OracleSchema getSchema()
+    {
+        return getContainer();
+    }
+
+    public OracleSourceType getSourceType()
+    {
+        return OracleSourceType.MATERIALIZED_VIEW;
+    }
+
+    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
+    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
+    {
+        return getAdditionalInfo(monitor).getText();
+    }
+
+    public void setSourceDeclaration(String source)
+    {
+        if (source == null) {
+            additionalInfo.loaded = false;
+        } else {
+            additionalInfo.setText(source);
+        }
+    }
+
+    public IDatabasePersistAction[] getCompileActions()
+    {
+        return new IDatabasePersistAction[] {
+            new OracleObjectPersistAction(
+                OracleObjectType.MATERIALIZED_VIEW,
+                "Compile materialized view",
+                "ALTER MATERIALIZED VIEW " + getFullQualifiedName() + " COMPILE"
+            )};
     }
 
 }

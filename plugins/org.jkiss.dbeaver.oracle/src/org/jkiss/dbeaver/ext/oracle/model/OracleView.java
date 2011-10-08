@@ -56,9 +56,9 @@ public class OracleView extends OracleTableBase implements OracleCompileUnit
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
-    public OracleView(OracleSchema schema)
+    public OracleView(OracleSchema schema, String name)
     {
-        super(schema, false);
+        super(schema, name, false);
     }
 
     public OracleView(
@@ -99,9 +99,9 @@ public class OracleView extends OracleTableBase implements OracleCompileUnit
     public void setSourceDeclaration(String source)
     {
         if (source == null) {
-            getAdditionalInfo().loaded = false;
+            additionalInfo.loaded = false;
         } else {
-            getAdditionalInfo().setText(source);
+            additionalInfo.setText(source);
         }
     }
 

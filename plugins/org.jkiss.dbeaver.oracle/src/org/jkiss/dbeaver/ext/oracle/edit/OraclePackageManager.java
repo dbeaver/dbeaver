@@ -81,6 +81,7 @@ public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, Oracle
                     "Create package body",
                     "CREATE OR REPLACE " + body));
         }
+        OracleUtils.addSchemaChangeActions(actions, pack);
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 

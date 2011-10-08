@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -304,10 +305,11 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             if (!CommonUtils.isEmpty(persistActions)) {
                 for (IDatabasePersistAction action : persistActions) {
                     if (script.length() > 0) {
-                        script.append('\n');
+                        script.append(ContentUtils.getDefaultLineSeparator());
                     }
                     script.append(action.getScript());
                     script.append(getCommandContext().getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
+                    script.append(ContentUtils.getDefaultLineSeparator());
                 }
             }
         }

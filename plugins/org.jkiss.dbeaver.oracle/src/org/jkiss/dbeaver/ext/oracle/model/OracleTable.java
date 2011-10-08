@@ -34,9 +34,9 @@ public class OracleTable extends OracleTablePhysical
 
     private List<OracleForeignKey> foreignKeys;
 
-    public OracleTable(OracleSchema schema)
+    public OracleTable(OracleSchema schema, String name)
     {
-        super(schema);
+        super(schema, name);
     }
 
     public OracleTable(

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -15,11 +16,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.regex.Matcher;
 
 /**
@@ -103,13 +106,21 @@ public class OracleUtils {
                         object.setName(DBObjectNameCaseTransformer.transformName(object, objectName));
                         object.getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object));
                     }
-                    return source.substring(0, matcher.start(1)) + object.getSchema().getName() + "." + objectName + source.substring(matcher.end(2));
+                    return source;//.substring(0, matcher.start(1)) + object.getSchema().getName() + "." + objectName + source.substring(matcher.end(2));
                 }
             }
             return source;
         } catch (DBException e) {
             log.error(e);
             return null;
+        }
+    }
+
+    public static void addSchemaChangeActions(List<IDatabasePersistAction> actions, OracleSourceObject object)
+    {
+        actions.add(0, new AbstractDatabasePersistAction("Set target schema", "ALTER SESSION SET CURRENT_SCHEMA=" + object.getSchema().getName()));
+        if (object.getSchema() != object.getDataSource().getSelectedEntity()) {
+            actions.add(new AbstractDatabasePersistAction("Set current schema", "ALTER SESSION SET CURRENT_SCHEMA=" + object.getDataSource().getSelectedEntity().getName()));
         }
     }
 

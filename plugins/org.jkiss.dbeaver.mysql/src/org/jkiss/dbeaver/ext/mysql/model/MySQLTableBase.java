@@ -39,7 +39,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         MySQLCatalog catalog,
         ResultSet dbResult)
     {
-        super(catalog, true, JDBCUtils.safeGetString(dbResult, 1));
+        super(catalog, JDBCUtils.safeGetString(dbResult, 1), true);
 
         this.columns = null;
     }

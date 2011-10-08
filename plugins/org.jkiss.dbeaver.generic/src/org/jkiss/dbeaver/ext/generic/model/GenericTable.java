@@ -62,7 +62,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         String remarks,
         boolean persisted)
     {
-        super(container, persisted, tableName);
+        super(container, tableName, persisted);
         this.tableType = tableType;
         this.description = remarks;
         if (!CommonUtils.isEmpty(this.getTableType())) {

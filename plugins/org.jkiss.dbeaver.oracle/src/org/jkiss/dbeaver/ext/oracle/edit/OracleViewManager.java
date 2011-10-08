@@ -40,8 +40,7 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
     @Override
     protected OracleView createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
-        OracleView newView = new OracleView(parent);
-        newView.setName("NewView");
+        OracleView newView = new OracleView(parent, "NewView");
         return newView;
     }
 

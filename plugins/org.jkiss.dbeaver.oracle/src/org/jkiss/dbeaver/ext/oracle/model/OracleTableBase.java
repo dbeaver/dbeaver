@@ -54,9 +54,9 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     private List<OracleTableColumn> columns;
     private List<OracleConstraint> constraints;
 
-    protected OracleTableBase(OracleSchema schema, boolean persisted)
+    protected OracleTableBase(OracleSchema schema, String name, boolean persisted)
     {
-        super(schema, persisted);
+        super(schema, name, persisted);
     }
 
     protected OracleTableBase(OracleSchema oracleSchema, ResultSet dbResult)

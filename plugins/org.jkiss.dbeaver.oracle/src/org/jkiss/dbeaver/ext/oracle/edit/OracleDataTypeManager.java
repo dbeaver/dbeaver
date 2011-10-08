@@ -86,6 +86,7 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
                     "Create type body",
                     "CREATE OR REPLACE " + body));
         }
+        OracleUtils.addSchemaChangeActions(actions, dataType);
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 

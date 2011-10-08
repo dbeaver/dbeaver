@@ -283,7 +283,7 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return true;
     }
 
-    public DBSEntity getSelectedEntity()
+    public OracleSchema getSelectedEntity()
     {
         return schemaCache.getCachedObject(activeSchemaName);
     }

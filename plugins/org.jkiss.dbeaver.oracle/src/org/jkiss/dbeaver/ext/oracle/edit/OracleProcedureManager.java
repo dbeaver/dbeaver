@@ -16,6 +16,9 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * OracleProcedureManager
  */
@@ -86,9 +89,10 @@ public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStan
         if (source == null) {
             return null;
         }
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + source)
-        };
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        actions.add(new AbstractDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + source));
+        OracleUtils.addSchemaChangeActions(actions, procedure);
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
 }
