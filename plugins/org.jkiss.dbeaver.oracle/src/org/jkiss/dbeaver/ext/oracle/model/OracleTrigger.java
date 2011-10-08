@@ -7,11 +7,14 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.DBSTrigger;
 import org.jkiss.utils.CommonUtils;
 
@@ -22,7 +25,7 @@ import java.util.List;
 /**
  * GenericProcedure
  */
-public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, OracleSourceObject
+public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, OracleCompileUnit
 {
     static final Log log = LogFactory.getLog(OracleTrigger.class);
 
@@ -62,6 +65,11 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     private ActionType actionType;
     private List<OracleTriggerColumn> columns;
     private String sourceDeclaration;
+
+    public OracleTrigger(OracleSchema schema, String name)
+    {
+        super(schema, name, false);
+    }
 
     public OracleTrigger(
         OracleSchema schema,
@@ -174,7 +182,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
-        if (sourceDeclaration == null) {
+        if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = OracleUtils.getSource(monitor, this, false);
         }
         return sourceDeclaration;
@@ -185,12 +193,32 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         this.sourceDeclaration = source;
     }
 
+    public DBSObjectState getObjectState()
+    {
+        return status != OracleObjectStatus.ERROR ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
+    }
+
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    {
+        this.status = (OracleUtils.getObjectStatus(monitor, this, OracleObjectType.TRIGGER) ? OracleObjectStatus.ENABLED : OracleObjectStatus.ERROR);
+    }
+
     @Override
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
         this.sourceDeclaration = null;
         this.columns = null;
         return true;
+    }
+
+    public IDatabasePersistAction[] getCompileActions()
+    {
+        return new IDatabasePersistAction[] {
+            new OracleObjectPersistAction(
+                OracleObjectType.TRIGGER,
+                "Compile trigger",
+                "ALTER TRIGGER " + getFullQualifiedName() + " COMPILE"
+            )};
     }
 
 }

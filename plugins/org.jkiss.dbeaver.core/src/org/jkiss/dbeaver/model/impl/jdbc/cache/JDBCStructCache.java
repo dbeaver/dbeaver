@@ -10,8 +10,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -39,7 +39,7 @@ public abstract class JDBCStructCache<
 
     abstract protected void cacheChildren(OBJECT parent, List<CHILD> children);
 
-    abstract protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OWNER owner, OBJECT forObject)
+    abstract protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OWNER owner, OBJECT forObject)
         throws SQLException;
 
     abstract protected CHILD fetchChild(JDBCExecutionContext context, OWNER owner, OBJECT parent, ResultSet dbResult)
@@ -74,10 +74,11 @@ public abstract class JDBCStructCache<
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<OBJECT, List<CHILD>>();
 
             // Load columns
-            JDBCPreparedStatement dbStat = prepareChildrenStatement(context, owner, forObject);
+            JDBCStatement dbStat = prepareChildrenStatement(context, owner, forObject);
             try {
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-                JDBCResultSet dbResult = dbStat.executeQuery();
+                dbStat.executeStatement();
+                JDBCResultSet dbResult = dbStat.getResultSet();
                 try {
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {

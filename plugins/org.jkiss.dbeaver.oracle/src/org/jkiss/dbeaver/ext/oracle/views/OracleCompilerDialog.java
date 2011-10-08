@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -421,7 +422,7 @@ public class OracleCompilerDialog extends TrayDialog
         OracleObjectType objectType)
     {
         try {
-            final PreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = (JDBCPreparedStatement)context.prepareStatement(
                 DBCStatementType.QUERY,
                 "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE",
                 false, false, false);

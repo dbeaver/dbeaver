@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,7 +61,7 @@ public abstract class JDBCCompositeCache<
         this.objectColumnName = objectColumnName;
     }
 
-    abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner, PARENT forParent)
+    abstract protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner, PARENT forParent)
         throws SQLException;
 
     abstract protected OBJECT fetchObject(JDBCExecutionContext context, OWNER owner, PARENT parent, String childName, ResultSet resultSet)
@@ -185,10 +186,11 @@ public abstract class JDBCCompositeCache<
         JDBCExecutionContext context = (JDBCExecutionContext) owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load composite objects");
         try {
 
-            JDBCPreparedStatement dbStat = prepareObjectsStatement(context, owner, forParent);
+            JDBCStatement dbStat = prepareObjectsStatement(context, owner, forParent);
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
+                dbStat.executeStatement();
+                JDBCResultSet dbResult = dbStat.getResultSet();
                 try {
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {

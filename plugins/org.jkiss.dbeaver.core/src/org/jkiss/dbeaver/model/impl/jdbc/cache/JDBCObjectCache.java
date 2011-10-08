@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -41,7 +42,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         this.listOrderComparator = listOrderComparator;
     }
 
-    abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner)
+    abstract protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner)
         throws SQLException;
 
     abstract protected OBJECT fetchObject(JDBCExecutionContext context, OWNER owner, ResultSet resultSet)
@@ -135,10 +136,11 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
 
         JDBCExecutionContext context = (JDBCExecutionContext)owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load objects");
         try {
-            JDBCPreparedStatement dbStat = prepareObjectsStatement(context, owner);
+            JDBCStatement dbStat = prepareObjectsStatement(context, owner);
             try {
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-                JDBCResultSet dbResult = dbStat.executeQuery();
+                dbStat.executeStatement();
+                JDBCResultSet dbResult = dbStat.getResultSet();
                 try {
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {

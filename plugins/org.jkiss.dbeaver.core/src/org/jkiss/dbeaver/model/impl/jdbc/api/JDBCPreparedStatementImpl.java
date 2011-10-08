@@ -21,17 +21,14 @@ import java.util.Calendar;
  * Managable prepared statement.
  * Stores information about execution in query manager and operated progress monitor.
  */
-public class JDBCPreparedStatementImpl extends JDBCStatementImpl implements JDBCPreparedStatement {
-
-    protected final PreparedStatement original;
+public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStatement> implements JDBCPreparedStatement {
 
     public JDBCPreparedStatementImpl(
         JDBCExecutionContext connection,
         PreparedStatement original,
         String query)
     {
-        super(connection);
-        this.original = original;
+        super(connection, original);
         setQueryString(query);
     }
 

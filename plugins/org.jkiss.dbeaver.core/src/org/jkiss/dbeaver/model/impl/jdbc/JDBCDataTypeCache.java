@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -25,7 +26,7 @@ public class JDBCDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSDataTy
     }
 
     @Override
-    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, JDBCDataSource owner) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, JDBCDataSource owner) throws SQLException
     {
         return context.getMetaData().getTypeInfo().getSource();
     }

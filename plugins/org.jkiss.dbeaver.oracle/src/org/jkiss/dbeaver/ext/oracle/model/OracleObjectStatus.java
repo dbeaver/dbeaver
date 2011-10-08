@@ -11,6 +11,7 @@ import org.jkiss.utils.CommonUtils;
 */
 public enum OracleObjectStatus {
     ENABLED,
-    DISABLED;
+    DISABLED,
+    ERROR;
 
 }

@@ -95,7 +95,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         appendQueryOrder(query, dataFilter);
 
         monitor.subTask("Fetch table data");
-        DBCStatement dbStat = DBUtils.prepareStatement(context, query.toString(), firstRow, maxRows);
+        DBCStatement dbStat = DBUtils.prepareStatement(
+            context,
+            DBCStatementType.QUERY,
+            query.toString(),
+            firstRow,
+            maxRows);
         try {
             dbStat.setDataContainer(this);
             if (!dbStat.executeStatement()) {

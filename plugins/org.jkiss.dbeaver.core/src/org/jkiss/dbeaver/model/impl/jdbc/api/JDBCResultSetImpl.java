@@ -32,7 +32,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     static final Log log = LogFactory.getLog(JDBCResultSetImpl.class);
 
     private JDBCExecutionContext context;
-    private JDBCPreparedStatementImpl statement;
+    private JDBCStatementImpl statement;
     private ResultSet original;
     private long rowsFetched;
     private long maxRows = -1;
@@ -62,7 +62,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         QMUtils.getDefaultHandler().handleResultSetOpen(this);
     }
 
-    JDBCResultSetImpl(JDBCPreparedStatementImpl statement, ResultSet original)
+    JDBCResultSetImpl(JDBCStatementImpl statement, ResultSet original)
     {
         this.context = statement.getContext();
         this.statement = statement;
@@ -94,12 +94,12 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         return context;
     }
 
-    public JDBCPreparedStatement getSource()
+    public JDBCStatementImpl getSource()
     {
         return statement;
     }
 
-    public JDBCPreparedStatementImpl getStatement()
+    public JDBCStatementImpl getStatement()
     {
         return statement;
     }

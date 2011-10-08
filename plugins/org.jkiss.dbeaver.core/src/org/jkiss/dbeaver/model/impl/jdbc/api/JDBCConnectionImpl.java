@@ -123,7 +123,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
         dataFormatterProfile = formatterProfile;
     }
 
-    public JDBCPreparedStatement prepareStatement(
+    public JDBCStatement prepareStatement(
         DBCStatementType type,
         String sqlQuery,
         boolean scrollable,
@@ -133,6 +133,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
     {
         try {
             if (type == DBCStatementType.EXEC) {
+                // Execute as call
                 try {
                     return prepareCall(
                         sqlQuery,
@@ -145,7 +146,17 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
                 catch (UnsupportedOperationException e) {
                     return prepareCall(sqlQuery);
                 }
+            } else if (type == DBCStatementType.SCRIPT) {
+                // Just simplest statement for scripts
+                // Sometimes prepared statements perform additional checks of queries
+                // (e.g. in Oracle it parses IN/OUT parameters)
+                JDBCStatementImpl statement = createStatement(
+                    scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                    updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                statement.setQueryString(sqlQuery);
+                return statement;
             } else if (returnGeneratedKeys) {
+                // Return keys
                 try {
                     return prepareStatement(
                         sqlQuery,
@@ -161,6 +172,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
                     return prepareStatement(sqlQuery);
                 }
             } else {
+                // Generic prepared statement
                 return prepareStatement(
                     sqlQuery,
                     scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
@@ -334,10 +346,12 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
         getConnection().clearWarnings();
     }
 
-    public Statement createStatement(int resultSetType, int resultSetConcurrency)
+    public JDBCStatementImpl createStatement(int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
-        return getConnection().createStatement(resultSetType, resultSetConcurrency);
+        return new JDBCStatementImpl<Statement>(
+            this,
+            getConnection().createStatement(resultSetType, resultSetConcurrency));
     }
 
     public JDBCPreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency)

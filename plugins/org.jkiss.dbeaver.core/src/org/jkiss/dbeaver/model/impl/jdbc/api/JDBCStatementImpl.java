@@ -23,11 +23,12 @@ import java.sql.*;
  * Managable statement.
  * Stores information about execution in query manager and operated progress monitor.
  */
-public abstract class JDBCStatementImpl implements JDBCStatement {
+public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCStatement {
 
     static final Log log = LogFactory.getLog(JDBCStatementImpl.class);
 
     private JDBCExecutionContext connection;
+    protected final STATEMENT original;
 
     private String query;
     private String description;
@@ -40,13 +41,17 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     private Throwable executeError;
     private Object userData;
 
-    public JDBCStatementImpl(JDBCExecutionContext connection)
+    public JDBCStatementImpl(JDBCExecutionContext connection, STATEMENT original)
     {
         this.connection = connection;
+        this.original = original;
         QMUtils.getDefaultHandler().handleStatementOpen(this);
     }
 
-    protected abstract Statement getOriginal();
+    protected STATEMENT getOriginal()
+    {
+        return original;
+    }
 
     protected void startBlock()
     {
@@ -101,6 +106,17 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public String getDescription()
     {
         return description;
+    }
+
+    public boolean executeStatement()
+        throws DBCException
+    {
+        try {
+            return execute(query);
+        }
+        catch (SQLException e) {
+            throw new DBCException(e);
+        }
     }
 
     protected void setDescription(String description)
@@ -178,20 +194,17 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     }
 
     private JDBCResultSetImpl makeResultSet(ResultSet resultSet)
-        throws SQLException {
-        if (this instanceof JDBCPreparedStatementImpl) {
-            JDBCResultSetImpl dbResult = new JDBCResultSetImpl((JDBCPreparedStatementImpl) this, resultSet);
-            // Scroll original result set if needed
-            if (rsOffset > 0) {
-                JDBCUtils.scrollResultSet(resultSet, rsOffset);
-            }
-            if (rsMaxRows > 0) {
-                dbResult.setMaxRows(rsMaxRows);
-            }
-            return dbResult;
-        } else {
-            throw new SQLFeatureNotSupportedException();
+        throws SQLException
+    {
+        JDBCResultSetImpl dbResult = new JDBCResultSetImpl(this, resultSet);
+        // Scroll original result set if needed
+        if (rsOffset > 0) {
+            JDBCUtils.scrollResultSet(resultSet, rsOffset);
         }
+        if (rsMaxRows > 0) {
+            dbResult.setMaxRows(rsMaxRows);
+        }
+        return dbResult;
     }
 
     ////////////////////////////////////////////////////////////////////

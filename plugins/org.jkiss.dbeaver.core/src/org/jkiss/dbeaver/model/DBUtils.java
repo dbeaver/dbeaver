@@ -503,6 +503,7 @@ public final class DBUtils {
 
     public static DBCStatement prepareStatement(
         DBCExecutionContext context,
+        DBCStatementType statementType,
         String query,
         long offset,
         long maxRows) throws DBCException
@@ -529,7 +530,9 @@ public final class DBUtils {
             query = fetchAllTransformer.transformQueryString(query);
         }
 
-        DBCStatement dbStat = prepareStatement(context, query);
+        DBCStatement dbStat = statementType == DBCStatementType.SCRIPT ?
+            createStatement(context, query) :
+            prepareStatement(context, query);
 
         if (hasLimits) {
             if (limitTransformer == null) {
@@ -542,6 +545,14 @@ public final class DBUtils {
         }
 
         return dbStat;
+    }
+
+    public static DBCStatement createStatement(
+        DBCExecutionContext context,
+        String query) throws DBCException
+    {
+        query = SQLUtils.makeUnifiedLineFeeds(query);
+        return context.prepareStatement(DBCStatementType.SCRIPT, query, false, false, false);
     }
 
     public static DBCStatement prepareStatement(

@@ -27,7 +27,7 @@ public abstract class JDBCObjectManager<OBJECT_TYPE extends DBSObject> extends A
     {
         String script = action.getScript();
 
-        DBCStatement dbStat = DBUtils.prepareStatement(context, script);
+        DBCStatement dbStat = DBUtils.createStatement(context, script);
         try {
             dbStat.executeStatement();
             action.handleExecute(null);

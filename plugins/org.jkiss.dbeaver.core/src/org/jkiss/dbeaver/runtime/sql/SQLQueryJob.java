@@ -278,8 +278,42 @@ public class SQLQueryJob extends DataSourceJob
         try {
             // Prepare statement
             closeStatement();
-            curStatement = DBUtils.prepareStatement(context, sqlQuery, rsOffset, rsMaxRows);
+
+            boolean hasParameters = false;
+            // Bind parameters
+            if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
+                List<SQLStatementParameter> unresolvedParams = new ArrayList<SQLStatementParameter>();
+                for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                    if (!param.isResolved()) {
+                        unresolvedParams.add(param);
+                    }
+                }
+                if (!CommonUtils.isEmpty(unresolvedParams)) {
+                    hasParameters = bindStatementParameters(unresolvedParams);
+                }
+            }
+
+            curStatement = DBUtils.prepareStatement(
+                context,
+                hasParameters ? DBCStatementType.QUERY : DBCStatementType.SCRIPT,
+                sqlQuery,
+                rsOffset,
+                rsMaxRows);
             curStatement.setUserData(dataReceiver);
+
+            if (hasParameters) {
+                // Bind them
+                for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                    if (param.isResolved()) {
+                        param.getValueHandler().bindValueObject(
+                            context,
+                            curStatement,
+                            param,
+                            param.getIndex(),
+                            param.getValue());
+                    }
+                }
+            }
 
             // Bind parameters
             if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
@@ -290,18 +324,18 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
                 if (!CommonUtils.isEmpty(unresolvedParams)) {
-                    if (!bindStatementParameters(unresolvedParams)) {
-                        return false;
-                    }
-                }
-                for (SQLStatementParameter param : sqlStatement.getParameters()) {
-                    if (param.isResolved()) {
-                        param.getValueHandler().bindValueObject(
-                            context,
-                            curStatement,
-                            param,
-                            param.getIndex(),
-                            param.getValue());
+                    if (bindStatementParameters(unresolvedParams)) {
+                        // Bind them
+                        for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                            if (param.isResolved()) {
+                                param.getValueHandler().bindValueObject(
+                                    context,
+                                    curStatement,
+                                    param,
+                                    param.getIndex(),
+                                    param.getValue());
+                            }
+                        }
                     }
                 }
             }

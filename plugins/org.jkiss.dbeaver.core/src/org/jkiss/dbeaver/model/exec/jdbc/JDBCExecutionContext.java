@@ -18,7 +18,7 @@ public interface JDBCExecutionContext extends DBCExecutionContext, Connection {
 
     Connection getOriginal();
 
-    JDBCPreparedStatement prepareStatement(
+    JDBCStatement prepareStatement(
         DBCStatementType type,
         String query,
         boolean scrollable,

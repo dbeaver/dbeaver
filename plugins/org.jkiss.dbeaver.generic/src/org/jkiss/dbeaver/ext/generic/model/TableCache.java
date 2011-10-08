@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -47,7 +48,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
         setListOrderComparator(DBUtils.<GenericTable>nameComparator());
     }
 
-    protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner)
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner)
         throws SQLException
     {
         return context.getMetaData().getTables(
@@ -112,7 +113,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
         table.setColumns(columns);
     }
 
-    protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forTable)
+    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forTable)
         throws SQLException
     {
         return context.getMetaData().getColumns(
