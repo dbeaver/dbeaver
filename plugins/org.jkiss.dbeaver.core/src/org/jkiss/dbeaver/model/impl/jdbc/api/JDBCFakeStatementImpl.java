@@ -4,8 +4,11 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+
+import java.sql.SQLException;
 
 /**
  * ResultSet container.
@@ -23,6 +26,24 @@ class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
         super(connection, JDBCVoidStatementImpl.INSTANCE, description);
         this.resultSet = resultSet;
         setDescription(description);
+    }
+
+    @Override
+    public boolean execute() throws SQLException
+    {
+        return false;
+    }
+
+    @Override
+    public boolean executeStatement() throws DBCException
+    {
+        return false;
+    }
+
+    @Override
+    public int executeUpdate() throws SQLException
+    {
+        return 0;
     }
 
     public JDBCResultSet executeQuery()
