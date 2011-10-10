@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
+<product-descriptor>
+
+    <company>
+        <name>JKISS</name>
+        <address1>Engelsa pr. 97-212</address1>
+        <address2> </address2>
+        <city>Saint-Petersburg</city>
+        <state>SPb</state>
+        <zip>194214</zip>
+        <country>Russian Federation</country>
+        <web>http://jkiss.org</web>
+        <contact>
+            <first-name>Serge</first-name>
+            <last-name>Rieder</last-name>
+            <email>serge@jkiss.org</email>
+            <phone>+7-962-728-16-88</phone>
+        </contact>
+    </company>
+
+    <product>
+        <name>DBeaver</name>
+        <web>http://dbeaver.jkiss.org/</web>
+        <screenshot-1>http://dbeaver.jkiss.org/product/Screenshot_Main.png</screenshot-1>
+        <icon-1>http://dbeaver.jkiss.org/product/dbeaver.gif</icon-1>
+        <keywords>sql,database manager,database client,mysql,postgresql,mssql,db2,oracle,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc</keywords>
+        <description>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase and any database which has JDBC driver.</description>
+    </product>
+
+    <releases>
+        <release>
+            <version>1.4.3</version>
+            <type>stable</type>
+            <date>11.11.2011</date>
+
+            <release-notes>
+
+            </release-notes>
+        </release>
+        <release>
+            <version>1.4.1</version>
+            <type>stable</type>
+            <date>04.11.2011</date>
+
+            <release-notes>
+                - Oracle
+                    * Oracle home selection fix
+                    * TNS_ADMIN environment variable usage fix
+                    * TNS names are available for Thin driver
+                    * Data type resolve fix (Timestamp and BigInteger)
+                    * View/Materialized view search
+                - MS SQL: UPDATE statement execution fix (do not use row count limit)
+                - Auto complete fix for complex identifiers
+                - Table/ResultSet editor fix
+                - PostgreSQL: driver update
+                - Driver manager fix (do not try to load redist libraries for drivers with custom libraries)
+                - OS-dependent drivers
+                - UI fixes
+            </release-notes>
+        </release>
+    </releases>
+
+    <update-sites>
+        <site title="Main DBeaver Mirror" url="http://dbeaver.jkiss.org/files" priority="1" />
+    </update-sites>
+
+</product-descriptor>
