@@ -12,6 +12,7 @@ import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
@@ -40,7 +41,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             return getColumnValue(context, (JDBCResultSet) resultSet, column, columnIndex + 1);
         }
         catch (Throwable e) {
-            throw new DBCException("Could not get result set value", e);
+            throw new DBCException(CoreMessages.model_jdbc_exception_could_not_get_result_set_value, e);
         }
     }
 
@@ -50,7 +51,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             this.bindParameter((JDBCExecutionContext) context, (JDBCPreparedStatement) statement, columnMetaData, paramIndex + 1, value);
         }
         catch (SQLException e) {
-            throw new DBCException("Could not bind statement parameter", e);
+            throw new DBCException(CoreMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
         }
     }
 
@@ -86,8 +87,8 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         propertySource.addProperty(
-            "column_size",
-            "Column Size",
+            "column_size", //$NON-NLS-1$
+            CoreMessages.model_jdbc_column_size,
             controller.getColumnMetaData().getMaxLength());
     }
 

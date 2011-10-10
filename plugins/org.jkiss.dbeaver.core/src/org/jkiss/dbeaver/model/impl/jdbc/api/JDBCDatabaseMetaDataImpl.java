@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -30,7 +31,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         String description = functionName;
         if (args.length > 0) {
-            description += " [" + DBUtils.getSimpleQualifiedName(args) + "]";
+            description += " [" + DBUtils.getSimpleQualifiedName(args) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
         return JDBCResultSetImpl.makeResultSet(connection, resultSet, description);
     }
@@ -69,7 +70,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getSuperTypes(catalog, schemaPattern, typeNamePattern),
-            "Load super types", catalog, schemaPattern, typeNamePattern);
+            CoreMessages.model_jdbc_load_super_types, catalog, schemaPattern, typeNamePattern);
     }
 
     public JDBCResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern)
@@ -77,7 +78,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getSuperTables(catalog, schemaPattern, tableNamePattern),
-            "Load super tables", catalog, schemaPattern, tableNamePattern);
+            CoreMessages.model_jdbc_load_super_tables, catalog, schemaPattern, tableNamePattern);
     }
 
     public JDBCResultSet getAttributes(String catalog, String schemaPattern, String typeNamePattern, String attributeNamePattern)
@@ -85,7 +86,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getAttributes(catalog, schemaPattern, typeNamePattern, attributeNamePattern),
-            "Load UDT attributes", catalog, schemaPattern, typeNamePattern, attributeNamePattern);
+            CoreMessages.model_jdbc_load_udt_attributes, catalog, schemaPattern, typeNamePattern, attributeNamePattern);
     }
 
     public boolean supportsResultSetHoldability(int holdability)
@@ -153,7 +154,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getSchemas(catalog, schemaPattern),
-            "Load schemas", catalog, schemaPattern);
+            CoreMessages.model_jdbc_load_schemas, catalog, schemaPattern);
     }
 
     public boolean supportsStoredFunctionsUsingCallSyntax()
@@ -173,7 +174,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getClientInfoProperties(),
-            "Load client info");
+            CoreMessages.model_jdbc_load_client_info);
     }
 
     public JDBCResultSet getFunctions(String catalog, String schemaPattern, String functionNamePattern)
@@ -181,7 +182,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getFunctions(catalog, schemaPattern, functionNamePattern),
-            "Load functions", catalog, schemaPattern, functionNamePattern);
+            CoreMessages.model_jdbc_load_functions, catalog, schemaPattern, functionNamePattern);
     }
 
     public JDBCResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern)
@@ -189,7 +190,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getFunctionColumns(catalog, schemaPattern, functionNamePattern, columnNamePattern),
-            "Load function columns", catalog, schemaPattern, functionNamePattern, columnNamePattern);
+            CoreMessages.model_jdbc_load_function_columns, catalog, schemaPattern, functionNamePattern, columnNamePattern);
     }
 
     public <T> T unwrap(Class<T> iface)
@@ -920,7 +921,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getProcedures(catalog, schemaPattern, procedureNamePattern),
-            "Load procedures", catalog, schemaPattern, procedureNamePattern);
+            CoreMessages.model_jdbc_load_procedures, catalog, schemaPattern, procedureNamePattern);
     }
 
     public JDBCResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern,
@@ -929,7 +930,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getProcedureColumns(catalog, schemaPattern, procedureNamePattern, columnNamePattern),
-            "Load procedure columns", catalog, schemaPattern, procedureNamePattern, columnNamePattern);
+            CoreMessages.model_jdbc_load_procedure_columns, catalog, schemaPattern, procedureNamePattern, columnNamePattern);
     }
 
     public JDBCResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)
@@ -937,7 +938,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getTables(catalog, schemaPattern, tableNamePattern, types),
-            "Load tables", catalog, schemaPattern, tableNamePattern, types);
+            CoreMessages.model_jdbc_load_tables, catalog, schemaPattern, tableNamePattern, types);
     }
 
     public JDBCResultSet getSchemas()
@@ -945,7 +946,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getSchemas(),
-            "Load schemas");
+            CoreMessages.model_jdbc_load_schemas);
     }
 
     public JDBCResultSet getCatalogs()
@@ -953,7 +954,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getCatalogs(),
-            "Load catalogs");
+            CoreMessages.model_jdbc_load_catalogs);
     }
 
     public JDBCResultSet getTableTypes()
@@ -961,7 +962,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getTableTypes(),
-            "Load table types");
+            CoreMessages.model_jdbc_load_table_types);
     }
 
     public JDBCResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern)
@@ -969,7 +970,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern),
-            "Load columns", catalog, schemaPattern, tableNamePattern, columnNamePattern);
+            CoreMessages.model_jdbc_load_columns, catalog, schemaPattern, tableNamePattern, columnNamePattern);
     }
 
     public JDBCResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern)
@@ -977,7 +978,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getColumnPrivileges(catalog, schema, table, columnNamePattern),
-            "Load column privileges", catalog, schema, table, columnNamePattern);
+            CoreMessages.model_jdbc_load_column_privileges, catalog, schema, table, columnNamePattern);
     }
 
     public JDBCResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern)
@@ -985,7 +986,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getTablePrivileges(catalog, schemaPattern, tableNamePattern),
-            "Load table privileges", catalog, schemaPattern, tableNamePattern);
+            CoreMessages.model_jdbc_load_table_privileges, catalog, schemaPattern, tableNamePattern);
     }
 
     public JDBCResultSet getBestRowIdentifier(String catalog, String schema, String table, int scope, boolean nullable)
@@ -993,7 +994,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getBestRowIdentifier(catalog, schema, table, scope, nullable),
-            "Find best row identifier", catalog, schema, table);
+            CoreMessages.model_jdbc_find_best_row_identifier, catalog, schema, table);
     }
 
     public JDBCResultSet getVersionColumns(String catalog, String schema, String table)
@@ -1001,7 +1002,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getVersionColumns(catalog, schema, table),
-            "Find version columns", catalog, schema, table);
+            CoreMessages.model_jdbc_find_version_columns, catalog, schema, table);
     }
 
     public JDBCResultSet getPrimaryKeys(String catalog, String schema, String table)
@@ -1009,7 +1010,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getPrimaryKeys(catalog, schema, table),
-            "Load primary keys", catalog, schema, table);
+            CoreMessages.model_jdbc_load_primary_keys, catalog, schema, table);
     }
 
     public JDBCResultSet getImportedKeys(String catalog, String schema, String table)
@@ -1017,7 +1018,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getImportedKeys(catalog, schema, table),
-            "Load imported keys", catalog, schema, table);
+            CoreMessages.model_jdbc_load_imported_keys, catalog, schema, table);
     }
 
     public JDBCResultSet getExportedKeys(String catalog, String schema, String table)
@@ -1025,7 +1026,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getExportedKeys(catalog, schema, table),
-            "Load exported keys", catalog, schema, table);
+            CoreMessages.model_jdbc_load_exported_keys, catalog, schema, table);
     }
 
     public JDBCResultSet getCrossReference(
@@ -1035,7 +1036,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getCrossReference(parentCatalog, parentSchema, parentTable, foreignCatalog, foreignSchema, foreignTable),
-            "Load cross reference", parentCatalog, parentSchema, parentTable, foreignCatalog, foreignSchema, foreignTable);
+            CoreMessages.model_jdbc_load_cross_reference, parentCatalog, parentSchema, parentTable, foreignCatalog, foreignSchema, foreignTable);
     }
 
     public JDBCResultSet getTypeInfo()
@@ -1043,7 +1044,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getTypeInfo(),
-            "Load type info");
+            CoreMessages.model_jdbc_load_type_info);
     }
 
     public JDBCResultSet getIndexInfo(String catalog, String schema, String table, boolean unique, boolean approximate)
@@ -1051,7 +1052,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getIndexInfo(catalog, schema, table, unique, approximate),
-            "Load indexes", catalog, schema, table);
+            CoreMessages.model_jdbc_load_indexes, catalog, schema, table);
     }
 
     public boolean supportsResultSetType(int type)
@@ -1131,7 +1132,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getUDTs(catalog, schemaPattern, typeNamePattern, types),
-            "Load UDTs", catalog, schemaPattern, typeNamePattern);
+            CoreMessages.model_jdbc_load_udts, catalog, schemaPattern, typeNamePattern);
     }
 
 }

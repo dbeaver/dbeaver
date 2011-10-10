@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.api;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -59,7 +60,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             this,
             SQLUtils.stripTransformations(
                 this.description == null ?
-                    (query == null ? "?" : JDBCUtils.limitQueryLength(query, 200)) :
+                    (query == null ? "?" : JDBCUtils.limitQueryLength(query, 200)) : //$NON-NLS-1$
                     this.description));
     }
 
@@ -217,7 +218,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             try {
                 updateCount = getOriginal().getUpdateCount();
             } catch (SQLException e) {
-                log.warn("Could not obtain update count", e);
+                log.warn("Could not obtain update count", e); //$NON-NLS-1$
             }
         } else {
             updateCount = 0;
@@ -240,13 +241,13 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
                     connection.rollback();
                 }
             } catch (SQLException e) {
-                log.error("Can't rollback connection after error (" + ex.getMessage() + ")", e);
+                log.error("Can't rollback connection after error (" + ex.getMessage() + ")", e); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
         if (ex instanceof SQLException) {
             return (SQLException) ex;
         } else {
-            return new SQLException("Internal jdbc driver error", ex);
+            return new SQLException(CoreMessages.model_jdbc_exception_internal_jdbc_driver_error, ex);
         }
     }
 
@@ -435,7 +436,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             getOriginal().close();
         }
         catch (SQLException e) {
-            log.error("Could not close statement", e);
+            log.error("Could not close statement", e); //$NON-NLS-1$
         }
     }
 

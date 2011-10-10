@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -595,7 +596,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         return dataSource.openContext(
             monitor,
             DBCExecutionPurpose.USER_SCRIPT,
-            "Execute " + command.getTitle());
+            CoreMessages.model_edit_execute_ + command.getTitle());
     }
 
     protected void closePersistContext(DBCExecutionContext context)

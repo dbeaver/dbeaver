@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,7 +36,7 @@ import java.util.List;
  */
 public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
-    private static final String BOOKMARKS_DIR = "Bookmarks";
+    private static final String BOOKMARKS_DIR = CoreMessages.model_project_bookmarks_folder;
     private static final String BOOKMARK_EXT = "bm";
 
     public static final String RES_TYPE_BOOKMARKS = "bookmarks"; //$NON-NLS-1$

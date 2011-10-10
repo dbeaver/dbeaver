@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDArray;
 import org.jkiss.dbeaver.model.data.DBDValue;
@@ -43,7 +44,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         try {
             type = new JDBCArrayType(array.getBaseTypeName(), array.getBaseType());
         } catch (SQLException e) {
-            type = new JDBCArrayType("Unknown", java.sql.Types.OTHER);
+            type = new JDBCArrayType(CoreMessages.model_jdbc_unknown, java.sql.Types.OTHER);
         }
         if (!type.resolveHandler(context)) {
             // Could not resolve element type handler
@@ -58,7 +59,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
             try {
                 contents = extractDataFromResultSet(context, array, type);
             } catch (Exception e1) {
-                log.warn("Could not extract array data from JDBC array");
+                log.warn("Could not extract array data from JDBC array"); //$NON-NLS-1$
             }
         }
         return new JDBCArray(contents, type);
@@ -71,7 +72,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
             return null;
         }
         try {
-            DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(context, dbResult, "Array result set");
+            DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(context, dbResult, CoreMessages.model_jdbc_array_result_set);
             List<Object> data = new ArrayList<Object>();
             while (dbResult.next()) {
                 data.add(type.getValueHandler().getValueObject(context, resultSet, type, 0));
@@ -82,7 +83,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
             try {
                 dbResult.close();
             } catch (SQLException e) {
-                log.debug("Could not close array result set", e);
+                log.debug("Could not close array result set", e); //$NON-NLS-1$
             }
         }
     }
@@ -163,7 +164,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
             String itemString = type.getValueHandler().getValueDisplayString(type, item);
             if (str.length() > 0) {
                 //str.append(ContentUtils.getDefaultLineSeparator());
-                str.append(",");
+                str.append(","); //$NON-NLS-1$
             }
             str.append(itemString);
         }

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.api;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -580,7 +581,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
             getConnection().close();
         }
         catch (SQLException e) {
-            throw new DBCException("Could not close connection", e);
+            throw new DBCException(CoreMessages.model_jdbc_exception_could_not_close_connection, e);
         }
     }
 
@@ -605,7 +606,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
             throws DBCException
         {
             if (!(transactionIsolation instanceof JDBCTransactionIsolation)) {
-                throw new JDBCException("Invalid transaction isolation parameter");
+                throw new JDBCException(CoreMessages.model_jdbc_exception_invalid_transaction_isolation_parameter);
             }
             JDBCTransactionIsolation jdbcTIL = (JDBCTransactionIsolation) transactionIsolation;
             try {
@@ -668,7 +669,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
                 if (savepoint instanceof Savepoint) {
                     JDBCConnectionImpl.this.releaseSavepoint((Savepoint)savepoint);
                 } else {
-                    throw new SQLFeatureNotSupportedException("Bad savepoint object");
+                    throw new SQLFeatureNotSupportedException(CoreMessages.model_jdbc_exception_bad_savepoint_object);
                 }
             }
             catch (SQLException e) {
@@ -695,7 +696,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
                     if (savepoint instanceof Savepoint) {
                         JDBCConnectionImpl.this.rollback((Savepoint)savepoint);
                     } else {
-                        throw new SQLFeatureNotSupportedException("Bad savepoint object");
+                        throw new SQLFeatureNotSupportedException(CoreMessages.model_jdbc_exception_bad_savepoint_object);
                     }
                 }
                 JDBCConnectionImpl.this.rollback();

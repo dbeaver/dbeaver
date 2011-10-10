@@ -85,6 +85,80 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_about_title;
 
+	public static String model_edit_execute_;
+
+	public static String model_jdbc_array_result_set;
+
+	public static String model_jdbc_column_size;
+
+	public static String model_jdbc_exception_bad_savepoint_object;
+
+	public static String model_jdbc_exception_could_not_bind_statement_parameter;
+
+	public static String model_jdbc_exception_could_not_close_connection;
+
+	public static String model_jdbc_exception_could_not_get_result_set_value;
+
+	public static String model_jdbc_exception_internal_jdbc_driver_error;
+
+	public static String model_jdbc_exception_invalid_transaction_isolation_parameter;
+
+	public static String model_jdbc_exception_unsupported_array_type_;
+
+	public static String model_jdbc_exception_unsupported_value_type_;
+
+	public static String model_jdbc_find_best_row_identifier;
+
+	public static String model_jdbc_find_version_columns;
+
+	public static String model_jdbc_load_catalogs;
+
+	public static String model_jdbc_load_client_info;
+
+	public static String model_jdbc_load_column_privileges;
+
+	public static String model_jdbc_load_columns;
+
+	public static String model_jdbc_load_cross_reference;
+
+	public static String model_jdbc_load_exported_keys;
+
+	public static String model_jdbc_load_function_columns;
+
+	public static String model_jdbc_load_functions;
+
+	public static String model_jdbc_load_imported_keys;
+
+	public static String model_jdbc_load_indexes;
+
+	public static String model_jdbc_load_primary_keys;
+
+	public static String model_jdbc_load_procedure_columns;
+
+	public static String model_jdbc_load_procedures;
+
+	public static String model_jdbc_load_schemas;
+
+	public static String model_jdbc_load_super_tables;
+
+	public static String model_jdbc_load_super_types;
+
+	public static String model_jdbc_load_table_privileges;
+
+	public static String model_jdbc_load_table_types;
+
+	public static String model_jdbc_load_tables;
+
+	public static String model_jdbc_load_type_info;
+
+	public static String model_jdbc_load_udt_attributes;
+
+	public static String model_jdbc_load_udts;
+
+	public static String model_jdbc_unknown;
+
+	public static String model_project_bookmarks_folder;
+
 	public static String toolbar_datasource_selector_action_read_databases;
 	public static String toolbar_datasource_selector_combo_database_tooltip;
 	public static String toolbar_datasource_selector_combo_datasource_tooltip;

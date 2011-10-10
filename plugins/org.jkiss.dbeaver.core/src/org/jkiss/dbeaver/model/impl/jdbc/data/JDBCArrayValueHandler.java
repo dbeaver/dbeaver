@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDArray;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -47,7 +48,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         } else if (value instanceof Array) {
             return JDBCArray.makeArray((JDBCExecutionContext) context, (Array)value);
         } else {
-            throw new DBCException("Unsupported array type: " + value.getClass().getName());
+            throw new DBCException(CoreMessages.model_jdbc_exception_unsupported_array_type_ + value.getClass().getName());
         }
     }
 
@@ -59,7 +60,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         Object value)
         throws DBCException, SQLException
     {
-        throw new DBCException("Unsupported value type: " + value);
+        throw new DBCException(CoreMessages.model_jdbc_exception_unsupported_value_type_ + value);
     }
 
     public int getFeatures()
