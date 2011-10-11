@@ -129,8 +129,6 @@ public class CoreMessages extends NLS {
 
 	public static String model_jdbc_jdbc_error;
 
-	public static String model_jdbc_jdbc_error;
-
 	public static String model_jdbc_load_catalogs;
 
 	public static String model_jdbc_load_client_info;
@@ -194,8 +192,6 @@ public class CoreMessages extends NLS {
 	public static String model_jdbc_unsupported_column_type_;
 
 	public static String model_jdbc_unsupported_content_value_type_;
-
-	public static String model_jdbc_unsupported_value_type_;
 
 	public static String model_jdbc_unsupported_value_type_;
 
