@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -33,10 +34,10 @@ import java.sql.SQLException;
  */
 public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
-    private static final String TYPE_NAME_NUMBER = "number";
+    private static final String TYPE_NAME_NUMBER = "number"; //$NON-NLS-1$
     private static final int MAX_NUMBER_LENGTH = 100;
 
-    private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308";
+    private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308"; //$NON-NLS-1$
 
     private DBDDataFormatter formatter;
 
@@ -45,7 +46,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         try {
             formatter = formatterProfile.createFormatter(TYPE_NAME_NUMBER);
         } catch (Exception e) {
-            log.error("Could not create formatter for number value handler", e);
+            log.error("Could not create formatter for number value handler", e); //$NON-NLS-1$
             formatter = DefaultDataFormatter.INSTANCE;
         }
     }
@@ -162,9 +163,9 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
             if (controller.getColumnMetaData().getValueType() == java.sql.Types.BIT) {
                 CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
-                editor.add("0");
-                editor.add("1");
-                editor.setText(value == null ? "0" : value.toString());
+                editor.add("0"); //$NON-NLS-1$
+                editor.add("1"); //$NON-NLS-1$
+                editor.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
                 editor.setFocus();
                 initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
                     public Object getValueFromControl(CCombo control)
@@ -178,7 +179,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 });
             } else {
                 Text editor = new Text(controller.getInlinePlaceholder(), SWT.BORDER);
-                editor.setText(value == null ? "" : value.toString());
+                editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
                 editor.setEditable(!controller.isReadOnly());
                 editor.setTextLimit(MAX_NUMBER_LENGTH);
                 editor.selectAll();
@@ -235,12 +236,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         propertySource.addProperty(
-            "precision",
-            "Precision",
+            "precision", //$NON-NLS-1$
+            CoreMessages.model_jdbc_precision,
             controller.getColumnMetaData().getPrecision());
         propertySource.addProperty(
-            "scale",
-            "Scale",
+            "scale", //$NON-NLS-1$
+            CoreMessages.model_jdbc_scale,
             controller.getColumnMetaData().getScale());
     }
 
@@ -293,7 +294,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             }
         }
         catch (NumberFormatException e) {
-            log.error("Bad numeric value '" + text + "' - " + e.getMessage());
+            log.error("Bad numeric value '" + text + "' - " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
     }

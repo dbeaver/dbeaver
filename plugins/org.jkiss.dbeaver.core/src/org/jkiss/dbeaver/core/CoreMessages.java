@@ -89,7 +89,23 @@ public class CoreMessages extends NLS {
 
 	public static String model_jdbc_array_result_set;
 
+	public static String model_jdbc_bad_content_value_;
+
+	public static String model_jdbc_cant_create_null_cursor;
+
 	public static String model_jdbc_column_size;
+
+	public static String model_jdbc_content_length;
+
+	public static String model_jdbc_content_type;
+
+	public static String model_jdbc_could_not_load_content;
+
+	public static String model_jdbc_could_not_load_content_from_file;
+
+	public static String model_jdbc_could_not_save_content;
+
+	public static String model_jdbc_could_not_save_content_to_file_;
 
 	public static String model_jdbc_exception_bad_savepoint_object;
 
@@ -111,6 +127,10 @@ public class CoreMessages extends NLS {
 
 	public static String model_jdbc_find_version_columns;
 
+	public static String model_jdbc_jdbc_error;
+
+	public static String model_jdbc_jdbc_error;
+
 	public static String model_jdbc_load_catalogs;
 
 	public static String model_jdbc_load_client_info;
@@ -122,6 +142,8 @@ public class CoreMessages extends NLS {
 	public static String model_jdbc_load_cross_reference;
 
 	public static String model_jdbc_load_exported_keys;
+
+	public static String model_jdbc_load_from_file_;
 
 	public static String model_jdbc_load_function_columns;
 
@@ -155,7 +177,27 @@ public class CoreMessages extends NLS {
 
 	public static String model_jdbc_load_udts;
 
+	public static String model_jdbc_lob_and_binary_data_cant_be_edited_inline;
+
+	public static String model_jdbc_max_length;
+
+	public static String model_jdbc_precision;
+
+	public static String model_jdbc_save_to_file_;
+
+	public static String model_jdbc_scale;
+
+	public static String model_jdbc_set_to_current_time;
+
 	public static String model_jdbc_unknown;
+
+	public static String model_jdbc_unsupported_column_type_;
+
+	public static String model_jdbc_unsupported_content_value_type_;
+
+	public static String model_jdbc_unsupported_value_type_;
+
+	public static String model_jdbc_unsupported_value_type_;
 
 	public static String model_project_bookmarks_folder;
 

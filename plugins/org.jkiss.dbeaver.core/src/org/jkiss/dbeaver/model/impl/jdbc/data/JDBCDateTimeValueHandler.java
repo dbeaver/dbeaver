@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -37,9 +38,9 @@ import java.util.Date;
  */
 public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
-    public static final String TYPE_NAME_DATE = "date";
-    public static final String TYPE_NAME_TIME = "time";
-    public static final String TYPE_NAME_TIMESTAMP = "timestamp";
+    public static final String TYPE_NAME_DATE = "date"; //$NON-NLS-1$
+    public static final String TYPE_NAME_TIME = "time"; //$NON-NLS-1$
+    public static final String TYPE_NAME_TIMESTAMP = "timestamp"; //$NON-NLS-1$
 
     private DBDDataFormatterProfile formatterProfile;
     private DBDDataFormatter formatter;
@@ -55,7 +56,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             try {
                 formatter = formatterProfile.createFormatter(typeId);
             } catch (Exception e) {
-                log.error("Could not create formatter for datetime value handler", e);
+                log.error("Could not create formatter for datetime value handler", e); //$NON-NLS-1$
                 formatter = DefaultDataFormatter.INSTANCE;
             }
         }
@@ -205,7 +206,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
         throws DBCException
     {
-        menuManager.add(new Action("Set to current time") {
+        menuManager.add(new Action(CoreMessages.model_jdbc_set_to_current_time) {
             @Override
             public void run() {
                 controller.updateValue(new Date());

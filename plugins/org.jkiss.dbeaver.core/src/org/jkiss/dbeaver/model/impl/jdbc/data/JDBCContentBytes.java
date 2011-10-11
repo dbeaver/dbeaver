@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
@@ -97,7 +98,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
                     data = new byte[(int)storage.getContentLength()];
                     int count = is.read(data);
                     if (count != data.length) {
-                        log.warn("Actual content length (" + count + ") is less than declared (" + data.length + ")");
+                        log.warn("Actual content length (" + count + ") is less than declared (" + data.length + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     }
                 }
                 finally {
@@ -126,7 +127,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
             }
         }
         catch (SQLException e) {
-            throw new DBCException("JDBC error", e);
+            throw new DBCException(CoreMessages.model_jdbc_jdbc_error, e);
         }
     }
 
@@ -151,7 +152,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         if (data == null) {
             return null;
         }
-        return "binary [" + data.length + "]";
+        return "binary [" + data.length + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public JDBCContentBytes cloneValue(DBRProgressMonitor monitor)

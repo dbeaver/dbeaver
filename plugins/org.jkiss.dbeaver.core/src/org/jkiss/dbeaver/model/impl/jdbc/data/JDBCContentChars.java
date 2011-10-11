@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -56,7 +57,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     {
         if (data == null) {
             // Empty content
-            return new StringReader("");
+            return new StringReader(""); //$NON-NLS-1$
         } else {
             return new StringReader(data);
         }
@@ -128,7 +129,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
             }
         }
         catch (SQLException e) {
-            throw new DBCException("JDBC error", e);
+            throw new DBCException(CoreMessages.model_jdbc_jdbc_error, e);
         }
     }
 

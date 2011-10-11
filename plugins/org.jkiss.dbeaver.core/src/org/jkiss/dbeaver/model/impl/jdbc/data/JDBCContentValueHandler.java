@@ -12,6 +12,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.*;
@@ -100,7 +101,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         } else if (value instanceof SQLXML) {
             return new JDBCContentXML((SQLXML) value);
         } else {
-            throw new DBCException("Unsupported value type: " + value.getClass().getName());
+            throw new DBCException(CoreMessages.model_jdbc_unsupported_value_type_ + value.getClass().getName());
         }
     }
 
@@ -115,7 +116,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         if (value instanceof JDBCContentAbstract) {
             ((JDBCContentAbstract)value).bindParameter(context, statement, paramType, paramIndex);
         } else {
-            throw new DBCException("Unsupported value type: " + value);
+            throw new DBCException(CoreMessages.model_jdbc_unsupported_value_type_ + value);
         }
     }
 
@@ -164,7 +165,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             case java.sql.Types.SQLXML:
                 return new JDBCContentXML(null);
             default:
-                throw new DBCException("Unsupported column type: " + column.getTypeName());
+                throw new DBCException(CoreMessages.model_jdbc_unsupported_column_type_ + column.getTypeName());
         }
     }
 
@@ -185,14 +186,14 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         throws DBCException
     {
         if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
-            menuManager.add(new Action("Save to file ...", DBIcon.SAVE.getImageDescriptor()) {
+            menuManager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBIcon.SAVE.getImageDescriptor()) {
                 @Override
                 public void run() {
                     saveToFile(controller);
                 }
             });
         }
-        menuManager.add(new Action("Load from file ...", DBIcon.LOAD.getImageDescriptor()) {
+        menuManager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBIcon.LOAD.getImageDescriptor()) {
             @Override
             public void run() {
                 loadFromFile(controller);
@@ -206,24 +207,24 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             Object value = controller.getValue();
             if (value instanceof DBDContent) {
                 propertySource.addProperty(
-                    "content_type",
-                    "Content Type",
+                    "content_type", //$NON-NLS-1$
+                    CoreMessages.model_jdbc_content_type,
                     ((DBDContent)value).getContentType());
                 final long contentLength = ((DBDContent) value).getContentLength();
                 if (contentLength >= 0) {
                     propertySource.addProperty(
-                        "content_length",
-                        "Content Length",
+                        "content_length", //$NON-NLS-1$
+                        CoreMessages.model_jdbc_content_length,
                         contentLength);
                 }
             }
         }
         catch (Exception e) {
-            log.warn("Could not extract LOB value information", e);
+            log.warn("Could not extract LOB value information", e); //$NON-NLS-1$
         }
         propertySource.addProperty(
-            "max_length",
-            "Max Length",
+            "max_length", //$NON-NLS-1$
+            CoreMessages.model_jdbc_max_length,
             controller.getColumnMetaData().getMaxLength());
     }
 
@@ -237,7 +238,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 JDBCContentChars value = (JDBCContentChars)controller.getValue();
 
                 Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
-                editor.setText(value.getData() == null ? "" : value.getData());
+                editor.setText(value.getData() == null ? "" : value.getData()); //$NON-NLS-1$
                 editor.setEditable(!controller.isReadOnly());
                 long maxLength = controller.getColumnMetaData().getMaxLength();
                 if (maxLength <= 0) {
@@ -257,7 +258,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 });
                 return true;
             } else {
-                controller.showMessage("LOB and binary data can't be edited inline", true);
+                controller.showMessage(CoreMessages.model_jdbc_lob_and_binary_data_cant_be_edited_inline, true);
                 return false;
             }
         }
@@ -281,7 +282,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 (DBDColumnController)controller,
                 parts.toArray(new IContentEditorPart[parts.size()]) );
         } else {
-            controller.showMessage("Unsupported content value type", true);
+            controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
             return false;
         }
     }
@@ -289,7 +290,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     private void loadFromFile(final DBDValueController controller)
     {
         if (!(controller.getValue() instanceof DBDContent)) {
-            log.error("Bad content value: " + controller.getValue());
+            log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
             return;
         }
 
@@ -322,8 +323,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(
                 shell,
-                "Could not load content",
-                "Could not load content from file '" + openFile.getAbsolutePath() + "'",
+                CoreMessages.model_jdbc_could_not_load_content,
+                CoreMessages.model_jdbc_could_not_load_content_from_file + openFile.getAbsolutePath() + "'", //$NON-NLS-2$
                 e.getTargetException());
         }
         catch (InterruptedException e) {
@@ -334,7 +335,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     private void saveToFile(DBDValueController controller)
     {
         if (!(controller.getValue() instanceof DBDContent)) {
-            log.error("Bad content value: " + controller.getValue());
+            log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
             return;
         }
 
@@ -374,8 +375,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(
                 shell,
-                "Could not save content",
-                "Could not save content to file '" + saveFile.getAbsolutePath() + "'",
+                CoreMessages.model_jdbc_could_not_save_content,
+                CoreMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.getAbsolutePath() + "'", //$NON-NLS-2$
                 e.getTargetException());
         }
         catch (InterruptedException e) {
