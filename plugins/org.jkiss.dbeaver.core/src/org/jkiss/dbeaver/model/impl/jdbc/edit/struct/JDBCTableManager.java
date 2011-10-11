@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -38,7 +39,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         final OBJECT_TYPE table = command.getObject();
         final NestedObjectCommand tableProps = command.getObjectCommands().get(table);
         if (tableProps == null) {
-            log.warn("Object change command not found");
+            log.warn("Object change command not found"); //$NON-NLS-1$
             return null;
         }
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
@@ -46,7 +47,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
 
         final String lineSeparator = ContentUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
-        createQuery.append("CREATE TABLE ").append(tableName).append(" (").append(lineSeparator);
+        createQuery.append("CREATE TABLE ").append(tableName).append(" (").append(lineSeparator); //$NON-NLS-1$ //$NON-NLS-2$
         boolean hasNestedDeclarations = false;
         for (NestedObjectCommand nestedCommand : getNestedOrderedCommands(command)) {
             if (nestedCommand.getObject() == table) {
@@ -56,9 +57,9 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
                 // Insert nested declaration
                 if (hasNestedDeclarations) {
-                    createQuery.append(",").append(lineSeparator);
+                    createQuery.append(",").append(lineSeparator); //$NON-NLS-1$
                 }
-                createQuery.append("\t").append(nestedDeclaration);
+                createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
                 hasNestedDeclarations = true;
             } else {
                 // This command should be executed separately
@@ -69,10 +70,10 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
             }
         }
 
-        createQuery.append(lineSeparator).append(")");
+        createQuery.append(lineSeparator).append(")"); //$NON-NLS-1$
         appendTableModifiers(table, tableProps, createQuery);
 
-        actions.add( 0, new AbstractDatabasePersistAction("Create new table", createQuery.toString()) );
+        actions.add( 0, new AbstractDatabasePersistAction(CoreMessages.model_jdbc_create_new_table, createQuery.toString()) );
 
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
@@ -81,7 +82,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop table", "DROP TABLE " + command.getObject().getFullQualifiedName())
+            new AbstractDatabasePersistAction(CoreMessages.model_jdbc_drop_table, "DROP TABLE " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 

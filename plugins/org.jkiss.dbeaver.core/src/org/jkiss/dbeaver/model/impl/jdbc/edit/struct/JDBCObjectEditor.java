@@ -9,6 +9,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -34,10 +35,10 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         DBEObjectEditor<OBJECT_TYPE>,
         DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE>
 {
-    public static final String PATTERN_ITEM_INDEX = "%INDEX%";
-    public static final String PATTERN_ITEM_TABLE = "%TABLE%";
-    public static final String PATTERN_ITEM_INDEX_SHORT = "%INDEX_SHORT%";
-    public static final String PATTERN_ITEM_CONSTRAINT = "%CONSTRAINT%";
+    public static final String PATTERN_ITEM_INDEX = "%INDEX%"; //$NON-NLS-1$
+    public static final String PATTERN_ITEM_TABLE = "%TABLE%"; //$NON-NLS-1$
+    public static final String PATTERN_ITEM_INDEX_SHORT = "%INDEX_SHORT%"; //$NON-NLS-1$
+    public static final String PATTERN_ITEM_CONSTRAINT = "%CONSTRAINT%"; //$NON-NLS-1$
 
     public final DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
     {
@@ -62,13 +63,13 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     public final void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
     {
         commandContext.addCommand(
-            new ObjectDeleteCommand(object, "Delete object"),
+            new ObjectDeleteCommand(object, CoreMessages.model_jdbc_delete_object),
             new DeleteObjectReflector<OBJECT_TYPE>(), true);
     }
 
     ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object)
     {
-        return new ObjectCreateCommand(object, "Create new object");
+        return new ObjectCreateCommand(object, CoreMessages.model_jdbc_create_new_object);
     }
 
 /*
@@ -107,13 +108,13 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         // Base SQL syntax do not support object properties change
-        throw new IllegalStateException("Object modification is not supported in " + getClass().getSimpleName());
+        throw new IllegalStateException("Object modification is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
     protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
         // Base SQL syntax do not support object properties change
-        throw new IllegalStateException("Object rename is not supported in " + getClass().getSimpleName());
+        throw new IllegalStateException("Object rename is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
     protected abstract IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command);
@@ -136,7 +137,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
     protected void processObjectRename(DBECommandContext commandContext, OBJECT_TYPE object, String newName) throws DBException
     {
-        ObjectRenameCommand command = new ObjectRenameCommand(object, "Rename object", newName);
+        ObjectRenameCommand command = new ObjectRenameCommand(object, CoreMessages.model_jdbc_rename_object, newName);
         commandContext.addCommand(command, new RenameObjectReflector());
     }
 
@@ -201,7 +202,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     {
         private ObjectChangeCommand(OBJECT_TYPE object)
         {
-            super(object, "JDBC Composite");
+            super(object, "JDBC Composite"); //$NON-NLS-1$
         }
 
         public IDatabasePersistAction[] getPersistActions()

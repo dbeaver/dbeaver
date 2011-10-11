@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
@@ -36,23 +37,23 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
 
         StringBuilder decl = new StringBuilder(40);
         decl
-            .append("CREATE INDEX ").append(indexName)
-            .append(" ON ").append(table.getFullQualifiedName())
-            .append(" (");
+            .append("CREATE INDEX ").append(indexName) //$NON-NLS-1$
+            .append(" ON ").append(table.getFullQualifiedName()) //$NON-NLS-1$
+            .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         boolean firstColumn = true;
         for (DBSIndexColumn indexColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
-            if (!firstColumn) decl.append(",");
+            if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
             decl.append(indexColumn.getName());
             if (!indexColumn.isAscending()) {
-                decl.append(" DESC");
+                decl.append(" DESC"); //$NON-NLS-1$
             }
         }
-        decl.append(")");
+        decl.append(")"); //$NON-NLS-1$
 
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Create new index", decl.toString())
+            new AbstractDatabasePersistAction(CoreMessages.model_jdbc_create_new_index, decl.toString())
         };
     }
 
@@ -61,7 +62,7 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Drop index",
+                CoreMessages.model_jdbc_drop_index,
                 getDropIndexPattern(command.getObject())
                     .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())
                     .replace(PATTERN_ITEM_INDEX, command.getObject().getFullQualifiedName())
@@ -71,7 +72,7 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
 
     protected String getDropIndexPattern(OBJECT_TYPE index)
     {
-        return "DROP INDEX " + PATTERN_ITEM_INDEX;
+        return "DROP INDEX " + PATTERN_ITEM_INDEX; //$NON-NLS-1$
     }
 
 

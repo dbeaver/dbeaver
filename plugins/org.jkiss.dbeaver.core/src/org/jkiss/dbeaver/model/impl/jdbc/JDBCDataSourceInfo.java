@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
@@ -25,10 +26,10 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
 {
     static final Log log = LogFactory.getLog(JDBCDataSourceInfo.class);
 
-    public static final String STRUCT_SEPARATOR = ".";
-    public static final String TERM_SCHEMA = "Schema";
-    public static final String TERM_PROCEDURE = "Procedure";
-    public static final String TERM_CATALOG = "Database";
+    public static final String STRUCT_SEPARATOR = "."; //$NON-NLS-1$
+    public static final String TERM_SCHEMA = CoreMessages.model_jdbc_Schema;
+    public static final String TERM_PROCEDURE = CoreMessages.model_jdbc_Procedure;
+    public static final String TERM_CATALOG = CoreMessages.model_jdbc_Database;
 
     private boolean readOnly;
     private String databaseProductName;
@@ -74,25 +75,25 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             this.databaseProductName = metaData.getDatabaseProductName();
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.databaseProductName = "?";
+            this.databaseProductName = "?"; //$NON-NLS-1$
         }
         try {
             this.databaseProductVersion = metaData.getDatabaseProductVersion();
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.databaseProductVersion = "?";
+            this.databaseProductVersion = "?"; //$NON-NLS-1$
         }
         try {
             this.driverName = metaData.getDriverName();
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.driverName = "?";
+            this.driverName = "?"; //$NON-NLS-1$
         }
         try {
             this.driverVersion = metaData.getDriverVersion();
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.driverVersion = "?";
+            this.driverVersion = "?"; //$NON-NLS-1$
         }
         try {
             this.identifierQuoteString = metaData.getIdentifierQuoteString();
@@ -177,7 +178,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             this.searchStringEscape = metaData.getSearchStringEscape();
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.searchStringEscape = "\\";
+            this.searchStringEscape = "\\"; //$NON-NLS-1$
         }
         try {
             this.schemaTerm = makeTermString(metaData.getSchemaTerm(), TERM_SCHEMA);
@@ -232,7 +233,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             validCharacters = metaData.getExtraNameCharacters();
         } catch (SQLException e) {
             log.debug(e.getMessage());
-            validCharacters = "";
+            validCharacters = ""; //$NON-NLS-1$
         }
 
         try {
@@ -443,7 +444,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
 
     public String getScriptDelimiter()
     {
-        return ";";
+        return ";"; //$NON-NLS-1$
     }
 
     public boolean validUnquotedCharacter(char c)
@@ -475,7 +476,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     {
         List<String> result = new ArrayList<String>();
         if (source != null && source.length() > 0) {
-            StringTokenizer st = new StringTokenizer(source, ";,");
+            StringTokenizer st = new StringTokenizer(source, ";,"); //$NON-NLS-1$
             while (st.hasMoreTokens()) {
                 result.add(st.nextToken().trim());
             }

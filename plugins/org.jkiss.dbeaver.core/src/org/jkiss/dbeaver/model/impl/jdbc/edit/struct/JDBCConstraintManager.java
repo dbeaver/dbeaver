@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
@@ -32,8 +33,8 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
 
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Create new constraint",
-                "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command))};
+                CoreMessages.model_jdbc_create_new_constraint,
+                "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command))}; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
@@ -41,7 +42,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Drop constraint",
+                CoreMessages.model_jdbc_drop_constraint,
                 getDropConstraintPattern(command.getObject())
                     .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())
                     .replace(PATTERN_ITEM_CONSTRAINT, command.getObject().getName()))
@@ -57,23 +58,23 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
 
         StringBuilder decl = new StringBuilder(40);
         decl
-            .append("CONSTRAINT ").append(constraintName)
-            .append(" ").append(constraint.getConstraintType().getName().toUpperCase())
-            .append(" (");
+            .append("CONSTRAINT ").append(constraintName) //$NON-NLS-1$
+            .append(" ").append(constraint.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
+            .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         boolean firstColumn = true;
         for (DBSConstraintColumn constraintColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
-            if (!firstColumn) decl.append(",");
+            if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
             decl.append(constraintColumn.getName());
         }
-        decl.append(")");
+        decl.append(")"); //$NON-NLS-1$
         return decl;
     }
 
     protected String getDropConstraintPattern(OBJECT_TYPE constraint)
     {
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT;
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }

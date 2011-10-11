@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.project;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -37,10 +38,10 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
     static final Log log = LogFactory.getLog(ScriptsHandlerImpl.class);
 
-    private static final String SCRIPTS_DIR = "Scripts";
+    private static final String SCRIPTS_DIR = CoreMessages.model_project_Scripts;
 
     public static final String RES_TYPE_SCRIPTS = "scripts"; //$NON-NLS-1$
-    public static final String SCRIPT_FILE_EXTENSION = "sql";
+    public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
 
     public static IFolder getScriptsFolder(IProject project, boolean forceCreate) throws CoreException
     {
@@ -108,7 +109,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         }
 
         // Make new script file
-        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", SCRIPT_FILE_EXTENSION);
+        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, CoreMessages.model_project_Script, SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
         tempFile.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_SCRIPTS);
 
@@ -136,9 +137,9 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     public String getTypeName(IResource resource)
     {
         if (resource instanceof IFolder) {
-            return "script folder";
+            return "script folder"; //$NON-NLS-1$
         } else {
-            return "script";
+            return "script"; //$NON-NLS-1$
         }
     }
 

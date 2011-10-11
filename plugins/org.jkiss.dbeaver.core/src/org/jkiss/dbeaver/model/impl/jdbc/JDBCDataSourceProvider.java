@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 
@@ -59,7 +60,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
         try {
             propDescs = driver.getPropertyInfo(connectionInfo.getUrl(), driverProps);
         } catch (Throwable e) {
-            log.debug("Cannot obtain driver's properties", e);
+            log.debug("Cannot obtain driver's properties", e); //$NON-NLS-1$
             return null;
         }
         if (propDescs == null) {
@@ -74,7 +75,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
             }
             desc.value = getConnectionPropertyDefaultValue(desc.name, desc.value);
             properties.add(new PropertyDescriptorEx(
-                "Driver properties",
+                CoreMessages.model_jdbc_driver_properties,
                 desc.name,
                 desc.name,
                 desc.description,

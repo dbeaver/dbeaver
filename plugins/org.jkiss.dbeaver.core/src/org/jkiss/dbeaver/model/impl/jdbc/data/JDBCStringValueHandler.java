@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -54,7 +55,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
             Object value = controller.getValue();
             Text editor = new Text(controller.getInlinePlaceholder(), SWT.BORDER);
-            editor.setText(value == null ? "" : value.toString());
+            editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
             editor.setEditable(!controller.isReadOnly());
             editor.setTextLimit(MAX_STRING_LENGTH);
             editor.selectAll();
@@ -93,8 +94,8 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         propertySource.addProperty(
-            "max_length",
-            "Max Length",
+            "max_length", //$NON-NLS-1$
+            CoreMessages.model_jdbc_max_length,
             controller.getColumnMetaData().getMaxLength());
     }
 

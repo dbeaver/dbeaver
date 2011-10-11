@@ -14,6 +14,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -88,8 +89,8 @@ public class DBNAdapterFactory implements IAdapterFactory
                 if (props.isEmpty() && adaptableObject instanceof DBSObject) {
                     // Add default properties
                     DBSObject meta = (DBSObject)adaptableObject;
-                    props.addProperty("name", "Name", meta.getName());
-                    props.addProperty("desc", "Description", meta.getDescription());
+                    props.addProperty("name", CoreMessages.model_navigator_Name, meta.getName()); //$NON-NLS-1$
+                    props.addProperty("desc", CoreMessages.model_navigator_Description, meta.getDescription()); //$NON-NLS-1$
                 }
                 return props;
             }

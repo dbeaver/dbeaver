@@ -10,6 +10,7 @@ import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -49,7 +50,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     @Override
     public String getNodeType()
     {
-        return getObject() == null ? "" : getMeta().getNodeType(getObject().getDataSource());
+        return getObject() == null ? "" : getMeta().getNodeType(getObject().getDataSource()); //$NON-NLS-1$
     }
 
     public String getNodeName()
@@ -59,7 +60,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
         String objectName = getObject().getName();
         if (CommonUtils.isEmpty(objectName)) {
-            objectName = "?";
+            objectName = "?"; //$NON-NLS-1$
         }
         return objectName;
     }
@@ -155,7 +156,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             }
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, DBNEvent.NodeChange.LOAD, newChild));
         } else {
-            log.error("Cannot add child item to " + getNodeName() + ". Conditions doesn't met");
+            log.error("Cannot add child item to " + getNodeName() + ". Conditions doesn't met"); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -224,7 +225,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
         if (isLocked()) {
-            log.warn("Attempt to refresh locked node '" + getNodeName() + "'");
+            log.warn("Attempt to refresh locked node '" + getNodeName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
         if (getObject() instanceof DBSEntity && ((DBSEntity)getObject()).refreshEntity(monitor)) {
@@ -287,13 +288,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         if (CommonUtils.isEmpty(childMetas)) {
             return;
         }
-        monitor.beginTask("Load items ...", childMetas.size());
+        monitor.beginTask(CoreMessages.model_navigator_load_items_, childMetas.size());
 
         for (DBXTreeNode child : childMetas) {
             if (monitor.isCanceled()) {
                 break;
             }
-            monitor.subTask("Load " + child.getChildrenType(getObject().getDataSource()));
+            monitor.subTask(CoreMessages.model_navigator_load_ + child.getChildrenType(getObject().getDataSource()));
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
                 boolean isLoaded = loadTreeItems(monitor, item, oldList, toList);
@@ -331,7 +332,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                     }
                 }
             } else {
-                log.warn("Unsupported meta node type: " + child);
+                log.warn("Unsupported meta node type: " + child); //$NON-NLS-1$
             }
             monitor.worked(1);
         }
@@ -366,7 +367,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             return false;
         }
         if (!(propertyValue instanceof Collection<?>)) {
-            log.warn("Bad property '" + propertyName + "' value: " + propertyValue.getClass().getName());
+            log.warn("Bad property '" + propertyName + "' value: " + propertyValue.getClass().getName()); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
         Collection<?> itemList = (Collection<?>) propertyValue;
@@ -383,7 +384,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                 continue;
             }
             if (!(childItem instanceof DBSObject)) {
-                log.warn("Bad item type: " + childItem.getClass().getName());
+                log.warn("Bad item type: " + childItem.getClass().getName()); //$NON-NLS-1$
                 continue;
             }
             if (childItem instanceof DBSHiddenObject && ((DBSHiddenObject) childItem).isHidden()) {
@@ -456,12 +457,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public boolean testAttribute(Object target, String name, String value) {
         if (getObject() != null) {
-            if (name.equals("targetType")) {
+            if (name.equals("targetType")) { //$NON-NLS-1$
                 try {
                     Class<?> targetClass = Class.forName(value);
                     return targetClass.isAssignableFrom(getObject().getClass());
                 } catch (ClassNotFoundException e) {
-                    log.warn("Unknown target type: " + value);
+                    log.warn("Unknown target type: " + value); //$NON-NLS-1$
                 }
             }
         }

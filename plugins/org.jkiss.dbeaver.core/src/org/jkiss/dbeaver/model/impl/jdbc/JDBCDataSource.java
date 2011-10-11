@@ -8,6 +8,7 @@ import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
@@ -59,7 +60,7 @@ public abstract class JDBCDataSource
             try {
                 autoCommit = connection.getAutoCommit();
             } catch (Throwable e) {
-                log.warn("Could not check auto-commit state", e);
+                log.warn("Could not check auto-commit state", e); //$NON-NLS-1$
             }
             QMUtils.getDefaultHandler().handleSessionStart(this, !autoCommit);
         }
@@ -203,7 +204,7 @@ public abstract class JDBCDataSource
     public synchronized void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read database meta data");
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
         try {
             dataSourceInfo = makeInfo(context.getMetaData());
         } catch (SQLException ex) {

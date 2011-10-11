@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.data.query.DBQCondition;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -90,11 +91,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         StringBuilder query = new StringBuilder(100);
-        query.append("SELECT * FROM ").append(getFullQualifiedName());
+        query.append("SELECT * FROM ").append(getFullQualifiedName()); //$NON-NLS-1$
         appendQueryConditions(query, dataFilter);
         appendQueryOrder(query, dataFilter);
 
-        monitor.subTask("Fetch table data");
+        monitor.subTask(CoreMessages.model_jdbc_fetch_table_data);
         DBCStatement dbStat = DBUtils.prepareStatement(
             context,
             DBCStatementType.QUERY,
@@ -124,7 +125,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         dataReceiver.fetchRow(context, dbResult);
                         rowCount++;
                         if (rowCount % 100 == 0) {
-                            monitor.subTask(rowCount + " rows fetched");
+                            monitor.subTask(rowCount + CoreMessages.model_jdbc__rows_fetched);
                             monitor.worked(100);
                         }
 
@@ -133,7 +134,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     try {
                         dataReceiver.fetchEnd(context);
                     } catch (DBCException e) {
-                        log.error("Error while finishing result set fetch", e);
+                        log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                     }
                 }
                 return rowCount;
@@ -156,10 +157,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         JDBCExecutionContext jdbcContext = (JDBCExecutionContext)context;
         DBRProgressMonitor monitor = context.getProgressMonitor();
 
-        StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM ");
+        StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM "); //$NON-NLS-1$
         query.append(getFullQualifiedName());
         appendQueryConditions(query, dataFilter);
-        monitor.subTask("Fetch table row count");
+        monitor.subTask(CoreMessages.model_jdbc_fetch_table_row_count);
         JDBCStatement dbStat = jdbcContext.prepareStatement(
             DBCStatementType.QUERY, query.toString(), false, false, false);
         try {
@@ -198,7 +199,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         // Make query
         StringBuilder query = new StringBuilder();
-        query.append("INSERT INTO ").append(getFullQualifiedName()).append(" (");
+        query.append("INSERT INTO ").append(getFullQualifiedName()).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;
         for (DBDColumnValue column : columns) {
@@ -206,21 +207,21 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 // do not use null values
                 continue;
             }
-            if (hasKey) query.append(",");
+            if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
             query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName()));
         }
-        query.append(") VALUES (");
+        query.append(") VALUES ("); //$NON-NLS-1$
         hasKey = false;
         for (DBDColumnValue column1 : columns) {
             if (DBUtils.isNullValue(column1.getValue())) {
                 continue;
             }
-            if (hasKey) query.append(",");
+            if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
-            query.append("?");
+            query.append("?"); //$NON-NLS-1$
         }
-        query.append(")");
+        query.append(")"); //$NON-NLS-1$
 
         // Execute
         DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
@@ -262,20 +263,20 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         // Make query
         StringBuilder query = new StringBuilder();
-        query.append("UPDATE ").append(getFullQualifiedName()).append(" SET ");
+        query.append("UPDATE ").append(getFullQualifiedName()).append(" SET "); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;
         for (DBDColumnValue column : updateColumns) {
-            if (hasKey) query.append(",");
+            if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?");
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?"); //$NON-NLS-1$
         }
-        query.append(" WHERE ");
+        query.append(" WHERE "); //$NON-NLS-1$
         hasKey = false;
         for (DBDColumnValue column : keyColumns) {
-            if (hasKey) query.append(" AND ");
+            if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?");
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?"); //$NON-NLS-1$
         }
 
         // Execute
@@ -313,13 +314,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         // Make query
         StringBuilder query = new StringBuilder();
-        query.append("DELETE FROM ").append(getFullQualifiedName()).append(" WHERE ");
+        query.append("DELETE FROM ").append(getFullQualifiedName()).append(" WHERE "); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;
         for (DBDColumnValue column : keyColumns) {
-            if (hasKey) query.append(" AND ");
+            if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?");
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?"); //$NON-NLS-1$
         }
 
         // Execute
@@ -348,11 +349,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (dataFilter != null) {
             // Construct WHERE
             if (!CommonUtils.isEmpty(dataFilter.getFilters()) || !CommonUtils.isEmpty(dataFilter.getWhere())) {
-                query.append(" WHERE ");
+                query.append(" WHERE "); //$NON-NLS-1$
                 boolean hasWhere = false;
                 if (!CommonUtils.isEmpty(dataFilter.getFilters())) {
                     for (DBQCondition filter : dataFilter.getFilters()) {
-                        if (hasWhere) query.append(" AND ");
+                        if (hasWhere) query.append(" AND "); //$NON-NLS-1$
                         hasWhere = true;
                         query
                             .append(DBUtils.getQuotedIdentifier(getDataSource(), filter.getColumnName()));
@@ -367,7 +368,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     }
                 }
                 if (!CommonUtils.isEmpty(dataFilter.getWhere())) {
-                    if (hasWhere) query.append(" AND ");
+                    if (hasWhere) query.append(" AND "); //$NON-NLS-1$
                     query.append(dataFilter.getWhere());
                 }
             }
@@ -379,13 +380,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (dataFilter != null) {
             // Construct ORDER BY
             if (!CommonUtils.isEmpty(dataFilter.getOrderColumns()) || !CommonUtils.isEmpty(dataFilter.getOrder())) {
-                query.append(" ORDER BY ");
+                query.append(" ORDER BY "); //$NON-NLS-1$
                 boolean hasOrder = false;
                 for (DBQOrderColumn co : dataFilter.getOrderColumns()) {
                     if (hasOrder) query.append(',');
                     query.append(DBUtils.getQuotedIdentifier(getDataSource(), co.getColumnName()));
                     if (co.isDescending()) {
-                        query.append(" DESC");
+                        query.append(" DESC"); //$NON-NLS-1$
                     }
                     hasOrder = true;
                 }
@@ -405,7 +406,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             dbResult = dbStat.openGeneratedKeysResultSet();
         }
         catch (Throwable e) {
-            log.debug("Error obtaining generated keys", e);
+            log.debug("Error obtaining generated keys", e); //$NON-NLS-1$
             return;
         }
         if (dbResult == null) {

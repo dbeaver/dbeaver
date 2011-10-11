@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -27,7 +28,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
 
     ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object)
     {
-        return new StructCreateCommand(object, "Create new object");
+        return new StructCreateCommand(object, CoreMessages.model_jdbc_create_new_object);
     }
 
     protected Collection<NestedObjectCommand> getNestedOrderedCommands(final StructCreateCommand structCommand)

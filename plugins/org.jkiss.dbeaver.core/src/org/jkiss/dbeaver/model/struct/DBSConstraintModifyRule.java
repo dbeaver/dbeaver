@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
@@ -11,12 +12,12 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  */
 public class DBSConstraintModifyRule implements DBPNamedObject
 {
-    public static final DBSConstraintModifyRule UNKNOWN = new DBSConstraintModifyRule("UNKNOWN", "?", null);
-    public static final DBSConstraintModifyRule NO_ACTION = new DBSConstraintModifyRule("NO_ACTION", "No Action", null);
-    public static final DBSConstraintModifyRule CASCADE = new DBSConstraintModifyRule("CASCADE", "Cascade", "CASCADE");
-    public static final DBSConstraintModifyRule SET_NULL = new DBSConstraintModifyRule("SET_NULL", "Set NULL", "SET NULL");
-    public static final DBSConstraintModifyRule SET_DEFAULT = new DBSConstraintModifyRule("SET_DEFAULT", "Set Default", "SET DEFAULT");
-    public static final DBSConstraintModifyRule RESTRICT = new DBSConstraintModifyRule("RESTRICT", "Restrict", "RESTRICT");
+    public static final DBSConstraintModifyRule UNKNOWN = new DBSConstraintModifyRule("UNKNOWN", "?", null); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBSConstraintModifyRule NO_ACTION = new DBSConstraintModifyRule("NO_ACTION", CoreMessages.model_struct_No_Action, null); //$NON-NLS-1$
+    public static final DBSConstraintModifyRule CASCADE = new DBSConstraintModifyRule("CASCADE", CoreMessages.model_struct_Cascade, "CASCADE"); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBSConstraintModifyRule SET_NULL = new DBSConstraintModifyRule("SET_NULL", CoreMessages.model_struct_Set_NULL, "SET NULL"); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBSConstraintModifyRule SET_DEFAULT = new DBSConstraintModifyRule("SET_DEFAULT", CoreMessages.model_struct_Set_Default, "SET DEFAULT"); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBSConstraintModifyRule RESTRICT = new DBSConstraintModifyRule("RESTRICT", CoreMessages.model_struct_Restrict, "RESTRICT"); //$NON-NLS-1$ //$NON-NLS-3$
 
     private final String id;
     private final String name;

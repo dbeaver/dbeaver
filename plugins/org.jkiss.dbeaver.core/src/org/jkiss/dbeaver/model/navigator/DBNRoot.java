@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
@@ -38,7 +39,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
     @Override
     public String getNodeType()
     {
-        return "Root";
+        return CoreMessages.model_navigator_Root;
     }
 
     public Object getValueObject()
@@ -48,7 +49,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
 
     public String getChildrenType()
     {
-        return "Project";
+        return CoreMessages.model_navigator_Project;
     }
 
     public Class<IProject> getChildrenClass()
@@ -58,12 +59,12 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
 
     public String getNodeName()
     {
-        return "#root";
+        return "#root"; //$NON-NLS-1$
     }
 
     public String getNodeDescription()
     {
-        return "Model root";
+        return CoreMessages.model_navigator_Model_root;
     }
 
     public Image getNodeIcon()

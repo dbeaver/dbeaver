@@ -37,7 +37,7 @@ import java.util.List;
 public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
     private static final String BOOKMARKS_DIR = CoreMessages.model_project_bookmarks_folder;
-    private static final String BOOKMARK_EXT = "bm";
+    private static final String BOOKMARK_EXT = "bm"; //$NON-NLS-1$
 
     public static final String RES_TYPE_BOOKMARKS = "bookmarks"; //$NON-NLS-1$
 
@@ -69,9 +69,9 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     public String getTypeName(IResource resource)
     {
         if (resource instanceof IFolder) {
-            return "bookmark folder";
+            return "bookmark folder"; //$NON-NLS-1$
         } else {
-            return "bookmark";
+            return "bookmark"; //$NON-NLS-1$
         }
     }
 
@@ -101,13 +101,13 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
         final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(resource.getProject());
         if (projectNode == null) {
-            throw new DBException("Can't find project node for '" + resource.getProject().getName() + "'");
+            throw new DBException("Can't find project node for '" + resource.getProject().getName() + "'"); //$NON-NLS-2$
         }
         final BookmarkStorage storage = new BookmarkStorage((IFile) resource, false);
         try {
             final DataSourceDescriptor dataSourceContainer = projectNode.getDatabases().getDataSourceRegistry().getDataSource(storage.getDataSourceId());
             if (dataSourceContainer == null) {
-                throw new DBException("Can't find datasource '" + storage.getDataSourceId() + "'");
+                throw new DBException("Can't find datasource '" + storage.getDataSourceId() + "'"); //$NON-NLS-2$
             }
             //if (!dataSourceContainer.isConnected()) {
             //    dataSourceContainer.connect();
@@ -153,7 +153,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                                 }
                             }
                             if (nextChild == null) {
-                                throw new DBException("Can't find node '" + path + "' in '" + currentNode.getNodePathName() + "'");
+                                throw new DBException("Can't find node '" + path + "' in '" + currentNode.getNodePathName() + "'"); //$NON-NLS-2$ //$NON-NLS-3$
                             }
                             currentNode = nextChild;
                         }
@@ -181,7 +181,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(window.getShell(), "Open bookmark", "Can't open bookmark", e.getTargetException());
+            UIUtils.showErrorDialog(window.getShell(), CoreMessages.model_project_open_bookmark, CoreMessages.model_project_cant_open_bookmark, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
@@ -227,7 +227,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
         BookmarkStorage storage = new BookmarkStorage(
             title,
-            node.getNodeType() + " " + node.getNodeName(),
+            node.getNodeType() + " " + node.getNodeName(), //$NON-NLS-1$
             node.getNodeIconDefault(),
             node.getObject().getDataSource().getContainer().getId(),
             nodePath);

@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
@@ -48,8 +49,8 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         final TABLE_TYPE table = command.getObject().getTable();
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Create new table column",
-                "ALTER TABLE " + table.getFullQualifiedName() + " ADD "  + getNestedDeclaration(table, command)) };
+                CoreMessages.model_jdbc_create_new_table_column,
+                "ALTER TABLE " + table.getFullQualifiedName() + " ADD "  + getNestedDeclaration(table, command)) }; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
@@ -57,8 +58,8 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Drop table column", "ALTER TABLE " + command.getObject().getTable().getFullQualifiedName() +
-                    " DROP " + (hasDDLFeature(DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP) ? "" : "COLUMN ") + DBUtils.getQuotedIdentifier(command.getObject()))
+                CoreMessages.model_jdbc_drop_table_column, "ALTER TABLE " + command.getObject().getTable().getFullQualifiedName() + //$NON-NLS-2$
+                    " DROP " + (hasDDLFeature(DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP) ? "" : "COLUMN ") + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         };
     }
 
@@ -100,7 +101,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         boolean useMaxLength = false;
         final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
         if (dataType == null) {
-            log.debug("Type name '" + typeName + "' is not supported by driver");
+            log.debug("Type name '" + typeName + "' is not supported by driver"); //$NON-NLS-1$ //$NON-NLS-2$
         } else if (dataType.getDataKind() == DBSDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
                 useMaxLength = true;
@@ -115,7 +116,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
             decl.append('(').append(maxLength).append(')');
         }
         if (notNull) {
-            decl.append(" NOT NULL");
+            decl.append(" NOT NULL"); //$NON-NLS-1$
         }
 
         return decl;

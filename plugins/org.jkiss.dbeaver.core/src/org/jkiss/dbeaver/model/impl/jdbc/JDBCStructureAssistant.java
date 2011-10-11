@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
@@ -53,7 +54,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         throws DBException
     {
         List<DBSObject> objects = new ArrayList<DBSObject>();
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Find objects by name");
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, CoreMessages.model_jdbc_find_objects_by_name);
         try {
             for (DBSObjectType type : objectTypes) {
                 findObjectsByMask(context, type, parentObject, objectNameMask, maxResults - objects.size(), objects);

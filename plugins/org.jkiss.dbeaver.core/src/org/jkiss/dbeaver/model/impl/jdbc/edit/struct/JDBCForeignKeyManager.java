@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
@@ -36,8 +37,8 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCConstraint<T
         final TABLE_TYPE table = command.getObject().getTable();
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Create new foreign key",
-                "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command))
+                CoreMessages.model_jdbc_create_new_foreign_key,
+                "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command)) //$NON-NLS-1$ //$NON-NLS-2$
         };
     }
 
@@ -45,7 +46,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCConstraint<T
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Drop foreign key",
+                CoreMessages.model_jdbc_drop_foreign_key,
                 getDropForeignKeyPattern(command.getObject())
                     .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())
                     .replace(PATTERN_ITEM_CONSTRAINT, command.getObject().getName()))
@@ -61,37 +62,37 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCConstraint<T
 
         StringBuilder decl = new StringBuilder(40);
         decl
-            .append("CONSTRAINT ").append(constraintName)
-            .append(" ").append(foreignKey.getConstraintType().getName().toUpperCase())
-            .append(" (");
+            .append("CONSTRAINT ").append(constraintName) //$NON-NLS-1$
+            .append(" ").append(foreignKey.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
+            .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         final Collection<? extends DBSConstraintColumn> columns = command.getObject().getColumns(VoidProgressMonitor.INSTANCE);
         boolean firstColumn = true;
         for (DBSConstraintColumn constraintColumn : columns) {
-            if (!firstColumn) decl.append(",");
+            if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
             decl.append(constraintColumn.getName());
         }
-        decl.append(") REFERENCES ").append(foreignKey.getReferencedKey().getTable().getFullQualifiedName()).append("(");
+        decl.append(") REFERENCES ").append(foreignKey.getReferencedKey().getTable().getFullQualifiedName()).append("("); //$NON-NLS-1$ //$NON-NLS-2$
         firstColumn = true;
         for (DBSConstraintColumn constraintColumn : columns) {
-            if (!firstColumn) decl.append(",");
+            if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
             decl.append(((DBSForeignKeyColumn) constraintColumn).getReferencedColumn().getName());
         }
-        decl.append(")");
+        decl.append(")"); //$NON-NLS-1$
         if (foreignKey.getDeleteRule() != null && !CommonUtils.isEmpty(foreignKey.getDeleteRule().getClause())) {
-            decl.append(" ON DELETE ").append(foreignKey.getDeleteRule().getClause());
+            decl.append(" ON DELETE ").append(foreignKey.getDeleteRule().getClause()); //$NON-NLS-1$
         }
         if (foreignKey.getUpdateRule() != null && !CommonUtils.isEmpty(foreignKey.getUpdateRule().getClause())) {
-            decl.append(" ON UPDATE ").append(foreignKey.getUpdateRule().getClause());
+            decl.append(" ON UPDATE ").append(foreignKey.getUpdateRule().getClause()); //$NON-NLS-1$
         }
         return decl;
     }
 
     protected String getDropForeignKeyPattern(OBJECT_TYPE constraint)
     {
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT;
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }

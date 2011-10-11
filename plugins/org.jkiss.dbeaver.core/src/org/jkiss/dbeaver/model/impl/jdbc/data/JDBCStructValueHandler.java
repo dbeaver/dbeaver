@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -101,13 +102,13 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
             Object value = controller.getValue();
             if (value instanceof JDBCStruct) {
                 propertySource.addProperty(
-                    "sql_type",
-                    "Type Name",
+                    "sql_type", //$NON-NLS-1$
+                    CoreMessages.model_jdbc_type_name,
                     ((JDBCStruct)value).getTypeName());
             }
         }
         catch (Exception e) {
-            log.warn("Could not extract struct value information", e);
+            log.warn("Could not extract struct value information", e); //$NON-NLS-1$
         }
     }
 

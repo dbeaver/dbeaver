@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 
 import java.sql.Connection;
@@ -13,11 +14,11 @@ import java.sql.Connection;
  */
 public enum JDBCTransactionIsolation implements DBPTransactionIsolation 
 {
-    NONE(Connection.TRANSACTION_NONE, "None"),
-    READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED, "Read committed"),
-    READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED, "Read uncommitted"),
-    REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ, "Repeatable read"),
-    SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE, "Serializable"),
+    NONE(Connection.TRANSACTION_NONE, CoreMessages.model_jdbc_None),
+    READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED, CoreMessages.model_jdbc_read_committed),
+    READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED, CoreMessages.model_jdbc_read_uncommitted),
+    REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ, CoreMessages.model_jdbc_repeatable_read),
+    SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE, CoreMessages.model_jdbc_Serializable),
     ;
 
     private final int code;
