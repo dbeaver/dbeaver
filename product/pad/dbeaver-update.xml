@@ -7,6 +7,8 @@
 	<version>1.4.2</version>
 	<date>11.11.2011</date>
 
+    <base-url>http://dbeaver.jkiss.org/download/</base-url>
+
 	<release-notes url="http://dbeaver.jkiss.org/2011/10/04/dbeaver-1-4-1/">
 
 	</release-notes>
