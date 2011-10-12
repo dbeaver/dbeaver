@@ -19,10 +19,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -418,6 +415,16 @@ public class OracleDataType extends OracleObject implements DBSDataType, DBSEnti
                 (modEnd == typeName.length() - 1 ? "" : typeName.substring(modEnd + 1));
         }
         return typeName;
+    }
+
+    public DBSObjectState getObjectState()
+    {
+        return DBSObjectState.NORMAL;
+    }
+
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    {
+
     }
 
     private class AttributeCache extends JDBCObjectCache<OracleDataType, OracleDataTypeAttribute> {

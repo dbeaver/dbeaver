@@ -12,6 +12,8 @@ import org.jkiss.dbeaver.model.struct.DBSIndexType;
  */
 public class OracleConstants {
 
+    public static final String CMD_COMPILE = "org.jkiss.dbeaver.ext.oracle.code.compile"; //$NON-NLS-1$
+
     public static final int DEFAULT_PORT = 1521;
 
     public static final String[] SYSTEM_SCHEMAS = {

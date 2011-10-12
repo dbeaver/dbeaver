@@ -7,11 +7,12 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 
 /**
  * Stored code interface
  */
-public interface OracleSourceObject extends DBSObject {
+public interface OracleSourceObject extends DBSObjectStateful {
 
     void setName(String name);
 

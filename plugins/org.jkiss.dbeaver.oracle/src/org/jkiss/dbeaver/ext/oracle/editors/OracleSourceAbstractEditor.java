@@ -6,6 +6,12 @@ package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.gef.ui.actions.ZoomInAction;
+import org.eclipse.gef.ui.actions.ZoomOutAction;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
@@ -22,6 +28,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.oracle.Activator;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
@@ -29,6 +37,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -98,6 +108,7 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> e
             try {
                 super.init(getEditorSite(), lazyInput);
                 reloadSyntaxRules();
+                pageControl.setInfo("State: " + getObject().getObjectState().getTitle());
                 lazyInput = null;
             } catch (PartInitException e) {
                 log.error(e);
@@ -179,9 +190,19 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> e
     protected abstract void setSourceText(String sourceText);
 
     private class EditorPageControl extends ProgressPageControl {
+
+        private ToolBarManager toolBarManager;
+
         public EditorPageControl(Composite parent, int style)
         {
             super(parent, style);
+        }
+
+        @Override
+        public void dispose()
+        {
+            toolBarManager.dispose();
+            super.dispose();
         }
 
         @Override
@@ -189,8 +210,31 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> e
         {
             Composite infoGroup = super.createProgressPanel(container);
 
+            toolBarManager = new ToolBarManager();
+
+            toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), ICommandIds.CMD_OPEN_FILE));
+            toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), ICommandIds.CMD_SAVE_FILE));
+            toolBarManager.add(new Separator());
+            toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), OracleConstants.CMD_COMPILE));
+            toolBarManager.add(new ViewLogAction());
+
+            toolBarManager.createControl(infoGroup);
+
             return infoGroup;
         }
+    }
+
+    public class ViewLogAction extends Action
+    {
+        public ViewLogAction()
+        {
+            super("View compile log", Activator.getImageDescriptor("icons/commands/compile-log.png"));
+        }
+
+        public void run()
+        {
+        }
+
     }
 
 }

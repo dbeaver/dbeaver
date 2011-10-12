@@ -612,14 +612,14 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SaveSQLFileHandler">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLFileHandler">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
                 </with>
             </enabledWhen>
         </handler>
