@@ -14,7 +14,11 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -33,9 +37,11 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
+import sun.plugin.util.UIUtil;
 import sun.rmi.runtime.Log;
 
 import java.lang.reflect.InvocationTargetException;
@@ -50,6 +56,9 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
 
     private EditorPageControl pageControl;
     private IEditorInput lazyInput;
+    private Table logTable;
+    private Control editorControl;
+    private SashForm editorSash;
 
     public OracleSourceAbstractEditor() {
         super();
@@ -75,15 +84,26 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
     public void createPartControl(Composite parent)
     {
         pageControl = new EditorPageControl(parent, SWT.NONE);
-        super.createPartControl(pageControl.createContentContainer());
-        pageControl.createProgressPanel();
-/*
-        SashForm sashForm = UIUtils.createPartDivider(this, parent, SWT.VERTICAL | SWT.SMOOTH);
-        Control editorControl = sashForm.getChildren()[0];
-        Table logTable = new Table(sashForm, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 
-        sashForm.setMaximizedControl(editorControl);
-*/
+        editorSash = new SashForm(pageControl.createContentContainer(), SWT.VERTICAL | SWT.SMOOTH);
+        super.createPartControl(editorSash);
+
+        editorControl = editorSash.getChildren()[0];
+        makeLogTable();
+
+        pageControl.createProgressPanel();
+
+        editorSash.setWeights(new int[] {70, 30});
+        editorSash.setMaximizedControl(editorControl);
+    }
+
+    private void makeLogTable()
+    {
+        logTable = new Table(editorSash, SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
+        logTable.setHeaderVisible(true);
+        TableColumn messageColumn = UIUtils.createTableColumn(logTable, SWT.LEFT, "Message");
+        TableColumn lineColumn = UIUtils.createTableColumn(logTable, SWT.LEFT, "Line");
+        TableColumn posColumn = UIUtils.createTableColumn(logTable, SWT.LEFT, "Pos");
     }
 
     @Override
@@ -105,6 +125,7 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
             try {
                 super.init(getEditorSite(), lazyInput);
                 reloadSyntaxRules();
+
                 pageControl.setInfo("State: " + getObject().getObjectState().getTitle());
                 lazyInput = null;
             } catch (PartInitException e) {
@@ -186,6 +207,11 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
         return null;
     }
 
+    public void setCompileInfo(String message, boolean error)
+    {
+        pageControl.setInfo(message);
+    }
+
     public void positionSource(int line, int position)
     {
         try {
@@ -197,6 +223,14 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
             log.warn(e);
             // do nothing
         }
+    }
+
+    private void showCompileLog()
+    {
+        editorSash.setMaximizedControl(null);
+        logTable.getColumn(0).setWidth(logTable.getBounds().width - 128);
+        logTable.getColumn(1).setWidth(64);
+        logTable.getColumn(2).setWidth(64);
     }
 
     protected abstract String getSourceText(DBRProgressMonitor monitor)
@@ -248,6 +282,14 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
 
         public void run()
         {
+            if (getTextViewer().getControl().isDisposed()) {
+                return;
+            }
+            if (editorSash.getMaximizedControl() == null) {
+                editorSash.setMaximizedControl(editorControl);
+            } else {
+                showCompileLog();
+            }
         }
 
     }

@@ -15,6 +15,8 @@ public interface OracleSourceHost {
 
     Log getCompileLog();
 
+    void setCompileInfo(String message, boolean error);
+
     void positionSource(int line, int position);
 
 }

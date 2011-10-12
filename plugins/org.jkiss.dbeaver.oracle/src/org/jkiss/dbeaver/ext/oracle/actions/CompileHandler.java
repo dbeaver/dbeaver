@@ -19,7 +19,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.oracle.model.OracleCompileError;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleCompileError;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceHost;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerDialog;
@@ -69,6 +69,11 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                 } catch (InterruptedException e) {
                     return null;
                 }
+                final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
+                OracleSourceHost sourceHost = RuntimeUtils.getObjectAdapter(activePart, OracleSourceHost.class);
+                if (sourceHost == null) {
+                    sourceHost = (OracleSourceHost) activePart.getAdapter(OracleSourceHost.class);
+                }
                 if (error != null) {
                     UIUtils.showErrorDialog(activeShell, "Unexpected compilation error", null, error);
                 } else if (!CommonUtils.isEmpty(compileLog.errorStack)) {
@@ -84,16 +89,23 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     }
 
                     // If compiled object is currently open in editor - try to position on error line
-                    final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
-                    final OracleSourceHost sourceHost = RuntimeUtils.getObjectAdapter(activePart, OracleSourceHost.class);
                     if (sourceHost != null && sourceHost.getObject() == unit && line > 0 && position > 0) {
                         sourceHost.positionSource(line, position);
                         activePart.getSite().getPage().activate(activePart);
                     }
 
-                    UIUtils.showErrorDialog(activeShell, unit.getName() + " compilation failed", fullMessage.toString());
+                    String errorTitle = unit.getName() + " compilation failed";
+                    if (sourceHost != null) {
+                        sourceHost.setCompileInfo(errorTitle, true);
+                    } else {
+                        UIUtils.showErrorDialog(activeShell, errorTitle, fullMessage.toString());
+                    }
                 } else {
-                    UIUtils.showMessageBox(activeShell, "Done", unit.getName() + " compiled successfully", SWT.ICON_INFORMATION);
+                    String message = unit.getName() + " compiled successfully";
+                    if (sourceHost != null) {
+                        sourceHost.setCompileInfo(message, true);
+                    }
+                    UIUtils.showMessageBox(activeShell, "Done", message, SWT.ICON_INFORMATION);
                 }
             } else {
                 OracleCompilerDialog dialog = new OracleCompilerDialog(activeShell, objects);
