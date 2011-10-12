@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -18,18 +19,16 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * GenericProcedure
  */
-public class OraclePackage extends OracleSchemaObject implements OracleSourceObjectEx, OracleCompileUnit, DBSEntityContainer
+public class OraclePackage extends OracleSchemaObject implements OracleSourceObjectEx, DBSEntityContainer
 {
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;
@@ -129,12 +128,24 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
 
     public IDatabasePersistAction[] getCompileActions()
     {
-        return new IDatabasePersistAction[] {
-            new OracleObjectPersistAction(
-                OracleObjectType.PACKAGE,
-                "Compile package",
-                "ALTER PACKAGE " + getFullQualifiedName() + " COMPILE"
-            )};
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        /*if (!CommonUtils.isEmpty(sourceDeclaration)) */{
+            actions.add(
+                new OracleObjectPersistAction(
+                    OracleObjectType.PACKAGE,
+                    "Compile package",
+                    "ALTER PACKAGE " + getFullQualifiedName() + " COMPILE"
+                ));
+        }
+        if (!CommonUtils.isEmpty(sourceDefinition)) {
+            actions.add(
+                new OracleObjectPersistAction(
+                    OracleObjectType.PACKAGE_BODY,
+                    "Compile package body",
+                    "ALTER PACKAGE " + getFullQualifiedName() + " COMPILE BODY"
+                ));
+        }
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
     public DBSObjectState getObjectState()

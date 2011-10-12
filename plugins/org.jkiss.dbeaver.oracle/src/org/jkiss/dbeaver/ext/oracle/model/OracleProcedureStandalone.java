@@ -6,10 +6,9 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -18,12 +17,11 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.ResultSet;
-import java.util.regex.Matcher;
 
 /**
  * GenericProcedure
  */
-public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema> implements OracleCompileUnit
+public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema> implements OracleSourceObject
 {
 
     private boolean valid;

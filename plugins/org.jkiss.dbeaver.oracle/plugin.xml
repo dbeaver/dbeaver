@@ -31,11 +31,11 @@
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit"/>
+                            <adapt type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
                         </iterate>
                     </with>
                     <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit"/>
+                        <adapt type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
                     </with>
                 </or>
             </activeWhen>
@@ -50,8 +50,7 @@
     </extension>
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="java.lang.Object" class="org.jkiss.dbeaver.ext.oracle.actions.OracleObjectAdapter">
-            <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject"/>
-            <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit"/>
+            <adapter type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
         </factory>
     </extension>
     <extension point="org.eclipse.ui.bindings">

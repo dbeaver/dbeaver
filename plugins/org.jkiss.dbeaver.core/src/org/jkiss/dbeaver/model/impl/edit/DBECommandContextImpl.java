@@ -114,7 +114,9 @@ public class DBECommandContextImpl implements DBECommandContext {
                                     } catch (DBException e) {
                                         persistInfo.error = e;
                                         persistInfo.executed = false;
-                                        error = e;
+                                        if (actionType != IDatabasePersistAction.ActionType.OPTIONAL) {
+                                            error = e;
+                                        }
                                     }
                                 }
                                 if (error != null) {

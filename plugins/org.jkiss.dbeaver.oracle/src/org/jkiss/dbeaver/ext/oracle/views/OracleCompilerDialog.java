@@ -22,9 +22,9 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleCompileError;
-import org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -58,7 +58,7 @@ public class OracleCompilerDialog extends TrayDialog
     private static final int COMPILE_ID = 1000;
     private static final int COMPILE_ALL_ID = 1001;
 
-    private java.util.List<OracleCompileUnit> compileUnits;
+    private java.util.List<OracleSourceObject> compileUnits;
     private TableViewer unitTable;
     private Table infoTable;
 
@@ -126,7 +126,7 @@ public class OracleCompilerDialog extends TrayDialog
         }
     }
     
-    public OracleCompilerDialog(Shell shell, java.util.List<OracleCompileUnit> compileUnits)
+    public OracleCompilerDialog(Shell shell, java.util.List<OracleSourceObject> compileUnits)
     {
         super(shell);
         this.compileUnits = compileUnits;
@@ -208,7 +208,7 @@ public class OracleCompilerDialog extends TrayDialog
                 {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                     if (!selection.isEmpty()) {
-                        OracleCompileUnit unit = (OracleCompileUnit) selection.getFirstElement();
+                        OracleSourceObject unit = (OracleSourceObject) selection.getFirstElement();
                         NavigatorHandlerObjectOpen.openEntityEditor(unit);
                     }
                 }
@@ -254,7 +254,7 @@ public class OracleCompilerDialog extends TrayDialog
     @Override
     protected void buttonPressed(int buttonId)
     {
-        final List<OracleCompileUnit> toCompile;
+        final List<OracleSourceObject> toCompile;
         if (buttonId == COMPILE_ID) {
             toCompile = ((IStructuredSelection) unitTable.getSelection()).toList();
         } else if (buttonId == COMPILE_ALL_ID) {
@@ -340,9 +340,9 @@ public class OracleCompilerDialog extends TrayDialog
             new Transfer[]{textTransfer});
     }
 
-    private void performCompilation(DBRProgressMonitor monitor, List<OracleCompileUnit> units)
+    private void performCompilation(DBRProgressMonitor monitor, List<OracleSourceObject> units)
     {
-        for (OracleCompileUnit unit : units) {
+        for (OracleSourceObject unit : units) {
             if (monitor.isCanceled()) {
                 break;
             }
@@ -361,14 +361,14 @@ public class OracleCompilerDialog extends TrayDialog
 
     }
 
-    public static boolean compileUnit(DBRProgressMonitor monitor, Log compileLog, OracleCompileUnit unit) throws DBCException
+    public static boolean compileUnit(DBRProgressMonitor monitor, Log compileLog, OracleSourceObject unit) throws DBCException
     {
         final IDatabasePersistAction[] compileActions = unit.getCompileActions();
         if (CommonUtils.isEmpty(compileActions)) {
             return true;
         }
 
-        final JDBCExecutionContext context = (JDBCExecutionContext)unit.getDataSource().openContext(
+        final JDBCExecutionContext context = unit.getDataSource().openContext(
             monitor,
             DBCExecutionPurpose.UTIL,
             "Compile '" + unit.getName() + "'");
@@ -417,7 +417,7 @@ public class OracleCompilerDialog extends TrayDialog
     private static boolean logObjectErrors(
         JDBCExecutionContext context,
         Log compileLog,
-        OracleCompileUnit unit,
+        OracleSourceObject unit,
         OracleObjectType objectType)
     {
         try {

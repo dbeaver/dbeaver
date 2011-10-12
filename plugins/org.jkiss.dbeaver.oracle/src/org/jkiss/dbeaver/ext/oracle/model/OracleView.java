@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -26,7 +27,7 @@ import java.sql.SQLException;
 /**
  * OracleView
  */
-public class OracleView extends OracleTableBase implements OracleCompileUnit
+public class OracleView extends OracleTableBase implements OracleSourceObject
 {
 
     public static final DBSConstraintType CONSTRAINT_WITH_CHECK_OPTION = new DBSConstraintType("V", "With Check Option", false);

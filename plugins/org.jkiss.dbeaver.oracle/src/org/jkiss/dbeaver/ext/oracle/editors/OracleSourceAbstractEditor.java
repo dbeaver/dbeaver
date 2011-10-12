@@ -6,50 +6,47 @@ package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.gef.ui.actions.ZoomInAction;
-import org.eclipse.gef.ui.actions.ZoomOutAction;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceHost;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
+import sun.rmi.runtime.Log;
 
 import java.lang.reflect.InvocationTargetException;
 
 /**
  * Oracle source editor
  */
-public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> extends SQLEditorBase implements IActiveWorkbenchPart, IRefreshablePart {
+public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
+    extends SQLEditorBase
+    implements IActiveWorkbenchPart, IRefreshablePart, OracleSourceHost
+{
 
     private EditorPageControl pageControl;
     private IEditorInput lazyInput;
@@ -70,8 +67,8 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> e
         return (T)getEditorInput().getDatabaseObject();
     }
 
-    public DBPDataSource getDataSource() {
-        return getEditorInput().getDataSource();
+    public OracleDataSource getDataSource() {
+        return getObject().getDataSource();
     }
 
     @Override
@@ -182,6 +179,24 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> e
             setSourceText(document.get());
         }
 
+    }
+
+    public Log getCompileLog()
+    {
+        return null;
+    }
+
+    public void positionSource(int line, int position)
+    {
+        try {
+            final IRegion lineInfo = getTextViewer().getDocument().getLineInformation(line - 1);
+            final int offset = lineInfo.getOffset() + position - 1;
+            super.selectAndReveal(offset, 0);
+            //textEditor.setFocus();
+        } catch (BadLocationException e) {
+            log.warn(e);
+            // do nothing
+        }
     }
 
     protected abstract String getSourceText(DBRProgressMonitor monitor)

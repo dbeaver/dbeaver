@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -25,7 +26,7 @@ import java.util.List;
 /**
  * GenericProcedure
  */
-public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, OracleCompileUnit
+public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, OracleSourceObject
 {
     static final Log log = LogFactory.getLog(OracleTrigger.class);
 

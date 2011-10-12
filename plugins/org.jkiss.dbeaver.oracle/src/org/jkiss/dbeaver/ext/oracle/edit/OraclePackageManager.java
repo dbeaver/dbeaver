@@ -74,12 +74,18 @@ public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, Oracle
                     "Create package header",
                     "CREATE OR REPLACE " + header));
         }
-        String body = OracleUtils.normalizeSourceName(pack, true);
+        String body = OracleUtils.normalizeSourceName(pack, true).trim();
         if (!CommonUtils.isEmpty(body)) {
             actions.add(
                 new AbstractDatabasePersistAction(
                     "Create package body",
                     "CREATE OR REPLACE " + body));
+        } else {
+            actions.add(
+                new AbstractDatabasePersistAction(
+                    "Create package body",
+                    "DROP PACKAGE BODY " + pack.getFullQualifiedName(), IDatabasePersistAction.ActionType.OPTIONAL)
+                );
         }
         OracleUtils.addSchemaChangeActions(actions, pack);
         return actions.toArray(new IDatabasePersistAction[actions.size()]);

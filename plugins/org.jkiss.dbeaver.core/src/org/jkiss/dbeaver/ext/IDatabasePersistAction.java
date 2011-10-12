@@ -12,6 +12,7 @@ public interface IDatabasePersistAction {
     public enum ActionType {
         INITIALIZER,
         NORMAL,
+        OPTIONAL,
         FINALIZER
     }
 

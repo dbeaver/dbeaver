@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -23,7 +24,7 @@ import java.sql.SQLException;
 /**
  * Oracle materialized view
  */
-public class OracleMaterializedView extends OracleTablePhysical implements OracleCompileUnit
+public class OracleMaterializedView extends OracleTablePhysical implements OracleSourceObject
 {
 
     public static class AdditionalInfo extends TableAdditionalInfo {

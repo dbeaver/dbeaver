@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -206,6 +208,16 @@ public class OracleDataType extends OracleObject implements DBSDataType, DBSEnti
     public void setSourceDeclaration(String sourceDeclaration)
     {
         this.sourceDeclaration = sourceDeclaration;
+    }
+
+    public IDatabasePersistAction[] getCompileActions()
+    {
+        return new IDatabasePersistAction[] {
+            new OracleObjectPersistAction(
+                OracleObjectType.VIEW,
+                "Compile type",
+                "ALTER TYPE " + getFullQualifiedName() + " COMPILE"
+            )};
     }
 
     @Property(name = "Body", hidden = true, editable = true, updatable = true, order = -1)

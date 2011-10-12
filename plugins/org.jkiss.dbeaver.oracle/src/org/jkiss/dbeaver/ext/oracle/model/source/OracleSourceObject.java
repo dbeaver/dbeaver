@@ -2,9 +2,13 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.oracle.model;
+package org.jkiss.dbeaver.ext.oracle.model.source;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSourceType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
@@ -26,5 +30,7 @@ public interface OracleSourceObject extends DBSObjectStateful {
         throws DBException;
 
     void setSourceDeclaration(String source);
+
+    IDatabasePersistAction[] getCompileActions();
 
 }

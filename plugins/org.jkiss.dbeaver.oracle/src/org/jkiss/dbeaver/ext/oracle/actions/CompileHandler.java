@@ -4,14 +4,10 @@
 
 package org.jkiss.dbeaver.ext.oracle.actions;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.impl.SimpleLog;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -24,15 +20,14 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleCompileError;
-import org.jkiss.dbeaver.ext.oracle.model.OracleCompileUnit;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceHost;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerDialog;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,15 +39,15 @@ import java.util.Map;
 
 public class CompileHandler extends AbstractHandler implements IElementUpdater
 {
-    static final Log log = LogFactory.getLog(CompileHandler.class);
+    //static final Log log = LogFactory.getLog(CompileHandler.class);
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final List<OracleCompileUnit> objects = getSelectedObjects(event);
+        final List<OracleSourceObject> objects = getSelectedObjects(event);
         if (!objects.isEmpty()) {
             final Shell activeShell = HandlerUtil.getActiveShell(event);
             if (objects.size() == 1) {
-                final OracleCompileUnit unit = objects.get(0);
+                final OracleSourceObject unit = objects.get(0);
                 final CompileLog compileLog = new CompileLog();
                 Throwable error = null;
                 try {
@@ -87,23 +82,13 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                             position = oce.getPosition();
                         }
                     }
+
                     // If compiled object is currently open in editor - try to position on error line
                     final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
-                    final OracleCompileUnit sourceObject = RuntimeUtils.getObjectAdapter(activePart, OracleCompileUnit.class);
-                    if (sourceObject == unit) {
-                        BaseTextEditor textEditor = (BaseTextEditor)activePart.getAdapter(BaseTextEditor.class);
-                        if (textEditor != null && line > 0 && position > 0) {
-                            try {
-                                final IRegion lineInfo = textEditor.getTextViewer().getDocument().getLineInformation(line - 1);
-                                final int offset = lineInfo.getOffset() + position - 1;
-                                textEditor.selectAndReveal(offset, 0);
-                                //textEditor.setFocus();
-                            } catch (BadLocationException e) {
-                                log.warn(e);
-                                // do nothing
-                            }
-                            activePart.getSite().getPage().activate(activePart);
-                        }
+                    final OracleSourceHost sourceHost = RuntimeUtils.getObjectAdapter(activePart, OracleSourceHost.class);
+                    if (sourceHost != null && sourceHost.getObject() == unit && line > 0 && position > 0) {
+                        sourceHost.positionSource(line, position);
+                        activePart.getSite().getPage().activate(activePart);
                     }
 
                     UIUtils.showErrorDialog(activeShell, unit.getName() + " compilation failed", fullMessage.toString());
@@ -118,14 +103,14 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
         return null;
     }
 
-    private List<OracleCompileUnit> getSelectedObjects(ExecutionEvent event)
+    private List<OracleSourceObject> getSelectedObjects(ExecutionEvent event)
     {
-        List<OracleCompileUnit> objects = new ArrayList<OracleCompileUnit>();
+        List<OracleSourceObject> objects = new ArrayList<OracleSourceObject>();
         final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
         if (currentSelection instanceof IStructuredSelection && !currentSelection.isEmpty()) {
             for (Iterator<?> iter = ((IStructuredSelection) currentSelection).iterator(); iter.hasNext(); ) {
                 final Object element = iter.next();
-                final OracleCompileUnit sourceObject = RuntimeUtils.getObjectAdapter(element, OracleCompileUnit.class);
+                final OracleSourceObject sourceObject = RuntimeUtils.getObjectAdapter(element, OracleSourceObject.class);
                 if (sourceObject != null) {
                     objects.add(sourceObject);
                 }
@@ -133,7 +118,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
         }
         if (objects.isEmpty()) {
             final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-            final OracleCompileUnit sourceObject = RuntimeUtils.getObjectAdapter(activePart, OracleCompileUnit.class);
+            final OracleSourceObject sourceObject = RuntimeUtils.getObjectAdapter(activePart, OracleSourceObject.class);
             if (sourceObject != null) {
                 objects.add(sourceObject);
             }
@@ -143,7 +128,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
 
     public void updateElement(UIElement element, Map parameters)
     {
-        List<OracleCompileUnit> objects = new ArrayList<OracleCompileUnit>();
+        List<OracleSourceObject> objects = new ArrayList<OracleSourceObject>();
         IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
         if (partSite != null) {
             final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
@@ -152,7 +137,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                 if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
                     for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
                         final Object item = iter.next();
-                        final OracleCompileUnit sourceObject = RuntimeUtils.getObjectAdapter(item, OracleCompileUnit.class);
+                        final OracleSourceObject sourceObject = RuntimeUtils.getObjectAdapter(item, OracleSourceObject.class);
                         if (sourceObject != null) {
                             objects.add(sourceObject);
                         }
@@ -161,7 +146,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
             }
             if (objects.isEmpty()) {
                 final IWorkbenchPart activePart = partSite.getPart();
-                final OracleCompileUnit sourceObject = RuntimeUtils.getObjectAdapter(activePart, OracleCompileUnit.class);
+                final OracleSourceObject sourceObject = RuntimeUtils.getObjectAdapter(activePart, OracleSourceObject.class);
                 if (sourceObject != null) {
                     objects.add(sourceObject);
                 }
@@ -171,10 +156,8 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
             if (objects.size() > 1) {
                 element.setText("Compile " + objects.size() + " objects");
             } else {
-                final OracleCompileUnit sourceObject = objects.get(0);
-                String objectType = sourceObject instanceof OracleSourceObject ?
-                    CommonUtils.formatWord(((OracleSourceObject) sourceObject).getSourceType().name()) :
-                    "";
+                final OracleSourceObject sourceObject = objects.get(0);
+                String objectType = CommonUtils.formatWord(sourceObject.getSourceType().name());
                 element.setText("Compile " + objectType/* + " '" + sourceObject.getName() + "'"*/);
             }
         }
