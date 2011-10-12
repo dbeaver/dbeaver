@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;

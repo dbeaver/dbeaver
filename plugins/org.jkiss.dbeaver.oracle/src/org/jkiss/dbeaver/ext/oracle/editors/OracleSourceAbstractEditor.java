@@ -8,11 +8,19 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceObject;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
@@ -21,6 +29,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 
@@ -31,6 +41,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> extends SQLEditorBase implements IActiveWorkbenchPart, IRefreshablePart {
 
+    private EditorPageControl pageControl;
     private IEditorInput lazyInput;
 
     public OracleSourceAbstractEditor() {
@@ -51,6 +62,21 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> e
 
     public DBPDataSource getDataSource() {
         return getEditorInput().getDataSource();
+    }
+
+    @Override
+    public void createPartControl(Composite parent)
+    {
+        pageControl = new EditorPageControl(parent, SWT.NONE);
+        super.createPartControl(pageControl.createContentContainer());
+        pageControl.createProgressPanel();
+/*
+        SashForm sashForm = UIUtils.createPartDivider(this, parent, SWT.VERTICAL | SWT.SMOOTH);
+        Control editorControl = sashForm.getChildren()[0];
+        Table logTable = new Table(sashForm, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+
+        sashForm.setMaximizedControl(editorControl);
+*/
     }
 
     @Override
@@ -151,5 +177,20 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject> e
         throws DBException;
 
     protected abstract void setSourceText(String sourceText);
+
+    private class EditorPageControl extends ProgressPageControl {
+        public EditorPageControl(Composite parent, int style)
+        {
+            super(parent, style);
+        }
+
+        @Override
+        public Composite createProgressPanel(Composite container)
+        {
+            Composite infoGroup = super.createProgressPanel(container);
+
+            return infoGroup;
+        }
+    }
 
 }
