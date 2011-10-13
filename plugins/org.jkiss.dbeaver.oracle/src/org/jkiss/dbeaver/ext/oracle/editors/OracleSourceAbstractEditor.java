@@ -17,8 +17,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -30,6 +28,8 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceHost;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleCompileLog;
+import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerLogViewer;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -37,12 +37,9 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
-import sun.plugin.util.UIUtil;
-import sun.rmi.runtime.Log;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -56,7 +53,7 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
 
     private EditorPageControl pageControl;
     private IEditorInput lazyInput;
-    private Table logTable;
+    private OracleCompilerLogViewer compileLog;
     private Control editorControl;
     private SashForm editorSash;
 
@@ -89,21 +86,12 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
         super.createPartControl(editorSash);
 
         editorControl = editorSash.getChildren()[0];
-        makeLogTable();
+        compileLog = new OracleCompilerLogViewer(editorSash);
 
         pageControl.createProgressPanel();
 
         editorSash.setWeights(new int[] {70, 30});
         editorSash.setMaximizedControl(editorControl);
-    }
-
-    private void makeLogTable()
-    {
-        logTable = new Table(editorSash, SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
-        logTable.setHeaderVisible(true);
-        TableColumn messageColumn = UIUtils.createTableColumn(logTable, SWT.LEFT, "Message");
-        TableColumn lineColumn = UIUtils.createTableColumn(logTable, SWT.LEFT, "Line");
-        TableColumn posColumn = UIUtils.createTableColumn(logTable, SWT.LEFT, "Pos");
     }
 
     @Override
@@ -202,9 +190,9 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
 
     }
 
-    public Log getCompileLog()
+    public OracleCompileLog getCompileLog()
     {
-        return null;
+        return compileLog;
     }
 
     public void setCompileInfo(String message, boolean error)
@@ -225,12 +213,10 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
         }
     }
 
-    private void showCompileLog()
+    public void showCompileLog()
     {
         editorSash.setMaximizedControl(null);
-        logTable.getColumn(0).setWidth(logTable.getBounds().width - 128);
-        logTable.getColumn(1).setWidth(64);
-        logTable.getColumn(2).setWidth(64);
+        compileLog.layoutLog();
     }
 
     protected abstract String getSourceText(DBRProgressMonitor monitor)

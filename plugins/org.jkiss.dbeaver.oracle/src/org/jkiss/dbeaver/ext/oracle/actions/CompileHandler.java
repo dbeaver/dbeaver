@@ -4,7 +4,8 @@
 
 package org.jkiss.dbeaver.ext.oracle.actions;
 
-import org.apache.commons.logging.impl.SimpleLog;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -19,27 +20,33 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleCompileError;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceHost;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
+import org.jkiss.dbeaver.ext.oracle.model.source.*;
 import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerDialog;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.sql.ResultSet;
+import java.util.*;
 
 public class CompileHandler extends AbstractHandler implements IElementUpdater
 {
-    //static final Log log = LogFactory.getLog(CompileHandler.class);
+    static final Log log = LogFactory.getLog(CompileHandler.class);
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -48,39 +55,45 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
             final Shell activeShell = HandlerUtil.getActiveShell(event);
             if (objects.size() == 1) {
                 final OracleSourceObject unit = objects.get(0);
-                final CompileLog compileLog = new CompileLog();
+
+                final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
+                OracleSourceHost sourceHost = RuntimeUtils.getObjectAdapter(activePart, OracleSourceHost.class);
+                if (sourceHost == null) {
+                    sourceHost = (OracleSourceHost) activePart.getAdapter(OracleSourceHost.class);
+                }
+                if (sourceHost != null && sourceHost.getObject() != unit) {
+                    sourceHost = null;
+                }
+
+                final OracleCompileLog compileLog = sourceHost == null ? new OracleCompileLogBase() : sourceHost.getCompileLog();
+                compileLog.clearLog();
                 Throwable error = null;
                 try {
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
                             try {
-                                OracleCompilerDialog.compileUnit(monitor, compileLog, unit);
+                                compileUnit(monitor, compileLog, unit);
                             } catch (DBCException e) {
                                 throw new InvocationTargetException(e);
                             }
                         }
                     });
-                    if (compileLog.error != null) {
-                        error = compileLog.error;
+                    if (compileLog.getError() != null) {
+                        error = compileLog.getError();
                     }
                 } catch (InvocationTargetException e) {
                     error = e.getTargetException();
                 } catch (InterruptedException e) {
                     return null;
                 }
-                final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
-                OracleSourceHost sourceHost = RuntimeUtils.getObjectAdapter(activePart, OracleSourceHost.class);
-                if (sourceHost == null) {
-                    sourceHost = (OracleSourceHost) activePart.getAdapter(OracleSourceHost.class);
-                }
                 if (error != null) {
                     UIUtils.showErrorDialog(activeShell, "Unexpected compilation error", null, error);
-                } else if (!CommonUtils.isEmpty(compileLog.errorStack)) {
+                } else if (!CommonUtils.isEmpty(compileLog.getErrorStack())) {
                     // Show compile errors
                     int line = -1, position = -1;
                     StringBuilder fullMessage = new StringBuilder();
-                    for (OracleCompileError oce : compileLog.errorStack) {
+                    for (OracleCompileError oce : compileLog.getErrorStack()) {
                         fullMessage.append(oce.toString()).append(ContentUtils.getDefaultLineSeparator());
                         if (line < 0) {
                             line = oce.getLine();
@@ -97,9 +110,9 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     String errorTitle = unit.getName() + " compilation failed";
                     if (sourceHost != null) {
                         sourceHost.setCompileInfo(errorTitle, true);
-                    } else {
-                        UIUtils.showErrorDialog(activeShell, errorTitle, fullMessage.toString());
+                        sourceHost.showCompileLog();
                     }
+                    UIUtils.showErrorDialog(activeShell, errorTitle, fullMessage.toString());
                 } else {
                     String message = unit.getName() + " compiled successfully";
                     if (sourceHost != null) {
@@ -175,22 +188,98 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
         }
     }
 
-    private class CompileLog extends SimpleLog {
-        private Throwable error;
-        private List<OracleCompileError> errorStack = new ArrayList<OracleCompileError>();
-        public CompileLog()
-        {
-            super("Compile log");
+    public static boolean compileUnit(DBRProgressMonitor monitor, Log compileLog, OracleSourceObject unit) throws DBCException
+    {
+        final IDatabasePersistAction[] compileActions = unit.getCompileActions();
+        if (CommonUtils.isEmpty(compileActions)) {
+            return true;
         }
 
-        @Override
-        protected void log(final int type, final Object message, final Throwable t)
-        {
-            if (t != null) {
-                error = t;
-            } else if (message instanceof OracleCompileError) {
-                errorStack.add((OracleCompileError) message);
+        final JDBCExecutionContext context = unit.getDataSource().openContext(
+            monitor,
+            DBCExecutionPurpose.UTIL,
+            "Compile '" + unit.getName() + "'");
+        try {
+            boolean success = true;
+            for (IDatabasePersistAction action : compileActions) {
+                final String script = action.getScript();
+                compileLog.trace(script);
+
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                try {
+                    final DBCStatement dbStat = context.prepareStatement(
+                        DBCStatementType.QUERY,
+                        script,
+                        false, false, false);
+                    try {
+                        dbStat.executeStatement();
+                    } finally {
+                        dbStat.close();
+                    }
+                    action.handleExecute(null);
+                } catch (DBCException e) {
+                    action.handleExecute(e);
+                    throw e;
+                }
+                if (action instanceof OracleObjectPersistAction) {
+                    if (!logObjectErrors(context, compileLog, unit, ((OracleObjectPersistAction) action).getObjectType())) {
+                        success = false;
+                    }
+                }
             }
+            final DBSObjectState oldState = unit.getObjectState();
+            unit.refreshObjectState(monitor);
+            if (unit.getObjectState() != oldState) {
+                unit.getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, unit));
+            }
+
+            return success;
+        } finally {
+            context.close();
+        }
+    }
+
+    public static boolean logObjectErrors(
+        JDBCExecutionContext context,
+        Log compileLog,
+        OracleSourceObject unit,
+        OracleObjectType objectType)
+    {
+        try {
+            final JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE");
+            try {
+                dbStat.setString(1, unit.getSchema().getName());
+                dbStat.setString(2, unit.getName());
+                dbStat.setString(3, objectType.getTypeName());
+                final ResultSet dbResult = dbStat.executeQuery();
+                try {
+                    boolean hasErrors = false;
+                    while (dbResult.next()) {
+                        OracleCompileError error = new OracleCompileError(
+                            "ERROR".equals(dbResult.getString("ATTRIBUTE")),
+                            dbResult.getString("TEXT"),
+                            dbResult.getInt("LINE"),
+                            dbResult.getInt("POSITION"));
+                        hasErrors = true;
+                        if (error.isError()) {
+                            compileLog.error(error);
+                        } else {
+                            compileLog.warn(error);
+                        }
+                    }
+                    return !hasErrors;
+                } finally {
+                    dbResult.close();
+                }
+            } finally {
+                dbStat.close();
+            }
+        } catch (Exception e) {
+            log.error("Can't read user errors", e);
+            return false;
         }
     }
 
