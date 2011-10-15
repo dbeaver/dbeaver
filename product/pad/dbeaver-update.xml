@@ -2,25 +2,19 @@
   ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
   -->
 
-<update>
-	<name>DBeaver</name>
-	<version>1.4.2</version>
-	<date>11.11.2011</date>
+<version>
+    <name>DBeaver</name>
+    <number>1.4.2</number>
+    <date>11.11.2011</date>
 
     <base-url>http://dbeaver.jkiss.org/download/</base-url>
 
-	<release-notes url="http://dbeaver.jkiss.org/2011/10/04/dbeaver-1-4-1/">
+    <release-notes>
 
-	</release-notes>
+    </release-notes>
 
-	<distributions>
-		<distribution os="win32" arch="x86" type="archive">
-			<file name="dbeaver-1.4.2-win32.win32.x86.zip" size="24424208"/>
-		</distribution>
-	</distributions>
+    <distribution os="win32" arch="x86" type="archive" file="dbeaver-1.4.2-win32.win32.x86.zip" size="24424208"/>
 
-	<update-sites>
-		<site title="Main DBeaver Mirror" url="http://dbeaver.jkiss.org/files" priority="1" />
-	</update-sites>
+    <site title="Main DBeaver Mirror" url="http://dbeaver.jkiss.org/files" priority="1" />
 
-</update>
+</version>

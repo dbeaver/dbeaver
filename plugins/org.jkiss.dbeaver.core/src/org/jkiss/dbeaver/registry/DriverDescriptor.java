@@ -521,7 +521,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         return
             driverClassName != null &&
-            driverClassName.indexOf("sun.jdbc") != -1; //$NON-NLS-1$
+            driverClassName.contains("sun.jdbc"); //$NON-NLS-1$
     }
 
 /*
@@ -541,7 +541,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 */
 
-    public List<DriverFileDescriptor> getFiles()
+    public Collection<DriverFileDescriptor> getFiles()
     {
         return files;
     }
@@ -601,7 +601,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return result;
     }
 
-    public List<DriverPathDescriptor> getPathList()
+    public Collection<DriverPathDescriptor> getPathList()
     {
         return pathList;
     }

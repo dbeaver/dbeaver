@@ -144,14 +144,13 @@ public class CommonUtils {
         return theList;
     }
 
-    public static <T> List<T> copyList(List<T> theList)
+    public static <T> List<T> copyList(Collection<T> theList)
     {
         if (theList == null) {
-            theList = new ArrayList<T>();
+            return new ArrayList<T>();
         } else {
-            theList = new ArrayList<T>(theList);
+            return new ArrayList<T>(theList);
         }
-        return theList;
     }
 
 	public static String getString(String value)

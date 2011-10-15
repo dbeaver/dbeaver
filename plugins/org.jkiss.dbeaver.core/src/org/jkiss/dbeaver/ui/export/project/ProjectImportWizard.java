@@ -35,10 +35,7 @@ import org.w3c.dom.Element;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -111,8 +108,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     // Read libraries map
                     final Element libsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_LIBRARIES);
                     if (libsElement != null) {
-                        final Element[] libList = XMLUtils.getChildElementList(libsElement, RegistryConstants.TAG_FILE);
-                        monitor.beginTask("Load driver libraries", libList.length);
+                        final Collection<Element> libList = XMLUtils.getChildElementList(libsElement, RegistryConstants.TAG_FILE);
+                        monitor.beginTask("Load driver libraries", libList.size());
                         for (Element libElement : libList) {
                             libMap.put(
                                 libElement.getAttribute(ExportConstants.ATTR_PATH),
@@ -127,8 +124,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     // Collect drivers to import
                     final Element driversElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), RegistryConstants.TAG_DRIVERS);
                     if (driversElement != null) {
-                        final Element[] driverList = XMLUtils.getChildElementList(driversElement, RegistryConstants.TAG_DRIVER);
-                        monitor.beginTask("Import drivers", driverList.length);
+                        final Collection<Element> driverList = XMLUtils.getChildElementList(driversElement, RegistryConstants.TAG_DRIVER);
+                        monitor.beginTask("Import drivers", driverList.size());
                         for (Element driverElement : driverList) {
                             if (monitor.isCanceled()) {
                                 break;
@@ -147,8 +144,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     // Import projects
                     final Element projectsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_PROJECTS);
                     if (projectsElement != null) {
-                        final Element[] projectList = XMLUtils.getChildElementList(projectsElement, ExportConstants.TAG_PROJECT);
-                        monitor.beginTask("Import projects", projectList.length);
+                        final Collection<Element> projectList = XMLUtils.getChildElementList(projectsElement, ExportConstants.TAG_PROJECT);
+                        monitor.beginTask("Import projects", projectList.size());
                         for (Element projectElement : projectList) {
                             if (monitor.isCanceled()) {
                                 break;
@@ -260,8 +257,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         // Add libraries (only for managable drivers with empty library list)
         if (CommonUtils.isEmpty(driver.getFiles())) {
             List<String> libraryList = new ArrayList<String>();
-            final Element[] libList = XMLUtils.getChildElementList(driverElement, RegistryConstants.TAG_FILE);
-            for (Element libElement : libList) {
+            for (Element libElement : XMLUtils.getChildElementList(driverElement, RegistryConstants.TAG_FILE)) {
                 libraryList.add(libElement.getAttribute(RegistryConstants.ATTR_PATH));
             }
 
@@ -308,10 +304,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             }
         }
 
-        if (driver != null) {
-            // Update driver map
-            driverMap.put(driverId, driver.getId());
-        }
+        // Update driver map
+        driverMap.put(driverId, driver.getId());
 
         return driver;
     }

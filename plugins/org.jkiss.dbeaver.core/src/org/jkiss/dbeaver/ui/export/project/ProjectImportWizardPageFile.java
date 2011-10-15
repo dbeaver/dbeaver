@@ -223,9 +223,8 @@ class ProjectImportWizardPageFile extends WizardPage {
                 if (projectsElement == null) {
                     setMessage("Cannot find projects in meta file", IMessageProvider.ERROR);
                 } else {
-                    Element[] projectElems = XMLUtils.getChildElementList(projectsElement, ExportConstants.TAG_PROJECT);
                     projectsTable.removeAll();
-                    for (Element projectElement : projectElems) {
+                    for (Element projectElement : XMLUtils.getChildElementList(projectsElement, ExportConstants.TAG_PROJECT)) {
                         String projectName = projectElement.getAttribute(ExportConstants.ATTR_NAME);
                         TableItem item = new TableItem(projectsTable, SWT.NONE);
                         item.setImage(DBIcon.PROJECT.getImage());

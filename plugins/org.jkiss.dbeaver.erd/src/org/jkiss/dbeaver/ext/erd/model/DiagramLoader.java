@@ -188,8 +188,8 @@ public class DiagramLoader
                 }
                 DBSEntityContainer rootContainer = (DBSEntityContainer)dataSource;
                 // Parse entities
-                Element[] entityElemList = XMLUtils.getChildElementList(dsElem, TAG_ENTITY);
-                monitor.beginTask("Parse entities", entityElemList.length);
+                Collection<Element> entityElemList = XMLUtils.getChildElementList(dsElem, TAG_ENTITY);
+                monitor.beginTask("Parse entities", entityElemList.size());
                 for (Element entityElem : entityElemList) {
                     String tableId = entityElem.getAttribute(ATTR_ID);
                     String tableName = entityElem.getAttribute(ATTR_NAME);
@@ -246,8 +246,8 @@ public class DiagramLoader
         final Element relationsElem = XMLUtils.getChildElement(diagramElem, TAG_RELATIONS);
         if (relationsElem != null) {
             // Parse relations
-            Element[] relElemList = XMLUtils.getChildElementList(relationsElem, TAG_RELATION);
-            monitor.beginTask("Parse relations", relElemList.length);
+            Collection<Element> relElemList = XMLUtils.getChildElementList(relationsElem, TAG_RELATION);
+            monitor.beginTask("Parse relations", relElemList.size());
             for (Element relElem : relElemList) {
                 String relName = relElem.getAttribute(ATTR_NAME);
                 monitor.subTask("Load " + relName);
@@ -296,8 +296,8 @@ public class DiagramLoader
         final Element notesElem = XMLUtils.getChildElement(diagramElem, TAG_NOTES);
         if (notesElem != null) {
             // Parse relations
-            Element[] noteElemList = XMLUtils.getChildElementList(notesElem, TAG_NOTE);
-            monitor.beginTask("Parse notes", noteElemList.length);
+            Collection<Element> noteElemList = XMLUtils.getChildElementList(notesElem, TAG_NOTE);
+            monitor.beginTask("Parse notes", noteElemList.size());
             for (Element noteElem : noteElemList) {
                 final String noteText = XMLUtils.getElementBody(noteElem);
                 ERDNote note = new ERDNote(noteText);

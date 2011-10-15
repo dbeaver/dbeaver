@@ -59,8 +59,7 @@ public class BookmarkStorage {
                     throw new DBException("Data source ID missing in bookmark definition");
                 }
                 this.dataSourcePath = new ArrayList<String>();
-                final Element[] pathElements = XMLUtils.getChildElementList(root, TAG_PATH);
-                for (Element elem : pathElements) {
+                for (Element elem : XMLUtils.getChildElementList(root, TAG_PATH)) {
                     this.dataSourcePath.add(XMLUtils.getElementBody(elem));
                 }
                 if (loadImage) {

@@ -4,8 +4,12 @@
 
 package org.jkiss.utils.xml;
 
+import org.w3c.dom.Element;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -82,79 +86,71 @@ public class XMLUtils
 	}
 
 	// Get list of all child elements of specified node
-	public static org.w3c.dom.Element[] getChildElementList(
-		org.w3c.dom.Element parent,
-		String nodeName)
+	public static Collection<Element> getChildElementList(
+        Element parent,
+        String nodeName)
 	{
-		List list = new java.util.ArrayList();
+		List<Element> list = new ArrayList<Element>();
 		for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
 				nodeName.equals(node.getNodeName()))
 			{
-				list.add(node);
+				list.add((Element) node);
 			}
 		}
-		org.w3c.dom.Element[] array = new org.w3c.dom.Element[list.size()];
-		list.toArray(array);
-		return array;
+		return list;
 	}
 
 	// Get list of all child elements of specified node
-	public static org.w3c.dom.Element[] getChildElementListNS(
+	public static Collection<Element> getChildElementListNS(
 		org.w3c.dom.Element parent,
 		String nsURI)
 	{
-		List list = new java.util.ArrayList();
+		List<Element> list = new ArrayList<Element>();
 		for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
 				node.getNamespaceURI().equals( nsURI ))
 			{
-				list.add(node);
+				list.add((Element) node);
 			}
 		}
-		org.w3c.dom.Element[] array = new org.w3c.dom.Element[list.size()];
-		list.toArray(array);
-		return array;
+		return list;
 	}
 
 	// Get list of all child elements of specified node
-	public static org.w3c.dom.Element[] getChildElementListNS(
+	public static Collection<Element> getChildElementListNS(
 		org.w3c.dom.Element parent,
 		String nodeName,
 		String nsURI)
 	{
-		List list = new java.util.ArrayList();
+		List<Element> list = new ArrayList<Element>();
 		for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
 				node.getLocalName().equals( nodeName ) &&
 				node.getNamespaceURI().equals( nsURI ))
 			{
-				list.add(node);
+				list.add((Element) node);
 			}
 		}
-		org.w3c.dom.Element[] array = new org.w3c.dom.Element[list.size()];
-		list.toArray(array);
-		return array;
+		return list;
 	}
 
 	// Get list of all child elements of specified node
-	public static org.w3c.dom.Element[] getChildElementList(
+	public static Collection<Element> getChildElementList(
 		org.w3c.dom.Element parent,
 		String[] nodeNameList)
 	{
-		List list = new java.util.ArrayList();
+		List<Element> list = new ArrayList<Element>();
 		for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
 				for (int i = 0; i < nodeNameList.length; i++) {
 					if (node.getNodeName().equals( nodeNameList[i] )) {
-						list.add(node);
+						list.add((Element) node);
 					}
 				}
 			}
 		}
-		org.w3c.dom.Element[] array = new org.w3c.dom.Element[list.size()];
-		list.toArray(array);
-		return array;
+		return list;
 	}
 
 	// Find one child element with specified name
