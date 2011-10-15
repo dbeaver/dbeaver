@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.registry.updater;
 
-import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -23,6 +22,8 @@ import java.util.List;
  * Version descriptor
  */
 public class VersionDescriptor {
+
+    public static final String DEFAULT_VERSION_URL = "http://dbeaver.jkiss.org/product/version.xml";
 
     private String programName;
     private String programVersion;
@@ -55,7 +56,7 @@ public class VersionDescriptor {
             }
         }
         finally {
-            connection.connect();
+            // nothing
         }
     }
 

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -74,6 +75,20 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     public void preStartup()
     {
         super.preStartup();
+    }
+
+    @Override
+    public void postStartup()
+    {
+        super.postStartup();
+
+        startVersionChecker();
+    }
+
+    private void startVersionChecker()
+    {
+        DBeaverVersionChecker checker = new DBeaverVersionChecker();
+        checker.schedule(3000);
     }
 
     public boolean preShutdown()

@@ -9,15 +9,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class OracleHomeDescriptor
@@ -34,7 +29,7 @@ public class OracleHomeDescriptor
     public OracleHomeDescriptor(String oraHome) throws DBException
     {
         this.oraHome = CommonUtils.removeTrailingSlash(oraHome);
-        this.isInstantClient = OCIUtils.isInstatntClient(oraHome);
+        this.isInstantClient = OCIUtils.isInstantClient(oraHome);
         this.oraVersion = OCIUtils.getOracleVersion(oraHome, isInstantClient);
         if (oraVersion == null) {
             throw new DBException("Unrecognized Oracle client version");

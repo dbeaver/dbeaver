@@ -290,7 +290,7 @@ public class OCIUtils
         return aliases;
     }
 
-    public static boolean isInstatntClient(String oraHome)
+    public static boolean isInstantClient(String oraHome)
     {
         File root = new File(System.mapLibraryName(CommonUtils.makeDirectoryName(oraHome) + "oci"));
         File bin = new File(System.mapLibraryName(CommonUtils.makeDirectoryName(oraHome) + "BIN/" + "oci"));
