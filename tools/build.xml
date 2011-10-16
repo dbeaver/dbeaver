@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<project name="babel" default="repack-babel" basedir=".">
+    <!--<property file="build.properties"/>-->
+
+    <target name="build">
+        <mkdir dir="build"/>
+        <javac srcdir="./src" destdir="build" includeantruntime="true"/>
+    </target>
+
+    <target name="declare" depends="build">
+        <taskdef name="repack"
+                 classname="org.jkiss.tools.ant.babel.BabelRepackerTask"
+                 classpath="build"/>
+    </target>
+
+    <target name="repack-babel" depends="declare">
+        <repack eclipseDirectory="${baseLocation}" babelLocation="${babelLocation}" locales="${locales}"/>
+    </target>
+</project>

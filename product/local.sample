@@ -3,11 +3,16 @@
 #
 
 buildDirectory=D:/Devel/my/DBeaver/product/build
-baseLocation=D:/Java/eclipse-build
+# Eclipse before localization
+stdBaseLocation=D:/Java/eclipse-build
+# Eclipse after localization (is used for build)
+baseLocation=D:/Java/eclipse-build-localized
 nsisDirectory=C:/Program Files/NSIS
 equinoxLauncherPluginVersion=1.1.0.v20100507
 pdeBuildPluginVersion=3.6.0.v20100603
 releaseFilesDirectory=d:/temp
+babelLocation=D:/Devel/my/Babel
+locales=ru,fr
 
 #configs = *, *, *
 

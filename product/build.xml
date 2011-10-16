@@ -2,7 +2,7 @@
   ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
   -->
 
-<project name="dbeaver" default="build">
+<project name="dbeaver" default="repack-babel">
     <!--sets the path of the properties file-->
     <property file="local.properties" />
     <property file="../plugins/org.jkiss.dbeaver.core/META-INF/MANIFEST.MF" />
@@ -115,7 +115,7 @@
     </target>
 
     <!--This target defines the run-order of the targets-->
-    <target name="build" depends="pde-build,driver-pack" />
+    <target name="build" depends="pde-build,driver-pack,repack-babel" />
 
     <target name="nsis">
         <unzip 
@@ -307,6 +307,33 @@
 
     <target name="dummy" depends="init">
 
+    </target>
+
+    <target name="copy_eclipse">
+        <delete dir="${baseLocation}" />
+        <mkdir dir="${baseLocation}" />
+        <copy todir="${baseLocation}">
+            <fileset dir="${stdBaseLocation}">
+                <include name="**" />
+            </fileset>
+        </copy>
+        <tstamp/>
+    </target>
+
+    <target name="repack-babel" depends="copy_eclipse">
+<!--
+        <unzip 
+            src="${buildDirectory}/${buildId}/${buildId}-win32.win32.x86.zip"
+            dest="${buildDirectory}/${buildId}"
+            overwrite="true"
+            />
+-->
+        <ant dir="../tools" antfile="build.xml" target="repack-babel" />
+<!--
+        <zip destfile="${buildDirectory}/${buildId}/${buildId}-win32.win32.x86.zip" update="false">
+            <fileset dir="${buildDirectory}/${buildId}/dbeaver" />
+        </zip>
+-->
     </target>
 
 </project>
