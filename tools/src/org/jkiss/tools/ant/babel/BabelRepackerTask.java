@@ -115,14 +115,14 @@ public class BabelRepackerTask extends Task
         int k = 1;
         int kplugins = eclipsePlugins.size();
         for (File pluginFile : eclipsePlugins) {
-            System.out.println("Plugin " + pluginFile.getName() + " [" + k++ + "/" + kplugins + "] is being localized.");
+            System.out.println("[" + k++ + "/" + kplugins + "] plugin " + pluginFile.getName() + " is being localized.");
             localizePlugin(pluginJarMap.get(pluginFile), pluginFile, PROPERTIES_FILTER);
         }
     }
 
     public static void localizePlugin(List<File> babelFiles, File pluginFile, FilenameFilter filenameFilter)
     {
-        if (!pluginFile.exists()) {
+        if (!pluginFile.exists() || babelFiles == null || babelFiles.isEmpty()) {
             return;
         }
         // get a temp file
