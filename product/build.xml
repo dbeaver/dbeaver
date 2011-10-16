@@ -2,7 +2,7 @@
   ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
   -->
 
-<project name="dbeaver" default="repack-babel">
+<project name="dbeaver" default="build">
     <!--sets the path of the properties file-->
     <property file="local.properties" />
     <property file="../plugins/org.jkiss.dbeaver.core/META-INF/MANIFEST.MF" />
