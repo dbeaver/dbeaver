@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.ScrollBarAdapter;
+import org.jkiss.utils.IntKeyMap;
 
 import java.util.*;
 import java.util.List;
@@ -81,6 +82,8 @@ public class LightGrid extends Canvas {
 
     private Set<GridPos> selectedCells = new TreeSet<GridPos>(new CellComparator());
     private Set<GridPos> selectedCellsBeforeRangeSelect = new TreeSet<GridPos>(new CellComparator());
+    private List<GridColumn> selectedColumns = new ArrayList<GridColumn>();
+    private IntKeyMap<Boolean> selectedRows = new IntKeyMap<Boolean>();
 
     private boolean cellDragSelectionOccuring = false;
     private boolean cellRowDragSelectionOccuring = false;
@@ -95,8 +98,6 @@ public class LightGrid extends Canvas {
     private GridColumn shiftSelectionAnchorColumn;
 
     private GridColumn focusColumn;
-
-    private List<GridColumn> selectedColumns = new ArrayList<GridColumn>();
 
     /**
      * List of table columns in creation/index order.
@@ -2333,8 +2334,7 @@ public class LightGrid extends Canvas {
 
             // get the item to draw
             if (row >= 0 && row < getItemCount()) {
-                boolean cellInRowSelected = false;
-
+                boolean cellInRowSelected = selectedRows.containsKey(row);
 
                 if (rowHeaderVisible) {
 
@@ -2369,7 +2369,7 @@ public class LightGrid extends Canvas {
 
                         if (selectedCells.contains(new GridPos(column.getIndex(), row))) {
                             column.getCellRenderer().setCellSelected(true);
-                            cellInRowSelected = true;
+                            //cellInRowSelected = true;
                         } else {
                             column.getCellRenderer().setCellSelected(false);
                         }
@@ -2810,7 +2810,7 @@ public class LightGrid extends Canvas {
             }
         }
 
-        updateColumnSelection();
+        updateSelectionCache();
 
         Event e = new Event();
         if (dragging) {
@@ -2837,16 +2837,18 @@ public class LightGrid extends Canvas {
         }
     }
 
-    void updateColumnSelection()
+    void updateSelectionCache()
     {
         //Update the list of which columns have all their cells selected
         selectedColumns.clear();
+        selectedRows.clear();
 
-        Set<Integer> columnIndices = new HashSet<Integer>();
+        IntKeyMap<Boolean> columnIndices = new IntKeyMap<Boolean>();
         for (GridPos cell : selectedCells) {
-            columnIndices.add(cell.col);
+            columnIndices.put(cell.col, Boolean.TRUE);
+            selectedRows.put(cell.row, Boolean.TRUE);
         }
-        for (Integer columnIndex : columnIndices) {
+        for (Integer columnIndex : columnIndices.keySet()) {
             selectedColumns.add(getColumn(columnIndex));
         }
     }
@@ -3975,7 +3977,7 @@ public class LightGrid extends Canvas {
         }
 
         if (selectionModified && !disposing) {
-            updateColumnSelection();
+            updateSelectionCache();
         }
 
     }
@@ -4083,7 +4085,7 @@ public class LightGrid extends Canvas {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
 
         selectedCells.remove(cell);
-        updateColumnSelection();
+        updateSelectionCache();
         redraw();
     }
 
@@ -4110,7 +4112,7 @@ public class LightGrid extends Canvas {
             selectedCells.remove(cell);
         }
 
-        updateColumnSelection();
+        updateSelectionCache();
 
         redraw();
     }
@@ -4122,7 +4124,7 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
         selectedCells.clear();
-        updateColumnSelection();
+        updateSelectionCache();
         redraw();
     }
 
@@ -4139,7 +4141,7 @@ public class LightGrid extends Canvas {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
 
         addToCellSelection(cell);
-        updateColumnSelection();
+        updateSelectionCache();
         redraw();
     }
 
@@ -4166,7 +4168,7 @@ public class LightGrid extends Canvas {
             addToCellSelection(cell);
         }
 
-        updateColumnSelection();
+        updateSelectionCache();
         redraw();
     }
 
@@ -4205,7 +4207,7 @@ public class LightGrid extends Canvas {
         focusColumn = oldFocusColumn;
         focusItem = oldFocusItem;
 
-        updateColumnSelection();
+        updateSelectionCache();
 
         redraw();
 
@@ -4243,7 +4245,7 @@ public class LightGrid extends Canvas {
 
         selectedCells.clear();
         addToCellSelection(cell);
-        updateColumnSelection();
+        updateSelectionCache();
         redraw();
     }
 
@@ -4275,7 +4277,7 @@ public class LightGrid extends Canvas {
             addToCellSelection(cell);
         }
 
-        updateColumnSelection();
+        updateSelectionCache();
         redraw();
     }
 
