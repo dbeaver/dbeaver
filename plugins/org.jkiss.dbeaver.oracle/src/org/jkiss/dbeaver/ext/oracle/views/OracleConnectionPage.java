@@ -199,12 +199,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         gd.horizontalSpan = 3;
         serviceNameCombo.setLayoutData(gd);
         serviceNameCombo.addModifyListener(controlModifyListener);
-
-        if (!OCIUtils.oraHomes.isEmpty()) {
-            for (String alias : OCIUtils.oraHomes.get(0).getOraServiceNames()) {
-                serviceNameCombo.add(alias);
-            }
-        }
     }
 
     private Control createOraHomeSelector(Composite parent)
@@ -249,7 +243,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     private void populateOraHomeCombo()
     {
         oraHomeNameCombo.removeAll();
-        for (OracleHomeDescriptor home : OCIUtils.oraHomes) {
+        for (OracleHomeDescriptor home : OCIUtils.getOraHomes()) {
             oraHomeNameCombo.add(home.getOraHomeName());
         }
         oraHomeNameCombo.add(BROWSE);
@@ -268,27 +262,33 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
 
         tnsNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         tnsNameCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        populateTnsNameCombo();
         tnsNameCombo.addModifyListener(controlModifyListener);
     }
 
     private void populateTnsNameCombo() {
         tnsNameCombo.removeAll();
         String oraHome = null;
-        if (oraHomeNameCombo != null) {
-            oraHome = oraHomeNameCombo.getText();
-        }
-        if (CommonUtils.isEmpty(oraHome)) {
-            if (!OCIUtils.oraHomes.isEmpty()) {
-                oraHome = OCIUtils.oraHomes.get(0).getOraHomeName();
+        if (isOCI) {
+            if (oraHomeNameCombo != null) {
+                oraHome = oraHomeNameCombo.getText();
+            }
+            if (CommonUtils.isEmpty(oraHome)) {
+                if (!OCIUtils.getOraHomes().isEmpty()) {
+                    oraHome = OCIUtils.getOraHomes().get(0).getOraHomeName();
+                }
+            }
+            if (!CommonUtils.isEmpty(oraHome)) {
+                OracleHomeDescriptor home = OCIUtils.getOraHomeByName(oraHome);
+                if (home != null) {
+                    for (String alias : home.getOraServiceNames()) {
+                        tnsNameCombo.add(alias);
+                    }
+                }
             }
         }
-        if (!CommonUtils.isEmpty(oraHome)) {
-            OracleHomeDescriptor home = OCIUtils.getOraHomeByName(oraHome);
-            if (home != null) {
-                for (String alias : home.getOraServiceNames()) {
-                    tnsNameCombo.add(alias);
-                }
+        else {
+            for (String alias : OCIUtils.readTnsNames(null, true)) {
+                tnsNameCombo.add(alias);
             }
         }
     }
@@ -436,6 +436,17 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             }
         }
 
+        if (tnsNameCombo.getItemCount() == 0) {
+            populateTnsNameCombo();
+        }
+
+        if (serviceNameCombo.getItemCount() == 0) {
+            String oraHome = isOCI ? (!OCIUtils.getOraHomes().isEmpty() ? OCIUtils.getOraHomes().get(0).getOraHome() : null) : null;
+            for (String alias : OCIUtils.readTnsNames(oraHome, true)) {
+                serviceNameCombo.add(alias);
+            }
+        }
+
         // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
@@ -447,8 +458,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                     oraHomeNameCombo.setText(oraHome.toString());
                 }
                 else {
-                    if (!OCIUtils.oraHomes.isEmpty()) {
-                        oraHomeNameCombo.setText(OCIUtils.oraHomes.get(0).getOraHomeName());
+                    if (!OCIUtils.getOraHomes().isEmpty()) {
+                        oraHomeNameCombo.setText(OCIUtils.getOraHomes().get(0).getOraHomeName());
                     }
                 }
                 displayClientVersion();

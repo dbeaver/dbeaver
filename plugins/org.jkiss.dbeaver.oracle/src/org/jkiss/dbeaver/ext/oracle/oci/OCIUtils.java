@@ -37,10 +37,27 @@ public class OCIUtils
      * A list of Oracle client homes found in the system.
      * The first one is always a current Oracle home (from PATH) 
      */
-    public static final List<OracleHomeDescriptor> oraHomes = new ArrayList<OracleHomeDescriptor>();
+    private static final List<OracleHomeDescriptor> oraHomes = new ArrayList<OracleHomeDescriptor>();
+    private static boolean oraHomesSearched = false;
 
+/*
     static {
         findOraHomes();
+    }
+*/
+
+    public static List<OracleHomeDescriptor> getOraHomes()
+    {
+        checkOraHomes();
+        return oraHomes;
+    }
+
+    private static boolean checkOraHomes() {
+        if (!oraHomesSearched) {
+            findOraHomes();
+            oraHomesSearched = true;
+        }
+        return !oraHomes.isEmpty();
     }
 
     public static OracleHomeDescriptor getOraHome(String oraHome) {
@@ -57,7 +74,7 @@ public class OCIUtils
     }
 
     public static OracleHomeDescriptor getOraHomeByName(String oraHomeName) {
-        if (CommonUtils.isEmpty(oraHomeName)) {
+        if (CommonUtils.isEmpty(oraHomeName) || !checkOraHomes()) {
             return null;
         }
         for (OracleHomeDescriptor home : oraHomes) {
