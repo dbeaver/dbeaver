@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
+<project name="VersionUpdater" default="build">
+    <!--<property file="build.properties"/>-->
+
+    <target name="build">
+        <mkdir dir="build"/>
+
+    </target>
+
+</project>
