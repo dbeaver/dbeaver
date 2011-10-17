@@ -18,7 +18,7 @@
                  classpath="build"/>
     </target>
 
-    <target name="repack-babel" depends="declare">
+    <target name="babel-repack" depends="declare">
         <repack-babel eclipseDirectory="${baseLocation}" babelLocation="${babelLocation}" locales="${locales}"/>
     </target>
 </project>
