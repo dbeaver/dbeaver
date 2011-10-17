@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 
-<project name="babel" default="repack-babel" basedir=".">
+<project name="babel" default="repack-babel" basedir="../">
     <!--<property file="build.properties"/>-->
 
     <target name="build">
         <mkdir dir="build"/>
-        <javac srcdir="./src" destdir="build" includeantruntime="true"/>
+        <javac srcdir="." destdir="build" includeantruntime="true"/>
     </target>
 
     <target name="declare" depends="build">
