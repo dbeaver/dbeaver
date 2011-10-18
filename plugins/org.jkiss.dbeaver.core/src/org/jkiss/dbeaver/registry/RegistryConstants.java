@@ -88,6 +88,7 @@ public class RegistryConstants {
     public static final String ATTR_EDITOR = "editor"; //$NON-NLS-1$
     public static final String ATTR_IF = "if"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT = "default"; //$NON-NLS-1$
-    static final String ATTR_MANAGABLE = "managable"; //$NON-NLS-1$
+    public static final String ATTR_MANAGABLE = "managable"; //$NON-NLS-1$
+    public static final String ATTR_CONTRIBUTOR = "contributor"; //$NON-NLS-1$
 
 }

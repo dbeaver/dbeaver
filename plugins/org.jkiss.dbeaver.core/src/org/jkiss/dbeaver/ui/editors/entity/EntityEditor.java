@@ -58,7 +58,6 @@ import java.util.*;
 public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorModelView, ISaveablePart2, IFolderedPart
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
-    private boolean hasPropertiesEditor;
 
     private static class EditorDefaults {
         String pageId;
@@ -71,12 +70,24 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         }
     }
 
+    private static class ActionContributorInfo {
+        final IEditorActionBarContributor contributor;
+        final List<IEditorPart> editors = new ArrayList<IEditorPart>();
+
+        private ActionContributorInfo(IEditorActionBarContributor contributor)
+        {
+            this.contributor = contributor;
+        }
+    }
+
     private static final Map<String, EditorDefaults> defaultPageMap = new HashMap<String, EditorDefaults>();
 
     private final Map<String, IEditorPart> editorMap = new LinkedHashMap<String, IEditorPart>();
     private IEditorPart activeEditor;
     private DBECommandAdapter commandListener;
     private IFolderListener folderListener;
+    private boolean hasPropertiesEditor;
+    private List<ActionContributorInfo> actionContributors = new ArrayList<ActionContributorInfo>();
 
     public EntityEditor()
     {
@@ -107,6 +118,10 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
     @Override
     public void dispose()
     {
+        for (ActionContributorInfo contributor : actionContributors) {
+            contributor.contributor.dispose();
+        }
+        actionContributors.clear();
         //final DBPDataSource dataSource = getDataSource();
 
 //        if (getCommandContext() != null && getCommandContext().isDirty()) {
@@ -438,6 +453,16 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         }
 
         UIUtils.setHelp(getContainer(), IHelpContextIds.CTX_ENTITY_EDITOR);
+
+        if (!actionContributors.isEmpty()) {
+            for (ActionContributorInfo contributorInfo : actionContributors) {
+                try {
+                    contributorInfo.contributor.init(this.getEditorSite().getActionBars(), this.getSite().getPage());
+                } catch (Exception e) {
+                    log.error(e);
+                }
+            }
+        }
     }
 
     private void addNavigatorTabs()
@@ -473,6 +498,13 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         super.pageChange(newPageIndex);
 
         activeEditor = getEditor(newPageIndex);
+
+        for (ActionContributorInfo contributor : actionContributors) {
+            if (contributor.editors.contains(activeEditor)) {
+                contributor.contributor.setActiveEditor(activeEditor);
+            }
+        }
+
         String editorPageId = getEditorPageId(activeEditor);
         if (editorPageId != null) {
             updateEditorDefaults(editorPageId, null);
@@ -649,6 +681,23 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             IEditorPart editor = descriptor.createEditor();
             if (editor == null) {
                 return false;
+            }
+            final Class<? extends IEditorActionBarContributor> contributorClass = descriptor.getContributorClass();
+            if (contributorClass != null) {
+                boolean found = false;
+                for (ActionContributorInfo contributorInfo : actionContributors) {
+                    if (contributorInfo.contributor.getClass().equals(contributorClass)) {
+                        contributorInfo.editors.add(editor);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    final IEditorActionBarContributor actionBarContributor = contributorClass.newInstance();
+                    ActionContributorInfo contributorInfo = new ActionContributorInfo(actionBarContributor);
+                    contributorInfo.editors.add(editor);
+                    actionContributors.add(contributorInfo);
+                }
             }
             int index = addPage(editor, getEditorInput());
             setPageText(index, descriptor.getName());

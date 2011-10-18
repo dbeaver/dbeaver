@@ -98,9 +98,7 @@ Function LaunchDBeaver
 FunctionEnd
 
 ;--------------------------------
-;Languages
- 
-  !insertmacro MUI_LANGUAGE "English"
+;JRE
 
 !include "FileFunc.nsh"
 !insertmacro GetFileVersion
@@ -109,6 +107,22 @@ FunctionEnd
 !insertmacro VersionCompare
 
 !include "JRE.nsh"
+
+;--------------------------------
+;Languages
+;!define MUI_LANGDLL_ALLLANGUAGES
+
+!define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
+!define MUI_LANGDLL_REGISTRY_KEY "Software\DBeaver"
+!define MUI_LANGDLL_REGISTRY_VALUENAME "Language"
+!define MUI_LANGDLL_ALWAYSSHOW
+
+!insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "Russian"
+!insertmacro MUI_LANGUAGE "SimpChinese"
+
+!insertmacro MUI_RESERVEFILE_LANGDLL
+
 
 ;--------------------------------
 ;Installer Sections
@@ -249,3 +263,15 @@ Section "Uninstall"
   DeleteRegKey /ifempty HKCU "Software\DBeaver"
 
 SectionEnd
+
+;--------------------------------
+;Installer Functions
+
+Function .onInit
+
+  !insertmacro MUI_LANGDLL_DISPLAY
+
+  ;!insertmacro MUI_UNGETLANGUAGE
+
+FunctionEnd
+

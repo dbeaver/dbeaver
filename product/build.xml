@@ -144,9 +144,9 @@
         <antcall target="nsis">
             <param name="arch" value="x86"/>
         </antcall>
-        <antcall target="nsis">
+        <!--antcall target="nsis">
             <param name="arch" value="x86_64"/>
-        </antcall>
+        </antcall-->
 
         <!--delete dir="${buildDirectory}/installer" /-->
     </target>

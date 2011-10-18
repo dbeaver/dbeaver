@@ -6,19 +6,19 @@ package org.jkiss.dbeaver.registry;
 
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverConstants;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.editors.entity.ObjectPropertiesEditor;
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.editors.entity.ObjectPropertiesEditor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +39,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 
     private String id;
     private String className;
+    private String contributorClassName;
     private List<ObjectType> objectTypes = new ArrayList<ObjectType>();
     private boolean main;
     private String name;
@@ -47,7 +48,8 @@ public class EntityEditorDescriptor extends AbstractDescriptor
     private Image icon;
 
     //private List<Class<?>> objectClasses;
-    private Class<?> editorClass;
+    private Class<? extends IEditorPart> editorClass;
+    private Class<? extends IEditorActionBarContributor> contributorClass;
 
     private class ObjectType {
         String implName;
@@ -120,6 +122,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         });
         this.id = DEFAULT_OBJECT_EDITOR_ID;
         this.className = ObjectPropertiesEditor.class.getName();
+        this.contributorClassName = null;
         this.main = true;
         this.name = "Properties";
         this.description = "Object properties";
@@ -133,6 +136,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.contributorClassName = config.getAttribute(RegistryConstants.ATTR_CONTRIBUTOR);
         this.main = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_MAIN));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -224,25 +228,37 @@ public class EntityEditorDescriptor extends AbstractDescriptor
     }
 */
 
-    public Class getEditorClass()
+    public Class<? extends IEditorPart> getEditorClass()
     {
         if (editorClass == null) {
-            editorClass = getObjectClass(className);
+            editorClass = (Class<IEditorPart>) getObjectClass(className);
         }
         return editorClass;
     }
 
+    public Class<? extends IEditorActionBarContributor> getContributorClass()
+    {
+        if (contributorClass == null) {
+            if (contributorClassName == null) {
+                return null;
+            }
+            contributorClass = (Class<IEditorActionBarContributor>) getObjectClass(contributorClassName);
+        }
+        return contributorClass;
+    }
+
     public IEditorPart createEditor()
     {
-        Class clazz = getEditorClass();
+        Class<? extends IEditorPart> clazz = getEditorClass();
         if (clazz == null) {
             return null;
         }
         try {
-            return (IEditorPart)clazz.newInstance();
+            return clazz.newInstance();
         } catch (Exception ex) {
             log.error("Error instantiating entity editor '" + className + "'", ex);
             return null;
         }
     }
+
 }
