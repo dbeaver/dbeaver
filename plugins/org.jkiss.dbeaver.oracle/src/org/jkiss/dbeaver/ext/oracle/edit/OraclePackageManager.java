@@ -74,7 +74,7 @@ public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, Oracle
                     "Create package header",
                     "CREATE OR REPLACE " + header));
         }
-        String body = OracleUtils.normalizeSourceName(pack, true).trim();
+        String body = OracleUtils.normalizeSourceName(pack, true);
         if (!CommonUtils.isEmpty(body)) {
             actions.add(
                 new AbstractDatabasePersistAction(

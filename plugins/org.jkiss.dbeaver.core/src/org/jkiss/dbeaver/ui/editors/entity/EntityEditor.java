@@ -502,6 +502,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         for (ActionContributorInfo contributor : actionContributors) {
             if (contributor.editors.contains(activeEditor)) {
                 contributor.contributor.setActiveEditor(activeEditor);
+            } else {
+                contributor.contributor.setActiveEditor(null);
             }
         }
 

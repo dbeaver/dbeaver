@@ -113,7 +113,7 @@ public class OracleUtils {
                     return source;//.substring(0, matcher.start(1)) + object.getSchema().getName() + "." + objectName + source.substring(matcher.end(2));
                 }
             }
-            return source;
+            return source.trim();
         } catch (DBException e) {
             log.error(e);
             return null;
