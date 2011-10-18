@@ -12,6 +12,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -29,7 +30,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     static final Log log = LogFactory.getLog(ConnectionPropertiesControl.class);
 
-    public static final String USER_PROPERTIES_CATEGORY = "User Properties";
+    public static final String USER_PROPERTIES_CATEGORY = CoreMessages.connection_properties_control_category_user_properties;
 
     private List<IPropertyDescriptor> driverProvidedProperties;
     private List<IPropertyDescriptor> customProperties;
@@ -77,14 +78,14 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     {
         boolean isCustom = USER_PROPERTIES_CATEGORY.equals(category);
         if (isCustom) {
-            manager.add(new Action("Add new property") {
+            manager.add(new Action(CoreMessages.connection_properties_control_action_add_property) {
                 @Override
                 public void run() {
                     createNewProperty(node, category);
                 }
             });
             if (property != null) {
-                manager.add(new Action("Remove property") {
+                manager.add(new Action(CoreMessages.connection_properties_control_action_remove_property) {
                     @Override
                     public void run() {
                         removeProperty(node);
@@ -96,7 +97,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     private void createNewProperty(Object node, String category) {
         // Ask user for new property name
-        String propName = EnterNameDialog.chooseName(getControl().getShell(), "Property Name");
+        String propName = EnterNameDialog.chooseName(getControl().getShell(), CoreMessages.connection_properties_control_dialog_new_property_title);
         if (propName != null) {
             // Check property name (must be unique
             addProperty(node, new PropertyDescriptorEx(category, propName, propName, null, null, false, null, null, true));
@@ -125,7 +126,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
                 driverProvidedProperties.addAll(connectionsProps);
             }
         } catch (DBException e) {
-            log.warn("Can't load driver properties", e);
+            log.warn("Can't load driver properties", e); //$NON-NLS-1$
         }
     }
 

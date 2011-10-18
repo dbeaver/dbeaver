@@ -415,7 +415,7 @@
                 <view
                     id="org.jkiss.dbeaver.ext.generic.dataSourceWizardView"
                     targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                    label="Generic JDBC Connection Settings"
+                    label="%dialog.connection.header"
                     class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
                     icon="icons/database.png">
                 </view>
@@ -423,7 +423,7 @@
                       class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
                       icon="icons/database.png"
                       id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
-                      label="Generic JDBC Connection Settings"
+                      label="%dialog.connection.header"
                       targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
                 </view>
             </views>

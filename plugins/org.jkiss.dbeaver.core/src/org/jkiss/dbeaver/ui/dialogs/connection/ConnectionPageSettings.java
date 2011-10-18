@@ -8,9 +8,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -70,7 +72,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
 
     public void activatePage()
     {
-        setMessage(getDriver().getName() + " connection settings");
+        setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getName()));
 
         if (this.connectionEditor != null) {
             this.connectionEditor.loadSettings();

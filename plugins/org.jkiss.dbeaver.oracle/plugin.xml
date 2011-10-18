@@ -324,14 +324,14 @@
                 <view
                     id="org.jkiss.dbeaver.ext.oracle.dataSourceWizardView"
                     targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                    label="Oracle Connection Settings"
+                    label="%dialog.connection.header"
                     class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage"
                     icon="icons/oracle_icon.png">
                 </view>
                 <view
                     id="org.jkiss.dbeaver.ext.oracle.dataSourceEditorView"
                     targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                    label="Oracle Connection Settings"
+                    label="%dialog.connection.header"
                     class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage">
                 </view>
             </views>

@@ -12,6 +12,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericMessages;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -30,12 +31,12 @@ import java.util.List;
  */
 public class GenericConnectionPage extends DialogPage implements IDataSourceConnectionEditor
 {
-    private static final String PROP_HOST = "host";
-    private static final String PROP_PORT = "port";
-    private static final String PROP_DATABASE = "database";
-    private static final String PROP_SERVER = "server";
-    private static final String PROP_FOLDER = "folder";
-    private static final String PROP_FILE = "file";
+    private static final String PROP_HOST = "host"; //$NON-NLS-1$
+    private static final String PROP_PORT = "port"; //$NON-NLS-1$
+    private static final String PROP_DATABASE = "database"; //$NON-NLS-1$
+    private static final String PROP_SERVER = "server"; //$NON-NLS-1$
+    private static final String PROP_FOLDER = "folder"; //$NON-NLS-1$
+    private static final String PROP_FILE = "file"; //$NON-NLS-1$
 
     private IDataSourceConnectionEditorSite site;
     // Host/port
@@ -62,12 +63,12 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
 
     private Map<String, List<Control>> propGroupMap = new HashMap<String, List<Control>>();
 
-    private static final String GROUP_URL = "url";
-    private static final String GROUP_HOST = "host";
-    private static final String GROUP_SERVER = "server";
-    private static final String GROUP_DB = "db";
-    private static final String GROUP_PATH = "path";
-    private static final String GROUP_LOGIN = "login";
+    private static final String GROUP_URL = "url"; //$NON-NLS-1$
+    private static final String GROUP_HOST = "host"; //$NON-NLS-1$
+    private static final String GROUP_SERVER = "server"; //$NON-NLS-1$
+    private static final String GROUP_DB = "db"; //$NON-NLS-1$
+    private static final String GROUP_PATH = "path"; //$NON-NLS-1$
+    private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
     private PropertySourceCustom propertySource;
 
     public void createControl(Composite composite)
@@ -80,13 +81,13 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
         optionsFolder.setLayoutData(gd);
 
         TabItem addrTab = new TabItem(optionsFolder, SWT.NONE);
-        addrTab.setText("General");
-        addrTab.setToolTipText("General connection properties");
+        addrTab.setText(GenericMessages.dialog_connection_general_tab);
+        addrTab.setToolTipText(GenericMessages.dialog_connection_general_tab_tooltip);
         addrTab.setControl(createGeneralTab(optionsFolder));
 
         final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
-        propsTab.setText("Advanced");
-        propsTab.setToolTipText("Advanced/custom driver properties");
+        propsTab.setText(GenericMessages.dialog_connection_advanced_tab);
+        propsTab.setToolTipText(GenericMessages.dialog_connection_advanced_tab_tooltip);
         propsTab.setControl(createPropertiesTab(optionsFolder));
 
         optionsFolder.addSelectionListener(
@@ -127,7 +128,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
 
         {
             Label urlLabel = new Label(settingsGroup, SWT.NONE);
-            urlLabel.setText("JDBC URL:");
+            urlLabel.setText(GenericMessages.dialog_connection_jdbc_url_);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             urlLabel.setLayoutData(gd);
 
@@ -150,7 +151,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
         }
         {
             Label hostLabel = new Label(settingsGroup, SWT.NONE);
-            hostLabel.setText("Host:");
+            hostLabel.setText(GenericMessages.dialog_connection_host_label);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             hostText = new Text(settingsGroup, SWT.BORDER);
@@ -160,7 +161,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
             hostText.addModifyListener(textListener);
 
             Label portLabel = new Label(settingsGroup, SWT.NONE);
-            portLabel.setText("Port:");
+            portLabel.setText(GenericMessages.dialog_connection_port_label);
             portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             portText = new Text(settingsGroup, SWT.BORDER);
@@ -178,7 +179,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
 
         {
             Label serverLabel = new Label(settingsGroup, SWT.NONE);
-            serverLabel.setText("Server:");
+            serverLabel.setText(GenericMessages.dialog_connection_server_label);
             serverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             serverText = new Text(settingsGroup, SWT.BORDER);
@@ -197,7 +198,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
 
         {
             Label dbLabel = new Label(settingsGroup, SWT.NONE);
-            dbLabel.setText("Database/Schema:");
+            dbLabel.setText(GenericMessages.dialog_connection_database_schema_label);
             dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             dbText = new Text(settingsGroup, SWT.BORDER);
@@ -217,7 +218,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
 
         {
             Label pathLabel = new Label(settingsGroup, SWT.NONE);
-            pathLabel.setText("Path:");
+            pathLabel.setText(GenericMessages.dialog_connection_path_label);
             pathLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             pathText = new Text(settingsGroup, SWT.BORDER);
@@ -229,7 +230,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
             pathText.addModifyListener(textListener);
 
             Button browseButton = new Button(settingsGroup, SWT.PUSH);
-            browseButton.setText("Browse ... ");
+            browseButton.setText(GenericMessages.dialog_connection_browse_button);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             browseButton.setLayoutData(gd);
@@ -240,7 +241,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
                     if (metaURL.getAvailableProperties().contains(PROP_FILE)) {
                         FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
                         dialog.setFileName(pathText.getText());
-                        dialog.setText("Choose database file");
+                        dialog.setText(GenericMessages.dialog_connection_db_file_chooser_text);
                         String file = dialog.open();
                         if (file != null) {
                             pathText.setText(file);
@@ -256,8 +257,8 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
                                 dialog.setFilterPath(curFolder.getParentFile().getAbsolutePath());
                             }
                         }
-                        dialog.setText("Choose database folder");
-                        dialog.setMessage("Choose folder with database files");
+                        dialog.setText(GenericMessages.dialog_connection_db_folder_chooser_text);
+                        dialog.setMessage(GenericMessages.dialog_connection_db_folder_chooser_message);
                         String folder = dialog.open();
                         if (folder != null) {
                             pathText.setText(folder);
@@ -273,7 +274,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
 
         {
             Label userNameLabel = new Label(settingsGroup, SWT.NONE);
-            userNameLabel.setText("User name:");
+            userNameLabel.setText(GenericMessages.dialog_connection_user_name_label);
             userNameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             userNameText = new Text(settingsGroup, SWT.BORDER);
@@ -286,7 +287,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
             Control emptyLabel = createEmptyLabel(settingsGroup, 2);
 
             Label passwordLabel = new Label(settingsGroup, SWT.NONE);
-            passwordLabel.setText("Password:");
+            passwordLabel.setText(GenericMessages.dialog_connection_password_label);
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             passwordText = new Text(settingsGroup, SWT.BORDER | SWT.PASSWORD);
@@ -309,7 +310,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
             buttonsPanel.setLayoutData(gd);
 
             Button driverButton = new Button(buttonsPanel, SWT.PUSH);
-            driverButton.setText("Edit Driver Settings");
+            driverButton.setText(GenericMessages.dialog_connection_edit_driver_button);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
             gd.grabExcessHorizontalSpace = true;
             gd.grabExcessVerticalSpace = true;
@@ -330,7 +331,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
             });
 
             testButton = new Button(buttonsPanel, SWT.PUSH);
-            testButton.setText("Test Connection ... ");
+            testButton.setText(GenericMessages.dialog_connection_test_connection_button);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_END);
             gd.grabExcessHorizontalSpace = true;
             gd.grabExcessVerticalSpace = true;
@@ -406,7 +407,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
                     if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                         hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
                     } else {
-                        hostText.setText("localhost");
+                        hostText.setText("localhost"); //$NON-NLS-1$
                     }
                 }
                 if (portText != null) {
@@ -415,7 +416,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
                     } else if (site.getDriver().getDefaultPort() != null) {
                         portText.setText(site.getDriver().getDefaultPort());
                     } else {
-                        portText.setText("");
+                        portText.setText(""); //$NON-NLS-1$
                     }
                 }
                 if (serverText != null) {
@@ -428,11 +429,11 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
                     pathText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
                 }
             } else {
-                hostText.setText("");
-                portText.setText("");
-                serverText.setText("");
-                dbText.setText("");
-                pathText.setText("");
+                hostText.setText(""); //$NON-NLS-1$
+                portText.setText(""); //$NON-NLS-1$
+                serverText.setText(""); //$NON-NLS-1$
+                dbText.setText(""); //$NON-NLS-1$
+                pathText.setText(""); //$NON-NLS-1$
             }
             if (userNameText != null) {
                 userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
@@ -448,7 +449,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
                     if (!isCustom) {
                         evaluateURL();
                     } else {
-                        urlText.setText("");
+                        urlText.setText(""); //$NON-NLS-1$
                     }
                 }
             }
@@ -590,7 +591,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
                     newComponent = newComponent.replace(makePropPattern(PROP_FOLDER), pathText.getText());
                     newComponent = newComponent.replace(makePropPattern(PROP_FILE), pathText.getText());
                 }
-                if (newComponent.startsWith("[")) {
+                if (newComponent.startsWith("[")) { //$NON-NLS-1$
                     if (!newComponent.equals(component)) {
                         url.append(newComponent.substring(1, newComponent.length() - 1));
                     }
@@ -632,7 +633,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
 
     private static String makePropPattern(String prop)
     {
-        return "{" + prop + "}";
+        return "{" + prop + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }
