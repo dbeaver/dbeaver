@@ -4,7 +4,9 @@
 
 package org.jkiss.dbeaver.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,10 +22,12 @@ public class DBPConnectionInfo implements DBPObject
     private String userName;
     private String userPassword;
     private String url;
-    private Map<Object, Object> properties = new HashMap<Object, Object>();
+    private final Map<Object, Object> properties;
+    private final List<DBPConnectionEvent> events = new ArrayList<DBPConnectionEvent>();
 
     public DBPConnectionInfo()
     {
+        this.properties = new HashMap<Object, Object>();
     }
 
     public DBPConnectionInfo(DBPConnectionInfo info)
@@ -127,7 +131,7 @@ public class DBPConnectionInfo implements DBPObject
 
     public void setProperties(Map<Object, Object> properties)
     {
-        this.properties = new HashMap<Object, Object>();
+        this.properties.clear();
         this.properties.putAll(properties);
     }
 

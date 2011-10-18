@@ -184,7 +184,7 @@ class ConnectionPageFinal extends ActiveWizardPage
             eventsButton.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
-
+                    configureEvents();
                 }
             });
 
@@ -230,6 +230,15 @@ class ConnectionPageFinal extends ActiveWizardPage
     private void testConnection()
     {
         wizard.testConnection(wizard.getPageSettings().getConnectionInfo());
+    }
+
+    private void configureEvents()
+    {
+        EditEventsDialog dialog = new EditEventsDialog(
+            getShell(),
+            wizard.getPageSettings().getConnectionInfo());
+        dialog.open();
+
     }
 
 }

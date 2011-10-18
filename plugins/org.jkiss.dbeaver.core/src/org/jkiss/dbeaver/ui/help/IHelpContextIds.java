@@ -28,4 +28,5 @@ public interface IHelpContextIds
     public static final String CTX_CON_WIZARD_FINAL = "con-wizard-final"; //$NON-NLS-1$
 
     public static final String CTX_SEARCH_OBJECTS = "search-objects"; //$NON-NLS-1$
+    public static final String CTX_EDIT_CONNECTION_EVENTS = "connection-events";
 }
