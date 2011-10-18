@@ -49,10 +49,6 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         this.dataFilter = new DBDDataFilter(resultSetViewer.getDataFilter());
     }
 
-    protected boolean isResizable() {
-    	return true;
-    }
-
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText("Result Set Order/Filter Settings");

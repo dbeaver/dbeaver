@@ -4,16 +4,34 @@
 
 package org.jkiss.dbeaver.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+
+import java.util.*;
 
 /**
  * DBPConnectionInfo
  */
 public class DBPConnectionInfo implements DBPObject
 {
+    public static enum EventType {
+        BEFORE_CONNECT("Before Connect"),
+        AFTER_CONNECT("After Connect"),
+        BEFORE_DISCONNECT("Before Disconnect"),
+        AFTER_DISCONNECT("After Disconnect");
+
+        private final String title;
+
+        EventType(String title)
+        {
+            this.title = title;
+        }
+
+        public String getTitle()
+        {
+            return title;
+        }
+    }
+
     //private DBPDriver driver;
     private String hostName;
     private String hostPort;
@@ -23,7 +41,7 @@ public class DBPConnectionInfo implements DBPObject
     private String userPassword;
     private String url;
     private final Map<Object, Object> properties;
-    private final List<DBPConnectionEvent> events = new ArrayList<DBPConnectionEvent>();
+    private final Map<EventType, DBRShellCommand> events = new HashMap<EventType, DBRShellCommand>();
 
     public DBPConnectionInfo()
     {
@@ -135,4 +153,23 @@ public class DBPConnectionInfo implements DBPObject
         this.properties.putAll(properties);
     }
 
+    public DBRShellCommand getEvent(EventType eventType)
+    {
+        return events.get(eventType);
+    }
+
+    public void setEvent(EventType eventType, DBRShellCommand command)
+    {
+        if (command == null) {
+            events.remove(eventType);
+        } else {
+            events.put(eventType, command);
+        }
+    }
+
+    public EventType[] getDeclaredEvents()
+    {
+        Set<EventType> eventTypes = events.keySet();
+        return eventTypes.toArray(new EventType[eventTypes.size()]);
+    }
 }

@@ -95,11 +95,6 @@ public class DriverEditDialog extends HelpEnabledDialog
         this.defaultCategory = category;
     }
 
-    protected boolean isResizable()
-    {
-        return true;
-    }
-
     protected Control createContents(Composite parent)
     {
         Control ctl = super.createContents(parent);

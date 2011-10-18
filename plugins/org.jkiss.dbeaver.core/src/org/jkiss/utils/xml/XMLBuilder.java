@@ -265,14 +265,13 @@ public class XMLBuilder
                 writer.write("/>");
                 break;
             case STATE_NOTHING:
-            case STATE_TEXT_ADDED:
                 if (butify) {
                     writer.write('\n');
                     for (int i = 0; i < element.getLevel(); i++) {
                         writer.write('\t');
                     }
                 }
-
+            case STATE_TEXT_ADDED:
                 writer.write("</");
                 writer.write(element.getName());
                 writer.write('>');
@@ -416,10 +415,13 @@ public class XMLBuilder
             default:
                 break;
         }
+        if (textValue.length() > 0) {
+            this.writeText(textValue);
 
-        this.writeText(textValue);
-
-        state = STATE_TEXT_ADDED;
+            state = STATE_TEXT_ADDED;
+        } else {
+            state = STATE_NOTHING;
+        }
 
         return this;
     }

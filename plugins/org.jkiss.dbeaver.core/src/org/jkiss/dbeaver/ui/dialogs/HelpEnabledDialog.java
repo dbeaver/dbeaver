@@ -31,6 +31,10 @@ public abstract class HelpEnabledDialog extends TrayDialog {
         return contents;
     }
 
+    protected boolean isResizable() {
+    	return true;
+    }
+
 //    protected Button createHelpButton(Composite parent)
 //    {
 //        final Button button = createButton(parent, IDialogConstants.HELP_ID, IDialogConstants.HELP_LABEL, false);

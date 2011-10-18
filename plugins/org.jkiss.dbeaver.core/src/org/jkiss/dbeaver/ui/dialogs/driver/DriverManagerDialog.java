@@ -51,11 +51,6 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         super(shell, IHelpContextIds.CTX_DRIVER_MANAGER);
     }
 
-    protected boolean isResizable()
-    {
-        return true;
-    }
-
     protected Control createDialogArea(Composite parent)
     {
         List<DataSourceProviderDescriptor> provders = DataSourceProviderRegistry.getDefault().getDataSourceProviders();

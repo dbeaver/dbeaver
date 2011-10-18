@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -408,6 +409,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     xml.addAttribute("value", CommonUtils.toString(entry.getValue()));
                     xml.endElement();
                 }
+            }
+            for (DBPConnectionInfo.EventType eventType : connectionInfo.getDeclaredEvents()) {
+                DBRShellCommand command = connectionInfo.getEvent(eventType);
+                xml.startElement("event");
+                xml.addAttribute("type", eventType.name());
+                xml.addAttribute("enabled", command.isEnabled());
+                xml.addAttribute("showPanel", command.isShowProcessPanel());
+                xml.addAttribute("waitProcess", command.isWaitProcessFinish());
+                xml.addAttribute("terminateAtDisconnect", command.isTerminateAtDisconnect());
+                xml.addText(command.getCommand());
+                xml.endElement();
             }
             xml.endElement();
         }
