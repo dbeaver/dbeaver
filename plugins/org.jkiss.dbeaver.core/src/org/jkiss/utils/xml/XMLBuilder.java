@@ -415,13 +415,9 @@ public class XMLBuilder
             default:
                 break;
         }
-        if (textValue.length() > 0) {
-            this.writeText(textValue);
+        this.writeText(textValue);
 
-            state = STATE_TEXT_ADDED;
-        } else {
-            state = STATE_NOTHING;
-        }
+        state = STATE_TEXT_ADDED;
 
         return this;
     }

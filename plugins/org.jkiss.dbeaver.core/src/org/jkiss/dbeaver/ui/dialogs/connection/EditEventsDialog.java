@@ -30,7 +30,6 @@ public class EditEventsDialog extends HelpEnabledDialog {
 
     private DBPConnectionInfo connectionInfo;
     private Text commandText;
-    private Button enabledCheck;
     private Button showProcessCheck;
     private Button terminateCheck;
     private Button waitFinishCheck;
@@ -81,7 +80,13 @@ public class EditEventsDialog extends HelpEnabledDialog {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    selectEventType(getSelectedEventType());
+                    DBPConnectionInfo.EventType eventType = getSelectedEventType();
+                    selectEventType(eventType);
+                    DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
+                    boolean enabled = ((TableItem) e.item).getChecked();
+                    if (enabled || (command != null && enabled != command.isEnabled())) {
+                        updateEvent(false);
+                    }
                 }
             });
         }
@@ -112,8 +117,6 @@ public class EditEventsDialog extends HelpEnabledDialog {
                 }
             };
 
-            enabledCheck = UIUtils.createCheckbox(detailsGroup, "Enabled", false);
-            enabledCheck.addSelectionListener(eventEditAdapter);
             showProcessCheck = UIUtils.createCheckbox(detailsGroup, "Show Process Panel", false);
             showProcessCheck.addSelectionListener(eventEditAdapter);
             waitFinishCheck = UIUtils.createCheckbox(detailsGroup, "Wait Process Finish", false);
@@ -133,6 +136,16 @@ public class EditEventsDialog extends HelpEnabledDialog {
         return CommonUtils.isEmpty(selection) ? null : (DBPConnectionInfo.EventType) selection[0].getData();
     }
 
+    private TableItem getEventItem(DBPConnectionInfo.EventType eventType)
+    {
+        for (TableItem item : eventTypeTable.getItems()) {
+            if (item.getData() == eventType) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     private void updateEvent(boolean commandChange)
     {
         DBPConnectionInfo.EventType eventType = getSelectedEventType();
@@ -146,7 +159,8 @@ public class EditEventsDialog extends HelpEnabledDialog {
             if (commandChange) {
                 command.setCommand(commandText.getText());
             } else {
-                command.setEnabled(enabledCheck.getSelection());
+                TableItem item = getEventItem(eventType);
+                command.setEnabled(item.getChecked());
                 command.setShowProcessPanel(showProcessCheck.getSelection());
                 command.setWaitProcessFinish(waitFinishCheck.getSelection());
                 command.setTerminateAtDisconnect(terminateCheck.getSelection());
@@ -161,7 +175,6 @@ public class EditEventsDialog extends HelpEnabledDialog {
 
     private void selectEventType(DBPConnectionInfo.EventType eventType)
     {
-        enabledCheck.setEnabled(eventType != null);
         DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
         commandText.setEnabled(command != null && command.isEnabled());
         showProcessCheck.setEnabled(command != null && command.isEnabled());
@@ -170,13 +183,11 @@ public class EditEventsDialog extends HelpEnabledDialog {
 
         if (command != null) {
             commandText.setText(CommonUtils.toString(command.getCommand()));
-            enabledCheck.setSelection(command.isEnabled());
             showProcessCheck.setSelection(command.isShowProcessPanel());
             waitFinishCheck.setSelection(command.isWaitProcessFinish());
             terminateCheck.setSelection(command.isTerminateAtDisconnect());
         } else {
             commandText.setText("");
-            enabledCheck.setSelection(false);
             showProcessCheck.setSelection(false);
             waitFinishCheck.setSelection(false);
             terminateCheck.setSelection(false);

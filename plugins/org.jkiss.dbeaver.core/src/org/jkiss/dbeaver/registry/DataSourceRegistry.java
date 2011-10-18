@@ -415,9 +415,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.startElement("event");
                 xml.addAttribute("type", eventType.name());
                 xml.addAttribute("enabled", command.isEnabled());
-                xml.addAttribute("showPanel", command.isShowProcessPanel());
-                xml.addAttribute("waitProcess", command.isWaitProcessFinish());
-                xml.addAttribute("terminateAtDisconnect", command.isTerminateAtDisconnect());
+                xml.addAttribute("show-panel", command.isShowProcessPanel());
+                xml.addAttribute("wait-process", command.isWaitProcessFinish());
+                xml.addAttribute("terminate-at-disconnect", command.isTerminateAtDisconnect());
                 xml.addText(command.getCommand());
                 xml.endElement();
             }
@@ -441,7 +441,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         }
 
-        xml.addText(CommonUtils.getString(dataSource.getDescription()));
+        //xml.addText(CommonUtils.getString(dataSource.getDescription()));
         xml.endElement();
     }
 
@@ -455,6 +455,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         DataSourceDescriptor curDataSource;
         PasswordEncrypter encrypter;
         boolean isDescription = false;
+        DBRShellCommand curCommand = null;
 
         private DataSourcesParser(PasswordEncrypter encrypter)
         {
@@ -465,6 +466,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             throws XMLException
         {
             isDescription = false;
+            curCommand = null;
             if (localName.equals("data-source")) {
             	String name = atts.getValue("name");
                 String id = atts.getValue("id");
@@ -535,6 +537,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         atts.getValue("name"),
                         atts.getValue("value"));
                 }
+            } else if (localName.equals("event")) {
+                if (curDataSource != null) {
+                    DBPConnectionInfo.EventType eventType = DBPConnectionInfo.EventType.valueOf(atts.getValue("type"));
+                    curCommand = new DBRShellCommand("");
+                    curCommand.setEnabled(CommonUtils.getBoolean(atts.getValue("enabled")));
+                    curCommand.setShowProcessPanel(CommonUtils.getBoolean(atts.getValue("show-panel")));
+                    curCommand.setWaitProcessFinish(CommonUtils.getBoolean(atts.getValue("wait-process")));
+                    curCommand.setTerminateAtDisconnect(CommonUtils.getBoolean(atts.getValue("terminate-at-disconnect")));
+                    curDataSource.getConnectionInfo().setEvent(eventType, curCommand);
+                }
             } else if (localName.equals("custom-property")) {
                 if (curDataSource != null) {
                     curDataSource.getPreferenceStore().getProperties().put(
@@ -551,6 +563,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         {
             if (isDescription && curDataSource != null) {
                 curDataSource.setDescription(data);
+            } else if (curCommand != null) {
+                curCommand.setCommand(data);
+                curCommand = null;
             }
         }
 
