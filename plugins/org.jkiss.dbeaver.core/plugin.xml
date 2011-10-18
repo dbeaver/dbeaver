@@ -119,6 +119,13 @@
                 icon="icons/misc/sql.png"
                 name="%view_query_manager_title"/>
         <view
+                id="org.jkiss.dbeaver.core.shellProcess"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.process.ShellProcessView"
+                allowMultiple="true"
+                icon="icons/misc/shell.png"
+                name="%view_shell_process_title"/>
+        <view
                 icon="icons/progress_view.png"
                 category="org.eclipse.ui"
                 class="org.eclipse.ui.ExtensionFactory:progressView"
