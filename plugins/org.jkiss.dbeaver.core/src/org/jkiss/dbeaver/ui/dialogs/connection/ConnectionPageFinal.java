@@ -4,15 +4,12 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.swt.events.*;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -44,6 +41,7 @@ class ConnectionPageFinal extends ActiveWizardPage
     private Button savePasswordCheck;
     private Button showSystemObjects;
     private Button testButton;
+    private Button eventsButton;
     private Text catFilterText;
     private Text schemaFilterText;
 
@@ -170,22 +168,41 @@ class ConnectionPageFinal extends ActiveWizardPage
             schemaFilterText = UIUtils.createCheckText(filterGroup, "Filter schemas", CommonUtils.getString(schFilter), !CommonUtils.isEmpty(schFilter), 200);
         }
 
-        testButton = new Button(group, SWT.PUSH);
-        testButton.setText("Test Connection ... ");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = 2;
-        testButton.setLayoutData(gd);
-        testButton.addSelectionListener(new SelectionListener()
         {
-            public void widgetSelected(SelectionEvent e)
-            {
-                testConnection();
-            }
+            Composite buttonsGroup = UIUtils.createPlaceholder(group, 2);
+            buttonsGroup.setLayout(new GridLayout(2, true));
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.horizontalSpan = 2;
+            buttonsGroup.setLayoutData(gd);
 
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        });
+            eventsButton = new Button(buttonsGroup, SWT.PUSH);
+            eventsButton.setText("Events ...");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.grabExcessHorizontalSpace = true;
+            gd.grabExcessVerticalSpace = true;
+            eventsButton.setLayoutData(gd);
+            eventsButton.addSelectionListener(new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+
+                }
+            });
+
+            testButton = new Button(buttonsGroup, SWT.PUSH);
+            testButton.setText("Test Connection ... ");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            gd.grabExcessHorizontalSpace = true;
+            gd.grabExcessVerticalSpace = true;
+            testButton.setLayoutData(gd);
+
+            testButton.addSelectionListener(new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    testConnection();
+                }
+            });
+
+        }
 
         setControl(group);
 
