@@ -4,12 +4,13 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.swt.events.*;
-import org.jkiss.dbeaver.ui.help.IHelpContextIds;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -17,11 +18,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.help.IHelpContextIds;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.StringTokenizer;
 
@@ -49,10 +53,10 @@ class ConnectionPageFinal extends ActiveWizardPage
 
     ConnectionPageFinal(ConnectionWizard wizard)
     {
-        super("newConnectionFinal");
+        super("newConnectionFinal"); //$NON-NLS-1$
         this.wizard = wizard;
-        setTitle("Finish connection creation");
-        setDescription("Set connection name.");
+        setTitle(CoreMessages.dialog_connection_wizard_final_header);
+        setDescription(CoreMessages.dialog_connection_wizard_final_description);
     }
 
     ConnectionPageFinal(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
@@ -68,7 +72,7 @@ class ConnectionPageFinal extends ActiveWizardPage
             testButton.setEnabled(settings != null && settings.isPageComplete());
             if (settings != null && connectionNameText != null && (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged)) {
                 DBPConnectionInfo connectionInfo = settings.getConnectionInfo();
-                String newName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName();
+                String newName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
                 if (CommonUtils.isEmpty(newName)) {
                     newName = connectionInfo.getDatabaseName();
                     if (CommonUtils.isEmpty(newName)) {
@@ -78,16 +82,16 @@ class ConnectionPageFinal extends ActiveWizardPage
                         newName = connectionInfo.getUrl();
                     }
                     if (CommonUtils.isEmpty(newName)) {
-                        newName = "New Connection";
+                        newName = CoreMessages.dialog_connection_wizard_final_default_new_connection_name;
                     }
-                    StringTokenizer st = new StringTokenizer(newName, "/\\:,?=%$#@!^&*()");
+                    StringTokenizer st = new StringTokenizer(newName, "/\\:,?=%$#@!^&*()"); //$NON-NLS-1$
                     while (st.hasMoreTokens()) {
                         newName = st.nextToken();
                     }
                     if (!CommonUtils.isEmpty(settings.getDriver().getCategory())) {
-                        newName = settings.getDriver().getCategory() + " - " + newName;
+                        newName = settings.getDriver().getCategory() + " - " + newName; //$NON-NLS-1$
                     } else {
-                        newName = settings.getDriver().getName() + " - " + newName;
+                        newName = settings.getDriver().getName() + " - " + newName; //$NON-NLS-1$
                     }
                     newName = CommonUtils.truncateString(newName, 50);
                 }
@@ -104,7 +108,7 @@ class ConnectionPageFinal extends ActiveWizardPage
             try {
                 features = dataSourceDescriptor.getDriver().getDataSourceProvider().getFeatures();
             } catch (DBException e) {
-                log.error("Can't obtain data source provider instance", e);
+                log.error("Can't obtain data source provider instance", e); //$NON-NLS-1$
             }
             UIUtils.enableCheckText(catFilterText, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
             UIUtils.enableCheckText(schemaFilterText, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
@@ -127,8 +131,8 @@ class ConnectionPageFinal extends ActiveWizardPage
         //gd.verticalAlignment = GridData.VERTICAL_ALIGN_CENTER;
         //group.setLayoutData(gd);
 
-        String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName();
-        connectionNameText = UIUtils.createLabelText(group, "Connection name", CommonUtils.toString(connectionName));
+        String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
+        connectionNameText = UIUtils.createLabelText(group, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
         connectionNameText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {
@@ -138,34 +142,34 @@ class ConnectionPageFinal extends ActiveWizardPage
         });
 
         {
-            Group securityGroup = UIUtils.createControlGroup(group, "Security", 1, GridData.FILL_HORIZONTAL, 0);
+            Group securityGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_security, 1, GridData.FILL_HORIZONTAL, 0);
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
             gd.widthHint = 400;
             securityGroup.setLayoutData(gd);
          
-            savePasswordCheck = UIUtils.createCheckbox(securityGroup, "Save password locally", dataSourceDescriptor == null || dataSourceDescriptor.isSavePassword());
+            savePasswordCheck = UIUtils.createCheckbox(securityGroup, CoreMessages.dialog_connection_wizard_final_checkbox_save_password_locally, dataSourceDescriptor == null || dataSourceDescriptor.isSavePassword());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             //gd.horizontalSpan = 2;
             savePasswordCheck.setLayoutData(gd);
         }
 
         {
-            Group filterGroup = UIUtils.createControlGroup(group, "Filters", 2, GridData.FILL_HORIZONTAL, 0);
+            Group filterGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_filters, 2, GridData.FILL_HORIZONTAL, 0);
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
             filterGroup.setLayoutData(gd);
             
-            showSystemObjects = UIUtils.createCheckbox(filterGroup, "Show system objects", dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
+            showSystemObjects = UIUtils.createCheckbox(filterGroup, CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects, dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             showSystemObjects.setLayoutData(gd);
 
             String catFilter = dataSourceDescriptor == null ? null : dataSourceDescriptor.getCatalogFilter();
-            catFilterText = UIUtils.createCheckText(filterGroup, "Filter catalogs", CommonUtils.getString(catFilter), !CommonUtils.isEmpty(catFilter), 200);
+            catFilterText = UIUtils.createCheckText(filterGroup, CoreMessages.dialog_connection_wizard_final_checkbox_filter_catalogs, CommonUtils.getString(catFilter), !CommonUtils.isEmpty(catFilter), 200);
 
-            String schFilter = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getSchemaFilter();
-            schemaFilterText = UIUtils.createCheckText(filterGroup, "Filter schemas", CommonUtils.getString(schFilter), !CommonUtils.isEmpty(schFilter), 200);
+            String schFilter = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getSchemaFilter(); //$NON-NLS-1$
+            schemaFilterText = UIUtils.createCheckText(filterGroup, CoreMessages.dialog_connection_wizard_final_checkbox_filter_schemas, CommonUtils.getString(schFilter), !CommonUtils.isEmpty(schFilter), 200);
         }
 
         {
@@ -176,20 +180,20 @@ class ConnectionPageFinal extends ActiveWizardPage
             buttonsGroup.setLayoutData(gd);
 
             eventsButton = new Button(buttonsGroup, SWT.PUSH);
-            eventsButton.setText("Events ...");
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            eventsButton.setText(CoreMessages.dialog_connection_wizard_final_button_events);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.grabExcessHorizontalSpace = true;
             gd.grabExcessVerticalSpace = true;
             eventsButton.setLayoutData(gd);
             eventsButton.addSelectionListener(new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
+            public void widgetSelected(SelectionEvent e)
+            {
                     configureEvents();
-                }
+            }
             });
 
             testButton = new Button(buttonsGroup, SWT.PUSH);
-            testButton.setText("Test Connection ... ");
+            testButton.setText(CoreMessages.dialog_connection_wizard_final_button_test);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             gd.grabExcessHorizontalSpace = true;
             gd.grabExcessVerticalSpace = true;
@@ -197,10 +201,10 @@ class ConnectionPageFinal extends ActiveWizardPage
 
             testButton.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
-                {
+            {
                     testConnection();
-                }
-            });
+            }
+        });
 
         }
 
@@ -239,6 +243,6 @@ class ConnectionPageFinal extends ActiveWizardPage
             wizard.getPageSettings().getConnectionInfo());
         dialog.open();
 
-    }
+}
 
 }

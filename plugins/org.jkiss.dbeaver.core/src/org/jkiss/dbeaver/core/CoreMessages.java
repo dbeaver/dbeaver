@@ -95,6 +95,50 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_connection_message;
 
+	public static String dialog_connection_wizard_final_button_test;
+
+	public static String dialog_connection_wizard_final_button_events;
+
+	public static String dialog_connection_wizard_final_checkbox_filter_catalogs;
+
+	public static String dialog_connection_wizard_final_checkbox_filter_schemas;
+
+	public static String dialog_connection_wizard_final_checkbox_save_password_locally;
+
+	public static String dialog_connection_wizard_final_checkbox_show_system_objects;
+
+	public static String dialog_connection_wizard_final_default_new_connection_name;
+
+	public static String dialog_connection_wizard_final_description;
+
+	public static String dialog_connection_wizard_final_group_filters;
+
+	public static String dialog_connection_wizard_final_group_security;
+
+	public static String dialog_connection_wizard_final_header;
+
+	public static String dialog_connection_wizard_final_label_connection_name;
+
+	public static String dialog_connection_wizard_start_connection_monitor_close;
+
+	public static String dialog_connection_wizard_start_connection_monitor_start;
+
+	public static String dialog_connection_wizard_start_connection_monitor_subtask_test;
+
+	public static String dialog_connection_wizard_start_connection_monitor_success;
+
+	public static String dialog_connection_wizard_start_connection_monitor_connected;
+
+	public static String dialog_connection_wizard_start_connection_monitor_thread;
+
+	public static String dialog_connection_wizard_start_dialog_error_message;
+
+	public static String dialog_connection_wizard_start_dialog_error_title;
+
+	public static String dialog_connection_wizard_start_dialog_interrupted_message;
+
+	public static String dialog_connection_wizard_start_dialog_interrupted_title;
+
 	public static String model_edit_execute_;
 
 	public static String model_html_read_database_meta_data;
