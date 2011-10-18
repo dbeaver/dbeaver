@@ -410,7 +410,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     xml.endElement();
                 }
             }
-            for (DBPConnectionInfo.EventType eventType : connectionInfo.getDeclaredEvents()) {
+            for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
                 DBRShellCommand command = connectionInfo.getEvent(eventType);
                 xml.startElement("event");
                 xml.addAttribute("type", eventType.name());
@@ -539,7 +539,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
             } else if (localName.equals("event")) {
                 if (curDataSource != null) {
-                    DBPConnectionInfo.EventType eventType = DBPConnectionInfo.EventType.valueOf(atts.getValue("type"));
+                    DBPConnectionEventType eventType = DBPConnectionEventType.valueOf(atts.getValue("type"));
                     curCommand = new DBRShellCommand("");
                     curCommand.setEnabled(CommonUtils.getBoolean(atts.getValue("enabled")));
                     curCommand.setShowProcessPanel(CommonUtils.getBoolean(atts.getValue("show-panel")));

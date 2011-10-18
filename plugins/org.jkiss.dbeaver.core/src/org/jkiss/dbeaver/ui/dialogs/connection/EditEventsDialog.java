@@ -12,6 +12,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -35,13 +36,13 @@ public class EditEventsDialog extends HelpEnabledDialog {
     private Button waitFinishCheck;
     private Table eventTypeTable;
 
-    private final Map<DBPConnectionInfo.EventType, DBRShellCommand> eventsCache = new HashMap<DBPConnectionInfo.EventType, DBRShellCommand>();
+    private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<DBPConnectionEventType, DBRShellCommand>();
 
     protected EditEventsDialog(Shell shell, DBPConnectionInfo connectionInfo)
     {
         super(shell, IHelpContextIds.CTX_EDIT_CONNECTION_EVENTS);
         this.connectionInfo = connectionInfo;
-        for (DBPConnectionInfo.EventType eventType : DBPConnectionInfo.EventType.values()) {
+        for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
             DBRShellCommand command = connectionInfo.getEvent(eventType);
             eventsCache.put(eventType, command == null ? null : new DBRShellCommand(command));
         }
@@ -67,7 +68,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
             eventTypeTable = new Table(eventGroup, SWT.BORDER | SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION);
             eventTypeTable.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-            for (DBPConnectionInfo.EventType eventType : DBPConnectionInfo.EventType.values()) {
+            for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
                 DBRShellCommand command = eventsCache.get(eventType);
                 TableItem item = new TableItem(eventTypeTable, SWT.NONE);
                 item.setData(eventType);
@@ -80,7 +81,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    DBPConnectionInfo.EventType eventType = getSelectedEventType();
+                    DBPConnectionEventType eventType = getSelectedEventType();
                     selectEventType(eventType);
                     DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
                     boolean enabled = ((TableItem) e.item).getChecked();
@@ -130,13 +131,13 @@ public class EditEventsDialog extends HelpEnabledDialog {
         return composite;
     }
 
-    private DBPConnectionInfo.EventType getSelectedEventType()
+    private DBPConnectionEventType getSelectedEventType()
     {
         TableItem[] selection = eventTypeTable.getSelection();
-        return CommonUtils.isEmpty(selection) ? null : (DBPConnectionInfo.EventType) selection[0].getData();
+        return CommonUtils.isEmpty(selection) ? null : (DBPConnectionEventType) selection[0].getData();
     }
 
-    private TableItem getEventItem(DBPConnectionInfo.EventType eventType)
+    private TableItem getEventItem(DBPConnectionEventType eventType)
     {
         for (TableItem item : eventTypeTable.getItems()) {
             if (item.getData() == eventType) {
@@ -148,7 +149,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
 
     private void updateEvent(boolean commandChange)
     {
-        DBPConnectionInfo.EventType eventType = getSelectedEventType();
+        DBPConnectionEventType eventType = getSelectedEventType();
         if (eventType != null) {
             DBRShellCommand command = eventsCache.get(eventType);
             if (command == null) {
@@ -173,7 +174,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
         }
     }
 
-    private void selectEventType(DBPConnectionInfo.EventType eventType)
+    private void selectEventType(DBPConnectionEventType eventType)
     {
         DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
         commandText.setEnabled(command != null && command.isEnabled());
@@ -197,7 +198,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
     @Override
     protected void okPressed()
     {
-        for (Map.Entry<DBPConnectionInfo.EventType, DBRShellCommand> entry : eventsCache.entrySet()) {
+        for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
             connectionInfo.setEvent(entry.getKey(), entry.getValue());
         }
         super.okPressed();

@@ -13,24 +13,6 @@ import java.util.*;
  */
 public class DBPConnectionInfo implements DBPObject
 {
-    public static enum EventType {
-        BEFORE_CONNECT("Before Connect"),
-        AFTER_CONNECT("After Connect"),
-        BEFORE_DISCONNECT("Before Disconnect"),
-        AFTER_DISCONNECT("After Disconnect");
-
-        private final String title;
-
-        EventType(String title)
-        {
-            this.title = title;
-        }
-
-        public String getTitle()
-        {
-            return title;
-        }
-    }
 
     //private DBPDriver driver;
     private String hostName;
@@ -41,7 +23,7 @@ public class DBPConnectionInfo implements DBPObject
     private String userPassword;
     private String url;
     private final Map<Object, Object> properties;
-    private final Map<EventType, DBRShellCommand> events = new HashMap<EventType, DBRShellCommand>();
+    private final Map<DBPConnectionEventType, DBRShellCommand> events = new HashMap<DBPConnectionEventType, DBRShellCommand>();
 
     public DBPConnectionInfo()
     {
@@ -153,12 +135,12 @@ public class DBPConnectionInfo implements DBPObject
         this.properties.putAll(properties);
     }
 
-    public DBRShellCommand getEvent(EventType eventType)
+    public DBRShellCommand getEvent(DBPConnectionEventType eventType)
     {
         return events.get(eventType);
     }
 
-    public void setEvent(EventType eventType, DBRShellCommand command)
+    public void setEvent(DBPConnectionEventType eventType, DBRShellCommand command)
     {
         if (command == null) {
             events.remove(eventType);
@@ -167,9 +149,9 @@ public class DBPConnectionInfo implements DBPObject
         }
     }
 
-    public EventType[] getDeclaredEvents()
+    public DBPConnectionEventType[] getDeclaredEvents()
     {
-        Set<EventType> eventTypes = events.keySet();
-        return eventTypes.toArray(new EventType[eventTypes.size()]);
+        Set<DBPConnectionEventType> eventTypes = events.keySet();
+        return eventTypes.toArray(new DBPConnectionEventType[eventTypes.size()]);
     }
 }

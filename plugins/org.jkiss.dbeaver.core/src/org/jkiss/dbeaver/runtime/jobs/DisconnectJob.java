@@ -8,9 +8,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.text.MessageFormat;
@@ -18,24 +18,25 @@ import java.text.MessageFormat;
 /**
  * DisconnectJob
  */
-public class DisconnectJob extends AbstractJob
+public class DisconnectJob extends EventProcessorJob
 {
     static final Log log = LogFactory.getLog(DisconnectJob.class);
-
-    private DataSourceDescriptor container;
 
     public DisconnectJob(
         DataSourceDescriptor container)
     {
-        super("Disconnect from " + container.getName());
+        super("Disconnect from " + container.getName(), container);
         setUser(true);
-        this.container = container;
     }
 
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
+            processEvents(DBPConnectionEventType.BEFORE_DISCONNECT);
+
             container.disconnect(monitor);
+
+            processEvents(DBPConnectionEventType.AFTER_DISCONNECT);
 
             return Status.OK_STATUS;
         }

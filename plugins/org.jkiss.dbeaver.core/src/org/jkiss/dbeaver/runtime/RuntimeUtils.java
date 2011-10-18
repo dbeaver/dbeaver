@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
@@ -36,6 +38,9 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * RuntimeUtils
@@ -45,6 +50,7 @@ public class RuntimeUtils
     static final Log log = LogFactory.getLog(RuntimeUtils.class);
 
     private static JexlEngine jexlEngine;
+    private static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
 
     @SuppressWarnings("unchecked")
     public static <T> T getObjectAdapter(Object adapter, Class<T> objectType)
@@ -319,6 +325,36 @@ public class RuntimeUtils
             }
         }
         return false;
+    }
+
+    public static void processCommand(
+        DBRShellCommand command,
+        Map<String, Object> variables)
+    {
+        String commandLine = replaceVariables(command.getCommand(), variables);
+
+        try {
+            Runtime.getRuntime().exec(commandLine);
+        } catch (IOException e) {
+            UIUtils.showErrorDialog(null, "Process", commandLine, e);
+        }
+    }
+
+    private static String replaceVariables(String string, Map<String, Object> variables)
+    {
+        Matcher matcher = VAR_PATTERN.matcher(string);
+        int pos = 0;
+        while (matcher.find(pos)) {
+            pos = matcher.end();
+            String varName = matcher.group(2);
+            Object varValue = variables.get(varName);
+            if (varValue != null) {
+                matcher = VAR_PATTERN.matcher(
+                    string = matcher.replaceFirst(CommonUtils.toString(varValue)));
+                pos = 0;
+            }
+        }
+        return string;
     }
 
     private static class SaveRunner implements Runnable {

@@ -11,31 +11,28 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.text.MessageFormat;
 
 /**
  * ConnectJob
  */
-public class ConnectJob extends AbstractJob
+public class ConnectJob extends EventProcessorJob
 {
     static final Log log = LogFactory.getLog(ConnectJob.class);
 
-    private DataSourceDescriptor container;
     private volatile Thread connectThread;
 
     public ConnectJob(
         DataSourceDescriptor container)
     {
-        super("Connect to " + container.getName());
+        super("Connect to " + container.getName(), container);
         setUser(true);
         setProperty(IProgressConstants.ICON_PROPERTY, ImageDescriptor.createFromImage(container.getDriver().getIcon()));
-        this.container = container;
     }
 
     @Override
@@ -48,6 +45,8 @@ public class ConnectJob extends AbstractJob
                 connectThread.setName("Connect to datasource '" + container.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
+            processEvents(DBPConnectionEventType.BEFORE_CONNECT);
+
             try {
                 container.connect(monitor);
             } finally {
@@ -56,6 +55,8 @@ public class ConnectJob extends AbstractJob
                     connectThread = null;
                 }
             }
+
+            processEvents(DBPConnectionEventType.AFTER_CONNECT);
 
             return new Status(
                 Status.OK,
