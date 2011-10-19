@@ -51,4 +51,8 @@ public final class PrefConstants
     public static final String HEX_FONT_NAME = "hex.font.name"; //$NON-NLS-1$
     public static final String HEX_FONT_SIZE = "hex.font.size"; //$NON-NLS-1$
     public static final String HEX_FONT_STYLE = "hex.font.style"; //$NON-NLS-1$
+
+    // General UI
+    public static final String UI_AUTO_UPDATE_CHECK = "ui.auto.update.check"; //$NON-NLS-1$
+
 }

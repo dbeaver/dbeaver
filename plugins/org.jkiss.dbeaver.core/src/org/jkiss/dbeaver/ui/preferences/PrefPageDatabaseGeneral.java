@@ -15,9 +15,9 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 /**
- * PrefPageCommon
+ * PrefPageDatabaseGeneral
  */
-public class PrefPageCommon extends TargetPrefPage
+public class PrefPageDatabaseGeneral extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common";
 
@@ -29,7 +29,7 @@ public class PrefPageCommon extends TargetPrefPage
     private Button readExpensiveCheck;
     private Button caseSensitiveNamesCheck;
 
-    public PrefPageCommon()
+    public PrefPageDatabaseGeneral()
     {
         super();
         setPreferenceStore(DBeaverCore.getInstance().getGlobalPreferenceStore());
