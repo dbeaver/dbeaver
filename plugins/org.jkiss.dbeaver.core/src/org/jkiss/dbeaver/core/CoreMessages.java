@@ -33,6 +33,20 @@ public class CoreMessages extends NLS {
 	public static String actions_ContentFormatProposal_tooltip;
 	public static String actions_ContentFormatProposal_description;
 
+	public static String actions_navigator__objects;
+
+	public static String actions_navigator_create_new;
+
+	public static String actions_navigator_edit;
+
+	public static String actions_navigator_error_dialog_open_entity_title;
+
+	public static String actions_navigator_error_dialog_open_resource_title;
+
+	public static String actions_navigator_open;
+
+	public static String actions_navigator_view;
+
 	public static String common_error_sql;
 
 	public static String confirm_exit_title;

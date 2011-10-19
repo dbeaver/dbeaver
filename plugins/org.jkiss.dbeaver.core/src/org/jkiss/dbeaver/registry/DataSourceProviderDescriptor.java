@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
@@ -263,8 +264,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             this,
             null,
             config.getAttribute(RegistryConstants.ATTR_ID),
-            "Connection",
-            "Connection",
+            CoreMessages.core_model_Connection,
+            CoreMessages.core_model_Connection,
             config.getAttribute(RegistryConstants.ATTR_PATH),
             null,
             false,

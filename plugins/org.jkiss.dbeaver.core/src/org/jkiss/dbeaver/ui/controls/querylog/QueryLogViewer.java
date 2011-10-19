@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.querylog;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 import org.apache.commons.logging.Log;
@@ -391,7 +392,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
     static String getObjectType(QMMObject object)
     {
         if (object instanceof QMMSessionInfo) {
-            return "Connection";
+            return CoreMessages.core_model_Connection;
         } else if (object instanceof QMMStatementInfo || object instanceof QMMStatementExecuteInfo) {
             return "SQL";
         } else if (object instanceof QMMStatementScripInfo) {

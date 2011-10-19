@@ -18,6 +18,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
@@ -77,7 +78,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 handler.openResource(resource, window);
             }
         } catch (Exception e) {
-            UIUtils.showErrorDialog(window.getShell(), "Open resource", "Can't open resource '" + resource.getName() + "'", e);
+            UIUtils.showErrorDialog(window.getShell(), CoreMessages.actions_navigator_error_dialog_open_resource_title, "Can't open resource '" + resource.getName() + "'", e); //$NON-NLS-3$
         }
     }
 
@@ -135,10 +136,10 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     editorInput,
                     EntityEditor.class.getName());
             } else {
-                throw new DBException("Don't know how to open object '" + selectedNode.getNodeName() + "'");
+                throw new DBException("Don't know how to open object '" + selectedNode.getNodeName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             }
         } catch (Exception ex) {
-            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Open entity", "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
+            UIUtils.showErrorDialog(workbenchWindow.getShell(), CoreMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
             return null;
         }
     }
@@ -152,16 +153,16 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 ISelection selection = selectionProvider.getSelection();
                 DBNNode node = NavigatorUtils.getSelectedNode(selection);
                 if (node != null) {
-                    String actionName = "Open";
+                    String actionName = CoreMessages.actions_navigator_open;
                     if (node instanceof DBNDatabaseNode) {
                         DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(((DBNDatabaseNode) node).getObject().getClass());
-                        actionName = objectManager == null ? "View" : "Edit";
+                        actionName = objectManager == null ? CoreMessages.actions_navigator_view : CoreMessages.actions_navigator_edit;
                     }
                     String label;
                     if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
-                        label = actionName + " Objects";
+                        label = actionName + CoreMessages.actions_navigator__objects;
                     } else {
-                        label = actionName + " " + node.getNodeType();
+                        label = actionName + " " + node.getNodeType(); //$NON-NLS-1$
                     }
                     element.setText(label);
                 }

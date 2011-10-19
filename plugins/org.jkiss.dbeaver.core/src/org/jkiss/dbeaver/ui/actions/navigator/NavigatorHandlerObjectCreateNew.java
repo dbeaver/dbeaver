@@ -13,6 +13,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
@@ -30,7 +31,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (element instanceof DBNNode) {
                 createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNNode) element, null);
             } else {
-                log.error("Can't create new object based on selected element '" + element + "'");
+                log.error("Can't create new object based on selected element '" + element + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
         return null;
@@ -50,7 +51,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                     } else {
                         objectName = node.getNodeType();
                     }
-                    element.setText("Create New " + objectName);
+                    element.setText(CoreMessages.actions_navigator_create_new + objectName);
                 }
             }
         }
