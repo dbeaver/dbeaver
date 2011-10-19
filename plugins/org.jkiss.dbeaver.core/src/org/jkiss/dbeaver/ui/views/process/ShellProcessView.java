@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.runtime.DBRProcessController;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -25,7 +26,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class ShellProcessView extends ViewPart
+public class ShellProcessView extends ViewPart implements DBRProcessController
 {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.shellProcess";
 
@@ -42,18 +43,32 @@ public class ShellProcessView extends ViewPart
         UIUtils.setHelp(group, IHelpContextIds.CTX_QUERY_MANAGER);
     }
 
+    public DBRProcessDescriptor getProcessDescriptor()
+    {
+        return processDescriptor;
+    }
+
+    public void terminateProcess()
+    {
+        if (processDescriptor != null) {
+            if (processDescriptor.isRunning()) {
+                processDescriptor.terminate();
+                DBeaverCore.getActiveWorkbenchShell().getDisplay().asyncExec(new Runnable() {
+                    public void run()
+                    {
+                        setPartName(processDescriptor.getName() + " (destroyed: " + processDescriptor.getExitValue() + ")");
+                    }
+                });
+
+            }
+        }
+    }
+
     @Override
     public void dispose()
     {
         terminateProcess();
         super.dispose();
-    }
-
-    private void terminateProcess()
-    {
-        if (processDescriptor != null) {
-            processDescriptor.terminate();
-        }
     }
 
     public void setFocus()

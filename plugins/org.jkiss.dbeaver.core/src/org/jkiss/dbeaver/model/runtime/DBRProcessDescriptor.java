@@ -19,7 +19,7 @@ public class DBRProcessDescriptor
     private final DBRShellCommand command;
     private ProcessBuilder processBuilder;
     private Process process;
-    private int exitValue;
+    private int exitValue = -1;
 
     public DBRProcessDescriptor(DBRShellCommand command)
     {
@@ -57,6 +57,11 @@ public class DBRProcessDescriptor
         return process;
     }
 
+    public boolean isRunning()
+    {
+        return process != null;
+    }
+
     public int getExitValue()
     {
         return exitValue;
@@ -74,12 +79,18 @@ public class DBRProcessDescriptor
         }
     }
 
-    public void terminate()
+    public synchronized void terminate()
     {
         if (process != null) {
             process.destroy();
-            exitValue = process.exitValue();
+            try {
+                exitValue = process.waitFor();
+            } catch (InterruptedException e) {
+                // Skip
+            }
+            //exitValue = process.exitValue();
             process = null;
+            DBRProcessPropertyTester.firePropertyChange(DBRProcessPropertyTester.PROP_RUNNING);
         }
     }
 

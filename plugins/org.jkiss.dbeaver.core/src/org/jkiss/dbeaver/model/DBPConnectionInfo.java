@@ -23,11 +23,12 @@ public class DBPConnectionInfo implements DBPObject
     private String userPassword;
     private String url;
     private final Map<Object, Object> properties;
-    private final Map<DBPConnectionEventType, DBRShellCommand> events = new HashMap<DBPConnectionEventType, DBRShellCommand>();
+    private final Map<DBPConnectionEventType, DBRShellCommand> events;
 
     public DBPConnectionInfo()
     {
         this.properties = new HashMap<Object, Object>();
+        this.events = new HashMap<DBPConnectionEventType, DBRShellCommand>();
     }
 
     public DBPConnectionInfo(DBPConnectionInfo info)
@@ -40,6 +41,7 @@ public class DBPConnectionInfo implements DBPObject
         this.userPassword = info.userPassword;
         this.url = info.url;
         this.properties = new HashMap<Object, Object>(info.properties);
+        this.events = new HashMap<DBPConnectionEventType, DBRShellCommand>(info.events);
     }
 
 /*

@@ -35,57 +35,55 @@
                 id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
                 namespace="org.jkiss.dbeaver.core.global"
                 properties="standalone,hasMultipleProjects"
-                type="java.lang.Object">
-        </propertyTester>
+                type="java.lang.Object"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.datasource"
                 properties="connected,transactional,transactionActive"
-                type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
-        </propertyTester>
+                type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 namespace="org.jkiss.dbeaver.core.object"
                 properties="canOpen,canCreate,canPaste,canDelete,canRename"
-                type="org.jkiss.dbeaver.model.navigator.DBNNode">
-        </propertyTester>
+                type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.resource"
                 properties="canOpen,canDelete,canCreateFolder,canSetActive,type"
-                type="org.eclipse.core.resources.IResource">
-        </propertyTester>
+                type="org.eclipse.core.resources.IResource"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.database.editor"
                 properties="active"
-                type="org.jkiss.dbeaver.ext.IDatabaseNodeEditor">
-        </propertyTester>
+                type="org.jkiss.dbeaver.ext.IDatabaseNodeEditor"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.sql"
                 properties="canExecute,canExplain"
-                type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-        </propertyTester>
+                type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
                 id="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
                 namespace="org.jkiss.dbeaver.core.resultset"
                 properties="hasData,canCopy,canCopy,canPaste,canCut,canMove,editable,changed"
-                type="org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid">
-        </propertyTester>
+                type="org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.entity"
                 properties="dirty,canUndo,canRedo"
-                type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
-        </propertyTester>
+                type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+        <propertyTester
+                class="org.jkiss.dbeaver.model.runtime.DBRProcessPropertyTester"
+                id="org.jkiss.dbeaver.model.runtime.DBRProcessPropertyTester"
+                namespace="org.jkiss.dbeaver.runtime.process"
+                properties="running"
+                type="org.jkiss.dbeaver.model.runtime.DBRProcessController"/>
 
     </extension>
     <extension point="org.eclipse.ui.views">
@@ -194,6 +192,8 @@
         <command id="org.jkiss.dbeaver.core.qm.filter" name="%command.org.jkiss.dbeaver.core.qm.filter.name" description="%command.org.jkiss.dbeaver.core.qm.filter.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.qm.clear" name="%command.org.jkiss.dbeaver.core.qm.clear.name" description="%command.org.jkiss.dbeaver.core.qm.clear.description" categoryId="org.jkiss.dbeaver.core.util"/>
 
+        <command id="org.jkiss.dbeaver.core.process.stop" name="%command.org.jkiss.dbeaver.core.process.stop.name" description="%command.org.jkiss.dbeaver.core.process.stop.description" categoryId="org.jkiss.dbeaver.core.util"/>
+
         <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="Content Format" description="Format text"/>
     </extension>
 
@@ -246,6 +246,8 @@
 
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="IMG_ETOOL_CLEAR"/>
+
+        <image commandId="org.jkiss.dbeaver.core.process.stop" icon="IMG_ELCL_STOP"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
@@ -877,6 +879,15 @@
         <!-- Query log view handlers -->
         <handler commandId="org.jkiss.dbeaver.core.qm.filter" class="org.jkiss.dbeaver.ui.views.qm.QueryManagerFilterHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.qm.clear" class="org.jkiss.dbeaver.ui.views.qm.QueryManagerClearHandler"/>
+
+        <!-- Process view handlers -->
+        <handler commandId="org.jkiss.dbeaver.core.process.stop" class="org.jkiss.dbeaver.ui.views.process.ShellProcessStopHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.runtime.process.running"/>
+                </with>
+            </enabledWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -1241,6 +1252,14 @@
             <command commandId="org.jkiss.dbeaver.core.qm.filter"/>
             <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
             <separator name="additions" visible="true"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.shellProcess">
+            <command commandId="org.jkiss.dbeaver.core.process.stop"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.shellProcess">
+            <command commandId="org.jkiss.dbeaver.core.process.stop"/>
         </menuContribution>
 
     </extension>
