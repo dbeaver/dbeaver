@@ -25,6 +25,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
@@ -67,7 +68,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 } else if (element instanceof DBNResource) {
                     deleteResource(activeWorkbenchWindow, (DBNResource)element);
                 } else {
-                    log.warn("Don't know how to delete element '" + element + "'");
+                    log.warn("Don't know how to delete element '" + element + "'"); //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 if (deleteAll != null && !deleteAll) {
                     break;
@@ -119,7 +120,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             }
             DBEObjectMaker objectMaker = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
             if (objectMaker == null) {
-                throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'");
+                throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'"); //$NON-NLS-2$
             }
 
             Map<String, Object> deleteOptions = null;
@@ -154,7 +155,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 return true;
             }
             if (confirmResult == ConfirmResult.DETAILS) {
-                if (!showScript(workbenchWindow, commandTarget.getContext(), "Delete script")) {
+                if (!showScript(workbenchWindow, commandTarget.getContext(), CoreMessages.actions_navigator_delete_script)) {
                     commandTarget.getContext().resetChanges();
                     return false;
                 }
@@ -172,7 +173,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException)e).getTargetException();
             }
-            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Delete object", "Can't delete object '" + node.getNodeName() + "'", e);
+            UIUtils.showErrorDialog(workbenchWindow.getShell(), CoreMessages.actions_navigator_error_dialog_delete_object_title, "Can't delete object '" + node.getNodeName() + "'", e);
             return false;
         }
 
@@ -214,8 +215,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             return deleteAll ? ConfirmResult.YES : ConfirmResult.NO;
         }
         ResourceBundle bundle = DBeaverActivator.getResourceBundle();
-        String titleKey = ConfirmationDialog.RES_CONFIRM_PREFIX + PrefConstants.CONFIRM_ENTITY_DELETE + "_" + ConfirmationDialog.RES_KEY_TITLE;
-        String messageKey = ConfirmationDialog.RES_CONFIRM_PREFIX + PrefConstants.CONFIRM_ENTITY_DELETE + "_" + ConfirmationDialog.RES_KEY_MESSAGE;
+        String titleKey = ConfirmationDialog.RES_CONFIRM_PREFIX + PrefConstants.CONFIRM_ENTITY_DELETE + "_" + ConfirmationDialog.RES_KEY_TITLE; //$NON-NLS-1$
+        String messageKey = ConfirmationDialog.RES_CONFIRM_PREFIX + PrefConstants.CONFIRM_ENTITY_DELETE + "_" + ConfirmationDialog.RES_KEY_MESSAGE; //$NON-NLS-1$
 
         String nodeTypeName = node.getNodeType();
 
@@ -236,7 +237,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                     createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
                 }
                 if (viewScript) {
-                    createButton(parent, IDialogConstants.DETAILS_ID, "View Script", false);
+                    createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.actions_navigator_view_script_button, false);
                 }
             }
         };
@@ -256,7 +257,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             case IDialogConstants.DETAILS_ID:
                 return ConfirmResult.DETAILS;
             default:
-                log.warn("Unsupported confirmation dialog result: " + result);
+                log.warn("Unsupported confirmation dialog result: " + result); //$NON-NLS-1$
                 return ConfirmResult.NO;
         }
     }
@@ -271,11 +272,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 ISelection selection = selectionProvider.getSelection();
 
                 if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
-                    element.setText("Delete Objects");
+                    element.setText(CoreMessages.actions_navigator_delete_objects);
                 } else {
                     DBNNode node = NavigatorUtils.getSelectedNode(selection);
                     if (node != null) {
-                        element.setText("Delete " + node.getNodeType()/* + " '" + node.getNodeName() + "'"*/);
+                        element.setText(CoreMessages.actions_navigator_delete_ + node.getNodeType()/* + " '" + node.getNodeName() + "'"*/);
                     }
                 }
             }

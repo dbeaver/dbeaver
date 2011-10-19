@@ -67,7 +67,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
 
     public String getChildrenType()
     {
-        return CoreMessages.core_model_Connection;
+        return CoreMessages.model_navigator_Connection;
     }
 
     public Class<DataSourceDescriptor> getChildrenClass()
@@ -77,12 +77,12 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
 
     public String getNodeName()
     {
-        return CoreMessages.core_model_Connections;
+        return CoreMessages.model_navigator_Connections;
     }
 
     public String getNodeDescription()
     {
-        return getResource().getProject().getName() + CoreMessages.core_model__connections;
+        return getResource().getProject().getName() + CoreMessages.model_navigator__connections;
     }
 
     public Image getNodeIcon()

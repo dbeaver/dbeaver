@@ -37,7 +37,15 @@ public class CoreMessages extends NLS {
 
 	public static String actions_navigator_create_new;
 
+	public static String actions_navigator_delete_objects;
+
+	public static String actions_navigator_delete_;
+
+	public static String actions_navigator_delete_script;
+
 	public static String actions_navigator_edit;
+
+	public static String actions_navigator_error_dialog_delete_object_title;
 
 	public static String actions_navigator_error_dialog_open_entity_title;
 
@@ -46,6 +54,8 @@ public class CoreMessages extends NLS {
 	public static String actions_navigator_open;
 
 	public static String actions_navigator_view;
+
+	public static String actions_navigator_view_script_button;
 
 	public static String common_error_sql;
 
@@ -100,9 +110,9 @@ public class CoreMessages extends NLS {
 
 	public static String connection_properties_control_dialog_new_property_title;
 
-	public static String core_model__connections;
-	public static String core_model_Connection;
-	public static String core_model_Connections;
+	public static String model_navigator__connections;
+	public static String model_navigator_Connection;
+	public static String model_navigator_Connections;
 
 	public static String dialog_about_font;
 	public static String dialog_about_label_version;
