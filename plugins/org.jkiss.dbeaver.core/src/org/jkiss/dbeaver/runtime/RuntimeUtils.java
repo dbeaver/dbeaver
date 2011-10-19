@@ -17,17 +17,15 @@ import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.ISaveablePart;
-import org.eclipse.ui.ISaveablePart2;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -39,14 +37,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * RuntimeUtils
  */
-public class RuntimeUtils
-{
+public class RuntimeUtils {
     static final Log log = LogFactory.getLog(RuntimeUtils.class);
 
     private static JexlEngine jexlEngine;
@@ -132,7 +130,7 @@ public class RuntimeUtils
     {
         if (store instanceof IPersistentPreferenceStore) {
             try {
-                ((IPersistentPreferenceStore)store).save();
+                ((IPersistentPreferenceStore) store).save();
             } catch (IOException e) {
                 log.warn(e);
             }
@@ -164,8 +162,7 @@ public class RuntimeUtils
                 return store.getLong(propName);
             } else if (valueType == Integer.class || valueType == Integer.TYPE ||
                 valueType == Short.class || valueType == Short.TYPE ||
-                valueType == Byte.class || valueType == Byte.TYPE)
-            {
+                valueType == Byte.class || valueType == Byte.TYPE) {
                 return store.getInt(propName);
             } else if (valueType == Double.class || valueType == Double.TYPE) {
                 return store.getDouble(propName);
@@ -328,19 +325,51 @@ public class RuntimeUtils
     }
 
     public static void processCommand(
-        DBRShellCommand command,
-        Map<String, Object> variables)
+        final DBRShellCommand command,
+        final Map<String, Object> variables)
     {
+        final Shell shell = DBeaverCore.getActiveWorkbenchShell();
         String commandLine = replaceVariables(command.getCommand(), variables);
 
-        try {
-            Runtime.getRuntime().exec(commandLine);
-        } catch (IOException e) {
-            UIUtils.showErrorDialog(null, "Process", commandLine, e);
+        final ProcessBuilder processBuilder = new ProcessBuilder(parseCommandLine(commandLine));
+        processBuilder.redirectErrorStream(true);
+        if (command.isShowProcessPanel()) {
+            shell.getDisplay().asyncExec(new Runnable() {
+                public void run()
+                {
+                    try {
+                        final ShellProcessView processView =
+                            (ShellProcessView) DBeaverCore.getActiveWorkbenchWindow().getActivePage().showView(
+                                ShellProcessView.VIEW_ID,
+                                ShellProcessView.getNextId(),
+                                IWorkbenchPage.VIEW_VISIBLE
+                            );
+                        processView.initProcess(command, processBuilder);
+                    } catch (PartInitException e) {
+                        log.error(e);
+                    }
+                }
+            });
+        } else {
+            // Direct execute
         }
+//        try {
+//        } catch (IOException e) {
+//            UIUtils.showErrorDialog(null, "Process", commandLine, e);
+//        }
     }
 
-    private static String replaceVariables(String string, Map<String, Object> variables)
+    public static String[] parseCommandLine(String commandLine)
+    {
+        StringTokenizer st = new StringTokenizer(commandLine);
+        String[] args = new String[st.countTokens()];
+        for (int i = 0; st.hasMoreTokens(); i++) {
+            args[i] = st.nextToken();
+        }
+        return args;
+    }
+
+    public static String replaceVariables(String string, Map<String, Object> variables)
     {
         Matcher matcher = VAR_PATTERN.matcher(string);
         int pos = 0;
@@ -377,7 +406,7 @@ public class RuntimeUtils
         {
             int choice = -1;
             if (saveable instanceof ISaveablePart2) {
-                choice = ((ISaveablePart2)saveable).promptToSaveOnClose();
+                choice = ((ISaveablePart2) saveable).promptToSaveOnClose();
             }
             if (choice == -1 || choice == ISaveablePart2.DEFAULT) {
                 Shell shell;
@@ -395,21 +424,27 @@ public class RuntimeUtils
                     ConfirmationDialog.QUESTION_WITH_CANCEL,
                     saveableName);
                 switch (confirmResult) {
-                    case IDialogConstants.YES_ID: choice = ISaveablePart2.YES; break;
-                    case IDialogConstants.NO_ID: choice = ISaveablePart2.NO; break;
-                    default: choice = ISaveablePart2.CANCEL; break;
+                    case IDialogConstants.YES_ID:
+                        choice = ISaveablePart2.YES;
+                        break;
+                    case IDialogConstants.NO_ID:
+                        choice = ISaveablePart2.NO;
+                        break;
+                    default:
+                        choice = ISaveablePart2.CANCEL;
+                        break;
                 }
             }
             switch (choice) {
-                case ISaveablePart2.YES : //yes
+                case ISaveablePart2.YES: //yes
                     saveable.doSave(monitor.getNestedMonitor());
                     result = !saveable.isDirty();
                     break;
-                case ISaveablePart2.NO : //no
+                case ISaveablePart2.NO: //no
                     result = true;
                     break;
-                case ISaveablePart2.CANCEL : //cancel
-                default :
+                case ISaveablePart2.CANCEL: //cancel
+                default:
                     result = false;
                     break;
             }
