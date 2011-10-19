@@ -10,10 +10,17 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.graphics.GC;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Text utils
  */
 public class TextUtils {
+    public static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
+
     public static boolean isEmptyLine(IDocument document, int line)
         throws BadLocationException
     {
@@ -156,5 +163,32 @@ public class TextUtils {
 
         return text;
 */
+    }
+
+    public static String replaceVariables(String string, Map<String, Object> variables)
+    {
+        Matcher matcher = VAR_PATTERN.matcher(string);
+        int pos = 0;
+        while (matcher.find(pos)) {
+            pos = matcher.end();
+            String varName = matcher.group(2);
+            Object varValue = variables.get(varName);
+            if (varValue != null) {
+                matcher = VAR_PATTERN.matcher(
+                    string = matcher.replaceFirst(CommonUtils.toString(varValue)));
+                pos = 0;
+            }
+        }
+        return string;
+    }
+
+    public static String[] parseCommandLine(String commandLine)
+    {
+        StringTokenizer st = new StringTokenizer(commandLine);
+        String[] args = new String[st.countTokens()];
+        for (int i = 0; st.hasMoreTokens(); i++) {
+            args[i] = st.nextToken();
+        }
+        return args;
     }
 }

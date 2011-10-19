@@ -20,9 +20,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
@@ -37,9 +39,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * RuntimeUtils
@@ -48,7 +47,6 @@ public class RuntimeUtils {
     static final Log log = LogFactory.getLog(RuntimeUtils.class);
 
     private static JexlEngine jexlEngine;
-    private static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
 
     @SuppressWarnings("unchecked")
     public static <T> T getObjectAdapter(Object adapter, Class<T> objectType)
@@ -329,10 +327,7 @@ public class RuntimeUtils {
         final Map<String, Object> variables)
     {
         final Shell shell = DBeaverCore.getActiveWorkbenchShell();
-        String commandLine = replaceVariables(command.getCommand(), variables);
-
-        final ProcessBuilder processBuilder = new ProcessBuilder(parseCommandLine(commandLine));
-        processBuilder.redirectErrorStream(true);
+        final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
         if (command.isShowProcessPanel()) {
             shell.getDisplay().asyncExec(new Runnable() {
                 public void run()
@@ -344,7 +339,7 @@ public class RuntimeUtils {
                                 ShellProcessView.getNextId(),
                                 IWorkbenchPage.VIEW_VISIBLE
                             );
-                        processView.initProcess(command, processBuilder);
+                        processView.initProcess(processDescriptor);
                     } catch (PartInitException e) {
                         log.error(e);
                     }
@@ -357,33 +352,6 @@ public class RuntimeUtils {
 //        } catch (IOException e) {
 //            UIUtils.showErrorDialog(null, "Process", commandLine, e);
 //        }
-    }
-
-    public static String[] parseCommandLine(String commandLine)
-    {
-        StringTokenizer st = new StringTokenizer(commandLine);
-        String[] args = new String[st.countTokens()];
-        for (int i = 0; st.hasMoreTokens(); i++) {
-            args[i] = st.nextToken();
-        }
-        return args;
-    }
-
-    public static String replaceVariables(String string, Map<String, Object> variables)
-    {
-        Matcher matcher = VAR_PATTERN.matcher(string);
-        int pos = 0;
-        while (matcher.find(pos)) {
-            pos = matcher.end();
-            String varName = matcher.group(2);
-            Object varValue = variables.get(varName);
-            if (varValue != null) {
-                matcher = VAR_PATTERN.matcher(
-                    string = matcher.replaceFirst(CommonUtils.toString(varValue)));
-                pos = 0;
-            }
-        }
-        return string;
     }
 
     private static class SaveRunner implements Runnable {

@@ -7,14 +7,14 @@ package org.jkiss.dbeaver.ui.views.process;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -30,19 +29,16 @@ public class ShellProcessView extends ViewPart
 {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.shellProcess";
 
-    private StringBuilder processLog = new StringBuilder();
-    private Text processLogText;
+    private StyledText processLogText;
     private static int viewId = 0;
-    private DBRShellCommand command;
-    private ProcessBuilder processBuilder;
-    private Process process;
+    private DBRProcessDescriptor processDescriptor;
 
     public void createPartControl(Composite parent)
     {
         Composite group = UIUtils.createPlaceholder(parent, 1);
         group.setLayout(new FillLayout());
 
-        processLogText = new Text(group, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
+        processLogText = new StyledText(group, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
         UIUtils.setHelp(group, IHelpContextIds.CTX_QUERY_MANAGER);
     }
 
@@ -55,8 +51,8 @@ public class ShellProcessView extends ViewPart
 
     private void terminateProcess()
     {
-        if (process != null) {
-            process.destroy();
+        if (processDescriptor != null) {
+            processDescriptor.terminate();
         }
     }
 
@@ -73,11 +69,10 @@ public class ShellProcessView extends ViewPart
         return String.valueOf(viewId);
     }
 
-    public void initProcess(DBRShellCommand command, ProcessBuilder process)
+    public void initProcess(DBRProcessDescriptor processDescriptor)
     {
-        this.command = command;
-        this.processBuilder = process;
-        setPartName(process.command().get(0));
+        this.processDescriptor = processDescriptor;
+        setPartName(processDescriptor.getName());
 
         new ProcessLogger().schedule();
     }
@@ -86,16 +81,16 @@ public class ShellProcessView extends ViewPart
 
         protected ProcessLogger()
         {
-            super(processBuilder.command().get(0));
+            super(processDescriptor.getName());
         }
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
             try {
-                process = processBuilder.start();
+                processDescriptor.execute();
                 try {
-                    final InputStream execOut = process.getInputStream();
+                    final InputStream execOut = processDescriptor.getProcess().getInputStream();
                     final BufferedReader reader = new BufferedReader(
                         new InputStreamReader(execOut)
                     );
@@ -108,10 +103,10 @@ public class ShellProcessView extends ViewPart
                         writeProcessLog(line);
                     }
                 } finally {
-                    process = null;
+                    processDescriptor.terminate();
                 }
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 return RuntimeUtils.makeExceptionStatus(e);
             }
             return Status.OK_STATUS;
@@ -123,18 +118,18 @@ public class ShellProcessView extends ViewPart
         if (line.isEmpty()) {
             return;
         }
-        processLog.append(line).append(ContentUtils.getDefaultLineSeparator());
         final Shell shell = DBeaverCore.getActiveWorkbenchShell();
         if (shell == null) {
             return;
         }
+        final String logLine = line + ContentUtils.getDefaultLineSeparator();
         shell.getDisplay().asyncExec(new Runnable() {
             public void run()
             {
                 if (processLogText == null || processLogText.isDisposed()) {
                     return;
                 }
-                processLogText.setText(processLog.toString());
+                processLogText.append(logLine);
             }
         });
     }
