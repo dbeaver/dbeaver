@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
@@ -347,11 +348,12 @@ public class RuntimeUtils {
             });
         } else {
             // Direct execute
+            try {
+                processDescriptor.execute();
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(shell, "Execute process", processDescriptor.getName(), e);
+            }
         }
-//        try {
-//        } catch (IOException e) {
-//            UIUtils.showErrorDialog(null, "Process", commandLine, e);
-//        }
     }
 
     private static class SaveRunner implements Runnable {

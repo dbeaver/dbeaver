@@ -12,9 +12,10 @@ public class DBRShellCommand
 
     private String command;
     private boolean enabled;
-    private boolean showProcessPanel;
+    private boolean showProcessPanel = true;
     private boolean waitProcessFinish;
-    private boolean terminateAtDisconnect;
+    private boolean terminateAtDisconnect = true;
+    private String workingDirectory;
 
     public DBRShellCommand(String command)
     {
@@ -78,5 +79,15 @@ public class DBRShellCommand
     public void setTerminateAtDisconnect(boolean terminateAtDisconnect)
     {
         this.terminateAtDisconnect = terminateAtDisconnect;
+    }
+
+    public String getWorkingDirectory()
+    {
+        return workingDirectory;
+    }
+
+    public void setWorkingDirectory(String workingDirectory)
+    {
+        this.workingDirectory = workingDirectory;
     }
 }
