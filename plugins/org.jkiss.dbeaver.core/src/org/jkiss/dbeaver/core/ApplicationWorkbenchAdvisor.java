@@ -88,7 +88,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     private void startVersionChecker()
     {
         DBeaverVersionChecker checker = new DBeaverVersionChecker();
-        checker.schedule(3000);
+        checker.schedule(5000);
     }
 
     public boolean preShutdown()

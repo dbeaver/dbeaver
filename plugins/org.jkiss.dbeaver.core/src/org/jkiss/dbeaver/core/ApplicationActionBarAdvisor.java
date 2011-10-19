@@ -17,6 +17,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.common.AboutBoxAction;
+import org.jkiss.dbeaver.ui.actions.common.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
@@ -38,6 +39,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     //private IWorkbenchAction findAction;
     private IActionDelegate emergentExitAction;
     private IActionDelegate aboutAction;
+    private IActionDelegate checkUpdatesAction;
     private IWorkbenchAction showHelpAction;
     private IWorkbenchAction searchHelpAction;
     private IWorkbenchAction dynamicHelpAction;
@@ -64,6 +66,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         register(showHelpAction = ActionFactory.HELP_CONTENTS.create(window));
         register(searchHelpAction = ActionFactory.HELP_SEARCH.create(window));
         register(dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window));
+        checkUpdatesAction = new CheckForUpdateAction();
 
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
         register(newWindowAction);
@@ -137,6 +140,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         helpMenu.add(showHelpAction);
         helpMenu.add(searchHelpAction);
         helpMenu.add(dynamicHelpAction);
+        helpMenu.add(ActionUtils.makeAction(checkUpdatesAction, null, null, CoreMessages.actions_menu_check_update, null, null));
     }
 
     protected void fillCoolBar(ICoolBarManager coolBar)

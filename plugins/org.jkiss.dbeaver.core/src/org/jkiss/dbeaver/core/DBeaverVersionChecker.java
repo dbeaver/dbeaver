@@ -8,9 +8,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.ui.dialogs.VersionUpdateDialog;
 
 import java.io.IOException;
 
@@ -21,7 +23,7 @@ public class DBeaverVersionChecker extends AbstractJob {
 
     static final Log log = LogFactory.getLog(DBeaverVersionChecker.class);
 
-    protected DBeaverVersionChecker()
+    public DBeaverVersionChecker()
     {
         super("DBeaver new version release checker");
     }
@@ -31,10 +33,26 @@ public class DBeaverVersionChecker extends AbstractJob {
     {
         try {
             VersionDescriptor versionDescriptor = new VersionDescriptor(VersionDescriptor.DEFAULT_VERSION_URL);
-            versionDescriptor.getBaseURL();
+            if (versionDescriptor.getProgramVersion().compareTo(DBeaverCore.getInstance().getVersion()) > 0) {
+                showUpdaterDialog(versionDescriptor);
+            }
         } catch (IOException e) {
             log.debug(e);
         }
         return Status.OK_STATUS;
+    }
+
+    private void showUpdaterDialog(final VersionDescriptor versionDescriptor)
+    {
+        final Shell shell = DBeaverCore.getActiveWorkbenchShell();
+        shell.getDisplay().asyncExec(new Runnable() {
+            public void run()
+            {
+                VersionUpdateDialog dialog = new VersionUpdateDialog(
+                    shell,
+                    versionDescriptor);
+                dialog.open();
+            }
+        });
     }
 }

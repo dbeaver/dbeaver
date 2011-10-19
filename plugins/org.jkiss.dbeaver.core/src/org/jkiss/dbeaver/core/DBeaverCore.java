@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.osgi.framework.Version;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -129,6 +130,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     void setStandalone(boolean standalone)
     {
         this.standalone = standalone;
+    }
+
+    public Version getVersion()
+    {
+        return Platform.getProduct().getDefiningBundle().getVersion();
     }
 
     private void initialize()

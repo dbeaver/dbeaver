@@ -5,8 +5,10 @@
 package org.jkiss.dbeaver.registry.updater;
 
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
+import org.osgi.framework.Version;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -26,7 +28,7 @@ public class VersionDescriptor {
     public static final String DEFAULT_VERSION_URL = "http://dbeaver.jkiss.org/product/version.xml";
 
     private String programName;
-    private String programVersion;
+    private Version programVersion;
     private String updateTime;
     private String baseURL;
     private String releaseNotes;
@@ -65,7 +67,7 @@ public class VersionDescriptor {
         return programName;
     }
 
-    public String getProgramVersion()
+    public Version getProgramVersion()
     {
         return programVersion;
     }
@@ -99,10 +101,10 @@ public class VersionDescriptor {
     {
         Element root = document.getDocumentElement();
         programName = XMLUtils.getChildElementBody(root, "name");
-        programVersion = XMLUtils.getChildElementBody(root, "number");
+        programVersion = Version.parseVersion(XMLUtils.getChildElementBody(root, "number"));
         updateTime = XMLUtils.getChildElementBody(root, "date");
         baseURL = XMLUtils.getChildElementBody(root, "base-url");
-        releaseNotes = XMLUtils.getChildElementBody(root, "release-notes");
+        releaseNotes = CommonUtils.toString(XMLUtils.getChildElementBody(root, "release-notes")).trim();
 
         for (Element dist : XMLUtils.getChildElementList(root, "distribution")) {
             distributions.add(new DistributionDescriptor(dist));
