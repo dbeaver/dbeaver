@@ -164,6 +164,20 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_connection_wizard_start_dialog_interrupted_title;
 
+	public static String editors_entity_dialog_persist_title;
+
+	public static String editors_entity_dialog_preview_title;
+
+	public static String editors_entity_monitor_add_folder;
+
+	public static String editors_entity_monitor_add_node;
+
+	public static String editors_entity_monitor_preview_changes;
+
+	public static String editors_entity_properties_text;
+
+	public static String editors_entity_properties_tooltip_suffix;
+
 	public static String editors_sql_data_grid;
 
 	public static String editors_sql_description;
@@ -319,6 +333,10 @@ public class CoreMessages extends NLS {
 	public static String model_struct_Statistic;
 	public static String model_struct_Unique_Key;
 	public static String model_struct_Unknown;
+
+	public static String registry_entity_editor_descriptor_description;
+
+	public static String registry_entity_editor_descriptor_name;
 
 	public static String toolbar_datasource_selector_action_read_databases;
 	public static String toolbar_datasource_selector_combo_database_tooltip;

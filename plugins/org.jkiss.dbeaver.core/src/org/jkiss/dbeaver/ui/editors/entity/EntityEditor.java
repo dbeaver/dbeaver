@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.ui.IFolderListener;
@@ -200,7 +201,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
     private void saveCommandContext(IProgressMonitor monitor)
     {
-        monitor.beginTask("Preview changes", 1);
+        monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
         int previewResult = showChanges(true);
         monitor.done();
 
@@ -400,8 +401,8 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         }
         if (hasPropertiesEditor) {
             DBNNode node = getEditorInput().getTreeNode();
-            setPageText(0, "Properties");
-            setPageToolTip(0, node.getNodeType() + " Properties");
+            setPageText(0, CoreMessages.editors_entity_properties_text);
+            setPageToolTip(0, node.getNodeType() + CoreMessages.editors_entity_properties_tooltip_suffix);
             setPageImage(0, node.getNodeIconDefault());
         }
 /*
@@ -628,13 +629,13 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 if (children != null) {
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
-                            monitor.subTask("Add folder '" + child.getNodeName() + "'");
+                            monitor.subTask(CoreMessages.editors_entity_monitor_add_folder + child.getNodeName() + "'");
                             tabs.add(new TabInfo((DBNDatabaseFolder)child));
                         }
                     }
                 }
             } catch (DBException e) {
-                log.error("Error initializing entity editor", e);
+                log.error("Error initializing entity editor", e); //$NON-NLS-1$
             }
             // Add itself as tab (if it has child items)
             if (node instanceof DBNDatabaseNode) {
@@ -645,11 +646,11 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                         if (child instanceof DBXTreeItem) {
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
-                                    monitor.subTask("Add node '" + node.getNodeName() + "'");
+                                    monitor.subTask(CoreMessages.editors_entity_monitor_add_node + node.getNodeName() + "'");
                                     tabs.add(new TabInfo((DBNDatabaseNode)node, child));
                                 }
                             } catch (DBException e) {
-                                log.debug("Can't add child items tab", e);
+                                log.debug("Can't add child items tab", e); //$NON-NLS-1$
                             }
                         }
                     }
@@ -717,7 +718,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
 
             return true;
         } catch (Exception ex) {
-            log.error("Error adding nested editor", ex);
+            log.error("Error adding nested editor", ex); //$NON-NLS-1$
             return false;
         }
     }
@@ -730,7 +731,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             if (tabInfo.meta == null) {
                 setPageText(index, tabInfo.node.getNodeName());
                 setPageImage(index, tabInfo.node.getNodeIconDefault());
-                setPageToolTip(index, getEditorInput().getTreeNode().getNodeType() + " " + tabInfo.node.getNodeName());
+                setPageToolTip(index, getEditorInput().getTreeNode().getNodeType() + " " + tabInfo.node.getNodeName()); //$NON-NLS-1$
             } else {
                 setPageText(index, tabInfo.meta.getChildrenType(getDataSource()));
                 if (tabInfo.meta.getDefaultIcon() != null) {
@@ -740,9 +741,9 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 }
                 setPageToolTip(index, tabInfo.meta.getChildrenType(getDataSource()));
             }
-            editorMap.put("node." + tabInfo.getName(), nodeEditor);
+            editorMap.put("node." + tabInfo.getName(), nodeEditor); //$NON-NLS-1$
         } catch (PartInitException ex) {
-            log.error("Error adding nested editor", ex);
+            log.error("Error adding nested editor", ex); //$NON-NLS-1$
         }
     }
 
@@ -811,7 +812,7 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             ViewSQLDialog dialog = new ViewSQLDialog(
                 getEditorSite(),
                 getDataSource().getContainer(),
-                allowSave ? "Persist Changes" : "Preview Changes", 
+                allowSave ? CoreMessages.editors_entity_dialog_persist_title : CoreMessages.editors_entity_dialog_preview_title, 
                 script.toString());
             dialog.setShowSaveButton(allowSave);
             dialog.setImage(DBIcon.SQL_PREVIEW.getImage());

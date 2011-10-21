@@ -13,6 +13,7 @@ import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -28,9 +29,9 @@ import java.util.List;
  */
 public class EntityEditorDescriptor extends AbstractDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.databaseEditor"; //NON-NLS-1
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.databaseEditor"; //NON-NLS-1 //$NON-NLS-1$
 
-    public static final String DEFAULT_OBJECT_EDITOR_ID = "default.object.editor"; //NON-NLS-1
+    public static final String DEFAULT_OBJECT_EDITOR_ID = "default.object.editor"; //NON-NLS-1 //$NON-NLS-1$
 
     public static final String POSITION_PROPS = IActionConstants.MB_ADDITIONS_PROPS;
     public static final String POSITION_START = IActionConstants.MB_ADDITIONS_START;
@@ -69,7 +70,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
                 try {
                     this.expression = RuntimeUtils.parseExpression(condition);
                 } catch (DBException ex) {
-                    log.warn("Can't parse object type expression: " + condition, ex);
+                    log.warn("Can't parse object type expression: " + condition, ex); //$NON-NLS-1$
                 }
             }
         }
@@ -97,17 +98,17 @@ public class EntityEditorDescriptor extends AbstractDescriptor
             return new JexlContext() {
                 public Object get(String name)
                 {
-                    return name.equals("object") ? object : null;
+                    return name.equals("object") ? object : null; //$NON-NLS-1$
                 }
 
                 public void set(String name, Object value)
                 {
-                    log.warn("Set is not implemented");
+                    log.warn("Set is not implemented"); //$NON-NLS-1$
                 }
 
                 public boolean has(String name)
                 {
-                    return name.equals("object") && object != null;
+                    return name.equals("object") && object != null; //$NON-NLS-1$
                 }
             };
         }
@@ -124,8 +125,8 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         this.className = ObjectPropertiesEditor.class.getName();
         this.contributorClassName = null;
         this.main = true;
-        this.name = "Properties";
-        this.description = "Object properties";
+        this.name = CoreMessages.registry_entity_editor_descriptor_name;
+        this.description = CoreMessages.registry_entity_editor_descriptor_description;
         this.position = null;
         this.icon = DBIcon.TREE_DATABASE.getImage();
     }
@@ -256,7 +257,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         try {
             return clazz.newInstance();
         } catch (Exception ex) {
-            log.error("Error instantiating entity editor '" + className + "'", ex);
+            log.error("Error instantiating entity editor '" + className + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
     }
