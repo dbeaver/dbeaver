@@ -94,28 +94,28 @@
                 class="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"
                 allowMultiple="false"
                 icon="icons/databases.png"
-                name="%view_database_navigator_title"/>
+                name="%view.database.navigator.title"/>
         <view
                 id="org.jkiss.dbeaver.core.projectNavigator"
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView"
                 allowMultiple="false"
                 icon="icons/projects.png"
-                name="%view_project_navigator_title"/>
+                name="%view.project.navigator.title"/>
         <view
                 id="org.jkiss.dbeaver.core.projectExplorer"
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView"
                 allowMultiple="false"
                 icon="icons/project.png"
-                name="%view_project_explorer_title"/>
+                name="%view.project.explorer.title"/>
         <view
                 id="org.jkiss.dbeaver.core.queryManager"
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"
                 allowMultiple="false"
                 icon="icons/misc/sql.png"
-                name="%view_query_manager_title"/>
+                name="%view.query.manager.title"/>
         <view
                 id="org.jkiss.dbeaver.core.shellProcess"
                 category="org.jkiss.dbeaver.core.category"
@@ -123,13 +123,13 @@
                 allowMultiple="true"
                 restorable="false"
                 icon="icons/misc/shell.png"
-                name="%view_shell_process_title"/>
+                name="%view.shell.process.title"/>
         <view
                 icon="icons/progress_view.png"
                 category="org.eclipse.ui"
                 class="org.eclipse.ui.ExtensionFactory:progressView"
                 id="org.eclipse.ui.views.ProgressView"
-                name="%view_progress_title"/>
+                name="%view.progress.title"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
@@ -1364,7 +1364,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.editors">
-        <editor name="%editor_sql_name"
+        <editor name="%editor.sql.name"
                 extensions="sql"
                 icon="icons/sql/sql_script.png"
                 contributorClass="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor"
@@ -1373,21 +1373,21 @@
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.core.content-type-sql"/>
         </editor>
         <editor
-                name="%editor_folder_name"
+                name="%editor.folder.name"
                 icon="icons/properties.png"
                 contributorClass="org.jkiss.dbeaver.ui.editors.entity.FolderEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"
                 id="org.jkiss.dbeaver.ui.editors.entity.FolderEditor">
         </editor>
         <editor
-                name="%editor_entity_name"
+                name="%editor.entity.name"
                 icon="icons/properties.png"
                 contributorClass="org.jkiss.dbeaver.ui.editors.entity.EntityEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
                 id="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
         </editor>
         <editor
-                name="%editor_lob_name"
+                name="%editor.lob.name"
                 icon="icons/sql/types/lob.png"
                 contributorClass="org.jkiss.dbeaver.ui.editors.content.ContentEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.content.ContentEditor"
@@ -1582,8 +1582,8 @@
                 class="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
                 objectType="org.jkiss.dbeaver.model.struct.DBSDataContainer"
                 main="false"
-                label="Data"
-                description="Table data"
+                label="%editor.dbdata.name"
+                description="%editor.dbdata.description"
                 position="additions_start"
                 icon="icons/sql/sql_table.png">
         </editor>
