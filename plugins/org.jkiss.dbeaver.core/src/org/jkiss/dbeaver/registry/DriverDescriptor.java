@@ -252,7 +252,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         if (isCustom()) {
             OverlayImageDescriptor customDescriptor = new OverlayImageDescriptor(this.iconPlain.getImageData());
-            customDescriptor.setBottomLeft(new ImageDescriptor[]{DBIcon.OVER_CONDITION.getImageDescriptor()});
+            customDescriptor.setBottomLeft(new ImageDescriptor[]{DBIcon.OVER_LAMP.getImageDescriptor()});
             this.iconNormal = new Image(this.iconPlain.getDevice(), customDescriptor.getImageData());
         } else {
             this.iconNormal = new Image(this.iconPlain.getDevice(), iconPlain, SWT.IMAGE_COPY);

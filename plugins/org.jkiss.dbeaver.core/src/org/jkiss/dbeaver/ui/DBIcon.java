@@ -176,7 +176,8 @@ public enum DBIcon
     OVER_SUCCESS("over_success", "/icons/over/success_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
     OVER_FAILED("over_failed", "/icons/over/failed_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
     OVER_ERROR("over_error", "/icons/over/error_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
-    OVER_CONDITION("over_condition", "/icons/over/conditional_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    OVER_UNKNOWN("over_condition", "/icons/over/conditional_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    OVER_LAMP("over_lamp", "/icons/over/lamp_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
     OVER_KEY("over_key", "/icons/over/key_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
     OVER_REFERENCE("over_reference", "/icons/over/reference_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
 

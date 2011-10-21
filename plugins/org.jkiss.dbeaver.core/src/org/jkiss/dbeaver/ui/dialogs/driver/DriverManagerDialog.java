@@ -153,7 +153,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                 gd.horizontalSpan = 2;
                 legend.setLayoutData(gd);
 
-                UIUtils.createImageLabel(legend, DBIcon.OVER_CONDITION.getImage());
+                UIUtils.createImageLabel(legend, DBIcon.OVER_LAMP.getImage());
                 UIUtils.createTextLabel(legend, "- User defined");
 
                 UIUtils.createImageLabel(legend, DBIcon.OVER_ERROR.getImage());
