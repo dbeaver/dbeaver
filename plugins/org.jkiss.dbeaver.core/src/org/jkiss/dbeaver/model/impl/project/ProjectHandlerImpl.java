@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -48,4 +49,9 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
         return new DBNProject(parentNode, (IProject)resource, this);
     }
 
+    @Override
+    public void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException
+    {
+        // do nothing
+    }
 }
