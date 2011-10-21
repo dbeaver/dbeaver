@@ -7,11 +7,10 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverIcons;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Image-related utils
@@ -59,6 +58,15 @@ public class ImageUtils {
 
     private static synchronized void initImages()
     {
+        // Capture checkbox image - only for windows
+        // There could be hard-to-understand problems in Linux
+        if (!DBeaverCore.getInstance().getLocalSystem().isWindows()) {
+            imageCheckboxEnabledOff = DBIcon.CHECK_OFF.getImage();
+            imageCheckboxEnabledOn = DBIcon.CHECK_ON.getImage();
+            imageCheckboxDisabledOn = DBIcon.CHECK_ON.getImage();
+            imageCheckboxDisabledOff = DBIcon.CHECK_OFF.getImage();
+            return;
+        }
         final Shell shell = DBeaverCore.getActiveWorkbenchShell();
         Button checkBox = new Button(shell, SWT.CHECK);
         checkBox.setVisible(true);

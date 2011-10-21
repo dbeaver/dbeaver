@@ -37,6 +37,11 @@ public class OSDescriptor {
         return true;
     }
 
+    public boolean isWindows()
+    {
+        return code.equals("win32");
+    }
+
     @Override
     public String toString() {
         return code + (arch == null ? "" : " (" + arch + ")");

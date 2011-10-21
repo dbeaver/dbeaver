@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
@@ -28,7 +29,6 @@ public class OCIUtils
 {
     static final Log log = LogFactory.getLog(OCIUtils.class);
 
-    public static final String WIN_32 = "win32";
     public static final String WIN_REG_ORACLE = "SOFTWARE\\ORACLE";
     public static final String WIN_REG_ORA_HOME = "ORACLE_HOME";
     public static final String WIN_REG_ORA_HOME_NAME = "ORACLE_HOME_NAME";
@@ -87,7 +87,7 @@ public class OCIUtils
     }
 
     private static boolean equalsFileName(String file1, String file2) {
-        if (Platform.getOS().equals(WIN_32)) {
+        if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
             return file1.equalsIgnoreCase(file2);
         }
         else {
@@ -152,7 +152,7 @@ public class OCIUtils
         }
 
         // find Oracle homes in Windows registry
-        if (Platform.getOS().equals(WIN_32)) {
+        if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
             try {
                 List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
                 if (oracleKeys != null) {
@@ -182,7 +182,7 @@ public class OCIUtils
     }
 
     public static String readWinRegistry(String oraHome, String name) {
-        if (Platform.getOS().equals(WIN_32)) {
+        if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
             try {
                 List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
                 if (oracleKeys != null) {
