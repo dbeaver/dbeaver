@@ -29,8 +29,8 @@
             id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorEmbedded"
             class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorEmbedded"
             main="false"
-            label="Diagram"
-            description="ERD Diagram"
+            label="%editor.erd.name"
+            description="%editor.erd.description"
             position="additions_end"
             icon="icons/erd.png">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSCatalog"/>
