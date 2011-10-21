@@ -37,7 +37,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ERDResourceHandler extends AbstractResourceHandler {
 
-    private static final String ERD_DIR = ERDMessages.diagrams;
+    private static final String ERD_DIR = "Diagrams";
     private static final String ERD_EXT = "erd"; //$NON-NLS-1$
 
     public static final String RES_TYPE_DIAGRAMS = "erd"; //$NON-NLS-1$
@@ -70,9 +70,9 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     public String getTypeName(IResource resource)
     {
         if (resource instanceof IFolder) {
-            return ERDMessages.diagram_folder;
+            return "diagram folder";
         } else {
-            return ERDMessages.diagram;
+            return "diagram";
         }
     }
 

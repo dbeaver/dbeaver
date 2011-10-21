@@ -11,6 +11,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.tabbed.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
@@ -65,7 +66,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         tabList.add(new PropertyTabDescriptor(
             PropertiesContributor.CATEGORY_INFO,
             PropertiesContributor.TAB_STANDARD,
-            "Information",
+            CoreMessages.ui_properties_category_information,
             DBIcon.TREE_INFO.getImage(),
             new SectionDescriptor(PropertiesContributor.SECTION_STANDARD, PropertiesContributor.TAB_STANDARD) {
                 public ISection getSectionClass()
@@ -145,13 +146,13 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
                 if (children != null) {
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
-                            monitor.subTask("Add folder '" + child.getNodeName() + "'");
+                            monitor.subTask(CoreMessages.ui_properties_task_add_folder + child.getNodeName() + "'"); //$NON-NLS-2$
                             tabs.add(new NavigatorTabInfo((DBNDatabaseFolder)child));
                         }
                     }
                 }
             } catch (DBException e) {
-                log.error("Error initializing property tabs", e);
+                log.error("Error initializing property tabs", e); //$NON-NLS-1$
             }
             // Add itself as tab (if it has child items)
             if (node instanceof DBNDatabaseNode) {
@@ -162,11 +163,11 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
                         if (child instanceof DBXTreeItem) {
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
-                                    monitor.subTask("Add node '" + node.getNodeName() + "'");
+                                    monitor.subTask(CoreMessages.ui_properties_task_add_node + node.getNodeName() + "'"); //$NON-NLS-2$
                                     tabs.add(new NavigatorTabInfo((DBNDatabaseNode)node, child));
                                 }
                             } catch (DBException e) {
-                                log.debug("Can't add child items tab", e);
+                                log.debug("Can't add child items tab", e); //$NON-NLS-1$
                             }
                         }
                     }
@@ -205,7 +206,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             tabInfo.getName(),
             tabInfo.getName(),
             tabInfo.node.getNodeIconDefault(),
-            new SectionDescriptor("default", tabInfo.getName()) {
+            new SectionDescriptor("default", tabInfo.getName()) { //$NON-NLS-1$
                 public ISection getSectionClass()
                 {
                     return new NodeEditorSection(part, tabInfo.node, tabInfo.meta);

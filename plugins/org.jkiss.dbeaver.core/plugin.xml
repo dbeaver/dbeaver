@@ -133,11 +133,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.core.navigator" name="Database Navigator" description="Database Navigator Commands"/>
-        <category id="org.jkiss.dbeaver.core.database" name="Connection" description="Database Connection Commands"/>
-        <category id="org.jkiss.dbeaver.core.util" name="Utility" description="Utility Commands"/>
-        <category id="org.jkiss.dbeaver.core.sql" name="SQL Editor" description="SQL Editor Commands"/>
-        <category id="org.jkiss.dbeaver.core.rs" name="Result Set" description="Result Set Commands"/>
+        <category id="org.jkiss.dbeaver.core.navigator" name="%category.dbnavigator.name" description="%category.dbnavigator.description"/>
+        <category id="org.jkiss.dbeaver.core.database" name="%category.dbconnection.name" description="%category.dbconnection.description"/>
+        <category id="org.jkiss.dbeaver.core.util" name="%category.utility.name" description="%category.utility.description"/>
+        <category id="org.jkiss.dbeaver.core.sql" name="%category.sqleditor.name" description="%category.sqleditor.description"/>
+        <category id="org.jkiss.dbeaver.core.rs" name="%category.rs.name" description="%category.rs.description"/>
 
         <command id="org.jkiss.dbeaver.core.driver.manager" name="%command.org.jkiss.dbeaver.core.driver.manager.name" description="%command.org.jkiss.dbeaver.core.driver.manager.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.new.connection" name="%command.org.jkiss.dbeaver.core.new.connection.name" description="%command.org.jkiss.dbeaver.core.new.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -1004,7 +1004,7 @@
 
         <!-- Database menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?before=window">
-            <menu id="dataSourceMenu" label="Database">
+            <menu id="dataSourceMenu" label="%menu.database">
                 <separator name="driverGroup" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
                 <command commandId="org.jkiss.dbeaver.core.new.connection"/>

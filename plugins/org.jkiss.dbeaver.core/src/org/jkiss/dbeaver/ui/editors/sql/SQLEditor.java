@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
@@ -101,9 +102,9 @@ public class SQLEditor extends SQLEditorBase
     //private IProject project;
 
     static {
-        imgDataGrid = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage();
-        imgExplainPlan = DBeaverActivator.getImageDescriptor("/icons/sql/page_explain_plan.png").createImage();
-        imgLog = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage();
+        imgDataGrid = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
+        imgExplainPlan = DBeaverActivator.getImageDescriptor("/icons/sql/page_explain_plan.png").createImage(); //$NON-NLS-1$
+        imgLog = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage(); //$NON-NLS-1$
     }
 
     public SQLEditor()
@@ -206,17 +207,17 @@ public class SQLEditor extends SQLEditorBase
             // Create tabs
             CTabItem item = new CTabItem(resultTabs, SWT.NONE, PAGE_INDEX_RESULTSET);
             item.setControl(resultsView.getControl());
-            item.setText("Data Grid");
+            item.setText(CoreMessages.editors_sql_data_grid);
             item.setImage(imgDataGrid);
 
             item = new CTabItem(resultTabs, SWT.NONE, PAGE_INDEX_PLAN);
             item.setControl(planView.getControl());
-            item.setText("Explain Plan");
+            item.setText(CoreMessages.editors_sql_explain_plan);
             item.setImage(imgExplainPlan);
 
             item = new CTabItem(resultTabs, SWT.NONE, PAGE_INDEX_LOG);
             item.setControl(logViewer);
-            item.setText("Execution Log");
+            item.setText(CoreMessages.editors_sql_execution_log);
             item.setImage(imgLog);
 
             resultTabs.setSelection(0);
@@ -282,7 +283,7 @@ public class SQLEditor extends SQLEditorBase
     {
         final SQLStatementInfo sqlQuery = extractActiveQuery();
         if (sqlQuery == null) {
-            setStatus("Empty query string", true);
+            setStatus(CoreMessages.editors_sql_status_empty_query_string, true);
             return;
         }
         resultTabs.setSelection(PAGE_INDEX_PLAN);
@@ -291,8 +292,8 @@ public class SQLEditor extends SQLEditorBase
         } catch (DBCException e) {
             UIUtils.showErrorDialog(
                 sashForm.getShell(),
-                "Execution plan",
-                "Could not explain execution plan",
+                CoreMessages.editors_sql_error_execution_plan_title,
+                CoreMessages.editors_sql_error_execution_plan_message,
                 e);
         }
     }
@@ -301,7 +302,7 @@ public class SQLEditor extends SQLEditorBase
     {
         IDocument document = getDocument();
         if (document == null) {
-            setStatus("Can't obtain editor's document", true);
+            setStatus(CoreMessages.editors_sql_status_cant_obtain_document, true);
             return;
         }
         resultTabs.setSelection(PAGE_INDEX_RESULTSET);
@@ -319,7 +320,7 @@ public class SQLEditor extends SQLEditorBase
             // Execute statement under cursor or selected text (if selection present)
             SQLStatementInfo sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
-                setStatus("Empty query string", true);
+                setStatus(CoreMessages.editors_sql_status_empty_query_string, true);
             } else {
                 processQuery(Collections.singletonList(sqlQuery));
             }
@@ -372,7 +373,7 @@ public class SQLEditor extends SQLEditorBase
                     }
                     hasValuableTokens = false;
                 } catch (BadLocationException ex) {
-                    log.error("Error extracting script query", ex);
+                    log.error("Error extracting script query", ex); //$NON-NLS-1$
                 }
                 statementStart = tokenOffset + 1;
             }
@@ -404,8 +405,8 @@ public class SQLEditor extends SQLEditorBase
         if (curJobRunning) {
             UIUtils.showErrorDialog(
                 getSite().getShell(),
-                "Can't execute query",
-                "Can't execute more than one query in one editor simultaneously");
+                CoreMessages.editors_sql_error_cant_execute_query_title,
+                CoreMessages.editors_sql_error_cant_execute_query_message);
             return;
         }
         try {
@@ -414,7 +415,7 @@ public class SQLEditor extends SQLEditorBase
             this.setStatus(ex.getMessage(), true);
             UIUtils.showErrorDialog(
                 getSite().getShell(),
-                "Can't obtain session",
+                CoreMessages.editors_sql_error_cant_obtain_session,
                 ex.getMessage());
             return;
         }
@@ -424,7 +425,7 @@ public class SQLEditor extends SQLEditorBase
             final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
             final boolean isSingleQuery = (queries.size() == 1);
             final SQLQueryJob job = new SQLQueryJob(
-                isSingleQuery ? "Execute query" : "Execute script",
+                isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
                 this,
                 queries,
                 resultsView.getDataReceiver());
@@ -479,12 +480,12 @@ public class SQLEditor extends SQLEditorBase
     */
                                     } else if (result.getUpdateCount() != null) {
                                         if (result.getUpdateCount() == 0) {
-                                            setStatus("Statement executed - no rows updated", false);
+                                            setStatus(CoreMessages.editors_sql_status_statement_executed_no_rows_updated, false);
                                         } else {
-                                            setStatus(String.valueOf(result.getUpdateCount()) + " row(s) updated", false);
+                                            setStatus(String.valueOf(result.getUpdateCount()) + CoreMessages.editors_sql_status_rows_updated, false);
                                         }
                                     } else {
-                                        setStatus("Statement executed", false);
+                                        setStatus(CoreMessages.editors_sql_status_statement_executed, false);
                                     }
                                     resultsView.setExecutionTime(result.getQueryTime());
                                 } else {
@@ -547,9 +548,9 @@ public class SQLEditor extends SQLEditorBase
     {
         if (resultsView != null) {
             if (getDataSource() == null) {
-                resultsView.setStatus("Not connected to database");
+                resultsView.setStatus(CoreMessages.editors_sql_status_not_connected_to_database);
             } else {
-                resultsView.setStatus("Connected to '" + getDataSource().getContainer().getName() + "'");
+                resultsView.setStatus(CoreMessages.editors_sql_staus_connected_to + getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
             }
         }
         if (planView != null) {
@@ -621,7 +622,7 @@ public class SQLEditor extends SQLEditorBase
             try {
                 fileToDelete.delete(true, new NullProgressMonitor());
             } catch (CoreException e) {
-                log.error("Can't delete empty script file", e);
+                log.error("Can't delete empty script file", e); //$NON-NLS-1$
             }
         }
     }
@@ -656,8 +657,8 @@ public class SQLEditor extends SQLEditorBase
     {
         if (curJobRunning) {
             MessageBox messageBox = new MessageBox(getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
-            messageBox.setMessage("Editor can't be closed while SQL query is being executed");
-            messageBox.setText("Query is being executed");
+            messageBox.setMessage(CoreMessages.editors_sql_save_on_close_message);
+            messageBox.setText(CoreMessages.editors_sql_save_on_close_text);
             messageBox.open();
             return ISaveablePart2.CANCEL;
         }
@@ -719,7 +720,7 @@ public class SQLEditor extends SQLEditorBase
 
         public String getDescription()
         {
-            return "SQL Editor";
+            return CoreMessages.editors_sql_description;
         }
 
         public DBSObject getParentObject()

@@ -38,7 +38,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
     static final Log log = LogFactory.getLog(ScriptsHandlerImpl.class);
 
-    private static final String SCRIPTS_DIR = CoreMessages.model_project_Scripts;
+    private static final String SCRIPTS_DIR = "Scripts";
 
     public static final String RES_TYPE_SCRIPTS = "scripts"; //$NON-NLS-1$
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$

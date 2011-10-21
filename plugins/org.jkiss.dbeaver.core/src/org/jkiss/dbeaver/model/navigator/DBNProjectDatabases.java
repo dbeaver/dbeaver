@@ -77,7 +77,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
 
     public String getNodeName()
     {
-        return CoreMessages.model_navigator_Connections;
+        return "Connections";
     }
 
     public String getNodeDescription()

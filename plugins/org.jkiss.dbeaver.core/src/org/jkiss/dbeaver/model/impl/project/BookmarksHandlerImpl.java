@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
-    private static final String BOOKMARKS_DIR = CoreMessages.model_project_bookmarks_folder;
+    private static final String BOOKMARKS_DIR = "Bookmarks";
     private static final String BOOKMARK_EXT = "bm"; //$NON-NLS-1$
 
     public static final String RES_TYPE_BOOKMARKS = "bookmarks"; //$NON-NLS-1$

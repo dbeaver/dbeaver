@@ -164,6 +164,46 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_connection_wizard_start_dialog_interrupted_title;
 
+	public static String editors_sql_data_grid;
+
+	public static String editors_sql_description;
+
+	public static String editors_sql_error_cant_execute_query_message;
+
+	public static String editors_sql_error_cant_execute_query_title;
+
+	public static String editors_sql_error_cant_obtain_session;
+
+	public static String editors_sql_error_execution_plan_message;
+
+	public static String editors_sql_error_execution_plan_title;
+
+	public static String editors_sql_execution_log;
+
+	public static String editors_sql_explain_plan;
+
+	public static String editors_sql_job_execute_query;
+
+	public static String editors_sql_job_execute_script;
+
+	public static String editors_sql_save_on_close_message;
+
+	public static String editors_sql_save_on_close_text;
+
+	public static String editors_sql_status_cant_obtain_document;
+
+	public static String editors_sql_status_empty_query_string;
+
+	public static String editors_sql_status_not_connected_to_database;
+
+	public static String editors_sql_status_rows_updated;
+
+	public static String editors_sql_status_statement_executed;
+
+	public static String editors_sql_status_statement_executed_no_rows_updated;
+
+	public static String editors_sql_staus_connected_to;
+
 	public static String model_edit_execute_;
 
 	public static String model_html_read_database_meta_data;
@@ -291,6 +331,14 @@ public class CoreMessages extends NLS {
 	public static String toolbar_datasource_selector_resultset_segment_size;
 
 	public static String ui_common_button_help;
+
+	public static String ui_properties_category_information;
+
+	public static String ui_properties_category_structure;
+
+	public static String ui_properties_task_add_folder;
+
+	public static String ui_properties_task_add_node;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
