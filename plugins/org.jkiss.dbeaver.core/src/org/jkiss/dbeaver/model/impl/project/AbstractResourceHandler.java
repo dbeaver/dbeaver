@@ -37,7 +37,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
 
     public void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException
     {
-        throw new DBException("Resource open is not implemented");
+        //throw new DBException("Resource open is not implemented");
     }
 
     public String getTypeName(IResource resource)

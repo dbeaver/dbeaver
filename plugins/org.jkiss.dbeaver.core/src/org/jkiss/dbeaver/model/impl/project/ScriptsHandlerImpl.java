@@ -183,7 +183,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
                 sqlInput,
                 SQLEditor.class.getName());
         } else {
-            throw new DBException("Cannot open folder");
+            //throw new DBException("Cannot open folder");
         }
     }
 
