@@ -27,6 +27,7 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
@@ -105,10 +106,10 @@ public class DriverEditDialog extends HelpEnabledDialog
     protected Control createDialogArea(Composite parent)
     {
         if (driver == null) {
-            getShell().setText("Create new driver");
+            getShell().setText(CoreMessages.dialog_edit_driver_title_create_driver);
             driver = provider.createDriver();
         } else {
-            getShell().setText("Edit Driver '" + driver.getName() + "'");
+            getShell().setText(CoreMessages.dialog_edit_driver_title_edit_driver + driver.getName() + "'"); //$NON-NLS-2$
             getShell().setImage(driver.getPlainIcon());
         }
 
@@ -126,7 +127,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             gd = new GridData(GridData.FILL_HORIZONTAL);
             propsGroup.setLayoutData(gd);
 
-            UIUtils.createControlLabel(propsGroup, "Driver Name");
+            UIUtils.createControlLabel(propsGroup, CoreMessages.dialog_edit_driver_label_driver_name);
             final Composite namePlaceholder = UIUtils.createPlaceholder(propsGroup, 3, 5);
             namePlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -140,7 +141,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 }
             });
 
-            driverCategoryCombo = UIUtils.createLabelCombo(namePlaceholder, "Category", SWT.BORDER | SWT.DROP_DOWN | advStyle);
+            driverCategoryCombo = UIUtils.createLabelCombo(namePlaceholder, CoreMessages.dialog_edit_driver_label_category, SWT.BORDER | SWT.DROP_DOWN | advStyle);
             {
                 if (isReadOnly) {
                     driverCategoryCombo.setEnabled(false);
@@ -161,9 +162,9 @@ public class DriverEditDialog extends HelpEnabledDialog
                 }
             }
 
-            driverDescText = UIUtils.createLabelText(propsGroup, "Description", CommonUtils.getString(driver.getDescription()), SWT.BORDER | advStyle);
+            driverDescText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_description, CommonUtils.getString(driver.getDescription()), SWT.BORDER | advStyle);
 
-            driverClassText = UIUtils.createLabelText(propsGroup, "Class Name", CommonUtils.getString(driver.getDriverClassName()), SWT.BORDER | advStyle);
+            driverClassText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_class_name, CommonUtils.getString(driver.getDriverClassName()), SWT.BORDER | advStyle);
             driverClassText.addModifyListener(new ModifyListener()
             {
                 public void modifyText(ModifyEvent e)
@@ -172,7 +173,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 }
             });
 
-            driverURLText = UIUtils.createLabelText(propsGroup, "Sample URL", CommonUtils.getString(driver.getSampleURL()), SWT.BORDER | advStyle);
+            driverURLText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_sample_url, CommonUtils.getString(driver.getSampleURL()), SWT.BORDER | advStyle);
             driverURLText.addModifyListener(new ModifyListener()
             {
                 public void modifyText(ModifyEvent e)
@@ -183,10 +184,10 @@ public class DriverEditDialog extends HelpEnabledDialog
 
             boolean hasSite = !CommonUtils.isEmpty(driver.getWebURL());
 
-            UIUtils.createControlLabel(propsGroup, "Default Port");
+            UIUtils.createControlLabel(propsGroup, CoreMessages.dialog_edit_driver_label_default_port);
             Composite ph = hasSite ? UIUtils.createPlaceholder(propsGroup, 3) : propsGroup;
             driverPortText = new Text(ph, SWT.BORDER | advStyle);
-            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort());
+            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort()); //$NON-NLS-1$
             driverPortText.setLayoutData(new GridData(SWT.NONE));
             driverPortText.addModifyListener(new ModifyListener()
             {
@@ -199,9 +200,9 @@ public class DriverEditDialog extends HelpEnabledDialog
                 GridLayout gl = (GridLayout)ph.getLayout();
                 gl.horizontalSpacing = 5;
 
-                UIUtils.createControlLabel(ph, "Website");
+                UIUtils.createControlLabel(ph, CoreMessages.dialog_edit_driver_label_website);
                 Link urlLabel = new Link(ph, SWT.NONE);
-                urlLabel.setText("<a>" + driver.getWebURL() + "</a>");
+                urlLabel.setText("<a>" + driver.getWebURL() + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
                 urlLabel.addSelectionListener(new SelectionAdapter() {
                     public void widgetSelected(SelectionEvent e)
                     {
@@ -309,7 +310,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             layout.marginWidth = 0;
             findClassGroup.setLayout(layout);
 
-            UIUtils.createControlLabel(findClassGroup, "Driver class");
+            UIUtils.createControlLabel(findClassGroup, CoreMessages.dialog_edit_driver_label_driver_class);
             classListCombo = new Combo(findClassGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             classListCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             classListCombo.addSelectionListener(new SelectionAdapter() {
@@ -322,7 +323,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 }
             });
             findClassButton = new Button(findClassGroup, SWT.PUSH);
-            findClassButton.setText("Find Class");
+            findClassButton.setText(CoreMessages.dialog_edit_driver_button_bind_class);
             findClassButton.addListener(SWT.Selection, new Listener()
             {
                 public void handleEvent(Event event)
@@ -351,16 +352,16 @@ public class DriverEditDialog extends HelpEnabledDialog
         libsControlGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         Button newButton = new Button(libsControlGroup, SWT.PUSH);
-        newButton.setText("Add &File");
+        newButton.setText(CoreMessages.dialog_edit_driver_button_add_file);
         newButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         newButton.addListener(SWT.Selection, new Listener()
         {
             public void handleEvent(Event event)
             {
                 FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
-                fd.setText("Open driver library");
+                fd.setText(CoreMessages.dialog_edit_driver_dialog_open_driver_library);
                 fd.setFilterPath(curFolder);
-                String[] filterExt = {"*.jar", "*.*"};
+                String[] filterExt = {"*.jar", "*.*"}; //$NON-NLS-1$ //$NON-NLS-2$
                 fd.setFilterExtensions(filterExt);
                 String selected = fd.open();
                 if (selected != null) {
@@ -381,14 +382,14 @@ public class DriverEditDialog extends HelpEnabledDialog
         });
 
         Button newDirButton = new Button(libsControlGroup, SWT.PUSH);
-        newDirButton.setText("Add Fol&der");
+        newDirButton.setText(CoreMessages.dialog_edit_driver_button_add_folder);
         newDirButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         newDirButton.addListener(SWT.Selection, new Listener()
         {
             public void handleEvent(Event event)
             {
                 DirectoryDialog fd = new DirectoryDialog(getShell(), SWT.MULTI);
-                fd.setText("Open driver directory");
+                fd.setText(CoreMessages.dialog_edit_driver_dialog_open_driver_directory);
                 fd.setFilterPath(curFolder);
                 String selected = fd.open();
                 if (selected != null) {
@@ -400,7 +401,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         });
 
         deleteButton = new Button(libsControlGroup, SWT.PUSH);
-        deleteButton.setText("D&elete");
+        deleteButton.setText(CoreMessages.dialog_edit_driver_button_delete);
         deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         deleteButton.addListener(SWT.Selection, new Listener()
         {
@@ -413,7 +414,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         deleteButton.setEnabled(false);
 
         upButton = new Button(libsControlGroup, SWT.PUSH);
-        upButton.setText("&Up");
+        upButton.setText(CoreMessages.dialog_edit_driver_button_up);
         upButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         upButton.setEnabled(false);
         upButton.addListener(SWT.Selection, new Listener()
@@ -429,7 +430,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         });
 
         downButton = new Button(libsControlGroup, SWT.PUSH);
-        downButton.setText("Do&wn");
+        downButton.setText(CoreMessages.dialog_edit_driver_button_down);
         downButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         downButton.setEnabled(false);
         downButton.addListener(SWT.Selection, new Listener()
@@ -445,7 +446,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         });
 
         Button cpButton = new Button(libsControlGroup, SWT.PUSH);
-        cpButton.setText("&Classpath");
+        cpButton.setText(CoreMessages.dialog_edit_driver_button_classpath);
         cpButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cpButton.addListener(SWT.Selection, new Listener()
         {
@@ -459,8 +460,8 @@ public class DriverEditDialog extends HelpEnabledDialog
         changeLibContent();
 
         TabItem libsTab = new TabItem(group, SWT.NONE);
-        libsTab.setText("Driver Libraries");
-        libsTab.setToolTipText("Additional Driver Libraries");
+        libsTab.setText(CoreMessages.dialog_edit_driver_tab_name_driver_libraries);
+        libsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_driver_libraries);
         libsTab.setControl(libsGroup);
     }
 
@@ -478,8 +479,8 @@ public class DriverEditDialog extends HelpEnabledDialog
         parametersEditor.loadProperties(driverPropertySource);
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
-        paramsTab.setText("Advanced parameters");
-        paramsTab.setToolTipText("Advanced driver parameters");
+        paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_advanced_parameters);
+        paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_advanced_parameters);
         paramsTab.setControl(paramsGroup);
     }
 
@@ -494,8 +495,8 @@ public class DriverEditDialog extends HelpEnabledDialog
 
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
-        paramsTab.setText("Connection properties");
-        paramsTab.setToolTipText("Default connection properties");
+        paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_connection_properties);
+        paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_connection_properties);
         paramsTab.setControl(paramsGroup);
     }
 
@@ -507,21 +508,21 @@ public class DriverEditDialog extends HelpEnabledDialog
         Text licenseText = new Text(paramsGroup, SWT.BORDER | SWT.WRAP | SWT.MULTI | SWT.V_SCROLL);
         licenseText.setText(license);
         licenseText.setEditable(false);
-        licenseText.setMessage("Driver license");
+        licenseText.setMessage(CoreMessages.dialog_edit_driver_text_driver_license);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 200;
         //gd.grabExcessVerticalSpace = true;
         licenseText.setLayoutData(gd);
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
-        paramsTab.setText("License");
-        paramsTab.setToolTipText("Driver license");
+        paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_license);
+        paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_license);
         paramsTab.setControl(paramsGroup);
     }
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        Button resetButton = createButton(parent, IDialogConstants.RETRY_ID, "Reset to Defaults", false);
+        Button resetButton = createButton(parent, IDialogConstants.RETRY_ID, CoreMessages.dialog_edit_driver_button_reset_to_defaults, false);
         if (driver.isCustom()) {
             resetButton.setEnabled(false);
         }
@@ -562,7 +563,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         driverDescText.setText(CommonUtils.getString(driver.getOrigDescription()));
         driverClassText.setText(CommonUtils.getString(driver.getOrigClassName()));
         driverURLText.setText(CommonUtils.getString(driver.getOrigSampleURL()));
-        driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort().toString());
+        driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort().toString()); //$NON-NLS-1$
         if (!CommonUtils.isEmpty(driver.getCategory())) {
             driverCategoryCombo.setText(driver.getCategory());
         } else if (!CommonUtils.isEmpty(defaultCategory)) {
@@ -625,7 +626,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         try {
             driver.loadDriver(true);
         } catch (Throwable ex) {
-            UIUtils.showErrorDialog(getShell(), "Driver Error", "Can't load driver", ex);
+            UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_edit_driver_dialog_driver_error_title, CoreMessages.dialog_edit_driver_dialog_driver_error_message, ex);
         }
 
         super.okPressed();
@@ -686,8 +687,8 @@ public class DriverEditDialog extends HelpEnabledDialog
                         }
                         JarEntry current = (JarEntry) e.nextElement();
                         String fileName = current.getName();
-                        if (fileName.endsWith(".class") && fileName.indexOf("$") == -1) {
-                            String className = fileName.replaceAll("/", ".").replace(".class", "");
+                        if (fileName.endsWith(".class") && fileName.indexOf("$") == -1) { //$NON-NLS-1$ //$NON-NLS-2$
+                            String className = fileName.replaceAll("/", ".").replace(".class", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                             monitor.subTask(className);
                             try {
                                 Class<?> aClass = Class.forName(className, false, findCL);

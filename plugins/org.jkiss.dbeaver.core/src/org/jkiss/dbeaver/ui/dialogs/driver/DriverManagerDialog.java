@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -17,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -70,9 +72,9 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             }
         }
 
-        getShell().setText("Driver Manager");
+        getShell().setText(CoreMessages.dialog_driver_manager_title);
         getShell().setMinimumSize(300, 300);
-        dialogImage = DBeaverActivator.getImageDescriptor("/icons/driver_manager.png").createImage();
+        dialogImage = DBeaverActivator.getImageDescriptor("/icons/driver_manager.png").createImage(); //$NON-NLS-1$
         getShell().setImage(dialogImage);
 
         Composite group = UIUtils.createPlaceholder((Composite) super.createDialogArea(parent), 2);
@@ -92,8 +94,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             buttonBar.setLayoutData(gd);
 
             newButton = new Button(buttonBar, SWT.FLAT | SWT.PUSH);
-            newButton.setText("&New");
-            gd = new GridData(GridData.BEGINNING);
+            newButton.setText(CoreMessages.dialog_driver_manager_button_new);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 100;
             newButton.setLayoutData(gd);
             newButton.addSelectionListener(new SelectionListener()
@@ -109,8 +111,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             });
 
             editButton = new Button(buttonBar, SWT.FLAT | SWT.PUSH);
-            editButton.setText("&Edit ...");
-            gd = new GridData(GridData.BEGINNING);
+            editButton.setText(CoreMessages.dialog_driver_manager_button_edit);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 100;
             editButton.setLayoutData(gd);
             editButton.addSelectionListener(new SelectionListener()
@@ -126,8 +128,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             });
 
             deleteButton = new Button(buttonBar, SWT.FLAT | SWT.PUSH);
-            deleteButton.setText("&Delete");
-            gd = new GridData(GridData.BEGINNING);
+            deleteButton.setText(CoreMessages.dialog_driver_manager_button_delete);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 100;
             deleteButton.setLayoutData(gd);
             deleteButton.addSelectionListener(new SelectionListener()
@@ -154,10 +156,10 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                 legend.setLayoutData(gd);
 
                 UIUtils.createImageLabel(legend, DBIcon.OVER_LAMP.getImage());
-                UIUtils.createTextLabel(legend, "- User defined");
+                UIUtils.createTextLabel(legend, CoreMessages.dialog_driver_manager_label_user_defined);
 
                 UIUtils.createImageLabel(legend, DBIcon.OVER_ERROR.getImage());
-                UIUtils.createTextLabel(legend, "- Unavailable");
+                UIUtils.createTextLabel(legend, CoreMessages.dialog_driver_manager_label_unavailable);
             }
         }
 /*
@@ -262,17 +264,17 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     {
         List<DataSourceDescriptor> usedDS = selectedDriver.getUsedBy();
         if (!usedDS.isEmpty()) {
-            StringBuilder message = new StringBuilder("Your can't delete driver '" + selectedDriver.getName() +"' because it's used by following datasource(s):");
+            StringBuilder message = new StringBuilder(NLS.bind(CoreMessages.dialog_driver_manager_message_cant_delete_text, selectedDriver.getName()));
             for (DataSourceDescriptor ds : usedDS) {
                 message.append("\n - ").append(ds.getName());
             }
-            UIUtils.showMessageBox(getShell(), "Can't delete driver", message.toString(), SWT.ICON_ERROR);
+            UIUtils.showMessageBox(getShell(), CoreMessages.dialog_driver_manager_message_cant_delete_title, message.toString(), SWT.ICON_ERROR);
             return;
         }
         if (UIUtils.confirmAction(
             getShell(),
-            "Delete driver",
-            "Are you sure you want to delete driver '" + selectedDriver.getName() + "'?"))
+            CoreMessages.dialog_driver_manager_message_delete_driver_title,
+            CoreMessages.dialog_driver_manager_message_delete_driver_text + selectedDriver.getName() + "'?"))
         {
             selectedDriver.getProviderDescriptor().removeDriver(selectedDriver);
             selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();

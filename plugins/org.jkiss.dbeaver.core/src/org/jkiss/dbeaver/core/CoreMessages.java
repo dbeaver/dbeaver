@@ -164,6 +164,88 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_connection_wizard_start_dialog_interrupted_title;
 
+	public static String dialog_driver_manager_button_delete;
+
+	public static String dialog_driver_manager_button_edit;
+
+	public static String dialog_driver_manager_button_new;
+
+	public static String dialog_driver_manager_label_unavailable;
+
+	public static String dialog_driver_manager_label_user_defined;
+
+	public static String dialog_driver_manager_message_cant_delete_text;
+
+	public static String dialog_driver_manager_message_cant_delete_title;
+
+	public static String dialog_driver_manager_message_delete_driver_text;
+
+	public static String dialog_driver_manager_message_delete_driver_title;
+
+	public static String dialog_driver_manager_title;
+
+	public static String dialog_edit_driver_button_add_file;
+
+	public static String dialog_edit_driver_button_add_folder;
+
+	public static String dialog_edit_driver_button_bind_class;
+
+	public static String dialog_edit_driver_button_classpath;
+
+	public static String dialog_edit_driver_button_delete;
+
+	public static String dialog_edit_driver_button_down;
+
+	public static String dialog_edit_driver_button_reset_to_defaults;
+
+	public static String dialog_edit_driver_button_up;
+
+	public static String dialog_edit_driver_dialog_driver_error_message;
+
+	public static String dialog_edit_driver_dialog_driver_error_title;
+
+	public static String dialog_edit_driver_dialog_open_driver_directory;
+
+	public static String dialog_edit_driver_dialog_open_driver_library;
+
+	public static String dialog_edit_driver_label_category;
+
+	public static String dialog_edit_driver_label_class_name;
+
+	public static String dialog_edit_driver_label_default_port;
+
+	public static String dialog_edit_driver_label_description;
+
+	public static String dialog_edit_driver_label_driver_class;
+
+	public static String dialog_edit_driver_label_driver_name;
+
+	public static String dialog_edit_driver_label_sample_url;
+
+	public static String dialog_edit_driver_label_website;
+
+	public static String dialog_edit_driver_tab_name_advanced_parameters;
+
+	public static String dialog_edit_driver_tab_name_connection_properties;
+
+	public static String dialog_edit_driver_tab_name_driver_libraries;
+
+	public static String dialog_edit_driver_tab_name_license;
+
+	public static String dialog_edit_driver_tab_tooltip_advanced_parameters;
+
+	public static String dialog_edit_driver_tab_tooltip_connection_properties;
+
+	public static String dialog_edit_driver_tab_tooltip_driver_libraries;
+
+	public static String dialog_edit_driver_tab_tooltip_license;
+
+	public static String dialog_edit_driver_text_driver_license;
+
+	public static String dialog_edit_driver_title_create_driver;
+
+	public static String dialog_edit_driver_title_edit_driver;
+
 	public static String editors_entity_dialog_persist_title;
 
 	public static String editors_entity_dialog_preview_title;
