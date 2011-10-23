@@ -5,11 +5,20 @@
   -->
 
 <project name="VersionUpdater" default="build">
-    <!--<property file="build.properties"/>-->
 
     <target name="build">
         <mkdir dir="build"/>
+        <javac srcdir="src" destdir="build" includeantruntime="true"/>
+    </target>
 
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="declare" depends="build">
+        <taskdef name="generate-version"
+                 classname="org.jkiss.tools.ant.productman.GenerateVersionTask"
+                 classpath="build"/>
     </target>
 
 </project>

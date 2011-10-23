@@ -32,18 +32,18 @@
         <description>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase and any database which has JDBC driver.</description>
     </product>
 
-    <releases>
-        <release>
-            <version>1.4.3</version>
+    <versions>
+        <version>
+            <number>1.4.3</number>
             <type>stable</type>
-            <date>11.11.2011</date>
+            <date>25.10.2011</date>
 
             <release-notes>
 
             </release-notes>
-        </release>
-        <release>
-            <version>1.4.1</version>
+        </version>
+        <version>
+            <number>1.4.1</number>
             <type>stable</type>
             <date>04.11.2011</date>
 
@@ -62,8 +62,8 @@
                 - OS-dependent drivers
                 - UI fixes
             </release-notes>
-        </release>
-    </releases>
+        </version>
+    </versions>
 
     <update-sites>
         <site title="Main DBeaver Mirror" url="http://dbeaver.jkiss.org/files" priority="1" />
