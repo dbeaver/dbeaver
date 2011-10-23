@@ -6,9 +6,18 @@
 
 <project name="VersionUpdater" default="build">
 
+    <path id="classpath">
+        <pathelement location="../../plugins/org.jkiss.dbeaver.core/bin"/>
+        <pathelement location="build"/>
+	<fileset dir="../../plugins/org.jkiss.dbeaver.core/lib/" includes="*.jar"/>
+    </path>
+
     <target name="build">
         <mkdir dir="build"/>
-        <javac srcdir="src" destdir="build" includeantruntime="true"/>
+
+        <javac srcdir="src" destdir="build" includeantruntime="true">
+		<classpath refid="classpath"/>
+	</javac>
     </target>
 
     <target name="clean">
@@ -16,9 +25,18 @@
     </target>
 
     <target name="declare" depends="build">
-        <taskdef name="generate-version"
-                 classname="org.jkiss.tools.ant.productman.GenerateVersionTask"
-                 classpath="build"/>
+        <taskdef name="generate-version" classname="org.jkiss.tools.ant.productman.GenerateVersionTask">
+            <classpath refid="classpath"/>
+	</taskdef>
+    </target>
+
+    <target name="generate-version" depends="declare">
+        <generate-version 
+		productDescriptor="pad/dbeaver-product.xml" 
+		targetDirectory="${targetDirectory}" 
+		versionNumber="${productVersion}"
+		configs="${configs}" 
+		locales="${locales}"/>
     </target>
 
 </project>

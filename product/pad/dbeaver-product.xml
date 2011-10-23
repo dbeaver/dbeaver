@@ -5,6 +5,14 @@
 
 <product-descriptor>
 
+    <name>DBeaver</name>
+    <web type="main">http://dbeaver.jkiss.org/</web>
+    <web type="download">http://dbeaver.jkiss.org/download/</web>
+    <screenshot-1>http://dbeaver.jkiss.org/product/Screenshot_Main.png</screenshot-1>
+    <icon-1>http://dbeaver.jkiss.org/product/dbeaver.gif</icon-1>
+    <keywords>sql,database manager,database client,mysql,postgresql,mssql,db2,oracle,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc</keywords>
+    <description>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase and any database which has JDBC driver.</description>
+
     <company>
         <name>JKISS</name>
         <address1>Engelsa pr. 97-212</address1>
@@ -21,16 +29,6 @@
             <phone>+7-962-728-16-88</phone>
         </contact>
     </company>
-
-    <product>
-        <name>DBeaver</name>
-        <web type="main">http://dbeaver.jkiss.org/</web>
-        <web type="download">http://dbeaver.jkiss.org/download/</web>
-        <screenshot-1>http://dbeaver.jkiss.org/product/Screenshot_Main.png</screenshot-1>
-        <icon-1>http://dbeaver.jkiss.org/product/dbeaver.gif</icon-1>
-        <keywords>sql,database manager,database client,mysql,postgresql,mssql,db2,oracle,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc</keywords>
-        <description>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase and any database which has JDBC driver.</description>
-    </product>
 
     <versions>
         <version>
