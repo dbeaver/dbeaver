@@ -9,7 +9,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Product descriptor
@@ -18,6 +20,7 @@ public class VMProductDescriptor {
 
     private List<VMVersionDescriptor> versions = new ArrayList<VMVersionDescriptor>();
     private String productName;
+    private Map<String,String> webSites = new HashMap<String, String>();
 
     public VMProductDescriptor(Document document)
     {
@@ -31,13 +34,26 @@ public class VMProductDescriptor {
                 VMVersionDescriptor versionDescriptor = new VMVersionDescriptor(version);
                 versions.add(versionDescriptor);
             }
+        }
 
+        for (Element web : XMLUtils.getChildElementList(root, "web")) {
+            webSites.put(web.getAttribute("type"), XMLUtils.getElementBody(web));
         }
     }
 
     public String getProductName()
     {
         return productName;
+    }
+
+    public Map<String, String> getWebSites()
+    {
+        return webSites;
+    }
+
+    public String getWebSite(String type)
+    {
+        return webSites.get(type);
     }
 
     public List<VMVersionDescriptor> getVersions()
@@ -54,4 +70,5 @@ public class VMProductDescriptor {
         }
         return null;
     }
+
 }

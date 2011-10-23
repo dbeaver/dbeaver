@@ -40,6 +40,18 @@
 
             </release-notes>
         </version>
+
+        <version>
+            <number>1.4.2</number>
+            <type>ea</type>
+            <date>07.10.2011</date>
+
+            <release-notes>
+                - Fixes of Oracle plugin (datatype handlers)
+                - Minor UI fixes
+            </release-notes>
+        </version>
+
         <version>
             <number>1.4.1</number>
             <type>stable</type>

@@ -6,15 +6,16 @@ package org.jkiss.tools.ant.productman;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 /**
  * Generates version descriptor from product descriptor
@@ -64,12 +65,37 @@ public class GenerateVersionTask extends Task
 
     private void generateVersionInfo(VMProductDescriptor product, VMVersionDescriptor version, XMLBuilder xml) throws IOException
     {
+        File archivesFolder = new File(new File(targetDirectory), "dbeaver-" + versionNumber);
+
         xml.startElement("version");
 
         xml.startElement("name").addText(product.getProductName()).endElement();
         xml.startElement("number").addText(version.getNumber()).endElement();
         xml.startElement("date").addText(version.getUpdateTime()).endElement();
         xml.startElement("release-notes").addText(version.getReleaseNotes()).endElement();
+        xml.startElement("base-url").addText(product.getWebSite("download")).endElement();
+
+        if (!CommonUtils.isEmpty(configs)) {
+            StringTokenizer st = new StringTokenizer(configs, "&");
+            while (st.hasMoreTokens()) {
+                String config = st.nextToken().trim();
+                StringTokenizer cst = new StringTokenizer(config, ",");
+                String os = cst.nextToken().trim();
+                String ui = cst.nextToken().trim();
+                String arch = cst.nextToken().trim();
+                String fileName = "dbeaver-" + versionNumber + "-" + os + "." + ui + "." + arch + ".zip";
+                File file = new File(archivesFolder, fileName);
+                xml.startElement("distribution");
+                xml.addAttribute("os", os);
+                xml.addAttribute("arch", arch);
+                xml.addAttribute("type", "archive");
+                xml.addAttribute("file", fileName);
+                if (file.exists()) {
+                    xml.addAttribute("size", file.length());
+                }
+                xml.endElement();
+            }
+        }
 
         xml.endElement();
     }
