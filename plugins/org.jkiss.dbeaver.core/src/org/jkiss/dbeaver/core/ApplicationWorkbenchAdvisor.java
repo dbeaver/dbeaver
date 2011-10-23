@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Calendar;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -89,6 +90,18 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     private void startVersionChecker()
     {
         if (DBeaverCore.getInstance().getGlobalPreferenceStore().getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK)) {
+            long lastVersionCheckTime = DBeaverCore.getInstance().getGlobalPreferenceStore().getLong(PrefConstants.UI_UPDATE_CHECK_TIME);
+            if (lastVersionCheckTime > 0) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(lastVersionCheckTime);
+                int checkDay = cal.get(Calendar.DAY_OF_MONTH);
+                cal.setTimeInMillis(System.currentTimeMillis());
+                int curDay = cal.get(Calendar.DAY_OF_MONTH);
+                if (curDay == checkDay) {
+                    return;
+                }
+            }
+            DBeaverCore.getInstance().getGlobalPreferenceStore().setValue(PrefConstants.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
             DBeaverVersionChecker checker = new DBeaverVersionChecker();
             checker.schedule(3000);
         }

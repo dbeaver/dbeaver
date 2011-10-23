@@ -54,5 +54,6 @@ public final class PrefConstants
 
     // General UI
     public static final String UI_AUTO_UPDATE_CHECK = "ui.auto.update.check"; //$NON-NLS-1$
+    public static final String UI_UPDATE_CHECK_TIME = "ui.auto.update.check.time"; //$NON-NLS-1$
 
 }
