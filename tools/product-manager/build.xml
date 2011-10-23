@@ -33,7 +33,7 @@
     <target name="generate-version" depends="declare">
         <generate-version 
 		productDescriptor="pad/dbeaver-product.xml" 
-		targetDirectory="${targetDirectory}" 
+		targetDirectory="${buildDirectory}" 
 		versionNumber="${productVersion}"
 		configs="${configs}" 
 		locales="${locales}"/>

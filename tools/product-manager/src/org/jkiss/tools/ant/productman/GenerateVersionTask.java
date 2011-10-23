@@ -51,6 +51,7 @@ public class GenerateVersionTask extends Task
                 XMLBuilder versionXML = new XMLBuilder(out, "UTF-8");
                 versionXML.setButify(true);
                 generateVersionInfo(product, version, versionXML);
+                versionXML.flush();
             } finally {
                 IOUtils.close(out);
             }
