@@ -91,6 +91,7 @@ public class GenerateVersionTask extends Task
                 xml.startElement("distribution");
                 xml.addAttribute("os", os);
                 xml.addAttribute("arch", arch);
+                xml.addAttribute("ui", ui);
                 xml.addAttribute("type", "archive");
                 xml.addAttribute("file", fileName);
                 if (file.exists()) {
