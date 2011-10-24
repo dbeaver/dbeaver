@@ -57,7 +57,7 @@ public class DBRProcessDescriptor
         return process;
     }
 
-    public boolean isRunning()
+    public synchronized boolean isRunning()
     {
         return process != null;
     }

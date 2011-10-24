@@ -37,7 +37,12 @@
             <date>25.10.2011</date>
 
             <release-notes>
-
+                - New version checker/updater
+                - Connection events (run shell command on connect/disconnect)
+                - Oracle tables view/edit fixes
+                - Oracle procedures, packages, views, types, triggers source code editor and compiler
+                - UI internationalization and first localization beta
+                - Many general UI fixes
             </release-notes>
         </version>
 

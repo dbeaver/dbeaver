@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -45,7 +46,10 @@ public abstract class EventProcessorJob extends AbstractJob {
             variables.put("password", info.getUserPassword());
             variables.put("url", info.getUrl());
 
-            RuntimeUtils.processCommand(command, variables);
+            DBRProcessDescriptor process = RuntimeUtils.processCommand(command, variables);
+            if (process != null) {
+                container.addChildProcess(process);
+            }
         }
     }
 

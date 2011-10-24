@@ -323,7 +323,7 @@ public class RuntimeUtils {
         return false;
     }
 
-    public static void processCommand(
+    public static DBRProcessDescriptor processCommand(
         final DBRShellCommand command,
         final Map<String, Object> variables)
     {
@@ -354,6 +354,7 @@ public class RuntimeUtils {
                 UIUtils.showErrorDialog(shell, "Execute process", processDescriptor.getName(), e);
             }
         }
+        return processDescriptor;
     }
 
     private static class SaveRunner implements Runnable {

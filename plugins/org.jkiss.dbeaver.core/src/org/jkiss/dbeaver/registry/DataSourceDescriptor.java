@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -80,7 +81,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     private volatile boolean connectFailed = false;
     private volatile Date connectTime = null;
-
+    private final List<DBRProcessDescriptor> childProcesses = new ArrayList<DBRProcessDescriptor>();
 
     public DataSourceDescriptor(
         DataSourceRegistry registry,
@@ -447,11 +448,23 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
         monitor.done();
 
+        // Terminate child processes
+        synchronized (childProcesses) {
+            for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
+                DBRProcessDescriptor process = iter.next();
+                if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
+                    process.terminate();
+                }
+                iter.remove();
+            }
+        }
+
         dataSource = null;
         connectTime = null;
         keywordManager = null;
 
         if (reflect) {
+            // Reflect UI
             getRegistry().fireDataSourceEvent(
                 DBPEvent.Action.OBJECT_UPDATE,
                 this,
@@ -656,6 +669,13 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             workbenchWindow,
             new EditConnectionWizard(this));
         dialog.open();
+    }
+
+    public void addChildProcess(DBRProcessDescriptor process)
+    {
+        synchronized (childProcesses) {
+            childProcesses.add(process);
+        }
     }
 
     private class TransactionCloseConfirmer implements Runnable {
