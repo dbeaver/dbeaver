@@ -7,12 +7,14 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -72,7 +74,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
         maxResults = store.getInt(PROP_MAX_RESULT);
         matchTypeIndex = store.getInt(PROP_MATCH_INDEX);
         for (int i = 0; ;i++) {
-            String history = store.getString(PROP_HISTORY + "." + i);
+            String history = store.getString(PROP_HISTORY + "." + i); //$NON-NLS-1$
             if (CommonUtils.isEmpty(history)) {
                 break;
             }
@@ -81,7 +83,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
         {
             String type = store.getString(PROP_OBJECT_TYPE);
             if (!CommonUtils.isEmpty(type)) {
-                StringTokenizer st = new StringTokenizer(type, "|");
+                StringTokenizer st = new StringTokenizer(type, "|"); //$NON-NLS-1$
                 while (st.hasMoreTokens()) {
                     savedTypeNames.add(st.nextToken());
                 }
@@ -102,7 +104,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 if (historyIndex >= 20) {
                     break;
                 }
-                store.setValue(PROP_HISTORY + "." + historyIndex, history);
+                store.setValue(PROP_HISTORY + "." + historyIndex, history); //$NON-NLS-1$
                 historyIndex++;
             }
         }
@@ -110,7 +112,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             StringBuilder typesString = new StringBuilder();
             for (DBSObjectType type : checkedTypes) {
                 if (typesString.length() > 0) {
-                    typesString.append("|");
+                    typesString.append("|"); //$NON-NLS-1$
                 }
                 typesString.append(type.getTypeClass().getName());
             }
@@ -128,7 +130,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
     {
         Shell shell = getShell();
 
-        shell.setText("Find database objects");
+        shell.setText(CoreMessages.dialog_search_objects_title);
         shell.setImage(DBIcon.FIND.getImage());
 
         //Composite divider = UIUtils.createPlaceholder(parent, 1, 5);
@@ -141,7 +143,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             searchGroup = new Composite(divider, SWT.NONE);
             searchGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             searchGroup.setLayout(new GridLayout(3, false));
-            UIUtils.createControlLabel(searchGroup, "Object Name");
+            UIUtils.createControlLabel(searchGroup, CoreMessages.dialog_search_objects_label_object_name);
             searchText = new Combo(searchGroup, SWT.DROP_DOWN);
             searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (nameMask != null) {
@@ -159,7 +161,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             });
 
             searchButton = new Button(searchGroup, SWT.PUSH);
-            searchButton.setText("Search");
+            searchButton.setText(CoreMessages.dialog_search_objects_button_search);
             searchButton.setImage(DBIcon.FIND.getImage());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             //gd.horizontalSpan = 2;
@@ -179,11 +181,11 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 gd.horizontalSpan = 3;
                 optionsGroup2.setLayoutData(gd);
 
-                UIUtils.createControlLabel(optionsGroup2, "Name match");
+                UIUtils.createControlLabel(optionsGroup2, CoreMessages.dialog_search_objects_label_name_match);
                 final Combo matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-                matchCombo.add("Starts with", MATCH_INDEX_STARTS_WITH);
-                matchCombo.add("Contains", MATCH_INDEX_CONTAINS);
-                matchCombo.add("Like", MATCH_INDEX_LIKE);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, MATCH_INDEX_STARTS_WITH);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, MATCH_INDEX_CONTAINS);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_like, MATCH_INDEX_LIKE);
                 matchCombo.select(0);
                 matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 if (matchTypeIndex >= 0) {
@@ -200,7 +202,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 if (maxResults <= 0) {
                     maxResults = 100;
                 }
-                final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, "Max results", maxResults, 1, 10000);
+                final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, CoreMessages.dialog_search_objects_spinner_max_results, maxResults, 1, 10000);
                 maxResultsSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 maxResultsSpinner.addModifyListener(new ModifyListener() {
                     public void modifyText(ModifyEvent e)
@@ -222,7 +224,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             {
                 final DBeaverCore core = DBeaverCore.getInstance();
 
-                Group sourceGroup = UIUtils.createControlGroup(optionsGroup, "Objects Source", 1, GridData.FILL_BOTH, 0);
+                Group sourceGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_search_objects_group_objects_source, 1, GridData.FILL_BOTH, 0);
                 final DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
                 dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode.getDatabases(), SWT.SINGLE);
                 gd = new GridData(GridData.FILL_BOTH);
@@ -280,7 +282,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             }
 
             {
-                Group typesGroup = UIUtils.createControlGroup(optionsGroup, "Object Types", 1, GridData.FILL_BOTH, 0);
+                Group typesGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_search_objects_group_object_types, 1, GridData.FILL_BOTH, 0);
                 typesTable = new Table(typesGroup, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
                 typesTable.addSelectionListener(new SelectionAdapter() {
                     public void widgetSelected(SelectionEvent e)
@@ -300,16 +302,16 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 typesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 
                 TableColumn typeColumn = new TableColumn(typesTable, SWT.LEFT);
-                typeColumn.setText("Type");
+                typeColumn.setText(CoreMessages.dialog_search_objects_column_type);
                 TableColumn descColumn = new TableColumn(typesTable, SWT.LEFT);
-                descColumn.setText("Description");
+                descColumn.setText(CoreMessages.dialog_search_objects_column_description);
             }
         }
 
         {
             itemList = new SearchResultsControl(divider);
             itemList.createProgressPanel();
-            itemList.setInfo("You have to set search query");
+            itemList.setInfo(CoreMessages.dialog_search_objects_item_list_info);
             gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 700;
             gd.heightHint = 500;
@@ -449,7 +451,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             Composite panel = super.createProgressPanel(container);
 
             Button closeButton = new Button(panel, SWT.PUSH);
-            closeButton.setText("Close");
+            closeButton.setText(CoreMessages.dialog_search_objects_button_close);
             closeButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -472,9 +474,9 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 protected String getItemsLoadMessage(int count)
                 {
                     if (count == 0) {
-                        return "No objects like '" + searchText.getText() + "' in '" + getSelectedNode().getNodeName() + "'";
+                        return NLS.bind(CoreMessages.dialog_search_objects_message_no_objects_like_, new Object[] {searchText.getText(), getSelectedNode().getNodeName()});
                     } else {
-                        return count + " objects found";
+                        return count + CoreMessages.dialog_search_objects_message_objects_found;
                     }
                 }
             };
@@ -509,15 +511,15 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             }
 
             if (matchTypeIndex == MATCH_INDEX_STARTS_WITH) {
-                if (!objectNameMask.endsWith("%")) {
-                    objectNameMask = objectNameMask + "%";
+                if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
+                    objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
                 }
             } else if (matchTypeIndex == MATCH_INDEX_CONTAINS) {
-                if (!objectNameMask.startsWith("%")) {
-                    objectNameMask = "%" + objectNameMask;
+                if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
+                    objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
                 }
-                if (!objectNameMask.endsWith("%")) {
-                    objectNameMask = objectNameMask + "%";
+                if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
+                    objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
                 }
             }
 
