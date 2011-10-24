@@ -39,7 +39,7 @@
 		productDescriptor="pad/dbeaver-product.xml" 
 		targetDirectory="${buildDirectory}" 
 		versionNumber="${productVersion}"
-		configs="${configs}" 
+		configs="${configs} &amp; ${configs.icu}" 
 		locales="${locales}"/>
     </target>
 

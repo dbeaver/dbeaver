@@ -79,6 +79,9 @@ public class GenerateVersionTask extends Task
             StringTokenizer st = new StringTokenizer(configs, "&");
             while (st.hasMoreTokens()) {
                 String config = st.nextToken().trim();
+                if (CommonUtils.isEmpty(config) || config.startsWith("$")) {
+                    continue;
+                }
                 StringTokenizer cst = new StringTokenizer(config, ",");
                 String os = cst.nextToken().trim();
                 String ui = cst.nextToken().trim();
@@ -95,6 +98,16 @@ public class GenerateVersionTask extends Task
                 }
                 xml.endElement();
             }
+        }
+
+        if (!CommonUtils.isEmpty(locales)) {
+            StringTokenizer st = new StringTokenizer(locales);
+            while (st.hasMoreTokens()) {
+                xml.startElement("locale");
+                xml.addAttribute("name", st.nextToken());
+                xml.endElement();
+            }
+
         }
 
         xml.endElement();
