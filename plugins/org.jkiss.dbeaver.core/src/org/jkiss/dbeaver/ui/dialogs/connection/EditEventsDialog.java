@@ -12,6 +12,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -51,7 +52,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Edit connection's events");
+        getShell().setText(CoreMessages.dialog_connection_events_title);
         getShell().setImage(DBIcon.EVENT.getImage());
 
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -64,7 +65,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
             eventGroup.setLayout(new GridLayout(1, false));
             eventGroup.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-            UIUtils.createControlLabel(eventGroup, "Event");
+            UIUtils.createControlLabel(eventGroup, CoreMessages.dialog_connection_events_label_event);
             eventTypeTable = new Table(eventGroup, SWT.BORDER | SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION);
             eventTypeTable.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
@@ -97,7 +98,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
             detailsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
                 //UIUtils.createControlGroup(group, "Event", 1, GridData.FILL_BOTH | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            UIUtils.createControlLabel(detailsGroup, "Command");
+            UIUtils.createControlLabel(detailsGroup, CoreMessages.dialog_connection_events_label_command);
             commandText = new Text(detailsGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             commandText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e)
@@ -118,11 +119,11 @@ public class EditEventsDialog extends HelpEnabledDialog {
                 }
             };
 
-            showProcessCheck = UIUtils.createCheckbox(detailsGroup, "Show Process Panel", false);
+            showProcessCheck = UIUtils.createCheckbox(detailsGroup, CoreMessages.dialog_connection_events_checkbox_show_process, false);
             showProcessCheck.addSelectionListener(eventEditAdapter);
-            waitFinishCheck = UIUtils.createCheckbox(detailsGroup, "Wait Process Finish", false);
+            waitFinishCheck = UIUtils.createCheckbox(detailsGroup, CoreMessages.dialog_connection_events_checkbox_wait_finish, false);
             waitFinishCheck.addSelectionListener(eventEditAdapter);
-            terminateCheck = UIUtils.createCheckbox(detailsGroup, "Terminate At Disconnect", false);
+            terminateCheck = UIUtils.createCheckbox(detailsGroup, CoreMessages.dialog_connection_events_checkbox_terminate_at_disconnect, false);
             terminateCheck.addSelectionListener(eventEditAdapter);
         }
 
@@ -153,7 +154,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
         if (eventType != null) {
             DBRShellCommand command = eventsCache.get(eventType);
             if (command == null) {
-                command = new DBRShellCommand("");
+                command = new DBRShellCommand(""); //$NON-NLS-1$
                 eventsCache.put(eventType, command);
             }
             boolean prevEnabled = command.isEnabled();
@@ -188,7 +189,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
             waitFinishCheck.setSelection(command.isWaitProcessFinish());
             terminateCheck.setSelection(command.isTerminateAtDisconnect());
         } else {
-            commandText.setText("");
+            commandText.setText(""); //$NON-NLS-1$
             showProcessCheck.setSelection(false);
             waitFinishCheck.setSelection(false);
             terminateCheck.setSelection(false);

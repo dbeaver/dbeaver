@@ -118,6 +118,26 @@ public class CoreMessages extends NLS {
 	public static String dialog_about_label_version;
 	public static String dialog_about_title;
 
+	public static String dialog_connection_events_checkbox_show_process;
+
+	public static String dialog_connection_events_checkbox_terminate_at_disconnect;
+
+	public static String dialog_connection_events_checkbox_wait_finish;
+
+	public static String dialog_connection_events_event_after_connect;
+
+	public static String dialog_connection_events_event_after_disconnect;
+
+	public static String dialog_connection_events_event_before_connect;
+
+	public static String dialog_connection_events_event_before_disconnect;
+
+	public static String dialog_connection_events_label_command;
+
+	public static String dialog_connection_events_label_event;
+
+	public static String dialog_connection_events_title;
+
 	public static String dialog_connection_message;
 
 	public static String dialog_connection_wizard_final_button_test;
@@ -163,6 +183,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_start_dialog_interrupted_message;
 
 	public static String dialog_connection_wizard_start_dialog_interrupted_title;
+
+	public static String dialog_connection_wizard_title;
 
 	public static String dialog_driver_manager_button_delete;
 

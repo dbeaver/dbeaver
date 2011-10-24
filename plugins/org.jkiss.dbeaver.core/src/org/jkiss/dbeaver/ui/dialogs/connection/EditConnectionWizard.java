@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
@@ -33,7 +34,7 @@ public class EditConnectionWizard extends ConnectionWizard
         super(dataSource.getRegistry());
         this.dataSource = dataSource;
         this.oldData = new DBPConnectionInfo(this.dataSource.getConnectionInfo());
-        setWindowTitle("Edit connection");
+        setWindowTitle(CoreMessages.dialog_connection_wizard_title);
     }
 
     public DataSourceDescriptor getDataSourceDescriptor()
