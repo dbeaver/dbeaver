@@ -63,8 +63,6 @@ public class GenericMessages extends NLS {
 
 	public static String dialog_connection_user_name_label;
 
-
-	public static String ui_common_button_help;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, GenericMessages.class);
