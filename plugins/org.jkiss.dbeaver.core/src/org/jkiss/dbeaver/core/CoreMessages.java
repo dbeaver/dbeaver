@@ -246,6 +246,24 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_edit_driver_title_edit_driver;
 
+	public static String dialog_version_update_available_new_version;
+
+	public static String dialog_version_update_button_more_info;
+
+	public static String dialog_version_update_current_version;
+
+	public static String dialog_version_update_n_a;
+
+	public static String dialog_version_update_new_version;
+
+	public static String dialog_version_update_no_new_version;
+
+	public static String dialog_version_update_notes;
+
+	public static String dialog_version_update_press_more_info_;
+
+	public static String dialog_version_update_title;
+
 	public static String editors_entity_dialog_persist_title;
 
 	public static String editors_entity_dialog_preview_title;
