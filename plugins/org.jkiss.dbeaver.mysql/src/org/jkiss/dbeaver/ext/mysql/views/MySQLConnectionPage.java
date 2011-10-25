@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.views;
 
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -59,13 +60,13 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         optionsFolder.setLayoutData(gd);
 
         TabItem addrTab = new TabItem(optionsFolder, SWT.NONE);
-        addrTab.setText("General");
-        addrTab.setToolTipText("General connection properties");
+        addrTab.setText(MySQLMessages.dialog_connection_general_tab);
+        addrTab.setToolTipText(MySQLMessages.dialog_connection_general_tab_tooltip);
         addrTab.setControl(createGeneralTab(optionsFolder));
 
         final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
-        propsTab.setText("Advanced");
-        propsTab.setToolTipText("Advanced/custom driver properties");
+        propsTab.setText(MySQLMessages.dialog_connection_advanced_tab);
+        propsTab.setToolTipText(MySQLMessages.dialog_connection_advanced_tab_tooltip);
         final Composite placeholder = UIUtils.createPlaceholder(optionsFolder, 1);
         connectionProps = new ConnectionPropertiesControl(placeholder, SWT.NONE);
         propsTab.setControl(placeholder);
@@ -106,7 +107,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        Label hostLabel = UIUtils.createControlLabel(addrGroup, "Server Host");
+        Label hostLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_host);
         hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         hostText = new Text(addrGroup, SWT.BORDER);
@@ -115,7 +116,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
 
-        Label portLabel = UIUtils.createControlLabel(addrGroup, "Port");
+        Label portLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_port);
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END);
         portLabel.setLayoutData(gd);
 
@@ -126,7 +127,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
         portText.addModifyListener(textListener);
 
-        Label dbLabel = UIUtils.createControlLabel(addrGroup, "Database");
+        Label dbLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_database);
         dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         dbText = new Text(addrGroup, SWT.BORDER);
@@ -136,7 +137,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
 
-        Label usernameLabel = UIUtils.createControlLabel(addrGroup, "User name");
+        Label usernameLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_user_name);
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         usernameText = new Text(addrGroup, SWT.BORDER);
@@ -146,7 +147,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(textListener);
 
-        Label passwordLabel = UIUtils.createControlLabel(addrGroup, "Password");
+        Label passwordLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_password);
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
@@ -157,7 +158,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         passwordText.addModifyListener(textListener);
 
         testButton = new Button(addrGroup, SWT.PUSH);
-        testButton.setText("Test Connection ... ");
+        testButton.setText(MySQLMessages.dialog_connection_test_connection);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         gd.horizontalSpan = 4;
         testButton.setLayoutData(gd);

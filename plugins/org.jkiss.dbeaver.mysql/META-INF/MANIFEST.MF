@@ -17,3 +17,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Serge Rieder
 Bundle-ClassPath: lib/mysql-connector-java-5.1.13-bin.jar,
  .
+Bundle-Localization: plugin
