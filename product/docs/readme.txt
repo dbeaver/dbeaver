@@ -33,6 +33,10 @@ Command line parameters
 	If you want to use DBeaver as redistributable program start it
 	with arguments like "dbeaver -data workspace".
 
+  - nl locale
+    Use specified locale instead of default one.
+    Example: -nl en (use English locale).
+
   - vm <java vm path>
     Use Java VM installed in <java vm path> folder instead of default
     location.
