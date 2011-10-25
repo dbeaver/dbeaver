@@ -22,20 +22,16 @@
       <Author_Email>serge@jkiss.org</Author_Email>
     </Contact_Info>
     <Support_Info>
-      <Sales_Email>serge@jkiss.org</Sales_Email>
       <Support_Email>support@jkiss.org</Support_Email>
       <General_Email>serge@jkiss.org</General_Email>
-      <Sales_Phone>+7-962-728-16-88</Sales_Phone>
       <Support_Phone>+7-962-728-16-88</Support_Phone>
-      <General_Phone>+7-962-728-16-88</General_Phone>
-      <Fax_Phone>+7-962-728-16-88</Fax_Phone>
     </Support_Info>
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.4.1</Program_Version>
-    <Program_Release_Month>09</Program_Release_Month>
-    <Program_Release_Day>26</Program_Release_Day>
+    <Program_Version>1.4.3</Program_Version>
+    <Program_Release_Month>10</Program_Release_Month>
+    <Program_Release_Day>25</Program_Release_Day>
     <Program_Release_Year>2011</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -44,19 +40,12 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-- Oracle
-    * Oracle home selection fix
-    * TNS_ADMIN environment variable usage fix
-    * TNS names are available for Thin driver
-    * Data type resolve fix (Timestamp and BigInteger)
-    * View/Materialized view search
-- MS SQL: UPDATE statement execution fix (do not use row count limit)
-- Auto complete fix for complex identifiers
-- Table/ResultSet editor fix
-- PostgreSQL: driver update
-- Driver manager fix (do not try to load redist libraries for drivers with custom libraries)
-- OS-dependent drivers
-- UI fixes
+        - New version checker/updater
+        - Connection events (run shell command on connect/disconnect)
+        - Oracle tables view/edit fixes
+        - Oracle procedures, packages, views, types, triggers source code editor and compiler
+        - UI internationalization and first localization beta
+        - Many general UI fixes
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -97,7 +86,7 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.4.1-x86-setup.exe</Primary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.4.3-x86-setup.exe</Primary_Download_URL>
       <Secondary_Download_URL></Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
