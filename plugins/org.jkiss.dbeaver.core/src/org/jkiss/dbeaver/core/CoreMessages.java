@@ -496,6 +496,10 @@ public class CoreMessages extends NLS {
 	public static String runtime_jobs_connect_status_error;
 	public static String runtime_jobs_connect_thread_name;
 
+	public static String runtime_jobs_disconnect_error;
+
+	public static String runtime_jobs_disconnect_name;
+
 	public static String toolbar_datasource_selector_action_read_databases;
 	public static String toolbar_datasource_selector_combo_database_tooltip;
 	public static String toolbar_datasource_selector_combo_datasource_tooltip;

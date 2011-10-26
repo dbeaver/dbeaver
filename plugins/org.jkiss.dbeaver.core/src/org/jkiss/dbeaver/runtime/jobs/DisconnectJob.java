@@ -8,6 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -25,7 +27,7 @@ public class DisconnectJob extends EventProcessorJob
     public DisconnectJob(
         DataSourceDescriptor container)
     {
-        super("Disconnect from " + container.getName(), container);
+        super(NLS.bind(CoreMessages.runtime_jobs_disconnect_name, container.getName()), container);
         setUser(true);
     }
 
@@ -42,7 +44,7 @@ public class DisconnectJob extends EventProcessorJob
         }
         catch (Exception ex) {
             return RuntimeUtils.makeExceptionStatus(
-                MessageFormat.format("Error disconnecting from datasource ''{0}''", container.getName()),
+                NLS.bind(CoreMessages.runtime_jobs_disconnect_error, container.getName()),
                 ex);
         }
     }
