@@ -8,6 +8,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class EmergentExitAction implements IWorkbenchWindowActionDelegate
@@ -23,8 +24,8 @@ public class EmergentExitAction implements IWorkbenchWindowActionDelegate
     {
         if (UIUtils.confirmAction(
             window == null ? null : window.getShell(),
-            "Emergency Exit",
-            "Are you sure you want to perform emergency exit? Some unsaved data could be lost or corrupted."))
+            CoreMessages.actions_menu_exit_emergency,
+            CoreMessages.ui_actions_exit_emergency_question))
         {
             System.exit(1);
         }

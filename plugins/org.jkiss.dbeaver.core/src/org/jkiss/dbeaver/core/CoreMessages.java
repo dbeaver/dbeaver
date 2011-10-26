@@ -510,12 +510,16 @@ public class CoreMessages extends NLS {
 	public static String toolbar_datasource_selector_error_database_change_not_supported;
 	public static String toolbar_datasource_selector_resultset_segment_size;
 
+	public static String ui_actions_context_search_name;
+    public static String ui_actions_exit_emergency_question;
+
 	public static String ui_common_button_help;
 	public static String ui_properties_category_information;
 	public static String ui_properties_category_structure;
 	public static String ui_properties_task_add_folder;
 	public static String ui_properties_task_add_node;
-	static {
+
+    static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
 	}
