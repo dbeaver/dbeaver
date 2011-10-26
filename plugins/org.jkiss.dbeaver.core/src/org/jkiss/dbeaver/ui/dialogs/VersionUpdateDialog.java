@@ -91,11 +91,13 @@ public class VersionUpdateDialog extends Dialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        createButton(
-            parent,
-            INFO_ID,
-            CoreMessages.dialog_version_update_button_more_info,
-            newVersion == null);
+        if (newVersion != null) {
+            createButton(
+                parent,
+                INFO_ID,
+                CoreMessages.dialog_version_update_button_more_info,
+                true);
+        }
 
         createButton(
             parent,

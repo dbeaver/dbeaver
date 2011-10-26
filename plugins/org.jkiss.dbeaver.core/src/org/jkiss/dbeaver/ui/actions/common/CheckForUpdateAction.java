@@ -16,7 +16,7 @@ public class CheckForUpdateAction implements IWorkbenchWindowActionDelegate
 
     public void run(IAction action)
     {
-        new DBeaverVersionChecker().schedule();
+        new DBeaverVersionChecker(true).schedule();
     }
 
     public void selectionChanged(IAction action, ISelection selection)

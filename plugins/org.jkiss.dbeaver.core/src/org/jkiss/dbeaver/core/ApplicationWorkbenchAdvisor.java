@@ -102,7 +102,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                 }
             }
             DBeaverCore.getInstance().getGlobalPreferenceStore().setValue(PrefConstants.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
-            DBeaverVersionChecker checker = new DBeaverVersionChecker();
+            DBeaverVersionChecker checker = new DBeaverVersionChecker(false);
             checker.schedule(3000);
         }
     }

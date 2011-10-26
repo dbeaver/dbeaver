@@ -23,9 +23,12 @@ public class DBeaverVersionChecker extends AbstractJob {
 
     static final Log log = LogFactory.getLog(DBeaverVersionChecker.class);
 
-    public DBeaverVersionChecker()
+    private final boolean showAlways;
+
+    public DBeaverVersionChecker(boolean showAlways)
     {
         super("DBeaver new version release checker");
+        this.showAlways = showAlways;
     }
 
     @Override
@@ -35,6 +38,8 @@ public class DBeaverVersionChecker extends AbstractJob {
             VersionDescriptor versionDescriptor = new VersionDescriptor(VersionDescriptor.DEFAULT_VERSION_URL);
             if (versionDescriptor.getProgramVersion().compareTo(DBeaverCore.getInstance().getVersion()) > 0) {
                 showUpdaterDialog(versionDescriptor);
+            } else if (showAlways) {
+                showUpdaterDialog(null);
             }
         } catch (IOException e) {
             log.debug(e);
