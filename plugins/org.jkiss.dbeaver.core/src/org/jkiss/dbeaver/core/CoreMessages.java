@@ -489,8 +489,12 @@ public class CoreMessages extends NLS {
 	public static String model_struct_Unknown;
 
 	public static String registry_entity_editor_descriptor_description;
-
 	public static String registry_entity_editor_descriptor_name;
+
+	public static String runtime_jobs_connect_name;
+	public static String runtime_jobs_connect_status_connected;
+	public static String runtime_jobs_connect_status_error;
+	public static String runtime_jobs_connect_thread_name;
 
 	public static String toolbar_datasource_selector_action_read_databases;
 	public static String toolbar_datasource_selector_combo_database_tooltip;
@@ -503,13 +507,9 @@ public class CoreMessages extends NLS {
 	public static String toolbar_datasource_selector_resultset_segment_size;
 
 	public static String ui_common_button_help;
-
 	public static String ui_properties_category_information;
-
 	public static String ui_properties_category_structure;
-
 	public static String ui_properties_task_add_folder;
-
 	public static String ui_properties_task_add_node;
 	static {
 		// initialize resource bundle

@@ -9,7 +9,9 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.progress.IProgressConstants;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,7 +32,7 @@ public class ConnectJob extends EventProcessorJob
     public ConnectJob(
         DataSourceDescriptor container)
     {
-        super("Connect to " + container.getName(), container);
+        super(NLS.bind(CoreMessages.runtime_jobs_connect_name, container.getName()), container);
         setUser(true);
         setProperty(IProgressConstants.ICON_PROPERTY, ImageDescriptor.createFromImage(container.getDriver().getIcon()));
     }
@@ -42,7 +44,7 @@ public class ConnectJob extends EventProcessorJob
             connectThread = getThread();
             String oldName = connectThread.getName();
             if (connectThread != null) {
-                connectThread.setName("Connect to datasource '" + container.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+                connectThread.setName(NLS.bind(CoreMessages.runtime_jobs_connect_thread_name, container.getName()));
             }
 
             processEvents(DBPConnectionEventType.BEFORE_CONNECT);
@@ -61,12 +63,12 @@ public class ConnectJob extends EventProcessorJob
             return new Status(
                 Status.OK,
                 DBeaverCore.getInstance().getPluginID(),
-                "Connected");
+                CoreMessages.runtime_jobs_connect_status_connected);
         }
         catch (Throwable ex) {
             log.debug(ex);
             return RuntimeUtils.makeExceptionStatus(
-                MessageFormat.format("Error connecting to datasource ''{0}''", container.getName()),
+                NLS.bind(CoreMessages.runtime_jobs_connect_status_error, container.getName()),
                 ex);
         }
     }
