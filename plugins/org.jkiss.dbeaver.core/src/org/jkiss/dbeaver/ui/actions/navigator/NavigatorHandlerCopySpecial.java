@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
@@ -24,7 +25,9 @@ public class NavigatorHandlerCopySpecial extends NavigatorHandlerCopyAbstract {
     @Override
     protected String getSelectionTitle(IStructuredSelection selection)
     {
-        return "Copy Fully Qualified Name" + (selection.size() > 1 ? "s" : "");
+        return (selection.size() > 1 ?
+                CoreMessages.actions_navigator_copy_fqn_title :
+                CoreMessages.actions_navigator_copy_fqn_titles);
     }
 
 }

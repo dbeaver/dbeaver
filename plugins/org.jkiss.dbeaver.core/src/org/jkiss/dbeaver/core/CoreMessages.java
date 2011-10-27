@@ -35,6 +35,25 @@ public class CoreMessages extends NLS {
 
 	public static String actions_navigator__objects;
 
+	public static String actions_navigator_bookmark_error_message;
+
+	public static String actions_navigator_bookmark_error_title;
+
+	public static String actions_navigator_bookmark_title;
+
+	public static String actions_navigator_copy_fqn_title;
+	public static String actions_navigator_copy_fqn_titles;
+
+	public static String actions_navigator_copy_object_copy_node;
+
+	public static String actions_navigator_copy_object_copy_objects;
+
+	public static String actions_navigator_create_folder_error_message;
+
+	public static String actions_navigator_create_folder_error_title;
+
+	public static String actions_navigator_create_folder_folder_name;
+
 	public static String actions_navigator_create_new;
 
 	public static String actions_navigator_delete_objects;
@@ -464,6 +483,8 @@ public class CoreMessages extends NLS {
 	public static String model_navigator_Model_root;
 	public static String model_navigator_Name;
 	public static String model_navigator_Project;
+
+	public static String model_navigator_resource_exception_already_exists;
 	public static String model_navigator_Root;
 
 	public static String model_project_bookmarks_folder;
@@ -516,8 +537,20 @@ public class CoreMessages extends NLS {
 	public static String ui_common_button_help;
 	public static String ui_properties_category_information;
 	public static String ui_properties_category_structure;
+
+	public static String ui_properties_name;
 	public static String ui_properties_task_add_folder;
 	public static String ui_properties_task_add_node;
+
+	public static String ui_properties_tree_viewer__to_default;
+
+	public static String ui_properties_tree_viewer_action_copy_value;
+
+	public static String ui_properties_tree_viewer_action_reset_value;
+
+	public static String ui_properties_tree_viewer_category_general;
+
+	public static String ui_properties_value;
 
     static {
 		// initialize resource bundle

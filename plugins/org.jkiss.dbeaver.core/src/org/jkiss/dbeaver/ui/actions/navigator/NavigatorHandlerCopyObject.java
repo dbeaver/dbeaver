@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -28,11 +30,11 @@ public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
     protected String getSelectionTitle(IStructuredSelection selection)
     {
         if (selection.size() > 1) {
-            return "Copy Objects";
+            return CoreMessages.actions_navigator_copy_object_copy_objects;
         }
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
         if (node != null) {
-            return "Copy " + node.getNodeType();
+            return NLS.bind(CoreMessages.actions_navigator_copy_object_copy_node, node.getNodeType());
         }
         return null;
     }

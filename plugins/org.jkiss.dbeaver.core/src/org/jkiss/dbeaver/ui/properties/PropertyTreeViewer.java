@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySource2;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -38,7 +39,7 @@ import java.util.List;
  */
 public class PropertyTreeViewer extends TreeViewer {
 
-    private static final String CATEGORY_GENERAL = "General";
+    private static final String CATEGORY_GENERAL = CoreMessages.ui_properties_tree_viewer_category_general;
 
     private boolean expandSingleRoot = true;
     private TreeEditor treeEditor;
@@ -99,7 +100,7 @@ public class PropertyTreeViewer extends TreeViewer {
         TreeViewerColumn column = new TreeViewerColumn(this, SWT.NONE);
         column.getColumn().setWidth(200);
         column.getColumn().setMoveable(true);
-        column.getColumn().setText("Name");
+        column.getColumn().setText(CoreMessages.ui_properties_name);
         column.setLabelProvider(new PropsLabelProvider(true));
         column.getColumn().addListener(SWT.Selection, new SortListener());
 
@@ -107,7 +108,7 @@ public class PropertyTreeViewer extends TreeViewer {
         column = new TreeViewerColumn(this, SWT.NONE);
         column.getColumn().setWidth(120);
         column.getColumn().setMoveable(true);
-        column.getColumn().setText("Value");
+        column.getColumn().setText(CoreMessages.ui_properties_value);
         column.setLabelProvider(new PropsLabelProvider(false));
 
         /*
@@ -403,7 +404,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     if (object instanceof TreeNode) {
                         final TreeNode prop = (TreeNode)object;
                         if (prop.property != null) {
-                            manager.add(new Action("Copy value") {
+                            manager.add(new Action(CoreMessages.ui_properties_tree_viewer_action_copy_value) {
                                 @Override
                                 public void run() {
                                     TextTransfer textTransfer = TextTransfer.getInstance();
@@ -599,7 +600,7 @@ public class PropertyTreeViewer extends TreeViewer {
         public String getText(Object obj, int columnIndex)
         {
             if (!(obj instanceof TreeNode)) {
-                return "";
+                return ""; //$NON-NLS-1$
             }
             TreeNode node = (TreeNode)obj;
             if (columnIndex == 0) {
@@ -612,11 +613,11 @@ public class PropertyTreeViewer extends TreeViewer {
                 if (node.property != null) {
                     final Object propertyValue = getPropertyValue(node);
                     if (propertyValue instanceof Boolean || renderer.isHyperlink(propertyValue)) {
-                        return "";
+                        return ""; //$NON-NLS-1$
                     }
                     return CommonUtils.toString(propertyValue);
                 } else {
-                    return "";
+                    return ""; //$NON-NLS-1$
                 }
             }
         }
@@ -624,7 +625,7 @@ public class PropertyTreeViewer extends TreeViewer {
         public String getToolTipText(Object obj)
         {
             if (!(obj instanceof TreeNode)) {
-                return "";
+                return ""; //$NON-NLS-1$
             }
             TreeNode node = (TreeNode)obj;
             if (node.category != null) {
@@ -712,7 +713,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
         public ActionResetProperty(TreeNode prop, boolean toDefault)
         {
-            super("Reset value" + (!toDefault ? "" : " to default"));
+            super(CoreMessages.ui_properties_tree_viewer_action_reset_value + (!toDefault ? "" : CoreMessages.ui_properties_tree_viewer__to_default)); //$NON-NLS-2$
             this.prop = prop;
             this.toDefault = toDefault;
         }

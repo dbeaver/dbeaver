@@ -11,6 +11,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -27,12 +28,18 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
             final DBNNode node = NavigatorUtils.getSelectedNode((IStructuredSelection) selection);
             if (node instanceof DBNDatabaseNode) {
                 try {
-                    final String title = EnterNameDialog.chooseName(activeShell, "Bookmark Name", node.getNodeName());
+                    final String title = EnterNameDialog.chooseName(
+                            activeShell,
+                            CoreMessages.actions_navigator_bookmark_title,
+                            node.getNodeName());
                     if (title != null) {
                         BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, title, null);
                     }
                 } catch (DBException e) {
-                    UIUtils.showErrorDialog(activeShell, "New Bookmark", "Can't create new bookmark", e);
+                    UIUtils.showErrorDialog(
+                            activeShell,
+                            CoreMessages.actions_navigator_bookmark_error_title,
+                            CoreMessages.actions_navigator_bookmark_error_message, e);
                 }
             }
         }
