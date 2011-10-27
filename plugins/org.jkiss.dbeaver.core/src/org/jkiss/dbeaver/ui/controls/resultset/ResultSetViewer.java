@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
@@ -41,6 +42,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -278,7 +280,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         statusLabel.addMouseListener(new MouseAdapter() {
             public void mouseDoubleClick(MouseEvent e)
             {
-                ViewTextDialog.showText(site.getShell(), "Status", statusLabel.getText());
+                ViewTextDialog.showText(site.getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusLabel.getText());
             }
         });
 
@@ -309,7 +311,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGLE_MODE));
         //toolBarManager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH, "Refresh result set", DBIcon.RS_REFRESH.getImageDescriptor()));
         // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
-        Action refreshAction = new Action("Refresh result set", DBIcon.RS_REFRESH.getImageDescriptor()) {
+        Action refreshAction = new Action(CoreMessages.controls_resultset_viewer_action_refresh, DBIcon.RS_REFRESH.getImageDescriptor()) {
             @Override
             public void run()
             {
@@ -568,7 +570,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             statusLabel.setForeground(null);
         }
         if (status == null) {
-            status = "???";
+            status = "???"; //$NON-NLS-1$
         }
         statusLabel.setText(status);
     }
@@ -578,7 +580,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (statusLabel.isDisposed()) {
             return;
         }
-        statusLabel.setText(statusLabel.getText() + " - " + executionTime + "ms");
+        statusLabel.setText(statusLabel.getText() + " - " + executionTime + CoreMessages.controls_resultset_viewer_ms); //$NON-NLS-1$
     }
 
     /**
@@ -647,9 +649,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         String statusMessage;
         if (rows.size() > 0) {
-            statusMessage = rows.size() + " row(s)";
+            statusMessage = rows.size() + CoreMessages.controls_resultset_viewer_status_rows;
         } else {
-            statusMessage = "No data";
+            statusMessage = CoreMessages.controls_resultset_viewer_status_no_data;
         }
         setStatus(statusMessage, false);
     }
@@ -660,7 +662,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         curRows.addAll(rows);
         refreshSpreadsheet(true);
 
-        setStatus(curRows.size() + " rows (+" + rows.size() + ")", false);
+        setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, curRows.size(), rows.size()), false);
     }
 
     private void clearResultsView()
@@ -846,7 +848,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (isCellEditable(cell)) {
                 // Standard items
                 manager.add(new Separator());
-                manager.add(new Action("Edit ...") {
+                manager.add(new Action(CoreMessages.controls_resultset_viewer_action_edit) {
                     @Override
                     public void run()
                     {
@@ -854,7 +856,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     }
                 });
                 if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)) {
-                    manager.add(new Action("Set to NULL") {
+                    manager.add(new Action(CoreMessages.controls_resultset_viewer_action_set_to_null) {
                         @Override
                         public void run()
                         {
@@ -877,14 +879,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (!CommonUtils.isEmpty(metaColumns)) {
             // Export and other utility methods
             manager.add(new Separator());
-            manager.add(new Action("Order/Filter ... ", DBIcon.FILTER.getImageDescriptor()) {
+            manager.add(new Action(CoreMessages.controls_resultset_viewer_action_order_filter, DBIcon.FILTER.getImageDescriptor()) {
                 @Override
                 public void run()
                 {
                     new ResultSetFilterDialog(ResultSetViewer.this).open();
                 }
             });
-            manager.add(new Action("Export Resultset ... ", DBIcon.EXPORT.getImageDescriptor()) {
+            manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBIcon.EXPORT.getImageDescriptor()) {
                 @Override
                 public void run()
                 {
@@ -949,14 +951,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void showCurrentRows()
     {
-        setStatus("Row " + (curRowNum + 1));
+        setStatus(CoreMessages.controls_resultset_viewer_status_row + (curRowNum + 1));
     }
 
     private void showRowsCount()
     {
-        setStatus(
-            String.valueOf(curRows.size()) +
-                " row" + (curRows.size() > 1 ? "s" : "") + " fetched");
+        setStatus(String.valueOf(curRows.size()) + CoreMessages.controls_resultset_viewer_status_rows_fetched);
     }
 
     public Control getControl()
@@ -1270,7 +1270,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     throws InvocationTargetException, InterruptedException
                 {
                     // Copy cell values in new context
-                    DBCExecutionContext context = getDataContainer().getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Copy row values");
+                    DBCExecutionContext context = getDataContainer().getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
                     try {
                         if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < curRows.size()) {
                             Object[] origRow = curRows.get(currentRowNumber);
@@ -2016,7 +2016,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
             protected DataUpdaterJob(DBDValueListener listener)
             {
-                super("Update data", DBIcon.SQL_EXECUTE.getImageDescriptor(), getDataContainer().getDataSource());
+                super(CoreMessages.controls_resultset_viewer_job_update, DBIcon.SQL_EXECUTE.getImageDescriptor(), getDataContainer().getDataSource());
                 this.listener = listener;
             }
 
@@ -2037,9 +2037,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                                 refreshSpreadsheet(rowsChanged);
                                 if (error == null) {
                                     setStatus(
-                                            "Instered: " + DataUpdaterJob.this.insertCount +
-                                                    " / Deleted: " + DataUpdaterJob.this.deleteCount +
-                                                    " / Updated: " + DataUpdaterJob.this.updateCount, false);
+                                            NLS.bind(CoreMessages.controls_resultset_viewer_status_inserted_,
+                                                    new Object[] {DataUpdaterJob.this.insertCount, DataUpdaterJob.this.deleteCount, DataUpdaterJob.this.updateCount}),
+                                            false);
                                 } else {
                                     UIUtils.showErrorDialog(ResultSetViewer.this.site.getShell(), "Data error", "Error synchronizing data with database", error);
                                     setStatus(error.getMessage(), true);
@@ -2061,7 +2061,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
             private Throwable executeStatements(DBRProgressMonitor monitor)
             {
-                DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Check connection's auto-commit state");
+                DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_execute_statement_context_name);
                 try {
                     try {
                         this.autocommit = context.getTransactionManager().isAutoCommit();
@@ -2080,7 +2080,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         }
                     }
                     try {
-                        monitor.beginTask("Apply resultset changes", DataUpdater.this.deleteStatements.size() + DataUpdater.this.insertStatements.size() + DataUpdater.this.updateStatements.size());
+                        monitor.beginTask(CoreMessages.controls_resultset_viewer_monitor_aply_changes, DataUpdater.this.deleteStatements.size() + DataUpdater.this.insertStatements.size() + DataUpdater.this.updateStatements.size());
 
                         for (DataStatementInfo statement : DataUpdater.this.deleteStatements) {
                             if (monitor.isCanceled()) break;
@@ -2394,7 +2394,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             int colNumber = ((Number)element).intValue();
             if (mode == ResultSetMode.RECORD) {
                 if (colNumber == 0) {
-                    return "Value";
+                    return CoreMessages.controls_resultset_viewer_value;
                 } else {
                     log.warn("Bad column index: " + colNumber);
                     return null;

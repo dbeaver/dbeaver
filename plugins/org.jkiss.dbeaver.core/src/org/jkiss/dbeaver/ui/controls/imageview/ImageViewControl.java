@@ -12,6 +12,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -69,7 +70,7 @@ public class ImageViewControl extends Composite {
             statusGroup.setLayout(layout);
 
             messageLabel = new Label(statusGroup, SWT.NONE);
-            messageLabel.setText("");
+            messageLabel.setText(""); //$NON-NLS-1$
             gd = new GridData(GridData.FILL_HORIZONTAL);
             messageLabel.setLayoutData(gd);
 
@@ -78,11 +79,11 @@ public class ImageViewControl extends Composite {
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
                 toolBar.setLayoutData(gd);
 
-                itemZoomIn = UIUtils.createToolItem(toolBar, "Zoom In", DBIcon.ZOOM_IN.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN));
-                itemZoomOut = UIUtils.createToolItem(toolBar, "Zoom Out", DBIcon.ZOOM_OUT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT));
-                itemRotate = UIUtils.createToolItem(toolBar, "Rotate", DBIcon.ROTATE_LEFT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE));
-                itemFit = UIUtils.createToolItem(toolBar, "Fit Window", DBIcon.FIT_WINDOW.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT));
-                itemOriginal = UIUtils.createToolItem(toolBar, "Original Size", DBIcon.ORIGINAL_SIZE.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL));
+                itemZoomIn = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_zoom_in, DBIcon.ZOOM_IN.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN));
+                itemZoomOut = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_zoom_out, DBIcon.ZOOM_OUT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT));
+                itemRotate = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_rotate, DBIcon.ROTATE_LEFT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE));
+                itemFit = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_fit_window, DBIcon.FIT_WINDOW.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT));
+                itemOriginal = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_original_size, DBIcon.ORIGINAL_SIZE.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL));
             }
         }
         updateActions();
@@ -146,8 +147,8 @@ public class ImageViewControl extends Composite {
                 ImageData imageData = canvas.getImageData();
 
                 messageLabel.setText(
-                    getImageType(imageData.type) + " " + imageData.width + "x" + imageData.height + "x" + imageData.depth +
-                    "  "/* + imageData.data.length + " bytes"*/);
+                    getImageType(imageData.type) + " " + imageData.width + "x" + imageData.height + "x" + imageData.depth + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    "  "/* + imageData.data.length + " bytes"*/); //$NON-NLS-1$
                 messageLabel.setForeground(blackColor);
                 return true;
             }
@@ -165,15 +166,15 @@ public class ImageViewControl extends Composite {
     public static String getImageType(int type)
     {
         switch (type) {
-        case SWT.IMAGE_BMP: return "BMP";
-        case SWT.IMAGE_BMP_RLE: return "BMP RLE";
-        case SWT.IMAGE_GIF: return "GIF";
-        case SWT.IMAGE_ICO: return "ICO";
-        case SWT.IMAGE_JPEG: return "JPEG";
-        case SWT.IMAGE_PNG: return "PNG";
-        case SWT.IMAGE_TIFF: return "TIFF";
-        case SWT.IMAGE_OS2_BMP: return "OS2 BMP";
-        default: return "UNKNOWN";
+        case SWT.IMAGE_BMP: return "BMP"; //$NON-NLS-1$
+        case SWT.IMAGE_BMP_RLE: return "BMP RLE"; //$NON-NLS-1$
+        case SWT.IMAGE_GIF: return "GIF"; //$NON-NLS-1$
+        case SWT.IMAGE_ICO: return "ICO"; //$NON-NLS-1$
+        case SWT.IMAGE_JPEG: return "JPEG"; //$NON-NLS-1$
+        case SWT.IMAGE_PNG: return "PNG"; //$NON-NLS-1$
+        case SWT.IMAGE_TIFF: return "TIFF"; //$NON-NLS-1$
+        case SWT.IMAGE_OS2_BMP: return "OS2 BMP"; //$NON-NLS-1$
+        default: return "UNKNOWN"; //$NON-NLS-1$
         }
     }
 }

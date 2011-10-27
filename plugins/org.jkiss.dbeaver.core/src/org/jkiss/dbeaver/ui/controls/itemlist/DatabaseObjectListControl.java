@@ -12,6 +12,7 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
@@ -46,7 +47,7 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
         menuMgr.addMenuListener(new IMenuListener() {
             public void menuAboutToShow(IMenuManager manager)
             {
-                IAction copyAction = new Action("Copy") {
+                IAction copyAction = new Action(CoreMessages.controls_itemlist_action_copy) {
                     public void run()
                     {
                         String text = getRenderer().getSelectedText();

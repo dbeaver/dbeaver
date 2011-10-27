@@ -129,6 +129,140 @@ public class CoreMessages extends NLS {
 
 	public static String connection_properties_control_dialog_new_property_title;
 
+	public static String controls_imageview_fit_window;
+
+	public static String controls_imageview_original_size;
+
+	public static String controls_imageview_rotate;
+
+	public static String controls_imageview_zoom_in;
+
+	public static String controls_imageview_zoom_out;
+
+	public static String controls_itemlist_action_copy;
+
+	public static String controls_querylog__ms;
+
+	public static String controls_querylog_action_clear_log;
+
+	public static String controls_querylog_action_copy;
+
+	public static String controls_querylog_action_copy_all_fields;
+
+	public static String controls_querylog_action_select_all;
+
+	public static String controls_querylog_column_duration_name;
+
+	public static String controls_querylog_column_duration_tooltip;
+
+	public static String controls_querylog_column_result_name;
+
+	public static String controls_querylog_column_result_tooltip;
+
+	public static String controls_querylog_column_rows_name;
+
+	public static String controls_querylog_column_rows_tooltip;
+
+	public static String controls_querylog_column_text_name;
+
+	public static String controls_querylog_column_text_tooltip;
+
+	public static String controls_querylog_column_time_name;
+
+	public static String controls_querylog_column_time_tooltip;
+
+	public static String controls_querylog_column_type_name;
+
+	public static String controls_querylog_column_type_tooltip;
+
+	public static String controls_querylog_commit;
+
+	public static String controls_querylog_connected_to;
+
+	public static String controls_querylog_disconnected_from;
+
+	public static String controls_querylog_error;
+
+	public static String controls_querylog_format_minutes;
+
+	public static String controls_querylog_job_refresh;
+
+	public static String controls_querylog_label_result;
+
+	public static String controls_querylog_label_text;
+
+	public static String controls_querylog_label_time;
+
+	public static String controls_querylog_label_type;
+
+	public static String controls_querylog_rollback;
+
+	public static String controls_querylog_savepoint;
+
+	public static String controls_querylog_script;
+
+	public static String controls_querylog_shell_text;
+
+	public static String controls_querylog_success;
+
+	public static String controls_querylog_transaction;
+
+	public static String controls_resultset_filter_button_reset;
+
+	public static String controls_resultset_filter_column_column;
+
+	public static String controls_resultset_filter_column_criteria;
+
+	public static String controls_resultset_filter_column_order;
+
+	public static String controls_resultset_filter_group_columns;
+
+	public static String controls_resultset_filter_group_custom;
+
+	public static String controls_resultset_filter_label_orderby;
+
+	public static String controls_resultset_filter_label_where;
+
+	public static String controls_resultset_filter_title;
+
+	public static String controls_resultset_filter_warning_custom_order_disabled;
+
+	public static String controls_resultset_viewer_action_edit;
+
+	public static String controls_resultset_viewer_action_export;
+
+	public static String controls_resultset_viewer_action_order_filter;
+
+	public static String controls_resultset_viewer_action_refresh;
+
+	public static String controls_resultset_viewer_action_set_to_null;
+
+	public static String controls_resultset_viewer_add_new_row_context_name;
+
+	public static String controls_resultset_viewer_dialog_status_title;
+
+	public static String controls_resultset_viewer_execute_statement_context_name;
+
+	public static String controls_resultset_viewer_job_update;
+
+	public static String controls_resultset_viewer_monitor_aply_changes;
+
+	public static String controls_resultset_viewer_ms;
+
+	public static String controls_resultset_viewer_status_inserted_;
+
+	public static String controls_resultset_viewer_status_no_data;
+
+	public static String controls_resultset_viewer_status_row;
+
+	public static String controls_resultset_viewer_status_rows;
+
+	public static String controls_resultset_viewer_status_rows_fetched;
+
+	public static String controls_resultset_viewer_status_rows_size;
+
+	public static String controls_resultset_viewer_value;
+
 	public static String model_navigator__connections;
 	public static String model_navigator_Connection;
 	public static String model_navigator_Connections;

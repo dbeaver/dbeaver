@@ -1178,7 +1178,7 @@
                     <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
                 </visibleWhen>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="Copy Advanced Info">
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="%command.org.jkiss.dbeaver.core.edit.copy.adv_info">
                 <visibleWhen checkEnabled="true">
                     <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
                 </visibleWhen>

@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -51,7 +52,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
 
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Result Set Order/Filter Settings");
+        getShell().setText(CoreMessages.controls_resultset_filter_title);
         getShell().setImage(DBIcon.FILTER.getImage());
 
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -67,7 +68,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
 
         TableColumn criteriaColumn;
         {
-            Group columnsGroup = UIUtils.createControlGroup(group, "Columns", 1, GridData.FILL_BOTH, 0);
+            Group columnsGroup = UIUtils.createControlGroup(group, CoreMessages.controls_resultset_filter_group_columns, 1, GridData.FILL_BOTH, 0);
 
             columnsViewer = new TableViewer(columnsGroup, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
             columnsViewer.setContentProvider(new ListContentProvider());
@@ -79,9 +80,9 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             columnsTable.setLayoutData(gd);
             columnsTable.setHeaderVisible(true);
             columnsTable.setLinesVisible(true);
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Column");
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Order");
-            criteriaColumn = UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Criteria");
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_column);
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_order);
+            criteriaColumn = UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_criteria);
 
             //columnsTable.addListener(SWT.PaintItem, new ColumnPaintListener());
             final TableEditor tableEditor = new TableEditor(columnsTable);
@@ -94,10 +95,10 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         }
 
         {
-            Group filterGroup = UIUtils.createControlGroup(group, "Custom", 2, GridData.FILL_BOTH, 0);
+            Group filterGroup = UIUtils.createControlGroup(group, CoreMessages.controls_resultset_filter_group_custom, 2, GridData.FILL_BOTH, 0);
 
-            orderText = UIUtils.createLabelText(filterGroup, "Order by", dataFilter.getOrder());
-            whereText = UIUtils.createLabelText(filterGroup, "Where", dataFilter.getWhere());
+            orderText = UIUtils.createLabelText(filterGroup, CoreMessages.controls_resultset_filter_label_orderby, dataFilter.getOrder());
+            whereText = UIUtils.createLabelText(filterGroup, CoreMessages.controls_resultset_filter_label_where, dataFilter.getWhere());
 
             if (!resultSetViewer.supportsDataFilter()) {
                 filterGroup.setEnabled(false);
@@ -118,7 +119,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
 
         if (!resultSetViewer.supportsDataFilter()) {
             Label warnLabel = new Label(group, SWT.NONE);
-            warnLabel.setText("Data filters and custom orderings are disabled for custom queries");
+            warnLabel.setText(CoreMessages.controls_resultset_filter_warning_custom_order_disabled);
             warnLabel.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_RED));
         }
 
@@ -137,7 +138,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
     {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-        createButton(parent, IDialogConstants.ABORT_ID, "Reset", false);
+        createButton(parent, IDialogConstants.ABORT_ID, CoreMessages.controls_resultset_filter_button_reset, false);
     }
 
     @Override
@@ -150,8 +151,8 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             dataFilter.setWhere(null);
 
             columnsViewer.setInput(resultSetViewer.getMetaColumns());
-            orderText.setText("");
-            whereText.setText("");
+            orderText.setText(""); //$NON-NLS-1$
+            whereText.setText(""); //$NON-NLS-1$
         } else {
             super.buttonPressed(buttonId);
         }
@@ -201,7 +202,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                     if (orderColumnIndex >= 0) {
                         return String.valueOf(orderColumnIndex + 1);
                     } else {
-                        return "";
+                        return ""; //$NON-NLS-1$
                     }
                 }
                 case 2: {
@@ -209,10 +210,10 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                     if (filterColumn != null) {
                         return filterColumn.getCondition();
                     } else {
-                        return "";
+                        return ""; //$NON-NLS-1$
                     }
                 }
-                default: return "";
+                default: return ""; //$NON-NLS-1$
             }
         }
 
