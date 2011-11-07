@@ -10,6 +10,7 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -21,9 +22,9 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
     private Table resultTable;
 
     DataExportPageFinal() {
-        super("Confirm");
-        setTitle("Confirm");
-        setDescription("Check results");
+        super(CoreMessages.dialog_export_wizard_final_name);
+        setTitle(CoreMessages.dialog_export_wizard_final_title);
+        setDescription(CoreMessages.dialog_export_wizard_final_description);
         setPageComplete(false);
     }
 
@@ -38,7 +39,7 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group tablesGroup = UIUtils.createControlGroup(composite, "Tables", 3, GridData.FILL_BOTH, 0);
+            Group tablesGroup = UIUtils.createControlGroup(composite, CoreMessages.dialog_export_wizard_final_group_tables, 3, GridData.FILL_BOTH, 0);
 
             resultTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             resultTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -52,10 +53,10 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
             });
 
             TableColumn columnTable = new TableColumn(resultTable, SWT.LEFT);
-            columnTable.setText("Table");
+            columnTable.setText(CoreMessages.dialog_export_wizard_final_column_table);
 
             TableColumn columnOutput = new TableColumn(resultTable, SWT.LEFT);
-            columnOutput.setText("Output");
+            columnOutput.setText(CoreMessages.dialog_export_wizard_final_column_output);
 
             UIUtils.packColumns(resultTable);
         }

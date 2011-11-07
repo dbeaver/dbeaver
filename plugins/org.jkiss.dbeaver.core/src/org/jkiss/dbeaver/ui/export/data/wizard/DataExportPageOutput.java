@@ -13,6 +13,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -38,9 +39,9 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
     private Button showFolderCheckbox;
 
     DataExportPageOutput() {
-        super("Output");
-        setTitle("Output");
-        setDescription("Configure export output parameters");
+        super(CoreMessages.dialog_export_wizard_output_name);
+        setTitle(CoreMessages.dialog_export_wizard_output_title);
+        setDescription(CoreMessages.dialog_export_wizard_output_description);
         setPageComplete(false);
     }
 
@@ -55,9 +56,9 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, "General", 5, GridData.FILL_HORIZONTAL, 0);
+            Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.dialog_export_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
             {
-                UIUtils.createControlLabel(generalSettings, "Directory");
+                UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_directory);
                 directoryText = new Text(generalSettings, SWT.BORDER | SWT.READ_ONLY);
                 GridData gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.horizontalSpan = 3;
@@ -75,8 +76,8 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
-                        dialog.setMessage("Choose directory to place exported files");
-                        dialog.setText("Export directory");
+                        dialog.setMessage(CoreMessages.dialog_export_wizard_output_dialog_directory_message);
+                        dialog.setText(CoreMessages.dialog_export_wizard_output_dialog_directory_text);
                         String directory = directoryText.getText();
                         if (!CommonUtils.isEmpty(directory)) {
                             dialog.setFilterPath(directory);
@@ -89,7 +90,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 });
             }
 
-            UIUtils.createControlLabel(generalSettings, "File name pattern");
+            UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_file_name_pattern);
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
@@ -102,7 +103,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             });
 
             {
-                UIUtils.createControlLabel(generalSettings, "Encoding");
+                UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_encoding);
                 encodingCombo = UIUtils.createEncodingCombo(generalSettings, getWizard().getSettings().getOutputEncoding());
                 //encodingCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
                 encodingCombo.addModifyListener(new ModifyListener() {
@@ -114,8 +115,8 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                         updatePageCompletion();
                     }
                 });
-                encodingBOMLabel = UIUtils.createControlLabel(generalSettings, "Insert BOM");
-                encodingBOMLabel.setToolTipText("BOM (Byte-Order-Mark) used for Unicode charsets and required by some software (like MS Excel). In the same time it is not supported by some other software. ");
+                encodingBOMLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_insert_bom);
+                encodingBOMLabel.setToolTipText(CoreMessages.dialog_export_wizard_output_label_insert_bom_tooltip);
                 encodingBOMCheckbox = new Button(generalSettings, SWT.CHECK);
                 encodingBOMCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
                 encodingBOMCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -126,7 +127,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 new Label(generalSettings, SWT.NONE);
             }
 
-            compressCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Compress", false);
+            compressCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_compress, false);
             compressCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 4, 1));
             compressCheckbox.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e) {
@@ -136,9 +137,9 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         }
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, "Progress", 4, GridData.FILL_HORIZONTAL, 0);
+            Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.dialog_export_wizard_output_group_progress, 4, GridData.FILL_HORIZONTAL, 0);
 
-            Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, "Maximum threads");
+            Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_max_threads);
             threadsNumText = new Spinner(generalSettings, SWT.BORDER);
             threadsNumText.setMinimum(1);
             threadsNumText.setMaximum(10);
@@ -158,11 +159,11 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             threadsNumText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
             if (false) {
-                UIUtils.createControlLabel(generalSettings, "Extract type");
+                UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_extract_type);
                 rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 rowsExtractType.setItems(new String[] {
-                    "Single query",
-                    "By segments" });
+                    CoreMessages.dialog_export_wizard_output_combo_extract_type_item_single_query,
+                    CoreMessages.dialog_export_wizard_output_combo_extract_type_item_by_segments });
                 rowsExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -175,7 +176,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                     }
                 });
 
-                segmentSizeLabel = UIUtils.createControlLabel(generalSettings, "Segment size");
+                segmentSizeLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_segment_size);
                 segmentSizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
                 segmentSizeText = new Text(generalSettings, SWT.BORDER);
                 segmentSizeText.addModifyListener(new ModifyListener() {
@@ -191,7 +192,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
             }
 
-            newConnectionCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Open new connection(s)", true);
+            newConnectionCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_new_connection, true);
             newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setOpenNewConnections(newConnectionCheckbox.getSelection());
@@ -199,7 +200,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             });
             newConnectionCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
-            rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Select row count", true);
+            rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_select_row_count, true);
             rowCountCheckbox.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setQueryRowCount(rowCountCheckbox.getSelection());
@@ -207,7 +208,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             });
             rowCountCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
-            showFolderCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Open output folder at end", true);
+            showFolderCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_open_folder, true);
             showFolderCheckbox.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setOpenFolderOnFinish(showFolderCheckbox.getSelection());

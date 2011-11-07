@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export.data.wizard;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 import org.apache.commons.logging.Log;
@@ -11,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
@@ -42,7 +44,7 @@ public class DataExportJob extends AbstractJob {
 
     public DataExportJob(DataExportSettings settings)
     {
-        super("Export data");
+        super(CoreMessages.dialog_export_wizard_job_name);
         this.settings = settings;
 
         setUser(true);
@@ -72,9 +74,9 @@ public class DataExportJob extends AbstractJob {
     private void extractData(DBRProgressMonitor monitor, DataExportProvider dataProvider)
     {
         final DBSDataContainer dataContainer = dataProvider.getDataContainer();
-        setName("Export data from \"" + dataContainer.getName() + "\"");
+        setName(NLS.bind(CoreMessages.dialog_export_wizard_job_container_name, dataContainer.getName()));
 
-        String contextTask = "Export data";
+        String contextTask = CoreMessages.dialog_export_wizard_job_task_export;
         DBCExecutionContext context = settings.isOpenNewConnections() ?
             dataContainer.getDataSource().openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
             dataContainer.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, contextTask);
@@ -94,7 +96,7 @@ public class DataExportJob extends AbstractJob {
 
     private class ExporterSite implements IDataExporterSite, DBDDataReceiver {
 
-        private static final String LOB_DIRECTORY_NAME = "files";
+        private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
 
         private DataExportProvider dataProvider;
         private IDataExporter dataExporter;
@@ -153,7 +155,7 @@ public class DataExportJob extends AbstractJob {
                 }
                 case HEX:
                 {
-                    writer.write("0x");
+                    writer.write("0x"); //$NON-NLS-1$
                     byte[] buffer = new byte[5000];
                     for (;;) {
                         int count = stream.read(buffer);
@@ -263,7 +265,7 @@ public class DataExportJob extends AbstractJob {
                 }
             }
             lobCount++;
-            File lobFile = new File(lobDirectory, outputFile.getName() + "-" + lobCount + ".data");
+            File lobFile = new File(lobDirectory, outputFile.getName() + "-" + lobCount + ".data"); //$NON-NLS-1$ //$NON-NLS-2$
             ContentUtils.saveContentToFile(content.getContents(monitor).getContentStream(), lobFile, monitor);
             return lobFile;
         }
@@ -306,7 +308,7 @@ public class DataExportJob extends AbstractJob {
 
                     long totalRows = 0;
                     if (settings.isQueryRowCount() && (dataProvider.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
-                        monitor.beginTask("Retrieve row count", 1);
+                        monitor.beginTask(CoreMessages.dialog_export_wizard_job_task_retrieve, 1);
                         totalRows = dataProvider.getDataContainer().readDataCount(context, dataProvider.getDataFilter());
                         monitor.done();
                     }
@@ -314,7 +316,7 @@ public class DataExportJob extends AbstractJob {
                     // init exporter
                     dataExporter.init(this);
 
-                    monitor.beginTask("Export table data", (int)totalRows);
+                    monitor.beginTask(CoreMessages.dialog_export_wizard_job_task_export_table_data, (int)totalRows);
 
                     // Perform export
                     if (settings.getExtractType() == DataExportSettings.ExtractType.SINGLE_QUERY) {

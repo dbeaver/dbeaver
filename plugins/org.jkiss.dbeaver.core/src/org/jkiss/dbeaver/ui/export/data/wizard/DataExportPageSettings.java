@@ -12,6 +12,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
@@ -40,9 +41,9 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     private PropertySourceCustom propertySource;
 
     DataExportPageSettings() {
-        super("Settings");
-        setTitle("Settings");
-        setDescription("Set export settings");
+        super(CoreMessages.dialog_export_wizard_settings_name);
+        setTitle(CoreMessages.dialog_export_wizard_settings_title);
+        setDescription(CoreMessages.dialog_export_wizard_settings_description);
         setPageComplete(false);
     }
 
@@ -58,7 +59,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
 
         {
             Group generalSettings = new Group(composite, SWT.NONE);
-            generalSettings.setText("General");
+            generalSettings.setText(CoreMessages.dialog_export_wizard_settings_group_general);
             gl = new GridLayout(4, false);
             generalSettings.setLayout(gl);
             generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -69,7 +70,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                 gd.horizontalSpan = 4;
                 formattingGroup.setLayoutData(gd);
                 
-                UIUtils.createControlLabel(formattingGroup, "Formatting");
+                UIUtils.createControlLabel(formattingGroup, CoreMessages.dialog_export_wizard_settings_label_formatting);
                 formatProfilesCombo = new Combo(formattingGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.widthHint = 200;
@@ -88,7 +89,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                 });
 
                 Button profilesManageButton = new Button(formattingGroup, SWT.PUSH);
-                profilesManageButton.setText("Edit ... ");
+                profilesManageButton.setText(CoreMessages.dialog_export_wizard_settings_button_edit);
                 profilesManageButton.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -112,12 +113,12 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                 reloadFormatProfiles();
             }
             {
-                UIUtils.createControlLabel(generalSettings, "Binaries");
+                UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_settings_label_binaries);
                 lobExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobExtractType.setItems(new String[] {
-                    "Set to NULL",
-                    "Save to files",
-                    "Inline" });
+                    CoreMessages.dialog_export_wizard_settings_binaries_item_set_to_null,
+                    CoreMessages.dialog_export_wizard_settings_binaries_item_save_to_file,
+                    CoreMessages.dialog_export_wizard_settings_binaries_item_inline });
                 lobExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -131,12 +132,12 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                     }
                 });
 
-                lobEncodingLabel = UIUtils.createControlLabel(generalSettings, "Encoding");
+                lobEncodingLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_settings_label_encoding);
                 lobEncodingCombo = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobEncodingCombo.setItems(new String[] {
-                    "Base64",
-                    "Hex",
-                    "Binary" });
+                    "Base64", //$NON-NLS-1$
+                    "Hex", //$NON-NLS-1$
+                    "Binary" }); //$NON-NLS-1$
                 lobEncodingCombo.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -152,7 +153,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
         }
 
         Group exporterSettings = new Group(composite, SWT.NONE);
-        exporterSettings.setText("Exporter settings");
+        exporterSettings.setText(CoreMessages.dialog_export_wizard_settings_group_exporter);
         exporterSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
         exporterSettings.setLayout(new GridLayout(1, false));
         
@@ -178,7 +179,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     {
         DataFormatterRegistry registry = DBeaverCore.getInstance().getDataFormatterRegistry();
         formatProfilesCombo.removeAll();
-        formatProfilesCombo.add("<Connection's default>");
+        formatProfilesCombo.add(CoreMessages.dialog_export_wizard_settings_listbox_formatting_item_default);
         for (DBDDataFormatterProfile profile : registry.getCustomProfiles()) {
             formatProfilesCombo.add(profile.getProfileName());
         }

@@ -11,6 +11,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
@@ -27,9 +28,9 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
     private TableViewer exporterTable;
 
     DataExportPageInit() {
-        super("Export type");
-        setTitle("Export type");
-        setDescription("Choose export type");
+        super(CoreMessages.dialog_export_wizard_init_name);
+        setTitle(CoreMessages.dialog_export_wizard_init_title);
+        setDescription(CoreMessages.dialog_export_wizard_init_description);
         setPageComplete(false);
     }
 
@@ -70,11 +71,11 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
         {
             TableViewerColumn columnName = new TableViewerColumn(exporterTable, SWT.LEFT);
             columnName.setLabelProvider(labelProvider);
-            columnName.getColumn().setText("Exporter");
+            columnName.getColumn().setText(CoreMessages.dialog_export_wizard_init_column_exported);
 
             TableViewerColumn columnDesc = new TableViewerColumn(exporterTable, SWT.LEFT);
             columnDesc.setLabelProvider(labelProvider);
-            columnDesc.getColumn().setText("Description");
+            columnDesc.getColumn().setText(CoreMessages.dialog_export_wizard_init_column_description);
         }
 
         loadExporters();
