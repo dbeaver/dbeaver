@@ -541,6 +541,26 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_new_connection_wizard_title;
 
+	public static String dialog_project_export_wizard_archive_name_prefix;
+
+	public static String dialog_project_export_wizard_checkbox_libraries;
+
+	public static String dialog_project_export_wizard_dialog_directory_message;
+
+	public static String dialog_project_export_wizard_dialog_directory_text;
+
+	public static String dialog_project_export_wizard_label_directory;
+
+	public static String dialog_project_export_wizard_label_output_file;
+
+	public static String dialog_project_export_wizard_message_choose_project;
+
+	public static String dialog_project_export_wizard_message_configure_settings;
+
+	public static String dialog_project_export_wizard_message_empty_output_directory;
+
+	public static String dialog_project_export_wizard_title;
+
 	public static String dialog_search_objects_button_close;
 
 	public static String dialog_search_objects_button_search;
