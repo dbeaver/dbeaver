@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -42,7 +43,7 @@ public class NewConnectionWizard extends ConnectionWizard
     public NewConnectionWizard(DataSourceRegistry registry)
     {
         super(registry);
-        setWindowTitle("Create new connection");
+        setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
     }
 
     List<DataSourceProviderDescriptor> getAvailableProvides()
@@ -87,7 +88,7 @@ public class NewConnectionWizard extends ConnectionWizard
                     throws InvocationTargetException, InterruptedException
                 {
                     List<DataSourceProviderDescriptor> providers = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders();
-                    monitor.beginTask("Load data sources", providers.size());
+                    monitor.beginTask(CoreMessages.dialog_new_connection_wizard_monitor_load_data_sources, providers.size());
                     for (DataSourceProviderDescriptor provider : providers) {
                         monitor.subTask(provider.getName());
                         DataSourceViewDescriptor view = provider.getView(IActionConstants.NEW_CONNECTION_POINT);

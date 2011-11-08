@@ -8,6 +8,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -28,8 +29,8 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     {
         super("newConnectionDrivers");
         this.wizard = wizard;
-        setTitle("Select new connection type");
-        setDescription("This wizard creates a new connection.");
+        setTitle(CoreMessages.dialog_new_connection_wizard_start_title);
+        setDescription(CoreMessages.dialog_new_connection_wizard_start_description);
     }
 
     public void createControl(Composite parent)
