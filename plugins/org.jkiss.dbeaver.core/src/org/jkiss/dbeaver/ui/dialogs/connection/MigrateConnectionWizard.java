@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -61,7 +62,7 @@ public class MigrateConnectionWizard extends Wizard
                 }
             }
         }
-        setWindowTitle("Migrate connection(s) to another driver");
+        setWindowTitle(CoreMessages.dialog_migrate_wizard_window_title);
     }
 
     /**
@@ -104,9 +105,9 @@ public class MigrateConnectionWizard extends Wizard
 
         protected PageConnections()
         {
-            super("Connections");
-            setTitle("Select connections to migrate");
-            setDescription("Select connection(s) you wish to migrate to another driver.");
+            super(CoreMessages.dialog_migrate_wizard_name);
+            setTitle(CoreMessages.dialog_migrate_wizard_start_title);
+            setDescription(CoreMessages.dialog_migrate_wizard_start_description);
         }
 
         public void createControl(Composite parent)
@@ -163,9 +164,9 @@ public class MigrateConnectionWizard extends Wizard
 
         PageDriver()
         {
-            super("migrateConnectionDriver");
-            setTitle("Choose target driver");
-            setDescription("Choose target driver for selected connections.");
+            super("migrateConnectionDriver"); //$NON-NLS-1$
+            setTitle(CoreMessages.dialog_migrate_wizard_choose_driver_title);
+            setDescription(CoreMessages.dialog_migrate_wizard_choose_driver_description);
         }
 
         public void createControl(Composite parent)
