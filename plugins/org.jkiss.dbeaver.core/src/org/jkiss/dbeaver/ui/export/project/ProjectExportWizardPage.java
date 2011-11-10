@@ -44,7 +44,7 @@ class ProjectExportWizardPage extends WizardPage {
     protected ProjectExportWizardPage(String pageName)
     {
         super(pageName);
-        setTitle(CoreMessages.dialog_project_export_wizard_title);
+        setTitle(CoreMessages.dialog_project_export_wizard_start_title);
     }
 
     @Override
@@ -54,16 +54,16 @@ class ProjectExportWizardPage extends WizardPage {
             return false;
         }
         if (CommonUtils.isEmpty(directoryText.getText())) {
-            setMessage(CoreMessages.dialog_project_export_wizard_message_empty_output_directory, IMessageProvider.ERROR);
+            setMessage(CoreMessages.dialog_project_export_wizard_start_message_empty_output_directory, IMessageProvider.ERROR);
             return false;
         }
         for (TableItem item : projectsTable.getItems()) {
             if (item.getChecked()) {
-                setMessage(CoreMessages.dialog_project_export_wizard_message_configure_settings, IMessageProvider.NONE);
+                setMessage(CoreMessages.dialog_project_export_wizard_start_message_configure_settings, IMessageProvider.NONE);
                 return true;
             }
         }
-        setMessage(CoreMessages.dialog_project_export_wizard_message_choose_project, IMessageProvider.ERROR);
+        setMessage(CoreMessages.dialog_project_export_wizard_start_message_choose_project, IMessageProvider.ERROR);
         return false;
     }
 
@@ -116,7 +116,7 @@ class ProjectExportWizardPage extends WizardPage {
 
         final Composite fileNameGroup = UIUtils.createPlaceholder(placeholder, 2);
         fileNameGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        fileNameText = UIUtils.createLabelText(fileNameGroup, CoreMessages.dialog_project_export_wizard_label_output_file, ""); //$NON-NLS-2$
+        fileNameText = UIUtils.createLabelText(fileNameGroup, CoreMessages.dialog_project_export_wizard_start_label_output_file, ""); //$NON-NLS-2$
         fileNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fileNameText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
@@ -131,7 +131,7 @@ class ProjectExportWizardPage extends WizardPage {
         Composite generalSettings = UIUtils.createPlaceholder(placeholder, 3);
         generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
-            UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_project_export_wizard_label_directory);
+            UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_project_export_wizard_start_label_directory);
             directoryText = new Text(generalSettings, SWT.BORDER);
             directoryText.setText(outDir);
             directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -149,8 +149,8 @@ class ProjectExportWizardPage extends WizardPage {
                 public void widgetSelected(SelectionEvent e)
                 {
                     DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
-                    dialog.setMessage(CoreMessages.dialog_project_export_wizard_dialog_directory_message);
-                    dialog.setText(CoreMessages.dialog_project_export_wizard_dialog_directory_text);
+                    dialog.setMessage(CoreMessages.dialog_project_export_wizard_start_dialog_directory_message);
+                    dialog.setText(CoreMessages.dialog_project_export_wizard_start_dialog_directory_text);
                     String directory = directoryText.getText();
                     if (!CommonUtils.isEmpty(directory)) {
                         dialog.setFilterPath(directory);
@@ -162,7 +162,7 @@ class ProjectExportWizardPage extends WizardPage {
                 }
             });
         }
-        exportDriverCheck = UIUtils.createCheckbox(placeholder, CoreMessages.dialog_project_export_wizard_checkbox_libraries, false);
+        exportDriverCheck = UIUtils.createCheckbox(placeholder, CoreMessages.dialog_project_export_wizard_start_checkbox_libraries, false);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.horizontalSpan = 3;
         exportDriverCheck.setLayoutData(gd);
@@ -205,7 +205,7 @@ class ProjectExportWizardPage extends WizardPage {
 
     static String getArchiveFileName(List<IProject> projects)
     {
-        String archiveName = CoreMessages.dialog_project_export_wizard_archive_name_prefix;
+        String archiveName = CoreMessages.dialog_project_export_wizard_start_archive_name_prefix;
         if (projects.size() == 1) {
             archiveName = projects.get(0).getName();
         }

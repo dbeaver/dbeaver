@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export.project;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.eclipse.core.resources.IProject;
@@ -15,6 +16,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -32,11 +34,11 @@ class ProjectImportWizardPageFile extends WizardPage {
 
     protected ProjectImportWizardPageFile(ProjectImportData importData)
     {
-        super("Import project(s)");
+        super(CoreMessages.dialog_project_import_wizard_file_name);
         this.importData = importData;
 
-        setTitle("Import project(s)");
-        setDescription("Configure project import settings.");
+        setTitle(CoreMessages.dialog_project_import_wizard_file_title);
+        setDescription(CoreMessages.dialog_project_import_wizard_file_description);
     }
 
     @Override
@@ -48,9 +50,9 @@ class ProjectImportWizardPageFile extends WizardPage {
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        Composite configGroup = UIUtils.createControlGroup(placeholder, "Input", 3, GridData.FILL_HORIZONTAL, 0);
+        Composite configGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_project_import_wizard_file_group_input, 3, GridData.FILL_HORIZONTAL, 0);
 
-        final Text fileNameText = UIUtils.createLabelText(configGroup, "File", "");
+        final Text fileNameText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_import_wizard_file_label_file, ""); //$NON-NLS-2$
         fileNameText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {
@@ -72,9 +74,9 @@ class ProjectImportWizardPageFile extends WizardPage {
             public void widgetSelected(SelectionEvent e)
             {
                 FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
-                fd.setText("Open export archive");
+                fd.setText(CoreMessages.dialog_project_import_wizard_file_dialog_export_archive_text);
                 fd.setFilterPath(curFolder);
-                String[] filterExt = {"*.dbp", "*.*"};
+                String[] filterExt = {"*.dbp", "*.*"}; //$NON-NLS-1$ //$NON-NLS-2$
                 fd.setFilterExtensions(filterExt);
                 String selected = fd.open();
                 if (selected != null) {
@@ -83,7 +85,7 @@ class ProjectImportWizardPageFile extends WizardPage {
                 }
             }
         });
-        final Button importDriverCheck = UIUtils.createCheckbox(configGroup, "Import driver libraries", true);
+        final Button importDriverCheck = UIUtils.createCheckbox(configGroup, CoreMessages.dialog_project_import_wizard_file_checkbox_import_libraries, true);
         importDriverCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -95,7 +97,7 @@ class ProjectImportWizardPageFile extends WizardPage {
         gd.horizontalSpan = 3;
         importDriverCheck.setLayoutData(gd);
 
-        Group projectsGroup = UIUtils.createControlGroup(placeholder, "Projects", 1, GridData.FILL_BOTH, 0);
+        Group projectsGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_project_import_wizard_file_group_projects, 1, GridData.FILL_BOTH, 0);
 
         // Project list
         projectsTable = new Table(projectsGroup, SWT.MULTI | SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION);
@@ -112,10 +114,10 @@ class ProjectImportWizardPageFile extends WizardPage {
             }
         });
         TableColumn sourceName = new TableColumn(projectsTable, SWT.LEFT);
-        sourceName.setText("Original Name");
+        sourceName.setText(CoreMessages.dialog_project_import_wizard_file_column_source_name);
 
         TableColumn targetName = new TableColumn(projectsTable, SWT.LEFT);
-        targetName.setText("Target Name");
+        targetName.setText(CoreMessages.dialog_project_import_wizard_file_column_target_name);
 
         final TableEditor tableEditor = new TableEditor(projectsTable);
         tableEditor.horizontalAlignment = SWT.LEFT;
@@ -181,9 +183,9 @@ class ProjectImportWizardPageFile extends WizardPage {
                 }
             }
             if (hasChecked) {
-                setMessage("Ready to import project(s)", IMessageProvider.INFORMATION);
+                setMessage(CoreMessages.dialog_project_import_wizard_file_message_ready, IMessageProvider.INFORMATION);
             } else {
-                setMessage("Choose project(s) to import", IMessageProvider.INFORMATION);
+                setMessage(CoreMessages.dialog_project_import_wizard_file_message_choose_project, IMessageProvider.INFORMATION);
             }
         }
         return !failed;
@@ -198,7 +200,7 @@ class ProjectImportWizardPageFile extends WizardPage {
             return true;
         } else {
             if (item.getChecked()) {
-                setMessage("Project '" + projectName + "' already exists", IMessageProvider.ERROR);
+                setMessage(NLS.bind(CoreMessages.dialog_project_import_wizard_file_message_project_exists, projectName), IMessageProvider.ERROR);
             }
             item.setForeground(1, projectsTable.getDisplay().getSystemColor(SWT.COLOR_RED));
             return false;
@@ -221,7 +223,7 @@ class ProjectImportWizardPageFile extends WizardPage {
                 Document metaTree = importData.getMetaTree();
                 Element projectsElement = XMLUtils.getChildElement(metaTree.getDocumentElement(), ExportConstants.TAG_PROJECTS);
                 if (projectsElement == null) {
-                    setMessage("Cannot find projects in meta file", IMessageProvider.ERROR);
+                    setMessage(CoreMessages.dialog_project_import_wizard_file_message_cannt_find_projects, IMessageProvider.ERROR);
                 } else {
                     projectsTable.removeAll();
                     for (Element projectElement : XMLUtils.getChildElementList(projectsElement, ExportConstants.TAG_PROJECT)) {

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export.project;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -14,6 +15,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -30,7 +32,7 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
 	}
 
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Project Create Wizard");
+        setWindowTitle(CoreMessages.dialog_project_create_wizard_title);
         setNeedsProgressMonitor(true);
     }
 
@@ -59,8 +61,8 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
         catch (InvocationTargetException ex) {
             UIUtils.showErrorDialog(
                 getShell(),
-                "Create error",
-                "Cannot create project",
+                CoreMessages.dialog_project_create_wizard_error_cannot_create,
+                CoreMessages.dialog_project_create_wizard_error_cannot_create_message,
                 ex.getTargetException());
             return false;
         }
@@ -72,7 +74,7 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
         IWorkspace workspace = DBeaverCore.getInstance().getWorkspace();
         IProject project = workspace.getRoot().getProject(data.getName());
         if (project.exists()) {
-            throw new DBException("Project '" + data.getName() + "' already exists");
+            throw new DBException(NLS.bind(CoreMessages.dialog_project_create_wizard_error_already_exists, data.getName()));
         }
         project.create(monitor.getNestedMonitor());
 

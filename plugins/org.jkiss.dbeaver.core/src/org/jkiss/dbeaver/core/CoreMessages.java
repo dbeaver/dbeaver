@@ -541,25 +541,101 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_new_connection_wizard_title;
 
-	public static String dialog_project_export_wizard_archive_name_prefix;
+	public static String dialog_project_create_settings_description;
 
-	public static String dialog_project_export_wizard_checkbox_libraries;
+	public static String dialog_project_create_settings_group_general;
 
-	public static String dialog_project_export_wizard_dialog_directory_message;
+	public static String dialog_project_create_settings_label_description;
 
-	public static String dialog_project_export_wizard_dialog_directory_text;
+	public static String dialog_project_create_settings_label_name;
 
-	public static String dialog_project_export_wizard_label_directory;
+	public static String dialog_project_create_settings_name;
 
-	public static String dialog_project_export_wizard_label_output_file;
+	public static String dialog_project_create_settings_title;
 
-	public static String dialog_project_export_wizard_message_choose_project;
+	public static String dialog_project_create_wizard_error_already_exists;
 
-	public static String dialog_project_export_wizard_message_configure_settings;
+	public static String dialog_project_create_wizard_error_cannot_create;
 
-	public static String dialog_project_export_wizard_message_empty_output_directory;
+	public static String dialog_project_create_wizard_error_cannot_create_message;
 
-	public static String dialog_project_export_wizard_title;
+	public static String dialog_project_create_wizard_title;
+
+	public static String dialog_project_export_wizard_main_page;
+
+	public static String dialog_project_export_wizard_monitor_collect_info;
+
+	public static String dialog_project_export_wizard_monitor_export_driver_info;
+
+	public static String dialog_project_export_wizard_monitor_export_libraries;
+
+	public static String dialog_project_export_wizard_monitor_export_project;
+
+	public static String dialog_project_export_wizard_start_archive_name_prefix;
+
+	public static String dialog_project_export_wizard_start_checkbox_libraries;
+
+	public static String dialog_project_export_wizard_start_dialog_directory_message;
+
+	public static String dialog_project_export_wizard_start_dialog_directory_text;
+
+	public static String dialog_project_export_wizard_start_label_directory;
+
+	public static String dialog_project_export_wizard_start_label_output_file;
+
+	public static String dialog_project_export_wizard_start_message_choose_project;
+
+	public static String dialog_project_export_wizard_start_message_configure_settings;
+
+	public static String dialog_project_export_wizard_start_message_empty_output_directory;
+
+	public static String dialog_project_export_wizard_start_title;
+
+	public static String dialog_project_export_wizard_window_title;
+
+	public static String dialog_project_import_wizard_file_checkbox_import_libraries;
+
+	public static String dialog_project_import_wizard_file_column_source_name;
+
+	public static String dialog_project_import_wizard_file_column_target_name;
+
+	public static String dialog_project_import_wizard_file_description;
+
+	public static String dialog_project_import_wizard_file_dialog_export_archive_text;
+
+	public static String dialog_project_import_wizard_file_group_input;
+
+	public static String dialog_project_import_wizard_file_group_projects;
+
+	public static String dialog_project_import_wizard_file_label_file;
+
+	public static String dialog_project_import_wizard_file_message_cannt_find_projects;
+
+	public static String dialog_project_import_wizard_file_message_choose_project;
+
+	public static String dialog_project_import_wizard_file_message_project_exists;
+
+	public static String dialog_project_import_wizard_file_message_ready;
+
+	public static String dialog_project_import_wizard_file_name;
+
+	public static String dialog_project_import_wizard_file_title;
+
+	public static String dialog_project_import_wizard_message_success_import_message;
+
+	public static String dialog_project_import_wizard_message_success_import_title;
+
+	public static String dialog_project_import_wizard_monitor_import_drivers;
+
+	public static String dialog_project_import_wizard_monitor_import_project;
+
+	public static String dialog_project_import_wizard_monitor_import_projects;
+
+	public static String dialog_project_import_wizard_monitor_load_driver;
+
+	public static String dialog_project_import_wizard_monitor_load_libraries;
+
+	public static String dialog_project_import_wizard_title;
 
 	public static String dialog_search_objects_button_close;
 

@@ -11,6 +11,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 
@@ -20,11 +21,11 @@ class ProjectCreateWizardPageSettings extends WizardPage {
 
     protected ProjectCreateWizardPageSettings(ProjectCreateData importData)
     {
-        super("Create new project");
+        super(CoreMessages.dialog_project_create_settings_name);
         this.createData = importData;
 
-        setTitle("Create new project");
-        setDescription("Set project settings.");
+        setTitle(CoreMessages.dialog_project_create_settings_title);
+        setDescription(CoreMessages.dialog_project_create_settings_description);
     }
 
     @Override
@@ -36,9 +37,9 @@ class ProjectCreateWizardPageSettings extends WizardPage {
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        Composite configGroup = UIUtils.createControlGroup(placeholder, "General", 2, GridData.FILL_HORIZONTAL, 0);
+        Composite configGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_project_create_settings_group_general, 2, GridData.FILL_HORIZONTAL, 0);
 
-        final Text projectNameText = UIUtils.createLabelText(configGroup, "Name", "");
+        final Text projectNameText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_create_settings_label_name, ""); //$NON-NLS-2$
         projectNameText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {
@@ -47,7 +48,7 @@ class ProjectCreateWizardPageSettings extends WizardPage {
             }
         });
 
-        final Text projectDescriptionText = UIUtils.createLabelText(configGroup, "Description", "");
+        final Text projectDescriptionText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_create_settings_label_description, ""); //$NON-NLS-2$
         projectDescriptionText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {

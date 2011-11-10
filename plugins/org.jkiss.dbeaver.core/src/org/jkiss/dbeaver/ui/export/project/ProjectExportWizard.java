@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export.project;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.apache.commons.logging.Log;
@@ -16,6 +17,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -46,9 +48,9 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 	}
 
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Project Export Wizard");
+        setWindowTitle(CoreMessages.dialog_project_export_wizard_window_title);
         setNeedsProgressMonitor(true);
-        mainPage = new ProjectExportWizardPage("Export project");
+        mainPage = new ProjectExportWizardPage(CoreMessages.dialog_project_export_wizard_main_page);
     }
 
     public void addPages() {
@@ -90,7 +92,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
     {
         if (!exportData.getOutputFolder().exists()) {
             if (!exportData.getOutputFolder().mkdirs()) {
-                throw new IOException("Cannot create directory '" + exportData.getOutputFolder().getAbsolutePath() + "'");
+                throw new IOException("Cannot create directory '" + exportData.getOutputFolder().getAbsolutePath() + "'"); //$NON-NLS-2$
             }
         }
 
@@ -119,7 +121,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             }
 
             Map<IProject, Integer> resCountMap = new HashMap<IProject, Integer>();
-            monitor.beginTask("Collect projects info", exportData.getProjectsToExport().size());
+            monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_collect_info, exportData.getProjectsToExport().size());
             for (IProject project : exportData.getProjectsToExport()) {
                 // Add used drivers to export data
                 final DataSourceRegistry dataSourceRegistry = exportData.projectRegistry.getDataSourceRegistry(project);
@@ -136,7 +138,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
             {
                 // Export drivers meta
-                monitor.beginTask("Export drivers information", 1);
+                monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_export_driver_info, 1);
                 exportData.meta.startElement(RegistryConstants.TAG_DRIVERS);
                 for (DriverDescriptor driver : exportData.usedDrivers) {
                     driver.serialize(exportData.meta, true);
@@ -149,7 +151,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 // Export projects
                 exportData.meta.startElement(ExportConstants.TAG_PROJECTS);
                 for (IProject project : exportData.getProjectsToExport()) {
-                    monitor.beginTask("Export project '" + project.getName() + "'", resCountMap.get(project));
+                    monitor.beginTask(NLS.bind(CoreMessages.dialog_project_export_wizard_monitor_export_project, project.getName()), resCountMap.get(project));
                     try {
                         exportProject(monitor, exportData, project);
                     } finally {
@@ -174,10 +176,10 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 }
 
                 if (!libFiles.isEmpty()) {
-                    monitor.beginTask("Export driver libraries", libFiles.size());
+                    monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_export_libraries, libFiles.size());
 
-                    final ZipEntry driversFolder = new ZipEntry(ExportConstants.DIR_DRIVERS + "/");
-                    driversFolder.setComment("Database driver libraries");
+                    final ZipEntry driversFolder = new ZipEntry(ExportConstants.DIR_DRIVERS + "/"); //$NON-NLS-1$
+                    driversFolder.setComment("Database driver libraries"); //$NON-NLS-1$
                     exportData.archiveStream.putNextEntry(driversFolder);
                     exportData.archiveStream.closeEntry();
 
@@ -188,7 +190,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                         // Check for file name duplications
                         final String libFileName = libFile.getName();
                         if (libFileNames.contains(libFileName)) {
-                            log.warn("Duplicate driver library file name: " + libFileName);
+                            log.warn("Duplicate driver library file name: " + libFileName); //$NON-NLS-1$
                             continue;
                         }
                         libFileNames.add(libFileName);
@@ -197,11 +199,11 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
                         exportData.meta.startElement(RegistryConstants.TAG_FILE);
                         exportData.meta.addAttribute(ExportConstants.ATTR_PATH, libPath);
-                        exportData.meta.addAttribute(ExportConstants.ATTR_FILE, "drivers/" + libFileName);
+                        exportData.meta.addAttribute(ExportConstants.ATTR_FILE, "drivers/" + libFileName); //$NON-NLS-1$
                         exportData.meta.endElement();
 
-                        final ZipEntry driverFile = new ZipEntry(ExportConstants.DIR_DRIVERS + "/" + libFileName);
-                        driverFile.setComment("Driver library");
+                        final ZipEntry driverFile = new ZipEntry(ExportConstants.DIR_DRIVERS + "/" + libFileName); //$NON-NLS-1$
+                        driverFile.setComment("Driver library"); //$NON-NLS-1$
                         exportData.archiveStream.putNextEntry(driverFile);
                         InputStream is = new FileInputStream(libFile);
                         try {
@@ -261,7 +263,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         saveResourceProperties(project, exportData.meta);
 
         // Add project folder
-        final String projectPath = ExportConstants.DIR_PROJECTS + "/" + project.getName() + "/";
+        final String projectPath = ExportConstants.DIR_PROJECTS + "/" + project.getName() + "/"; //$NON-NLS-1$ //$NON-NLS-2$
         exportData.archiveStream.putNextEntry(new ZipEntry(projectPath));
         exportData.archiveStream.closeEntry();
 
@@ -290,7 +292,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
         if (resource instanceof IContainer) {
             // Add folder entry
-            parentPath = parentPath + resource.getName() + "/";
+            parentPath = parentPath + resource.getName() + "/"; //$NON-NLS-1$
             exportData.archiveStream.putNextEntry(new ZipEntry(parentPath));
             exportData.archiveStream.closeEntry();
 

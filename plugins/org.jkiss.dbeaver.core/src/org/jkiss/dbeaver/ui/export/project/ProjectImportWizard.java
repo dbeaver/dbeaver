@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -49,7 +50,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 	}
 
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Project Import Wizard");
+        setWindowTitle(CoreMessages.dialog_project_import_wizard_title);
         setNeedsProgressMonitor(true);
     }
 
@@ -84,7 +85,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 ex.getTargetException());
             return false;
         }
-        UIUtils.showMessageBox(getShell(), "Project import", "Project(s) successfully imported", SWT.ICON_INFORMATION);
+        UIUtils.showMessageBox(getShell(), CoreMessages.dialog_project_import_wizard_message_success_import_title, CoreMessages.dialog_project_import_wizard_message_success_import_message, SWT.ICON_INFORMATION);
         return true;
 	}
 
@@ -100,7 +101,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             final Map<String, String> driverMap = new HashMap<String, String>();
             InputStream metaStream = zipFile.getInputStream(metaEntry);
             if (metaStream == null) {
-                throw new DBException("Cannot open meta file '" + metaEntry.getName() + "'");
+                throw new DBException("Cannot open meta file '" + metaEntry.getName() + "'"); //$NON-NLS-2$
             }
             try {
                 final Document metaDocument = XMLUtils.parseDocument(metaStream);
@@ -109,7 +110,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     final Element libsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_LIBRARIES);
                     if (libsElement != null) {
                         final Collection<Element> libList = XMLUtils.getChildElementList(libsElement, RegistryConstants.TAG_FILE);
-                        monitor.beginTask("Load driver libraries", libList.size());
+                        monitor.beginTask(CoreMessages.dialog_project_import_wizard_monitor_load_libraries, libList.size());
                         for (Element libElement : libList) {
                             libMap.put(
                                 libElement.getAttribute(ExportConstants.ATTR_PATH),
@@ -125,7 +126,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     final Element driversElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), RegistryConstants.TAG_DRIVERS);
                     if (driversElement != null) {
                         final Collection<Element> driverList = XMLUtils.getChildElementList(driversElement, RegistryConstants.TAG_DRIVER);
-                        monitor.beginTask("Import drivers", driverList.size());
+                        monitor.beginTask(CoreMessages.dialog_project_import_wizard_monitor_import_drivers, driverList.size());
                         for (Element driverElement : driverList) {
                             if (monitor.isCanceled()) {
                                 break;
@@ -145,7 +146,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     final Element projectsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_PROJECTS);
                     if (projectsElement != null) {
                         final Collection<Element> projectList = XMLUtils.getChildElementList(projectsElement, ExportConstants.TAG_PROJECT);
-                        monitor.beginTask("Import projects", projectList.size());
+                        monitor.beginTask(CoreMessages.dialog_project_import_wizard_monitor_import_projects, projectList.size());
                         for (Element projectElement : projectList) {
                             if (monitor.isCanceled()) {
                                 break;
@@ -192,14 +193,14 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         if (dataSourceProvider == null) {
             throw new DBException("Cannot find data source provider '" + providerId + "' for driver '" + driverName + "'");
         }
-        monitor.subTask("Load driver " + driverName);
+        monitor.subTask(CoreMessages.dialog_project_import_wizard_monitor_load_driver + driverName);
 
         DriverDescriptor driver = null;
         if (!isCustom) {
             // Get driver by ID
             driver = dataSourceProvider.getDriver(driverId);
             if (driver == null) {
-                log.warn("Driver '" + driverId + "' not found in data source provider '" + dataSourceProvider.getName() + "'");
+                log.warn("Driver '" + driverId + "' not found in data source provider '" + dataSourceProvider.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             }
         }
         if (driver == null) {
@@ -222,7 +223,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 }
                 if (driver == null) {
                     // Not found - lets use first one
-                    log.warn("Ambiguous driver '" + driverName + "' - multiple drivers with class '" + driverClass + "' found. First one will be used");
+                    log.warn("Ambiguous driver '" + driverName + "' - multiple drivers with class '" + driverClass + "' found. First one will be used"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     driver = matchedDrivers.get(0);
                 }
             }
@@ -277,7 +278,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                             File contribFolder = DriverDescriptor.getDriversContribFolder();
                             if (!contribFolder.exists()) {
                                 if (!contribFolder.mkdir()) {
-                                    log.error("Cannot create drivers folder '" + contribFolder.getAbsolutePath() + "'");
+                                    log.error("Cannot create drivers folder '" + contribFolder.getAbsolutePath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
                                     continue;
                                 }
                             }
@@ -325,7 +326,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             throw new DBException("Project '" + targetProjectName + "' already exists");
         }
 
-        monitor.subTask("Import project " + targetProjectName);
+        monitor.subTask(CoreMessages.dialog_project_import_wizard_monitor_import_project + targetProjectName);
 
         final IProjectDescription description = DBeaverCore.getInstance().getWorkspace().newProjectDescription(project.getName());
         if (!CommonUtils.isEmpty(projectDescription)) {
@@ -346,7 +347,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 monitor,
                 project,
                 projectElement,
-                ExportConstants.DIR_PROJECTS + "/" + projectName + "/",
+                ExportConstants.DIR_PROJECTS + "/" + projectName + "/", //$NON-NLS-1$ //$NON-NLS-2$
                 zipFile);
 
             // Update driver references in datasources
@@ -375,7 +376,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             boolean isDirectory = CommonUtils.getBoolean(childElement.getAttribute(ExportConstants.ATTR_DIRECTORY));
             String entryPath = containerPath + childName;
             if (isDirectory) {
-                entryPath += "/";
+                entryPath += "/"; //$NON-NLS-1$
             }
             final ZipEntry resourceEntry = zipFile.getEntry(entryPath);
             if (resourceEntry == null) {
