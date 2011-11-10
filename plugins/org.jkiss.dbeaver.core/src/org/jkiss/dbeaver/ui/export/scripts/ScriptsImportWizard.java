@@ -18,6 +18,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -44,7 +45,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
 	}
 
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Scripts Import Wizard");
+        setWindowTitle(CoreMessages.dialog_scripts_import_wizard_window_title);
         setNeedsProgressMonitor(true);
     }
 
@@ -68,16 +69,16 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         catch (InvocationTargetException ex) {
             UIUtils.showErrorDialog(
                 getShell(),
-                "Import error",
-                "Cannot import scripts",
+                CoreMessages.dialog_scripts_import_wizard_dialog_error_title,
+                CoreMessages.dialog_scripts_import_wizard_dialog_error_text,
                 ex.getTargetException());
             return false;
         }
         if (importer.getImportedCount() <= 0) {
-            UIUtils.showMessageBox(getShell(), "Scripts import", "No scripts were found", SWT.ICON_WARNING);
+            UIUtils.showMessageBox(getShell(), CoreMessages.dialog_scripts_import_wizard_dialog_message_title, CoreMessages.dialog_scripts_import_wizard_dialog_message_no_scripts, SWT.ICON_WARNING);
             return false;
         } else {
-            UIUtils.showMessageBox(getShell(), "Scripts import", importer.getImportedCount() + " script(s) successfully imported", SWT.ICON_INFORMATION);
+            UIUtils.showMessageBox(getShell(), CoreMessages.dialog_scripts_import_wizard_dialog_message_title, importer.getImportedCount() + CoreMessages.dialog_scripts_import_wizard_dialog_message_success_imported, SWT.ICON_INFORMATION);
             return true;
         }
 	}
@@ -85,11 +86,11 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
     private int importScripts(DBRProgressMonitor monitor, ScriptsImportData importData) throws IOException, DBException, CoreException
     {
         List<Pattern> masks = new ArrayList<Pattern>();
-        StringTokenizer st = new StringTokenizer(importData.getFileMasks(), ",; ");
+        StringTokenizer st = new StringTokenizer(importData.getFileMasks(), ",; "); //$NON-NLS-1$
         while (st.hasMoreTokens()) {
             String mask = st.nextToken().trim();
             if (!CommonUtils.isEmpty(mask)) {
-                mask = mask.replace("*", ".*");
+                mask = mask.replace("*", ".*"); //$NON-NLS-1$ //$NON-NLS-2$
                 masks.add(Pattern.compile(mask));
             }
         }
@@ -101,7 +102,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         // Use null monitor for resource actions to not break our main monitor
         final IProgressMonitor nullMonitor = new NullProgressMonitor();
         // Import scripts
-        monitor.beginTask("Import scripts", filesToImport.size());
+        monitor.beginTask(CoreMessages.dialog_scripts_import_wizard_monitor_import_scripts, filesToImport.size());
         for (File file : filesToImport) {
             // Create dirs
             monitor.subTask(file.getName());
@@ -118,8 +119,8 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
                 }
             }
             String targetName = file.getName();
-            if (!targetName.toLowerCase().endsWith("." + ScriptsHandlerImpl.SCRIPT_FILE_EXTENSION)) {
-                targetName += "." + ScriptsHandlerImpl.SCRIPT_FILE_EXTENSION;
+            if (!targetName.toLowerCase().endsWith("." + ScriptsHandlerImpl.SCRIPT_FILE_EXTENSION)) { //$NON-NLS-1$
+                targetName += "." + ScriptsHandlerImpl.SCRIPT_FILE_EXTENSION; //$NON-NLS-1$
             }
 
             final IFile targetFile = targetDir.getFile(targetName);

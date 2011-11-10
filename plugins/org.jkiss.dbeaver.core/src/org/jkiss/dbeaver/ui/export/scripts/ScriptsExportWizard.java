@@ -14,6 +14,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -39,10 +40,10 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
 	}
 
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Scripts Export Wizard"); //NON-NLS-1
+        setWindowTitle(CoreMessages.dialog_scripts_export_wizard_window_title); //NON-NLS-1
         setDefaultPageImageDescriptor(DBIcon.SQL_SCRIPT.getImageDescriptor());
         setNeedsProgressMonitor(true);
-        mainPage = new ScriptsExportWizardPage("Export scripts"); //NON-NLS-1
+        mainPage = new ScriptsExportWizardPage(CoreMessages.dialog_scripts_export_wizard_page_name); //NON-NLS-1
     }
 
     public void addPages() {
@@ -129,10 +130,10 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
             if (fsFile.isDirectory()) {
                 throw new IOException("Target file '" + fsFile.getAbsolutePath() + "' is a directory");
             } else if (!exportData.isOverwriteFiles()) {
-                log.warn("File '" + fsFile.getAbsolutePath() + "' already exists - skipped");
+                log.warn("File '" + fsFile.getAbsolutePath() + "' already exists - skipped"); //$NON-NLS-1$ //$NON-NLS-2$
                 return;
             } else {
-                log.warn("Overwriting file '" + fsFile.getAbsolutePath() + "'");
+                log.warn("Overwriting file '" + fsFile.getAbsolutePath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
         final File fileDir = fsFile.getParentFile();

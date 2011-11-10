@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -44,10 +45,10 @@ class ScriptsImportWizardPage extends WizardPage {
 
     protected ScriptsImportWizardPage()
     {
-        super("Import script(s)");
+        super(CoreMessages.dialog_scripts_import_wizard_name);
 
-        setTitle("Import script(s)");
-        setDescription("Configure scripts import settings.");
+        setTitle(CoreMessages.dialog_scripts_import_wizard_title);
+        setDescription(CoreMessages.dialog_scripts_import_wizard_description);
     }
 
     @Override
@@ -73,7 +74,7 @@ class ScriptsImportWizardPage extends WizardPage {
         Composite generalSettings = UIUtils.createPlaceholder(placeholder, 3);
         generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
-            UIUtils.createControlLabel(generalSettings, "Input directory");
+            UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_input_directory);
             directoryText = new Text(generalSettings, SWT.BORDER);
             directoryText.setText(externalDir);
             directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -91,8 +92,8 @@ class ScriptsImportWizardPage extends WizardPage {
                 public void widgetSelected(SelectionEvent e)
                 {
                     DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
-                    dialog.setMessage("Choose scripts source directory");
-                    dialog.setText("Source directory");
+                    dialog.setMessage(CoreMessages.dialog_scripts_import_wizard_dialog_choose_dir_message);
+                    dialog.setText(CoreMessages.dialog_scripts_import_wizard_dialog_choose_dir_text);
                     String directory = directoryText.getText();
                     if (!CommonUtils.isEmpty(directory)) {
                         dialog.setFilterPath(directory);
@@ -104,12 +105,12 @@ class ScriptsImportWizardPage extends WizardPage {
                 }
             });
 
-            extensionsText = UIUtils.createLabelText(generalSettings, "File mask(s)", "*.sql,*.txt");
+            extensionsText = UIUtils.createLabelText(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_file_mask, "*.sql,*.txt"); //$NON-NLS-2$
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             extensionsText.setLayoutData(gd);
 
-            UIUtils.createControlLabel(generalSettings, "Default connection");
+            UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_default_connection);
             scriptsDataSources = new CImageCombo(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
             final DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(projectRegistry.getActiveProject());
@@ -126,7 +127,7 @@ class ScriptsImportWizardPage extends WizardPage {
             scriptsDataSources.setLayoutData(gd);
         }
 
-        UIUtils.createControlLabel(placeholder, "Root scripts folder");
+        UIUtils.createControlLabel(placeholder, CoreMessages.dialog_scripts_import_wizard_label_root_folder);
         importRoot = ScriptsExportUtils.getScriptsNode();
         final DatabaseNavigatorTree scriptsNavigator = new DatabaseNavigatorTree(placeholder, importRoot, SWT.BORDER | SWT.SINGLE, true);
         scriptsNavigator.setLayoutData(new GridData(GridData.FILL_BOTH));

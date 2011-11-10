@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -42,7 +43,7 @@ class ScriptsExportWizardPage extends WizardPage {
 
     static final Log log = LogFactory.getLog(ScriptsExportWizardPage.class);
 
-    static final String PREF_SCRIPTS_EXPORT_OUT_DIR = "export.scripts.out.dir";
+    static final String PREF_SCRIPTS_EXPORT_OUT_DIR = "export.scripts.out.dir"; //$NON-NLS-1$
 
     private Button overwriteCheck;
     private Text directoryText;
@@ -52,7 +53,7 @@ class ScriptsExportWizardPage extends WizardPage {
     protected ScriptsExportWizardPage(String pageName)
     {
         super(pageName);
-        setTitle("Export scripts(s)");
+        setTitle(CoreMessages.dialog_project_export_wizard_page_title);
     }
 
     @Override
@@ -62,7 +63,7 @@ class ScriptsExportWizardPage extends WizardPage {
             return false;
         }
         if (CommonUtils.isEmpty(directoryText.getText())) {
-            setMessage("Output directory is not specified.", IMessageProvider.ERROR);
+            setMessage(CoreMessages.dialog_project_export_wizard_page_message_no_output_dir, IMessageProvider.ERROR);
             return false;
         }
         selectedResources.clear();
@@ -73,10 +74,10 @@ class ScriptsExportWizardPage extends WizardPage {
             }
         }
         if (selectedResources.isEmpty()) {
-            setMessage("Check script(s) to export.", IMessageProvider.ERROR);
+            setMessage(CoreMessages.dialog_project_export_wizard_page_message_check_script, IMessageProvider.ERROR);
             return false;
         } else {
-            setMessage("Configure script(s) export settings.", IMessageProvider.NONE);
+            setMessage(CoreMessages.dialog_project_export_wizard_page_message_configure_settings, IMessageProvider.NONE);
             return true;
         }
     }
@@ -107,11 +108,11 @@ class ScriptsExportWizardPage extends WizardPage {
         Composite generalSettings = UIUtils.createPlaceholder(placeholder, 3);
         generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
-            overwriteCheck = UIUtils.createCheckbox(generalSettings, "Overwrite existing files", false);
+            overwriteCheck = UIUtils.createCheckbox(generalSettings, CoreMessages.dialog_project_export_wizard_page_checkbox_overwrite_files, false);
             gd = new GridData(GridData.BEGINNING);
             gd.horizontalSpan = 3;
             overwriteCheck.setLayoutData(gd);
-            UIUtils.createControlLabel(generalSettings, "Directory");
+            UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_project_export_wizard_page_label_directory);
             directoryText = new Text(generalSettings, SWT.BORDER);
             directoryText.setText(outDir);
             directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -129,8 +130,8 @@ class ScriptsExportWizardPage extends WizardPage {
                 public void widgetSelected(SelectionEvent e)
                 {
                     DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
-                    dialog.setMessage("Choose directory to place exported files");
-                    dialog.setText("Export directory");
+                    dialog.setMessage(CoreMessages.dialog_project_export_wizard_page_dialog_choose_export_dir_message);
+                    dialog.setText(CoreMessages.dialog_project_export_wizard_page_dialog_choose_export_dir_text);
                     String directory = directoryText.getText();
                     if (!CommonUtils.isEmpty(directory)) {
                         dialog.setFilterPath(directory);

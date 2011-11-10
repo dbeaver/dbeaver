@@ -571,6 +571,22 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_project_export_wizard_monitor_export_project;
 
+	public static String dialog_project_export_wizard_page_checkbox_overwrite_files;
+
+	public static String dialog_project_export_wizard_page_dialog_choose_export_dir_message;
+
+	public static String dialog_project_export_wizard_page_dialog_choose_export_dir_text;
+
+	public static String dialog_project_export_wizard_page_label_directory;
+
+	public static String dialog_project_export_wizard_page_message_check_script;
+
+	public static String dialog_project_export_wizard_page_message_configure_settings;
+
+	public static String dialog_project_export_wizard_page_message_no_output_dir;
+
+	public static String dialog_project_export_wizard_page_title;
+
 	public static String dialog_project_export_wizard_start_archive_name_prefix;
 
 	public static String dialog_project_export_wizard_start_checkbox_libraries;
@@ -636,6 +652,42 @@ public class CoreMessages extends NLS {
 	public static String dialog_project_import_wizard_monitor_load_libraries;
 
 	public static String dialog_project_import_wizard_title;
+
+	public static String dialog_scripts_export_wizard_page_name;
+
+	public static String dialog_scripts_export_wizard_window_title;
+
+	public static String dialog_scripts_import_wizard_description;
+
+	public static String dialog_scripts_import_wizard_dialog_choose_dir_message;
+
+	public static String dialog_scripts_import_wizard_dialog_choose_dir_text;
+
+	public static String dialog_scripts_import_wizard_dialog_error_text;
+
+	public static String dialog_scripts_import_wizard_dialog_error_title;
+
+	public static String dialog_scripts_import_wizard_dialog_message_no_scripts;
+
+	public static String dialog_scripts_import_wizard_dialog_message_success_imported;
+
+	public static String dialog_scripts_import_wizard_dialog_message_title;
+
+	public static String dialog_scripts_import_wizard_label_default_connection;
+
+	public static String dialog_scripts_import_wizard_label_file_mask;
+
+	public static String dialog_scripts_import_wizard_label_input_directory;
+
+	public static String dialog_scripts_import_wizard_label_root_folder;
+
+	public static String dialog_scripts_import_wizard_monitor_import_scripts;
+
+	public static String dialog_scripts_import_wizard_name;
+
+	public static String dialog_scripts_import_wizard_title;
+
+	public static String dialog_scripts_import_wizard_window_title;
 
 	public static String dialog_search_objects_button_close;
 
