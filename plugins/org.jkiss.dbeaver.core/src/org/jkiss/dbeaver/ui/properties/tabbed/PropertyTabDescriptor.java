@@ -75,4 +75,13 @@ public class PropertyTabDescriptor extends AbstractTabDescriptor {
         this.afterTab = afterTab;
     }
 
+    @Override
+    /**
+     * Tabs are always intended because non-intended tabs looks ugly in some look-and-feel themes
+     * (because they use shadow color as background)
+     */
+    public boolean isIndented()
+    {
+        return true;//PropertiesContributor.TAB_STANDARD.equals(id);
+    }
 }
