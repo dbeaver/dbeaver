@@ -8,10 +8,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -26,6 +23,8 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ui.general";
     private Button automaticUpdateCheck;
+    private Text proxyHostText;
+    private Spinner proxyPortSpinner;
 
     public void init(IWorkbench workbench)
     {
@@ -37,8 +36,12 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group groupObjects = UIUtils.createControlGroup(composite, "General", 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 150);
+        Group groupObjects = UIUtils.createControlGroup(composite, "General", 1, GridData.VERTICAL_ALIGN_BEGINNING, 300);
         automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, "Automatic Updates Check", false);
+
+        Group proxyObjects = UIUtils.createControlGroup(composite, "HTTP Proxy", 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
+        proxyHostText = UIUtils.createLabelText(proxyObjects, "Proxy Host", "");
+        proxyPortSpinner = UIUtils.createLabelSpinner(proxyObjects, "Proxy Port", 0, 0, 65535);
 
         performDefaults();
 
@@ -51,6 +54,8 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
         automaticUpdateCheck.setSelection(store.getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK));
+        proxyHostText.setText(store.getString(PrefConstants.UI_PROXY_HOST));
+        proxyPortSpinner.setSelection(store.getInt(PrefConstants.UI_PROXY_PORT));
 
         super.performDefaults();
     }
@@ -60,6 +65,8 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
         store.setValue(PrefConstants.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
+        store.setValue(PrefConstants.UI_PROXY_HOST, proxyHostText.getText());
+        store.setValue(PrefConstants.UI_PROXY_PORT, proxyPortSpinner.getSelection());
         RuntimeUtils.savePreferenceStore(store);
 
         return super.performOk();

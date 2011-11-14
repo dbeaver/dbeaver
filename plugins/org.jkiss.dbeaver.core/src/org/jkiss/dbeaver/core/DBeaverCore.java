@@ -521,6 +521,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         // General UI
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_AUTO_UPDATE_CHECK, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_HOST, "");
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_PORT, 0);
 
         // QM
         queryManager.initDefaultPreferences(store);

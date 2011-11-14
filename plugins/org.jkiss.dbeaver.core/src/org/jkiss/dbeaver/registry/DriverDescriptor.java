@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.framework.internal.core.BundleHost;
 import org.eclipse.swt.SWT;
@@ -43,9 +44,7 @@ import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -925,8 +924,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     private void downloadLibraryFile(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException, InterruptedException
     {
+        IPreferenceStore prefs = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        String proxyHost = prefs.getString(PrefConstants.UI_PROXY_HOST);
+        Proxy proxy = null;
+        if (!CommonUtils.isEmpty(proxyHost)) {
+            int proxyPort = prefs.getInt(PrefConstants.UI_PROXY_PORT);
+            if (proxyPort <= 0) {
+                log.warn("Invalid proxy port: " + proxyPort);
+            }
+            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        }
         URL url = new URL(file.getExternalURL());
-        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        final HttpURLConnection connection = (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
         connection.setReadTimeout(10000);
         connection.setConnectTimeout(10000);
         connection.setRequestMethod("GET"); //$NON-NLS-1$
