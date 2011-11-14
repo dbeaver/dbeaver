@@ -1413,17 +1413,31 @@
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
-        <page id="org.jkiss.dbeaver.preferences.main" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral" name="Database Configuration"/>
-        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="Data Formats"/>
-        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.misc.qm" class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" name="Query Manager"/>
+        <page id="org.jkiss.dbeaver.preferences.main" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral" name="Database Configuration">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.general"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="Data Formats">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.misc.qm" class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" name="Query Manager">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.qm"/>
+        </page>
 
         <page id="org.jkiss.dbeaver.preferences.editors" class="org.eclipse.ui.ExtensionFactory:editorsPreferencePage" name="Database Editors"/>
-        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="SQL Editor"/>
-        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.contenteditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor" name="Content Editor"/>
-        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="Binary Editor"/>
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="SQL Editor">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.contenteditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor" name="Content Editor">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.content"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="Binary Editor">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
+        </page>
 
         <page id="org.jkiss.dbeaver.preferences.general" class="org.eclipse.ui.ExtensionFactory:workbenchPreferencePage" name="Database UI"/>
-        <page category="org.jkiss.dbeaver.preferences.general" id="org.jkiss.dbeaver.preferences.ui.general" class="org.jkiss.dbeaver.ui.preferences.PrefPageUIGeneral" name="General"/>
+        <page category="org.jkiss.dbeaver.preferences.general" id="org.jkiss.dbeaver.preferences.ui.general" class="org.jkiss.dbeaver.ui.preferences.PrefPageUIGeneral" name="General">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.general"/>
+        </page>
         <page category="org.jkiss.dbeaver.preferences.general" id="org.jkiss.dbeaver.preferences.appearance" class="org.eclipse.ui.ExtensionFactory:appearancePreferencePage" name="Appearance"/>
         <page category="org.jkiss.dbeaver.preferences.appearance" id="org.eclipse.ui.preferencePages.ColorsAndFonts" class="org.eclipse.ui.ExtensionFactory:colorsAndFontsPreferencePage" name="Colors and fonts"/>
 
@@ -1793,6 +1807,17 @@
     <extension point="org.eclipse.help.contentProducer">
        <contentProducer producer="org.jkiss.dbeaver.ui.help.HelpContentProducer">
        </contentProducer>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="auto commit cursor rollback resultset lob script"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="format date number string locale language"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="query log statement ddl"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.binary" label="binary hex blob"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.content" label="lob blob clob"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.erd" label="erd diagram"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.sql" label="sql script commit fetch timeout"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.general" label="update http proxy"/>
     </extension>
 
 </plugin>
