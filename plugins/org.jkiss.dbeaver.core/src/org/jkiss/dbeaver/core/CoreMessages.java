@@ -18,6 +18,8 @@ public class CoreMessages extends NLS {
 	public static String actions_menu_help;
 	public static String actions_menu_navigate;
 	public static String actions_menu_window;
+    public static String actions_menu_edit_ContentFormat;
+
 	public static String DBeaverCore_error_can_create_temp_dir;
 	public static String DBeaverCore_error_can_create_temp_file;
 

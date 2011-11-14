@@ -11,6 +11,7 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
@@ -99,7 +100,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
             //editMenu.add(new Separator());
             editMenu.add(contentAssistProposal);
             editMenu.add(contentAssistTip);
-            editMenu.add(contentFormatProposal);
+            MenuManager formatMenu = new MenuManager(CoreMessages.actions_menu_edit_ContentFormat);
+            editMenu.add(formatMenu);
+            formatMenu.add(contentFormatProposal);
             //editMenu.add(new Separator());
             //editMenu.add(executeStatementAction);
             //editMenu.add(executeScriptAction);
