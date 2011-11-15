@@ -15,6 +15,7 @@ public class DBPConnectionInfo implements DBPObject
 {
 
     //private DBPDriver driver;
+    private String clientHomeId;
     private String hostName;
     private String hostPort;
     private String serverName;
@@ -55,6 +56,16 @@ public class DBPConnectionInfo implements DBPObject
 		return driver;
 	}
 */
+
+    public String getClientHomeId()
+    {
+        return clientHomeId;
+    }
+
+    public void setClientHomeId(String clientHomeId)
+    {
+        this.clientHomeId = clientHomeId;
+    }
 
     public String getHostName()
     {

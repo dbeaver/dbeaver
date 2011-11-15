@@ -9,9 +9,9 @@ package org.jkiss.dbeaver.model;
  */
 public interface DBPClientHome {
 
-    String getClientName();
+    String getHomeId();
 
-    String getClientPath();
+    String getHomePath();
 
     String getProductName();
 
