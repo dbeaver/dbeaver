@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -106,11 +107,11 @@ public class ViewSQLDialog extends Dialog {
     protected void createButtonsForButtonBar(Composite parent)
     {
         if (showSaveButton) {
-            createButton(parent, IDialogConstants.PROCEED_ID, "Persist", true);
-            createButton(parent, IDialogConstants.DETAILS_ID, "Copy", false);
+            createButton(parent, IDialogConstants.PROCEED_ID, CoreMessages.dialog_view_sql_button_persist, true);
+            createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.dialog_view_sql_button_copy, false);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         } else {
-            createButton(parent, IDialogConstants.DETAILS_ID, "Copy", false);
+            createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.dialog_view_sql_button_copy, false);
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
         }
     }

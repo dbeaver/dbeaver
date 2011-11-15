@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryTextFinder;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.binary.HexManager;
@@ -33,30 +34,30 @@ import java.util.regex.Pattern;
 public class FindReplaceDialog extends Dialog {
 
 
-    private static final Pattern patternHexDigits = Pattern.compile("[0-9a-fA-F]*");
-    private static final String text1Replacement = "1 Replacement";
-    private static final String textBackward = "&Backward";
-    private static final String textCancel = "Cancel";
-    private static final String textClose = "Close";
-    private static final String textDirection = "Direction";
-    private static final String textError = "Error: ";
-    private static final String textFind = "Fi&nd";
-    private static final String textFindLiteral = "Find literal";
-    private static final String textFindReplace = "Find/Replace";
-    private static final String textForward = "F&orward";
-    private static final String textFoundLiteral = "Found literal";
-    private static final String textHex = "Hex";
-    private static final String textIgnoreCase = "&Ignore case";
-    private static final String textLiteralNotFound = "Literal not found";
-    private static final String textNewFind = "New find";
-    private static final String textReplace = "&Replace";
-    private static final String textReplaceAll = "Replace &All";
-    private static final String textReplaceFind = "Replace/Fin&d";
-    private static final String textReplaceWith = "Replace With";
-    private static final String textReplacements = " Replacements";
-    private static final String textSearching = "Searching";
-    private static final String textStop = "Stop";
-    private static final String textText = "Text";
+    private static final Pattern patternHexDigits = Pattern.compile("[0-9a-fA-F]*"); //$NON-NLS-1$
+    private static final String text1Replacement = CoreMessages.dialog_find_replace_1_replacement;
+    private static final String textBackward = CoreMessages.dialog_find_replace_backward;
+    private static final String textCancel = CoreMessages.dialog_find_replace_cancel;
+    private static final String textClose = CoreMessages.dialog_find_replace_close;
+    private static final String textDirection = CoreMessages.dialog_find_replace_direction;
+    private static final String textError = CoreMessages.dialog_find_replace_error_;
+    private static final String textFind = CoreMessages.dialog_find_replace_find;
+    private static final String textFindLiteral = CoreMessages.dialog_find_replace_find_literal;
+    private static final String textFindReplace = CoreMessages.dialog_find_replace_find_replace;
+    private static final String textForward = CoreMessages.dialog_find_replace_forward;
+    private static final String textFoundLiteral = CoreMessages.dialog_find_replace_found_literal;
+    private static final String textHex = "Hex"; //$NON-NLS-1$
+    private static final String textIgnoreCase = CoreMessages.dialog_find_replace_ignore_case;
+    private static final String textLiteralNotFound = CoreMessages.dialog_find_replace_literal_not_found;
+    private static final String textNewFind = CoreMessages.dialog_find_replace_new_find;
+    private static final String textReplace = CoreMessages.dialog_find_replace_replace;
+    private static final String textReplaceAll = CoreMessages.dialog_find_replace_replace_all;
+    private static final String textReplaceFind = CoreMessages.dialog_find_replace_replace_find;
+    private static final String textReplaceWith = CoreMessages.dialog_find_replace_replace_with;
+    private static final String textReplacements = CoreMessages.dialog_find_replace_replacements;
+    private static final String textSearching = CoreMessages.dialog_find_replace_searching;
+    private static final String textStop = CoreMessages.dialog_find_replace_stop;
+    private static final String textText = CoreMessages.dialog_find_replace_text;
 
     SelectionAdapter defaultSelectionAdapter = new SelectionAdapter() {
         public void widgetSelected(SelectionEvent e)
@@ -65,7 +66,7 @@ public class FindReplaceDialog extends Dialog {
                 lastForward != forwardRadioButton.getSelection() ||
                 lastFindHexButtonSelected != findGroup.hexRadioButton.getSelection() ||
                 lastReplaceHexButtonSelected != replaceGroup.hexRadioButton.getSelection()) {
-                feedbackLabel.setText("");
+                feedbackLabel.setText(""); //$NON-NLS-1$
             }
             lastFocused.textCombo.setFocus();
         }
@@ -158,7 +159,7 @@ public class FindReplaceDialog extends Dialog {
             textCombo.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e)
                 {
-                    feedbackLabel.setText("");
+                    feedbackLabel.setText(""); //$NON-NLS-1$
                     if (TextHexInputGroup.this == findGroup) {
                         enableDisableControls();
                     }
@@ -185,7 +186,7 @@ public class FindReplaceDialog extends Dialog {
                 {
                     Matcher numberMatcher = patternHexDigits.matcher(textCombo.getText());
                     if (!numberMatcher.matches())
-                        textCombo.setText("");
+                        textCombo.setText(""); //$NON-NLS-1$
                 }
             });
             textRadioButton = new Button(composite, SWT.RADIO);
@@ -222,7 +223,7 @@ public class FindReplaceDialog extends Dialog {
         private void rememberText()
         {
             String lastText = textCombo.getText();
-            if ("".equals(lastText) || items == null) return;
+            if ("".equals(lastText) || items == null) return; //$NON-NLS-1$
 
             for (Iterator<Object[]> iterator = items.iterator(); iterator.hasNext();) {
                 String itemString = (String)iterator.next()[0];
@@ -585,7 +586,7 @@ public class FindReplaceDialog extends Dialog {
     {
         replace();
         enableDisableControls();
-        feedbackLabel.setText("");
+        feedbackLabel.setText(""); //$NON-NLS-1$
     }
 
     private void doReplaceFind()

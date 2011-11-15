@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.binary.dialogs;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -12,6 +13,7 @@ import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.editors.binary.HexManager;
 
 import java.util.regex.Matcher;
@@ -25,8 +27,8 @@ import java.util.regex.Pattern;
  */
 public class GoToDialog extends Dialog {
 
-    private static final Pattern patternDecDigits = Pattern.compile("[0-9]+");
-    private static final Pattern patternHexDigits = Pattern.compile("[0-9a-fA-F]+");
+    private static final Pattern patternDecDigits = Pattern.compile("[0-9]+"); //$NON-NLS-1$
+    private static final Pattern patternHexDigits = Pattern.compile("[0-9a-fA-F]+"); //$NON-NLS-1$
 
     private Shell dialogShell = null;  //  @jve:decl-index=0:visual-constraint="100,50"
     private Button hexRadioButton = null;
@@ -84,12 +86,12 @@ public class GoToDialog extends Dialog {
         // conversion. What does sometimes happen is one enters the right number and the wrong binary or dec was
         // selected. In that case automatic conversion is the wrong thing to do and very annoying.
         hexRadioButton = new Button(composite, SWT.RADIO);
-        hexRadioButton.setText("Hex");
+        hexRadioButton.setText("Hex"); //$NON-NLS-1$
         hexRadioButton.addSelectionListener(defaultSelectionAdapter);
         hexRadioButton.addSelectionListener(hexTextSelectionAdapter);
 
         decRadioButton = new Button(composite, SWT.RADIO);
-        decRadioButton.setText("Dec");
+        decRadioButton.setText("Dec"); //$NON-NLS-1$
         decRadioButton.addSelectionListener(defaultSelectionAdapter);
         decRadioButton.addSelectionListener(hexTextSelectionAdapter);//decTextSelectionAdapter);
     }
@@ -128,7 +130,7 @@ public class GoToDialog extends Dialog {
         composite2.setLayout(rowLayout1);
 
         showButton = new Button(composite2, SWT.NONE);
-        showButton.setText("Show location");
+        showButton.setText(CoreMessages.dialog_go_to_button_show_location);
         showButton.addSelectionListener(defaultSelectionAdapter);
         showButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
@@ -139,7 +141,7 @@ public class GoToDialog extends Dialog {
         });
 
         gotoButton = new Button(composite2, SWT.NONE);
-        gotoButton.setText("Go to location");
+        gotoButton.setText(CoreMessages.dialog_go_to_button_go_to_location);
         gotoButton.addSelectionListener(defaultSelectionAdapter);
         gotoButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
@@ -150,7 +152,7 @@ public class GoToDialog extends Dialog {
         });
 
         Button closeButton = new Button(composite2, SWT.NONE);
-        closeButton.setText("Close");
+        closeButton.setText(CoreMessages.dialog_go_to_button_close);
         closeButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
             {
@@ -199,16 +201,16 @@ public class GoToDialog extends Dialog {
                 if (tempResult >= 0L && tempResult <= limit) {
                     showButton.setEnabled(true);
                     gotoButton.setEnabled(true);
-                    label2.setText("");
+                    label2.setText(""); //$NON-NLS-1$
                 } else {
                     showButton.setEnabled(false);
                     gotoButton.setEnabled(false);
-                    if ("".equals(newText))
-                        label2.setText("");
+                    if ("".equals(newText)) //$NON-NLS-1$
+                        label2.setText(""); //$NON-NLS-1$
                     else if (tempResult < 0)
-                        label2.setText("Not a number");
+                        label2.setText(CoreMessages.dialog_go_to_label_not_number);
                     else
-                        label2.setText("Location out of range");
+                        label2.setText(CoreMessages.dialog_go_to_label_out_of_range);
                 }
             }
         });
@@ -225,7 +227,7 @@ public class GoToDialog extends Dialog {
     {
 //	dialogShell = new Shell(/*XXX getParent(),*/ SWT.MODELESS | SWT.DIALOG_TRIM);
         dialogShell = new Shell(getParent(), SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
-        dialogShell.setText("Go to location");
+        dialogShell.setText(CoreMessages.dialog_go_to_title);
         FormLayout formLayout = new FormLayout();
         formLayout.marginHeight = 3;
         formLayout.marginWidth = 3;
@@ -264,7 +266,7 @@ public class GoToDialog extends Dialog {
             decRadioButton.setSelection(true);
         }
         label.setText(
-            "Enter location number, 0 to " + limit + " (0x0 to 0x" + Long.toHexString(limit) + ")");
+            NLS.bind(CoreMessages.dialog_go_to_label_enter_location_number, limit, Long.toHexString(limit)));
         text.setText(lastLocationText);
         text.selectAll();
         text.setFocus();

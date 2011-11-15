@@ -17,6 +17,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.widgets.List;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 
@@ -33,11 +34,11 @@ public class HexPreferencesManager {
     static final java.util.Set<Integer> scalableSizes = new TreeSet<Integer>(
         Arrays.asList(6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 22, 32, 72));
 
-    private static final String TEXT_BOLD = "Bold";
-    private static final String TEXT_BOLD_ITALIC = "Bold Italic";
-    private static final String TEXT_ITALIC = "Italic";
-    private static final String TEXT_REGULAR = "Regular";
-    public static final String SAMPLE_TEXT = "ca fe ba be 00 00 01 2d";
+    private static final String TEXT_BOLD = CoreMessages.editor_binary_hex_font_style_bold;
+    private static final String TEXT_BOLD_ITALIC = CoreMessages.editor_binary_hex_font_style_bold_italic;
+    private static final String TEXT_ITALIC = CoreMessages.editor_binary_hex_font_style_italic;
+    private static final String TEXT_REGULAR = CoreMessages.editor_binary_hex_font_style_regular;
+    public static final String SAMPLE_TEXT = CoreMessages.editor_binary_hex_sample_text;
 
     private java.util.List<FontData> fontsListCurrent = null;
     private java.util.List<FontData> fontsNonScalable = null;
@@ -103,20 +104,20 @@ public class HexPreferencesManager {
         composite.setLayout(new FillLayout());
 
         Group group = new Group(composite, SWT.NONE);
-        group.setText("Font selection");
+        group.setText(CoreMessages.editor_binary_hex_froup_font_selection);
         group.setVisible(true);
         GridLayout gridLayout = new GridLayout();
         gridLayout.numColumns = 3;
         group.setLayout(gridLayout);
 
-        Label label = UIUtils.createControlLabel(group, "Available fixed char width fonts");
+        Label label = UIUtils.createControlLabel(group, CoreMessages.editor_binary_hex_label_available_fix_width_fonts);
         label.setVisible(true);
         GridData gridData = new GridData();
         gridData.horizontalSpan = 3;
         label.setLayoutData(gridData);
-        UIUtils.createControlLabel(group, "Name");
-        UIUtils.createControlLabel(group, "Style");
-        UIUtils.createControlLabel(group, "Size");
+        UIUtils.createControlLabel(group, CoreMessages.editor_binary_hex_label_name);
+        UIUtils.createControlLabel(group, CoreMessages.editor_binary_hex_label_style);
+        UIUtils.createControlLabel(group, CoreMessages.editor_binary_hex_label_size);
 
         text = new Text(group, SWT.SINGLE | SWT.BORDER);
         GridData gridData4 = new GridData();
@@ -254,7 +255,7 @@ public class HexPreferencesManager {
     int getSize()
     {
         int size = 0;
-        if (!"".equals(text2.getText())) {
+        if (!"".equals(text2.getText())) { //$NON-NLS-1$
             try {
                 size = Integer.parseInt(text2.getText());
             }
@@ -359,7 +360,7 @@ public class HexPreferencesManager {
             return;
 
         if (fontsSorted == null || !fontsSorted.containsKey(sampleFontData.getName())) {
-            text.setText("default font");
+            text.setText(CoreMessages.editor_binary_hex_default_font);
         } else {
             text.setText(sampleFontData.getName());
         }
