@@ -38,6 +38,8 @@ public interface DBPDriver extends DBPObject
 
     String getWebURL();
 
+    boolean isClientRequired();
+
     boolean supportsDriverProperties();
 
     boolean isAnonymousAccess();
@@ -59,8 +61,5 @@ public interface DBPDriver extends DBPObject
     boolean isSupportedByLocalSystem();
 
     ClassLoader getClassLoader();
-
-    void loadDriver()
-        throws DBException;
 
 }

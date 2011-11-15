@@ -7,12 +7,15 @@ package org.jkiss.dbeaver.model;
 import java.util.Collection;
 
 /**
- * DBPClientManager
+ * Native client manager.
+ * This interface can be implemented by data source provider to support native client functions.
  */
 public interface DBPClientManager {
 
-    Collection<DBPClientHome> findHomes();
+    Collection<String> findClientHomeIds();
 
-    DBPClientHome getDefaultHome();
+    String getDefaultClientHomeId();
+
+    DBPClientHome getClientHome(String homeId);
 
 }

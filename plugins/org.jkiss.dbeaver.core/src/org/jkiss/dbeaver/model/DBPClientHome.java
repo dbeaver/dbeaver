@@ -5,13 +5,15 @@
 package org.jkiss.dbeaver.model;
 
 /**
- * DBPClientHome
+ * Native client home descriptor
  */
 public interface DBPClientHome {
 
     String getHomeId();
 
     String getHomePath();
+
+    String getDisplayName();
 
     String getProductName();
 

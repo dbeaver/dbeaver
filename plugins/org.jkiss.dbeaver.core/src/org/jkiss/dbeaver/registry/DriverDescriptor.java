@@ -74,6 +74,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private Image iconPlain;
     private Image iconNormal;
     private Image iconError;
+    private boolean clientRequired;
     private boolean supportsDriverProperties;
     private boolean anonymousAccess;
     private boolean customDriverLoader;
@@ -133,6 +134,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         this.origSampleURL = this.sampleURL = config.getAttribute(RegistryConstants.ATTR_SAMPLE_URL);
         this.webURL = config.getAttribute(RegistryConstants.ATTR_WEB_URL);
+        this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.custom = false;
@@ -484,6 +486,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public String getWebURL()
     {
         return webURL;
+    }
+
+    public boolean isClientRequired()
+    {
+        return clientRequired;
     }
 
     public boolean supportsDriverProperties()
