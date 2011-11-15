@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.dialogs.struct;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.Dialog;
@@ -22,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
@@ -113,7 +115,7 @@ public class EditForeignKeyDialog extends Dialog {
         {
             final Composite tableGroup = UIUtils.createPlaceholder(panel, 2);
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createLabelText(tableGroup, "Table", ownTable.getFullQualifiedName(), SWT.READ_ONLY | SWT.BORDER);
+            UIUtils.createLabelText(tableGroup, CoreMessages.dialog_struct_edit_fk_label_table, ownTable.getFullQualifiedName(), SWT.READ_ONLY | SWT.BORDER);
         }
 
         ItemListControl tableList;
@@ -121,7 +123,7 @@ public class EditForeignKeyDialog extends Dialog {
             DBNNode rootNode = ownerTableNode.getParentNode();
 
             //Composite columnsGroup = UIUtils.createControlGroup(panel, "Reference Table", 1, GridData.FILL_BOTH, 0);
-            UIUtils.createControlLabel(panel, "Reference table");
+            UIUtils.createControlLabel(panel, CoreMessages.dialog_struct_edit_fk_label_ref_table);
             tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
             if (progressProvider != null) {
                 tableList.substituteProgressPanel(progressProvider.getProgressControl());
@@ -145,7 +147,7 @@ public class EditForeignKeyDialog extends Dialog {
         final Composite pkGroup = UIUtils.createPlaceholder(panel, 2);
         {
             pkGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            uniqueKeyCombo = UIUtils.createLabelCombo(pkGroup, "Unique Key", SWT.DROP_DOWN | SWT.READ_ONLY);
+            uniqueKeyCombo = UIUtils.createLabelCombo(pkGroup, CoreMessages.dialog_struct_edit_fk_combo_unik, SWT.DROP_DOWN | SWT.READ_ONLY);
             uniqueKeyCombo.setEnabled(false);
             uniqueKeyCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -156,7 +158,7 @@ public class EditForeignKeyDialog extends Dialog {
             });
         }
         {
-            UIUtils.createControlLabel(panel, "Columns");
+            UIUtils.createControlLabel(panel, CoreMessages.dialog_struct_edit_fk_label_columns);
             columnsTable = new Table(panel, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
             columnsTable.setHeaderVisible(true);
             columnsTable.setLinesVisible(true);
@@ -165,10 +167,10 @@ public class EditForeignKeyDialog extends Dialog {
             gd.heightHint = 100;
             columnsTable.setLayoutData(gd);
 
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Column");
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Column Type");
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Ref Column");
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Ref Column Type");
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.dialog_struct_edit_fk_column_column);
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.dialog_struct_edit_fk_column_col_type);
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.dialog_struct_edit_fk_column_ref_col);
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.dialog_struct_edit_fk_column_ref_col_type);
             UIUtils.packColumns(columnsTable);
 
             final TableEditor tableEditor = new TableEditor(columnsTable);
@@ -184,9 +186,9 @@ public class EditForeignKeyDialog extends Dialog {
         {
             // Cascades
             cascadeGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            final Combo onDeleteCombo = UIUtils.createLabelCombo(cascadeGroup, "On Delete", SWT.DROP_DOWN | SWT.READ_ONLY);
+            final Combo onDeleteCombo = UIUtils.createLabelCombo(cascadeGroup, CoreMessages.dialog_struct_edit_fk_combo_on_delete, SWT.DROP_DOWN | SWT.READ_ONLY);
             onDeleteCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            final Combo onUpdateCombo = UIUtils.createLabelCombo(cascadeGroup, "On Update", SWT.DROP_DOWN | SWT.READ_ONLY);
+            final Combo onUpdateCombo = UIUtils.createLabelCombo(cascadeGroup, CoreMessages.dialog_struct_edit_fk_combo_on_update, SWT.DROP_DOWN | SWT.READ_ONLY);
             onUpdateCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             for (DBSConstraintModifyRule modifyRule : supportedModifyRules) {
                 onDeleteCombo.add(modifyRule.getName());
@@ -277,7 +279,7 @@ public class EditForeignKeyDialog extends Dialog {
             }
 
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(getShell(), "Load constraints", "Can't load table constraints", e.getTargetException());
+            UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_struct_edit_fk_error_load_constraints_title, CoreMessages.dialog_struct_edit_fk_error_load_constraints_message, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
@@ -323,7 +325,7 @@ public class EditForeignKeyDialog extends Dialog {
                 item.setData(fkColumnInfo);
             }
         } catch (DBException e) {
-            UIUtils.showErrorDialog(getShell(), "Load constraint columns", "Can't load table constraint columns", e);
+            UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_struct_edit_fk_error_load_constraint_columns_title, CoreMessages.dialog_struct_edit_fk_error_load_constraint_columns_message, e);
         }
         UIUtils.packColumns(columnsTable, true);
     }
@@ -364,7 +366,7 @@ public class EditForeignKeyDialog extends Dialog {
 
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText(title + " for table '" + ownerTableNode.getNodeName() + "'");
+        shell.setText(NLS.bind(CoreMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
         shell.setImage(ownerTableNode.getNodeIcon());
     }
 

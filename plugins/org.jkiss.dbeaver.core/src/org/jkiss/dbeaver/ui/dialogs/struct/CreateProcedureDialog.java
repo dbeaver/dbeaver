@@ -11,6 +11,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
@@ -31,7 +32,7 @@ public class CreateProcedureDialog extends TrayDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Create new procedure/function");
+        getShell().setText(CoreMessages.dialog_struct_create_procedure_title);
         Composite group = (Composite) super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
@@ -41,21 +42,21 @@ public class CreateProcedureDialog extends TrayDialog {
         gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text nameText = UIUtils.createLabelText(propsGroup, "Name", "");
+        final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_label_name, ""); //$NON-NLS-2$
         nameText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {
                 name = nameText.getText();
             }
         });
-        final Combo typeCombo = UIUtils.createLabelCombo(propsGroup, "Type", SWT.DROP_DOWN | SWT.READ_ONLY);
+        final Combo typeCombo = UIUtils.createLabelCombo(propsGroup, CoreMessages.dialog_struct_create_procedure_combo_type, SWT.DROP_DOWN | SWT.READ_ONLY);
         typeCombo.add(DBSProcedureType.PROCEDURE.name());
         typeCombo.add(DBSProcedureType.FUNCTION.name());
         typeCombo.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {
                 type = typeCombo.getSelectionIndex() == 0 ? DBSProcedureType.PROCEDURE : DBSProcedureType.FUNCTION;
-                nameText.setText(type == DBSProcedureType.PROCEDURE ? "NewProcedure" : "NewFunction");
+                nameText.setText(type == DBSProcedureType.PROCEDURE ? "NewProcedure" : "NewFunction"); //$NON-NLS-1$ //$NON-NLS-2$
             }
         });
         typeCombo.select(0);

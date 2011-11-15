@@ -11,6 +11,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
@@ -32,7 +33,7 @@ public class CreateEntityDialog extends TrayDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Create new " + entityType);
+        getShell().setText(CoreMessages.dialog_struct_create_entity_title + entityType);
         Composite group = (Composite) super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
@@ -42,7 +43,7 @@ public class CreateEntityDialog extends TrayDialog {
         gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text nameText = UIUtils.createLabelText(propsGroup, "Name", "");
+        final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_entity_group_name, ""); //$NON-NLS-2$
         nameText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {

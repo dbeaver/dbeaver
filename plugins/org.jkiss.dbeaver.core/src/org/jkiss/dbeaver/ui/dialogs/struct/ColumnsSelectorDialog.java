@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.dialogs.struct;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.Dialog;
@@ -15,6 +16,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -77,13 +79,13 @@ public abstract class ColumnsSelectorDialog extends Dialog {
             final Composite tableGroup = new Composite(panel, SWT.NONE);
             tableGroup.setLayout(new GridLayout(2, false));
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createLabelText(tableGroup, "Table", tableNode.getNodeName(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(tableGroup, CoreMessages.dialog_struct_columns_select_label_table, tableNode.getNodeName(), SWT.BORDER | SWT.READ_ONLY);
 
             createContentsBeforeColumns(tableGroup);
         }
 
         {
-            Composite columnsGroup = UIUtils.createControlGroup(panel, "Columns", 1, GridData.FILL_BOTH, 0);
+            Composite columnsGroup = UIUtils.createControlGroup(panel, CoreMessages.dialog_struct_columns_select_group_columns, 1, GridData.FILL_BOTH, 0);
             columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
             columnsTable.setHeaderVisible(true);
             final GridData gd = new GridData(GridData.FILL_BOTH);
@@ -98,11 +100,11 @@ public abstract class ColumnsSelectorDialog extends Dialog {
                 }
             });
             TableColumn colName = new TableColumn(columnsTable, SWT.NONE);
-            colName.setText("Column");
+            colName.setText(CoreMessages.dialog_struct_columns_select_column);
             colName.setWidth(170);
 
             TableColumn colPosition = new TableColumn(columnsTable, SWT.CENTER);
-            colPosition.setText("#");
+            colPosition.setText("#"); //$NON-NLS-1$
             colPosition.setWidth(30);
         }
         createContentsAfterColumns(panel);
@@ -138,7 +140,11 @@ public abstract class ColumnsSelectorDialog extends Dialog {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(getShell(), "Load columns", "Error loading table columns", e.getTargetException());
+            UIUtils.showErrorDialog(
+                    getShell(),
+                    CoreMessages.dialog_struct_columns_select_error_load_columns_title,
+                    CoreMessages.dialog_struct_columns_select_error_load_columns_message,
+                    e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
@@ -182,7 +188,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
             item.setText(1, String.valueOf(col.position + 1));
         } else if (!item.getChecked() && col.position >= 0) {
             // Unchecked
-            item.setText(1, "");
+            item.setText(1, ""); //$NON-NLS-1$
             for (ColumnInfo tmp : columns) {
                 if (tmp != col && tmp.position >= col.position) {
                     tmp.position--;
@@ -216,7 +222,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
 
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText(title + " for table '" + tableNode.getNodeName() + "'");
+        shell.setText(NLS.bind(CoreMessages.dialog_struct_columns_select_title, title, tableNode.getNodeName()));
         shell.setImage(tableNode.getNodeIcon());
     }
 

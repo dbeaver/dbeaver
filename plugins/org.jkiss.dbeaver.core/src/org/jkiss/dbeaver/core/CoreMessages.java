@@ -759,6 +759,62 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_select_datasource_title;
 
+	public static String dialog_struct_columns_select_column;
+
+	public static String dialog_struct_columns_select_error_load_columns_message;
+
+	public static String dialog_struct_columns_select_error_load_columns_title;
+
+	public static String dialog_struct_columns_select_group_columns;
+
+	public static String dialog_struct_columns_select_label_table;
+
+	public static String dialog_struct_columns_select_title;
+
+	public static String dialog_struct_create_entity_group_name;
+
+	public static String dialog_struct_create_entity_title;
+
+	public static String dialog_struct_create_procedure_combo_type;
+
+	public static String dialog_struct_create_procedure_label_name;
+
+	public static String dialog_struct_create_procedure_title;
+
+	public static String dialog_struct_edit_constrain_label_type;
+
+	public static String dialog_struct_edit_fk_column_col_type;
+
+	public static String dialog_struct_edit_fk_column_column;
+
+	public static String dialog_struct_edit_fk_column_ref_col;
+
+	public static String dialog_struct_edit_fk_column_ref_col_type;
+
+	public static String dialog_struct_edit_fk_combo_on_delete;
+
+	public static String dialog_struct_edit_fk_combo_on_update;
+
+	public static String dialog_struct_edit_fk_combo_unik;
+
+	public static String dialog_struct_edit_fk_error_load_constraint_columns_message;
+
+	public static String dialog_struct_edit_fk_error_load_constraint_columns_title;
+
+	public static String dialog_struct_edit_fk_error_load_constraints_message;
+
+	public static String dialog_struct_edit_fk_error_load_constraints_title;
+
+	public static String dialog_struct_edit_fk_label_columns;
+
+	public static String dialog_struct_edit_fk_label_ref_table;
+
+	public static String dialog_struct_edit_fk_label_table;
+
+	public static String dialog_struct_edit_fk_title;
+
+	public static String dialog_struct_edit_index_label_type;
+
 	public static String dialog_value_view_button_cancel;
 
 	public static String dialog_value_view_button_sat_null;

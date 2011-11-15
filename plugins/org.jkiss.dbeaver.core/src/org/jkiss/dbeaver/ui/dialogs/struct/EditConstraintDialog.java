@@ -13,6 +13,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -40,7 +41,7 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
     @Override
     protected void createContentsBeforeColumns(Composite panel)
     {
-        UIUtils.createControlLabel(panel, "Type");
+        UIUtils.createControlLabel(panel, CoreMessages.dialog_struct_edit_constrain_label_type);
         final Combo typeCombo = new Combo(panel, SWT.DROP_DOWN | SWT.READ_ONLY);
         typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
