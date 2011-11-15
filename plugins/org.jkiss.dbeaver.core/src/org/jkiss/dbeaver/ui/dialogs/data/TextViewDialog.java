@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 
 /**
@@ -32,7 +33,7 @@ public class TextViewDialog extends ValueViewDialog {
         boolean isForeignKey = super.isForeignKey();
 
         Label label = new Label(dialogGroup, SWT.NONE);
-        label.setText("Value: ");
+        label.setText(CoreMessages.dialog_data_label_value);
 
         int style = SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP;
         if (getValueController().isReadOnly()) {

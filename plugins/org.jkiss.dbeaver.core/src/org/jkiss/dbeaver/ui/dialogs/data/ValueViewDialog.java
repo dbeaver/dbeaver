@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -21,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -122,9 +124,9 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     protected void createButtonsForButtonBar(Composite parent) {
         // create OK and Cancel buttons by default
-        createButton(parent, IDialogConstants.OK_ID, "&Save", true).setEnabled(!valueController.isReadOnly());
-        createButton(parent, IDialogConstants.IGNORE_ID, "Set &NULL", false).setEnabled(!valueController.isReadOnly() && !DBUtils.isNullValue(valueController.getValue()));
-        createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", false);
+        createButton(parent, IDialogConstants.OK_ID, CoreMessages.dialog_value_view_button_save, true).setEnabled(!valueController.isReadOnly());
+        createButton(parent, IDialogConstants.IGNORE_ID, CoreMessages.dialog_value_view_button_sat_null, false).setEnabled(!valueController.isReadOnly() && !DBUtils.isNullValue(valueController.getValue()));
+        createButton(parent, IDialogConstants.CANCEL_ID, CoreMessages.dialog_value_view_button_cancel, false);
     }
 
     protected void initializeBounds()
@@ -152,7 +154,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
             super.okPressed();
         }
         catch (Exception e) {
-            UIUtils.showErrorDialog(getShell(), "Error updating column", "Could not update column value", e);
+            UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_value_view_dialog_error_updating_title, CoreMessages.dialog_value_view_dialog_error_updating_message, e);
             super.cancelPressed();
         }
     }
@@ -210,7 +212,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         this.editor = control;
 
         Link label = new Link(parent, SWT.NONE);
-        label.setText("Dictionary  (<a>" + refConstraint.getReferencedKey().getTable().getName() + "</a>): ");
+        label.setText(NLS.bind(CoreMessages.dialog_value_view_label_dictionary, refConstraint.getReferencedKey().getTable().getName()));
         label.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -241,8 +243,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         //gd.grabExcessHorizontalSpace = true;
         editorSelector.setLayoutData(gd);
 
-        UIUtils.createTableColumn(editorSelector, SWT.LEFT, "Value");
-        UIUtils.createTableColumn(editorSelector, SWT.LEFT, "Description");
+        UIUtils.createTableColumn(editorSelector, SWT.LEFT, CoreMessages.dialog_value_view_column_value);
+        UIUtils.createTableColumn(editorSelector, SWT.LEFT, CoreMessages.dialog_value_view_column_description);
         UIUtils.packColumns(editorSelector);
 
         editorSelector.addSelectionListener(new SelectionAdapter() {
@@ -289,7 +291,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         private SelectorLoaderJob()
         {
             super(
-                "Select " + valueController.getColumnMetaData().getName() + " possible values",
+                CoreMessages.dialog_value_view_job_selector_name + valueController.getColumnMetaData().getName() + " possible values",
                 DBIcon.SQL_EXECUTE.getImageDescriptor(),
                 valueController.getDataSource());
             setUser(false);
@@ -330,7 +332,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                         }
                     }
                 }
-                final DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Select '" + fkColumn.getReferencedColumn().getName() + "' enumeration values");
+                final DBCExecutionContext context = getDataSource().openContext(
+                        monitor,
+                        DBCExecutionPurpose.UTIL,
+                        NLS.bind(CoreMessages.dialog_value_view_context_name, fkColumn.getReferencedColumn().getName()));
                 try {
                     DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable)refConstraint.getReferencedKey();
                     Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(

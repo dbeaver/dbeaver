@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSColumnBase;
@@ -37,7 +38,7 @@ public class DateTimeViewDialog extends ValueViewDialog {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
         Label label = new Label(dialogGroup, SWT.NONE);
-        label.setText("Value: ");
+        label.setText(CoreMessages.dialog_data_label_value);
 
         int style = SWT.BORDER;
         if (getValueController().isReadOnly()) {

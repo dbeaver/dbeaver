@@ -10,6 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 /**
@@ -35,7 +36,7 @@ public class ConnectionAuthDialog extends Dialog
 
     protected Control createDialogArea(Composite parent)
     {
-        String title = "'" + dataSource.getName() + "' Authentication";
+        String title = "'" + dataSource.getName() + CoreMessages.dialog_connection_auth_title; //$NON-NLS-1$
         getShell().setText(title);
         getShell().setImage(dataSource.getDriver().getIcon());
 
@@ -49,7 +50,7 @@ public class ConnectionAuthDialog extends Dialog
 
         {
             Group cridGroup = new Group(addrGroup, SWT.NONE);
-            cridGroup.setText("User Cridentials: ");
+            cridGroup.setText(CoreMessages.dialog_connection_auth_group_user_cridentials);
             gl = new GridLayout(2, false);
             gl.marginHeight = 5;
             gl.marginWidth = 5;
@@ -58,7 +59,7 @@ public class ConnectionAuthDialog extends Dialog
             cridGroup.setLayoutData(gd);
 
             Label usernameLabel = new Label(cridGroup, SWT.NONE);
-            usernameLabel.setText("Username:");
+            usernameLabel.setText(CoreMessages.dialog_connection_auth_label_username);
             usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             usernameText = new Text(cridGroup, SWT.BORDER);
@@ -72,7 +73,7 @@ public class ConnectionAuthDialog extends Dialog
             }
 
             Label passwordLabel = new Label(cridGroup, SWT.NONE);
-            passwordLabel.setText("Password:");
+            passwordLabel.setText(CoreMessages.dialog_connection_auth_label_password);
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             passwordText = new Text(cridGroup, SWT.BORDER | SWT.PASSWORD);
@@ -85,7 +86,7 @@ public class ConnectionAuthDialog extends Dialog
         }
 
         savePasswordCheck = new Button(addrGroup, SWT.CHECK);
-        savePasswordCheck.setText("Save password");
+        savePasswordCheck.setText(CoreMessages.dialog_connection_auth_checkbox_save_password);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         savePasswordCheck.setLayoutData(gd);
 

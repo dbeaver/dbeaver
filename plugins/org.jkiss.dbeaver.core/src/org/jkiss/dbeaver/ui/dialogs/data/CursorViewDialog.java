@@ -8,6 +8,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -98,7 +99,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
                             break;
                         }
                         if (rowCount % 100 == 0) {
-                            monitor.subTask(rowCount + " rows fetched");
+                            monitor.subTask(rowCount + CoreMessages.dialog_cursor_view_monitor_rows_fetched);
                             monitor.worked(100);
                         }
 
@@ -107,7 +108,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
                     try {
                         dataReceiver.fetchEnd(context);
                     } catch (DBCException e) {
-                        log.error("Error while finishing result set fetch", e);
+                        log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                     }
                 }
                 return rowCount;

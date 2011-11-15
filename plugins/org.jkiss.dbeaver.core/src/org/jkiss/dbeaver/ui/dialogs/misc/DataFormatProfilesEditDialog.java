@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.dialogs.misc;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -14,6 +15,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
@@ -42,7 +44,7 @@ public class DataFormatProfilesEditDialog extends org.eclipse.jface.dialogs.Dial
 
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Manage data format profiles");
+        getShell().setText(CoreMessages.dialog_data_format_profiles_title);
 
         Composite group = new Composite(parent, SWT.NONE);
         group.setLayout(new GridLayout(1, false));
@@ -68,8 +70,8 @@ public class DataFormatProfilesEditDialog extends org.eclipse.jface.dialogs.Dial
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        createButton(parent, NEW_ID, "New Profile", false);
-        createButton(parent, DELETE_ID, "Delete Profile", false);
+        createButton(parent, NEW_ID, CoreMessages.dialog_data_format_profiles_button_new_profile, false);
+        createButton(parent, DELETE_ID, CoreMessages.dialog_data_format_profiles_button_delete_profile, false);
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
 
         getButton(DELETE_ID).setEnabled(false);
@@ -80,9 +82,12 @@ public class DataFormatProfilesEditDialog extends org.eclipse.jface.dialogs.Dial
     {
         DataFormatterRegistry registry = DBeaverCore.getInstance().getDataFormatterRegistry();
         if (buttonId == NEW_ID) {
-            String profileName = EnterNameDialog.chooseName(getShell(), "Profile Name");
+            String profileName = EnterNameDialog.chooseName(getShell(), CoreMessages.dialog_data_format_profiles_dialog_name_chooser_title);
             if (registry.getCustomProfile(profileName) != null) {
-                UIUtils.showMessageBox(getShell(), "Create profile", "Profile '" + profileName + "' already exists", SWT.ICON_ERROR);
+                UIUtils.showMessageBox(
+                        getShell(),
+                        CoreMessages.dialog_data_format_profiles_error_title,
+                        NLS.bind(CoreMessages.dialog_data_format_profiles_error_message, profileName), SWT.ICON_ERROR);
             } else {
                 registry.createCustomProfile(profileName);
                 loadProfiles();
@@ -92,7 +97,10 @@ public class DataFormatProfilesEditDialog extends org.eclipse.jface.dialogs.Dial
             if (selectionIndex >= 0) {
                 DBDDataFormatterProfile profile = registry.getCustomProfile(profileList.getItem(selectionIndex));
                 if (profile != null) {
-                    if (UIUtils.confirmAction(getShell(), "Delete Profile", "Are You Sure?")) {
+                    if (UIUtils.confirmAction(
+                            getShell(),
+                            CoreMessages.dialog_data_format_profiles_confirm_delete_title,
+                            CoreMessages.dialog_data_format_profiles_confirm_delete_message)) {
                         registry.deleteCustomProfile(profile);
                         loadProfiles();
                     }

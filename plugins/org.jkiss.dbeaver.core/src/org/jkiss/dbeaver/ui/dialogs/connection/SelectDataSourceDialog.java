@@ -12,6 +12,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -42,7 +43,7 @@ public class SelectDataSourceDialog extends Dialog {
 
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Select datasource");
+        getShell().setText(CoreMessages.dialog_select_datasource_title);
 
         Composite group = (Composite) super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -109,7 +110,7 @@ public class SelectDataSourceDialog extends Dialog {
     {
         List<DataSourceDescriptor> datasources = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry().getDataSources();
         if (datasources.isEmpty()) {
-            UIUtils.showMessageBox(parentShell, "No datasources exists", "Create new datasource first.", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(parentShell, CoreMessages.dialog_select_datasource_error_title, CoreMessages.dialog_select_datasource_error_message, SWT.ICON_ERROR);
             return null;
         } else if (datasources.size() == 1) {
             return datasources.get(0);

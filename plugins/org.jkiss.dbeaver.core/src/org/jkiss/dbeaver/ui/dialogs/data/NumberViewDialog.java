@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.dialogs.data;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCNumberValueHandler;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,7 +37,7 @@ public class NumberViewDialog extends ValueViewDialog {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
         Label label = new Label(dialogGroup, SWT.NONE);
-        label.setText("Value: ");
+        label.setText(CoreMessages.dialog_data_label_value);
 
         int style = SWT.BORDER;
         if (getValueController().isReadOnly()) {

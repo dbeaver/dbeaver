@@ -273,6 +273,16 @@ public class CoreMessages extends NLS {
 	public static String dialog_about_label_version;
 	public static String dialog_about_title;
 
+	public static String dialog_connection_auth_checkbox_save_password;
+
+	public static String dialog_connection_auth_group_user_cridentials;
+
+	public static String dialog_connection_auth_label_password;
+
+	public static String dialog_connection_auth_label_username;
+
+	public static String dialog_connection_auth_title;
+
 	public static String dialog_connection_events_checkbox_show_process;
 
 	public static String dialog_connection_events_checkbox_terminate_at_disconnect;
@@ -340,6 +350,26 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_start_dialog_interrupted_title;
 
 	public static String dialog_connection_wizard_title;
+
+	public static String dialog_cursor_view_monitor_rows_fetched;
+
+	public static String dialog_data_format_profiles_button_delete_profile;
+
+	public static String dialog_data_format_profiles_button_new_profile;
+
+	public static String dialog_data_format_profiles_confirm_delete_message;
+
+	public static String dialog_data_format_profiles_confirm_delete_title;
+
+	public static String dialog_data_format_profiles_dialog_name_chooser_title;
+
+	public static String dialog_data_format_profiles_error_message;
+
+	public static String dialog_data_format_profiles_error_title;
+
+	public static String dialog_data_format_profiles_title;
+
+	public static String dialog_data_label_value;
 
 	public static String dialog_driver_manager_button_delete;
 
@@ -722,6 +752,32 @@ public class CoreMessages extends NLS {
 	public static String dialog_search_objects_spinner_max_results;
 
 	public static String dialog_search_objects_title;
+
+	public static String dialog_select_datasource_error_message;
+
+	public static String dialog_select_datasource_error_title;
+
+	public static String dialog_select_datasource_title;
+
+	public static String dialog_value_view_button_cancel;
+
+	public static String dialog_value_view_button_sat_null;
+
+	public static String dialog_value_view_button_save;
+
+	public static String dialog_value_view_column_description;
+
+	public static String dialog_value_view_column_value;
+
+	public static String dialog_value_view_context_name;
+
+	public static String dialog_value_view_dialog_error_updating_message;
+
+	public static String dialog_value_view_dialog_error_updating_title;
+
+	public static String dialog_value_view_job_selector_name;
+
+	public static String dialog_value_view_label_dictionary;
 
 	public static String dialog_version_update_available_new_version;
 
