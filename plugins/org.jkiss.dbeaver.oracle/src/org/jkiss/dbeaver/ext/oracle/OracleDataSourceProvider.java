@@ -71,7 +71,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
 
     public DBPClientHome getClientHome(String homeId)
     {
-        return null;
+        return new OracleClientHome(homeId, homeId);
     }
 
 }
