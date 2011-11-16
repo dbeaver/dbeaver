@@ -515,8 +515,8 @@ public class DriverEditDialog extends HelpEnabledDialog
         paramsGroup.setLayout(new GridLayout(1, false));
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
-        paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_connection_properties);
-        paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_connection_properties);
+        paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
+        paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
         paramsTab.setControl(paramsGroup);
     }
 

@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.DBException;
+
 /**
  * Native client home descriptor
  */
@@ -15,8 +17,10 @@ public interface DBPClientHome {
 
     String getDisplayName();
 
-    String getProductName();
+    String getProductName()
+        throws DBException;
 
-    String getProductVersion();
+    String getProductVersion()
+        throws DBException;
 
 }
