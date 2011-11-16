@@ -302,6 +302,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             libTable.setInput(libList);
 
             // Find driver class
+            boolean isReadOnly = !provider.isDriversManagable();
 
             Composite findClassGroup = new Composite(libsListGroup, SWT.TOP);
             findClassGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -322,6 +323,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                     }
                 }
             });
+            classListCombo.setEnabled(!isReadOnly);
             findClassButton = new Button(findClassGroup, SWT.PUSH);
             findClassButton.setText(CoreMessages.dialog_edit_driver_button_bind_class);
             findClassButton.addListener(SWT.Selection, new Listener()
@@ -345,6 +347,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                     }
                 }
             });
+            findClassButton.setEnabled(!isReadOnly);
         }
 
         Composite libsControlGroup = new Composite(libsGroup, SWT.TOP);
@@ -539,7 +542,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private void changeLibContent()
     {
         libTable.refresh();
-        findClassButton.setEnabled(!libList.isEmpty());
+        findClassButton.setEnabled(provider.isDriversManagable() && !libList.isEmpty());
     }
 
     private void changeLibSelection()

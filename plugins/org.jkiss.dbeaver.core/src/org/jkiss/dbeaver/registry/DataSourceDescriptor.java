@@ -71,6 +71,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private Date updateDate;
     private Date loginDate;
     private DBDDataFormatterProfile formatterProfile;
+    private DBPClientHome clientHome;
     private DataSourcePreferenceStore preferenceStore;
 
     private DBPDataSource dataSource;
@@ -94,6 +95,9 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         this.driver = driver;
         this.connectionInfo = connectionInfo;
         this.createDate = new Date();
+        if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
+            this.clientHome = driver.getClientHome(connectionInfo.getClientHomeId());
+        }
         this.preferenceStore = new DataSourcePreferenceStore(this);
 
         this.driver.addUser(this);
@@ -197,6 +201,11 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     public void setSchemaFilter(String schemaFilter)
     {
         this.schemaFilter = schemaFilter;
+    }
+
+    public DBPClientHome getClientHome()
+    {
+        return clientHome;
     }
 
     public DBSObject getParentObject()

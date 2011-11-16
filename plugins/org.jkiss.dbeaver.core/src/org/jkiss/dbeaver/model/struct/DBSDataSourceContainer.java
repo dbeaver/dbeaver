@@ -48,6 +48,8 @@ public interface DBSDataSourceContainer extends DBSEntity, DBDPreferences
 
     String getSchemaFilter();
 
+    DBPClientHome getClientHome();
+
     boolean isConnected();
 
     /**

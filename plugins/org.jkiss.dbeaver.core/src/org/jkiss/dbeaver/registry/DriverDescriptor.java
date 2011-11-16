@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPClientHome;
+import org.jkiss.dbeaver.model.DBPClientManager;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -81,6 +83,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean custom;
     private boolean modified;
     private boolean disabled;
+    private final List<String> clientHomeIds = new ArrayList<String>();
     private final List<DriverFileDescriptor> files = new ArrayList<DriverFileDescriptor>();
     private final List<DriverFileDescriptor> origFiles = new ArrayList<DriverFileDescriptor>();
     private final List<DriverPathDescriptor> pathList = new ArrayList<DriverPathDescriptor>();
@@ -546,6 +549,27 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return classLoader;
     }
 */
+
+    public Collection<String> getClientHomeIds()
+    {
+        return clientHomeIds;
+    }
+
+    public void setClientHomeIds(Collection<String> homeIds)
+    {
+        clientHomeIds.clear();
+        clientHomeIds.addAll(homeIds);
+    }
+
+    public void addClientHomeId(String homeId)
+    {
+        clientHomeIds.add(homeId);
+    }
+
+    public void removeClientHomeId(String homeId)
+    {
+        clientHomeIds.remove(homeId);
+    }
 
     public Collection<DriverFileDescriptor> getFiles()
     {
@@ -1071,6 +1095,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
+        // Client homes
+        for (String homeId : clientHomeIds) {
+            xml.startElement(RegistryConstants.TAG_CLIENT_HOME);
+            xml.addAttribute(RegistryConstants.ATTR_ID, homeId);
+            xml.endElement();
+        }
+
         // Path list
         for (DriverPathDescriptor path : this.getPathList()) {
             xml.startElement(RegistryConstants.TAG_PATH);
@@ -1103,6 +1134,19 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
 
         xml.endElement();
+    }
+
+    public DBPClientHome getClientHome(String homeId)
+    {
+        try {
+            DBPDataSourceProvider dataSourceProvider = getDataSourceProvider();
+            if (dataSourceProvider instanceof DBPClientManager) {
+                return ((DBPClientManager) dataSourceProvider).getClientHome(homeId);
+            }
+        } catch (DBException e) {
+            log.warn("Can't obtain client home '" + homeId + "' for driver '" + getName() + "'", e);
+        }
+        return null;
     }
 
     static class DriversParser implements SAXListener
@@ -1174,6 +1218,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 } else if (lib == null) {
                     curDriver.addLibrary(path);
                 }
+            } else if (localName.equals(RegistryConstants.TAG_CLIENT_HOME)) {
+                curDriver.addClientHomeId(atts.getValue(RegistryConstants.ATTR_ID));
             } else if (localName.equals(RegistryConstants.TAG_PATH)) {
                 DriverPathDescriptor path = new DriverPathDescriptor();
                 path.setPath(atts.getValue(RegistryConstants.ATTR_PATH));
