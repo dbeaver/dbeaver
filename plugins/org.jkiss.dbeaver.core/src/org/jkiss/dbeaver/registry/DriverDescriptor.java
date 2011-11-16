@@ -316,6 +316,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return providerDescriptor.getInstance();
     }
 
+    public DBPClientManager getClientManager()
+    {
+        try {
+            DBPDataSourceProvider provider = getDataSourceProvider();
+            if (provider instanceof DBPClientManager) {
+                return (DBPClientManager) provider;
+            } else {
+                return null;
+            }
+        } catch (DBException e) {
+            log.error(e);
+            return null;
+        }
+    }
+
     public String getId()
     {
         return id;
@@ -1138,13 +1153,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public DBPClientHome getClientHome(String homeId)
     {
-        try {
-            DBPDataSourceProvider dataSourceProvider = getDataSourceProvider();
-            if (dataSourceProvider instanceof DBPClientManager) {
-                return ((DBPClientManager) dataSourceProvider).getClientHome(homeId);
-            }
-        } catch (DBException e) {
-            log.warn("Can't obtain client home '" + homeId + "' for driver '" + getName() + "'", e);
+        DBPClientManager clientManager = getClientManager();
+        if (clientManager != null) {
+            return clientManager.getClientHome(homeId);
         }
         return null;
     }

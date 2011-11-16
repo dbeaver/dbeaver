@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.jkiss.dbeaver.ui.help.IHelpContextIds;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -37,8 +35,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -222,6 +222,7 @@ public class DriverEditDialog extends HelpEnabledDialog
 //                });
 //            }
         }
+
         final String license = driver.getLicense();
         {
             TabFolder tabFolder = new TabFolder(group, SWT.NONE);
@@ -231,6 +232,11 @@ public class DriverEditDialog extends HelpEnabledDialog
             createLibrariesTab(tabFolder);
             createConnectionPropertiesTab(tabFolder);
             createParametersTab(tabFolder);
+            // Client homes
+            if (driver.getClientManager() != null) {
+                createClientHomesTab(tabFolder);
+            }
+
             if (license != null) {
                 createLicenseTab(tabFolder, license);
             }
@@ -496,6 +502,17 @@ public class DriverEditDialog extends HelpEnabledDialog
         connectionPropertySource = connectionPropertiesEditor.makeProperties(driver, driver.getConnectionProperties());
         connectionPropertiesEditor.loadProperties(connectionPropertySource);
 
+
+        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_connection_properties);
+        paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_connection_properties);
+        paramsTab.setControl(paramsGroup);
+    }
+
+    private void createClientHomesTab(TabFolder group)
+    {
+        Composite paramsGroup = new Composite(group, SWT.NONE);
+        paramsGroup.setLayout(new GridLayout(1, false));
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
         paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_connection_properties);

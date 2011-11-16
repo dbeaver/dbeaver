@@ -20,6 +20,8 @@ public interface DBPDriver extends DBPObject
     DBPDataSourceProvider getDataSourceProvider()
         throws DBException;
 
+    DBPClientManager getClientManager();
+
     String getId();
 
     String getName();
