@@ -606,6 +606,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         changeLibContent();
         parametersEditor.loadProperties(driverPropertySource);
         connectionPropertiesEditor.loadProperties(connectionPropertySource);
+        clientHomesControl.loadHomes(driver);
     }
 
     @Override
@@ -642,6 +643,11 @@ public class DriverEditDialog extends HelpEnabledDialog
 
         driver.setDriverParameters(driverPropertySource.getProperties());
         driver.setConnectionProperties(connectionPropertySource.getProperties());
+
+        // Store client homes
+        if (clientHomesControl != null) {
+            driver.setClientHomeIds(clientHomesControl.getHomeIds());
+        }
 
         // Finish
         if (provider.getDriver(driver.getId()) == null) {

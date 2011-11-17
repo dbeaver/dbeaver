@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -181,8 +183,20 @@ public class ClientHomesControl extends Composite
         }
     }
 
+    public Collection<String> getHomeIds()
+    {
+        java.util.List<String> homes = new ArrayList<String>();
+        for (TableItem item : homesTable.getItems()) {
+            homes.add(((HomeInfo)item.getData()).home.getHomeId());
+        }
+        return homes;
+    }
+
     public void loadHomes(DriverDescriptor driver)
     {
+        homesTable.removeAll();
+        selectHome(null);
+
         this.driver = driver;
         DBPClientManager clientManager = this.driver.getClientManager();
         if (clientManager == null) {
@@ -192,13 +206,8 @@ public class ClientHomesControl extends Composite
         Set<String> providedHomes = new LinkedHashSet<String>(
             clientManager.findClientHomeIds());
 
-        for (String homeId : providedHomes) {
-            createHomeItem(clientManager, homeId, true);
-        }
-        for (String homeId : clientManager.findClientHomeIds()) {
-            if (!providedHomes.contains(homeId)) {
-                createHomeItem(clientManager, homeId, false);
-            }
+        for (String homeId : driver.getClientHomeIds()) {
+            createHomeItem(clientManager, homeId, providedHomes.contains(homeId));
         }
     }
 
