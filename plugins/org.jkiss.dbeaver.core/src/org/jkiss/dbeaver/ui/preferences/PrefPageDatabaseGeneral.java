@@ -8,6 +8,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -19,7 +20,7 @@ import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
  */
 public class PrefPageDatabaseGeneral extends TargetPrefPage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common";
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
 
     private Button autoCommitCheck;
     private Button keepStatementOpenCheck;
@@ -61,17 +62,17 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
         // General settings
         {
             Group txnGroup = new Group(composite, SWT.NONE);
-            txnGroup.setText("Transactions");
+            txnGroup.setText(CoreMessages.pref_page_database_general_group_transactions);
             txnGroup.setLayout(new GridLayout(2, false));
 
-            autoCommitCheck = UIUtils.createLabelCheckbox(txnGroup, "Auto-commit by default", false);
-            keepStatementOpenCheck = UIUtils.createLabelCheckbox(txnGroup, "Keep open cursors in SQL editor", false);
-            rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, "Rollback on error", false);
+            autoCommitCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_auto_commit_by_default, false);
+            keepStatementOpenCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
+            rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
         }
 
         {
-            Group queriesGroup = UIUtils.createControlGroup(composite, "Queries", 2, SWT.NONE, 0);
-            UIUtils.createControlLabel(queriesGroup, "ResultSet maximum size");
+            Group queriesGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
+            UIUtils.createControlLabel(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_max_size);
 
             resultSetSize = new Spinner(queriesGroup, SWT.BORDER);
             resultSetSize.setSelection(0);
@@ -82,11 +83,11 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
         }
 
         {
-            Group performanceGroup = UIUtils.createControlGroup(composite, "Performance", 2, SWT.NONE, 0);
+            Group performanceGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_performance, 2, SWT.NONE, 0);
 
-            readExpensiveCheck = UIUtils.createLabelCheckbox(performanceGroup, "Show row count for tables", false);
+            readExpensiveCheck = UIUtils.createLabelCheckbox(performanceGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, false);
 
-            UIUtils.createControlLabel(performanceGroup, "Maximum LOB length to keep in memory");
+            UIUtils.createControlLabel(performanceGroup, CoreMessages.pref_page_database_general_label_max_lob_length);
 
             memoryContentSize = new Spinner(performanceGroup, SWT.BORDER);
             memoryContentSize.setSelection(0);
@@ -97,9 +98,9 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
         }
 
         {
-            Group metadataGroup = UIUtils.createControlGroup(composite, "Metadata", 2, SWT.NONE, 0);
+            Group metadataGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_metadata, 2, SWT.NONE, 0);
 
-            caseSensitiveNamesCheck = UIUtils.createLabelCheckbox(metadataGroup, "Use case-sensitive names in DDL statements", false);
+            caseSensitiveNamesCheck = UIUtils.createLabelCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names, false);
         }
         return composite;
     }

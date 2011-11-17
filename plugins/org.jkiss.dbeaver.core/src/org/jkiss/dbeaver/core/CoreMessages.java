@@ -702,295 +702,160 @@ public class CoreMessages extends NLS {
 	public static String dialog_project_export_wizard_window_title;
 
 	public static String dialog_project_import_wizard_file_checkbox_import_libraries;
-
 	public static String dialog_project_import_wizard_file_column_source_name;
-
 	public static String dialog_project_import_wizard_file_column_target_name;
-
 	public static String dialog_project_import_wizard_file_description;
-
 	public static String dialog_project_import_wizard_file_dialog_export_archive_text;
-
 	public static String dialog_project_import_wizard_file_group_input;
-
 	public static String dialog_project_import_wizard_file_group_projects;
-
 	public static String dialog_project_import_wizard_file_label_file;
-
 	public static String dialog_project_import_wizard_file_message_cannt_find_projects;
-
 	public static String dialog_project_import_wizard_file_message_choose_project;
-
-	public static String dialog_project_import_wizard_file_message_project_exists;
-
+    public static String dialog_project_import_wizard_file_message_project_exists;
 	public static String dialog_project_import_wizard_file_message_ready;
-
 	public static String dialog_project_import_wizard_file_name;
-
 	public static String dialog_project_import_wizard_file_title;
-
-	public static String dialog_project_import_wizard_message_success_import_message;
-
+    public static String dialog_project_import_wizard_message_success_import_message;
 	public static String dialog_project_import_wizard_message_success_import_title;
-
 	public static String dialog_project_import_wizard_monitor_import_drivers;
-
 	public static String dialog_project_import_wizard_monitor_import_project;
-
 	public static String dialog_project_import_wizard_monitor_import_projects;
-
 	public static String dialog_project_import_wizard_monitor_load_driver;
-
 	public static String dialog_project_import_wizard_monitor_load_libraries;
-
 	public static String dialog_project_import_wizard_title;
 
 	public static String dialog_scripts_export_wizard_page_name;
-
 	public static String dialog_scripts_export_wizard_window_title;
 
 	public static String dialog_scripts_import_wizard_description;
-
 	public static String dialog_scripts_import_wizard_dialog_choose_dir_message;
-
 	public static String dialog_scripts_import_wizard_dialog_choose_dir_text;
-
 	public static String dialog_scripts_import_wizard_dialog_error_text;
-
 	public static String dialog_scripts_import_wizard_dialog_error_title;
-
 	public static String dialog_scripts_import_wizard_dialog_message_no_scripts;
-
 	public static String dialog_scripts_import_wizard_dialog_message_success_imported;
-
 	public static String dialog_scripts_import_wizard_dialog_message_title;
-
 	public static String dialog_scripts_import_wizard_label_default_connection;
-
 	public static String dialog_scripts_import_wizard_label_file_mask;
-
 	public static String dialog_scripts_import_wizard_label_input_directory;
-
 	public static String dialog_scripts_import_wizard_label_root_folder;
-
 	public static String dialog_scripts_import_wizard_monitor_import_scripts;
-
 	public static String dialog_scripts_import_wizard_name;
-
 	public static String dialog_scripts_import_wizard_title;
-
 	public static String dialog_scripts_import_wizard_window_title;
 
 	public static String dialog_search_objects_button_close;
-
-	public static String dialog_search_objects_button_search;
-
+    public static String dialog_search_objects_button_search;
 	public static String dialog_search_objects_column_description;
-
 	public static String dialog_search_objects_column_type;
-
 	public static String dialog_search_objects_combo_contains;
-
 	public static String dialog_search_objects_combo_like;
-
 	public static String dialog_search_objects_combo_starts_with;
-
 	public static String dialog_search_objects_group_object_types;
-
 	public static String dialog_search_objects_group_objects_source;
-
 	public static String dialog_search_objects_item_list_info;
-
 	public static String dialog_search_objects_label_name_match;
-
 	public static String dialog_search_objects_label_object_name;
-
 	public static String dialog_search_objects_message_no_objects_like_;
-
 	public static String dialog_search_objects_message_objects_found;
-
 	public static String dialog_search_objects_spinner_max_results;
-
 	public static String dialog_search_objects_title;
 
 	public static String dialog_select_datasource_error_message;
-
 	public static String dialog_select_datasource_error_title;
-
 	public static String dialog_select_datasource_title;
-
 	public static String dialog_struct_columns_select_column;
 
-	public static String dialog_struct_columns_select_error_load_columns_message;
-
+    public static String dialog_struct_columns_select_error_load_columns_message;
 	public static String dialog_struct_columns_select_error_load_columns_title;
-
 	public static String dialog_struct_columns_select_group_columns;
-
 	public static String dialog_struct_columns_select_label_table;
-
 	public static String dialog_struct_columns_select_title;
-
 	public static String dialog_struct_create_entity_group_name;
-
 	public static String dialog_struct_create_entity_title;
-
 	public static String dialog_struct_create_procedure_combo_type;
-
 	public static String dialog_struct_create_procedure_label_name;
-
 	public static String dialog_struct_create_procedure_title;
-
 	public static String dialog_struct_edit_constrain_label_type;
-
 	public static String dialog_struct_edit_fk_column_col_type;
-
 	public static String dialog_struct_edit_fk_column_column;
-
 	public static String dialog_struct_edit_fk_column_ref_col;
-
 	public static String dialog_struct_edit_fk_column_ref_col_type;
-
 	public static String dialog_struct_edit_fk_combo_on_delete;
-
 	public static String dialog_struct_edit_fk_combo_on_update;
-
 	public static String dialog_struct_edit_fk_combo_unik;
-
 	public static String dialog_struct_edit_fk_error_load_constraint_columns_message;
-
 	public static String dialog_struct_edit_fk_error_load_constraint_columns_title;
-
 	public static String dialog_struct_edit_fk_error_load_constraints_message;
-
 	public static String dialog_struct_edit_fk_error_load_constraints_title;
-
 	public static String dialog_struct_edit_fk_label_columns;
-
 	public static String dialog_struct_edit_fk_label_ref_table;
-
 	public static String dialog_struct_edit_fk_label_table;
-
 	public static String dialog_struct_edit_fk_title;
-
 	public static String dialog_struct_edit_index_label_type;
 
 	public static String dialog_value_view_button_cancel;
-
 	public static String dialog_value_view_button_sat_null;
-
 	public static String dialog_value_view_button_save;
-
 	public static String dialog_value_view_column_description;
-
 	public static String dialog_value_view_column_value;
-
 	public static String dialog_value_view_context_name;
-
 	public static String dialog_value_view_dialog_error_updating_message;
-
 	public static String dialog_value_view_dialog_error_updating_title;
-
 	public static String dialog_value_view_job_selector_name;
-
 	public static String dialog_value_view_label_dictionary;
-
 	public static String dialog_version_update_available_new_version;
-
 	public static String dialog_version_update_button_more_info;
-
 	public static String dialog_version_update_current_version;
-
 	public static String dialog_version_update_n_a;
-
 	public static String dialog_version_update_new_version;
-
 	public static String dialog_version_update_no_new_version;
-
 	public static String dialog_version_update_notes;
-
 	public static String dialog_version_update_press_more_info_;
-
 	public static String dialog_version_update_title;
 
 	public static String dialog_view_sql_button_copy;
-
 	public static String dialog_view_sql_button_persist;
 
 	public static String editor_binary_hex_default_font;
-
 	public static String editor_binary_hex_font_style_bold;
-
 	public static String editor_binary_hex_font_style_bold_italic;
-
 	public static String editor_binary_hex_font_style_italic;
-
 	public static String editor_binary_hex_font_style_regular;
-
 	public static String editor_binary_hex_froup_font_selection;
-
 	public static String editor_binary_hex_label_available_fix_width_fonts;
-
 	public static String editor_binary_hex_label_name;
-
 	public static String editor_binary_hex_label_style;
-
 	public static String editor_binary_hex_label_size;
-
 	public static String editor_binary_hex_sample_text;
 
 	public static String editors_entity_dialog_persist_title;
-
 	public static String editors_entity_dialog_preview_title;
-
 	public static String editors_entity_monitor_add_folder;
-
 	public static String editors_entity_monitor_add_node;
-
 	public static String editors_entity_monitor_preview_changes;
-
 	public static String editors_entity_properties_text;
-
 	public static String editors_entity_properties_tooltip_suffix;
 
 	public static String editors_sql_data_grid;
-
 	public static String editors_sql_description;
-
 	public static String editors_sql_error_cant_execute_query_message;
-
 	public static String editors_sql_error_cant_execute_query_title;
-
 	public static String editors_sql_error_cant_obtain_session;
-
 	public static String editors_sql_error_execution_plan_message;
-
 	public static String editors_sql_error_execution_plan_title;
-
 	public static String editors_sql_execution_log;
-
 	public static String editors_sql_explain_plan;
-
 	public static String editors_sql_job_execute_query;
-
 	public static String editors_sql_job_execute_script;
-
 	public static String editors_sql_save_on_close_message;
-
-	public static String editors_sql_save_on_close_text;
-
+    public static String editors_sql_save_on_close_text;
 	public static String editors_sql_status_cant_obtain_document;
-
 	public static String editors_sql_status_empty_query_string;
-
 	public static String editors_sql_status_not_connected_to_database;
-
 	public static String editors_sql_status_rows_updated;
-
 	public static String editors_sql_status_statement_executed;
-
 	public static String editors_sql_status_statement_executed_no_rows_updated;
-
 	public static String editors_sql_staus_connected_to;
 
 	public static String model_edit_execute_;
@@ -1111,6 +976,39 @@ public class CoreMessages extends NLS {
 	public static String model_struct_Unique_Key;
 	public static String model_struct_Unknown;
 
+	public static String pref_page_confirmations_combo_always;
+	public static String pref_page_confirmations_combo_never;
+	public static String pref_page_confirmations_combo_prompt;
+	public static String pref_page_confirmations_group_general_actions;
+	public static String pref_page_confirmations_group_object_editor;
+	public static String pref_page_content_editor_checkbox_commit_on_content_apply;
+	public static String pref_page_content_editor_checkbox_commit_on_value_apply;
+	public static String pref_page_content_editor_checkbox_edit_long_as_lobs;
+	public static String pref_page_content_editor_group_content;
+	public static String pref_page_content_editor_label_max_text_length;
+
+	public static String pref_page_database_general_checkbox_auto_commit_by_default;
+
+	public static String pref_page_database_general_checkbox_case_sensitive_names;
+
+	public static String pref_page_database_general_checkbox_keep_cursor;
+
+	public static String pref_page_database_general_checkbox_rollback_on_error;
+
+	public static String pref_page_database_general_checkbox_show_row_count;
+
+	public static String pref_page_database_general_group_metadata;
+
+	public static String pref_page_database_general_group_performance;
+
+	public static String pref_page_database_general_group_queries;
+
+	public static String pref_page_database_general_group_transactions;
+
+	public static String pref_page_database_general_label_max_lob_length;
+
+	public static String pref_page_database_general_label_result_set_max_size;
+
 	public static String registry_entity_editor_descriptor_description;
 	public static String registry_entity_editor_descriptor_name;
 
@@ -1118,9 +1016,7 @@ public class CoreMessages extends NLS {
 	public static String runtime_jobs_connect_status_connected;
 	public static String runtime_jobs_connect_status_error;
 	public static String runtime_jobs_connect_thread_name;
-
 	public static String runtime_jobs_disconnect_error;
-
 	public static String runtime_jobs_disconnect_name;
 
 	public static String toolbar_datasource_selector_action_read_databases;
@@ -1145,13 +1041,9 @@ public class CoreMessages extends NLS {
 	public static String ui_properties_task_add_node;
 
 	public static String ui_properties_tree_viewer__to_default;
-
 	public static String ui_properties_tree_viewer_action_copy_value;
-
 	public static String ui_properties_tree_viewer_action_reset_value;
-
 	public static String ui_properties_tree_viewer_category_general;
-
 	public static String ui_properties_value;
 
     static {

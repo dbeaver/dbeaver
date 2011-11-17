@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -29,7 +30,7 @@ import java.util.ResourceBundle;
  */
 public class PrefPageConfirmations extends PreferencePage implements IWorkbenchPreferencePage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.confirmations";
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.confirmations"; //$NON-NLS-1$
 
     private Map<String, Combo> confirmChecks = new HashMap<String, Combo>();
 
@@ -46,7 +47,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
         Composite filterSettings = UIUtils.createPlaceholder(composite, 1, 5);
 
         {
-            Group groupObjects = UIUtils.createControlGroup(filterSettings, "General actions", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group groupObjects = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_confirmations_group_general_actions, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_EXIT);
             createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ORDER_RESULTSET);
             createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_RS_EDIT_CLOSE);
@@ -56,7 +57,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
         }
 
         {
-            Group groupObjects = UIUtils.createControlGroup(filterSettings, "Object editor", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group groupObjects = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_confirmations_group_object_editor, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE);
             createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_DELETE);
             createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_REJECT);
@@ -76,7 +77,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
         UIUtils.createControlLabel(parent, bundle.getString(labelKey));
         Combo combo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
             //UIUtils.createCheckbox(parent, bundle.getString(labelKey), false);
-        combo.setItems(new String[] {"Always", "Never", "Prompt"} );
+        combo.setItems(new String[] {CoreMessages.pref_page_confirmations_combo_always, CoreMessages.pref_page_confirmations_combo_never, CoreMessages.pref_page_confirmations_combo_prompt} );
         confirmChecks.put(id, combo);
     }
 

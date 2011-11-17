@@ -8,6 +8,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -18,7 +19,7 @@ import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
  */
 public class PrefPageContentEditor extends TargetPrefPage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.contenteditor";
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.contenteditor"; //$NON-NLS-1$
 
     private Spinner maxTextContentSize;
     private Button editLongAsLobCheck;
@@ -53,10 +54,10 @@ public class PrefPageContentEditor extends TargetPrefPage
         // Content
         {
             Group contentGroup = new Group(composite, SWT.NONE);
-            contentGroup.setText("Content");
+            contentGroup.setText(CoreMessages.pref_page_content_editor_group_content);
             contentGroup.setLayout(new GridLayout(2, false));
 
-            UIUtils.createControlLabel(contentGroup, "Maximum text editor content length");
+            UIUtils.createControlLabel(contentGroup, CoreMessages.pref_page_content_editor_label_max_text_length);
 
             maxTextContentSize = new Spinner(contentGroup, SWT.BORDER);
             maxTextContentSize.setSelection(0);
@@ -65,9 +66,9 @@ public class PrefPageContentEditor extends TargetPrefPage
             maxTextContentSize.setMinimum(0);
             maxTextContentSize.setMaximum(Integer.MAX_VALUE);
 
-            editLongAsLobCheck = UIUtils.createLabelCheckbox(contentGroup, "Edit LONG columns as LOBs", false);
-            commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup, "Commit session on value edit apply", false);
-            commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, "Commit session on content edit apply", false);
+            editLongAsLobCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_edit_long_as_lobs, false);
+            commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false);
+            commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
         }
         return composite;
     }
