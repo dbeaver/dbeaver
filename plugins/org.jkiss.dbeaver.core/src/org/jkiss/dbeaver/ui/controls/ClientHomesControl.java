@@ -7,8 +7,11 @@ package org.jkiss.dbeaver.ui.controls;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -30,20 +33,47 @@ public class ClientHomesControl extends Composite
 {
     static final Log log = LogFactory.getLog(ClientHomesControl.class);
 
+    private static String lastHomeDirectory;
+
     private Table homesTable;
     private Text idText;
     private Text pathText;
     private Text nameText;
     private Text productNameText;
     private Text productVersionText;
-    private Button addButton;
     private Button removeButton;
+    private Font fontBold;
+    private Font fontItalic;
+
+    private DriverDescriptor driver;
+
+    static class HomeInfo {
+        DBPClientHome home;
+        boolean isProvided;
+        boolean isDefault;
+
+        HomeInfo(DBPClientHome home)
+        {
+            this.home = home;
+        }
+    }
 
     public ClientHomesControl(
         Composite parent,
         int style)
     {
         super(parent, style);
+
+        fontBold = UIUtils.makeBoldFont(parent.getFont());
+        fontItalic = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
+        addDisposeListener(new DisposeListener()
+        {
+            public void widgetDisposed(DisposeEvent e)
+            {
+                UIUtils.dispose(fontBold);
+                UIUtils.dispose(fontItalic);
+            }
+        });
 
         GridLayout layout = new GridLayout(2, false);
         setLayout(layout);
@@ -61,17 +91,36 @@ public class ClientHomesControl extends Composite
                 if (CommonUtils.isEmpty(selection)) {
                     selectHome(null);
                 } else {
-                    selectHome((DBPClientHome)selection[0].getData());
+                    selectHome((HomeInfo)selection[0].getData());
                 }
             }
         });
         Composite buttonsGroup = UIUtils.createPlaceholder(listGroup, 2);
         buttonsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-        addButton = new Button(buttonsGroup, SWT.PUSH);
+        Button addButton = new Button(buttonsGroup, SWT.PUSH);
         addButton.setText("Add Home");
+        addButton.addSelectionListener(new SelectionAdapter()
+        {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                addClientHome();
+            }
+        });
         removeButton = new Button(buttonsGroup, SWT.PUSH);
         removeButton.setText("Remove Home");
         removeButton.setEnabled(false);
+        removeButton.addSelectionListener(new SelectionAdapter()
+        {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                TableItem[] selection = homesTable.getSelection();
+                if (!CommonUtils.isEmpty(selection)) {
+                    removeClientHome();
+                }
+            }
+        });
 
         Group infoGroup = UIUtils.createControlGroup(this, "Information", 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
         idText = UIUtils.createLabelText(infoGroup, "ID", "", SWT.BORDER | SWT.READ_ONLY);
@@ -81,19 +130,52 @@ public class ClientHomesControl extends Composite
         productVersionText = UIUtils.createLabelText(infoGroup, "Product Version", "", SWT.BORDER | SWT.READ_ONLY);
     }
 
-    private void selectHome(DBPClientHome home)
+    private void removeClientHome()
     {
-        removeButton.setEnabled(home != null);
-        idText.setText(home == null ? "" : home.getHomeId());
-        pathText.setText(home == null ? "" : home.getHomePath());
-        nameText.setText(home == null ? "" : home.getDisplayName());
+        int selIndex = homesTable.getSelectionIndex();
+        HomeInfo info = (HomeInfo) homesTable.getItem(selIndex).getData();
+        if (!info.isProvided) {
+            if (UIUtils.confirmAction(
+                getShell(),
+                "Remove Client Home",
+                "Are you sure you want to delete client home '" + info.home.getHomeId() + "'?"))
+            {
+                homesTable.remove(selIndex);
+                selectHome(null);
+            }
+        }
+    }
+
+    private void addClientHome()
+    {
+        DirectoryDialog directoryDialog = new DirectoryDialog(getShell());
+        if (lastHomeDirectory != null) {
+            directoryDialog.setFilterPath(lastHomeDirectory);
+        }
+        String homeId = directoryDialog.open();
+        if (homeId == null) {
+            return;
+        }
+        lastHomeDirectory = homeId;
+        DBPClientManager clientManager = driver.getClientManager();
+        if (clientManager != null) {
+            createHomeItem(clientManager, homeId, false);
+        }
+    }
+
+    private void selectHome(HomeInfo home)
+    {
+        removeButton.setEnabled(home != null && !home.isProvided);
+        idText.setText(home == null ? "" : CommonUtils.getString(home.home.getHomeId()));
+        pathText.setText(home == null ? "" : CommonUtils.getString(home.home.getHomePath()));
+        nameText.setText(home == null ? "" : CommonUtils.getString(home.home.getDisplayName()));
         try {
-            productNameText.setText(home == null ? "" : home.getProductName());
+            productNameText.setText(home == null ? "" : CommonUtils.getString(home.home.getProductName()));
         } catch (DBException e) {
             log.warn(e);
         }
         try {
-            productVersionText.setText(home == null ? "" : home.getProductVersion());
+            productVersionText.setText(home == null ? "" : CommonUtils.getString(home.home.getProductVersion()));
         } catch (DBException e) {
             log.warn(e);
         }
@@ -101,31 +183,51 @@ public class ClientHomesControl extends Composite
 
     public void loadHomes(DriverDescriptor driver)
     {
-        DBPClientManager clientManager = driver.getClientManager();
+        this.driver = driver;
+        DBPClientManager clientManager = this.driver.getClientManager();
         if (clientManager == null) {
             log.error("Client manager is not supported by driver '" + driver.getName() + "'");
             return;
         }
-        Set<String> clientHomeIds = new LinkedHashSet<String>();
-        clientHomeIds.addAll(clientManager.findClientHomeIds());
-        clientHomeIds.addAll(driver.getClientHomeIds());
+        Set<String> providedHomes = new LinkedHashSet<String>(
+            clientManager.findClientHomeIds());
 
-        for (String homeId : clientHomeIds) {
-            DBPClientHome home;
-            try {
-                home = clientManager.getClientHome(homeId);
-                if (home == null) {
-                    log.warn("Home '" + homeId + "' is not supported");
-                    continue;
-                }
-            } catch (Exception e) {
-                log.error(e);
-                continue;
+        for (String homeId : providedHomes) {
+            createHomeItem(clientManager, homeId, true);
+        }
+        for (String homeId : clientManager.findClientHomeIds()) {
+            if (!providedHomes.contains(homeId)) {
+                createHomeItem(clientManager, homeId, false);
             }
-            TableItem homeItem = new TableItem(homesTable, SWT.NONE);
-            homeItem.setText(home.getDisplayName());
-            homeItem.setImage(DBIcon.HOME.getImage());
-            homeItem.setData(home);
+        }
+    }
+
+    private void createHomeItem(DBPClientManager clientManager, String homeId, boolean provided)
+    {
+        DBPClientHome home;
+        try {
+            home = clientManager.getClientHome(homeId);
+            if (home == null) {
+                log.warn("Home '" + homeId + "' is not supported");
+                return;
+            }
+        } catch (Exception e) {
+            log.error(e);
+            return;
+        }
+        HomeInfo homeInfo = new HomeInfo(home);
+        homeInfo.isProvided = provided;
+        homeInfo.isDefault = home.getHomeId().equals(clientManager.getDefaultClientHomeId());
+        TableItem homeItem = new TableItem(homesTable, SWT.NONE);
+        homeItem.setText(home.getDisplayName());
+        homeItem.setImage(DBIcon.HOME.getImage());
+        homeItem.setData(homeInfo);
+        if (!homeInfo.isProvided) {
+            homeItem.setFont(fontItalic);
+        } else {
+            if (homeInfo.isDefault) {
+                homeItem.setFont(fontBold);
+            }
         }
     }
 
