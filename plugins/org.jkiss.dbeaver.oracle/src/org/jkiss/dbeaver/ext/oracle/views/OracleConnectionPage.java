@@ -226,8 +226,8 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         OracleHomeDescriptor oraHome = OCIUtils.getOraHomeByName(oraHomeNameCombo.getText());
         if (oraHome != null) {
             // display Ora client version
-            if (oraHome.getFullOraVersion() != null) {
-                oracleVersionLabel.setText(oraHome.getFullOraVersion());
+            if (oraHome.getProductVersion() != null) {
+                oracleVersionLabel.setText(oraHome.getProductVersion());
             } else {
                 if (oraHome.getOraVersion() != null) {
                     oracleVersionLabel.setText(OracleMessages.dialog_connection_ver + oraHome.getOraVersion());
@@ -244,7 +244,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
     {
         oraHomeNameCombo.removeAll();
         for (OracleHomeDescriptor home : OCIUtils.getOraHomes()) {
-            oraHomeNameCombo.add(home.getOraHomeName());
+            oraHomeNameCombo.add(home.getDisplayName());
         }
         oraHomeNameCombo.add(BROWSE);
     }
@@ -274,7 +274,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             }
             if (CommonUtils.isEmpty(oraHome)) {
                 if (!OCIUtils.getOraHomes().isEmpty()) {
-                    oraHome = OCIUtils.getOraHomes().get(0).getOraHomeName();
+                    oraHome = OCIUtils.getOraHomes().get(0).getDisplayName();
                 }
             }
             if (!CommonUtils.isEmpty(oraHome)) {
@@ -441,7 +441,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         }
 
         if (serviceNameCombo.getItemCount() == 0) {
-            String oraHome = isOCI ? (!OCIUtils.getOraHomes().isEmpty() ? OCIUtils.getOraHomes().get(0).getOraHome() : null) : null;
+            String oraHome = isOCI ? (!OCIUtils.getOraHomes().isEmpty() ? OCIUtils.getOraHomes().get(0).getHomeId() : null) : null;
             for (String alias : OCIUtils.readTnsNames(oraHome, true)) {
                 serviceNameCombo.add(alias);
             }
@@ -459,7 +459,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                 }
                 else {
                     if (!OCIUtils.getOraHomes().isEmpty()) {
-                        oraHomeNameCombo.setText(OCIUtils.getOraHomes().get(0).getOraHomeName());
+                        oraHomeNameCombo.setText(OCIUtils.getOraHomes().get(0).getDisplayName());
                     }
                 }
                 displayClientVersion();
@@ -672,7 +672,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
                         }
                     }
                     if (oraHome != null) {
-                        oraHomeNameCombo.setText(oraHome.getOraHomeName());
+                        oraHomeNameCombo.setText(oraHome.getDisplayName());
                     }
                     else {
                         oraHomeNameCombo.setText(""); //$NON-NLS-1$

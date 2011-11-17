@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ext.oracle;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
+import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPClientHome;
 import org.jkiss.dbeaver.model.DBPClientManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -14,10 +16,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
 
@@ -61,7 +60,11 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
 
     public Collection<String> findClientHomeIds()
     {
-        return new ArrayList<String>();
+        List<String> homeIds = new ArrayList<String>();
+        for (OracleHomeDescriptor home : OCIUtils.getOraHomes()) {
+            homeIds.add(home.getHomeId());
+        }
+        return homeIds;
     }
 
     public String getDefaultClientHomeId()
@@ -71,7 +74,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
 
     public DBPClientHome getClientHome(String homeId)
     {
-        return new OracleClientHome(homeId, homeId);
+        return new OracleHomeDescriptor(homeId);
     }
 
 }

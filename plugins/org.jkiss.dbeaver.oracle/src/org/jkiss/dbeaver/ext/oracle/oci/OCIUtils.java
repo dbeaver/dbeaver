@@ -66,7 +66,7 @@ public class OCIUtils
         }
         for (OracleHomeDescriptor home : oraHomes) {
             // file name case insensitivity on Windows platform
-            if (equalsFileName(home.getOraHome(), oraHome)) {
+            if (equalsFileName(home.getHomeId(), oraHome)) {
                 return home;
             }
         }
@@ -79,7 +79,7 @@ public class OCIUtils
         }
         for (OracleHomeDescriptor home : oraHomes) {
             // file name case insensitivity on Windows platform
-            if (equalsFileName(home.getOraHomeName(), oraHomeName)) {
+            if (equalsFileName(home.getDisplayName(), oraHomeName)) {
                 return home;
             }
         }
@@ -105,7 +105,7 @@ public class OCIUtils
         boolean contains = false;
         for (OracleHomeDescriptor home : oraHomes) {
             // file name case insensitivity on Windows platform
-            if (equalsFileName(home.getOraHome(), oraHome)) {
+            if (equalsFileName(home.getHomeId(), oraHome)) {
                 contains = true;
                 break;
             }

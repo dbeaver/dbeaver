@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.oci;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -15,33 +16,27 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OracleHomeDescriptor
+public class OracleHomeDescriptor extends JDBCClientHome
 {
     static final Log log = LogFactory.getLog(OracleHomeDescriptor.class);
 
-    private String oraHome; // without slash at the end
     private Integer oraVersion; // short version (9, 10, 11...)
     private String fullOraVersion;
     private boolean isInstantClient;
     private String oraHomeName;
     private List<String> tnsNames;
 
-    public OracleHomeDescriptor(String oraHome) throws DBException
+    public OracleHomeDescriptor(String oraHome)
     {
-        this.oraHome = CommonUtils.removeTrailingSlash(oraHome);
+        super(CommonUtils.removeTrailingSlash(oraHome), oraHome);
         this.isInstantClient = OCIUtils.isInstantClient(oraHome);
         this.oraVersion = OCIUtils.getOracleVersion(oraHome, isInstantClient);
         if (oraVersion == null) {
-            throw new DBException("Unrecognized Oracle client version");
+            log.error("Unrecognized Oracle client version at " + oraHome);
         }
         this.fullOraVersion = OCIUtils.getFullOraVersion(oraHome, isInstantClient);
         this.oraHomeName = OCIUtils.readWinRegistry(oraHome, OCIUtils.WIN_REG_ORA_HOME_NAME);
-        tnsNames = OCIUtils.readTnsNames(this.oraHome, true);
-    }
-
-    public String getOraHome()
-    {
-        return oraHome;
+        tnsNames = OCIUtils.readTnsNames(getHomePath(), true);
     }
 
     public Integer getOraVersion()
@@ -49,7 +44,12 @@ public class OracleHomeDescriptor
         return oraVersion;
     }
 
-    public String getFullOraVersion()
+    public String getProductName()
+    {
+        return "Oracle" + (oraVersion == null ? "" : " " + oraVersion);
+    }
+
+    public String getProductVersion()
     {
         return fullOraVersion;
     }
@@ -59,13 +59,13 @@ public class OracleHomeDescriptor
         return isInstantClient;
     }
 
-    public String getOraHomeName()
+    public String getDisplayName()
     {
         if (oraHomeName != null) {
             return oraHomeName;
         }
         else {
-            return oraHome;
+            return getHomeId();
         }
     }
 
@@ -80,10 +80,11 @@ public class OracleHomeDescriptor
         String jdbcDriverJar;
         String jdbcPathPrefix = isInstantClient ? "/" : "/jdbc/lib/";
         String libPathPrefix = isInstantClient ? "/" : "/lib/";
+        String oraHome = getHomeId();
         switch (oraVersion) {
             case 8:
                 list.add(oraHome + jdbcPathPrefix + "classes12.zip"); // JDBC drivers to connect to a 9i database. (JDK 1.2.x)
-                list.add(oraHome + jdbcPathPrefix + "nls_charset12.zip"); // Additional National Language character set support 
+                list.add(oraHome + jdbcPathPrefix + "nls_charset12.zip"); // Additional National Language character set support
                 break;
             case 9:
                 list.add(oraHome + jdbcPathPrefix + "ojdbc14.jar"); // JDBC classes (JDK 1.4)
