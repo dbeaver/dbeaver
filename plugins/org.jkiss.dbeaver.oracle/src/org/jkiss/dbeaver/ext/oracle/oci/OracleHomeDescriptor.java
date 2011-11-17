@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ext.oracle.oci;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
 import org.jkiss.utils.CommonUtils;
 
@@ -23,7 +22,7 @@ public class OracleHomeDescriptor extends JDBCClientHome
     private Integer oraVersion; // short version (9, 10, 11...)
     private String fullOraVersion;
     private boolean isInstantClient;
-    private String oraHomeName;
+    private String displayName;
     private List<String> tnsNames;
 
     public OracleHomeDescriptor(String oraHome)
@@ -34,9 +33,7 @@ public class OracleHomeDescriptor extends JDBCClientHome
         if (oraVersion == null) {
             log.error("Unrecognized Oracle client version at " + oraHome);
         }
-        this.fullOraVersion = OCIUtils.getFullOraVersion(oraHome, isInstantClient);
-        this.oraHomeName = OCIUtils.readWinRegistry(oraHome, OCIUtils.WIN_REG_ORA_HOME_NAME);
-        tnsNames = OCIUtils.readTnsNames(getHomePath(), true);
+        this.displayName = OCIUtils.readWinRegistry(oraHome, OCIUtils.WIN_REG_ORA_HOME_NAME);
     }
 
     public Integer getOraVersion()
@@ -51,6 +48,12 @@ public class OracleHomeDescriptor extends JDBCClientHome
 
     public String getProductVersion()
     {
+        if (fullOraVersion == null) {
+            this.fullOraVersion = OCIUtils.getFullOraVersion(getHomeId(), isInstantClient);
+            if (fullOraVersion == null) {
+                fullOraVersion = "Unknown";
+            }
+        }
         return fullOraVersion;
     }
 
@@ -61,8 +64,8 @@ public class OracleHomeDescriptor extends JDBCClientHome
 
     public String getDisplayName()
     {
-        if (oraHomeName != null) {
-            return oraHomeName;
+        if (displayName != null) {
+            return displayName;
         }
         else {
             return getHomeId();
@@ -71,6 +74,9 @@ public class OracleHomeDescriptor extends JDBCClientHome
 
     public List<String> getOraServiceNames()
     {
+        if (tnsNames == null) {
+            tnsNames = OCIUtils.readTnsNames(getHomePath(), true);
+        }
         return tnsNames;
     }
 
