@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileType;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ClientHomesControl;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
@@ -80,6 +81,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private List<DriverFileDescriptor> libList;
     private PropertySourceCustom driverPropertySource;
     private PropertySourceCustom connectionPropertySource;
+    private ClientHomesControl clientHomesControl;
     //private Button anonymousCheck;
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
@@ -511,13 +513,17 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private void createClientHomesTab(TabFolder group)
     {
-        Composite paramsGroup = new Composite(group, SWT.NONE);
-        paramsGroup.setLayout(new GridLayout(1, false));
+        //Composite paramsGroup = new Composite(group, SWT.NONE);
+        //paramsGroup.setLayout(new GridLayout(1, false));
+
+        clientHomesControl = new ClientHomesControl(group, SWT.NONE);
+        clientHomesControl.loadHomes(driver);
+        clientHomesControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
         paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
         paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
-        paramsTab.setControl(paramsGroup);
+        paramsTab.setControl(clientHomesControl);
     }
 
     private void createLicenseTab(TabFolder group, String license)

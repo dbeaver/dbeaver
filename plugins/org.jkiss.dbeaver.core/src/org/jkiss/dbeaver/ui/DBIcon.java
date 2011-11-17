@@ -123,6 +123,7 @@ public enum DBIcon
     FRAME_QUERY("frame_query", "/icons/misc/frame_query.png"), //$NON-NLS-1$ //$NON-NLS-2$
     FILTER("filter", "/icons/misc/filter.png"), //$NON-NLS-1$ //$NON-NLS-2$
     EVENT("event", "/icons/misc/event.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    HOME("home", "/icons/misc/home.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     SAVE("save", "/icons/file/save.png"), //$NON-NLS-1$ //$NON-NLS-2$
     SAVE_ALL("save_all", "/icons/file/save_all.png"), //$NON-NLS-1$ //$NON-NLS-2$

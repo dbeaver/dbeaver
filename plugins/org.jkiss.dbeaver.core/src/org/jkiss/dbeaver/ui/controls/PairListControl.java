@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * ItemListControl
+ * PairListControl
  */
 public class PairListControl<ELEMENT> extends Composite
 {
