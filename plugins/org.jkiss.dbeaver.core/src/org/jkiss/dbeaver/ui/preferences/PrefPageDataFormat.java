@@ -12,6 +12,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -33,7 +34,7 @@ import java.util.List;
  */
 public class PrefPageDataFormat extends TargetPrefPage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.dataformat";
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.dataformat"; //$NON-NLS-1$
 
     private DBDDataFormatterProfile formatterProfile;
 
@@ -77,7 +78,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         if (!isDataSourcePreferencePage()) {
             Composite profileGroup = UIUtils.createPlaceholder(composite, 3);
             profileGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createControlLabel(profileGroup, "Profile");
+            UIUtils.createControlLabel(profileGroup, CoreMessages.pref_page_data_format_label_profile);
             profilesCombo = new Combo(profileGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             profilesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             profilesCombo.addSelectionListener(new SelectionAdapter() {
@@ -88,7 +89,7 @@ public class PrefPageDataFormat extends TargetPrefPage
                 }
             });
             Button editButton = new Button(profileGroup, SWT.PUSH);
-            editButton.setText("Manage Profiles");
+            editButton.setText(CoreMessages.pref_page_data_format_button_manage_profiles);
             editButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -119,11 +120,11 @@ public class PrefPageDataFormat extends TargetPrefPage
         // formats
         {
             Group formatGroup = new Group(composite, SWT.NONE);
-            formatGroup.setText("Format");
+            formatGroup.setText(CoreMessages.pref_page_data_format_group_format);
             formatGroup.setLayout(new GridLayout(2, false));
             formatGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createControlLabel(formatGroup, "Type");
+            UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_type);
             typeCombo = new Combo(formatGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             typeCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -133,7 +134,7 @@ public class PrefPageDataFormat extends TargetPrefPage
                 }
             });
 
-            Label propsLabel = UIUtils.createControlLabel(formatGroup, "Settings");
+            Label propsLabel = UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_settingt);
             propsLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             propertiesControl = new PropertyTreeViewer(formatGroup, SWT.BORDER);
             propertiesControl.getControl().addListener(SWT.Modify, new Listener() {
@@ -143,7 +144,7 @@ public class PrefPageDataFormat extends TargetPrefPage
                 }
             });
 
-            UIUtils.createControlLabel(formatGroup, "Sample");
+            UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_sample);
             sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
             sampleText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
@@ -234,7 +235,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             oldProfile = profilesCombo.getItem(selectionIndex);
         }
         profilesCombo.removeAll();
-        profilesCombo.add("<" + getRegistry().getGlobalProfile().getProfileName() + ">");
+        profilesCombo.add("<" + getRegistry().getGlobalProfile().getProfileName() + ">"); //$NON-NLS-1$ //$NON-NLS-2$
         for (DBDDataFormatterProfile profile : getRegistry().getCustomProfiles()) {
             profilesCombo.add(profile.getProfileName());
         }
@@ -299,7 +300,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             String sampleValue = formatter.formatValue(formatterDescriptor.getSample().getSampleValue());
             sampleText.setText(sampleValue);
         } catch (Exception e) {
-            log.warn("Could not render sample value", e);
+            log.warn("Could not render sample value", e); //$NON-NLS-1$
         }
     }
 

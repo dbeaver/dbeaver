@@ -987,6 +987,18 @@ public class CoreMessages extends NLS {
 	public static String pref_page_content_editor_group_content;
 	public static String pref_page_content_editor_label_max_text_length;
 
+	public static String pref_page_data_format_button_manage_profiles;
+
+	public static String pref_page_data_format_group_format;
+
+	public static String pref_page_data_format_label_profile;
+
+	public static String pref_page_data_format_label_sample;
+
+	public static String pref_page_data_format_label_settingt;
+
+	public static String pref_page_data_format_label_type;
+
 	public static String pref_page_database_general_checkbox_auto_commit_by_default;
 
 	public static String pref_page_database_general_checkbox_case_sensitive_names;
@@ -1008,6 +1020,36 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_label_max_lob_length;
 
 	public static String pref_page_database_general_label_result_set_max_size;
+
+	public static String pref_page_query_manager_checkbox_ddl_executions;
+
+	public static String pref_page_query_manager_checkbox_metadata_read;
+
+	public static String pref_page_query_manager_checkbox_other;
+
+	public static String pref_page_query_manager_checkbox_queries;
+
+	public static String pref_page_query_manager_checkbox_scripts;
+
+	public static String pref_page_query_manager_checkbox_sessions;
+
+	public static String pref_page_query_manager_checkbox_transactions;
+
+	public static String pref_page_query_manager_checkbox_user_queries;
+
+	public static String pref_page_query_manager_checkbox_user_scripts;
+
+	public static String pref_page_query_manager_checkbox_utility_functions;
+
+	public static String pref_page_query_manager_group_object_types;
+
+	public static String pref_page_query_manager_group_query_types;
+
+	public static String pref_page_query_manager_group_settings;
+
+	public static String pref_page_query_manager_label_days_to_store_log;
+
+	public static String pref_page_query_manager_label_entries_per_page;
 
 	public static String registry_entity_editor_descriptor_description;
 	public static String registry_entity_editor_descriptor_name;

@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -28,7 +29,7 @@ import java.util.List;
  */
 public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.qm";
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.qm"; //$NON-NLS-1$
     private Button checkObjectTypeSessions;
     private Button checkObjectTypeTxn;
     private Button checkObjectTypeScripts;
@@ -55,23 +56,23 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
 
         Composite filterSettings = UIUtils.createPlaceholder(composite, 2, 5);
 
-        Group groupObjects = UIUtils.createControlGroup(filterSettings, "Object Types", 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 150);
-        checkObjectTypeSessions = UIUtils.createCheckbox(groupObjects, "Sessions", false);
-        checkObjectTypeTxn = UIUtils.createCheckbox(groupObjects, "Transactions", false);
-        checkObjectTypeScripts = UIUtils.createCheckbox(groupObjects, "Scripts", false);
-        checkObjectTypeQueries = UIUtils.createCheckbox(groupObjects, "Queries", false);
+        Group groupObjects = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_query_manager_group_object_types, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 170);
+        checkObjectTypeSessions = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_sessions, false);
+        checkObjectTypeTxn = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_transactions, false);
+        checkObjectTypeScripts = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_scripts, false);
+        checkObjectTypeQueries = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_queries, false);
 
-        Group groupQueryTypes = UIUtils.createControlGroup(filterSettings, "Query Types", 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 150);
-        checkQueryTypeUser = UIUtils.createCheckbox(groupQueryTypes, "User queries", false);
-        checkQueryTypeScript = UIUtils.createCheckbox(groupQueryTypes, "User scripts", false);
-        checkQueryTypeUtil = UIUtils.createCheckbox(groupQueryTypes, "Utility functions", false);
-        checkQueryTypeMeta = UIUtils.createCheckbox(groupQueryTypes, "Metadata read", false);
-        checkQueryTypeDDL = UIUtils.createCheckbox(groupQueryTypes, "DDL executions", false);
-        checkQueryTypeOther = UIUtils.createCheckbox(groupQueryTypes, "Other", false);
+        Group groupQueryTypes = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_query_manager_group_query_types, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 170);
+        checkQueryTypeUser = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_queries, false);
+        checkQueryTypeScript = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_scripts, false);
+        checkQueryTypeUtil = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_utility_functions, false);
+        checkQueryTypeMeta = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_metadata_read, false);
+        checkQueryTypeDDL = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_ddl_executions, false);
+        checkQueryTypeOther = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_other, false);
 
-        Group settingsTypes = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        textHistoryDays = UIUtils.createLabelText(settingsTypes, "Days to store log", "", SWT.BORDER, new GridData(50, SWT.DEFAULT));
-        textEntriesPerPage = UIUtils.createLabelText(settingsTypes, "Entries per page", "", SWT.BORDER, new GridData(50, SWT.DEFAULT));
+        Group settingsTypes = UIUtils.createControlGroup(composite, CoreMessages.pref_page_query_manager_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        textHistoryDays = UIUtils.createLabelText(settingsTypes, CoreMessages.pref_page_query_manager_label_days_to_store_log, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
+        textEntriesPerPage = UIUtils.createLabelText(settingsTypes, CoreMessages.pref_page_query_manager_label_entries_per_page, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
 
         performDefaults();
 
