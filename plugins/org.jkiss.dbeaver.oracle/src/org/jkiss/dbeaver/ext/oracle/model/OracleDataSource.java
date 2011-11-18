@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.sql.Driver;
@@ -153,17 +152,16 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         if (ociDriver) {
             String homeId = container.getConnectionInfo().getClientHomeId();
             if (homeId != null) {
-                DriverDescriptor driverDescriptor = (DriverDescriptor) driver;
                 ClassLoader ociClassLoader = ociClassLoadersCache.get(homeId);
                 if (ociClassLoader == null) {
-                    OracleHomeDescriptor homeDescriptor = (OracleHomeDescriptor)driverDescriptor.getClientHome(homeId);
+                    OracleHomeDescriptor homeDescriptor = (OracleHomeDescriptor)driver.getClientHome(homeId);
                     if (homeDescriptor == null) {
                         throw new DBException("Can't load driver from '" + homeId + "'");
                     }
                     ociClassLoader = new OCIClassLoader(homeDescriptor, getClass().getClassLoader());
                     ociClassLoadersCache.put(homeId, ociClassLoader);
                 }
-                String driverClassName = driverDescriptor.getDriverClassName();
+                String driverClassName = driver.getDriverClassName();
                 try {
                     final Class<?> driverClass = ociClassLoader.loadClass(driverClassName);
                     return (Driver) driverClass.newInstance();
