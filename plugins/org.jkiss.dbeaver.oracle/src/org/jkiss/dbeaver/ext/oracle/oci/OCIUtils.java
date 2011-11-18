@@ -217,7 +217,7 @@ public class OCIUtils
         if (!folder.exists()) {
             return null;
         }
-        for (int counter = 1; counter <= 12; counter++) {
+        for (int counter = 5; counter <= 15; counter++) {
             String dllName = System.mapLibraryName((isInstantClient ? "oraociei" : "oraclient") + counter);
             File oraclient_dll = new File(folder, dllName);
             if (oraclient_dll.exists()) {
