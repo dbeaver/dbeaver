@@ -69,6 +69,10 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
 
     public String getDefaultClientHomeId()
     {
+        List<OracleHomeDescriptor> oraHomes = OCIUtils.getOraHomes();
+        if (!oraHomes.isEmpty()) {
+            return oraHomes.get(0).getHomeId();
+        }
         return null;
     }
 
