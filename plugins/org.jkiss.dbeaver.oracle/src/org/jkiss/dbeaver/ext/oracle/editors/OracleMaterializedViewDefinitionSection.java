@@ -26,18 +26,18 @@ public class OracleMaterializedViewDefinitionSection extends SourceEditSection {
     @Override
     protected boolean isSourceRead()
     {
-        return view.getAdditionalInfo().isLoaded();
+        return true;
     }
 
     @Override
     protected String loadSources(DBRProgressMonitor monitor) throws DBException
     {
-        return view.getAdditionalInfo(monitor).getText();
+        return view.getSourceDeclaration(monitor);
     }
 
     protected void updateSources(String source)
     {
-        getEditor().getEditorInput().getPropertySource().setPropertyValue("text", source);
+        getEditor().getEditorInput().getPropertySource().setPropertyValue("declaration", source);
     }
 
 }

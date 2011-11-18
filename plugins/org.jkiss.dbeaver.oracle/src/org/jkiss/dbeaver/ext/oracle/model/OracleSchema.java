@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -37,6 +38,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
     static final Log log = LogFactory.getLog(OracleSchema.class);
 
     final TableCache tableCache = new TableCache();
+    final MViewCache mviewCache = new MViewCache();
     final ConstraintCache constraintCache = new ConstraintCache();
     final ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
     final TriggerCache triggerCache = new TriggerCache();
@@ -134,7 +136,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
     public Collection<OracleMaterializedView> getMaterializedViews(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, this, OracleMaterializedView.class);
+        return mviewCache.getObjects(monitor, this);
     }
 
     @Association
@@ -303,6 +305,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         protected TableCache()
         {
             super("TABLE_NAME");
+            setListOrderComparator(DBUtils.<OracleTableBase>nameComparator());
         }
 
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
@@ -310,21 +313,15 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT /*+ USE_NL(tc)*/ tab.*,tc.COMMENTS FROM (\n" +
-                    "SELECT /*+ USE_NL(mv)*/ t.OWNER,\n" +
-                    "NVL(mv.MVIEW_NAME,t.TABLE_NAME) as TABLE_NAME,\n" +
-                    "CASE WHEN mv.MVIEW_NAME IS NULL THEN 'TABLE' ELSE 'MVIEW' END as OBJECT_TYPE,CASE WHEN mv.MVIEW_NAME IS NULL THEN 'VALID' ELSE mv.COMPILE_STATE END as STATUS," +
-                    "t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
-                    "FROM SYS.ALL_ALL_TABLES t\n" +
-                    "LEFT OUTER JOIN SYS.ALL_MVIEWS mv ON mv.OWNER=t.OWNER AND mv.CONTAINER_NAME=t.TABLE_NAME \n" +
-                    "WHERE t.OWNER=?\n" +
+                    "\tSELECT t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as OBJECT_TYPE,t.STATUS,t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
+                    "\tFROM SYS.ALL_ALL_TABLES t\n" +
+                    "\tWHERE t.OWNER=?\n" +
                 "UNION ALL\n" +
-                    "SELECT v.OWNER,v.VIEW_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,o.STATUS,NULL,NULL,NULL,NULL,o.TEMPORARY,o.SECONDARY,NULL,NULL " +
-                    "FROM SYS.ALL_VIEWS v\n" +
-                    "JOIN SYS.ALL_OBJECTS o ON o.OWNER=v.OWNER AND o.OBJECT_NAME=v.VIEW_NAME AND o.OBJECT_TYPE='VIEW'" +
-                    "WHERE v.OWNER=?\n" +
+                    "\tSELECT o.OWNER,o.OBJECT_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,o.STATUS,NULL,NULL,NULL,NULL,o.TEMPORARY,o.SECONDARY,NULL,NULL \n" +
+                    "\tFROM SYS.ALL_OBJECTS o \n" +
+                    "\tWHERE o.OWNER=? AND o.OBJECT_TYPE='VIEW'\n" +
                 ") tab\n" +
-                "LEFT OUTER JOIN SYS.ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME\n" +
-                "ORDER BY tab.TABLE_NAME");
+                "LEFT OUTER JOIN SYS.ALL_TAB_COMMENTS tc ON tc.OWNER=tab.OWNER AND tc.TABLE_NAME=tab.TABLE_NAME");
             dbStat.setString(1, owner.getName());
             dbStat.setString(2, owner.getName());
             return dbStat;
@@ -334,9 +331,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
-            if ("MVIEW".equals(tableType)) {
-                return new OracleMaterializedView(owner, dbResult);
-            } else if ("TABLE".equals(tableType)) {
+            if ("TABLE".equals(tableType)) {
                 return new OracleTable(context.getProgressMonitor(), owner, dbResult);
             } else {
                 return new OracleView(owner, dbResult);
@@ -713,6 +708,26 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         {
             return new OracleSynonym(owner, resultSet);
         }
+    }
+
+    static class MViewCache extends JDBCObjectCache<OracleSchema, OracleMaterializedView> {
+
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleSchema owner)
+            throws SQLException
+        {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM SYS.ALL_MVIEWS WHERE OWNER=? " +
+                "ORDER BY MVIEW_NAME");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        protected OracleMaterializedView fetchObject(JDBCExecutionContext context, OracleSchema owner, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new OracleMaterializedView(owner, dbResult);
+        }
+
     }
 
     static class DBLinkCache extends JDBCObjectCache<OracleSchema, OracleDBLink> {

@@ -205,8 +205,10 @@ public class ClientHomesControl extends Composite
         }
         Set<String> providedHomes = new LinkedHashSet<String>(
             clientManager.findClientHomeIds());
+        Set<String> allHomes = new LinkedHashSet<String>(providedHomes);
+        allHomes.addAll(driver.getClientHomeIds());
 
-        for (String homeId : driver.getClientHomeIds()) {
+        for (String homeId : allHomes) {
             createHomeItem(clientManager, homeId, providedHomes.contains(homeId));
         }
     }

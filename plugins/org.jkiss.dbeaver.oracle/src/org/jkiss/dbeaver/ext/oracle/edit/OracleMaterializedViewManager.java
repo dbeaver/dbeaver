@@ -32,7 +32,7 @@ public class OracleMaterializedViewManager extends JDBCObjectEditor<OracleMateri
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty");
         }
-        if (CommonUtils.isEmpty(command.getObject().getAdditionalInfo().getText())) {
+        if (CommonUtils.isEmpty(command.getObject().getSourceDeclaration(null))) {
             throw new DBException("View definition cannot be empty");
         }
     }
@@ -69,7 +69,7 @@ public class OracleMaterializedViewManager extends JDBCObjectEditor<OracleMateri
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = ContentUtils.getDefaultLineSeparator();
         decl.append("CREATE MATERIALIZED VIEW ").append(view.getFullQualifiedName()).append(lineSeparator)
-            .append("AS ").append(view.getAdditionalInfo().getText());
+            .append("AS ").append(view.getSourceDeclaration(null));
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction("Drop materialized view", "DROP MATERIALIZED VIEW " + view.getFullQualifiedName()),
             new AbstractDatabasePersistAction("Create materialized view", decl.toString())

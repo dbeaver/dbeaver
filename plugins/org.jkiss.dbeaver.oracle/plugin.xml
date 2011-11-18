@@ -137,6 +137,7 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView" label="%tree.materialized_views.node.name" iconId="#folder_view" description="Materialized Views">
                             <items label="%tree.materialized_view.node.name" path="view" property="materializedViews" iconId="#view">
+                                <!--
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="%tree.columns.node.name" iconId="#columns" description="View columns">
                                     <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" iconId="#column">
                                     </items>
@@ -153,6 +154,7 @@
                                         </items>
                                     </items>
                                 </folder>
+                                -->
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSequence" label="%tree.sequences.node.name" iconId="#sequences" description="Sequences">

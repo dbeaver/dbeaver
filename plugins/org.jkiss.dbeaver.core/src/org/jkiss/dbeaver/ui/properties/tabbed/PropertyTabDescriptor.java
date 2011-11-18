@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.properties.tabbed;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.tabbed.AbstractTabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ISectionDescriptor;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,6 +83,6 @@ public class PropertyTabDescriptor extends AbstractTabDescriptor {
      */
     public boolean isIndented()
     {
-        return true;//PropertiesContributor.TAB_STANDARD.equals(id);
+        return !DBeaverCore.getInstance().getLocalSystem().isWindows();//true;//PropertiesContributor.TAB_STANDARD.equals(id);
     }
 }
