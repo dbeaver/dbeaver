@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.dialogs.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -18,6 +19,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPClientHome;
 import org.jkiss.dbeaver.model.DBPClientManager;
+import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -29,11 +31,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * ClientHomesControl
+ * ClientHomesPanel
  */
-public class ClientHomesControl extends Composite
+public class ClientHomesPanel extends Composite
 {
-    static final Log log = LogFactory.getLog(ClientHomesControl.class);
+    static final Log log = LogFactory.getLog(ClientHomesPanel.class);
 
     private static String lastHomeDirectory;
 
@@ -47,7 +49,7 @@ public class ClientHomesControl extends Composite
     private Font fontBold;
     private Font fontItalic;
 
-    private DriverDescriptor driver;
+    private DBPDriver driver;
 
     static class HomeInfo {
         DBPClientHome home;
@@ -60,7 +62,7 @@ public class ClientHomesControl extends Composite
         }
     }
 
-    public ClientHomesControl(
+    public ClientHomesPanel(
         Composite parent,
         int style)
     {
@@ -192,7 +194,7 @@ public class ClientHomesControl extends Composite
         return homes;
     }
 
-    public void loadHomes(DriverDescriptor driver)
+    public void loadHomes(DBPDriver driver)
     {
         homesTable.removeAll();
         selectHome(null);
@@ -239,6 +241,69 @@ public class ClientHomesControl extends Composite
             if (homeInfo.isDefault) {
                 homeItem.setFont(fontBold);
             }
+        }
+    }
+
+    private String getSelectedHome()
+    {
+        TableItem[] selection = homesTable.getSelection();
+        if (CommonUtils.isEmpty(selection)) {
+            return null;
+        } else {
+            return ((HomeInfo)selection[0].getData()).home.getHomeId();
+        }
+    }
+
+    private static class ChooserDialog extends org.eclipse.jface.dialogs.Dialog {
+        private DBPDriver driver;
+        private ClientHomesPanel panel;
+        private String selectedHome;
+
+        protected ChooserDialog(Shell parentShell, DBPDriver driver)
+        {
+            super(parentShell);
+            this.driver = driver;
+        }
+
+        protected Control createDialogArea(Composite parent)
+        {
+            getShell().setText("Database Client Homes");
+
+            panel = new ClientHomesPanel(parent, SWT.NONE);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.widthHint = 500;
+            panel.setLayoutData(gd);
+            panel.loadHomes(driver);
+
+            return parent;
+        }
+
+        protected boolean isResizable()
+        {
+            return true;
+        }
+
+        @Override
+        protected void buttonPressed(int buttonId)
+        {
+            if (IDialogConstants.OK_ID == buttonId) {
+                selectedHome = panel.getSelectedHome();
+                if (driver instanceof DriverDescriptor) {
+                    ((DriverDescriptor) driver).setClientHomeIds(panel.getHomeIds());
+                    ((DriverDescriptor) driver).getProviderDescriptor().getRegistry().saveDrivers();
+                }
+            }
+            super.buttonPressed(buttonId);
+        }
+    }
+
+    public static String chooseClientHome(Shell parent, DBPDriver driver)
+    {
+        ChooserDialog dialog = new ChooserDialog(parent, driver);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            return dialog.selectedHome;
+        } else {
+            return null;
         }
     }
 

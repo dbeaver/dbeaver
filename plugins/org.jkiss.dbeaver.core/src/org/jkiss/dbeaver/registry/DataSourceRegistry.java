@@ -402,6 +402,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
                 xml.addAttribute("password", encPassword);
             }
+            if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
+                xml.addAttribute("home", connectionInfo.getClientHomeId());
+            }
             if (connectionInfo.getProperties() != null) {
                 for (Map.Entry<Object, Object> entry : connectionInfo.getProperties().entrySet()) {
                     xml.startElement("property");
@@ -530,6 +533,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         }
                     }
                     curDataSource.getConnectionInfo().setUserPassword(encPassword);
+                    curDataSource.getConnectionInfo().setClientHomeId(atts.getValue("home"));
                 }
             } else if (localName.equals("property")) {
                 if (curDataSource != null) {

@@ -62,6 +62,10 @@ public interface DBPDriver extends DBPObject
 
     boolean isSupportedByLocalSystem();
 
+    Collection<String> getClientHomeIds();
+
+    DBPClientHome getClientHome(String homeId);
+
     ClassLoader getClassLoader();
 
 }

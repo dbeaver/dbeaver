@@ -20,7 +20,6 @@ public class OracleMessages extends NLS {
 	public static String dialog_connection_advanced_tab;
 	public static String dialog_connection_advanced_tab_tooltip;
 	public static String dialog_connection_basic_tab;
-	public static String dialog_connection_browse;
 	public static String dialog_connection_connection_type_group;
 	public static String dialog_connection_custom_tab;
 	public static String dialog_connection_general_tab;

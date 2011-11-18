@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileType;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ClientHomesControl;
+import org.jkiss.dbeaver.ui.controls.ClientHomesPanel;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
@@ -81,7 +81,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private List<DriverFileDescriptor> libList;
     private PropertySourceCustom driverPropertySource;
     private PropertySourceCustom connectionPropertySource;
-    private ClientHomesControl clientHomesControl;
+    private ClientHomesPanel clientHomesPanel;
     //private Button anonymousCheck;
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
@@ -516,14 +516,14 @@ public class DriverEditDialog extends HelpEnabledDialog
         //Composite paramsGroup = new Composite(group, SWT.NONE);
         //paramsGroup.setLayout(new GridLayout(1, false));
 
-        clientHomesControl = new ClientHomesControl(group, SWT.NONE);
-        clientHomesControl.loadHomes(driver);
-        clientHomesControl.setLayoutData(new GridData(GridData.FILL_BOTH));
+        clientHomesPanel = new ClientHomesPanel(group, SWT.NONE);
+        clientHomesPanel.loadHomes(driver);
+        clientHomesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
         paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
         paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
-        paramsTab.setControl(clientHomesControl);
+        paramsTab.setControl(clientHomesPanel);
     }
 
     private void createLicenseTab(TabFolder group, String license)
@@ -606,7 +606,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         changeLibContent();
         parametersEditor.loadProperties(driverPropertySource);
         connectionPropertiesEditor.loadProperties(connectionPropertySource);
-        clientHomesControl.loadHomes(driver);
+        clientHomesPanel.loadHomes(driver);
     }
 
     @Override
@@ -645,8 +645,8 @@ public class DriverEditDialog extends HelpEnabledDialog
         driver.setConnectionProperties(connectionPropertySource.getProperties());
 
         // Store client homes
-        if (clientHomesControl != null) {
-            driver.setClientHomeIds(clientHomesControl.getHomeIds());
+        if (clientHomesPanel != null) {
+            driver.setClientHomeIds(clientHomesPanel.getHomeIds());
         }
 
         // Finish

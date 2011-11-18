@@ -269,6 +269,8 @@ public class CoreMessages extends NLS {
 	public static String model_navigator_Connection;
 	public static String model_navigator_Connections;
 
+    public static String client_home_selector_browse;
+
 	public static String dialog_about_font;
 	public static String dialog_about_label_version;
 	public static String dialog_about_title;

@@ -41,6 +41,7 @@ public class DBPConnectionInfo implements DBPObject
         this.userName = info.userName;
         this.userPassword = info.userPassword;
         this.url = info.url;
+        this.clientHomeId = info.clientHomeId;
         this.properties = new HashMap<Object, Object>(info.properties);
         this.events = new HashMap<DBPConnectionEventType, DBRShellCommand>(info.events);
     }
