@@ -926,7 +926,7 @@
         </menuContribution>
 
         <!-- File menu-->
-        <menuContribution allPopups="false" locationURI="menu:file?before=fileEnd">
+        <menuContribution allPopups="false" locationURI="menu:file?after=additions">
             <command commandId="org.eclipse.ui.newWizard">
                 <visibleWhen><test property="org.jkiss.dbeaver.core.global.standalone"/></visibleWhen>
             </command>
@@ -964,6 +964,9 @@
                 <visibleWhen><test property="org.jkiss.dbeaver.core.global.standalone"/></visibleWhen>
             </command>
 
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:file?after=fileEnd">
             <separator name="exit" visible="true"/>
             <command commandId="org.eclipse.ui.file.exit">
                 <visibleWhen><test property="org.jkiss.dbeaver.core.global.standalone"/></visibleWhen>

@@ -34,7 +34,7 @@ public class ERDEditorInput extends ProjectFileEditorInput implements IPersistab
 
     public String getToolTipText()
     {
-        return diagramName;
+        return "ER Diagram";
     }
 
     @Override

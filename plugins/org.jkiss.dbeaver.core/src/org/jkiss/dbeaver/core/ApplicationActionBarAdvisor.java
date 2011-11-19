@@ -91,10 +91,19 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         menuBar.add(helpMenu);
 
         // File
-        fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        fileMenu.add(new Separator(IWorkbenchActionConstants.FILE_END));
-        fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
-        fileMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
+        //MenuManager recentMenu = new MenuManager("Recent editors");
+        //recentMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
+
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        if (DBeaverCore.getInstance().isStandalone()) {
+            fileMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
+            fileMenu.add(new Separator());
+        }
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
+        if (DBeaverCore.getInstance().isStandalone()) {
+            fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
+        }
 
         // Edit
 /*
