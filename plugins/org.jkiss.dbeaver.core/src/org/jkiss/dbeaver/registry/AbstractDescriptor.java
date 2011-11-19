@@ -4,6 +4,12 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.apache.commons.jexl2.Expression;
+import org.apache.commons.jexl2.JexlContext;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,9 +28,72 @@ import java.net.URL;
 /**
  * EntityEditorDescriptor
  */
-public class AbstractDescriptor {
+public abstract class AbstractDescriptor {
 
     static final Log log = LogFactory.getLog(AbstractDescriptor.class);
+
+    protected class ObjectType {
+        String implName;
+        Class<?> implClass;
+        Expression expression;
+
+        ObjectType(String implName)
+        {
+            this.implName = implName;
+        }
+
+        ObjectType(IConfigurationElement cfg)
+        {
+            this.implName = cfg.getAttribute(RegistryConstants.ATTR_NAME);
+            String condition = cfg.getAttribute(RegistryConstants.ATTR_IF);
+            if (!CommonUtils.isEmpty(condition)) {
+                try {
+                    this.expression = RuntimeUtils.parseExpression(condition);
+                } catch (DBException ex) {
+                    log.warn("Can't parse object type expression: " + condition, ex); //$NON-NLS-1$
+                }
+            }
+        }
+
+        public boolean appliesTo(DBPObject object)
+        {
+            if (implClass == null) {
+                implClass = getObjectClass(implName);
+            }
+            if (implClass == null) {
+                return false;
+            }
+            if (!implClass.isAssignableFrom(object.getClass())) {
+                return false;
+            }
+            if (expression != null) {
+                Object result = expression.evaluate(makeContext(object));
+                return Boolean.TRUE.equals(result);
+            }
+            return true;
+        }
+
+        private JexlContext makeContext(final DBPObject object)
+        {
+            return new JexlContext() {
+                public Object get(String name)
+                {
+                    return name.equals("object") ? object : null; //$NON-NLS-1$
+                }
+
+                public void set(String name, Object value)
+                {
+                    log.warn("Set is not implemented"); //$NON-NLS-1$
+                }
+
+                public boolean has(String name)
+                {
+                    return name.equals("object") && object != null; //$NON-NLS-1$
+                }
+            };
+        }
+    }
+
 
     private IContributor contributor;
 
@@ -74,6 +143,11 @@ public class AbstractDescriptor {
 
     public Class<?> getObjectClass(String className)
     {
+        return getObjectClass(className, Object.class);
+    }
+
+    public <T> Class<T> getObjectClass(String className, Class<T> type)
+    {
         Class<?> objectClass = null;
         try {
             objectClass = DBeaverCore.getInstance().getPlugin().getBundle().loadClass(className);
@@ -89,7 +163,7 @@ public class AbstractDescriptor {
                 log.error("Can't determine object class '" + className + "'", ex);
             }
         }
-        return objectClass;
+        return (Class<T>) objectClass;
     }
 
 }

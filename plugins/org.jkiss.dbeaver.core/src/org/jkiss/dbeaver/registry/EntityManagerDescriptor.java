@@ -57,7 +57,7 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         return this.getObjectClass() != null && this.getObjectClass().isAssignableFrom(objectType);
     }
 
-    public Class getObjectClass()
+    public Class<?> getObjectClass()
     {
         if (objectClass == null) {
             objectClass = getObjectClass(objectType);
@@ -65,7 +65,7 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         return objectClass;
     }
 
-    public Class getManagerClass()
+    public Class<?> getManagerClass()
     {
         if (managerClass == null) {
             managerClass = getObjectClass(className);

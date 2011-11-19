@@ -59,7 +59,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     public synchronized Class<DBPResourceHandler> getHandlerClass()
     {
         if (handlerClass == null) {
-            handlerClass = (Class<DBPResourceHandler>)getObjectClass(className);
+            handlerClass = getObjectClass(className, DBPResourceHandler.class);
         }
         return handlerClass;
     }

@@ -4,7 +4,9 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
@@ -257,6 +259,17 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             }
         }
         return null;
+    }
+
+    public List<DataSourceToolDescriptor> getTools(DBPObject object)
+    {
+        List<DataSourceToolDescriptor> result = new ArrayList<DataSourceToolDescriptor>();
+        for (DataSourceToolDescriptor descriptor : tools) {
+            if (descriptor.appliesTo(object)) {
+                tools.add(descriptor);
+            }
+        }
+        return tools;
     }
 
     private DBXTreeNode loadTreeInfo(IConfigurationElement config)

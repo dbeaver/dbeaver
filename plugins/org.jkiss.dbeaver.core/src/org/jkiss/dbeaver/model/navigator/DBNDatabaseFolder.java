@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -14,7 +13,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -106,7 +105,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         if (CommonUtils.isEmpty(itemsType)) {
             return null;
         }
-        Class<?> aClass = meta.getSource().getObjectClass(itemsType);
+        Class<DBSObject> aClass = meta.getSource().getObjectClass(itemsType, DBSObject.class);
         if (aClass == null) {
             log.error("Items class '" + itemsType + "' not found");
             return null;
@@ -115,7 +114,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
             log.error("Class '" + aClass.getName() + "' doesn't extend DBSObject");
             return null;
         }
-        return (Class<DBSObject>)aClass ;
+        return aClass ;
     }
 
     public Collection<DBSObject> getChildrenObjects(DBRProgressMonitor monitor) throws DBException

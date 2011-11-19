@@ -105,7 +105,7 @@ public class DataExporterDescriptor extends AbstractDescriptor
         return false;
     }
 
-    public Class getExporterClass()
+    public Class<?> getExporterClass()
     {
         if (exporterClass == null) {
             exporterClass = getObjectClass(className);

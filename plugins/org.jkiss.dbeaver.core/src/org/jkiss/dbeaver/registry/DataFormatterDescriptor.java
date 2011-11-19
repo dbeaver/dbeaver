@@ -72,7 +72,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         return properties;
     }
 
-    public Class getFormatterClass()
+    public Class<?> getFormatterClass()
     {
         if (formatterClass == null) {
             formatterClass = getObjectClass(className);

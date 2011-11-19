@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * EntityEditorDescriptor
  */
-public class EntityEditorDescriptor extends AbstractDescriptor
+public class EntityEditorDescriptor extends AbstractContextDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.databaseEditor"; //NON-NLS-1 //$NON-NLS-1$
 
@@ -41,7 +41,6 @@ public class EntityEditorDescriptor extends AbstractDescriptor
     private String id;
     private String className;
     private String contributorClassName;
-    private List<ObjectType> objectTypes = new ArrayList<ObjectType>();
     private boolean main;
     private String name;
     private String description;
@@ -52,75 +51,13 @@ public class EntityEditorDescriptor extends AbstractDescriptor
     private Class<? extends IEditorPart> editorClass;
     private Class<? extends IEditorActionBarContributor> contributorClass;
 
-    private class ObjectType {
-        String implName;
-        Class<?> implClass;
-        Expression expression;
-
-        private ObjectType(String implName)
-        {
-            this.implName = implName;
-        }
-
-        private ObjectType(IConfigurationElement cfg)
-        {
-            this.implName = cfg.getAttribute(RegistryConstants.ATTR_NAME);
-            String condition = cfg.getAttribute(RegistryConstants.ATTR_IF);
-            if (!CommonUtils.isEmpty(condition)) {
-                try {
-                    this.expression = RuntimeUtils.parseExpression(condition);
-                } catch (DBException ex) {
-                    log.warn("Can't parse object type expression: " + condition, ex); //$NON-NLS-1$
-                }
-            }
-        }
-
-        public boolean appliesTo(DBPObject object)
-        {
-            if (implClass == null) {
-                implClass = getObjectClass(implName);
-            }
-            if (implClass == null) {
-                return false;
-            }
-            if (!implClass.isAssignableFrom(object.getClass())) {
-                return false;
-            }
-            if (expression != null) {
-                Object result = expression.evaluate(makeContext(object));
-                return Boolean.TRUE.equals(result);
-            }
-            return true;
-        }
-
-        private JexlContext makeContext(final DBPObject object)
-        {
-            return new JexlContext() {
-                public Object get(String name)
-                {
-                    return name.equals("object") ? object : null; //$NON-NLS-1$
-                }
-
-                public void set(String name, Object value)
-                {
-                    log.warn("Set is not implemented"); //$NON-NLS-1$
-                }
-
-                public boolean has(String name)
-                {
-                    return name.equals("object") && object != null; //$NON-NLS-1$
-                }
-            };
-        }
-    }
-
     EntityEditorDescriptor()
     {
         super(new IContributor() {
             public String getName() {
                 return DBeaverConstants.PLUGIN_ID;
             }
-        });
+        }, null);
         this.id = DEFAULT_OBJECT_EDITOR_ID;
         this.className = ObjectPropertiesEditor.class.getName();
         this.contributorClassName = null;
@@ -133,7 +70,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 
     public EntityEditorDescriptor(IConfigurationElement config)
     {
-        super(config.getContributor());
+        super(config.getContributor(), config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
@@ -145,19 +82,6 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         String iconPath = config.getAttribute(RegistryConstants.ATTR_ICON);
         if (!CommonUtils.isEmpty(iconPath)) {
             this.icon = iconToImage(iconPath);
-        }
-
-        {
-            String objectType = config.getAttribute(RegistryConstants.ATTR_OBJECT_TYPE);
-            if (objectType != null) {
-                objectTypes.add(new ObjectType(objectType));
-            }
-        }
-        IConfigurationElement[] typesCfg = config.getChildren(RegistryConstants.TAG_OBJECT_TYPE);
-        if (typesCfg != null) {
-            for (IConfigurationElement typeCfg : typesCfg) {
-                objectTypes.add(new ObjectType(typeCfg));
-            }
         }
     }
 
@@ -203,36 +127,10 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         return icon;
     }
 
-    public boolean appliesTo(DBPObject object)
-    {
-        for (ObjectType objectType : objectTypes) {
-            if (objectType.appliesTo(object)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-/*
-    public List<Class<?>> getObjectClasses()
-    {
-        if (objectClasses == null) {
-            objectClasses = new ArrayList<Class<?>>();
-            for (String objectType : objectTypes) {
-                Class<?> objectClass = getObjectClass(objectType);
-                if (objectClass != null) {
-                    objectClasses.add(objectClass);
-                }
-            }
-        }
-        return objectClasses;
-    }
-*/
-
     public Class<? extends IEditorPart> getEditorClass()
     {
         if (editorClass == null) {
-            editorClass = (Class<IEditorPart>) getObjectClass(className);
+            editorClass = getObjectClass(className, IEditorPart.class);
         }
         return editorClass;
     }
@@ -243,7 +141,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
             if (contributorClassName == null) {
                 return null;
             }
-            contributorClass = (Class<IEditorActionBarContributor>) getObjectClass(contributorClassName);
+            contributorClass = getObjectClass(contributorClassName, IEditorActionBarContributor.class);
         }
         return contributorClass;
     }
