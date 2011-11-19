@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.osgi.framework.Version;
 
 import java.io.ByteArrayInputStream;
@@ -45,8 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * DBeaverCore
@@ -526,6 +526,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         // QM
         queryManager.initDefaultPreferences(store);
+
+        // Data formats
+        DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
     }
 
     public static IWorkbenchWindow getActiveWorkbenchWindow()

@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * DataFormatterProfile
  */
-class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeListener {
+public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeListener {
 
     private static final String PROP_LANGUAGE = "dataformat.profile.language"; //$NON-NLS-1$
     private static final String PROP_COUNTRY = "dataformat.profile.country"; //$NON-NLS-1$
@@ -94,9 +94,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
                 }
             }
         }
-        if (store instanceof AbstractPreferenceStore) {
-            ((AbstractPreferenceStore)store).save();
-        }
+        RuntimeUtils.savePreferenceStore(store);
     }
 
     public IPreferenceStore getPreferenceStore()
@@ -181,4 +179,17 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
         }
     }
 
+    public static void initDefaultPreferences(IPreferenceStore store, Locale locale)
+    {
+        for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
+            Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
+            Map<Object, Object> formatterProps = new HashMap<Object, Object>();
+            for (PropertyDescriptorEx prop : formatter.getProperties()) {
+                Object defaultValue = defaultProperties.get(prop.getId());
+                if (defaultValue != null) {
+                    RuntimeUtils.setPreferenceDefaultValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), defaultValue);
+                }
+            }
+        }
+    }
 }

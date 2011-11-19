@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
+import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -150,6 +151,9 @@ public class RuntimeUtils {
     {
         try {
             if (!store.contains(propName)) {
+                if (store instanceof AbstractPreferenceStore && ((AbstractPreferenceStore)store).getParentStore() != null) {
+                    return getPreferenceValue(((AbstractPreferenceStore)store).getParentStore(), propName, valueType);
+                }
                 return null;
             }
             if (valueType == null || CharSequence.class.isAssignableFrom(valueType)) {
@@ -200,6 +204,28 @@ public class RuntimeUtils {
             store.setValue(propName, (Float) value);
         } else {
             store.setValue(propName, value.toString());
+        }
+    }
+
+    public static void setPreferenceDefaultValue(IPreferenceStore store, String propName, Object value)
+    {
+        if (value == null) {
+            return;
+        }
+        if (value instanceof CharSequence) {
+            store.setDefault(propName, value.toString());
+        } else if (value instanceof Boolean) {
+            store.setDefault(propName, (Boolean) value);
+        } else if (value instanceof Long) {
+            store.setDefault(propName, (Long) value);
+        } else if (value instanceof Integer || value instanceof Short || value instanceof Byte) {
+            store.setDefault(propName, ((Number) value).intValue());
+        } else if (value instanceof Double) {
+            store.setDefault(propName, (Double) value);
+        } else if (value instanceof Float) {
+            store.setDefault(propName, (Float) value);
+        } else {
+            store.setDefault(propName, value.toString());
         }
     }
 
