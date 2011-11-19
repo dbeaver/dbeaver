@@ -4,25 +4,17 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.jexl2.Expression;
-import org.apache.commons.jexl2.JexlContext;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.editors.entity.ObjectPropertiesEditor;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * EntityEditorDescriptor

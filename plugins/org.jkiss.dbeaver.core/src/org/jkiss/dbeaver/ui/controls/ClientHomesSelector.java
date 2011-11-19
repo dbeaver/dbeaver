@@ -102,7 +102,7 @@ public class ClientHomesSelector extends Composite
 
     private void displayClientVersion()
     {
-        DBPClientHome clientHome = driver.getClientHome(currentHomeId);
+        DBPClientHome clientHome = currentHomeId == null ? null : driver.getClientHome(currentHomeId);
         if (clientHome != null) {
             try {
                 // display client version

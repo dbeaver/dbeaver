@@ -163,6 +163,10 @@ public abstract class AbstractDescriptor {
                 log.error("Can't determine object class '" + className + "'", ex);
             }
         }
+        if (!type.isAssignableFrom(objectClass)) {
+            log.error("Object class '" + className + "' doesn't match requested type '" + type.getName() + "'");
+            return null;
+        }
         return (Class<T>) objectClass;
     }
 

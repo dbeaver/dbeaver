@@ -4,22 +4,21 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.registry.tree.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -135,11 +134,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return id;
     }
 
-    public String getImplClassName()
-    {
-        return implClassName;
-    }
-
     public String getName()
     {
         return name;
@@ -246,11 +240,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         }
     }
 
-    public List<DataSourceViewDescriptor> getViews()
-    {
-        return views;
-    }
-
     public DataSourceViewDescriptor getView(String targetID)
     {
         for (DataSourceViewDescriptor view : views) {
@@ -269,7 +258,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 tools.add(descriptor);
             }
         }
-        return tools;
+        return result;
     }
 
     private DBXTreeNode loadTreeInfo(IConfigurationElement config)
