@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -233,26 +234,31 @@ public class OCIUtils
      */
     public static String getFullOraVersion(String oraHome, boolean isInstantClient)
     {
-        String version = null;
-        String sqlplus = 
+        String sqlplus =
                 (isInstantClient ? CommonUtils.makeDirectoryName(oraHome) : CommonUtils.makeDirectoryName(oraHome) + "BIN/") +
                         "sqlplus -version";
         try {
             Process p = Runtime.getRuntime().exec(sqlplus);
-            BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            while ((line = input.readLine()) != null) {
-                if (line.startsWith("SQL*Plus: Release ")) {
-                    version = line.substring(18, line.indexOf(" ", 19));
-                    break;
+            try {
+                BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                try {
+                    String line;
+                    while ((line = input.readLine()) != null) {
+                        if (line.startsWith("SQL*Plus: Release ")) {
+                            return line.substring(18, line.indexOf(" ", 19));
+                        }
+                    }
+                } finally {
+                    IOUtils.close(input);
                 }
+            } finally {
+                p.destroy();
             }
-            input.close();
         }
         catch (Exception ex) {
             log.warn("Error reading Oracle client version from " + sqlplus, ex);
         }
-        return version;
+        return null;
     }
 
     /**

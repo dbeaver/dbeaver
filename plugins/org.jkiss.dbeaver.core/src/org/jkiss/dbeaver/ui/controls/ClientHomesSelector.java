@@ -68,8 +68,10 @@ public class ClientHomesSelector extends Composite
                 handleHomeChange();
             }
         });
-        versionLabel = new Label(this, SWT.NONE);
-        versionLabel.setText("                  "); //$NON-NLS-1$
+        versionLabel = new Label(this, SWT.CENTER);
+        gd = new GridData();
+        gd.widthHint = 60;
+        versionLabel.setLayoutData(gd);
     }
 
     private void manageHomes()

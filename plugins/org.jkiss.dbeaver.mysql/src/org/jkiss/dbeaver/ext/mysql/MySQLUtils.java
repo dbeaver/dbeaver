@@ -103,4 +103,8 @@ public class MySQLUtils {
     }
 
 
+    public static String getMySQLConsoleBinaryName()
+    {
+        return DBeaverCore.getInstance().getLocalSystem().isWindows() ? "mysql.exe" : "mysql";
+    }
 }

@@ -107,7 +107,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         if (path != null) {
             for (String token : path.split(System.getProperty("path.separator"))) {
                 token = CommonUtils.removeTrailingSlash(token);
-                File mysqlFile = new File(token, getMySQLConsoleBinaryName());
+                File mysqlFile = new File(token, MySQLUtils.getMySQLConsoleBinaryName());
                 if (mysqlFile.exists()) {
                     localServers.put(token, new MySQLServerHome(token, null));
                 }
@@ -139,11 +139,6 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                 log.warn("Error reading Windows registry", e);
             }
         }
-    }
-
-    private static String getMySQLConsoleBinaryName()
-    {
-        return DBeaverCore.getInstance().getLocalSystem().isWindows() ? "mysql.exe" : "mysql";
     }
 
 }
