@@ -39,6 +39,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
 
     public void updateElement(UIElement element, Map parameters)
     {
+        if (!updateUI) {
+            return;
+        }
         IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
         if (partSite != null) {
             final ISelectionProvider selectionProvider = partSite.getSelectionProvider();

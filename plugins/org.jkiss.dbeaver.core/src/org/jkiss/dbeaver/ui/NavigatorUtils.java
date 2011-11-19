@@ -139,7 +139,7 @@ public class NavigatorUtils {
                             if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
                                 DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                                 if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
-                                    String text = "Set Active " + databaseNode.getNodeType();
+                                    String text = "Set Active ";// + databaseNode.getNodeType();
                                     IAction action = ActionUtils.makeAction(new NavigatorActionSetActiveObject(), workbenchPart, selection, text, null, null);
 
                                     manager.add(action);

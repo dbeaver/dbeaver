@@ -13,7 +13,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class MySQLDataSourceProvider extends JDBCDataSourceProvider {
 

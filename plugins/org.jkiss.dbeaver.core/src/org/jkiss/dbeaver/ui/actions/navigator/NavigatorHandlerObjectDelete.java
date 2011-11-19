@@ -264,6 +264,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
     public void updateElement(UIElement element, Map parameters)
     {
+        if (!updateUI) {
+            return;
+        }
         //IWorkbenchPartSite partSite = (IWorkbenchPartSite) parameters.get(IServiceScopes.PARTSITE_SCOPE);
         IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
         if (partSite != null) {
