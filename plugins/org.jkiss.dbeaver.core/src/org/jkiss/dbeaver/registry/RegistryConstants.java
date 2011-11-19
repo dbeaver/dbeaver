@@ -78,6 +78,8 @@ public class RegistryConstants {
     static final String TAG_DRIVER_PROPERTIES = "driver-properties"; //$NON-NLS-1$
     static final String TAG_VIEWS = "views"; //$NON-NLS-1$
     static final String TAG_VIEW = "view"; //$NON-NLS-1$
+    static final String TAG_TOOLS = "tools"; //$NON-NLS-1$
+    static final String TAG_TOOL = "tool"; //$NON-NLS-1$
 
     public static final String ATTR_REF = "ref"; //$NON-NLS-1$
     public static final String ATTR_VISIBLE_IF = "visibleIf"; //$NON-NLS-1$

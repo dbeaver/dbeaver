@@ -34,18 +34,19 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
 
     private DataSourceProviderRegistry registry;
-    private String id;
-    private String implClassName;
-    private String name;
-    private String description;
+    private final String id;
+    private final String implClassName;
+    private final String name;
+    private final String description;
     private Image icon;
     private DBPDataSourceProvider instance;
     private DBXTreeNode treeDescriptor;
-    private Map<String, DBXTreeNode> treeNodeMap = new HashMap<String, DBXTreeNode>();
+    private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<String, DBXTreeNode>();
     private boolean driversManagable;
-    private List<IPropertyDescriptor> driverProperties = new ArrayList<IPropertyDescriptor>();
-    private List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
-    private List<DataSourceViewDescriptor> views = new ArrayList<DataSourceViewDescriptor>();
+    private final List<IPropertyDescriptor> driverProperties = new ArrayList<IPropertyDescriptor>();
+    private final List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
+    private final List<DataSourceViewDescriptor> views = new ArrayList<DataSourceViewDescriptor>();
+    private final List<DataSourceToolDescriptor> tools = new ArrayList<DataSourceToolDescriptor>();
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
@@ -71,41 +72,41 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         }
 
         // Load driver properties
-        IConfigurationElement[] driverPropsGroup = config.getChildren(RegistryConstants.TAG_DRIVER_PROPERTIES);
-        if (!CommonUtils.isEmpty(driverPropsGroup)) {
-            for (IConfigurationElement propsElement : driverPropsGroup) {
-                IConfigurationElement[] propElements = propsElement.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
-                for (IConfigurationElement prop : propElements) {
+        {
+            for (IConfigurationElement propsElement : config.getChildren(RegistryConstants.TAG_DRIVER_PROPERTIES)) {
+                for (IConfigurationElement prop : propsElement.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP)) {
                     driverProperties.addAll(PropertyDescriptorEx.extractProperties(prop));
                 }
             }
         }
 
         // Load supplied drivers
-        IConfigurationElement[] driversGroup = config.getChildren(RegistryConstants.TAG_DRIVERS);
-        if (!CommonUtils.isEmpty(driversGroup)) {
-            for (IConfigurationElement driversElement : driversGroup) {
+        {
+            for (IConfigurationElement driversElement : config.getChildren(RegistryConstants.TAG_DRIVERS)) {
                 this.driversManagable = driversElement.getAttribute(RegistryConstants.ATTR_MANAGABLE) == null ||
                     CommonUtils.getBoolean(driversElement.getAttribute(RegistryConstants.ATTR_MANAGABLE));
-                IConfigurationElement[] driverList = driversElement.getChildren(RegistryConstants.TAG_DRIVER);
-                if (!CommonUtils.isEmpty(driverList)) {
-                    for (IConfigurationElement driverElement : driverList) {
-                        this.drivers.add(loadDriver(driverElement));
-                    }
+                for (IConfigurationElement driverElement : driversElement.getChildren(RegistryConstants.TAG_DRIVER)) {
+                    this.drivers.add(loadDriver(driverElement));
                 }
             }
         }
 
         // Load views
-        IConfigurationElement[] viewsGroup = config.getChildren(RegistryConstants.TAG_VIEWS);
-        if (!CommonUtils.isEmpty(viewsGroup)) {
-            for (IConfigurationElement viewsElement : viewsGroup) {
-                IConfigurationElement[] viewList = viewsElement.getChildren(RegistryConstants.TAG_VIEW);
-                if (!CommonUtils.isEmpty(viewList)) {
-                    for (IConfigurationElement viewElement : viewList) {
-                        this.views.add(
-                            new DataSourceViewDescriptor(this, viewElement));
-                    }
+        {
+            for (IConfigurationElement viewsElement : config.getChildren(RegistryConstants.TAG_VIEWS)) {
+                for (IConfigurationElement viewElement : viewsElement.getChildren(RegistryConstants.TAG_VIEW)) {
+                    this.views.add(
+                        new DataSourceViewDescriptor(this, viewElement));
+                }
+            }
+        }
+
+        // Load views
+        {
+            for (IConfigurationElement toolsElement : config.getChildren(RegistryConstants.TAG_TOOLS)) {
+                for (IConfigurationElement toolElement : toolsElement.getChildren(RegistryConstants.TAG_TOOL)) {
+                    this.tools.add(
+                        new DataSourceToolDescriptor(this, toolElement));
                 }
             }
         }
