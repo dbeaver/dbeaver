@@ -29,7 +29,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
     private static final String PROP_COUNTRY = "dataformat.profile.country"; //$NON-NLS-1$
     private static final String PROP_VARIANT = "dataformat.profile.variant"; //$NON-NLS-1$
     public static final String DATAFORMAT_PREFIX = "dataformat."; //$NON-NLS-1$
-    public static final String DATAFORMAT_TYPE_PREFIX = DATAFORMAT_PREFIX + ".type."; //$NON-NLS-1$
+    public static final String DATAFORMAT_TYPE_PREFIX = DATAFORMAT_PREFIX + "type."; //$NON-NLS-1$
 
     private IPreferenceStore store;
     private String name;
