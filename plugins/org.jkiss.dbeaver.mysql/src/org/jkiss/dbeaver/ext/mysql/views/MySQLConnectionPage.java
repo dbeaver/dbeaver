@@ -4,10 +4,6 @@
 
 package org.jkiss.dbeaver.ext.mysql.views;
 
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
-import org.jkiss.utils.CommonUtils;
-import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -19,28 +15,25 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.Activator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
-import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
-import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * MySQLConnectionPage
  */
-public class MySQLConnectionPage extends DialogPage implements IDataSourceConnectionEditor
+public class MySQLConnectionPage extends ConnectionPageAdvanced
 {
-    private IDataSourceConnectionEditorSite site;
     private Text hostText;
     private Text portText;
     private Text dbText;
     private Text usernameText;
     private Text passwordText;
-    private ConnectionPropertiesControl connectionProps;
     private ClientHomesSelector homesSelector;
     private Button testButton;
-    private PropertySourceCustom propertySource;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/mysql_logo.png");
 
@@ -69,9 +62,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
         propsTab.setText(MySQLMessages.dialog_connection_advanced_tab);
         propsTab.setToolTipText(MySQLMessages.dialog_connection_advanced_tab_tooltip);
-        final Composite placeholder = UIUtils.createPlaceholder(optionsFolder, 1);
-        connectionProps = new ConnectionPropertiesControl(placeholder, SWT.NONE);
-        propsTab.setControl(placeholder);
+        propsTab.setControl(createPropertiesTab(optionsFolder));
 
         optionsFolder.addSelectionListener(
             new SelectionListener()
@@ -185,11 +176,6 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         return addrGroup;
     }
 
-    public void setSite(IDataSourceConnectionEditorSite site)
-    {
-        this.site = site;
-    }
-
     public boolean isComplete()
     {
         return hostText != null && portText != null && 
@@ -228,27 +214,10 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
             }
         }
 
-        // Set props model
-        if (connectionProps != null) {
-            refreshDriverProperties();
-        }
+        super.loadSettings();
     }
 
-    private void refreshDriverProperties()
-    {
-        DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
-        saveSettings(tmpConnectionInfo);
-        tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
-        propertySource = connectionProps.makeProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
-        connectionProps.loadProperties(propertySource);
-    }
-
-    public void saveSettings()
-    {
-        saveSettings(site.getConnectionInfo());
-    }
-
-    private void saveSettings(DBPConnectionInfo connectionInfo)
+    protected void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo != null) {
             if (hostText != null) {
@@ -266,9 +235,6 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
             if (passwordText != null) {
                 connectionInfo.setUserPassword(passwordText.getText());
             }
-            if (propertySource != null) {
-                connectionInfo.setProperties(propertySource.getProperties());
-            }
             if (homesSelector != null) {
                 connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
             }
@@ -276,6 +242,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
                 "jdbc:mysql://" + connectionInfo.getHostName() +
                     ":" + connectionInfo.getHostPort() +
                     "/" + connectionInfo.getDatabaseName());
+            super.saveSettings(connectionInfo);
         }
     }
 

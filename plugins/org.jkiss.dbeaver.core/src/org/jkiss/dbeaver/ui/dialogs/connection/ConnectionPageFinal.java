@@ -143,7 +143,7 @@ class ConnectionPageFinal extends ActiveWizardPage
 
         {
             Group securityGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_security, 1, GridData.FILL_HORIZONTAL, 0);
-            gd = new GridData(GridData.FILL_BOTH);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             gd.widthHint = 400;
             securityGroup.setLayoutData(gd);
@@ -156,7 +156,7 @@ class ConnectionPageFinal extends ActiveWizardPage
 
         {
             Group filterGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_filters, 2, GridData.FILL_HORIZONTAL, 0);
-            gd = new GridData(GridData.FILL_BOTH);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             filterGroup.setLayoutData(gd);
             
@@ -175,7 +175,7 @@ class ConnectionPageFinal extends ActiveWizardPage
         {
             Composite buttonsGroup = UIUtils.createPlaceholder(group, 2);
             buttonsGroup.setLayout(new GridLayout(2, true));
-            gd = new GridData(GridData.FILL_BOTH);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             buttonsGroup.setLayoutData(gd);
 

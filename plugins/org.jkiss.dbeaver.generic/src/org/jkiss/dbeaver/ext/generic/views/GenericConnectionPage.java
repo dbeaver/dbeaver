@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ext.generic.views;
 
-import org.jkiss.utils.CommonUtils;
-import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
@@ -13,14 +11,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericMessages;
-import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
-import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
-import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.util.*;
@@ -29,7 +25,7 @@ import java.util.List;
 /**
  * GenericConnectionPage
  */
-public class GenericConnectionPage extends DialogPage implements IDataSourceConnectionEditor
+public class GenericConnectionPage extends ConnectionPageAdvanced
 {
     private static final String PROP_HOST = "host"; //$NON-NLS-1$
     private static final String PROP_PORT = "port"; //$NON-NLS-1$
@@ -38,7 +34,6 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
     private static final String PROP_FOLDER = "folder"; //$NON-NLS-1$
     private static final String PROP_FILE = "file"; //$NON-NLS-1$
 
-    private IDataSourceConnectionEditorSite site;
     // Host/port
     private Text hostText;
     private Text portText;
@@ -57,9 +52,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
     private boolean isCustom;
     private DriverDescriptor.MetaURL metaURL;
 
-    private boolean driverPropsLoaded;
     private Composite settingsGroup;
-    private ConnectionPropertiesControl propsControl;
 
     private Map<String, List<Control>> propGroupMap = new HashMap<String, List<Control>>();
 
@@ -69,7 +62,6 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
     private static final String GROUP_DB = "db"; //$NON-NLS-1$
     private static final String GROUP_PATH = "path"; //$NON-NLS-1$
     private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
-    private PropertySourceCustom propertySource;
 
     public void createControl(Composite composite)
     {
@@ -363,18 +355,6 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
         return emptyLabel;
     }
 
-    private Composite createPropertiesTab(Composite parent)
-    {
-        final Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        propsControl = new ConnectionPropertiesControl(placeholder, SWT.NONE);
-        return placeholder;
-    }
-
-    public void setSite(IDataSourceConnectionEditorSite site)
-    {
-        this.site = site;
-    }
-
     public boolean isComplete()
     {
         if (isCustom) {
@@ -398,7 +378,6 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
     public void loadSettings()
     {
         // Load values from new connection info
-        driverPropsLoaded = false;
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
             this.parseSampleURL(site.getDriver());
@@ -455,30 +434,10 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
             }
         }
 
-        // Set props model
-        if (propsControl != null) {
-            refreshDriverProperties();
-        }
+        super.loadSettings();
     }
 
-    private void refreshDriverProperties()
-    {
-        if (!driverPropsLoaded) {
-            DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
-            saveSettings(tmpConnectionInfo);
-            tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
-            propertySource = propsControl.makeProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
-            propsControl.loadProperties(propertySource);
-            driverPropsLoaded = true;
-        }
-    }
-
-    public void saveSettings()
-    {
-        saveSettings(site.getConnectionInfo());
-    }
-
-    private void saveSettings(DBPConnectionInfo connectionInfo)
+    protected void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo != null) {
             final Set<String> properties = metaURL == null ? Collections.<String>emptySet() : metaURL.getAvailableProperties();
@@ -507,9 +466,7 @@ public class GenericConnectionPage extends DialogPage implements IDataSourceConn
             if (urlText != null) {
                 connectionInfo.setUrl(urlText.getText());
             }
-            if (propertySource != null) {
-                connectionInfo.setProperties(propertySource.getProperties());
-            }
+            super.saveSettings(connectionInfo);
         }
     }
 

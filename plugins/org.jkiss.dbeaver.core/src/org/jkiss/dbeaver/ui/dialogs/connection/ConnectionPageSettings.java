@@ -142,6 +142,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
         DBPConnectionInfo info = infoMap.get(driver);
         if (info == null) {
             info = new DBPConnectionInfo();
+            info.setClientHomeId(driver.getDefaultClientHomeId());
             infoMap.put(driver, info);
         }
         return info;

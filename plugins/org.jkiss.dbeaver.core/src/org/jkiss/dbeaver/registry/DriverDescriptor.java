@@ -1160,6 +1160,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return null;
     }
 
+    public String getDefaultClientHomeId()
+    {
+        DBPClientManager clientManager = getClientManager();
+        if (clientManager != null) {
+            return clientManager.getDefaultClientHomeId();
+        }
+        return null;
+    }
+
     static class DriversParser implements SAXListener
     {
         DataSourceProviderDescriptor curProvider;

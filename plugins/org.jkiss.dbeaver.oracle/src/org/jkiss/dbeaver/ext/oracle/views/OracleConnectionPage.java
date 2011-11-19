@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.views;
 
-import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -18,13 +17,10 @@ import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
-import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
-import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
-import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
-import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -32,20 +28,17 @@ import java.util.Map;
 /**
  * OracleConnectionPage
  */
-public class OracleConnectionPage extends DialogPage implements IDataSourceConnectionEditor
+public class OracleConnectionPage extends ConnectionPageAdvanced
 {
     //static final Log log = LogFactory.getLog(OracleConnectionPage.class);
 
-    private IDataSourceConnectionEditorSite site;
     private Text hostText;
     private Text portText;
     private Combo serviceNameCombo;
     private Text userNameText;
     private Combo userRoleCombo;
     private Text passwordText;
-    private ConnectionPropertiesControl connectionProps;
     private Button testButton;
-    private PropertySourceCustom propertySource;
     private Combo tnsNameCombo;
 	private CTabFolder connectionTypeFolder;
     private Composite bottomControls;
@@ -86,9 +79,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
         propsTab.setText(OracleMessages.dialog_connection_advanced_tab);
         propsTab.setToolTipText(OracleMessages.dialog_connection_advanced_tab_tooltip);
-        final Composite placeholder = UIUtils.createPlaceholder(optionsFolder, 1);
-        connectionProps = new ConnectionPropertiesControl(placeholder, SWT.NONE);
-        propsTab.setControl(placeholder);
+        propsTab.setControl(super.createPropertiesTab(optionsFolder));
 
 /*
         optionsFolder.addSelectionListener(
@@ -332,11 +323,6 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
         }
     }
 
-    public void setSite(IDataSourceConnectionEditorSite site)
-    {
-        this.site = site;
-    }
-
     public boolean isComplete()
     {
         if (isOCI && CommonUtils.isEmpty(oraHomeSelector.getSelectedHome())) {
@@ -440,34 +426,13 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             }
         }
 
-        // Set props model
-        if (connectionProps != null) {
-            refreshDriverProperties();
-        }
+        super.loadSettings();
     }
 
-    private void refreshDriverProperties()
-    {
-        DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
-        saveSettings(tmpConnectionInfo);
-        tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
-        propertySource = connectionProps.makeProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
-        connectionProps.loadProperties(propertySource);
-    }
-
-    public void saveSettings()
-    {
-        saveSettings(site.getConnectionInfo());
-    }
-
-    private void saveSettings(DBPConnectionInfo connectionInfo)
+    protected void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo != null) {
             Map<Object, Object> connectionProperties = connectionInfo.getProperties();
-            if (propertySource != null) {
-                connectionProperties.putAll(propertySource.getProperties());
-            }
-
             if (isOCI) {
                 connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
             }
@@ -504,6 +469,7 @@ public class OracleConnectionPage extends DialogPage implements IDataSourceConne
             } else {
                 connectionProperties.remove(OracleConstants.PROP_INTERNAL_LOGON);
             }
+            super.saveSettings(connectionInfo);
         }
     }
 
