@@ -46,4 +46,9 @@ public class OSDescriptor {
     public String toString() {
         return code + (arch == null ? "" : " (" + arch + ")");
     }
+
+    public boolean is64()
+    {
+        return "x86_64".equals(arch);
+    }
 }

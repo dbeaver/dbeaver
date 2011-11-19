@@ -21,7 +21,9 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * ClientHomesSelector
@@ -86,7 +88,12 @@ public class ClientHomesSelector extends Composite
 
         this.homesCombo.removeAll();
         this.homeIds.clear();
-        for (String homeId : driver.getClientHomeIds()) {
+
+        Set<String> homes = new LinkedHashSet<String>(
+            driver.getClientManager().findClientHomeIds());
+        homes.addAll(driver.getClientHomeIds());
+
+        for (String homeId : homes) {
             DBPClientHome home = driver.getClientHome(homeId);
             if (home != null) {
                 homesCombo.add(home.getDisplayName());

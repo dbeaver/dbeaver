@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.mysql.views;
 
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
+import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -37,6 +38,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
     private Text usernameText;
     private Text passwordText;
     private ConnectionPropertiesControl connectionProps;
+    private ClientHomesSelector homesSelector;
     private Button testButton;
     private PropertySourceCustom propertySource;
 
@@ -157,10 +159,16 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
 
+        homesSelector = new ClientHomesSelector(addrGroup, SWT.NONE, "Local Server");
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.horizontalSpan = 3;
+        gd.minimumWidth = 300;
+        homesSelector.setLayoutData(gd);
+
         testButton = new Button(addrGroup, SWT.PUSH);
         testButton.setText(MySQLMessages.dialog_connection_test_connection);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 4;
+        gd.horizontalSpan = 1;
         testButton.setLayoutData(gd);
         testButton.addSelectionListener(new SelectionListener()
         {
@@ -213,6 +221,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
             if (passwordText != null) {
                 passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
             }
+            homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
         } else {
             if (portText != null) {
                 portText.setText(String.valueOf(MySQLConstants.DEFAULT_PORT));
@@ -259,6 +268,9 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
             }
             if (propertySource != null) {
                 connectionInfo.setProperties(propertySource.getProperties());
+            }
+            if (homesSelector != null) {
+                connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
             }
             connectionInfo.setUrl(
                 "jdbc:mysql://" + connectionInfo.getHostName() +

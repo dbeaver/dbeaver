@@ -6,8 +6,15 @@ package org.jkiss.dbeaver.ext.mysql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.registry.OSDescriptor;
+import org.jkiss.dbeaver.utils.WinRegistry;
+import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -94,5 +101,6 @@ public class MySQLUtils {
         }
         return privs;
     }
-    
+
+
 }

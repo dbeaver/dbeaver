@@ -79,7 +79,7 @@ public class ClientHomesPanel extends Composite
             }
         });
 
-        GridLayout layout = new GridLayout(2, false);
+        GridLayout layout = new GridLayout(2, true);
         setLayout(layout);
 
         Composite listGroup = UIUtils.createPlaceholder(this, 1);
