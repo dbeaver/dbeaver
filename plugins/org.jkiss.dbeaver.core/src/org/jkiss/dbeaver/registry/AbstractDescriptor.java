@@ -33,7 +33,7 @@ public abstract class AbstractDescriptor {
     static final Log log = LogFactory.getLog(AbstractDescriptor.class);
 
     protected class ObjectType {
-        String implName;
+        final String implName;
         Class<?> implClass;
         Expression expression;
 
@@ -57,6 +57,9 @@ public abstract class AbstractDescriptor {
 
         public boolean appliesTo(DBPObject object)
         {
+            if (implName == null) {
+                return false;
+            }
             if (implClass == null) {
                 implClass = getObjectClass(implName);
             }
@@ -160,12 +163,11 @@ public abstract class AbstractDescriptor {
             try {
                 objectClass = getContributorBundle().loadClass(className);
             } catch (Throwable ex) {
-                log.error("Can't determine object class '" + className + "'", ex);
+                throw new IllegalStateException("Can't determine object class '" + className + "'", ex);
             }
         }
         if (!type.isAssignableFrom(objectClass)) {
-            log.error("Object class '" + className + "' doesn't match requested type '" + type.getName() + "'");
-            return null;
+            throw new IllegalStateException("Object class '" + className + "' doesn't match requested type '" + type.getName() + "'");
         }
         return (Class<T>) objectClass;
     }

@@ -71,10 +71,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.position = config.getAttribute(RegistryConstants.ATTR_POSITION);
-        String iconPath = config.getAttribute(RegistryConstants.ATTR_ICON);
-        if (!CommonUtils.isEmpty(iconPath)) {
-            this.icon = iconToImage(iconPath);
-        }
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
     }
 
     public String getId()

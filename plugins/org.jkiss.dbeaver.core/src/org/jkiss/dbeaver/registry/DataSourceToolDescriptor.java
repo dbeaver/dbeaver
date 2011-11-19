@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPTool;
 import org.osgi.framework.Bundle;
@@ -21,7 +23,7 @@ public class DataSourceToolDescriptor extends AbstractContextDescriptor
     private final String label;
     private final String description;
     private final String toolClassName;
-    private final Object icon;
+    private final Image icon;
 
     public DataSourceToolDescriptor(
         DataSourceProviderDescriptor provider, IConfigurationElement config)
@@ -31,7 +33,7 @@ public class DataSourceToolDescriptor extends AbstractContextDescriptor
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.toolClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
-        this.icon = config.getAttribute(RegistryConstants.ATTR_ICON);
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
     }
 
     public String getId()
@@ -49,19 +51,20 @@ public class DataSourceToolDescriptor extends AbstractContextDescriptor
         return description;
     }
 
-    public Object getIcon()
+    public Image getIcon()
     {
         return icon;
     }
 
     public DBPTool createTool()
+        throws DBException
     {
         try {
             Class<DBPTool> toolClass = getObjectClass(toolClassName, DBPTool.class);
             return toolClass.newInstance();
         }
         catch (Throwable ex) {
-            throw new IllegalStateException("Can't create tool '" + toolClassName + "'", ex);
+            throw new DBException("Can't create tool '" + toolClassName + "'", ex);
         }
     }
 

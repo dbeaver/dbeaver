@@ -255,7 +255,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         List<DataSourceToolDescriptor> result = new ArrayList<DataSourceToolDescriptor>();
         for (DataSourceToolDescriptor descriptor : tools) {
             if (descriptor.appliesTo(object)) {
-                tools.add(descriptor);
+                result.add(descriptor);
             }
         }
         return result;

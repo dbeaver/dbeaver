@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -32,6 +33,9 @@ import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.registry.DataSourceToolDescriptor;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
@@ -147,6 +151,29 @@ public class NavigatorUtils {
                             }
                         }
                     }
+                    // Add tools sub-menu
+                    if (selectedNode instanceof DBNDatabaseNode) {
+                        DBSObject object = ((DBNDatabaseNode) selectedNode).getObject();
+                        if (object.getDataSource() != null) {
+                            DriverDescriptor driver = (DriverDescriptor) object.getDataSource().getContainer().getDriver();
+                            List<DataSourceToolDescriptor> tools = driver.getProviderDescriptor().getTools(object);
+                            if (!CommonUtils.isEmpty(tools)) {
+                                MenuManager toolsMenu = new MenuManager("Tools");
+                                for (DataSourceToolDescriptor tool : tools) {
+                                    IAction action = ActionUtils.makeAction(
+                                        new NavigatorActionExecuteTool(workbenchPart.getSite().getWorkbenchWindow(), tool),
+                                        workbenchPart,
+                                        selection,
+                                        tool.getLabel(),
+                                        tool.getIcon() == null ? null : ImageDescriptor.createFromImage(tool.getIcon()),
+                                        tool.getDescription());
+                                    toolsMenu.add(action);
+                                }
+                                manager.add(toolsMenu);
+                            }
+                        }
+                    }
+                    //DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider()
                 }
 
                 manager.add(new Separator());

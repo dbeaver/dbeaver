@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.swt.graphics.Image;
 
 /**
  * DataSourceViewDescriptor
@@ -15,7 +16,7 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
     private String targetID;
     private String label;
     private String viewClassName;
-    private Object icon;
+    private Image icon;
 
     public DataSourceViewDescriptor(DataSourceProviderDescriptor provider, IConfigurationElement config)
     {
@@ -24,7 +25,7 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
         this.targetID = config.getAttribute(RegistryConstants.ATTR_TARGET_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.viewClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
-        this.icon = config.getAttribute(RegistryConstants.ATTR_ICON);
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
     }
 
     public String getId()
@@ -42,7 +43,7 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
         return label;
     }
 
-    public Object getIcon()
+    public Image getIcon()
     {
         return icon;
     }

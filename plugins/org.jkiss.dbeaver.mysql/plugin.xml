@@ -168,21 +168,21 @@
                     description="Make database dump"
                     id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolDump"
                     label="Database dump">
-                    <objectType type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 </tool>
                 <tool
                     class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
                     description="Import database"
                     id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
                     label="Database import">
-                    <objectType type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 </tool>
                 <tool
                     class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
                     description="Execute script with native client"
                     id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
                     label="Execute script">
-                    <objectType type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 </tool>
             </tools>
         </datasource>
