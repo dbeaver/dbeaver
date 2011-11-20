@@ -30,11 +30,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -136,7 +135,9 @@ public class MySQLToolDump extends MySQLToolAbstract {
                 public void widgetSelected(SelectionEvent e)
                 {
                     File file = ContentUtils.selectFileForSave(getShell(), "Choose output file", new String[]{"*.sql", "*.txt", "*.*"}, outputFileText.getText());
-                    outputFileText.setText(file.getAbsolutePath());
+                    if (file != null) {
+                        outputFileText.setText(file.getAbsolutePath());
+                    }
                 }
             });
             outputFileText.setText(outputFile.getName());
@@ -269,9 +270,9 @@ public class MySQLToolDump extends MySQLToolAbstract {
                 {
                     if (!dumpLogText.isDisposed()) {
                         dumpLogText.append(line);
+                        //dumpLogText.append(ContentUtils.getDefaultLineSeparator());
                         dumpLogText.setCaretOffset(dumpLogText.getCharCount());
                         dumpLogText.showSelection();
-                        //dumpLogText.append(ContentUtils.getDefaultLineSeparator());
                     }
                 }
             });
@@ -279,7 +280,7 @@ public class MySQLToolDump extends MySQLToolAbstract {
 
         public void setStatus(final String status)
         {
-            if (getShell().isDisposed()) {
+            if (getShell() == null || getShell().isDisposed()) {
                 return;
             }
             UIUtils.runInUI(getShell(), new Runnable() {
@@ -330,40 +331,21 @@ public class MySQLToolDump extends MySQLToolAbstract {
             cmd.add(catalog.getName());
 
             try {
-                ProcessBuilder builder = new ProcessBuilder(cmd);
-                process = builder.start();
-                new LogReaderJob(progressDialog, process.getErrorStream()).schedule();
-                //new LogReaderJob(progressDialog, process.getInputStream()).schedule();
-
-                InputStream inputStream = process.getInputStream();
-
-                long totalBytesDumped = 0, prevStatusSize = 0;
-                byte[] buffer = new byte[10000];
-                for (;;) {
-                    int count = inputStream.read(buffer);
-                    if (count <= 0) {
-                        break;
-                    }
-                    totalBytesDumped += count;
-                    if (totalBytesDumped - 10000 > prevStatusSize) {
-                        progressDialog.setStatus(String.valueOf(totalBytesDumped));
-                        prevStatusSize = totalBytesDumped;
-                    }
-                }
-
-            } catch (IOException e) {
-                return RuntimeUtils.makeExceptionStatus(e);
-            } finally {
-                Process proc;
-                synchronized (dumpSync) {
-                    proc = process;
-                }
+                //ProcessBuilder builder = new ProcessBuilder(cmd);
+                process = Runtime.getRuntime().exec(cmd.toArray(new String[cmd.size()]));//builder.start();
+                new DumpTransformerJob(progressDialog, process.getInputStream()).start();
+                new LogReaderJob(progressDialog, process.getErrorStream()).start();
                 try {
-                    proc.waitFor();
+                    process.waitFor();
                 } catch (InterruptedException e) {
                     // skip
                 }
-                process = null;
+            } catch (IOException e) {
+                return RuntimeUtils.makeExceptionStatus(e);
+            } finally {
+                synchronized (dumpSync) {
+                    process = null;
+                }
                 progressDialog.finishDump();
                 synchronized (dumpSync) {
                     dumpJob = null;
@@ -378,26 +360,79 @@ public class MySQLToolDump extends MySQLToolAbstract {
             synchronized (dumpSync) {
                 if (process != null) {
                     process.destroy();
+                    progressDialog.setStatus("Terminated");
                 }
             }
         }
     }
 
-    class LogReaderJob extends AbstractJob {
+    class DumpTransformerJob extends Thread {
         private DumpProgressDialog progressDialog;
-        private InputStreamReader input;
+        private InputStream input;
+
+        protected DumpTransformerJob(DumpProgressDialog progressDialog, InputStream stream)
+        {
+            super("Dump log reader");
+            this.progressDialog = progressDialog;
+            this.input = stream;
+        }
+
+        public void run()
+        {
+            long totalBytesDumped = 0;
+            long prevStatusUpdateTime = 0;
+            byte[] buffer = new byte[10000];
+            try {
+                NumberFormat numberFormat = NumberFormat.getInstance();
+                OutputStream output = new BufferedOutputStream(new FileOutputStream(outputFile), 10000);
+                try {
+                    for (;;) {
+                        int count = input.read(buffer);
+                        if (count <= 0) {
+                            break;
+                        }
+                        totalBytesDumped += count;
+                        long currentTime = System.currentTimeMillis();
+                        if (currentTime - prevStatusUpdateTime > 300) {
+                            progressDialog.setStatus(numberFormat.format(totalBytesDumped) + " bytes");
+                            prevStatusUpdateTime = currentTime;
+                        }
+                        output.write(buffer, 0, count);
+                    }
+                    progressDialog.setStatus("Done (" + String.valueOf(totalBytesDumped) + " bytes)");
+                    output.flush();
+                } finally {
+                    IOUtils.close(output);
+                }
+            } catch (IOException e) {
+                progressDialog.appendLog(e.getMessage());
+            }
+        }
+    }
+
+    class LogReaderJob extends Thread {
+        private DumpProgressDialog progressDialog;
+        private InputStream input;
+        //private BufferedReader in;
         protected LogReaderJob(DumpProgressDialog progressDialog, InputStream stream)
         {
             super("Dump log reader");
             this.progressDialog = progressDialog;
-            input = new InputStreamReader(stream);
+            //in = new BufferedReader(new InputStreamReader(stream), 100);
+            this.input = stream;
         }
 
-        @Override
-        protected IStatus run(DBRProgressMonitor monitor)
+        public void run()
         {
             progressDialog.appendLog("Database dump started at " + new Date() + ContentUtils.getDefaultLineSeparator());
             try {
+/*
+                String line;
+                while ((line = in.readLine()) != null) {
+                    progressDialog.appendLog(line);
+                }
+*/
+
                 StringBuilder buf = new StringBuilder();
                 for (;;) {
                     int b = input.read();
@@ -405,17 +440,18 @@ public class MySQLToolDump extends MySQLToolAbstract {
                         break;
                     }
                     buf.append((char)b);
+                    int avail = input.available();
                     if (b == 0x0A) {
                         progressDialog.appendLog(buf.toString());
                         buf.setLength(0);
                     }
                 }
+
             } catch (IOException e) {
                 // just skip
             } finally {
                 progressDialog.appendLog("Dump finished " + new Date());
             }
-            return Status.OK_STATUS;
         }
     }
 
