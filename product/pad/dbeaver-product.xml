@@ -32,6 +32,21 @@
 
     <versions>
         <version>
+            <number>1.4.4</number>
+            <type>unstable</type>
+            <date>21.11.2011</date>
+
+            <release-notes>
+                Experimental version
+                - UI and code fixes
+                - Native clients support
+                - MySQL tools
+                - Oracle metadata reading fixes
+                - i18n updates
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.4.3</number>
             <type>stable</type>
             <date>25.10.2011</date>
