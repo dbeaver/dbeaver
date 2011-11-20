@@ -13,8 +13,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPClientHome;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -33,7 +31,7 @@ public class ClientHomesSelector extends Composite
     static final Log log = LogFactory.getLog(ClientHomesSelector.class);
 
     private Combo homesCombo;
-    private Label versionLabel;
+    //private Label versionLabel;
     private DBPDriver driver;
     private List<String> homeIds = new ArrayList<String>();
     private String currentHomeId;
@@ -45,8 +43,7 @@ public class ClientHomesSelector extends Composite
     {
         super(parent, style);
 
-        this.setLayout(new GridLayout(3, false));
-        this.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        this.setLayout(new GridLayout(2, false));
 
         UIUtils.createControlLabel(this, title);
         //label.setFont(UIUtils.makeBoldFont(label.getFont()));
@@ -68,10 +65,10 @@ public class ClientHomesSelector extends Composite
                 handleHomeChange();
             }
         });
-        versionLabel = new Label(this, SWT.CENTER);
-        gd = new GridData();
-        gd.widthHint = 60;
-        versionLabel.setLayoutData(gd);
+//        versionLabel = new Label(this, SWT.CENTER);
+//        gd = new GridData();
+//        gd.widthHint = 60;
+//        versionLabel.setLayoutData(gd);
     }
 
     private void manageHomes()
@@ -111,6 +108,7 @@ public class ClientHomesSelector extends Composite
 
     private void displayClientVersion()
     {
+/*
         DBPClientHome clientHome = currentHomeId == null ? null : driver.getClientHome(currentHomeId);
         if (clientHome != null) {
             try {
@@ -126,6 +124,7 @@ public class ClientHomesSelector extends Composite
         } else {
             versionLabel.setText(""); //$NON-NLS-1$
         }
+*/
     }
 
     protected void handleHomeChange()

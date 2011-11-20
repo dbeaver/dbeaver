@@ -131,7 +131,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         final Group securityGroup = UIUtils.createControlGroup(addrGroup, OracleMessages.dialog_connection_security_group, 4, GridData.FILL_HORIZONTAL, 0);
         createSecurityGroup(securityGroup);
 
-        bottomControls = UIUtils.createPlaceholder(addrGroup, 2);
+        bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createBottomGroup(bottomControls);
         return addrGroup;
@@ -304,6 +304,21 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 //            Label phLabel = new Label(bottomControls, SWT.NONE);
 //            phLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 //        }
+
+        oraHomeSelector = new ClientHomesSelector(bottomControls, SWT.NONE, OracleMessages.dialog_connection_ora_home) {
+            @Override
+            protected void handleHomeChange()
+            {
+                populateTnsNameCombo();
+            }
+        };
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.widthHint = 300;
+        oraHomeSelector.setLayoutData(gd);
+
+        Label ph = new Label(bottomControls, SWT.NONE);
+        ph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         {
             testButton = new Button(bottomControls, SWT.PUSH);
             testButton.setText(OracleMessages.dialog_connection_test_connection);
@@ -343,21 +358,8 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
     public void loadSettings()
     {
         isOCI = OCIUtils.isOciDriver(site.getDriver());
-        if (isOCI) {
-            if (oraHomeSelector == null || oraHomeSelector.isDisposed()) {
-                oraHomeSelector = new ClientHomesSelector(bottomControls, SWT.NONE, OracleMessages.dialog_connection_ora_home) {
-                    @Override
-                    protected void handleHomeChange()
-                    {
-                        populateTnsNameCombo();
-                    }
-                };
-            }
-        } else {
-            if (oraHomeSelector != null) {
-                oraHomeSelector.dispose();
-            }
-        }
+
+        oraHomeSelector.setVisible(isOCI);
 
         if (tnsNameCombo.getItemCount() == 0) {
             populateTnsNameCombo();
