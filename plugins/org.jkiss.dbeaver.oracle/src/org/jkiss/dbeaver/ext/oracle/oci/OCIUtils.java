@@ -264,7 +264,7 @@ public class OCIUtils
     /**
      * Reads TNS names from a specified Oracle home or system variable TNS_ADMIN.
      */
-    public static List<String> readTnsNames(String oraHome, boolean checkTnsAdmin)
+    public static List<String> readTnsNames(File oraHome, boolean checkTnsAdmin)
     {
         File tnsNamesFile = null;
         if (checkTnsAdmin) {
@@ -274,7 +274,7 @@ public class OCIUtils
             }
         }
         if ((tnsNamesFile == null || !tnsNamesFile.exists()) && oraHome != null) {
-            tnsNamesFile = new File (oraHome + "/Network/Admin/TNSNAMES.ORA");
+            tnsNamesFile = new File (oraHome, "Network/Admin/TNSNAMES.ORA");
         }
         if (tnsNamesFile != null && tnsNamesFile.exists()) {
             return parseTnsNames(tnsNamesFile.getAbsolutePath());

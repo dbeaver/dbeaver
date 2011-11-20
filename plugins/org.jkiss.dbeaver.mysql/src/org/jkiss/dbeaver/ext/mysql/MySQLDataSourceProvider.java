@@ -91,6 +91,11 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 
     public DBPClientHome getClientHome(String homeId)
     {
+        return getServerHome(homeId);
+    }
+
+    public static MySQLServerHome getServerHome(String homeId)
+    {
         findLocalClients();
         MySQLServerHome home = localServers.get(homeId);
         return home == null ? new MySQLServerHome(homeId, homeId) : home;

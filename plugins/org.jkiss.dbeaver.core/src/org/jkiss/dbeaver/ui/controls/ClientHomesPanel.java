@@ -171,7 +171,7 @@ public class ClientHomesPanel extends Composite
     {
         removeButton.setEnabled(home != null && !home.isProvided);
         idText.setText(home == null ? "" : CommonUtils.getString(home.home.getHomeId()));
-        pathText.setText(home == null ? "" : CommonUtils.getString(home.home.getHomePath()));
+        pathText.setText(home == null ? "" : home.home.getHomePath().getAbsolutePath());
         nameText.setText(home == null ? "" : CommonUtils.getString(home.home.getDisplayName()));
         try {
             productNameText.setText(home == null ? "" : CommonUtils.getString(home.home.getProductName()));

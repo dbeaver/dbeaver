@@ -55,7 +55,7 @@ public class MySQLServerHome extends JDBCClientHome {
     private String getFullServerVersion()
     {
         String cmd = new File(
-            CommonUtils.makeDirectoryName(getHomePath()) + "BIN",
+            new File(getHomePath(), "BIN"),
             MySQLUtils.getMySQLConsoleBinaryName()).getAbsolutePath();
 
         try {

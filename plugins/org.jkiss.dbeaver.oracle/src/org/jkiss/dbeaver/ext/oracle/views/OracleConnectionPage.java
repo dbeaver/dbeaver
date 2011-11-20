@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -367,7 +368,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
         if (serviceNameCombo.getItemCount() == 0) {
             String oraHome = isOCI ? (!OCIUtils.getOraHomes().isEmpty() ? OCIUtils.getOraHomes().get(0).getHomeId() : null) : null;
-            for (String alias : OCIUtils.readTnsNames(oraHome, true)) {
+            for (String alias : OCIUtils.readTnsNames(new File(oraHome), true)) {
                 serviceNameCombo.add(alias);
             }
         }

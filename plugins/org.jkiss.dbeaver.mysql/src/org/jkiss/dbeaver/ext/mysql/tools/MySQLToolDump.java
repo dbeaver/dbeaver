@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.*;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -17,16 +17,26 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
+import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Database dump
@@ -179,7 +189,7 @@ public class MySQLToolDump extends MySQLToolAbstract {
             dumpLogText.setLayoutData(gd);
 
             dumpJob = new DumpJob(this);
-            dumpJob.schedule(1000);
+            dumpJob.schedule(200);
 
             return composite;
         }
@@ -226,6 +236,7 @@ public class MySQLToolDump extends MySQLToolAbstract {
                         if (UIUtils.confirmAction(getShell(), "Cancel database dump", "Are you sure you want to cancel database dump? Dump file may be corrupted")) {
                             dumpJob.stop();
                         }
+                        return;
                     }
                 }
             }
@@ -234,6 +245,9 @@ public class MySQLToolDump extends MySQLToolAbstract {
 
         public void finishDump()
         {
+            if (getShell().isDisposed()) {
+                return;
+            }
             UIUtils.runInUI(getShell(), new Runnable() {
                 public void run()
                 {
@@ -244,10 +258,44 @@ public class MySQLToolDump extends MySQLToolAbstract {
                 }
             });
         }
+
+        public void appendLog(final String line)
+        {
+            if (getShell().isDisposed()) {
+                return;
+            }
+            UIUtils.runInUI(getShell(), new Runnable() {
+                public void run()
+                {
+                    if (!dumpLogText.isDisposed()) {
+                        dumpLogText.append(line);
+                        dumpLogText.setCaretOffset(dumpLogText.getCharCount());
+                        dumpLogText.showSelection();
+                        //dumpLogText.append(ContentUtils.getDefaultLineSeparator());
+                    }
+                }
+            });
+        }
+
+        public void setStatus(final String status)
+        {
+            if (getShell().isDisposed()) {
+                return;
+            }
+            UIUtils.runInUI(getShell(), new Runnable() {
+                public void run()
+                {
+                    if (!statusLabel.isDisposed()) {
+                        statusLabel.setText(status);
+                    }
+                }
+            });
+        }
     }
 
     class DumpJob extends AbstractJob {
         private DumpProgressDialog progressDialog;
+        private Process process;
         protected DumpJob(DumpProgressDialog progressDialog)
         {
             super("Dump database " + catalog.getName());
@@ -257,16 +305,117 @@ public class MySQLToolDump extends MySQLToolAbstract {
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            progressDialog.finishDump();
-            synchronized (dumpSync) {
-                dumpJob = null;
+            DBSDataSourceContainer container = catalog.getDataSource().getContainer();
+            DBPConnectionInfo connectionInfo = container.getConnectionInfo();
+            String clientHomeId = connectionInfo.getClientHomeId();
+            if (clientHomeId == null) {
+                return RuntimeUtils.makeExceptionStatus(new DBException("Server home is not specified for connection"));
             }
+            MySQLServerHome home = MySQLDataSourceProvider.getServerHome(clientHomeId);
+            if (home == null) {
+                return RuntimeUtils.makeExceptionStatus(new DBException("Server home '" + clientHomeId + "' not found"));
+            }
+            String dumpPath = new File(home.getHomePath(), "bin/mysqldump").getAbsolutePath();
+            java.util.List<String> cmd = new ArrayList<String>();
+            cmd.add(dumpPath);
+            cmd.add("--host=" + connectionInfo.getHostName());
+            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                cmd.add("--port=" + connectionInfo.getHostPort());
+            }
+            cmd.add("-u");
+            cmd.add(connectionInfo.getUserName());
+            cmd.add("--password=" + connectionInfo.getUserPassword());
+            cmd.add("-v");
+            cmd.add("-q");
+            cmd.add(catalog.getName());
+
+            try {
+                ProcessBuilder builder = new ProcessBuilder(cmd);
+                process = builder.start();
+                new LogReaderJob(progressDialog, process.getErrorStream()).schedule();
+                //new LogReaderJob(progressDialog, process.getInputStream()).schedule();
+
+                InputStream inputStream = process.getInputStream();
+
+                long totalBytesDumped = 0, prevStatusSize = 0;
+                byte[] buffer = new byte[10000];
+                for (;;) {
+                    int count = inputStream.read(buffer);
+                    if (count <= 0) {
+                        break;
+                    }
+                    totalBytesDumped += count;
+                    if (totalBytesDumped - 10000 > prevStatusSize) {
+                        progressDialog.setStatus(String.valueOf(totalBytesDumped));
+                        prevStatusSize = totalBytesDumped;
+                    }
+                }
+
+            } catch (IOException e) {
+                return RuntimeUtils.makeExceptionStatus(e);
+            } finally {
+                Process proc;
+                synchronized (dumpSync) {
+                    proc = process;
+                }
+                try {
+                    proc.waitFor();
+                } catch (InterruptedException e) {
+                    // skip
+                }
+                process = null;
+                progressDialog.finishDump();
+                synchronized (dumpSync) {
+                    dumpJob = null;
+                }
+            }
+
             return Status.OK_STATUS;
         }
 
         public void stop()
         {
+            synchronized (dumpSync) {
+                if (process != null) {
+                    process.destroy();
+                }
+            }
+        }
+    }
 
+    class LogReaderJob extends AbstractJob {
+        private DumpProgressDialog progressDialog;
+        private InputStreamReader input;
+        protected LogReaderJob(DumpProgressDialog progressDialog, InputStream stream)
+        {
+            super("Dump log reader");
+            this.progressDialog = progressDialog;
+            input = new InputStreamReader(stream);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor)
+        {
+            progressDialog.appendLog("Database dump started at " + new Date() + ContentUtils.getDefaultLineSeparator());
+            try {
+                StringBuilder buf = new StringBuilder();
+                for (;;) {
+                    int b = input.read();
+                    if (b == -1) {
+                        break;
+                    }
+                    buf.append((char)b);
+                    if (b == 0x0A) {
+                        progressDialog.appendLog(buf.toString());
+                        buf.setLength(0);
+                    }
+                }
+            } catch (IOException e) {
+                // just skip
+            } finally {
+                progressDialog.appendLog("Dump finished " + new Date());
+            }
+            return Status.OK_STATUS;
         }
     }
 
