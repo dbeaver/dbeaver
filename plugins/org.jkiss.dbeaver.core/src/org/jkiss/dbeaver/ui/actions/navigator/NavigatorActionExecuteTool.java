@@ -42,7 +42,9 @@ public class NavigatorActionExecuteTool implements IActionDelegate
     {
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
             Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element instanceof DBPObject) {
+            if (element instanceof DBNDatabaseNode) {
+                executeTool(((DBNDatabaseNode) element).getObject());
+            } else if (element instanceof DBPObject) {
                 executeTool((DBPObject) element);
             }
         }

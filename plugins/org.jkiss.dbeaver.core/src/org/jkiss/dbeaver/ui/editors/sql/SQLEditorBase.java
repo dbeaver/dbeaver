@@ -548,18 +548,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     public void saveToExternalFile()
     {
-        FileDialog fileDialog = new FileDialog(getSite().getShell(), SWT.SAVE);
-        fileDialog.setFilterExtensions(new String[] { "*.sql", "*.txt", "*.*"});
         IEditorInput editorInput = getEditorInput();
-        if (editorInput instanceof ProjectFileEditorInput) {
-            fileDialog.setFileName(((ProjectFileEditorInput)getEditorInput()).getFile().getName());
-        }
-        fileDialog.setOverwrite(true);
-        String fileName = fileDialog.open();
-        if (CommonUtils.isEmpty(fileName)) {
+        String fileName = (editorInput instanceof ProjectFileEditorInput ?
+            ((ProjectFileEditorInput)getEditorInput()).getFile().getName() : null);
+
+        final File saveFile = ContentUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[] { "*.sql", "*.txt", "*.*"}, fileName);
+        if (saveFile == null) {
             return;
         }
-        final File saveFile = new File(fileName);
 
         try {
             DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {

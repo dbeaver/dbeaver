@@ -54,6 +54,7 @@ public class ContentUtils {
       '8', '9', 'a', 'b',
       'c', 'd', 'e', 'f'
     };
+    private static String curDialogFolder;
 
     public static byte[] getCharsetBOM(String charsetName)
     {
@@ -109,13 +110,29 @@ public class ContentUtils {
 
     public static File selectFileForSave(Shell parentShell)
     {
+        return selectFileForSave(parentShell, "Save Content As", null, null);
+    }
+
+    public static File selectFileForSave(Shell parentShell, String title, String[] filterExt, String fileName)
+    {
         FileDialog fileDialog = new FileDialog(parentShell, SWT.SAVE);
-        fileDialog.setText("Save Content As");
-        fileDialog.setOverwrite(true); 
-        String fileName = fileDialog.open();
+        fileDialog.setText(title);
+        fileDialog.setOverwrite(true);
+        if (filterExt != null) {
+            fileDialog.setFilterExtensions(filterExt);
+        }
+        if (fileName != null) {
+            fileDialog.setFileName(fileName);
+        }
+        if (curDialogFolder == null) {
+            fileDialog.setFilterPath(curDialogFolder);
+        }
+
+        fileName = fileDialog.open();
         if (CommonUtils.isEmpty(fileName)) {
             return null;
         }
+        curDialogFolder = fileDialog.getFilterPath();
         final File saveFile = new File(fileName);
         File saveDir = saveFile.getParentFile();
         if (!saveDir.exists()) {
