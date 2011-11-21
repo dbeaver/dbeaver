@@ -368,7 +368,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
         if (serviceNameCombo.getItemCount() == 0) {
             String oraHome = isOCI ? (!OCIUtils.getOraHomes().isEmpty() ? OCIUtils.getOraHomes().get(0).getHomeId() : null) : null;
-            for (String alias : OCIUtils.readTnsNames(new File(oraHome), true)) {
+            for (String alias : OCIUtils.readTnsNames(oraHome == null ? null : new File(oraHome), true)) {
                 serviceNameCombo.add(alias);
             }
         }

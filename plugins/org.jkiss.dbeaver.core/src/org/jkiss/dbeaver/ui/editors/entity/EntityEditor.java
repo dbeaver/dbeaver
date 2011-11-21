@@ -432,6 +432,16 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_END);
 
+        if (!actionContributors.isEmpty()) {
+            for (ActionContributorInfo contributorInfo : actionContributors) {
+                try {
+                    contributorInfo.contributor.init(this.getEditorSite().getActionBars(), this.getSite().getPage());
+                } catch (Exception e) {
+                    log.error(e);
+                }
+            }
+        }
+
         String defPageId = getEditorInput().getDefaultPageId();
         if (defPageId == null && editorDefaults != null) {
             defPageId = editorDefaults.pageId;
@@ -454,16 +464,6 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
         }
 
         UIUtils.setHelp(getContainer(), IHelpContextIds.CTX_ENTITY_EDITOR);
-
-        if (!actionContributors.isEmpty()) {
-            for (ActionContributorInfo contributorInfo : actionContributors) {
-                try {
-                    contributorInfo.contributor.init(this.getEditorSite().getActionBars(), this.getSite().getPage());
-                } catch (Exception e) {
-                    log.error(e);
-                }
-            }
-        }
     }
 
     private void addNavigatorTabs()

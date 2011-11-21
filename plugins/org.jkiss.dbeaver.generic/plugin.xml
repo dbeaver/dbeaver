@@ -280,7 +280,7 @@
                     defaultPort="1360"
                     webURL="http://developer.mimer.com/"
                     description="Mimer SQL TCP/IP driver">
-                    <file type="jar" path="drivers/mimer/mimjdbc3.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mimjdbc3.jar"/>
+                    <file type="jar" path="drivers/mimer/mimjdbc3.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mimer/mimjdbc3.jar"/>
                 </driver>
                 <driver
                     id="hsqldb_server"

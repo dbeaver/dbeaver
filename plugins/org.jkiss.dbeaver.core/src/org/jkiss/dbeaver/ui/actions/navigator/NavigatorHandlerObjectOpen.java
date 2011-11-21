@@ -10,10 +10,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -116,27 +113,38 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     return editor;
                 }
             }
-            if (selectedNode instanceof DBNDatabaseFolder) {
-                FolderEditorInput folderInput = new FolderEditorInput((DBNDatabaseFolder)selectedNode);
-                folderInput.setDefaultPageId(defaultPageId);
-                return workbenchWindow.getActivePage().openEditor(
-                    folderInput,
-                    FolderEditor.class.getName());
-            } else if (selectedNode instanceof DBNDatabaseObject) {
-                DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
-                ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
-                return workbenchWindow.getActivePage().openEditor(
-                    objectInput,
-                    objectNode.getMeta().getEditorId());
-            } else if (selectedNode.getObject() != null) {
-                EntityEditorInput editorInput = new EntityEditorInput(selectedNode);
-                editorInput.setDefaultPageId(defaultPageId);
-                editorInput.setDefaultFolderId(defaultFolderId);
-                return workbenchWindow.getActivePage().openEditor(
-                    editorInput,
-                    EntityEditor.class.getName());
-            } else {
-                throw new DBException("Don't know how to open object '" + selectedNode.getNodeName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+            IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
+            try {
+                if (selectedNode instanceof DBNDatabaseFolder) {
+                    FolderEditorInput folderInput = new FolderEditorInput((DBNDatabaseFolder)selectedNode);
+                    folderInput.setDefaultPageId(defaultPageId);
+                    return workbenchWindow.getActivePage().openEditor(
+                        folderInput,
+                        FolderEditor.class.getName());
+                } else if (selectedNode instanceof DBNDatabaseObject) {
+                    DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
+                    ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
+                    return workbenchWindow.getActivePage().openEditor(
+                        objectInput,
+                        objectNode.getMeta().getEditorId());
+                } else if (selectedNode.getObject() != null) {
+                    EntityEditorInput editorInput = new EntityEditorInput(selectedNode);
+                    editorInput.setDefaultPageId(defaultPageId);
+                    editorInput.setDefaultFolderId(defaultFolderId);
+                    return workbenchWindow.getActivePage().openEditor(
+                        editorInput,
+                        EntityEditor.class.getName());
+                } else {
+                    throw new DBException("Don't know how to open object '" + selectedNode.getNodeName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+                }
+            }
+            finally {
+                // Reactivate navigator
+                // Actually it still focused but we need to use it's selection
+                // I think it is an eclipse bug
+                if (!(oldActivePart instanceof IEditorPart)) {
+                    workbenchWindow.getActivePage().activate(oldActivePart);
+                }
             }
         } catch (Exception ex) {
             UIUtils.showErrorDialog(workbenchWindow.getShell(), CoreMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
