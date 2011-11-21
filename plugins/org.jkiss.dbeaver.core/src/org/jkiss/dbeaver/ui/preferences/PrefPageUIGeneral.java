@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -21,7 +22,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ui.general";
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ui.general"; //$NON-NLS-1$
     private Button automaticUpdateCheck;
     private Text proxyHostText;
     private Spinner proxyPortSpinner;
@@ -36,12 +37,12 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group groupObjects = UIUtils.createControlGroup(composite, "General", 1, GridData.VERTICAL_ALIGN_BEGINNING, 300);
-        automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, "Automatic Updates Check", false);
+        Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 300);
+        automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, false);
 
-        Group proxyObjects = UIUtils.createControlGroup(composite, "HTTP Proxy", 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
-        proxyHostText = UIUtils.createLabelText(proxyObjects, "Proxy Host", "");
-        proxyPortSpinner = UIUtils.createLabelSpinner(proxyObjects, "Proxy Port", 0, 0, 65535);
+        Group proxyObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_http_proxy, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
+        proxyHostText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_host, ""); //$NON-NLS-2$
+        proxyPortSpinner = UIUtils.createLabelSpinner(proxyObjects, CoreMessages.pref_page_ui_general_spinner_proxy_port, 0, 0, 65535);
 
         performDefaults();
 
