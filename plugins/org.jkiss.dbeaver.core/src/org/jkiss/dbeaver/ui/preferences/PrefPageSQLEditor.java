@@ -8,6 +8,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
@@ -20,7 +21,7 @@ import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
  */
 public class PrefPageSQLEditor extends TargetPrefPage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor";
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor"; //$NON-NLS-1$
 
     private Spinner executeTimeoutText;
 
@@ -59,9 +60,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         // General settings
         {
-            Composite commonGroup = UIUtils.createControlGroup(composite, "Common", 2, SWT.NONE, 0);
+            Composite commonGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_common, 2, SWT.NONE, 0);
             {
-                UIUtils.createControlLabel(commonGroup, "SQL statement timeout");
+                UIUtils.createControlLabel(commonGroup, CoreMessages.pref_page_sql_editor_label_sql_timeout);
 
                 executeTimeoutText = new Spinner(commonGroup, SWT.BORDER);
                 executeTimeoutText.setSelection(0);
@@ -74,20 +75,20 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         // Scripts
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite, "Scripts", 2, SWT.NONE, 0);
+            Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_scripts, 2, SWT.NONE, 0);
 
             {
-                UIUtils.createControlLabel(scriptsGroup, "Commit type");
+                UIUtils.createControlLabel(scriptsGroup, CoreMessages.pref_page_sql_editor_label_commit_type);
 
                 commitTypeCombo = new Combo(scriptsGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-                commitTypeCombo.add("At script end", SQLScriptCommitType.AT_END.ordinal());
-                commitTypeCombo.add("After each line (autocommit)", SQLScriptCommitType.AUTOCOMMIT.ordinal());
-                commitTypeCombo.add("After each specified line", SQLScriptCommitType.NLINES.ordinal());
-                commitTypeCombo.add("No commit", SQLScriptCommitType.NO_COMMIT.ordinal());
+                commitTypeCombo.add(CoreMessages.pref_page_sql_editor_combo_item_script_end, SQLScriptCommitType.AT_END.ordinal());
+                commitTypeCombo.add(CoreMessages.pref_page_sql_editor_combo_item_each_line_autocommit, SQLScriptCommitType.AUTOCOMMIT.ordinal());
+                commitTypeCombo.add(CoreMessages.pref_page_sql_editor_combo_item_each_spec_line, SQLScriptCommitType.NLINES.ordinal());
+                commitTypeCombo.add(CoreMessages.pref_page_sql_editor_combo_item_no_commit, SQLScriptCommitType.NO_COMMIT.ordinal());
             }
 
             {
-                UIUtils.createControlLabel(scriptsGroup, "Commit after line");
+                UIUtils.createControlLabel(scriptsGroup, CoreMessages.pref_page_sql_editor_label_commit_after_line);
                 commitLinesText = new Spinner(scriptsGroup, SWT.BORDER);
                 commitLinesText.setSelection(0);
                 commitLinesText.setDigits(0);
@@ -97,22 +98,22 @@ public class PrefPageSQLEditor extends TargetPrefPage
             }
 
             {
-                UIUtils.createControlLabel(scriptsGroup, "Error handling");
+                UIUtils.createControlLabel(scriptsGroup, CoreMessages.pref_page_sql_editor_label_error_handling);
 
                 errorHandlingCombo = new Combo(scriptsGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-                errorHandlingCombo.add("Stop + rollback", SQLScriptErrorHandling.STOP_ROLLBACK.ordinal());
-                errorHandlingCombo.add("Stop + commit", SQLScriptErrorHandling.STOP_COMMIT.ordinal());
-                errorHandlingCombo.add("Ignore", SQLScriptErrorHandling.IGNORE.ordinal());
+                errorHandlingCombo.add(CoreMessages.pref_page_sql_editor_combo_item_stop_rollback, SQLScriptErrorHandling.STOP_ROLLBACK.ordinal());
+                errorHandlingCombo.add(CoreMessages.pref_page_sql_editor_combo_item_stop_commit, SQLScriptErrorHandling.STOP_COMMIT.ordinal());
+                errorHandlingCombo.add(CoreMessages.pref_page_sql_editor_combo_item_ignore, SQLScriptErrorHandling.IGNORE.ordinal());
             }
 
-            fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, "Fetch resultsets", false);
+            fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, false);
         }
 
         // Scripts
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite, "Resources", 2, SWT.NONE, 0);
+            Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_resources, 2, SWT.NONE, 0);
 
-            autoFoldersCheck = UIUtils.createLabelCheckbox(scriptsGroup, "Put new scripts in folders", false);
+            autoFoldersCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, false);
         }
         return composite;
     }

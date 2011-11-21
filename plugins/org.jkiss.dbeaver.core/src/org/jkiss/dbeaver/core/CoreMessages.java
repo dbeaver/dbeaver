@@ -1053,6 +1053,38 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_query_manager_label_entries_per_page;
 
+	public static String pref_page_sql_editor_checkbox_fetch_resultsets;
+
+	public static String pref_page_sql_editor_checkbox_put_new_scripts;
+
+	public static String pref_page_sql_editor_combo_item_each_line_autocommit;
+
+	public static String pref_page_sql_editor_combo_item_each_spec_line;
+
+	public static String pref_page_sql_editor_combo_item_ignore;
+
+	public static String pref_page_sql_editor_combo_item_no_commit;
+
+	public static String pref_page_sql_editor_combo_item_script_end;
+
+	public static String pref_page_sql_editor_combo_item_stop_commit;
+
+	public static String pref_page_sql_editor_combo_item_stop_rollback;
+
+	public static String pref_page_sql_editor_group_common;
+
+	public static String pref_page_sql_editor_group_resources;
+
+	public static String pref_page_sql_editor_group_scripts;
+
+	public static String pref_page_sql_editor_label_commit_after_line;
+
+	public static String pref_page_sql_editor_label_commit_type;
+
+	public static String pref_page_sql_editor_label_error_handling;
+
+	public static String pref_page_sql_editor_label_sql_timeout;
+
 	public static String registry_entity_editor_descriptor_description;
 	public static String registry_entity_editor_descriptor_name;
 
