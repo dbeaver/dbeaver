@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
@@ -125,15 +126,15 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
                     enableDataSourceSpecificSettings(enabled);
                 }
             });
-            dataSourceSettingsButton.setText("Use datasource settings");
+            dataSourceSettingsButton.setText(CoreMessages.pref_page_target_button_use_datasource_settings);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             dataSourceSettingsButton.setLayoutData(gd);
 
-            changeSettingsTargetLink = createLink(composite, "Show global settings");
+            changeSettingsTargetLink = createLink(composite, CoreMessages.pref_page_target_link_show_global_settings);
             changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 
         } else if (supportsDataSourceSpecificOptions()) {
-            changeSettingsTargetLink = createLink(parent, "Show datasource settings");
+            changeSettingsTargetLink = createLink(parent, CoreMessages.pref_page_target_link_show_datasource_settings);
             changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
         }
 
