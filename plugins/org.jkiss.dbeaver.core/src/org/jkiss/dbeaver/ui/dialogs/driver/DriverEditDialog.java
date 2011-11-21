@@ -204,13 +204,14 @@ public class DriverEditDialog extends HelpEnabledDialog
 
                 UIUtils.createControlLabel(ph, CoreMessages.dialog_edit_driver_label_website);
                 Link urlLabel = new Link(ph, SWT.NONE);
-                urlLabel.setText("<a>" + driver.getWebURL() + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
+                urlLabel.setText("<a>" + (driver.getWebURL().length() > 32 ? CommonUtils.truncateString(driver.getWebURL(), 32) + "..." : driver.getWebURL()) + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
                 urlLabel.addSelectionListener(new SelectionAdapter() {
                     public void widgetSelected(SelectionEvent e)
                     {
-                        Program.launch(e.text);
+                        Program.launch(driver.getWebURL());
                     }
                 });
+                //urlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             }
 //            if (!isReadOnly) {
