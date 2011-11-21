@@ -316,6 +316,17 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         if (site instanceof IDoubleClickListener) {
             ((IDoubleClickListener)site).doubleClick(event);
         }
+        ISelection selection = event.getSelection();
+        if (!selection.isEmpty()) {
+            Object element = ((IStructuredSelection) selection).getFirstElement();
+            if (element instanceof DriverCategory) {
+                if (Boolean.TRUE.equals(getExpandedState(element))) {
+                    super.collapseToLevel(element, 1);
+                } else {
+                    super.expandToLevel(element, 1);
+                }
+            }
+        }
     }
 
 }
