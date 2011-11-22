@@ -43,7 +43,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
 	}
 
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle(ERDMessages.diagram_create_wizard);
+        setWindowTitle(ERDMessages.wizard_diagram_create_title);
         setNeedsProgressMonitor(true);
     }
 

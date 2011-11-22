@@ -39,11 +39,11 @@ class DiagramCreateWizardPage extends WizardPage {
 
     protected DiagramCreateWizardPage(EntityDiagram diagram)
     {
-        super(ERDMessages.create_new_diagram);
+        super(ERDMessages.wizard_page_diagram_create_name);
         this.diagram = diagram;
 
-        setTitle(ERDMessages.create_new_diagram);
-        setDescription(ERDMessages.manage_diagram_content);
+        setTitle(ERDMessages.wizard_page_diagram_create_title);
+        setDescription(ERDMessages.wizard_page_diagram_create_description);
     }
 
     @Override
@@ -55,9 +55,9 @@ class DiagramCreateWizardPage extends WizardPage {
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        Composite configGroup = UIUtils.createControlGroup(placeholder, ERDMessages.settings, 2, GridData.FILL_BOTH, 0);
+        Composite configGroup = UIUtils.createControlGroup(placeholder, ERDMessages.wizard_page_diagram_create_group_settings, 2, GridData.FILL_BOTH, 0);
 
-        final Text projectNameText = UIUtils.createLabelText(configGroup, ERDMessages.name, "");
+        final Text projectNameText = UIUtils.createLabelText(configGroup, "Name", ""); //$NON-NLS-1$ //$NON-NLS-2$
         projectNameText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {
@@ -66,7 +66,7 @@ class DiagramCreateWizardPage extends WizardPage {
             }
         });
 
-        Label contentLabel = UIUtils.createControlLabel(configGroup, ERDMessages.initial_content_optional);
+        Label contentLabel = UIUtils.createControlLabel(configGroup, ERDMessages.wizard_page_diagram_create_label_init_content);
         GridData gd = new GridData(GridData.BEGINNING);
         gd.horizontalSpan = 2;
         contentLabel.setLayoutData(gd);

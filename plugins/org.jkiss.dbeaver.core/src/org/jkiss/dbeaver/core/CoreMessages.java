@@ -143,6 +143,16 @@ public class CoreMessages extends NLS {
 
 	public static String controls_itemlist_action_copy;
 
+    public static String controls_locale_selector_group_locale;
+
+    public static String controls_locale_selector_label_country;
+
+    public static String controls_locale_selector_label_language;
+
+    public static String controls_locale_selector_label_locale;
+
+    public static String controls_locale_selector_label_variant;
+
 	public static String controls_querylog__ms;
 
 	public static String controls_querylog_action_clear_log;

@@ -64,7 +64,7 @@ public class NotePart extends NodePart
 			performDirectEdit();
 */
 		} else if (request.getType() == RequestConstants.REQ_OPEN) {
-            final String newText = EditTextDialog.editText(getViewer().getControl().getShell(), ERDMessages.note, getNote().getObject());
+            final String newText = EditTextDialog.editText(getViewer().getControl().getShell(), ERDMessages.part_note_title, getNote().getObject());
             if (newText != null) {
                 getNote().setObject(newText);
                 ((NoteFigure)getFigure()).setText(newText);

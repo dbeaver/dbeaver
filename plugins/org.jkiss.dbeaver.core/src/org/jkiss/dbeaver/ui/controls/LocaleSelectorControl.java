@@ -11,6 +11,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Locale;
@@ -44,9 +45,9 @@ public class LocaleSelectorControl extends Composite
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         gl = new GridLayout(2, false);
         group.setLayout(gl);
-        group.setText("Locale");
+        group.setText(CoreMessages.controls_locale_selector_group_locale);
 
-        UIUtils.createControlLabel(group, "Language");
+        UIUtils.createControlLabel(group, CoreMessages.controls_locale_selector_label_language);
         languageCombo = new Combo(group, SWT.DROP_DOWN);
         languageCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         languageCombo.addModifyListener(new ModifyListener() {
@@ -56,7 +57,7 @@ public class LocaleSelectorControl extends Composite
             }
         });
 
-        UIUtils.createControlLabel(group, "Country");
+        UIUtils.createControlLabel(group, CoreMessages.controls_locale_selector_label_country);
         countryCombo = new Combo(group, SWT.DROP_DOWN);
         countryCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         countryCombo.addModifyListener(new ModifyListener() {
@@ -66,7 +67,7 @@ public class LocaleSelectorControl extends Composite
             }
         });
 
-        UIUtils.createControlLabel(group, "Variant");
+        UIUtils.createControlLabel(group, CoreMessages.controls_locale_selector_label_variant);
         variantCombo = new Combo(group, SWT.DROP_DOWN);
         variantCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         variantCombo.addModifyListener(new ModifyListener() {
@@ -76,7 +77,7 @@ public class LocaleSelectorControl extends Composite
             }
         });
 
-        UIUtils.createControlLabel(group, "Locale");
+        UIUtils.createControlLabel(group, CoreMessages.controls_locale_selector_label_locale);
         localeText = new Text(group, SWT.BORDER | SWT.READ_ONLY);
         localeText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -84,7 +85,7 @@ public class LocaleSelectorControl extends Composite
 
         Set<String> languages = new TreeSet<String>();
         for (Locale locale : locales) {
-            languages.add(locale.getLanguage() + " - " + locale.getDisplayLanguage());
+            languages.add(locale.getLanguage() + " - " + locale.getDisplayLanguage()); //$NON-NLS-1$
         }
 
         currentLocale = defaultLocale;
@@ -158,7 +159,7 @@ public class LocaleSelectorControl extends Composite
         Set<String> countries = new TreeSet<String>();
         for (Locale locale : locales) {
             if (language.equals(locale.getLanguage()) && !CommonUtils.isEmpty(locale.getCountry())) {
-                countries.add(locale.getCountry() + " - " + locale.getDisplayCountry());
+                countries.add(locale.getCountry() + " - " + locale.getDisplayCountry()); //$NON-NLS-1$
             }
         }
         for (String country : countries) {
@@ -185,7 +186,7 @@ public class LocaleSelectorControl extends Composite
                     if (locale.getVariant().equals(locale.getDisplayVariant())) {
                         variants.add(locale.getVariant());
                     } else {
-                        variants.add(locale.getVariant() + " - " + locale.getDisplayVariant());
+                        variants.add(locale.getVariant() + " - " + locale.getDisplayVariant()); //$NON-NLS-1$
                     }
                 }
             }

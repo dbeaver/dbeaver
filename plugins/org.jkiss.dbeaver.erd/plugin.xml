@@ -200,7 +200,7 @@
     <extension point="org.eclipse.ui.menus">
         <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
-            <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="Create New Diagram">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -229,9 +229,9 @@
              class="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"
              icon="icons/erd.png"
              id="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"
-             name="ER Diagram">
+             name="%wizard.erd.name">
            <description>
-               Entity Relation Diagram (ERD)
+               %wizard.erd.description
            </description>
         </wizard>
     </extension>

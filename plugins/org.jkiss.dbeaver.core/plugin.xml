@@ -1360,7 +1360,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.perspectives">
-        <perspective name="Database Manager Perspective" class="org.jkiss.dbeaver.core.DBeaverPerspective" id="org.jkiss.dbeaver.core.perspective"/>
+        <perspective name="%perspective.name" class="org.jkiss.dbeaver.core.DBeaverPerspective" id="org.jkiss.dbeaver.core.perspective"/>
     </extension>
 
     <extension point="org.eclipse.ui.editors">
