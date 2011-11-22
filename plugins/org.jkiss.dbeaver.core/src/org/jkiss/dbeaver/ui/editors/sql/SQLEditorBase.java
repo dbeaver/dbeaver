@@ -506,18 +506,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     public void loadFromExternalFile()
     {
-        FileDialog fileDialog = new FileDialog(getSite().getShell(), SWT.OPEN);
-        fileDialog.setFilterExtensions(new String[] { "*.sql", "*.txt", "*.*"});
-        String fileName = fileDialog.open();
-        if (CommonUtils.isEmpty(fileName)) {
-            return;
-        }
-        final File loadFile = new File(fileName);
-        if (!loadFile.exists()) {
-            MessageBox aMessageBox = new MessageBox(getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
-            aMessageBox.setText("File doesn't exists");
-            aMessageBox.setMessage("The file "+ loadFile.getAbsolutePath() + " doesn't exists.");
-            aMessageBox.open();
+        final File loadFile = ContentUtils.openFile(getSite().getShell(), new String[] { "*.sql", "*.txt", "*.*"});
+        if (loadFile == null) {
             return;
         }
 

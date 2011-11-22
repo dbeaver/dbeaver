@@ -124,15 +124,11 @@ public class ContentUtils {
         if (fileName != null) {
             fileDialog.setFileName(fileName);
         }
-        if (curDialogFolder == null) {
-            fileDialog.setFilterPath(curDialogFolder);
-        }
 
-        fileName = fileDialog.open();
+        fileName = openFileDialog(fileDialog);
         if (CommonUtils.isEmpty(fileName)) {
             return null;
         }
-        curDialogFolder = fileDialog.getFilterPath();
         final File saveFile = new File(fileName);
         File saveDir = saveFile.getParentFile();
         if (!saveDir.exists()) {
@@ -144,8 +140,16 @@ public class ContentUtils {
 
     public static File openFile(Shell parentShell)
     {
+        return openFile(parentShell, null);
+    }
+
+    public static File openFile(Shell parentShell, String[] filterExt)
+    {
         FileDialog fileDialog = new FileDialog(parentShell, SWT.OPEN);
-        String fileName = fileDialog.open();
+        if (filterExt != null) {
+            fileDialog.setFilterExtensions(filterExt);
+        }
+        String fileName = openFileDialog(fileDialog);
         if (CommonUtils.isEmpty(fileName)) {
             return null;
         }
@@ -158,6 +162,18 @@ public class ContentUtils {
             return null;
         }
         return loadFile;
+    }
+
+    public static String openFileDialog(FileDialog fileDialog)
+    {
+        if (curDialogFolder == null) {
+            fileDialog.setFilterPath(curDialogFolder);
+        }
+        String fileName = fileDialog.open();
+        if (!CommonUtils.isEmpty(fileName)) {
+            curDialogFolder = fileDialog.getFilterPath();
+        }
+        return fileName;
     }
 
     public static void saveContentToFile(InputStream contentStream, File file, DBRProgressMonitor monitor)

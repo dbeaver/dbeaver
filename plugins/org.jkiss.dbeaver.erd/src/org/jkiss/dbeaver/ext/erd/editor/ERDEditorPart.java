@@ -643,7 +643,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             "JPEG format (*.jpg)",
             "Bitmap format (*.bmp)"});
 
-        String filePath = saveDialog.open();
+        String filePath = ContentUtils.openFileDialog(saveDialog);
         if (filePath == null || filePath.trim().length() == 0) {
             return;
         }
