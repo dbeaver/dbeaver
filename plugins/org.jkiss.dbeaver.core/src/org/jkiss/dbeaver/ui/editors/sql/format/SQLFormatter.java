@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.format;
 
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.ArrayList;
@@ -207,7 +208,7 @@ public class SQLFormatter {
                     encounterBetween = false;
                 }
             } else if (token.getType() == SQLFormatterConstants.COMMENT) {
-                if (token.getString().startsWith("/*")) { //$NON-NLS-1$
+                if (token.getString().startsWith(SQLConstants.ML_COMMENT_START)) {
                     index += insertReturnAndIndent(argList, index + 1, indent);
                 }
             }

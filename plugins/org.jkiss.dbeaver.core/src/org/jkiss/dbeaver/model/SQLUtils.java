@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
@@ -47,7 +48,11 @@ public final class SQLUtils {
 
     public static String stripComments(DBPDataSource dataSource, String query)
     {
-        return stripComments(query, "/*", "*/", dataSource.getContainer().getKeywordManager().getSingleLineComments());
+        return stripComments(
+            query,
+            SQLConstants.ML_COMMENT_START,
+            SQLConstants.ML_COMMENT_END,
+            dataSource.getContainer().getKeywordManager().getSingleLineComments());
     }
 
     public static String stripComments(String query, String mlCommentStart, String mlCommentEnd, String[] slComments)

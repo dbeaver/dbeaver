@@ -13,6 +13,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
@@ -73,7 +74,7 @@ public class CopyUnformattedTextAction extends Action {
                     String comment = document.get(tokenOffset, tokenLength);
                     for (String slc : singleLineComments) {
                         if (comment.startsWith(slc)) {
-                            comment = "/*" + comment.substring(slc.length()) + "*/";
+                            comment = SQLConstants.ML_COMMENT_START + comment.substring(slc.length()) + SQLConstants.ML_COMMENT_END;
                             break;
                         }
                     }
