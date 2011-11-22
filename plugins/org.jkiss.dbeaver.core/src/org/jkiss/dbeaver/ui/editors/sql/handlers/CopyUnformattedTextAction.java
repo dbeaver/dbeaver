@@ -48,7 +48,7 @@ public class CopyUnformattedTextAction extends Action {
             endPos = startPos + selection.getLength();
         } else {
             startPos = 0;
-            endPos = document.getLength() - 1;
+            endPos = document.getLength();
         }
 
         StringBuilder result = new StringBuilder();
