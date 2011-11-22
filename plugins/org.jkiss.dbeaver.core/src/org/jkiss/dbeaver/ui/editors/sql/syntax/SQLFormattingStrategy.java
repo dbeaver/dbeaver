@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
@@ -18,8 +16,6 @@ import java.util.StringTokenizer;
  */
 public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
 {
-    static final Log log = LogFactory.getLog(SQLFormattingStrategy.class);
-
     private SQLSyntaxManager sqlSyntax;
 
     /**

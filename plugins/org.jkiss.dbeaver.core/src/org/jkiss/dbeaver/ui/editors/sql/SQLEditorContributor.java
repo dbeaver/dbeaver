@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.CopyUnformattedTextAction;
 
 import java.util.ResourceBundle;
 
@@ -32,6 +33,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     private RetargetTextEditorAction contentAssistProposal;
     private RetargetTextEditorAction contentAssistTip;
     private RetargetTextEditorAction contentFormatProposal;
+    private CopyUnformattedTextAction copyUnformattedTextAction;
 
     public SQLEditorContributor()
     {
@@ -60,6 +62,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         contentFormatProposal.setActionDefinitionId(ICommandIds.CMD_CONTENT_FORMAT);
         contentAssistTip = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_TIP));
         contentAssistTip.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
+        copyUnformattedTextAction = new CopyUnformattedTextAction();
     }
 
     public void dispose()
@@ -83,6 +86,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
             contentAssistProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_PROPOSAL)); //$NON-NLS-1$
             contentAssistTip.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
             contentFormatProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
+            copyUnformattedTextAction.setEditor(activeEditorPart);
         }
     }
 
@@ -103,6 +107,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
             MenuManager formatMenu = new MenuManager(CoreMessages.actions_menu_edit_ContentFormat);
             editMenu.add(formatMenu);
             formatMenu.add(contentFormatProposal);
+            formatMenu.add(copyUnformattedTextAction);
             //editMenu.add(new Separator());
             //editMenu.add(executeStatementAction);
             //editMenu.add(executeScriptAction);
