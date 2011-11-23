@@ -27,10 +27,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-class ExportWizard extends AbstractToolWizard implements IExportWizard, DBRRunnableWithProgress {
+class DatabaseExportWizard extends AbstractToolWizard implements IExportWizard, DBRRunnableWithProgress {
 
-    static final Log log = LogFactory.getLog(ExportWizard.class);
+    static final Log log = LogFactory.getLog(DatabaseExportWizard.class);
+    private ProcessBuilder processBuilder;
 
     public enum DumpMethod {
         ONLINE,
@@ -41,28 +43,35 @@ class ExportWizard extends AbstractToolWizard implements IExportWizard, DBRRunna
     File outputFile;
     DumpMethod method;
     boolean noCreateStatements;
-    boolean addDropStatements;
-    boolean disableKeys;
-    boolean noExtendedInserts;
+    boolean addDropStatements = true;
+    boolean disableKeys = true;
+    boolean extendedInserts = true;
     boolean dumpEvents;
     boolean comments;
 
-    private ExportWizardPageSettings mainPage;
-    private ExportWizardPageFinal logPage;
+    private DatabaseExportWizardPageSettings mainPage;
+    private DatabaseExportWizardPageFinal logPage;
 
     private Process process;
+    private boolean finished;
 
-    public ExportWizard(MySQLCatalog catalog) {
+    public DatabaseExportWizard(MySQLCatalog catalog) {
         super(catalog);
-        this.method = DumpMethod.ONLINE;
+        this.method = DumpMethod.NORMAL;
         this.outputFile = new File(catalog.getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql");
 	}
 
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
+    @Override
+    public boolean canFinish()
+    {
+        return !finished && super.canFinish();
+    }
+
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(CoreMessages.dialog_project_export_wizard_window_title);
         setNeedsProgressMonitor(true);
-        mainPage = new ExportWizardPageSettings(this);
-        logPage = new ExportWizardPageFinal();
+        mainPage = new DatabaseExportWizardPageSettings(this);
+        logPage = new DatabaseExportWizardPageFinal();
     }
 
     public void addPages() {
@@ -93,7 +102,8 @@ class ExportWizard extends AbstractToolWizard implements IExportWizard, DBRRunna
         }
         UIUtils.showMessageBox(getShell(), "Database export", "Database '" + getCatalog().getName() + "' export completed", SWT.ICON_INFORMATION);
         Program.launch(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
-        return true;
+        getContainer().updateButtons();
+        return false;
 	}
 
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
@@ -116,6 +126,24 @@ class ExportWizard extends AbstractToolWizard implements IExportWizard, DBRRunna
         String dumpPath = new File(getServerHome().getHomePath(), "bin/mysqldump").getAbsolutePath();
         java.util.List<String> cmd = new ArrayList<String>();
         cmd.add(dumpPath);
+        cmd.add("-v");
+        cmd.add("-q");
+        switch (method) {
+            case LOCK_ALL_TABLES:
+                cmd.add("--lock-all-tables");
+                break;
+            case ONLINE:
+                cmd.add("--single-transaction");
+                break;
+        }
+
+        if (noCreateStatements) cmd.add("--no-create-info");
+        if (addDropStatements) cmd.add("--add-drop-table");
+        if (disableKeys) cmd.add("--disable-keys");
+        if (extendedInserts) cmd.add("--extended-insert");
+        if (dumpEvents) cmd.add("--events");
+        if (comments) cmd.add("--comments");
+
         cmd.add("--host=" + getConnectionInfo().getHostName());
         if (!CommonUtils.isEmpty(getConnectionInfo().getHostPort())) {
             cmd.add("--port=" + getConnectionInfo().getHostPort());
@@ -123,13 +151,12 @@ class ExportWizard extends AbstractToolWizard implements IExportWizard, DBRRunna
         cmd.add("-u");
         cmd.add(getConnectionInfo().getUserName());
         cmd.add("--password=" + getConnectionInfo().getUserPassword());
-        cmd.add("-v");
-        cmd.add("-q");
+
         cmd.add(getCatalog().getName());
 
         try {
-            //ProcessBuilder builder = new ProcessBuilder(cmd);
-            process = Runtime.getRuntime().exec(cmd.toArray(new String[cmd.size()]));//builder.start();
+            processBuilder = new ProcessBuilder(cmd);
+            process = processBuilder.start();
             new DumpTransformerJob(monitor, process.getInputStream()).start();
             new LogReaderJob(process.getErrorStream()).start();
 
@@ -153,6 +180,7 @@ class ExportWizard extends AbstractToolWizard implements IExportWizard, DBRRunna
             return false;
         }
 
+        finished = true;
         return true;
     }
 
@@ -217,7 +245,18 @@ class ExportWizard extends AbstractToolWizard implements IExportWizard, DBRRunna
 
         public void run()
         {
-            logPage.appendLog("Database dump started at " + new Date() + ContentUtils.getDefaultLineSeparator());
+            String lf = ContentUtils.getDefaultLineSeparator();
+            List<String> command = processBuilder.command();
+            StringBuilder cmdString = new StringBuilder();
+            for (String cmd : command) {
+                if (cmd.startsWith("--password")) continue;
+                if (cmdString.length() > 0) cmdString.append(' ');
+                cmdString.append(cmd);
+            }
+            cmdString.append(lf);
+            logPage.appendLog(cmdString.toString());
+            logPage.appendLog("Database dump started at " + new Date() + lf);
+
             try {
 /*
                 String line;
@@ -243,7 +282,7 @@ class ExportWizard extends AbstractToolWizard implements IExportWizard, DBRRunna
             } catch (IOException e) {
                 // just skip
             } finally {
-                logPage.appendLog("Dump finished " + new Date() + ContentUtils.getDefaultLineSeparator());
+                logPage.appendLog("Dump finished " + new Date() + lf);
             }
         }
     }

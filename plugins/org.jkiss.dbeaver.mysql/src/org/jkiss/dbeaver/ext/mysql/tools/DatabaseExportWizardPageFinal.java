@@ -12,11 +12,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 
-class ExportWizardPageFinal extends WizardPage {
+class DatabaseExportWizardPageFinal extends WizardPage {
 
     private StyledText dumpLogText;
 
-    protected ExportWizardPageFinal()
+    protected DatabaseExportWizardPageFinal()
     {
         super("Export progress");
         setTitle("Export progress");

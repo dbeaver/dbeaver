@@ -16,18 +16,18 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 
 
-class ExportWizardPageSettings extends AbstractToolWizardPage<ExportWizard> {
+class DatabaseExportWizardPageSettings extends AbstractToolWizardPage<DatabaseExportWizard> {
 
     private Text outputFileText;
     private Combo methodCombo;
     private Button noCreateStatementsCheck;
     private Button addDropStatementsCheck;
     private Button disableKeysCheck;
-    private Button noExtendedInsertsCheck;
+    private Button extendedInsertsCheck;
     private Button dumpEventsCheck;
     private Button commentsCheck;
 
-    protected ExportWizardPageSettings(ExportWizard wizard)
+    protected DatabaseExportWizardPageSettings(DatabaseExportWizard wizard)
     {
         super(wizard, "Export configuration");
         setTitle("Export configuration");
@@ -56,7 +56,7 @@ class ExportWizardPageSettings extends AbstractToolWizardPage<ExportWizard> {
         noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, "No CREATE statements", wizard.noCreateStatements);
         addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, "Add DROP statements", wizard.addDropStatements);
         disableKeysCheck = UIUtils.createCheckbox(settingsGroup, "Disable keys", wizard.disableKeys);
-        noExtendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, "No extended inserts", wizard.noExtendedInserts);
+        extendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, "Extended inserts", wizard.extendedInserts);
         dumpEventsCheck = UIUtils.createCheckbox(settingsGroup, "Dump events", wizard.dumpEvents);
         commentsCheck = UIUtils.createCheckbox(settingsGroup, "Additional comments", wizard.comments);
 
@@ -89,14 +89,14 @@ class ExportWizardPageSettings extends AbstractToolWizardPage<ExportWizard> {
         String fileName = outputFileText.getText();
         wizard.outputFile = CommonUtils.isEmpty(fileName) ? null : new File(fileName);
         switch (methodCombo.getSelectionIndex()) {
-            case 0: wizard.method = ExportWizard.DumpMethod.ONLINE; break;
-            case 1: wizard.method = ExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
-            default: wizard.method = ExportWizard.DumpMethod.NORMAL; break;
+            case 0: wizard.method = DatabaseExportWizard.DumpMethod.ONLINE; break;
+            case 1: wizard.method = DatabaseExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
+            default: wizard.method = DatabaseExportWizard.DumpMethod.NORMAL; break;
         }
         wizard.noCreateStatements = noCreateStatementsCheck.getSelection();
         wizard.addDropStatements = addDropStatementsCheck.getSelection();
         wizard.disableKeys = disableKeysCheck.getSelection();
-        wizard.noExtendedInserts = noExtendedInsertsCheck.getSelection();
+        wizard.extendedInserts = extendedInsertsCheck.getSelection();
         wizard.dumpEvents = dumpEventsCheck.getSelection();
         wizard.comments = commentsCheck.getSelection();
 

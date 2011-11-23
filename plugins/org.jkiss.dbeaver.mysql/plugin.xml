@@ -164,9 +164,9 @@
             </views>
             <tools>
                 <tool
-                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolDump"
+                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
                     description="Export database"
-                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolDump"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
                     label="Export database">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 </tool>

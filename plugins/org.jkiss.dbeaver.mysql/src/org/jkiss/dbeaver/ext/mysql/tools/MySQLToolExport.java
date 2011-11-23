@@ -11,15 +11,15 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 /**
- * Database dump
+ * Database export
  */
-public class MySQLToolDump extends MySQLToolAbstract {
+public class MySQLToolExport extends MySQLToolAbstract {
 
     @Override
     public void execute(IWorkbenchWindow window, DBPObject object) throws DBException
     {
         if (object instanceof MySQLCatalog) {
-            ExportWizard wizard = new ExportWizard((MySQLCatalog) object);
+            DatabaseExportWizard wizard = new DatabaseExportWizard((MySQLCatalog) object);
             ActiveWizardDialog dialog = new ActiveWizardDialog(window, wizard);
             dialog.open();
         }
