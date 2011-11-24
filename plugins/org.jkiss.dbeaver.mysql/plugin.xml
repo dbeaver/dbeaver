@@ -167,14 +167,16 @@
                     class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
                     description="Export database"
                     id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
-                    label="Export database">
+                    label="Export database"
+                    icon="#export">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 </tool>
                 <tool
                     class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
                     description="Import database"
                     id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
-                    label="Import database">
+                    label="Import database"
+                    icon="#import">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 </tool>
                 <tool

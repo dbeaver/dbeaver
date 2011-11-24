@@ -7,9 +7,8 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
-import org.eclipse.ui.IExportWizard;
+import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -20,35 +19,21 @@ import java.io.*;
 import java.text.NumberFormat;
 import java.util.List;
 
-class DatabaseExportWizard extends AbstractToolWizard implements IExportWizard {
+class DatabaseImportWizard extends AbstractToolWizard implements IImportWizard {
 
-    public enum DumpMethod {
-        ONLINE,
-        LOCK_ALL_TABLES,
-        NORMAL
-    }
+    File inputFile;
 
-    File outputFile;
-    DumpMethod method;
-    boolean noCreateStatements;
-    boolean addDropStatements = true;
-    boolean disableKeys = true;
-    boolean extendedInserts = true;
-    boolean dumpEvents;
-    boolean comments;
+    private DatabaseImportWizardPageSettings mainPage;
 
-    private DatabaseExportWizardPageSettings mainPage;
-
-    public DatabaseExportWizard(MySQLCatalog catalog) {
-        super(catalog, "Export");
-        this.method = DumpMethod.NORMAL;
-        this.outputFile = new File(catalog.getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql");
+    public DatabaseImportWizard(MySQLCatalog catalog) {
+        super(catalog, "Import");
+        this.inputFile = null;
 	}
 
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Database export");
+        setWindowTitle("Database Import");
         setNeedsProgressMonitor(true);
-        mainPage = new DatabaseExportWizardPageSettings(this);
+        mainPage = new DatabaseImportWizardPageSettings(this);
     }
 
     public void addPages() {
@@ -59,58 +44,43 @@ class DatabaseExportWizard extends AbstractToolWizard implements IExportWizard {
 
 	@Override
 	public void onSuccess() {
-        UIUtils.showMessageBox(getShell(), "Database export", "Database '" + getCatalog().getName() + "' export completed", SWT.ICON_INFORMATION);
-        Program.launch(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
+        UIUtils.showMessageBox(getShell(), "Database import", "Database '" + getCatalog().getName() + "' import completed", SWT.ICON_INFORMATION);
+        Program.launch(inputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
 	}
 
     @Override
     protected void fillProcessParameters(List<String> cmd)
     {
-        String dumpPath = new File(getServerHome().getHomePath(), "bin/mysqldump").getAbsolutePath();
+        String dumpPath = new File(getServerHome().getHomePath(), "bin/mysql").getAbsolutePath();
         cmd.add(dumpPath);
-        switch (method) {
-            case LOCK_ALL_TABLES:
-                cmd.add("--lock-all-tables");
-                break;
-            case ONLINE:
-                cmd.add("--single-transaction");
-                break;
-        }
-
-        if (noCreateStatements) cmd.add("--no-create-info");
-        if (addDropStatements) cmd.add("--add-drop-table");
-        if (disableKeys) cmd.add("--disable-keys");
-        if (extendedInserts) cmd.add("--extended-insert");
-        if (dumpEvents) cmd.add("--events");
-        if (comments) cmd.add("--comments");
     }
 
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, ProcessBuilder processBuilder, Process process)
     {
-        new DumpTransformerJob(monitor, process.getInputStream());
+        new ScriptTransformerJob(monitor, process.getInputStream());
     }
 
-    class DumpTransformerJob extends Thread {
+    class ScriptTransformerJob extends Thread {
         private DBRProgressMonitor monitor;
         private InputStream input;
 
-        protected DumpTransformerJob(DBRProgressMonitor monitor, InputStream stream)
+        protected ScriptTransformerJob(DBRProgressMonitor monitor, InputStream stream)
         {
-            super("Dump log reader");
+            super("Script dumper");
             this.monitor = monitor;
             this.input = stream;
         }
 
         public void run()
         {
-            monitor.beginTask("Export database", 100);
+            monitor.beginTask("Import database", 100);
             long totalBytesDumped = 0;
             long prevStatusUpdateTime = 0;
             byte[] buffer = new byte[10000];
             try {
                 NumberFormat numberFormat = NumberFormat.getInstance();
-                OutputStream output = new BufferedOutputStream(new FileOutputStream(outputFile), 10000);
+                OutputStream output = new BufferedOutputStream(new FileOutputStream(inputFile), 10000);
                 try {
                     for (;;) {
                         int count = input.read(buffer);
