@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ext.ui.ISearchExecutor;
@@ -125,7 +126,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     private void setChildControl(ProgressPageControl progressPageControl)
     {
         if (this.childPageControl != null && progressPageControl != null) {
-            log.warn("Overwrite of child page control '" + this.childPageControl);
+            log.warn("Overwrite of child page control '" + this.childPageControl); //$NON-NLS-1$
         }
         this.childPageControl = progressPageControl;
         if (getProgressControl().progressBar == null) {
@@ -153,7 +154,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     public Composite createProgressPanel(Composite container)
     {
         if (this.ownerPageControl != null) {
-            throw new IllegalStateException("Can't create page control while substitution control already set");
+            throw new IllegalStateException("Can't create page control while substitution control already set"); //$NON-NLS-1$
         }
         if (showDivider) {
             Label separator = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
@@ -179,7 +180,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         controlComposite.setLayoutData(gd);
         controlComposite.setLayout(new GridLayout(1, false));
         Label ctrlLabel = new Label(controlComposite, SWT.NONE);
-        ctrlLabel.setText(" ");
+        ctrlLabel.setText(" "); //$NON-NLS-1$
 
         Composite customControls = new Composite(infoGroup, SWT.NONE);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
@@ -190,7 +191,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         customControls.setLayout(gl);
 
         Label phLabel = new Label(customControls, SWT.NONE);
-        phLabel.setText("");
+        phLabel.setText(""); //$NON-NLS-1$
 
         return customControls;
     }
@@ -227,7 +228,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                         defaultToolbarManager.add(ActionUtils.makeCommandContribution(
                                 DBeaverCore.getInstance().getWorkbench(),
                                 IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
-                                "Search item(s)",
+                                CoreMessages.controls_progress_page_toolbar_title,
                                 DBIcon.SEARCH.getImageDescriptor()));
                     }
                 }
@@ -256,13 +257,13 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         progressBar.setState(SWT.NORMAL);
         progressBar.setMinimum(PROGRESS_MIN);
         progressBar.setMaximum(PROGRESS_MAX);
-        progressBar.setToolTipText("Loading progress");
+        progressBar.setToolTipText(CoreMessages.controls_progress_page_progress_bar_loading_tooltip);
         progressBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         ToolBar progressTools = new ToolBar(controlComposite, SWT.HORIZONTAL);
         final ToolItem stopButton = new ToolItem(progressTools, SWT.PUSH);
         stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
-        stopButton.setToolTipText("Cancel current operation");
+        stopButton.setToolTipText(CoreMessages.controls_progress_page_progress_bar_cancel_tooltip);
         stopButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -314,7 +315,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             {
                 curSearchText = searchText.getText();
                 if (curSearchJob == null) {
-                    curSearchJob = new UIJob("Search") {
+                    curSearchJob = new UIJob(CoreMessages.controls_progress_page_job_search) {
                         @Override
                         public IStatus runInUIThread(IProgressMonitor monitor)
                         {
@@ -345,7 +346,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                     null,
                     DBIcon.ARROW_UP.getImageDescriptor()));
             //ToolItem closeButton = new ToolItem(searchTools, SWT.PUSH);
-            searchToolbarManager.add(new Action("Close search panel", PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
+            searchToolbarManager.add(new Action(CoreMessages.controls_progress_page_action_close, PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
                 @Override
                 public void run()
                 {
@@ -512,10 +513,10 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 public void done()
                 {
                     super.done();
-                    curStatus = "";
+                    curStatus = ""; //$NON-NLS-1$
                     synchronized (tasksRunning) {
                         if (tasksRunning.isEmpty()) {
-                            log.warn("Task end when no tasks are running");
+                            log.warn("Task end when no tasks are running"); //$NON-NLS-1$
                         } else {
                             tasksRunning.remove(tasksRunning.size() - 1);
                         }

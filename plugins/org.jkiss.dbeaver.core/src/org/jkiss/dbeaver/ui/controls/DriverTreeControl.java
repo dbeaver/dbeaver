@@ -14,6 +14,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -95,10 +96,10 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         }
 
         TreeColumn nameColumn = new TreeColumn(getTree(), SWT.LEFT);
-        nameColumn.setText("Name");
+        nameColumn.setText(CoreMessages.controls_driver_tree_column_name);
 
         TreeColumn usersColumn = new TreeColumn(getTree(), SWT.RIGHT);
-        usersColumn.setText("Connections");
+        usersColumn.setText(CoreMessages.controls_driver_tree_column_connections);
 
         //TreeColumn descColumn = new TreeColumn(getTree(), SWT.RIGHT);
         //descColumn.setText("Description");
@@ -216,10 +217,10 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                     break;
                 case 1:
                     final int count = getConnectionCount(cell.getElement());
-                    cell.setText(count <= 0 ? "" : String.valueOf(count));
+                    cell.setText(count <= 0 ? "" : String.valueOf(count)); //$NON-NLS-1$
                     break;
                 default:
-                    cell.setText("");
+                    cell.setText(""); //$NON-NLS-1$
                     break;
             }
             cell.setImage(getImage(cell.getElement(), cell.getColumnIndex()));
@@ -271,7 +272,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
             } else if (obj instanceof DriverDescriptor) {
                 return ((DriverDescriptor) obj).getDescription();
             } else {
-                return "";
+                return ""; //$NON-NLS-1$
             }
         }
 

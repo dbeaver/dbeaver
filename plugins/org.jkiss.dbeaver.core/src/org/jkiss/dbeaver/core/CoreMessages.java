@@ -123,13 +123,49 @@ public class CoreMessages extends NLS {
 	public static String confirm_entity_revert_message;
 	public static String confirm_entity_revert_toggleMessage;
 
-	public static String connection_properties_control_action_add_property;
+	public static String controls_connection_properties_action_add_property;
 
-	public static String connection_properties_control_action_remove_property;
+	public static String controls_connection_properties_action_remove_property;
 
-	public static String connection_properties_control_category_user_properties;
+	public static String controls_connection_properties_category_user_properties;
 
-	public static String connection_properties_control_dialog_new_property_title;
+	public static String controls_connection_properties_dialog_new_property_title;
+
+    public static String controls_client_home_selector_browse;
+
+	public static String controls_client_homes_panel_button_add_home;
+
+	public static String controls_client_homes_panel_button_remove_home;
+
+	public static String controls_client_homes_panel_confirm_remove_home_text;
+
+	public static String controls_client_homes_panel_confirm_remove_home_title;
+
+	public static String controls_client_homes_panel_dialog_title;
+
+	public static String controls_client_homes_panel_group_information;
+
+	public static String controls_client_homes_panel_label_id;
+
+	public static String controls_client_homes_panel_label_name;
+
+	public static String controls_client_homes_panel_label_path;
+
+	public static String controls_client_homes_panel_label_product_name;
+
+	public static String controls_client_homes_panel_label_product_version;
+
+	public static String controls_column_info_panel_property_column_name;
+
+	public static String controls_column_info_panel_property_column_type;
+
+	public static String controls_column_info_panel_property_key;
+
+	public static String controls_column_info_panel_property_table_name;
+
+	public static String controls_driver_tree_column_connections;
+
+	public static String controls_driver_tree_column_name;
 
 	public static String controls_imageview_fit_window;
 
@@ -152,6 +188,16 @@ public class CoreMessages extends NLS {
     public static String controls_locale_selector_label_locale;
 
     public static String controls_locale_selector_label_variant;
+
+	public static String controls_progress_page_action_close;
+
+	public static String controls_progress_page_job_search;
+
+	public static String controls_progress_page_progress_bar_cancel_tooltip;
+
+	public static String controls_progress_page_progress_bar_loading_tooltip;
+
+	public static String controls_progress_page_toolbar_title;
 
 	public static String controls_querylog__ms;
 
@@ -278,8 +324,6 @@ public class CoreMessages extends NLS {
 	public static String model_navigator__connections;
 	public static String model_navigator_Connection;
 	public static String model_navigator_Connections;
-
-    public static String client_home_selector_browse;
 
 	public static String dialog_about_font;
 	public static String dialog_about_label_version;
@@ -825,6 +869,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_version_update_notes;
 	public static String dialog_version_update_press_more_info_;
 	public static String dialog_version_update_title;
+
+	public static String dialog_view_classpath_title;
 
 	public static String dialog_view_sql_button_copy;
 	public static String dialog_view_sql_button_persist;

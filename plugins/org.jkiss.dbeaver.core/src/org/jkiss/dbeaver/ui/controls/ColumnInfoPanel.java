@@ -8,6 +8,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.DBDColumnController;
@@ -37,12 +38,12 @@ public class ColumnInfoPanel extends Composite {
     protected void createPanel(DBDColumnController valueController)
     {
         PropertyCollector infoItem = new PropertyCollector(valueController.getColumnMetaData(), false);
-        infoItem.addProperty("Table_Name", "Table Name", valueController.getColumnMetaData().getTableName());
-        infoItem.addProperty("Column_Name", "Column Name", valueController.getColumnMetaData().getName() );
-        infoItem.addProperty("Column_Type", "Column Type", valueController.getColumnMetaData().getTypeName() );
+        infoItem.addProperty("Table_Name", CoreMessages.controls_column_info_panel_property_table_name, valueController.getColumnMetaData().getTableName()); //$NON-NLS-1$
+        infoItem.addProperty("Column_Name", CoreMessages.controls_column_info_panel_property_column_name, valueController.getColumnMetaData().getName() ); //$NON-NLS-1$
+        infoItem.addProperty("Column_Type", CoreMessages.controls_column_info_panel_property_column_type, valueController.getColumnMetaData().getTypeName() ); //$NON-NLS-1$
         valueController.getValueHandler().fillProperties(infoItem, valueController);
         if (valueController.getValueLocator() != null) {
-            infoItem.addProperty("Key", "Key", new CellKeyInfo(valueController) );
+            infoItem.addProperty("Key", CoreMessages.controls_column_info_panel_property_key, new CellKeyInfo(valueController) ); //$NON-NLS-1$
         }
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -76,7 +77,7 @@ public class ColumnInfoPanel extends Composite {
         }
         public String toString()
         {
-            return value == null ? "[NULL]" : value.toString();
+            return value == null ? "[NULL]" : value.toString(); //$NON-NLS-1$
         }
     }
 

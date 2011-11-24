@@ -102,7 +102,7 @@ public class ClientHomesSelector extends Composite
                 }
             }
         }
-        this.homesCombo.add(CoreMessages.client_home_selector_browse);
+        this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
         displayClientVersion();
     }
 

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.controls;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -17,6 +18,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPClientHome;
 import org.jkiss.dbeaver.model.DBPClientManager;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -102,7 +104,7 @@ public class ClientHomesPanel extends Composite
         Composite buttonsGroup = UIUtils.createPlaceholder(listGroup, 2);
         buttonsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
         Button addButton = new Button(buttonsGroup, SWT.PUSH);
-        addButton.setText("Add Home");
+        addButton.setText(CoreMessages.controls_client_homes_panel_button_add_home);
         addButton.addSelectionListener(new SelectionAdapter()
         {
             @Override
@@ -112,7 +114,7 @@ public class ClientHomesPanel extends Composite
             }
         });
         removeButton = new Button(buttonsGroup, SWT.PUSH);
-        removeButton.setText("Remove Home");
+        removeButton.setText(CoreMessages.controls_client_homes_panel_button_remove_home);
         removeButton.setEnabled(false);
         removeButton.addSelectionListener(new SelectionAdapter()
         {
@@ -126,12 +128,12 @@ public class ClientHomesPanel extends Composite
             }
         });
 
-        Group infoGroup = UIUtils.createControlGroup(this, "Information", 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-        idText = UIUtils.createLabelText(infoGroup, "ID", "", SWT.BORDER | SWT.READ_ONLY);
-        pathText = UIUtils.createLabelText(infoGroup, "Path", "", SWT.BORDER | SWT.READ_ONLY);
-        nameText = UIUtils.createLabelText(infoGroup, "Name", "", SWT.BORDER | SWT.READ_ONLY);
-        productNameText = UIUtils.createLabelText(infoGroup, "Product Name", "", SWT.BORDER | SWT.READ_ONLY);
-        productVersionText = UIUtils.createLabelText(infoGroup, "Product Version", "", SWT.BORDER | SWT.READ_ONLY);
+        Group infoGroup = UIUtils.createControlGroup(this, CoreMessages.controls_client_homes_panel_group_information, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        idText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_id, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+        pathText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_path, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+        nameText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_name, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+        productNameText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_product_name, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+        productVersionText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_product_version, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
     }
 
     private void removeClientHome()
@@ -141,8 +143,8 @@ public class ClientHomesPanel extends Composite
         if (!info.isProvided) {
             if (UIUtils.confirmAction(
                 getShell(),
-                "Remove Client Home",
-                "Are you sure you want to delete client home '" + info.home.getHomeId() + "'?"))
+                CoreMessages.controls_client_homes_panel_confirm_remove_home_title,
+                NLS.bind(CoreMessages.controls_client_homes_panel_confirm_remove_home_text, info.home.getHomeId())))
             {
                 homesTable.remove(selIndex);
                 selectHome(null);
@@ -170,16 +172,16 @@ public class ClientHomesPanel extends Composite
     private void selectHome(HomeInfo home)
     {
         removeButton.setEnabled(home != null && !home.isProvided);
-        idText.setText(home == null ? "" : CommonUtils.getString(home.home.getHomeId()));
-        pathText.setText(home == null ? "" : home.home.getHomePath().getAbsolutePath());
-        nameText.setText(home == null ? "" : CommonUtils.getString(home.home.getDisplayName()));
+        idText.setText(home == null ? "" : CommonUtils.getString(home.home.getHomeId())); //$NON-NLS-1$
+        pathText.setText(home == null ? "" : home.home.getHomePath().getAbsolutePath()); //$NON-NLS-1$
+        nameText.setText(home == null ? "" : CommonUtils.getString(home.home.getDisplayName())); //$NON-NLS-1$
         try {
-            productNameText.setText(home == null ? "" : CommonUtils.getString(home.home.getProductName()));
+            productNameText.setText(home == null ? "" : CommonUtils.getString(home.home.getProductName())); //$NON-NLS-1$
         } catch (DBException e) {
             log.warn(e);
         }
         try {
-            productVersionText.setText(home == null ? "" : CommonUtils.getString(home.home.getProductVersion()));
+            productVersionText.setText(home == null ? "" : CommonUtils.getString(home.home.getProductVersion())); //$NON-NLS-1$
         } catch (DBException e) {
             log.warn(e);
         }
@@ -202,7 +204,7 @@ public class ClientHomesPanel extends Composite
         this.driver = driver;
         DBPClientManager clientManager = this.driver.getClientManager();
         if (clientManager == null) {
-            log.error("Client manager is not supported by driver '" + driver.getName() + "'");
+            log.error("Client manager is not supported by driver '" + driver.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
         Set<String> providedHomes = new LinkedHashSet<String>(
@@ -221,7 +223,7 @@ public class ClientHomesPanel extends Composite
         try {
             home = clientManager.getClientHome(homeId);
             if (home == null) {
-                log.warn("Home '" + homeId + "' is not supported");
+                log.warn("Home '" + homeId + "' is not supported"); //$NON-NLS-1$ //$NON-NLS-2$
                 return;
             }
         } catch (Exception e) {
@@ -267,7 +269,7 @@ public class ClientHomesPanel extends Composite
 
         protected Control createDialogArea(Composite parent)
         {
-            getShell().setText("Database Client Homes");
+            getShell().setText(CoreMessages.controls_client_homes_panel_dialog_title);
 
             panel = new ClientHomesPanel(parent, SWT.NONE);
             GridData gd = new GridData(GridData.FILL_BOTH);

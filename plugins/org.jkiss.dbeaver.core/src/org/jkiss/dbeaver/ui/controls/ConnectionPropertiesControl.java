@@ -30,7 +30,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     static final Log log = LogFactory.getLog(ConnectionPropertiesControl.class);
 
-    public static final String USER_PROPERTIES_CATEGORY = CoreMessages.connection_properties_control_category_user_properties;
+    public static final String USER_PROPERTIES_CATEGORY = CoreMessages.controls_connection_properties_category_user_properties;
 
     private List<IPropertyDescriptor> driverProvidedProperties;
     private List<IPropertyDescriptor> customProperties;
@@ -78,14 +78,14 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     {
         boolean isCustom = USER_PROPERTIES_CATEGORY.equals(category);
         if (isCustom) {
-            manager.add(new Action(CoreMessages.connection_properties_control_action_add_property) {
+            manager.add(new Action(CoreMessages.controls_connection_properties_action_add_property) {
                 @Override
                 public void run() {
                     createNewProperty(node, category);
                 }
             });
             if (property != null) {
-                manager.add(new Action(CoreMessages.connection_properties_control_action_remove_property) {
+                manager.add(new Action(CoreMessages.controls_connection_properties_action_remove_property) {
                     @Override
                     public void run() {
                         removeProperty(node);
@@ -97,7 +97,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     private void createNewProperty(Object node, String category) {
         // Ask user for new property name
-        String propName = EnterNameDialog.chooseName(getControl().getShell(), CoreMessages.connection_properties_control_dialog_new_property_title);
+        String propName = EnterNameDialog.chooseName(getControl().getShell(), CoreMessages.controls_connection_properties_dialog_new_property_title);
         if (propName != null) {
             // Check property name (must be unique
             addProperty(node, new PropertyDescriptorEx(category, propName, propName, null, null, false, null, null, true));
