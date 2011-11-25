@@ -6,52 +6,52 @@
 
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-        <title>Connection Settings</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Настройки соединения</title>
     </head>
 
     <body>
-        <h1>Connection Settings</h1>
+        <h1>Настройки соединения</h1>
 
-        <h2>Basic settings</h2>
-        <p>Here is where you may specify connection settings and properties.</p>
-        <p>Some properties are required, others are optional.</p>
-        <p>List of standard settings:</p>
+        <h2>Базовые настройки</h2>
+        <p>В этом месте вы можете определить настройки и параметры соединения.</p>
+        <p>Некоторые параметры обязательны, другие - опциональны.</p>
+        <p>Стандартные настройки:</p>
         <table border="1">
             <tr valign="top">
-                <td nowrap>JDBC URL</td>
-                <td>Database URL. This field is editable only if the database driver doesn't have sample URL.
-                    Otherwise its value will be automatically changed whene you change other connection settings.
+                <td nowrap>JDBC-адрес</td>
+                <td>Адрес (URL) базы данных. Это поле доступно для редактирования только в том случае, когда драйвер не имеет шаблона адреса (sample URL).
+                    В противном случае, это поле будет изменяться автоматически при заполнении прочих параметров соединения.
                 </td>
             </tr>
             <tr valign="top">
-                <td nowrap>Host</td>
-                <td>Database host name</td>
+                <td nowrap>Хост</td>
+                <td>Имя хоста базы данных</td>
             </tr>
             <tr valign="top">
-                <td nowrap>Port</td>
-                <td>Database port number. Usually this field is optional. If left blank then the default database port will be used.</td>
+                <td nowrap>Порт</td>
+                <td>Номер порта базы данных. Как правило, это поле опционально. Если оно оставлено пустым, будет использован порт, принятый по-умолчанию для текущей базы данных.</td>
             </tr>
             <tr valign="top">
-                <td nowrap>Database/Schema</td>
-                <td>Name of remote database/schema.</td>
+                <td nowrap>База данных/схема</td>
+                <td>Имя удалённой базы данных/схемы.</td>
             </tr>
             <tr valign="top">
-                <td nowrap>Server</td>
-                <td>Name of remote server.</td>
+                <td nowrap>Сервер</td>
+                <td>Имя удалённого сервера.</td>
             </tr>
             <tr valign="top">
-                <td nowrap>User name/password</td>
-                <td>User credentials. May be left blank for some drivers (e.g. for embedded databases)</td>
+                <td nowrap>Имя пользователя/пароль</td>
+                <td>Учётные данные пользователя. Могут быть оставлены пустыми для некоторых драйверов (например, для встроенных баз данных)</td>
             </tr>
         </table>
 
-        <h2>Advanced settings</h2>
-        <p>The database driver may support additional connection settings.
-            Users may view a list of all available properties on the "Advanced" tab. All properties are editable.</p>
-        <p>Some drivers support additional properties but don't provide a list of them.
-            In this case you may find a list of available properties in driver's documentation. After reviewing the driver's documentation you may specify any number of properties under the "User Properties" element.
-            Right click on it and choose the "Add new property" menu item.
+        <h2>Дополнительные настройки</h2>
+        <p>Драйвер базы данных может поддерживать дополнительные настройки соединения.
+            Пользователь может видеть список всех дополнительных свойств на закладке "Дополнительно". Все эти свойства - редактируемые.</p>
+        <p>Некоторые драйвера поддерживают дополнительные настройки, но не предоставляют их список.
+            В этом случае Вы можете найти список дополнительных свойств в документации драйвера. Выяснив там необходимые параметры, Вы можете определить их в разделе "Пользовательские настройки".
+            Щёлкните там правой кнопкой мыши и выберите пункт меню "Добавить новое свойство".
         </p>
 
     </body>
