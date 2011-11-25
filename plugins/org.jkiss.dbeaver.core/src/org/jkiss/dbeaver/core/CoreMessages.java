@@ -321,6 +321,10 @@ public class CoreMessages extends NLS {
 
 	public static String controls_resultset_viewer_value;
 
+	public static String controls_rs_pump_job_context_name;
+
+	public static String controls_rs_pump_job_name;
+
 	public static String model_navigator__connections;
 	public static String model_navigator_Connection;
 	public static String model_navigator_Connections;

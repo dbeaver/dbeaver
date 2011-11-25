@@ -6,7 +6,9 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -21,7 +23,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private Throwable error;
 
     protected ResultSetDataPumpJob(ResultSetViewer resultSetViewer) {
-        super("Read data", DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetViewer.getDataContainer().getDataSource());
+        super(CoreMessages.controls_rs_pump_job_name, DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetViewer.getDataContainer().getDataSource());
         this.resultSetViewer = resultSetViewer;
     }
 
@@ -42,7 +44,10 @@ class ResultSetDataPumpJob extends DataSourceJob {
 
     protected IStatus run(DBRProgressMonitor monitor) {
         error = null;
-        DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.USER, "Read data from '" + resultSetViewer.getDataContainer().getName() + "'");
+        DBCExecutionContext context = getDataSource().openContext(
+                monitor,
+                DBCExecutionPurpose.USER,
+                NLS.bind(CoreMessages.controls_rs_pump_job_context_name, resultSetViewer.getDataContainer().getName()));
         try {
             resultSetViewer.getDataContainer().readData(
                 context,
