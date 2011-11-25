@@ -6,7 +6,7 @@
   -->
 
 <toc label="Универсальный менеджер баз данных">
-	<topic label="Об Универсальном менеджере баз данных" href="docs/help/html/about.html">
+	<topic label="О DBeaver" href="docs/help/html/about.html">
         <topic href="docs/help/html/techdoc.html" label="Техническое описание"/>
 	</topic>
     <topic label="Управление соединениями с БД">
