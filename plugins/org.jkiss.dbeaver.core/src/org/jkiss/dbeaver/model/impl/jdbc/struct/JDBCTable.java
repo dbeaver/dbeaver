@@ -347,30 +347,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private void appendQueryConditions(StringBuilder query, DBDDataFilter dataFilter)
     {
         if (dataFilter != null) {
-            // Construct WHERE
-            if (!CommonUtils.isEmpty(dataFilter.getFilters()) || !CommonUtils.isEmpty(dataFilter.getWhere())) {
+            String where = dataFilter.generateWhereClause(getDataSource());
+            if (!CommonUtils.isEmpty(where)) {
                 query.append(" WHERE "); //$NON-NLS-1$
-                boolean hasWhere = false;
-                if (!CommonUtils.isEmpty(dataFilter.getFilters())) {
-                    for (DBQCondition filter : dataFilter.getFilters()) {
-                        if (hasWhere) query.append(" AND "); //$NON-NLS-1$
-                        hasWhere = true;
-                        query
-                            .append(DBUtils.getQuotedIdentifier(getDataSource(), filter.getColumnName()));
-
-                        final String condition = filter.getCondition();
-                        final char firstChar = condition.trim().charAt(0);
-                        if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
-                            query.append('=').append(condition);
-                        } else {
-                            query.append(' ').append(condition);
-                        }
-                    }
-                }
-                if (!CommonUtils.isEmpty(dataFilter.getWhere())) {
-                    if (hasWhere) query.append(" AND "); //$NON-NLS-1$
-                    query.append(dataFilter.getWhere());
-                }
+                query.append(where);
             }
         }
     }

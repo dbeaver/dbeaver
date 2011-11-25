@@ -97,6 +97,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private IWorkbenchPartSite site;
     private ResultSetMode mode;
     private Composite viewerPanel;
+    private Text filtersText;
     private Spreadsheet spreadsheet;
     private ResultSetProvider resultSetProvider;
     private ResultSetDataReceiver dataReceiver;
@@ -143,6 +144,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         super();
         this.site = site;
         this.mode = ResultSetMode.GRID;
+        this.resultSetProvider = resultSetProvider;
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
         ISharedTextColors sharedColors = DBeaverCore.getInstance().getSharedTextColors();
@@ -155,6 +157,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
 
+        this.filtersText = new Text(viewerPanel, SWT.READ_ONLY | SWT.BORDER);
+        this.filtersText.setForeground(colorRed);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.exclude = true;
+        this.filtersText.setLayoutData(gd);
+        this.filtersText.setVisible(false);
+
+
         this.spreadsheet = new Spreadsheet(
             viewerPanel,
             SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
@@ -165,11 +175,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             new ColumnLabelProvider(),
             new RowLabelProvider());
         this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
+        this.dataReceiver = new ResultSetDataReceiver(this);
 
         createStatusBar(viewerPanel);
         changeMode(ResultSetMode.GRID);
-        this.resultSetProvider = resultSetProvider;
-        this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
         this.themeManager.addPropertyChangeListener(this);
@@ -356,6 +365,23 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 resetColumnOrdering();
             }
         });
+        this.updateFiltersText();
+    }
+
+    private void updateFiltersText()
+    {
+        String where = dataFilter.generateWhereClause(resultSetProvider.getDataContainer().getDataSource());
+        boolean show = false;
+        if (!CommonUtils.isEmpty(where)) {
+            filtersText.setText(where);
+            show = true;
+        }
+        if (filtersText.getVisible() == show) {
+            return;
+        }
+        filtersText.setVisible(show);
+        ((GridData)filtersText.getLayoutData()).exclude = !show;
+        viewerPanel.layout();
     }
 
     // Update all columns ordering
@@ -702,6 +728,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         spreadsheet.setRedraw(true);
 
         this.updateGridCursor(-1, -1);
+        this.updateFiltersText();
     }
 
     public int promptToSaveOnClose()

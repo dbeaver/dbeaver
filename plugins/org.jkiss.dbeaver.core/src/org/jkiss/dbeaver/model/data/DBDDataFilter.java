@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.data.query.DBQCondition;
 import org.jkiss.utils.CommonUtils;
@@ -132,6 +134,36 @@ public class DBDDataFilter {
     public boolean hasCustomFilters()
     {
         return !filters.isEmpty() || !CommonUtils.isEmpty(this.order) || !CommonUtils.isEmpty(this.where);
+    }
+
+    public String generateWhereClause(DBPDataSource dataSource)
+    {
+        if (CommonUtils.isEmpty(getFilters()) && CommonUtils.isEmpty(where)) {
+            return ""; //$NON-NLS-1$
+        }
+        StringBuilder query = new StringBuilder();
+        boolean hasWhere = false;
+        if (!CommonUtils.isEmpty(getFilters())) {
+            for (DBQCondition filter : getFilters()) {
+                if (hasWhere) query.append(" AND "); //$NON-NLS-1$
+                hasWhere = true;
+                query
+                    .append(DBUtils.getQuotedIdentifier(dataSource, filter.getColumnName()));
+
+                final String condition = filter.getCondition();
+                final char firstChar = condition.trim().charAt(0);
+                if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
+                    query.append('=').append(condition);
+                } else {
+                    query.append(' ').append(condition);
+                }
+            }
+        }
+        if (!CommonUtils.isEmpty(getWhere())) {
+            if (hasWhere) query.append(" AND "); //$NON-NLS-1$
+            query.append(getWhere());
+        }
+        return query.toString();
     }
 
     @Override

@@ -192,7 +192,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
                 getBounds().y + getBounds().height - 1);
         }
 
-
+        gc.setFont(grid.getFont());
     }
 
     /**
