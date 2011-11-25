@@ -5,32 +5,32 @@
   ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
   -->
 
-<toc label="DBeaver Help">
-	<topic label="About DBeaver" href="docs/help/html/about.html">
-        <topic href="docs/help/html/techdoc.html" label="Technical description"/>
+<toc label="Универсальный менеджер баз данных">
+	<topic label="Об Универсальном менеджере баз данных" href="docs/help/html/about.html">
+        <topic href="docs/help/html/techdoc.html" label="Техническое описание"/>
 	</topic>
-    <topic label="Manage connections">
-        <topic href="docs/help/html/dialogs/driver-manager.html" label="Manage drivers"/>
-        <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver editor dialog"/>
-        <topic label="Connection wizard">
-            <topic href="docs/help/html/dialogs/con-wizard-driver.html" label="Driver selection"/>
-            <topic href="docs/help/html/dialogs/con-wizard-settings.html" label="Connection settings"/>
-            <topic href="docs/help/html/dialogs/con-wizard-final.html" label="Additional settings"/>
+    <topic label="Управление соединениями с БД">
+        <topic href="docs/help/html/dialogs/driver-manager.html" label="Управление драйверами"/>
+        <topic href="docs/help/html/dialogs/driver-editor.html" label="Диалог редактирования драйвера"/>
+        <topic label="Мастер соединения">
+            <topic href="docs/help/html/dialogs/con-wizard-driver.html" label="Выбор драйвера"/>
+            <topic href="docs/help/html/dialogs/con-wizard-settings.html" label="Настройки соединения"/>
+            <topic href="docs/help/html/dialogs/con-wizard-final.html" label="Дополнительные настройки"/>
         </topic>
     </topic>
-    <topic label="Work with data">
-        <topic href="docs/help/html/editors/sql-editor.html" label="SQL Editor"/>
-        <topic href="docs/help/html/editors/result-set.html" label="Result Set"/>
+    <topic label="Работа с данными">
+        <topic href="docs/help/html/editors/sql-editor.html" label="Редактор SQL"/>
+        <topic href="docs/help/html/editors/result-set.html" label="Выборка"/>
     </topic>
-    <topic label="Work with metadata">
-        <topic href="docs/help/html/views/database-navigator.html" label="Database Navigator"/>
-        <topic href="docs/help/html/editors/entity-editor.html" label="Entity Editor"/>
+    <topic label="Работа с метаданными">
+        <topic href="docs/help/html/views/database-navigator.html" label="Окно баз данных"/>
+        <topic href="docs/help/html/editors/entity-editor.html" label="Редактор сущности"/>
     </topic>
-    <topic label="Projects">
-        <topic href="docs/help/html/views/project-navigator.html" label="Project Navigator"/>
-        <topic href="docs/help/html/views/project-explorer.html" label="Project Explorer"/>
+    <topic label="Проекты">
+        <topic href="docs/help/html/views/project-navigator.html" label="Окно проектов"/>
+        <topic href="docs/help/html/views/project-explorer.html" label="Окно проекта"/>
     </topic>
-    <topic label="Miscellaneous">
-        <topic href="docs/help/html/views/query-manager.html" label="Query Manager"/>
+    <topic label="Разное">
+        <topic href="docs/help/html/views/query-manager.html" label="Менеджер запросов"/>
     </topic>
 </toc>

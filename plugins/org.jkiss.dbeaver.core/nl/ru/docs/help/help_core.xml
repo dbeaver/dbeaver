@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <contexts>
    <context id="Context">
-      <topic label="Topic"/>
+      <topic label="Раздел"/>
    </context>
 </contexts>
