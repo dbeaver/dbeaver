@@ -12,11 +12,13 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -38,8 +40,8 @@ import java.util.List;
 public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl {
     static final Log log = LogFactory.getLog(ObjectListControl.class);
 
-    private final static LazyValue DEF_LAZY_VALUE = new LazyValue("...");
-    private final static String DATA_OBJECT_COLUMN = "objectColumn";
+    private final static LazyValue DEF_LAZY_VALUE = new LazyValue("..."); //$NON-NLS-1$
+    private final static String DATA_OBJECT_COLUMN = "objectColumn"; //$NON-NLS-1$
     private final static int LAZY_LOAD_DELAY = 100;
     private final static Object NULL_VALUE = new Object();
 
@@ -137,12 +139,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 String status;
                 IStructuredSelection selection = (IStructuredSelection)itemsViewer.getSelection();
                 if (selection.isEmpty()) {
-                    status = "";
+                    status = ""; //$NON-NLS-1$
                 } else if (selection.size() == 1) {
                     Object selectedNode = selection.getFirstElement();
                     status = ObjectViewerRenderer.getCellString(selectedNode);
                 } else {
-                    status = String.valueOf(selection.size()) + " objects";
+                    status = NLS.bind(String.valueOf(selection.size()), CoreMessages.controls_object_list_status_objects); 
                 }
                 setInfo(status);
             }
@@ -255,7 +257,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 // interrupted
             }
             if (loadingJob != null) {
-                log.warn("Can't start new loading service because old one still running");
+                log.warn("Can't start new loading service because old one still running"); //$NON-NLS-1$
                 return;
             }
             return;
@@ -443,9 +445,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     protected String getItemsLoadMessage(int count)
     {
         if (count == 0) {
-            return "No items";
+            return CoreMessages.controls_object_list_message_no_items;
         } else {
-            return count + " items";
+            return NLS.bind(CoreMessages.controls_object_list_message_items, count);
         }
     }
 
@@ -785,7 +787,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 cellValue = ((LazyValue)cellValue).value;
             }
             if (!sampleItems && renderer.isHyperlink(cellValue)) {
-                return "";
+                return ""; //$NON-NLS-1$
             }
             return ObjectViewerRenderer.getCellString(cellValue);
         }
@@ -864,7 +866,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private class LazyLoaderJob extends AbstractJob {
         public LazyLoaderJob()
         {
-            super("Lazy properties read");
+            super(CoreMessages.controls_object_list_job_props_read);
         }
 
         @Override
@@ -874,7 +876,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (isDisposed()) {
                 return Status.OK_STATUS;
             }
-            monitor.beginTask("Load lazy properties", objectMap.size());
+            monitor.beginTask(CoreMessages.controls_object_list_monitor_load_lazy_props, objectMap.size());
             for (Map.Entry<OBJECT_TYPE, List<ObjectColumn>> entry : objectMap.entrySet()) {
                 if (monitor.isCanceled() || isDisposed()) {
                     break;
@@ -893,7 +895,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     }
                 }
                 String objectName = UIUtils.makeStringForUI(getObjectValue(element)).toString();
-                monitor.subTask("Load '" + objectName + "' properties");
+                monitor.subTask(NLS.bind(CoreMessages.controls_object_list_monitor_load_props, objectName));
                 for (ObjectColumn column : entry.getValue()) {
                     if (monitor.isCanceled() || isDisposed()) {
                         break;
@@ -919,7 +921,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             if (e instanceof InvocationTargetException) {
                                 e = ((InvocationTargetException) e).getTargetException();
                             }
-                            log.error("Error reading property '" + prop.getId() + "' from " + object, e);
+                            log.error("Error reading property '" + prop.getId() + "' from " + object, e); //$NON-NLS-1$ //$NON-NLS-2$
                             return RuntimeUtils.makeExceptionStatus(e);
                         }
                 }

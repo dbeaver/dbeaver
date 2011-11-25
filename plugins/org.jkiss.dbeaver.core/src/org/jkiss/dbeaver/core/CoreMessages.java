@@ -189,6 +189,18 @@ public class CoreMessages extends NLS {
 
     public static String controls_locale_selector_label_variant;
 
+	public static String controls_object_list_job_props_read;
+
+	public static String controls_object_list_message_items;
+
+	public static String controls_object_list_message_no_items;
+
+	public static String controls_object_list_monitor_load_lazy_props;
+
+	public static String controls_object_list_monitor_load_props;
+
+	public static String controls_object_list_status_objects;
+
 	public static String controls_progress_page_action_close;
 
 	public static String controls_progress_page_job_search;
