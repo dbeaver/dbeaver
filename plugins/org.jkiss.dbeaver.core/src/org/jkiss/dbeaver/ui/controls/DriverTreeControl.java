@@ -14,7 +14,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -96,10 +95,10 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         }
 
         TreeColumn nameColumn = new TreeColumn(getTree(), SWT.LEFT);
-        nameColumn.setText(CoreMessages.controls_driver_tree_column_name);
+        nameColumn.setText("Name");
 
         TreeColumn usersColumn = new TreeColumn(getTree(), SWT.RIGHT);
-        usersColumn.setText(CoreMessages.controls_driver_tree_column_connections);
+        usersColumn.setText("Connections");
 
         //TreeColumn descColumn = new TreeColumn(getTree(), SWT.RIGHT);
         //descColumn.setText("Description");
@@ -217,10 +216,10 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                     break;
                 case 1:
                     final int count = getConnectionCount(cell.getElement());
-                    cell.setText(count <= 0 ? "" : String.valueOf(count)); //$NON-NLS-1$
+                    cell.setText(count <= 0 ? "" : String.valueOf(count));
                     break;
                 default:
-                    cell.setText(""); //$NON-NLS-1$
+                    cell.setText("");
                     break;
             }
             cell.setImage(getImage(cell.getElement(), cell.getColumnIndex()));
@@ -272,7 +271,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
             } else if (obj instanceof DriverDescriptor) {
                 return ((DriverDescriptor) obj).getDescription();
             } else {
-                return ""; //$NON-NLS-1$
+                return "";
             }
         }
 
@@ -320,7 +319,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         ISelection selection = event.getSelection();
         if (!selection.isEmpty()) {
             Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element instanceof DriverCategory) {
+            if (element instanceof DriverCategory || element instanceof DataSourceProviderDescriptor) {
                 if (Boolean.TRUE.equals(getExpandedState(element))) {
                     super.collapseToLevel(element, 1);
                 } else {
