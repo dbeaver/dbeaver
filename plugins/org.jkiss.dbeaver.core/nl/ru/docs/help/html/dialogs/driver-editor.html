@@ -7,70 +7,70 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Driver Editor</title>
+        <title>Редактор драйвера</title>
     </head>
 
     <body>
-        <h1>Driver Editor</h1>
-        This dialog allows you to change the driver settings.
+        <h1>Редактор драйвера</h1>
+        Этот диалог позволяет Вам изменять настройки драйвера.
 
-        <h2>Basic settings</h2>
+        <h2>Базовые параметры</h2>
 
         <table border="1">
             <tr valign="top">
-                <td nowrap="nowrap">Driver name</td>
+                <td nowrap="nowrap">Имя драйвера</td>
 
-                <td>Name of driver, shown in the driver manager. May be used by DBeaver to name scripts, show tips, etc</td>
+                <td>Имя драйвера, показанное в драйвер-менеджере, может быть использовано DBeaver'ом для именования скриптов, показа подсказок и т.д.</td>
             </tr>
 
             <tr valign="top">
-                <td nowrap="nowrap">Category</td>
+                <td nowrap="nowrap">Категория</td>
 
-                <td>Optional field. Some databases have many different drivers, it is convenient to group these drivers. Category is just a name for this group. Most drivers do not have category.</td>
+                <td>Не обязательное поле. Некоторые базы данных имеют несколько различных драйверов, объединённых в одну группу. Категория - это имя такой группы. Большинство драйверов категории не имеют.</td>
             </tr>
 
             <tr valign="top">
-                <td nowrap="nowrap">Class name</td>
+                <td nowrap="nowrap">Имя класса</td>
 
-                <td>Required field. It is a name of Java class which implements the driver. You may find the class name in the driver&#39;s documentation or click on the &quot;Find Class&quot; button in the &quot;Driver Libraries&quot; tab and choose the class name from the list.</td>
+                <td>Обязательное поле. Это имя Java класса, который реализует, собственно, драйвер. Вы можете найти имя класса в документации на драйвер или попробовать использовать кнопку &quot;Найти класс&quot; на закладке &quot;Библиотеки драйвера&quot; и выбрать имя класса из предложенного списка.</td>
             </tr>
 
             <tr valign="top">
-                <td nowrap="nowrap">Sample URL</td>
+                <td nowrap="nowrap">Пример адреса (URL)</td>
 
                 <td>
-                    Optional field. If this value is left blank, you will need to specify the full database URL. It is much more convenient when the sample URL is specified - in this case the connection wizard will require only valuable connection properties (host name, database name, etc).
+                    Не обязательное поле. Если это поле оставлено пустым, Вам придётся определить полный адрес (URL) базы данных. Гораздо удобнее, когда пример адреса (URL) определён, в этом случае мастер соединения потребует только отдельные параметры соединения (имя хоста, базы и т.д.).
 
-                    <p>A sample URL is a JDBC database URL but instead of real database properties it consists of &quot;patterns&quot; which will be replaced by the connection wizard with real values.</p>
+                    <p>Пример адреса (URL) - это JDBC-адрес базы данных, но вместо действительных параметров базы данных он состоит из &quot;меток&quot;, которые будут заменены на реальные значения мастером соединения.</p>
 
-                    <p>List of supported URL patterns:</p>
+                    <p>Список поддерживаемых меток в примере адреса:</p>
 
                     <ul>
-                        <li><code>{host}</code>- database host name</li>
+                        <li><code>{host}</code> - имя хоста базы данных</li>
 
-                        <li><code>{port}</code>- database port number</li>
+                        <li><code>{port}</code> - порт базы данных</li>
 
-                        <li><code>{database}</code>- database/schema name</li>
+                        <li><code>{database}</code> - имя базы данных/схемы</li>
 
-                        <li><code>{server}</code>- database server name. Rarely used, usually by complex legacy databases (e.g. Informix)</li>
+                        <li><code>{server}</code> - имя сервера базы данных. Редко используется, как правило в &quot;древних&quot; базах данных (вроде Informix)</li>
 
-                        <li><code>{folder}</code>- database folder. Usually used by embedded database engines to specify folder with database files</li>
+                        <li><code>{folder}</code> - директория базы данных. Обычно используется во встроенных базах данных для определения места расположения их файлов</li>
 
-                        <li><code>{file}</code>- the same as <code>{folder}</code>but specifies single file</li>
+                        <li><code>{file}</code> - то же, что <code>{folder}</code>, но определяет отдельный файл</li>
                     </ul>
 
-                    <p>Optional patterns may be enclosed in square brackets</p>
+                    <p>Необязательные метки заключаются в квадратные скобки</p>
 
-                    <p>Typical sample URL: <code>jdbc:db2://{host}[:{port}]/{database}</code></p>
+                    <p>Типичный пример адреса (URL): <code>jdbc:db2://{host}[:{port}]/{database}</code></p>
                 </td>
             </tr>
         </table>
 
-        <h2>Driver Libraries</h2>
+        <h2>Библиотеки драйвера</h2>
 
-        <p>List of external driver libraries. Usually the library is a <code>jar</code> or <code>zip</code> archive file which contains an implementation of a JDBC driver. You may specify an entire directory as source of driver classes instead of the archive file.</p>
+        <p>Список внешних библиотек драйвера. Обычно, библиотека - это <code>jar</code> или <code>zip</code> архивный файл, который содержит реализацию JDBC-драйвера. Вы можете определить целую директорию как источник классов драйвера вместо архивного файла.</p>
 
-        <p>The &quot;Find class&quot; button below the library list searches for all JDBC driver implementations in the specified libraries. You may choose a particular class name (if there are multiple classes found) and it will be placed in &quot;Class Name&quot; field.</p>
+        <p>Кнопка &quot;Найти класс&quot; под списком библиотек ищет все реализации JDBC-драйвера в указанных библиотеках. Вы можете выбрать определённое имя класса (если найдено несколько классов) и оно будет помещено в поле &quot;Имя класса&quot;.</p>
         
         <!-- Stopped editing here 6/21 -->
         <!-- TODO -->
