@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
@@ -15,18 +14,18 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
-import java.text.NumberFormat;
 import java.util.List;
 
 class DatabaseImportWizard extends AbstractToolWizard implements IImportWizard {
 
     File inputFile;
-
+    boolean isImport;
     private DatabaseImportWizardPageSettings mainPage;
 
-    public DatabaseImportWizard(MySQLCatalog catalog) {
-        super(catalog, "Import");
+    public DatabaseImportWizard(MySQLCatalog catalog, boolean isImport) {
+        super(catalog, isImport ? "Import" : "Script");
         this.inputFile = null;
+        this.isImport = isImport;
 	}
 
     public void init(IWorkbench workbench, IStructuredSelection selection) {
@@ -43,8 +42,10 @@ class DatabaseImportWizard extends AbstractToolWizard implements IImportWizard {
 
 	@Override
 	public void onSuccess() {
-        UIUtils.showMessageBox(getShell(), "Database import", "Database '" + getCatalog().getName() + "' import completed", SWT.ICON_INFORMATION);
-        Program.launch(inputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
+        UIUtils.showMessageBox(getShell(),
+            isImport ? "Database import" : "Script execute",
+            "Database '" + getCatalog().getName() + "' " + (isImport ? "import" : "script") + " completed",
+            SWT.ICON_INFORMATION);
 	}
 
     @Override
@@ -117,7 +118,7 @@ class DatabaseImportWizard extends AbstractToolWizard implements IImportWizard {
         }
     }
 
-    private static class ProgressStreamReader extends InputStream {
+    private class ProgressStreamReader extends InputStream {
 
         static final int BUFFER_SIZE = 10000;
 
@@ -133,7 +134,7 @@ class DatabaseImportWizard extends AbstractToolWizard implements IImportWizard {
             this.streamLength = streamLength;
             this.totalRead = 0;
 
-            monitor.beginTask("Import database", (int)streamLength);
+            monitor.beginTask(isImport ? "Import database" : "Execute script", (int)streamLength);
         }
 
         @Override

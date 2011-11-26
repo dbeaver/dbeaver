@@ -25,9 +25,9 @@ class DatabaseImportWizardPageSettings extends AbstractToolWizardPage<DatabaseIm
 
     protected DatabaseImportWizardPageSettings(DatabaseImportWizard wizard)
     {
-        super(wizard, "Import configuration");
-        setTitle("Import configuration");
-        setDescription(("Set database import  settings"));
+        super(wizard, wizard.isImport ? "Import configuration" : "Script configuration");
+        setTitle(wizard.isImport ? "Import configuration" : "Script configuration");
+        setDescription(wizard.isImport ? "Set database import  settings" : "Set script execution settings");
     }
 
     @Override

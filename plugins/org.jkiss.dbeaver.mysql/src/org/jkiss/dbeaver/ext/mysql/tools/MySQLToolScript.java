@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 /**
  * Database import
  */
-public class MySQLToolImport extends MySQLToolAbstract {
+public class MySQLToolScript extends MySQLToolAbstract {
 
     @Override
     public void execute(IWorkbenchWindow window, DBPObject object) throws DBException
