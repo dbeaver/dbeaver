@@ -137,7 +137,7 @@
         </exec>
     </target>
     
-    <target name="dist-win">
+    <target name="dist-win" depends="init">
         <mkdir dir="${buildDirectory}/installer" />
         <mkdir dir="${buildDirectory}/installer/raw" />
 
@@ -151,25 +151,14 @@
         <!--delete dir="${buildDirectory}/installer" /-->
     </target>
 
-    <target name="dist-deb">
-        <path id="ant-deb.classpath">
-            <fileset dir="lib" includes="*.jar"/>
-        </path>
-        <taskdef resource="ant_deb_task.properties" classpathref="ant-deb.classpath"/>
-
+    <target name="deb">
+        <property name="debDirectory" value="${buildDirectory}/installer/deb/linux.${arch}"/>
         <property name="packageName" value="${archivePrefix}"/>
-        <property name="debDirectory" value="build/deb"/>
-
-        <echo message="Build ${productName} deb package"/>
-
-        <delete dir="${debDirectory}" />
-        <mkdir dir="${debDirectory}" />
-        <unzip 
-            src="build/${buildId}/${buildId}-linux.gtk.x86.zip"
+        <unzip
+            src="${buildDirectory}/${buildId}/${buildId}-linux.gtk.${arch}.zip"
             dest="${debDirectory}"
             overwrite="true"
             />
-        
         <desktopentry
             name="${productName}"
             toFile="${debDirectory}/dbeaver.desktop"
@@ -179,7 +168,7 @@
             icon="/usr/share/${packageName}/icon.xpm"
             categories="Development;Java"/>
 
-        <deb 
+        <deb
             package="${packageName}"
             version="${productVersion}"
             todir="${distDirectory}"
@@ -187,7 +176,7 @@
             depends="sun-java6-jre | openjdk-6-jre"
             homepage="http://dbeaver.jkiss.org"
             suggests="dbeaver"
-            architecture="i386">
+            architecture="${arch.deb}">
             <maintainer name="Serge Rieder" email="serge@jkiss.org"/>
             <description synopsis="DBeaver">Universal Database Manager</description>
             <tarfileset file="${debDirectory}/dbeaver/dbeaver" prefix="usr/share/${packageName}" filemode="755"/>
@@ -196,6 +185,22 @@
             </tarfileset>
             <tarfileset file="${debDirectory}/dbeaver.desktop" prefix="usr/share/applications"/>
         </deb>
+    </target>
+
+    <target name="dist-deb" depends="init">
+        <path id="ant-deb.classpath">
+            <fileset dir="lib" includes="*.jar"/>
+        </path>
+        <taskdef resource="ant_deb_task.properties" classpathref="ant-deb.classpath"/>
+
+        <antcall target="deb">
+            <param name="arch" value="x86"/>
+            <param name="arch.deb" value="i386"/>
+        </antcall>
+        <antcall target="deb">
+            <param name="arch" value="x86_64"/>
+            <param name="arch.deb" value="ia64"/>
+        </antcall>
 
     </target>
 

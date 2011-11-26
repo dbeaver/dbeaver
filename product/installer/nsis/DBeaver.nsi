@@ -45,6 +45,8 @@
   ;Request application privileges for Windows Vista
   RequestExecutionLevel admin
 
+  Var JAVA_LOCALE
+
 ;--------------------------------
 ;Variables
 
@@ -90,7 +92,7 @@
   !insertmacro MUI_PAGE_FINISH
 
 Function FinishPageAction
-	CreateShortCut "$DESKTOP\DBeaver.lnk" "$INSTDIR\dbeaver.exe" ""
+	CreateShortCut "$DESKTOP\DBeaver.lnk" "$INSTDIR\dbeaver.exe" "-nl $JAVA_LOCALE"
 FunctionEnd
 
 Function LaunchDBeaver
@@ -110,16 +112,27 @@ FunctionEnd
 
 ;--------------------------------
 ;Languages
-;!define MUI_LANGDLL_ALLLANGUAGES
 
-!define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
-!define MUI_LANGDLL_REGISTRY_KEY "Software\DBeaver"
-!define MUI_LANGDLL_REGISTRY_VALUENAME "Language"
+!define MUI_LANGDLL_REGISTRY_ROOT HKCU
+!define MUI_LANGDLL_REGISTRY_KEY Software\DBeaver
+!define MUI_LANGDLL_REGISTRY_VALUENAME Language
+
 !define MUI_LANGDLL_ALWAYSSHOW
 
+!insertmacro MUI_DEFAULT MUI_LANGDLL_WINDOWTITLE "Installer Language"
+!insertmacro MUI_DEFAULT MUI_LANGDLL_INFO "Please select a language."
+
+!define MUI_LANGDLL_ALLLANGUAGES
+
 !insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "Arabic"
+!insertmacro MUI_LANGUAGE "Dutch"
+!insertmacro MUI_LANGUAGE "French"
+!insertmacro MUI_LANGUAGE "German"
+!insertmacro MUI_LANGUAGE "Italian"
 !insertmacro MUI_LANGUAGE "Russian"
 !insertmacro MUI_LANGUAGE "SimpChinese"
+!insertmacro MUI_LANGUAGE "Spanish"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -161,7 +174,7 @@ Section "-DBeaver Core" SecCore
     
     ;Create shortcuts
     CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\DBeaver.lnk" "$INSTDIR\dbeaver.exe"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\DBeaver.lnk" "$INSTDIR\dbeaver.exe" "-nl $JAVA_LOCALE"
     CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
   
   !insertmacro MUI_STARTMENU_WRITE_END
@@ -267,9 +280,48 @@ SectionEnd
 ;--------------------------------
 ;Installer Functions
 
+!define LOCALE_ILANGUAGE '0x1' ;System Language Resource ID
+!define LOCALE_SLANGUAGE '0x2' ;System Language & Country [Cool]
+!define LOCALE_SABBREVLANGNAME '0x3' ;System abbreviated language
+!define LOCALE_SNATIVELANGNAME '0x4' ;System native language name [Cool]
+!define LOCALE_ICOUNTRY '0x5' ;System country code
+!define LOCALE_SCOUNTRY '0x6' ;System Country
+!define LOCALE_SABBREVCTRYNAME '0x7' ;System abbreviated country name
+!define LOCALE_SNATIVECTRYNAME '0x8' ;System native country name [Cool]
+!define LOCALE_IDEFAULTLANGUAGE '0x9' ;System default language ID
+!define LOCALE_IDEFAULTCOUNTRY  '0xA' ;System default country code
+!define LOCALE_IDEFAULTCODEPAGE '0xB' ;System default oem code page
+
 Function .onInit
 
-  !insertmacro MUI_LANGDLL_DISPLAY
+    !insertmacro MUI_LANGDLL_DISPLAY
+
+    StrCpy $JAVA_LOCALE en
+
+    StrCmp $LANGUAGE 1025 0 +2
+        StrCpy $JAVA_LOCALE ar
+    StrCmp $LANGUAGE 1031 0 +2
+        StrCpy $JAVA_LOCALE de
+    StrCmp $LANGUAGE 1036 0 +2
+        StrCpy $JAVA_LOCALE fr
+    StrCmp $LANGUAGE 1040 0 +2
+        StrCpy $JAVA_LOCALE it
+    StrCmp $LANGUAGE 1043 0 +2
+        StrCpy $JAVA_LOCALE nl
+    StrCmp $LANGUAGE 1044 0 +2
+        StrCpy $JAVA_LOCALE no
+    StrCmp $LANGUAGE 1045 0 +2
+        StrCpy $JAVA_LOCALE pl
+    StrCmp $LANGUAGE 1048 0 +2
+        StrCpy $JAVA_LOCALE ro
+    StrCmp $LANGUAGE 1049 0 +2
+        StrCpy $JAVA_LOCALE ru
+    StrCmp $LANGUAGE 1053 0 +2
+        StrCpy $JAVA_LOCALE sv
+    StrCmp $LANGUAGE 1066 0 +2
+        StrCpy $JAVA_LOCALE vi
+    StrCmp $LANGUAGE 2052 0 +2
+        StrCpy $JAVA_LOCALE zh
 
   ;!insertmacro MUI_UNGETLANGUAGE
 
