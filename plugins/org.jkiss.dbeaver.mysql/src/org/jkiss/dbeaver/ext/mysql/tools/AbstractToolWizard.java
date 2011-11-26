@@ -142,7 +142,9 @@ public abstract class AbstractToolWizard extends Wizard implements DBRRunnableWi
         java.util.List<String> cmd = new ArrayList<String>();
         fillProcessParameters(cmd);
 
-        cmd.add("-v");
+        if (isVerbose()) {
+            cmd.add("-v");
+        }
         cmd.add("-q");
         cmd.add("--host=" + getConnectionInfo().getHostName());
         if (!CommonUtils.isEmpty(getConnectionInfo().getHostPort())) {
@@ -156,9 +158,12 @@ public abstract class AbstractToolWizard extends Wizard implements DBRRunnableWi
 
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+            processBuilder.redirectErrorStream(this.isMergeProcessStreams());
             Process process = processBuilder.start();
             startProcessHandler(monitor, processBuilder, process);
-            logPage.startLogReader(processBuilder, process);
+            logPage.startLogReader(
+                processBuilder,
+                this.isMergeProcessStreams() ? process.getInputStream() : process.getErrorStream());
 
             for (;;) {
                 Thread.sleep(100);
@@ -181,6 +186,16 @@ public abstract class AbstractToolWizard extends Wizard implements DBRRunnableWi
         }
 
         return true;
+    }
+
+    protected boolean isMergeProcessStreams()
+    {
+        return false;
+    }
+
+    protected boolean isVerbose()
+    {
+        return false;
     }
 
     protected void onSuccess()

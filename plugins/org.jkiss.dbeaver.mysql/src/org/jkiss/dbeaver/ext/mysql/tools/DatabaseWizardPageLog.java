@@ -66,9 +66,14 @@ class DatabaseWizardPageLog extends WizardPage {
         });
     }
 
-    void startLogReader(ProcessBuilder processBuilder, Process process)
+    void startLogReader(ProcessBuilder processBuilder, InputStream stream)
     {
-        new LogReaderJob(processBuilder, process.getErrorStream());
+        new LogReaderJob(processBuilder, stream).start();
+    }
+
+    void startNullReader(InputStream stream)
+    {
+        new NullReaderJob(stream).start();
     }
 
     private class LogReaderJob extends Thread {
@@ -123,6 +128,30 @@ class DatabaseWizardPageLog extends WizardPage {
                 // just skip
             } finally {
                 appendLog(task + " finished " + new Date() + lf);
+            }
+        }
+    }
+
+    private class NullReaderJob extends Thread {
+        private InputStream input;
+        protected NullReaderJob(InputStream stream)
+        {
+            super(task + " log reader");
+            this.input = stream;
+        }
+
+        public void run()
+        {
+            try {
+                byte[] buffer = new byte[1000];
+                for (;;) {
+                    int count = input.read(buffer);
+                    if (count <= 0) {
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                // just skip
             }
         }
     }

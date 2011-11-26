@@ -86,9 +86,15 @@ class DatabaseExportWizard extends AbstractToolWizard implements IExportWizard {
     }
 
     @Override
+    protected boolean isVerbose()
+    {
+        return true;
+    }
+
+    @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, ProcessBuilder processBuilder, Process process)
     {
-        new DumpTransformerJob(monitor, process.getInputStream());
+        new DumpTransformerJob(monitor, process.getInputStream()).start();
     }
 
     class DumpTransformerJob extends Thread {
