@@ -32,6 +32,22 @@
 
     <versions>
         <version>
+            <number>1.4.5</number>
+            <type>stable</type>
+            <date>28.11.2011</date>
+
+            <release-notes>
+                - MySQL and Oracle native clients support
+                - MySQL full database export/import
+                - Resultset filters UI update
+                - Drivers management improvements
+                - SQL editor fixes and additional formatting
+                - General UI and code fixes
+                - Multilingual installer
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.4.4</number>
             <type>unstable</type>
             <date>21.11.2011</date>
