@@ -114,7 +114,11 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                 token = CommonUtils.removeTrailingSlash(token);
                 File mysqlFile = new File(token, MySQLUtils.getMySQLConsoleBinaryName());
                 if (mysqlFile.exists()) {
-                    localServers.put(token, new MySQLServerHome(token, null));
+                    File binFolder = mysqlFile.getAbsoluteFile().getParentFile();//.getName()
+                    if (binFolder.getName().equalsIgnoreCase("bin")) {
+                    	String homeId = CommonUtils.removeTrailingSlash(binFolder.getParentFile().getAbsolutePath());
+                        localServers.put(homeId, new MySQLServerHome(homeId, null));
+                    }
                 }
             }
         }
