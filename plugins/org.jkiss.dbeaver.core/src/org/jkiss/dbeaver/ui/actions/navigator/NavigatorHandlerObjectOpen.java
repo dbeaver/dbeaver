@@ -92,6 +92,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
     {
         if (selectedNode.getObject() instanceof DBEPrivateObjectEditor) {
             ((DBEPrivateObjectEditor)selectedNode.getObject()).editObject(workbenchWindow);
+//            ISelectionProvider selectionProvider = workbenchWindow.getActivePage().getActivePart().getSite().getSelectionProvider();
+//            selectionProvider.setSelection(selectionProvider.getSelection());
             return null;
         }
         if (!selectedNode.isPersisted()) {

@@ -678,6 +678,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             workbenchWindow,
             new EditConnectionWizard(this));
         dialog.open();
+        //workbenchWindow.
     }
 
     public void addChildProcess(DBRProcessDescriptor process)
