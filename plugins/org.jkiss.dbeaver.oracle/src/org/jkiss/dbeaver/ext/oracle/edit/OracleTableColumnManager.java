@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.utils.CommonUtils;
@@ -31,25 +32,25 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
         StringBuilder decl = super.getNestedDeclaration(owner, command);
         final OracleTableColumn column = command.getObject();
         if (column.isAutoIncrement()) {
-            decl.append(" AUTO_INCREMENT");
+            decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
         }
         if (!CommonUtils.isEmpty(column.getDefaultValue())) {
-            decl.append(" DEFAULT '").append(column.getDefaultValue()).append("'");
+            decl.append(" DEFAULT '").append(column.getDefaultValue()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         if (!CommonUtils.isEmpty(column.getComment())) {
-            decl.append(" COMMENT '").append(column.getComment()).append("'");
+            decl.append(" COMMENT '").append(column.getComment()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return decl;
     }
 
     protected OracleTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent, Object copyFrom)
     {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2");
+        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$
 
         final OracleTableColumn column = new OracleTableColumn(parent);
         column.setName(DBObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
         column.setType((OracleDataType) columnType);
-        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
+        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBSDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getValueType());
         column.setOrdinalPosition(-1);
@@ -63,7 +64,7 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
 
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Alter table column",
-                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command))};
+                OracleMessages.edit_oracle_table_column_manager_action_alter_table_column,
+                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

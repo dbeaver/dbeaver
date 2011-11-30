@@ -8,6 +8,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
@@ -28,7 +29,7 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
     @Override
     protected OracleDataType createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
-        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(), "Package");
+        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(), OracleMessages.edit_oracle_data_type_manager_dialog_title);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -36,9 +37,9 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
             parent,
             dialog.getEntityName(),
             false);
-        dataType.setSourceDeclaration("TYPE " + dataType.getName() + " AS OBJECT\n" +
-            "(\n" +
-            ")");
+        dataType.setSourceDeclaration("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
+            "(\n" + //$NON-NLS-1$
+            ")"); //$NON-NLS-1$
         return dataType;
     }
 
@@ -53,8 +54,8 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
     {
         final OracleDataType object = objectDeleteCommand.getObject();
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop data type",
-                "DROP TYPE " + object.getFullQualifiedName())
+            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_data_type_manager_action_drop_data_type,
+                "DROP TYPE " + object.getFullQualifiedName()) //$NON-NLS-1$
         };
     }
 
@@ -76,15 +77,15 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
         if (!CommonUtils.isEmpty(header)) {
             actions.add(
                 new AbstractDatabasePersistAction(
-                    "Create type header",
-                    "CREATE OR REPLACE " + header));
+                    OracleMessages.edit_oracle_data_type_manager_action_create_type_header,
+                    "CREATE OR REPLACE " + header)); //$NON-NLS-1$
         }
         String body = OracleUtils.normalizeSourceName(dataType, true);
         if (!CommonUtils.isEmpty(body)) {
             actions.add(
                 new AbstractDatabasePersistAction(
-                    "Create type body",
-                    "CREATE OR REPLACE " + body));
+                    OracleMessages.edit_oracle_data_type_manager_action_create_type_body,
+                    "CREATE OR REPLACE " + body)); //$NON-NLS-1$
         }
         OracleUtils.addSchemaChangeActions(actions, dataType);
         return actions.toArray(new IDatabasePersistAction[actions.size()]);

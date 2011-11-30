@@ -8,6 +8,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
@@ -67,8 +68,8 @@ public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStan
     {
         final OracleProcedureStandalone object = objectDeleteCommand.getObject();
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop procedure",
-                "DROP " + object.getProcedureType().name() + " " + object.getFullQualifiedName())
+            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_procedure_manager_action_drop_procedure,
+                "DROP " + object.getProcedureType().name() + " " + object.getFullQualifiedName()) //$NON-NLS-1$ //$NON-NLS-2$
         };
     }
 
@@ -90,7 +91,7 @@ public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStan
             return null;
         }
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        actions.add(new AbstractDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + source));
+        actions.add(new AbstractDatabasePersistAction(OracleMessages.edit_oracle_procedure_manager_action_create_procedure, "CREATE OR REPLACE " + source)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actions, procedure);
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }

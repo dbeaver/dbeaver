@@ -11,6 +11,7 @@ import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.editors.OracleTableDDLSection;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -42,13 +43,13 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     {
         return new OracleTable(
             parent,
-            DBObjectNameCaseTransformer.transformName(parent, "NewTable"));
+            DBObjectNameCaseTransformer.transformName(parent, "NewTable")); //$NON-NLS-1$
     }
 
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        StringBuilder query = new StringBuilder("ALTER TABLE ");
-        query.append(command.getObject().getFullQualifiedName()).append(" ");
+        StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
+        query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
         appendTableModifiers(command.getObject(), command, query);
 
         return new IDatabasePersistAction[] {
@@ -65,9 +66,9 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Rename table",
-                "RENAME TABLE " + command.getObject().getFullQualifiedName() +
-                    " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()))
+                OracleMessages.edit_oracle_table_manager_action_rename_table,
+                "RENAME TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
+                    " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
         };
     }
 
@@ -89,10 +90,10 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
         return new ITabDescriptor[] {
             new PropertyTabDescriptor(
                 PropertiesContributor.CATEGORY_INFO,
-                "table.ddl",
-                "DDL",
+                "table.ddl", //$NON-NLS-1$
+                "DDL", //$NON-NLS-1$
                 DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "DDL") {
+                new SectionDescriptor("default", "DDL") { //$NON-NLS-1$ //$NON-NLS-2$
                     public ISection getSectionClass()
                     {
                         return new OracleTableDDLSection(activeEditor);

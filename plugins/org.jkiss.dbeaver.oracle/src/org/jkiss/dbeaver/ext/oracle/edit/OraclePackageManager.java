@@ -8,6 +8,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
@@ -28,7 +29,7 @@ public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, Oracle
     @Override
     protected OraclePackage createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
-        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(), "Package");
+        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(), OracleMessages.edit_oracle_package_manager_dialog_title);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -48,8 +49,8 @@ public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, Oracle
     {
         final OraclePackage object = objectDeleteCommand.getObject();
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop package",
-                "DROP PACKAGE " + object.getFullQualifiedName())
+            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_package_manager_action_drop_package,
+                "DROP PACKAGE " + object.getFullQualifiedName()) //$NON-NLS-1$
         };
     }
 
@@ -71,20 +72,20 @@ public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, Oracle
         if (!CommonUtils.isEmpty(header)) {
             actions.add(
                 new AbstractDatabasePersistAction(
-                    "Create package header",
-                    "CREATE OR REPLACE " + header));
+                    OracleMessages.edit_oracle_package_manager_action_create_package_header,
+                    "CREATE OR REPLACE " + header)); //$NON-NLS-1$
         }
         String body = OracleUtils.normalizeSourceName(pack, true);
         if (!CommonUtils.isEmpty(body)) {
             actions.add(
                 new AbstractDatabasePersistAction(
-                    "Create package body",
-                    "CREATE OR REPLACE " + body));
+                    OracleMessages.edit_oracle_package_manager_action_create_package_body,
+                    "CREATE OR REPLACE " + body)); //$NON-NLS-1$
         } else {
             actions.add(
                 new AbstractDatabasePersistAction(
-                    "Create package body",
-                    "DROP PACKAGE BODY " + pack.getFullQualifiedName(), IDatabasePersistAction.ActionType.OPTIONAL)
+            		OracleMessages.edit_oracle_package_manager_action_create_package_body,
+                    "DROP PACKAGE BODY " + pack.getFullQualifiedName(), IDatabasePersistAction.ActionType.OPTIONAL) //$NON-NLS-1$
                 );
         }
         OracleUtils.addSchemaChangeActions(actions, pack);

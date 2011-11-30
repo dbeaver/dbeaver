@@ -9,6 +9,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTrigger;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
@@ -42,14 +43,14 @@ public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, Oracle
     @Override
     protected OracleTrigger createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent, Object copyFrom)
     {
-        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(), "Trigger");
+        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(), OracleMessages.edit_oracle_trigger_manager_dialog_title);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
         OracleTrigger newTrigger = new OracleTrigger(parent.getContainer(), parent, dialog.getEntityName());
-        newTrigger.setSourceDeclaration("TRIGGER " + dialog.getEntityName() + "\n" +
-            "BEGIN\n" +
-            "END;");
+        newTrigger.setSourceDeclaration("TRIGGER " + dialog.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+            "BEGIN\n" + //$NON-NLS-1$
+            "END;"); //$NON-NLS-1$
         return newTrigger;
     }
 
@@ -69,7 +70,7 @@ public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, Oracle
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop trigger", "DROP TRIGGER " + command.getObject().getFullQualifiedName())
+            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_trigger_manager_action_drop_trigger, "DROP TRIGGER " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
@@ -80,7 +81,7 @@ public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, Oracle
             return null;
         }
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        actions.add(new AbstractDatabasePersistAction("Create trigger", "CREATE OR REPLACE " + source));
+        actions.add(new AbstractDatabasePersistAction(OracleMessages.edit_oracle_trigger_manager_action_create_trigger, "CREATE OR REPLACE " + source)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actions, trigger);
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }

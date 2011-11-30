@@ -9,8 +9,10 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
@@ -73,7 +75,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
         public DisconnectSessionAction(boolean kill)
         {
             super(
-                kill ? "Kill Session" : "Disconnect session",
+                kill ? OracleMessages.editors_oracle_session_editor_title_kill_session : OracleMessages.editors_oracle_session_editor_title_disconnect_session,
                 kill ? DBIcon.REJECT.getImageDescriptor() : DBIcon.SQL_DISCONNECT.getImageDescriptor());
             this.kill = kill;
         }
@@ -82,16 +84,16 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeE
         public void run()
         {
             final DBAServerSession session = sessionsViewer.getSelectedSession();
-            final String action = (kill ? "Kill" : "Disconnect") + " session";
+            final String action = (kill ? OracleMessages.editors_oracle_session_editor_action_kill : OracleMessages.editors_oracle_session_editor_action_disconnect) + OracleMessages.editors_oracle_session_editor_action__session;
             ConfirmationDialog dialog = new ConfirmationDialog(
                 getSite().getShell(),
                 action,
                 null,
-                "Are you sure you want to " + action.toLowerCase() + " '" + session + "'?",
+                NLS.bind(OracleMessages.editors_oracle_session_editor_confirm_action, action.toLowerCase(), session),
                 MessageDialog.CONFIRM,
                 new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL },
                 0,
-                "Immediate",
+                OracleMessages.editors_oracle_session_editor_confirm_title,
                 false);
             if (dialog.open() == IDialogConstants.YES_ID) {
                 Map<String, Object> options = new HashMap<String, Object>();

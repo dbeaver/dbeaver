@@ -8,6 +8,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleView;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -40,7 +41,7 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
     @Override
     protected OracleView createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
-        OracleView newView = new OracleView(parent, "NewView");
+        OracleView newView = new OracleView(parent, "NewView"); //$NON-NLS-1$
         return newView;
     }
 
@@ -60,7 +61,7 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName())
+            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_view_manager_action_drop_view, "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
@@ -68,10 +69,10 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = ContentUtils.getDefaultLineSeparator();
-        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator)
-            .append("AS ").append(view.getAdditionalInfo().getText());
+        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
+            .append("AS ").append(view.getAdditionalInfo().getText()); //$NON-NLS-1$
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Create view", decl.toString())
+            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_view_manager_action_create_view, decl.toString())
         };
     }
 

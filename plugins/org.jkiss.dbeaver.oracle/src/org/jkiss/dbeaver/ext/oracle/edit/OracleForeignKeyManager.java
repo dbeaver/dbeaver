@@ -8,6 +8,7 @@ import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -25,7 +26,7 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeign
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
             workbenchWindow.getShell(),
-            "Create foreign key",
+            OracleMessages.edit_oracle_foreign_key_manager_dialog_title,
             activeEditor,
             table,
             new DBSConstraintModifyRule[] {
@@ -44,8 +45,8 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeign
             (OracleConstraint) editDialog.getUniqueConstraint(),
             editDialog.getOnDeleteRule());
         foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey,
-                CommonUtils.escapeIdentifier(table.getName()) + "_" +
-                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK"));
+                CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
+                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK")); //$NON-NLS-1$
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(
@@ -59,7 +60,7 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeign
 
     protected String getDropForeignKeyPattern(OracleForeignKey foreignKey)
     {
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT;
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }

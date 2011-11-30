@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -32,7 +33,7 @@ public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTabl
     {
         EditIndexDialog editDialog = new EditIndexDialog(
             workbenchWindow.getShell(),
-            "Create index",
+            OracleMessages.edit_oracle_index_manager_dialog_title,
             parent,
             Collections.singletonList(DBSIndexType.OTHER));
         if (editDialog.open() != IDialogConstants.OK_ID) {
@@ -40,9 +41,9 @@ public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTabl
         }
 
         StringBuilder idxName = new StringBuilder(64);
-        idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_")
+        idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_") //$NON-NLS-1$
             .append(CommonUtils.escapeIdentifier(editDialog.getSelectedColumns().iterator().next().getName()))
-            .append("_IDX");
+            .append("_IDX"); //$NON-NLS-1$
         final OracleIndex index = new OracleIndex(
             parent,
             DBObjectNameCaseTransformer.transformName((DBPDataSource) parent.getDataSource(), idxName.toString()),
@@ -62,7 +63,7 @@ public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTabl
 
     protected String getDropIndexPattern(OracleIndex index)
     {
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP INDEX " + PATTERN_ITEM_INDEX_SHORT;
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP INDEX " + PATTERN_ITEM_INDEX_SHORT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }

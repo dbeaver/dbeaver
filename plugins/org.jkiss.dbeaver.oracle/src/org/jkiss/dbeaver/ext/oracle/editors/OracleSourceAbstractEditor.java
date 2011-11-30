@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.oracle.Activator;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceHost;
@@ -114,7 +115,7 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
                 super.init(getEditorSite(), lazyInput);
                 reloadSyntaxRules();
 
-                pageControl.setInfo("State: " + getObject().getObjectState().getTitle());
+                pageControl.setInfo(OracleMessages.editors_oracle_source_abstract_editor_state + getObject().getObjectState().getTitle());
                 lazyInput = null;
             } catch (PartInitException e) {
                 log.error(e);
@@ -263,7 +264,7 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
     {
         public ViewLogAction()
         {
-            super("View compile log", Activator.getImageDescriptor("icons/commands/compile-log.png"));
+            super(OracleMessages.editors_oracle_source_abstract_editor_action_name, Activator.getImageDescriptor("icons/commands/compile-log.png")); //$NON-NLS-2$
         }
 
         public void run()
