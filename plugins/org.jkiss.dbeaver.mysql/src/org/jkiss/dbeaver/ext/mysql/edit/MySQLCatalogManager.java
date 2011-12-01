@@ -9,6 +9,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -30,7 +31,7 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     @Override
     protected MySQLCatalog createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLDataSource parent, Object copyFrom)
     {
-        String schemaName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Schema name");
+        String schemaName = EnterNameDialog.chooseName(workbenchWindow.getShell(), MySQLMessages.edit_catalog_manager_dialog_schema_name);
         if (CommonUtils.isEmpty(schemaName)) {
             return null;
         }
@@ -43,7 +44,7 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Create schema", "CREATE SCHEMA " + command.getObject().getName())
+            new AbstractDatabasePersistAction(MySQLMessages.edit_catalog_manager_action_create_schema, "CREATE SCHEMA " + command.getObject().getName()) //$NON-NLS-2$
         };
     }
 
@@ -51,7 +52,7 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop schema", "DROP SCHEMA " + command.getObject().getName())
+            new AbstractDatabasePersistAction(MySQLMessages.edit_catalog_manager_action_drop_schema, "DROP SCHEMA " + command.getObject().getName()) //$NON-NLS-2$
         };
     }
 

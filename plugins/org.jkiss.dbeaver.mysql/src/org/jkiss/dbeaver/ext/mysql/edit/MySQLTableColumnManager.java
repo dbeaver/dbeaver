@@ -9,6 +9,7 @@ import org.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -30,24 +31,24 @@ public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableCo
         StringBuilder decl = super.getNestedDeclaration(owner, command);
         final MySQLTableColumn column = command.getObject();
         if (column.isAutoIncrement()) {
-            decl.append(" AUTO_INCREMENT");
+            decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
         }
         if (!CommonUtils.isEmpty(column.getDefaultValue())) {
-            decl.append(" DEFAULT '").append(column.getDefaultValue()).append("'");
+            decl.append(" DEFAULT '").append(column.getDefaultValue()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         if (!CommonUtils.isEmpty(column.getComment())) {
-            decl.append(" COMMENT '").append(column.getComment()).append("'");
+            decl.append(" COMMENT '").append(column.getComment()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return decl;
     }
 
     protected MySQLTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLTableBase parent, Object copyFrom)
     {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar");
+        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
 
         final MySQLTableColumn column = new MySQLTableColumn(parent);
         column.setName(DBObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
-        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
+        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBSDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getValueType());
         column.setOrdinalPosition(-1);
@@ -61,7 +62,7 @@ public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableCo
 
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Alter table column",
-                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command))};
+                MySQLMessages.edit_table_column_manager_action_alter_table_column,
+                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

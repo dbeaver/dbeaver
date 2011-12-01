@@ -9,6 +9,7 @@ import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCForeignKeyManager;
@@ -25,7 +26,7 @@ public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKe
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
             workbenchWindow.getShell(),
-            "Create foreign key",
+            MySQLMessages.edit_foreign_key_manager_title,
             activeEditor,
             table,
             new DBSConstraintModifyRule[] {
@@ -46,8 +47,8 @@ public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKe
             editDialog.getOnUpdateRule(),
             false);
         foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey,
-                CommonUtils.escapeIdentifier(table.getName()) + "_" +
-                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK"));
+                CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
+                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK")); //$NON-NLS-1$
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(
@@ -62,7 +63,7 @@ public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKe
 
     protected String getDropForeignKeyPattern(MySQLForeignKey foreignKey)
     {
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT;
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }

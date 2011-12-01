@@ -12,6 +12,7 @@ import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.editors.MySQLViewDefinitionSection;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
@@ -48,7 +49,7 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
     protected MySQLView createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
     {
         MySQLView newCatalog = new MySQLView(parent);
-        newCatalog.setName("NewView");
+        newCatalog.setName("NewView"); //$NON-NLS-1$
         return newCatalog;
     }
 
@@ -68,7 +69,7 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName())
+            new AbstractDatabasePersistAction(MySQLMessages.edit_view_manager_action_drop_view, "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
@@ -76,14 +77,14 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = ContentUtils.getDefaultLineSeparator();
-        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator)
-            .append("AS ").append(view.getAdditionalInfo().getDefinition());
+        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
+            .append("AS ").append(view.getAdditionalInfo().getDefinition()); //$NON-NLS-1$
         final MySQLView.CheckOption checkOption = view.getAdditionalInfo().getCheckOption();
         if (checkOption != null && checkOption != MySQLView.CheckOption.NONE) {
-            decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION");
+            decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Create view", decl.toString())
+            new AbstractDatabasePersistAction(MySQLMessages.edit_view_manager_action_create_view, decl.toString())
         };
     }
 
@@ -95,10 +96,10 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
         return new ITabDescriptor[] {
             new PropertyTabDescriptor(
                 PropertiesContributor.CATEGORY_INFO,
-                "view.definition",
-                "Definition",
+                "view.definition", //$NON-NLS-1$
+                MySQLMessages.edit_view_manager_definition,
                 DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "Definition") {
+                new SectionDescriptor("default", "Definition") { //$NON-NLS-1$
                     public ISection getSectionClass()
                     {
                         return new MySQLViewDefinitionSection(activeEditor);

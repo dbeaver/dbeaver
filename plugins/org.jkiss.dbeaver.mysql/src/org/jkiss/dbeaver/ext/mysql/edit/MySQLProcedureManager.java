@@ -12,6 +12,7 @@ import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.editors.MySQLProcedureBodySection;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
@@ -76,15 +77,15 @@ public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQ
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop procedure", "DROP PROCEDURE " + command.getObject().getFullQualifiedName())
+            new AbstractDatabasePersistAction(MySQLMessages.edit_procedure_manager_action_drop_procedure, "DROP PROCEDURE " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
     private IDatabasePersistAction[] createOrReplaceProcedureQuery(MySQLProcedure procedure)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName()),
-            new AbstractDatabasePersistAction("Create procedure", "CREATE " + procedure.getClientBody())
+            new AbstractDatabasePersistAction(MySQLMessages.edit_procedure_manager_action_drop_procedure, "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName()), //$NON-NLS-2$ //$NON-NLS-3$
+            new AbstractDatabasePersistAction(MySQLMessages.edit_procedure_manager_action_create_procedure, "CREATE " + procedure.getClientBody()) //$NON-NLS-2$
         };
     }
 
@@ -96,10 +97,10 @@ public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQ
         return new ITabDescriptor[] {
             new PropertyTabDescriptor(
                 PropertiesContributor.CATEGORY_INFO,
-                "procedure.body",
-                "Body",
+                "procedure.body", //$NON-NLS-1$
+                MySQLMessages.edit_procedure_manager_body,
                 DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "Body") {
+                new SectionDescriptor("default", MySQLMessages.edit_procedure_manager_body) {
                     public ISection getSectionClass()
                     {
                         return new MySQLProcedureBodySection(activeEditor);

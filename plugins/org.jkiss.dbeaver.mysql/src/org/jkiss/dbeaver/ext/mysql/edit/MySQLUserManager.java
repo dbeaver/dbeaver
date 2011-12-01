@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -60,15 +61,15 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
             queue.add(
                 new DatabaseObjectScriptCommand<MySQLUser>(
                     queue.getObject(),
-                    "Flush privileges",
-                    "FLUSH PRIVILEGES"));
+                    MySQLMessages.edit_user_manager_command_flush_privileges,
+                    "FLUSH PRIVILEGES")); //$NON-NLS-1$
         }
     }
 
     private static class CommandCreateUser extends DBECommandAbstract<MySQLUser> {
         protected CommandCreateUser(MySQLUser user)
         {
-            super(user, "Create user");
+            super(user, MySQLMessages.edit_user_manager_command_create_user);
         }
     }
 
@@ -76,12 +77,12 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
     private static class CommandDropUser extends DBECommandComposite<MySQLUser, UserPropertyHandler> {
         protected CommandDropUser(MySQLUser user)
         {
-            super(user, "Drop user");
+            super(user, MySQLMessages.edit_user_manager_command_drop_user);
         }
         public IDatabasePersistAction[] getPersistActions()
         {
             return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction("Drop user", "DROP USER " + getObject().getFullName()) {
+                new AbstractDatabasePersistAction("Drop user", "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$
                     @Override
                     public void handleExecute(Throwable error)
                     {

@@ -11,6 +11,7 @@ import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.editors.MySQLTableDDLSection;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -44,7 +45,7 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
     protected MySQLTable createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
     {
         final MySQLTable table = new MySQLTable(parent);
-        table.setName(DBObjectNameCaseTransformer.transformName(parent, "NewTable"));
+        table.setName(DBObjectNameCaseTransformer.transformName(parent, "NewTable")); //$NON-NLS-1$
         try {
             final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
             additionalInfo.setEngine(parent.getDataSource().getDefaultEngine());
@@ -60,8 +61,8 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
 
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        StringBuilder query = new StringBuilder("ALTER TABLE ");
-        query.append(command.getObject().getFullQualifiedName()).append(" ");
+        StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
+        query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
         appendTableModifiers(command.getObject(), command, query);
 
         return new IDatabasePersistAction[] {
@@ -74,20 +75,20 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
     {
         try {
             final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
-            if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) {
-                ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName());
+            if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
+                ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
             }
-            if ((!table.isPersisted() || tableProps.getProperty("charset") != null) && additionalInfo.getCharset() != null) {
-                ddl.append("\nDEFAULT CHARSET=").append(additionalInfo.getCharset().getName());
+            if ((!table.isPersisted() || tableProps.getProperty("charset") != null) && additionalInfo.getCharset() != null) { //$NON-NLS-1$
+                ddl.append("\nDEFAULT CHARSET=").append(additionalInfo.getCharset().getName()); //$NON-NLS-1$
             }
-            if ((!table.isPersisted() || tableProps.getProperty("collation") != null) && additionalInfo.getCollation() != null) {
-                ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName());
+            if ((!table.isPersisted() || tableProps.getProperty("collation") != null) && additionalInfo.getCollation() != null) { //$NON-NLS-1$
+                ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
             }
             if ((!table.isPersisted() || tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
-                ddl.append("\nCOMMENT='").append(table.getDescription().replace('\'', '"')).append("'");
+                ddl.append("\nCOMMENT='").append(table.getDescription().replace('\'', '"')).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
             }
-            if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) {
-                ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement());
+            if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
+                ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement()); //$NON-NLS-1$
             }
         } catch (DBCException e) {
             log.error(e);
@@ -98,9 +99,9 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                "Rename table",
-                "RENAME TABLE " + command.getObject().getFullQualifiedName() +
-                    " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()))
+                MySQLMessages.edit_table_manager_action_rename_table,
+                "RENAME TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
+                    " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
         };
     }
 
@@ -122,10 +123,10 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
         return new ITabDescriptor[] {
             new PropertyTabDescriptor(
                 PropertiesContributor.CATEGORY_INFO,
-                "table.ddl",
-                "DDL",
+                "table.ddl", //$NON-NLS-1$
+                "DDL", //$NON-NLS-1$
                 DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "DDL") {
+                new SectionDescriptor("default", "DDL") { //$NON-NLS-1$ //$NON-NLS-2$
                     public ISection getSectionClass()
                     {
                         return new MySQLTableDDLSection(activeEditor);

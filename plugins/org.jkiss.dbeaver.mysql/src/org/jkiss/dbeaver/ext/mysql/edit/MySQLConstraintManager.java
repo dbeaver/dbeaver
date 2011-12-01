@@ -9,6 +9,7 @@ import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLConstraint;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLConstraintColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
@@ -31,7 +32,7 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstrain
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(
             workbenchWindow.getShell(),
-            "Create constraint",
+            MySQLMessages.edit_constraint_manager_title,
             parent,
             new DBSConstraintType[] {
                 DBSConstraintType.PRIMARY_KEY,
@@ -46,7 +47,7 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstrain
             null,
             editDialog.getConstraintType(),
             false);
-        constraint.setName(DBObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
+        constraint.setName(DBObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
         int colIndex = 1;
         for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
             constraint.addColumn(
@@ -62,11 +63,11 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstrain
     {
         String clause;
         if (constraint.getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
-            clause = "PRIMARY KEY";
+            clause = "PRIMARY KEY"; //$NON-NLS-1$
         } else {
-            clause = "KEY";
+            clause = "KEY"; //$NON-NLS-1$
         }
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT;
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
 }
