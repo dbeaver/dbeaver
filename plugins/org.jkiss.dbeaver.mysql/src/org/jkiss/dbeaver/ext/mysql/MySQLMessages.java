@@ -49,4 +49,28 @@ public class MySQLMessages extends NLS {
 	public static String edit_view_manager_action_create_view;
 	public static String edit_view_manager_action_drop_view;
 	public static String edit_view_manager_definition;
+	public static String editors_session_editor_action_kill_Session;
+	public static String editors_session_editor_action_terminate_Query;
+	public static String editors_session_editor_confirm;
+	public static String editors_user_editor_abstract_load_grants;
+	public static String editors_user_editor_general_control_dba_privileges;
+	public static String editors_user_editor_general_group_limits;
+	public static String editors_user_editor_general_group_login;
+	public static String editors_user_editor_general_label_confirm;
+	public static String editors_user_editor_general_label_host;
+	public static String editors_user_editor_general_label_password;
+	public static String editors_user_editor_general_label_user_name;
+	public static String editors_user_editor_general_service_load_catalog_privileges;
+	public static String editors_user_editor_general_spinner_max_connections;
+	public static String editors_user_editor_general_spinner_max_queries;
+	public static String editors_user_editor_general_spinner_max_updates;
+	public static String editors_user_editor_general_spinner_max_user_connections;
+	public static String editors_user_editor_privileges_column_catalog;
+	public static String editors_user_editor_privileges_column_table;
+	public static String editors_user_editor_privileges_control_other_privileges;
+	public static String editors_user_editor_privileges_control_table_privileges;
+	public static String editors_user_editor_privileges_group_catalogs;
+	public static String editors_user_editor_privileges_group_tables;
+	public static String editors_user_editor_privileges_service_load_privileges;
+	public static String editors_user_editor_privileges_service_load_tables;
 }

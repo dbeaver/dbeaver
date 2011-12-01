@@ -9,10 +9,12 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -74,7 +76,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
         if (dataSource instanceof MySQLDataSource) {
             return (MySQLDataSource)dataSource;
         }
-        log.error("Bad datasource object: " + dataSource);
+        log.error("Bad datasource object: " + dataSource); //$NON-NLS-1$
         return null;
     }
 
@@ -88,7 +90,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
         public KillSessionAction(boolean killQuery)
         {
             super(
-                killQuery ? "Terminate Query" : "Kill Session",
+                killQuery ? MySQLMessages.editors_session_editor_action_terminate_Query : MySQLMessages.editors_session_editor_action_kill_Session,
                 killQuery ?
                     PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_STOP) :
                     DBIcon.SQL_DISCONNECT.getImageDescriptor());
@@ -101,7 +103,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEd
             final DBAServerSession session = sessionsViewer.getSelectedSession();
             if (session != null && UIUtils.confirmAction(getSite().getShell(),
                 this.getText(),
-                getText() + " '" + session + "'. Are you sure?"))
+                NLS.bind(MySQLMessages.editors_session_editor_confirm, getText(), session)))
             {
                 sessionsViewer.alterSession(
                     sessionsViewer.getSelectedSession(),

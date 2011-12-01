@@ -82,7 +82,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
         public IDatabasePersistAction[] getPersistActions()
         {
             return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction("Drop user", "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$
+                new AbstractDatabasePersistAction(MySQLMessages.edit_user_manager_command_drop_user, "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$
                     @Override
                     public void handleExecute(Throwable error)
                     {

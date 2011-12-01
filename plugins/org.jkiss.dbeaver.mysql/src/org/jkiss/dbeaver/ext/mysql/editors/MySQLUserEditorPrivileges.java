@@ -16,6 +16,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.ext.mysql.edit.MySQLCommandGrantPrivilege;
@@ -63,7 +64,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         leftPane.setLayoutData(new GridData(GridData.FILL_BOTH));
         leftPane.setLayout(new GridLayout(2, true));
         {
-            Composite catalogGroup = UIUtils.createControlGroup(leftPane, "Catalogs", 1, GridData.FILL_BOTH, 0);
+            Composite catalogGroup = UIUtils.createControlGroup(leftPane, MySQLMessages.editors_user_editor_privileges_group_catalogs, 1, GridData.FILL_BOTH, 0);
 
             catalogsTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             catalogsTable.setHeaderVisible(true);
@@ -82,10 +83,10 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                     showGrants();
                 }
             });
-            UIUtils.createTableColumn(catalogsTable, SWT.LEFT, "Catalog");
+            UIUtils.createTableColumn(catalogsTable, SWT.LEFT, MySQLMessages.editors_user_editor_privileges_column_catalog);
             {
                 TableItem item = new TableItem(catalogsTable, SWT.NONE);
-                item.setText("% (All)");
+                item.setText("% (All)"); //$NON-NLS-1$
                 item.setImage(DBIcon.TREE_DATABASE.getImage());
             }
             for (MySQLCatalog catalog : getDatabaseObject().getDataSource().getCatalogs()) {
@@ -98,7 +99,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
 
         {
-            Composite tablesGroup = UIUtils.createControlGroup(leftPane, "Tables", 1, GridData.FILL_BOTH, 0);
+            Composite tablesGroup = UIUtils.createControlGroup(leftPane, MySQLMessages.editors_user_editor_privileges_group_tables, 1, GridData.FILL_BOTH, 0);
 
             tablesTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             tablesTable.setHeaderVisible(true);
@@ -116,17 +117,17 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                     showGrants();
                 }
             });
-            UIUtils.createTableColumn(tablesTable, SWT.LEFT, "Table");
+            UIUtils.createTableColumn(tablesTable, SWT.LEFT, MySQLMessages.editors_user_editor_privileges_column_table);
             UIUtils.packColumns(tablesTable);
         }
         Composite ph = UIUtils.createPlaceholder(container, 1);
         ph.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        tablePrivilegesTable = new PrivilegeTableControl(ph, "Table Privileges");
+        tablePrivilegesTable = new PrivilegeTableControl(ph, MySQLMessages.editors_user_editor_privileges_control_table_privileges);
         gd = new GridData(GridData.FILL_BOTH);
         tablePrivilegesTable.setLayoutData(gd);
 
-        otherPrivilegesTable = new PrivilegeTableControl(ph, "Other Privileges");
+        otherPrivilegesTable = new PrivilegeTableControl(ph, MySQLMessages.editors_user_editor_privileges_control_other_privileges);
         gd = new GridData(GridData.FILL_BOTH);
         otherPrivilegesTable.setLayoutData(gd);
 
@@ -213,8 +214,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             MySQLGrant grant = new MySQLGrant(
                 getDatabaseObject(),
                 privileges,
-                curCatalog == null ? "*" : curCatalog.getName(),
-                curTable == null ? "*" : curTable.getName(),
+                curCatalog == null ? "*" : curCatalog.getName(), //$NON-NLS-1$
+                curTable == null ? "*" : curTable.getName(), //$NON-NLS-1$
                 false,
                 privilege.isGrantOption());
             grants.add(grant);
@@ -226,7 +227,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private void showCatalogTables()
     {
         LoadingUtils.createService(
-            new DatabaseLoadService<Collection<MySQLTable>>("Load tables", getDataSource()) {
+            new DatabaseLoadService<Collection<MySQLTable>>(MySQLMessages.editors_user_editor_privileges_service_load_tables, getDataSource()) {
                 public Collection<MySQLTable> evaluate()
                     throws InvocationTargetException, InterruptedException
                 {
@@ -268,7 +269,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
         isLoaded = true;
         LoadingUtils.createService(
-            new DatabaseLoadService<java.util.List<MySQLPrivilege>>("Load privileges", getDataSource()) {
+            new DatabaseLoadService<java.util.List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_privileges_service_load_privileges, getDataSource()) {
                 public java.util.List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
                 {
                     try {
@@ -358,7 +359,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                     tablesTable.removeAll();
                     {
                         TableItem item = new TableItem(tablesTable, SWT.NONE);
-                        item.setText("% (All)");
+                        item.setText("% (All)"); //$NON-NLS-1$
                         item.setImage(DBIcon.TREE_TABLE.getImage());
                     }
                     for (MySQLTable table : tables) {

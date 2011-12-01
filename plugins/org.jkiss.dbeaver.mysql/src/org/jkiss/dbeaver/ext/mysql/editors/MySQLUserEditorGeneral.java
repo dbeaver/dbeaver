@@ -8,6 +8,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
@@ -30,7 +31,7 @@ import java.util.List;
 public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 {
     //static final Log log = LogFactory.getLog(MySQLUserEditorGeneral.class);
-    public static final String DEF_PASSWORD_VALUE = "**********";
+    public static final String DEF_PASSWORD_VALUE = "**********"; //$NON-NLS-1$
 
     private PageControl pageControl;
     private boolean isLoaded;
@@ -50,47 +51,47 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
         newUser = !getDatabaseObject().isPersisted();
         {
-            Composite loginGroup = UIUtils.createControlGroup(container, "Login", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
+            Composite loginGroup = UIUtils.createControlGroup(container, MySQLMessages.editors_user_editor_general_group_login, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
 
-            userNameText = UIUtils.createLabelText(loginGroup, "User Name", getDatabaseObject().getUserName());
+            userNameText = UIUtils.createLabelText(loginGroup, MySQLMessages.editors_user_editor_general_label_user_name, getDatabaseObject().getUserName());
             userNameText.setEditable(newUser);
             if (newUser) {
                 ControlPropertyCommandListener.create(this, userNameText, UserPropertyHandler.NAME);
             }
 
-            hostText = UIUtils.createLabelText(loginGroup, "Host", getDatabaseObject().getHost());
+            hostText = UIUtils.createLabelText(loginGroup, MySQLMessages.editors_user_editor_general_label_host, getDatabaseObject().getHost());
             hostText.setEditable(newUser);
             if (newUser) {
                 ControlPropertyCommandListener.create(this, hostText, UserPropertyHandler.HOST);
             }
 
-            String password = newUser ? "" : DEF_PASSWORD_VALUE;
-            Text passwordText = UIUtils.createLabelText(loginGroup, "Password", password, SWT.BORDER | SWT.PASSWORD);
+            String password = newUser ? "" : DEF_PASSWORD_VALUE; //$NON-NLS-1$
+            Text passwordText = UIUtils.createLabelText(loginGroup, MySQLMessages.editors_user_editor_general_label_password, password, SWT.BORDER | SWT.PASSWORD);
             ControlPropertyCommandListener.create(this, passwordText, UserPropertyHandler.PASSWORD);
 
-            Text confirmText = UIUtils.createLabelText(loginGroup, "Confirm", password, SWT.BORDER | SWT.PASSWORD);
+            Text confirmText = UIUtils.createLabelText(loginGroup, MySQLMessages.editors_user_editor_general_label_confirm, password, SWT.BORDER | SWT.PASSWORD);
             ControlPropertyCommandListener.create(this, confirmText, UserPropertyHandler.PASSWORD_CONFIRM);
         }
 
         {
-            Composite limitsGroup = UIUtils.createControlGroup(container, "Limits", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite limitsGroup = UIUtils.createControlGroup(container, MySQLMessages.editors_user_editor_general_group_limits, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            Spinner maxQueriesText = UIUtils.createLabelSpinner(limitsGroup, "Max Queries", getDatabaseObject().getMaxQuestions(), 0, Integer.MAX_VALUE);
+            Spinner maxQueriesText = UIUtils.createLabelSpinner(limitsGroup, MySQLMessages.editors_user_editor_general_spinner_max_queries, getDatabaseObject().getMaxQuestions(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxQueriesText, UserPropertyHandler.MAX_QUERIES);
 
-            Spinner maxUpdatesText = UIUtils.createLabelSpinner(limitsGroup, "Max Updates",  getDatabaseObject().getMaxUpdates(), 0, Integer.MAX_VALUE);
+            Spinner maxUpdatesText = UIUtils.createLabelSpinner(limitsGroup, MySQLMessages.editors_user_editor_general_spinner_max_updates,  getDatabaseObject().getMaxUpdates(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxUpdatesText, UserPropertyHandler.MAX_UPDATES);
 
-            Spinner maxConnectionsText = UIUtils.createLabelSpinner(limitsGroup, "Max Connections", getDatabaseObject().getMaxConnections(), 0, Integer.MAX_VALUE);
+            Spinner maxConnectionsText = UIUtils.createLabelSpinner(limitsGroup, MySQLMessages.editors_user_editor_general_spinner_max_connections, getDatabaseObject().getMaxConnections(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxConnectionsText, UserPropertyHandler.MAX_CONNECTIONS);
 
-            Spinner maxUserConnectionsText = UIUtils.createLabelSpinner(limitsGroup, "Max User Connections", getDatabaseObject().getMaxUserConnections(), 0, Integer.MAX_VALUE);
+            Spinner maxUserConnectionsText = UIUtils.createLabelSpinner(limitsGroup, MySQLMessages.editors_user_editor_general_spinner_max_user_connections, getDatabaseObject().getMaxUserConnections(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxUserConnectionsText, UserPropertyHandler.MAX_USER_CONNECTIONS);
         }
 
 
         {
-            privTable = new PrivilegeTableControl(container, "DBA Privileges");
+            privTable = new PrivilegeTableControl(container, MySQLMessages.editors_user_editor_general_control_dba_privileges);
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
             privTable.setLayoutData(gd);
@@ -147,7 +148,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         }
         isLoaded = true;
         LoadingUtils.createService(
-            new DatabaseLoadService<List<MySQLPrivilege>>("Load catalog privileges", getDataSource()) {
+            new DatabaseLoadService<List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_general_service_load_catalog_privileges, getDataSource()) {
                 public List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
                 {
                     try {

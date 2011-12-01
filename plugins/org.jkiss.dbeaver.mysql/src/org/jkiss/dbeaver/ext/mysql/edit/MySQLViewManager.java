@@ -99,7 +99,7 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
                 "view.definition", //$NON-NLS-1$
                 MySQLMessages.edit_view_manager_definition,
                 DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "Definition") { //$NON-NLS-1$
+                new SectionDescriptor("default", MySQLMessages.edit_view_manager_definition) { //$NON-NLS-1$
                     public ISection getSectionClass()
                     {
                         return new MySQLViewDefinitionSection(activeEditor);
