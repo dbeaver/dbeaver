@@ -8,6 +8,7 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleCompileError;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleCompileLogBase;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -30,9 +31,9 @@ public class OracleCompilerLogViewer extends OracleCompileLogBase {
         infoTable = new Table(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
         infoTable.setHeaderVisible(true);
         infoTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        TableColumn messageColumn = UIUtils.createTableColumn(infoTable, SWT.LEFT, "Message");
-        TableColumn lineColumn = UIUtils.createTableColumn(infoTable, SWT.LEFT, "Line");
-        TableColumn posColumn = UIUtils.createTableColumn(infoTable, SWT.LEFT, "Pos");
+        TableColumn messageColumn = UIUtils.createTableColumn(infoTable, SWT.LEFT, OracleMessages.views_oracle_compiler_log_viewer_column_message);
+        TableColumn lineColumn = UIUtils.createTableColumn(infoTable, SWT.LEFT, OracleMessages.views_oracle_compiler_log_viewer_column_line);
+        TableColumn posColumn = UIUtils.createTableColumn(infoTable, SWT.LEFT, OracleMessages.views_oracle_compiler_log_viewer_column_pos);
 
         createContextMenu();
     }
@@ -94,7 +95,7 @@ public class OracleCompilerLogViewer extends OracleCompileLogBase {
                 } else {
                     messageStr = CommonUtils.toString(message);
                 }
-                StringTokenizer st = new StringTokenizer(messageStr, "\n");
+                StringTokenizer st = new StringTokenizer(messageStr, "\n"); //$NON-NLS-1$
                 while (st.hasMoreTokens()) {
                     final TableItem item = new TableItem(infoTable, SWT.NONE);
                     item.setText(0, st.nextToken());
@@ -133,7 +134,7 @@ public class OracleCompilerLogViewer extends OracleCompileLogBase {
         menuMgr.addMenuListener(new IMenuListener() {
             public void menuAboutToShow(IMenuManager manager)
             {
-                IAction copyAction = new Action("Copy") {
+                IAction copyAction = new Action(OracleMessages.views_oracle_compiler_log_viewer_action_copy) {
                     public void run()
                     {
                         copySelectionToClipboard();
@@ -142,7 +143,7 @@ public class OracleCompilerLogViewer extends OracleCompileLogBase {
                 copyAction.setEnabled(infoTable.getSelectionCount() > 0);
                 copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 
-                IAction selectAllAction = new Action("Select All") {
+                IAction selectAllAction = new Action(OracleMessages.views_oracle_compiler_log_viewer_action_select_all) {
                     public void run()
                     {
                         infoTable.selectAll();
@@ -150,7 +151,7 @@ public class OracleCompilerLogViewer extends OracleCompileLogBase {
                 };
                 selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
 
-                IAction clearLogAction = new Action("Clear Log") {
+                IAction clearLogAction = new Action(OracleMessages.views_oracle_compiler_log_viewer_action_clear_log) {
                     public void run()
                     {
                         infoTable.removeAll();

@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -17,6 +18,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.actions.CompileHandler;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -61,7 +63,7 @@ public class OracleCompilerDialog extends TrayDialog
 
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Compile object(s)");
+        getShell().setText(OracleMessages.views_oracle_compiler_dialog_title);
 
         GridData gd;
         Composite composite = new Composite(parent, SWT.NONE);
@@ -87,7 +89,7 @@ public class OracleCompilerDialog extends TrayDialog
                 table.setHeaderVisible(true);
             }
 
-            final TableViewerColumn pathColumn = UIUtils.createTableViewerColumn(unitTable, SWT.NONE, "Name");
+            final TableViewerColumn pathColumn = UIUtils.createTableViewerColumn(unitTable, SWT.NONE, OracleMessages.views_oracle_compiler_dialog_column_name);
             pathColumn.setLabelProvider(new CellLabelProvider() {
                 @Override
                 public void update(ViewerCell cell)
@@ -102,7 +104,7 @@ public class OracleCompilerDialog extends TrayDialog
                     }
                 }
             });
-            final TableViewerColumn versionColumn = UIUtils.createTableViewerColumn(unitTable, SWT.NONE, "Type");
+            final TableViewerColumn versionColumn = UIUtils.createTableViewerColumn(unitTable, SWT.NONE, OracleMessages.views_oracle_compiler_dialog_column_type);
             versionColumn.setLabelProvider(new CellLabelProvider() {
                 @Override
                 public void update(ViewerCell cell)
@@ -112,7 +114,7 @@ public class OracleCompilerDialog extends TrayDialog
                     if (node != null) {
                         cell.setText(node.getNodeType());
                     } else {
-                        cell.setText("???");
+                        cell.setText("???"); //$NON-NLS-1$
                     }
                 }
             });
@@ -160,8 +162,8 @@ public class OracleCompilerDialog extends TrayDialog
     protected void createButtonsForButtonBar(Composite parent)
     {
 		// create OK and Cancel buttons by default
-        createButton(parent, COMPILE_ID, "Compi&le", false).setEnabled(false);
-		createButton(parent, COMPILE_ALL_ID, "Compile &All", true);
+        createButton(parent, COMPILE_ID, OracleMessages.views_oracle_compiler_dialog_button_compile, false).setEnabled(false);
+		createButton(parent, COMPILE_ALL_ID, OracleMessages.views_oracle_compiler_dialog_button_compile_all, true);
 		createButton(parent, IDialogConstants.CANCEL_ID,
             IDialogConstants.CLOSE_LABEL, false);
     }
@@ -208,7 +210,7 @@ public class OracleCompilerDialog extends TrayDialog
             if (monitor.isCanceled()) {
                 break;
             }
-            final String message = "Compile " + unit.getSourceType().name() + " '" + unit.getName() + "' ...";
+            final String message = NLS.bind(OracleMessages.views_oracle_compiler_dialog_message_compile_unit, unit.getSourceType().name(), unit.getName());
             compileLog.info(message);
             boolean success = false;
             try {
@@ -217,8 +219,8 @@ public class OracleCompilerDialog extends TrayDialog
                 log.error("Compile error", e);
             }
 
-            compileLog.info(!success ? "Compilation errors occurred" : "Successfully compiled");
-            compileLog.info("");
+            compileLog.info(!success ? OracleMessages.views_oracle_compiler_dialog_message_compilation_error : OracleMessages.views_oracle_compiler_dialog_message_compilation_success);
+            compileLog.info(""); //$NON-NLS-1$
         }
 
     }

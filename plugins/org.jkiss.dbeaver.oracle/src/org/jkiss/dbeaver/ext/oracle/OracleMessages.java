@@ -72,4 +72,18 @@ public class OracleMessages extends NLS {
 	public static String editors_oracle_session_editor_title_kill_session;
 	public static String editors_oracle_source_abstract_editor_action_name;
 	public static String editors_oracle_source_abstract_editor_state;
+	public static String views_oracle_compiler_dialog_button_compile;
+	public static String views_oracle_compiler_dialog_button_compile_all;
+	public static String views_oracle_compiler_dialog_column_name;
+	public static String views_oracle_compiler_dialog_column_type;
+	public static String views_oracle_compiler_dialog_message_compilation_error;
+	public static String views_oracle_compiler_dialog_message_compilation_success;
+	public static String views_oracle_compiler_dialog_message_compile_unit;
+	public static String views_oracle_compiler_dialog_title;
+	public static String views_oracle_compiler_log_viewer_action_clear_log;
+	public static String views_oracle_compiler_log_viewer_action_copy;
+	public static String views_oracle_compiler_log_viewer_action_select_all;
+	public static String views_oracle_compiler_log_viewer_column_line;
+	public static String views_oracle_compiler_log_viewer_column_message;
+	public static String views_oracle_compiler_log_viewer_column_pos;
 }
