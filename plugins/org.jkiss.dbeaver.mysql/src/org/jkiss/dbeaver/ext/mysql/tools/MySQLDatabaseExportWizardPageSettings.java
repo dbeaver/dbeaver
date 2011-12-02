@@ -16,7 +16,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 
 
-class DatabaseExportWizardPageSettings extends AbstractToolWizardPage<DatabaseExportWizard> {
+class MySQLDatabaseExportWizardPageSettings extends MySQLAbstractToolWizardPage<MySQLDatabaseExportWizard>
+{
 
     private Text outputFileText;
     private Combo methodCombo;
@@ -27,7 +28,7 @@ class DatabaseExportWizardPageSettings extends AbstractToolWizardPage<DatabaseEx
     private Button dumpEventsCheck;
     private Button commentsCheck;
 
-    protected DatabaseExportWizardPageSettings(DatabaseExportWizard wizard)
+    protected MySQLDatabaseExportWizardPageSettings(MySQLDatabaseExportWizard wizard)
     {
         super(wizard, "Export configuration");
         setTitle("Export configuration");
@@ -89,9 +90,9 @@ class DatabaseExportWizardPageSettings extends AbstractToolWizardPage<DatabaseEx
         String fileName = outputFileText.getText();
         wizard.outputFile = CommonUtils.isEmpty(fileName) ? null : new File(fileName);
         switch (methodCombo.getSelectionIndex()) {
-            case 0: wizard.method = DatabaseExportWizard.DumpMethod.ONLINE; break;
-            case 1: wizard.method = DatabaseExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
-            default: wizard.method = DatabaseExportWizard.DumpMethod.NORMAL; break;
+            case 0: wizard.method = MySQLDatabaseExportWizard.DumpMethod.ONLINE; break;
+            case 1: wizard.method = MySQLDatabaseExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
+            default: wizard.method = MySQLDatabaseExportWizard.DumpMethod.NORMAL; break;
         }
         wizard.noCreateStatements = noCreateStatementsCheck.getSelection();
         wizard.addDropStatements = addDropStatementsCheck.getSelection();

@@ -21,7 +21,7 @@ public class MySQLToolScript extends MySQLToolAbstract {
         if (object instanceof MySQLCatalog) {
             ActiveWizardDialog dialog = new ActiveWizardDialog(
                 window,
-                new DatabaseImportWizard((MySQLCatalog) object, false));
+                new MySQLDatabaseImportWizard((MySQLCatalog) object, false));
             dialog.open();
         }
     }

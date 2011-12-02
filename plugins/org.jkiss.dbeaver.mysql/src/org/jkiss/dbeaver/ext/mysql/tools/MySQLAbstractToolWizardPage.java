@@ -7,11 +7,11 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 import org.eclipse.jface.wizard.WizardPage;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 
-abstract class AbstractToolWizardPage<T extends AbstractToolWizard> extends WizardPage {
+abstract class MySQLAbstractToolWizardPage<T extends MySQLAbstractToolWizard> extends WizardPage {
 
     protected final T wizard;
 
-    protected AbstractToolWizardPage(T wizard, String pageName)
+    protected MySQLAbstractToolWizardPage(T wizard, String pageName)
     {
         super(pageName);
         this.wizard = wizard;

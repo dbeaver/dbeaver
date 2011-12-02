@@ -21,7 +21,7 @@ public class MySQLToolExport extends MySQLToolAbstract {
         if (object instanceof MySQLCatalog) {
             ActiveWizardDialog dialog = new ActiveWizardDialog(
                 window,
-                new DatabaseExportWizard((MySQLCatalog) object));
+                new MySQLDatabaseExportWizard((MySQLCatalog) object));
             dialog.open();
         }
     }

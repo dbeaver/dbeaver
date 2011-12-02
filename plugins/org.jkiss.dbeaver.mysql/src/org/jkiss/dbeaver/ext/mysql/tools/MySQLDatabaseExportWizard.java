@@ -9,7 +9,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -20,7 +19,7 @@ import java.io.*;
 import java.text.NumberFormat;
 import java.util.List;
 
-class DatabaseExportWizard extends AbstractToolWizard implements IExportWizard {
+class MySQLDatabaseExportWizard extends MySQLAbstractToolWizard implements IExportWizard {
 
     public enum DumpMethod {
         ONLINE,
@@ -37,9 +36,9 @@ class DatabaseExportWizard extends AbstractToolWizard implements IExportWizard {
     boolean dumpEvents;
     boolean comments;
 
-    private DatabaseExportWizardPageSettings mainPage;
+    private MySQLDatabaseExportWizardPageSettings mainPage;
 
-    public DatabaseExportWizard(MySQLCatalog catalog) {
+    public MySQLDatabaseExportWizard(MySQLCatalog catalog) {
         super(catalog, "Export");
         this.method = DumpMethod.NORMAL;
         this.outputFile = new File(catalog.getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql");
@@ -48,7 +47,7 @@ class DatabaseExportWizard extends AbstractToolWizard implements IExportWizard {
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle("Database export");
         setNeedsProgressMonitor(true);
-        mainPage = new DatabaseExportWizardPageSettings(this);
+        mainPage = new MySQLDatabaseExportWizardPageSettings(this);
     }
 
     public void addPages() {

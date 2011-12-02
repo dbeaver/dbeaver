@@ -16,13 +16,13 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.util.List;
 
-class DatabaseImportWizard extends AbstractToolWizard implements IImportWizard {
+class MySQLDatabaseImportWizard extends MySQLAbstractToolWizard implements IImportWizard {
 
     File inputFile;
     boolean isImport;
-    private DatabaseImportWizardPageSettings mainPage;
+    private MySQLDatabaseImportWizardPageSettings mainPage;
 
-    public DatabaseImportWizard(MySQLCatalog catalog, boolean isImport) {
+    public MySQLDatabaseImportWizard(MySQLCatalog catalog, boolean isImport) {
         super(catalog, isImport ? "Import" : "Script");
         this.inputFile = null;
         this.isImport = isImport;
@@ -31,7 +31,7 @@ class DatabaseImportWizard extends AbstractToolWizard implements IImportWizard {
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle("Database Import");
         setNeedsProgressMonitor(true);
-        mainPage = new DatabaseImportWizardPageSettings(this);
+        mainPage = new MySQLDatabaseImportWizardPageSettings(this);
     }
 
     public void addPages() {

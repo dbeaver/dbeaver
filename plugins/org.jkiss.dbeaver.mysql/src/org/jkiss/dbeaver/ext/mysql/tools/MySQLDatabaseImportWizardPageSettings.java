@@ -19,11 +19,12 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 
 
-class DatabaseImportWizardPageSettings extends AbstractToolWizardPage<DatabaseImportWizard> {
+class MySQLDatabaseImportWizardPageSettings extends MySQLAbstractToolWizardPage<MySQLDatabaseImportWizard>
+{
 
     private Text inputFileText;
 
-    protected DatabaseImportWizardPageSettings(DatabaseImportWizard wizard)
+    protected MySQLDatabaseImportWizardPageSettings(MySQLDatabaseImportWizard wizard)
     {
         super(wizard, wizard.isImport ? "Import configuration" : "Script configuration");
         setTitle(wizard.isImport ? "Import configuration" : "Script configuration");

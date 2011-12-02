@@ -30,24 +30,24 @@ import java.util.List;
 /**
  * Abstract wizard
  */
-public abstract class AbstractToolWizard extends Wizard implements DBRRunnableWithProgress {
+public abstract class MySQLAbstractToolWizard extends Wizard implements DBRRunnableWithProgress {
 
-    static final Log log = LogFactory.getLog(AbstractToolWizard.class);
+    static final Log log = LogFactory.getLog(MySQLAbstractToolWizard.class);
 
     private final MySQLCatalog catalog;
     private MySQLServerHome serverHome;
     private DBPConnectionInfo connectionInfo;
 
     protected String task;
-    protected final DatabaseWizardPageLog logPage;
+    protected final MySQLDatabaseWizardPageLog logPage;
     private boolean finished;
 
 
-    protected AbstractToolWizard(MySQLCatalog catalog, String task)
+    protected MySQLAbstractToolWizard(MySQLCatalog catalog, String task)
     {
         this.catalog = catalog;
         this.task = task;
-        this.logPage = new DatabaseWizardPageLog(task);
+        this.logPage = new MySQLDatabaseWizardPageLog(task);
     }
 
     @Override

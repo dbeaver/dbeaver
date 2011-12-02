@@ -18,12 +18,12 @@ import java.util.Date;
 import java.util.List;
 
 
-class DatabaseWizardPageLog extends WizardPage {
+class MySQLDatabaseWizardPageLog extends WizardPage {
 
     private StyledText dumpLogText;
     private String task;
 
-    protected DatabaseWizardPageLog(String task)
+    protected MySQLDatabaseWizardPageLog(String task)
     {
         super(task + " progress");
         this.task = task;
