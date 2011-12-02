@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
-public class DataSourceTransactionModeHandler extends DataSourceHandler implements IElementUpdater
+public class DataSourceAutoCommitHandler extends DataSourceHandler implements IElementUpdater
 {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {

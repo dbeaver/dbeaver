@@ -16,11 +16,15 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class DataSourceTransactionModeContributor extends DataSourceMenuContributor
@@ -37,23 +41,6 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
                 DBeaverCore.getActiveWorkbenchWindow(),
                 ICommandIds.CMD_TOGGLE_AUTOCOMMIT,
                 CommandContributionItem.STYLE_CHECK));
-/*
-            // Auto-commit
-            MenuItem autoCommit = new MenuItem(menu, SWT.CHECK);
-            autoCommit.setText("Auto-commit");
-            try {
-                autoCommit.setSelection(txnManager.isAutoCommit());
-            } catch (DBCException ex) {
-                log.warn("Can't check auto-commit status", ex);
-            }
-            autoCommit.addSelectionListener(new SelectionAdapter()
-            {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    DataSourceTransactionModeHandler.execute(menu.getShell(), dataSource.getContainer());
-                }
-            });
-*/
 
             menuItems.add(new Separator());
 
@@ -71,25 +58,6 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
                 menuItems.add(ActionUtils.makeActionContribution(
                     new TransactionIsolationAction(dataSource, txi, txi.equals(txnLevelCurrent)),
                     true));
-/*
-                MenuItem txnItem = new MenuItem(menu, SWT.RADIO);
-                txnItem.setText(txnLevel.getName());
-                txnItem.setSelection(txnLevel == txnLevelCurrent);
-                txnItem.setData(txnLevel);
-                txnItem.addSelectionListener(new SelectionAdapter()
-                {
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        try {
-                            if (!txnManager.getTransactionIsolation().equals(txnLevel)) {
-                                txnManager.setTransactionIsolation(txnLevel);
-                            }
-                        } catch (DBCException ex) {
-                            log.warn("Can't change current transaction isolation level", ex);
-                        }
-                    }
-                });
-*/
             }
         }
         finally {
@@ -131,16 +99,32 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         @Override
         public void run()
         {
-            DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check connection's auto-commit state");
-            final DBCTransactionManager txnManager = context.getTransactionManager();
             try {
-                if (!txnManager.getTransactionIsolation().equals(level)) {
-                    txnManager.setTransactionIsolation(level);
-                }
-            } catch (DBCException ex) {
-                log.warn("Can't change current transaction isolation level", ex);
-            } finally {
-                context.close();
+                DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress()
+                {
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Check connection's auto-commit state");
+                        final DBCTransactionManager txnManager = context.getTransactionManager();
+                        try {
+                            if (!txnManager.getTransactionIsolation().equals(level)) {
+                                txnManager.setTransactionIsolation(level);
+                            }
+                        } catch (DBCException ex) {
+                            log.warn("Can't change current transaction isolation level", ex);
+                        } finally {
+                            context.close();
+                        }
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                UIUtils.showErrorDialog(
+                    null,
+                    "Transaction mode change",
+                    "Can't set transaction isolation",
+                    e.getTargetException());
+            } catch (InterruptedException e) {
+                // ok
             }
         }
     }
