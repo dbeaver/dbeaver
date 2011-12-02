@@ -1204,6 +1204,11 @@
                     <!--<with variable="activePart"><instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/></with>-->
                 </visibleWhen>
             </command>
+
+            <menu label="%menu.database.tools">
+                <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>
+            </menu>
+
         </menuContribution>
 
         <!-- Transaction mode menu -->
