@@ -150,25 +150,6 @@ public class NavigatorUtils {
                             }
                         }
                     }
-/*
-                    // Add tools sub-menu
-                    if (selectedNode instanceof DBNDatabaseNode) {
-                        DBSObject object = ((DBNDatabaseNode) selectedNode).getObject();
-                        if (object.getDataSource() != null) {
-                            DriverDescriptor driver = (DriverDescriptor) object.getDataSource().getContainer().getDriver();
-                            List<DataSourceToolDescriptor> tools = driver.getProviderDescriptor().getTools(object);
-                            if (!CommonUtils.isEmpty(tools)) {
-                                MenuManager toolsMenu = new MenuManager("Tools");
-                                List<IContributionItem> items = new ArrayList<IContributionItem>();
-                                DataSourceToolsContributor.fillToolsMenu(items, tools);
-                                for (IContributionItem item : items) {
-                                    toolsMenu.add(item);
-                                }
-                                manager.add(toolsMenu);
-                            }
-                        }
-                    }
-*/
                 }
 
                 manager.add(new Separator());

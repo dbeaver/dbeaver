@@ -18,9 +18,13 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.registry.DataSourceToolDescriptor;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * ObjectPropertyTester
@@ -35,6 +39,7 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_CAN_RENAME = "canRename";
+    public static final String PROP_HAS_TOOLS = "hasTools";
 
     public ObjectPropertyTester() {
         super();
@@ -105,6 +110,14 @@ public class ObjectPropertyTester extends PropertyTester
                     node.getParentNode() instanceof DBNContainer &&
                     object != null &&
                     hasObjectManager(object.getClass(), DBEObjectRenamer.class);
+            }
+        } else if (property.equals(PROP_HAS_TOOLS)) {
+            if (node instanceof DBNDatabaseNode) {
+                DBSObject object = ((DBNDatabaseNode)node).getObject();
+                if (object.getDataSource() != null) {
+                    DriverDescriptor driver = (DriverDescriptor) object.getDataSource().getContainer().getDriver();
+                    return !CommonUtils.isEmpty(driver.getProviderDescriptor().getTools(object));
+                }
             }
         }
         return false;

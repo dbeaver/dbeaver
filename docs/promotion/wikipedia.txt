@@ -10,34 +10,54 @@
 |website                = [http://dbeaver.jkiss.org/ dbeaver.jkiss.org]
 }}
 
-The '''DBeaver''' is a universal database administration tool and SQL client. It uses [[JDBC]] to allow users to explore and interact with databases via a JDBC driver.  It provides an editor that offers code completion and syntax highlighting for standard [[SQL]].  It also provides a plugin architecture that allows plugin writers to modify much of the application's behavior to provide database-specific functionality or features that are database-independent. As this desktop application is written entirely in [[Java platform|Java]] with [[Swing (Java)|Swing]] UI components, it should run on any platform that has a [[JVM]].<ref name="squirrel-faq">{{cite web|url=http://squirrel-sql.sourceforge.net/paper/SQuirreL_us.pdf|title=SQuirreL, a Universal SQL Client|first=Gerd|last=Wagner|first2=Glenn|last2=Griffin|accessdate=2009-04-15}}</ref>
+The '''DBeaver''' is a universal database administration tool and SQL client.
+Generally it uses [[JDBC]] drivers to allow users to work with databases.
+It provides an SQL editor that offers code completion and syntax highlighting for standard [[SQL]] and database metadata browser which allows to view database structure and settings.
+Also it has a set of tools and plugins which allows to view/edit ER diagrams, perform export and import of tables and databases, etc.
+DBeaver has a plugin architecture that allows to create custom plugins for certain databases to provide non-standard database features (like tablespaces, stored procedures, security management, etc).
+As DBeaver is written entirely in [[Java platform|Java]] with [[SWT (Java)|SWT]] UI components, it should run on any platform that has a [[JVM]].
 
-DBeaver is freeware but it is not open-source. According to it's licence it can be used for any purpose with no limitations.
+DBeaver is freeware but not open-source. According to it's licence it can be used for any purpose with no limitations.
 
 ==Feature Summary==
 
-* Object Tree allows for browsing database objects such as catalogs, schemas, tables, triggers, views, sequences, procedures, UDTs, etc.
-* The SQL Editor is based on RSyntaxTextArea by fifesoft.com to provide syntax highlighting.  It can be used to open, create, save and execute files containing SQL statements.
-* Supports simultaneous sessions with multiple databases. This allows to compare data and share SQL statements between databases. <ref>{{cite web|last=Martinig|first=Franco |title=SQuirreL SQL Client|url=http://www.methodsandtools.com/tools/tools.php?squirrel| accessdate = 1 March 2011}}</ref>
-* It runs on any platform that has a JVM.
-* Plugin architecture to facilitate database vendor-specific extensions (Information or actions not available using standard JDBC - see [[SQuirreL SQL Client Plugin API]] for more details)
-* Translations for the user interface are available in: ([[Bulgarian language|Bulgarian]], [[Brazilian Portuguese]], [[Chinese language|Chinese]], [[Czech language|Czech]], [[French language|French]], [[German language|German]], [[Italian language|Italian]], [[Japanese language|Japanese]], [[Polish language|Polish]], [[Spanish language|Spanish]], [[Russian language|Russian]]).
-* Graph capabilities to create charts showing table relationships.<ref name="squirrel-sql">{{cite web|url=http://squirrel-sql.sourceforge.net/|title=SQuirreL SQL Client Home Page|publisher=SourceForge.net|accessdate=2009-04-15}}</ref>
-* Bookmarks, which are user-defined code templates. SQuirreL comes with predefined example bookmarks for the most common SQL and DDL statements.<ref name="squirrel-sql"/>
+* Database metadata browse -  allows for browsing database objects such as catalogs, schemas, tables, view, triggers, sequences, procedures, indexes, security objects, etc
+* Metadata editor - allows for editing database objects.
+* SQL statements/scripts execution
+* SQL highlighting (specific for each database engine)
+* Autocompletion and metadata hyperlinks in SQL editor
+* Result set/table edit
+* BLOB/CLOB support (view and edit modes)
+* Scrollable resultsets
+* Data (tables, query results) export
+* Transactions management
+* Database objects search (tables, columns, constraints, procedures)
+* ERD (Entity Relational Diagrams)
+* Database object bookmarks
+* SQL scripts management
+* Projects (connections, SQL scripts and bookmarks)
 
 ==History==
 
 The SQuirreL SQL project was developed by a team of Java developers around the world and led by Colin Bell.  It has been hosted as a [[SourceForge]] project since 2001, and is still being developed today.
+
+==Supported operation systems==
+
+* [[Microsoft Windows]]
+* [[Linux]]
+* [[Mac OS]]
+* [[Solaris]]
+* [[AIX]]
+* [[HPUX]]
 
 ==Supported databases==
 
 * Axion Java RDBMS.
 * [[Apache Derby]]
 * [[Daffodil database|Daffodil (One$DB)]]
-* Fujitsu Siemens SESAM/SQL-Server with the SESAM/SQL JDBC driver
 * [[Firebird (database server)|Firebird]] with the JayBird JCA/JDBC Driver
 * [[FrontBase]]
-* [[HSQLDB|Hypersonic SQL]]
+* [[HSQLDB]]
 * [[H2 (DBMS)]]
 * [[IBM DB2]] for Linux, OS/400 and Windows
 * [[Informix]]
@@ -49,16 +69,12 @@ The SQuirreL SQL project was developed by a team of Java developers around the w
 * [[Microsoft SQL Server]]
 * [[Mimer SQL]]
 * [[MySQL]]
-* [[Netezza]]
-* [[Oracle Database]] 8i, 9i, 10g, 11g
+* [[Oracle Database]]
 * Pointbase
 * [[PostgreSQL]] 7.1.3 and higher
 * SAPDB
-* [[Adaptive Server Enterprise|Sybase]]
-* Sunopsis XML Driver (JDBC Edition)
-* [[Teradata|Teradata Warehouse]]
-* [[ThinkSQL]] RDBMS
-* [[Vertica]] Analytic Database
+* [[Sybase]]
+* [[Teradata]]
 
 ==See also==
 *[[SQL]]
