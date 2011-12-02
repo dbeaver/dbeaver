@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 
+
 <!--
   ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
   -->
@@ -1013,7 +1014,7 @@
                 <command commandId="org.jkiss.dbeaver.core.connect"/>
                 <command commandId="org.jkiss.dbeaver.core.invalidate"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
-                <separator name="tools" visible="true"/>
+                <separator name="sql" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
                 <command commandId="org.jkiss.dbeaver.core.object.find"/>
@@ -1022,6 +1023,10 @@
                 <command commandId="org.jkiss.dbeaver.core.rollback"/>
                 <menu label="%command.org.jkiss.dbeaver.core.transaction_mode.name">
                     <dynamic id="org.jkiss.dbeaver.core.menu.txn" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
+                </menu>
+                <separator name="tools" visible="true"/>
+                <menu label="%menu.database.tools">
+                    <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>
                 </menu>
             </menu>
         </menuContribution>

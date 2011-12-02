@@ -26,11 +26,16 @@ public class ActionUtils
 
     public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId)
     {
+        return makeCommandContribution(serviceLocator, commandId, CommandContributionItem.STYLE_PUSH);
+    }
+
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, int style)
+    {
         return new CommandContributionItem(new CommandContributionItemParameter(
             serviceLocator,
             null,
             commandId,
-            CommandContributionItem.STYLE_PUSH));
+            style));
     }
 
     public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, ImageDescriptor imageDescriptor)

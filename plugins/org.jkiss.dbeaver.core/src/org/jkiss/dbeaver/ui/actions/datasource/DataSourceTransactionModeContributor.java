@@ -4,15 +4,10 @@
 
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.ContributionItem;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -21,31 +16,28 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ICommandIds;
 
-public class DataSourceTransactionModeContributor extends ContributionItem
+import java.util.List;
+
+public class DataSourceTransactionModeContributor extends DataSourceMenuContributor
 {
-    static final Log log = LogFactory.getLog(DataSourceTransactionModeContributor.class);
-
     @Override
-    public void fill(Menu menu, int index)
+    protected void fillContributionItems(final List<IContributionItem> menuItems, final DBPDataSource dataSource, final DBSObject selectedObject)
     {
-        createMenu(menu);
-    }
-    
-    private void createMenu(final Menu menu)
-    {
-        final DBPDataSource dataSource = getDataSource();
-        if (dataSource == null) {
-            return;
-        }
         final DBPDataSourceInfo dsInfo = dataSource.getInfo();
 
         DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check connection's auto-commit state");
         try {
             final DBCTransactionManager txnManager = context.getTransactionManager();
+            menuItems.add(ActionUtils.makeCommandContribution(
+                DBeaverCore.getActiveWorkbenchWindow(),
+                ICommandIds.CMD_TOGGLE_AUTOCOMMIT,
+                CommandContributionItem.STYLE_CHECK));
+/*
             // Auto-commit
             MenuItem autoCommit = new MenuItem(menu, SWT.CHECK);
             autoCommit.setText("Auto-commit");
@@ -61,8 +53,9 @@ public class DataSourceTransactionModeContributor extends ContributionItem
                     DataSourceTransactionModeHandler.execute(menu.getShell(), dataSource.getContainer());
                 }
             });
+*/
 
-            new MenuItem(menu, SWT.SEPARATOR);
+            menuItems.add(new Separator());
 
             // Transactions
             DBPTransactionIsolation txnLevelCurrent = null;
@@ -75,7 +68,10 @@ public class DataSourceTransactionModeContributor extends ContributionItem
                 if (!txi.isEnabled()) {
                     continue;
                 }
-                final DBPTransactionIsolation txnLevel = txi;
+                menuItems.add(ActionUtils.makeActionContribution(
+                    new TransactionIsolationAction(dataSource, txi, txi.equals(txnLevelCurrent)),
+                    true));
+/*
                 MenuItem txnItem = new MenuItem(menu, SWT.RADIO);
                 txnItem.setText(txnLevel.getName());
                 txnItem.setSelection(txnLevel == txnLevelCurrent);
@@ -93,6 +89,7 @@ public class DataSourceTransactionModeContributor extends ContributionItem
                         }
                     }
                 });
+*/
             }
         }
         finally {
@@ -100,11 +97,52 @@ public class DataSourceTransactionModeContributor extends ContributionItem
         }
     }
 
-    private DBPDataSource getDataSource()
+    private static class TransactionIsolationAction extends Action
     {
-        IWorkbenchPart activePart = DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        DBSDataSourceContainer container = DataSourceHandler.getDataSourceContainer(activePart);
-        return container == null ? null : container.getDataSource();
+
+        private final DBPDataSource dataSource;
+        private final DBPTransactionIsolation level;
+        private final boolean checked;
+        public TransactionIsolationAction(DBPDataSource dataSource, DBPTransactionIsolation level, boolean checked)
+        {
+            this.dataSource = dataSource;
+            this.level = level;
+            this.checked = checked;
+        }
+
+        @Override
+        public int getStyle()
+        {
+            return AS_RADIO_BUTTON;
+        }
+
+        @Override
+        public boolean isChecked()
+        {
+            return checked;
+        }
+
+        @Override
+        public String getText()
+        {
+            return level.getName();
+        }
+
+        @Override
+        public void run()
+        {
+            DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check connection's auto-commit state");
+            final DBCTransactionManager txnManager = context.getTransactionManager();
+            try {
+                if (!txnManager.getTransactionIsolation().equals(level)) {
+                    txnManager.setTransactionIsolation(level);
+                }
+            } catch (DBCException ex) {
+                log.warn("Can't change current transaction isolation level", ex);
+            } finally {
+                context.close();
+            }
+        }
     }
 
 }

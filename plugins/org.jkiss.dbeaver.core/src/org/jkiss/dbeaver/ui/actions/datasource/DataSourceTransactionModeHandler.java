@@ -8,7 +8,11 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -18,13 +22,15 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
-public class DataSourceTransactionModeHandler extends DataSourceHandler
+public class DataSourceTransactionModeHandler extends DataSourceHandler implements IElementUpdater
 {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -69,4 +75,29 @@ public class DataSourceTransactionModeHandler extends DataSourceHandler
         }
     }
 
+    public void updateElement(UIElement element, Map parameters)
+    {
+        IWorkbenchWindow workbenchWindow = (IWorkbenchWindow) element.getServiceLocator().getService(IWorkbenchWindow.class);
+        if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
+            return;
+        }
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(workbenchWindow.getActivePage().getActivePart());
+        if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
+            final DBPDataSource dataSource = dataSourceContainer.getDataSource();
+            DBCExecutionContext context = dataSource.openContext(
+                VoidProgressMonitor.INSTANCE,
+                DBCExecutionPurpose.UTIL,
+                "Get autocommit mode");
+            try {
+                DBCTransactionManager txnManager = context.getTransactionManager();
+                // Change auto-commit mode
+                element.setChecked(txnManager.isAutoCommit());
+                // Update command image
+            } catch (DBCException e) {
+                log.warn(e);
+            } finally {
+                context.close();
+            }
+        }
+    }
 }
