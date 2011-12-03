@@ -5,13 +5,12 @@
 package org.jkiss.dbeaver.ui.actions.common;
 
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.actions.ActionDelegate;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-public class EmergentExitAction implements IWorkbenchWindowActionDelegate
+public class EmergentExitAction extends ActionDelegate
 {
 
     private IWorkbenchWindow window;
@@ -29,18 +28,6 @@ public class EmergentExitAction implements IWorkbenchWindowActionDelegate
         {
             System.exit(1);
         }
-    }
-
-    public void selectionChanged(IAction action, ISelection selection)
-    {
-    }
-
-    public void dispose() {
-
-    }
-
-    public void init(IWorkbenchWindow window) {
-        this.window = window;
     }
 
 }

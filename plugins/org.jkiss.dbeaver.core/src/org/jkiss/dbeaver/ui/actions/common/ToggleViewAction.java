@@ -4,17 +4,15 @@
 
 package org.jkiss.dbeaver.ui.actions.common;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.IViewDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 
 public class ToggleViewAction extends Action implements IPartListener
 {
-    static final Log log = LogFactory.getLog(ToggleViewAction.class);
 
     private String viewId;
     private boolean listenerRegistered = false;
@@ -67,7 +65,7 @@ public class ToggleViewAction extends Action implements IPartListener
             }
             activePage.addPartListener(this);
             listenerRegistered = true;
-            return activePage.findView(viewId) != null;
+            setChecked(activePage.findView(viewId) != null);
         }
 
         return super.isChecked();
@@ -87,7 +85,7 @@ public class ToggleViewAction extends Action implements IPartListener
                 activePage.hideView(view);
             }
         } catch (PartInitException ex) {
-            log.error("Can't open view " + viewId, ex);
+            UIUtils.showErrorDialog(null, viewId, "Can't open view " + viewId, ex);
         }
     }
 
@@ -99,6 +97,13 @@ public class ToggleViewAction extends Action implements IPartListener
 
     public void partBroughtToTop(IWorkbenchPart part)
     {
+    }
+
+    public void partOpened(IWorkbenchPart part)
+    {
+        if (part.getSite().getId().equals(viewId)) {
+            setChecked(true);
+        }
     }
 
     public void partClosed(IWorkbenchPart part)
@@ -116,10 +121,4 @@ public class ToggleViewAction extends Action implements IPartListener
     {
     }
 
-    public void partOpened(IWorkbenchPart part)
-    {
-        if (part.getSite().getId().equals(viewId)) {
-            setChecked(true);
-        }
-    }
 }

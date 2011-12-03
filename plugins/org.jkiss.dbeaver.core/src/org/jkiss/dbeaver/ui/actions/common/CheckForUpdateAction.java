@@ -5,29 +5,15 @@
 package org.jkiss.dbeaver.ui.actions.common;
 
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.actions.ActionDelegate;
 import org.jkiss.dbeaver.core.DBeaverVersionChecker;
 
 
-public class CheckForUpdateAction implements IWorkbenchWindowActionDelegate
-{
+public class CheckForUpdateAction extends ActionDelegate {
 
     public void run(IAction action)
     {
         new DBeaverVersionChecker(true).schedule();
-    }
-
-    public void selectionChanged(IAction action, ISelection selection)
-    {
-    }
-
-    public void dispose() {
-
-    }
-
-    public void init(IWorkbenchWindow window) {
     }
 
 }

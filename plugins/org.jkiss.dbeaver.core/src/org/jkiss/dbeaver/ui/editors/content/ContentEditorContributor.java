@@ -21,7 +21,6 @@ import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.SimpleAction;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;
@@ -226,6 +225,21 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     /////////////////////////////////////////////////////////
     // Actions
     /////////////////////////////////////////////////////////
+
+    public abstract class SimpleAction extends Action {
+
+        public SimpleAction(String id, String text, String toolTip, DBIcon icon)
+        {
+            super(text, icon.getImageDescriptor());
+            setId(id);
+            //setActionDefinitionId(id);
+            setToolTipText(toolTip);
+        }
+
+        @Override
+        public abstract void run();
+
+    }
 
     private class FileExportAction extends SimpleAction
     {
