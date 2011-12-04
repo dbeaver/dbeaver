@@ -409,6 +409,17 @@
                     <file type="jar" path="drivers/teradata/tdgssconfig.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/teradata/tdgssconfig.jar"/>
                     <file type="license" path="drivers/teradata/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/teradata/LICENSE.txt"/>
                 </driver>
+                <driver
+                    id="mysql3"
+                    label="MySQL 3.x"
+                    class="com.mysql.jdbc.Driver"
+                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                    defaultPort="3306"
+                    webURL="http://www.mysql.com/products/connector/"
+                    description="Driver for MySQL 3.x and earlier">
+                    <file type="license" path="drivers/mysql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/LICENSE.txt"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/mysql-connector-java-5.1.13-bin.jar"/>
+                </driver>
             </drivers>
 
             <views>

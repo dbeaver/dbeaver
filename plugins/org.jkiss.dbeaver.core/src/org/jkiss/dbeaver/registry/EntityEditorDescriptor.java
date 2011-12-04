@@ -30,6 +30,11 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     public static final String POSITION_MIDDLE = IActionConstants.MB_ADDITIONS_MIDDLE;
     public static final String POSITION_END = IActionConstants.MB_ADDITIONS_END;
 
+    public static enum Type {
+        editor,
+        section
+    }
+
     private String id;
     private String className;
     private String contributorClassName;
@@ -38,6 +43,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     private String description;
     private String position;
     private Image icon;
+    private Type type;
 
     //private List<Class<?>> objectClasses;
     private Class<? extends IEditorPart> editorClass;
@@ -58,6 +64,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         this.description = CoreMessages.registry_entity_editor_descriptor_description;
         this.position = null;
         this.icon = DBIcon.TREE_DATABASE.getImage();
+        this.type = Type.editor;
     }
 
     public EntityEditorDescriptor(IConfigurationElement config)
@@ -72,6 +79,10 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.position = config.getAttribute(RegistryConstants.ATTR_POSITION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        String typeName = config.getAttribute(RegistryConstants.ATTR_TYPE);
+        if (!CommonUtils.isEmpty(typeName)) {
+            this.type = Type.valueOf(typeName);
+        }
     }
 
     public String getId()
@@ -116,7 +127,12 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         return icon;
     }
 
-    public Class<? extends IEditorPart> getEditorClass()
+    public Type getType()
+    {
+        return type;
+    }
+
+    private Class<? extends IEditorPart> getEditorClass()
     {
         if (editorClass == null) {
             editorClass = getObjectClass(className, IEditorPart.class);

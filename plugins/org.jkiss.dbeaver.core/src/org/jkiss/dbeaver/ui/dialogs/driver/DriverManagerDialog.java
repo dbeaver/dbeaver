@@ -13,10 +13,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -29,6 +26,7 @@ import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -47,6 +45,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private Button deleteButton;
     private DriverTreeControl treeControl;
     private Image dialogImage;
+    private Label driverDescription;
 
     public DriverManagerDialog(Shell shell)
     {
@@ -160,6 +159,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
                 UIUtils.createImageLabel(legend, DBIcon.OVER_ERROR.getImage());
                 UIUtils.createTextLabel(legend, CoreMessages.dialog_driver_manager_label_unavailable);
+
             }
         }
 /*
@@ -176,6 +176,12 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         }
 */
         //UIUtils.setHelp(group, IHelpContextIds.CTX_DRIVER_MANAGER);
+
+        driverDescription = new Label(group, SWT.NONE);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 5;
+        gd.horizontalSpan = 2;
+        driverDescription.setLayoutData(gd);
 
         return group;
     }
@@ -231,6 +237,16 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         newButton.setEnabled(onlyManagableProvider != null || (selectedProvider != null && selectedProvider.isDriversManagable()));
         editButton.setEnabled(selectedDriver != null);
         deleteButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManagable());
+
+        if (selectedDriver != null) {
+            driverDescription.setText(CommonUtils.toString(selectedDriver.getDescription()));
+        } else if (selectedCategory != null) {
+            driverDescription.setText(selectedProvider.getName() + " " + selectedCategory + " drivers");
+        } else if (selectedProvider != null) {
+            driverDescription.setText(selectedProvider.getName() + " provider");
+        } else {
+            driverDescription.setText("");
+        }
     }
 
     private void createDriver()
