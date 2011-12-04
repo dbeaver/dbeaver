@@ -91,40 +91,5 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
-/*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final OracleDataType object)
-    {
-        List<ITabDescriptor> tabs = new ArrayList<ITabDescriptor>();
-        if (!object.isPredefined() || object.hasAttributes() || object.hasMethods()) {
-            tabs.add(
-                new PropertyTabDescriptor(
-                    PropertiesContributor.CATEGORY_INFO,
-                    "type.declaration",
-                    "Declaration",
-                    DBIcon.SOURCES.getImage(),
-                    new SectionDescriptor("default", "Declaration") {
-                        public ISection getSectionClass()
-                        {
-                            return new OracleSourceViewSection(activeEditor, false);
-                        }
-                    }));
-        }
-
-        if (object.hasMethods()) {
-            tabs.add(new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "type.definition",
-                "Definition",
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "Definition") {
-                    public ISection getSectionClass()
-                    {
-                        return new OracleSourceViewSection(activeEditor, true);
-                    }
-                }));
-        }
-        return tabs.toArray(new ITabDescriptor[tabs.size()]);
-    }
-*/
 }
 

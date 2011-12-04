@@ -61,7 +61,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                 if (sourceHost == null) {
                     sourceHost = (OracleSourceHost) activePart.getAdapter(OracleSourceHost.class);
                 }
-                if (sourceHost != null && sourceHost.getObject() != unit) {
+                if (sourceHost != null && sourceHost.getSourceObject() != unit) {
                     sourceHost = null;
                 }
 
@@ -102,7 +102,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     }
 
                     // If compiled object is currently open in editor - try to position on error line
-                    if (sourceHost != null && sourceHost.getObject() == unit && line > 0 && position > 0) {
+                    if (sourceHost != null && sourceHost.getSourceObject() == unit && line > 0 && position > 0) {
                         sourceHost.positionSource(line, position);
                         activePart.getSite().getPage().activate(activePart);
                     }

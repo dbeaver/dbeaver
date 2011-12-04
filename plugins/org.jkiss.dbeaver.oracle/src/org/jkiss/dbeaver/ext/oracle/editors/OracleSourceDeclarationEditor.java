@@ -6,17 +6,18 @@ package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Oracle source declaration editor
  */
-public class OracleSourceDeclarationEditor extends OracleSourceAbstractEditor {
+public class OracleSourceDeclarationEditor extends OracleSourceAbstractEditor<OracleSourceObject> {
 
 
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException {
-        return getObject().getSourceDeclaration(monitor);
+        return getSourceObject().getSourceDeclaration(monitor);
     }
 
     @Override

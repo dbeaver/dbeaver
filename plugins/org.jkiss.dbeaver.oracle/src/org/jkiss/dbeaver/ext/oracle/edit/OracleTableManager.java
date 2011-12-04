@@ -6,30 +6,21 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.views.properties.tabbed.ISection;
-import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
-import org.jkiss.dbeaver.ext.oracle.editors.OracleTableDDLSection;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
-import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
 
 /**
  * Oracle table manager
  */
-public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSchema> implements DBEObjectRenamer<OracleTable>, DBEObjectTabProvider<OracleTable> {
+public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSchema> implements DBEObjectRenamer<OracleTable> {
 
     private static final Class<?>[] CHILD_TYPES = {
         OracleTableColumn.class,
@@ -80,26 +71,6 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     public void renameObject(DBECommandContext commandContext, OracleTable object, String newName) throws DBException
     {
         processObjectRename(commandContext, object, newName);
-    }
-
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final OracleTable object)
-    {
-        if (object.getContainer().isSystem()) {
-            return null;
-        }
-        return new ITabDescriptor[] {
-            new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "table.ddl", //$NON-NLS-1$
-                "DDL", //$NON-NLS-1$
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "DDL") { //$NON-NLS-1$ //$NON-NLS-2$
-                    public ISection getSectionClass()
-                    {
-                        return new OracleTableDDLSection(activeEditor);
-                    }
-                })
-        };
     }
 
 }

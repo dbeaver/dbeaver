@@ -4,12 +4,15 @@
 
 package org.jkiss.dbeaver.ext.oracle.model.source;
 
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
+
 /**
  * Compile host
  */
 public interface OracleSourceHost {
 
-    OracleSourceObject getObject();
+    DBSObjectStateful getSourceObject();
 
     OracleCompileLog getCompileLog();
 

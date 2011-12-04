@@ -76,24 +76,5 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
         };
     }
 
-/*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final OracleView object)
-    {
-        return new ITabDescriptor[] {
-            new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "view.definition",
-                "Definition",
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "Definition") {
-                    public ISection getSectionClass()
-                    {
-                        return new OracleViewDefinitionSection(activeEditor);
-                    }
-                })
-        };
-    }
-*/
-
 }
 

@@ -20,24 +20,21 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.MultiPageEditorPart;
-import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceHost;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleCompileLog;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceHost;
 import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerLogViewer;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
@@ -50,7 +47,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Oracle source editor
  */
-public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
+public abstract class OracleSourceAbstractEditor<T extends DBSObjectStateful>
     extends SQLEditorBase
     implements IActiveWorkbenchPart, IRefreshablePart, OracleSourceHost
 {
@@ -73,13 +70,13 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
         return (IDatabaseEditorInput)super.getEditorInput();
     }
 
-    public T getObject()
+    public T getSourceObject()
     {
         return (T)getEditorInput().getDatabaseObject();
     }
 
     public OracleDataSource getDataSource() {
-        return getObject().getDataSource();
+        return (OracleDataSource)getSourceObject().getDataSource();
     }
 
     @Override
@@ -87,7 +84,7 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
     {
         pageControl = new EditorPageControl(parent, SWT.SHEET);
 
-        ProgressPageControl progressControl = null;
+//        ProgressPageControl progressControl = null;
 //        if (getSite() instanceof MultiPageEditorSite) {
 //            MultiPageEditorPart ownerEditor = ((MultiPageEditorSite) getSite()).getMultiPageEditor();
 //            if (ownerEditor instanceof IProgressControlProvider) {
@@ -101,11 +98,11 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
         editorControl = editorSash.getChildren()[0];
         compileLog = new OracleCompilerLogViewer(editorSash);
 
-        if (progressControl != null) {
-            pageControl.substituteProgressPanel(progressControl);
-        } else {
-            pageControl.createProgressPanel();
-        }
+//        if (progressControl != null) {
+//            pageControl.substituteProgressPanel(progressControl);
+//        } else {
+//            pageControl.createProgressPanel();
+//        }
 
         editorSash.setWeights(new int[] {70, 30});
         editorSash.setMaximizedControl(editorControl);
@@ -131,7 +128,7 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
                 super.init(getEditorSite(), lazyInput);
                 reloadSyntaxRules();
 
-                pageControl.setInfo(OracleMessages.editors_oracle_source_abstract_editor_state + getObject().getObjectState().getTitle());
+                pageControl.setInfo(OracleMessages.editors_oracle_source_abstract_editor_state + getSourceObject().getObjectState().getTitle());
                 lazyInput = null;
             } catch (PartInitException e) {
                 log.error(e);
@@ -154,15 +151,20 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
         }
     }
 
+    public boolean isReadOnly()
+    {
+        return false;
+    }
+
     private class ObjectDocumentProvider extends BaseTextDocumentProvider {
         @Override
         public boolean isReadOnly(Object element) {
-            return false;
+            return OracleSourceAbstractEditor.this.isReadOnly();
         }
 
         @Override
         public boolean isModifiable(Object element) {
-            return true;
+            return !OracleSourceAbstractEditor.this.isReadOnly();
         }
 
         @Override

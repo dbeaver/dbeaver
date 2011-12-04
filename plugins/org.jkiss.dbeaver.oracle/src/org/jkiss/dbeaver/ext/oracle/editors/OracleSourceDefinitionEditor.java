@@ -17,7 +17,7 @@ public class OracleSourceDefinitionEditor extends OracleSourceAbstractEditor<Ora
 
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException {
-        return getObject().getSourceDefinition(monitor);
+        return getSourceObject().getSourceDefinition(monitor);
     }
 
     @Override

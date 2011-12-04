@@ -25,25 +25,6 @@ import java.util.List;
  */
 public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStandalone, OracleSchema> {
 
-/*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final OracleProcedureStandalone object)
-    {
-        return new ITabDescriptor[] {
-            new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "procedure.body",
-                "Body",
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", "Body") {
-                    public ISection getSectionClass()
-                    {
-                        return new OracleProcedureBodySection(activeEditor);
-                    }
-                })
-        };
-    }
-*/
-
     @Override
     protected OracleProcedureStandalone createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
