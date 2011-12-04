@@ -1,4 +1,8 @@
-package org.jkiss.dbeaver.ext.oracle.model.source;
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
+package org.jkiss.dbeaver.model.exec.compile;
 
 import org.apache.commons.logging.impl.SimpleLog;
 
@@ -6,12 +10,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class OracleCompileLogBase extends SimpleLog implements OracleCompileLog {
+public class DBCCompileLogBase extends SimpleLog implements DBCCompileLog {
 
     private Throwable error;
-    private List<OracleCompileError> errorStack = new ArrayList<OracleCompileError>();
+    private List<DBCCompileError> errorStack = new ArrayList<DBCCompileError>();
 
-    public OracleCompileLogBase()
+    public DBCCompileLogBase()
     {
         super("Compile log");
     }
@@ -21,8 +25,8 @@ public class OracleCompileLogBase extends SimpleLog implements OracleCompileLog 
     {
         if (t != null) {
             error = t;
-        } else if (message instanceof OracleCompileError) {
-            errorStack.add((OracleCompileError) message);
+        } else if (message instanceof DBCCompileError) {
+            errorStack.add((DBCCompileError) message);
         }
     }
 
@@ -31,7 +35,7 @@ public class OracleCompileLogBase extends SimpleLog implements OracleCompileLog 
         return error;
     }
 
-    public Collection<OracleCompileError> getErrorStack()
+    public Collection<DBCCompileError> getErrorStack()
     {
         return errorStack;
     }

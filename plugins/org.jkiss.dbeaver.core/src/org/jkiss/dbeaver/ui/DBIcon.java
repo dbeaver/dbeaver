@@ -124,6 +124,8 @@ public enum DBIcon
     FILTER("filter", "/icons/misc/filter.png"), //$NON-NLS-1$ //$NON-NLS-2$
     EVENT("event", "/icons/misc/event.png"), //$NON-NLS-1$ //$NON-NLS-2$
     HOME("home", "/icons/misc/home.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    COMPILE("compile", "/icons/misc/compile.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    COMPILE_LOG("compile_log", "/icons/misc/compile_log.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     SAVE("save", "/icons/file/save.png"), //$NON-NLS-1$ //$NON-NLS-2$
     SAVE_ALL("save_all", "/icons/file/save_all.png"), //$NON-NLS-1$ //$NON-NLS-2$

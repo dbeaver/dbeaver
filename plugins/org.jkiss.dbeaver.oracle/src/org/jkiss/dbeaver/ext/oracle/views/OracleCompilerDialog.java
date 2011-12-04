@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -47,7 +48,7 @@ public class OracleCompilerDialog extends TrayDialog
     private java.util.List<OracleSourceObject> compileUnits;
     private TableViewer unitTable;
 
-    private OracleCompilerLogViewer compileLog;
+    private ObjectCompilerLogViewer compileLog;
 
 
     public OracleCompilerDialog(Shell shell, java.util.List<OracleSourceObject> compileUnits)
@@ -151,8 +152,8 @@ public class OracleCompilerDialog extends TrayDialog
             infoGroup.setLayoutData(gd);
             infoGroup.setLayout(new GridLayout(1, false));
 
-            compileLog = new OracleCompilerLogViewer(infoGroup);
-            compileLog.setLevel(OracleCompilerLogViewer.LOG_LEVEL_ALL);
+            compileLog = new ObjectCompilerLogViewer(infoGroup);
+            compileLog.setLevel(ObjectCompilerLogViewer.LOG_LEVEL_ALL);
         }
 
         return composite;

@@ -30,6 +30,10 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
+import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
+import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
+import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -57,15 +61,15 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                 final OracleSourceObject unit = objects.get(0);
 
                 final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
-                OracleSourceHost sourceHost = RuntimeUtils.getObjectAdapter(activePart, OracleSourceHost.class);
+                DBCSourceHost sourceHost = RuntimeUtils.getObjectAdapter(activePart, DBCSourceHost.class);
                 if (sourceHost == null) {
-                    sourceHost = (OracleSourceHost) activePart.getAdapter(OracleSourceHost.class);
+                    sourceHost = (DBCSourceHost) activePart.getAdapter(DBCSourceHost.class);
                 }
                 if (sourceHost != null && sourceHost.getSourceObject() != unit) {
                     sourceHost = null;
                 }
 
-                final OracleCompileLog compileLog = sourceHost == null ? new OracleCompileLogBase() : sourceHost.getCompileLog();
+                final DBCCompileLog compileLog = sourceHost == null ? new DBCCompileLogBase() : sourceHost.getCompileLog();
                 compileLog.clearLog();
                 Throwable error = null;
                 try {
@@ -93,7 +97,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     // Show compile errors
                     int line = -1, position = -1;
                     StringBuilder fullMessage = new StringBuilder();
-                    for (OracleCompileError oce : compileLog.getErrorStack()) {
+                    for (DBCCompileError oce : compileLog.getErrorStack()) {
                         fullMessage.append(oce.toString()).append(ContentUtils.getDefaultLineSeparator());
                         if (line < 0) {
                             line = oce.getLine();
@@ -258,7 +262,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                 try {
                     boolean hasErrors = false;
                     while (dbResult.next()) {
-                        OracleCompileError error = new OracleCompileError(
+                        DBCCompileError error = new DBCCompileError(
                             "ERROR".equals(dbResult.getString("ATTRIBUTE")),
                             dbResult.getString("TEXT"),
                             dbResult.getInt("LINE"),

@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.oracle.editors;
+package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -23,21 +23,19 @@ import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ext.oracle.Activator;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
-import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleCompileLog;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceHost;
-import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerLogViewer;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
+import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
@@ -45,20 +43,20 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * Oracle source editor
+ * AbstractDatabaseTextEditor
  */
-public abstract class OracleSourceAbstractEditor<T extends DBSObjectStateful>
+public abstract class AbstractDatabaseTextEditor<T extends DBSObject>
     extends SQLEditorBase
-    implements IActiveWorkbenchPart, IRefreshablePart, OracleSourceHost
+    implements IActiveWorkbenchPart, IRefreshablePart, DBCSourceHost
 {
 
     private EditorPageControl pageControl;
     private IEditorInput lazyInput;
-    private OracleCompilerLogViewer compileLog;
+    private ObjectCompilerLogViewer compileLog;
     private Control editorControl;
     private SashForm editorSash;
 
-    public OracleSourceAbstractEditor() {
+    public AbstractDatabaseTextEditor() {
         super();
 
         setDocumentProvider(new ObjectDocumentProvider());
@@ -75,8 +73,8 @@ public abstract class OracleSourceAbstractEditor<T extends DBSObjectStateful>
         return (T)getEditorInput().getDatabaseObject();
     }
 
-    public OracleDataSource getDataSource() {
-        return (OracleDataSource)getSourceObject().getDataSource();
+    public DBPDataSource getDataSource() {
+        return getSourceObject().getDataSource();
     }
 
     @Override
@@ -96,13 +94,14 @@ public abstract class OracleSourceAbstractEditor<T extends DBSObjectStateful>
         super.createPartControl(editorSash);
 
         editorControl = editorSash.getChildren()[0];
-        compileLog = new OracleCompilerLogViewer(editorSash);
+        compileLog = new ObjectCompilerLogViewer(editorSash);
 
 //        if (progressControl != null) {
 //            pageControl.substituteProgressPanel(progressControl);
 //        } else {
 //            pageControl.createProgressPanel();
 //        }
+        pageControl.createProgressPanel();
 
         editorSash.setWeights(new int[] {70, 30});
         editorSash.setMaximizedControl(editorControl);
@@ -128,7 +127,7 @@ public abstract class OracleSourceAbstractEditor<T extends DBSObjectStateful>
                 super.init(getEditorSite(), lazyInput);
                 reloadSyntaxRules();
 
-                pageControl.setInfo(OracleMessages.editors_oracle_source_abstract_editor_state + getSourceObject().getObjectState().getTitle());
+                //pageControl.setInfo(OracleMessages.editors_oracle_source_abstract_editor_state + getSourceObject().getObjectState().getTitle());
                 lazyInput = null;
             } catch (PartInitException e) {
                 log.error(e);
@@ -151,35 +150,31 @@ public abstract class OracleSourceAbstractEditor<T extends DBSObjectStateful>
         }
     }
 
-    public boolean isReadOnly()
+    protected boolean isReadOnly()
     {
         return false;
+    }
+
+    protected String getCompileCommandId()
+    {
+        return null;
     }
 
     private class ObjectDocumentProvider extends BaseTextDocumentProvider {
         @Override
         public boolean isReadOnly(Object element) {
-            return OracleSourceAbstractEditor.this.isReadOnly();
+            return AbstractDatabaseTextEditor.this.isReadOnly();
         }
 
         @Override
         public boolean isModifiable(Object element) {
-            return !OracleSourceAbstractEditor.this.isReadOnly();
+            return !AbstractDatabaseTextEditor.this.isReadOnly();
         }
 
         @Override
         protected IDocument createDocument(Object element) throws CoreException {
             final Document document = new Document();
-/*
-            try {
-                String declaration = getObject().getSourceDeclaration(new DefaultProgressMonitor(getProgressMonitor()));
-                if (declaration != null) {
-                    document.set(declaration);
-                }
-            } catch (DBException e) {
-                throw new CoreException(RuntimeUtils.makeExceptionStatus(e));
-            }
-*/
+
             try {
                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
@@ -206,10 +201,9 @@ public abstract class OracleSourceAbstractEditor<T extends DBSObjectStateful>
         protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException {
             setSourceText(document.get());
         }
-
     }
 
-    public OracleCompileLog getCompileLog()
+    public DBCCompileLog getCompileLog()
     {
         return compileLog;
     }
@@ -268,9 +262,12 @@ public abstract class OracleSourceAbstractEditor<T extends DBSObjectStateful>
 
             toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), ICommandIds.CMD_OPEN_FILE));
             toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), ICommandIds.CMD_SAVE_FILE));
-            toolBarManager.add(new Separator());
-            toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), OracleConstants.CMD_COMPILE));
-            toolBarManager.add(new ViewLogAction());
+            String compileCommandId = getCompileCommandId();
+            if (compileCommandId != null) {
+                toolBarManager.add(new Separator());
+                toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), compileCommandId));
+                toolBarManager.add(new ViewLogAction());
+            }
 
             toolBarManager.createControl(infoGroup);
 
@@ -282,7 +279,7 @@ public abstract class OracleSourceAbstractEditor<T extends DBSObjectStateful>
     {
         public ViewLogAction()
         {
-            super(OracleMessages.editors_oracle_source_abstract_editor_action_name, Activator.getImageDescriptor("icons/commands/compile-log.png")); //$NON-NLS-2$
+            super("View compile log", DBIcon.COMPILE_LOG.getImageDescriptor()); //$NON-NLS-2$
         }
 
         public void run()

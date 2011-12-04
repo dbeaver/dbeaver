@@ -8,12 +8,17 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.editors.AbstractDatabaseTextEditor;
 
 /**
  * Oracle source declaration editor
  */
-public class OracleSourceDeclarationEditor extends OracleSourceAbstractEditor<OracleSourceObject> {
-
+public class OracleSourceDeclarationEditor extends AbstractDatabaseTextEditor<OracleSourceObject> {
+    @Override
+    protected String getCompileCommandId()
+    {
+        return OracleConstants.CMD_COMPILE;
+    }
 
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException {
