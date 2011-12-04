@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ui.properties.tabbed;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.compare.IPropertyChangeNotifier;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.events.DisposeEvent;
@@ -29,7 +28,7 @@ import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import java.util.List;
 
 /**
- * SourceEditSection
+ * EditorWrapperSection
  */
 public class EditorWrapperSection extends AbstractPropertySection implements ISectionEditorContributor, ISaveablePart, IRefreshablePart, IAdaptable {
 

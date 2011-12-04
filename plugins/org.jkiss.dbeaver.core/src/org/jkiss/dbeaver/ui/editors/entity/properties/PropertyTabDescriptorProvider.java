@@ -4,19 +4,17 @@
 
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
-import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
-import org.jkiss.dbeaver.ui.properties.tabbed.*;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.views.properties.tabbed.*;
+import org.eclipse.ui.views.properties.tabbed.ISection;
+import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
+import org.eclipse.ui.views.properties.tabbed.ITabDescriptorProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -24,14 +22,19 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
+import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
+import org.jkiss.dbeaver.ui.properties.tabbed.StandardPropertiesSection;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -133,15 +136,6 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
                 if (descriptor.getType() == EntityEditorDescriptor.Type.section) {
                     tabList.add(new EditorTabDescriptor(part, descriptor));
                 }
-            }
-        }
-
-        // Query for tab providers
-        final DBEObjectTabProvider tabProvider = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectTabProvider.class);
-        if (tabProvider != null) {
-            final ITabDescriptor[] tabDescriptors = tabProvider.getTabDescriptors(part.getSite().getWorkbenchWindow(), part, object);
-            if (!CommonUtils.isEmpty(tabDescriptors)) {
-                Collections.addAll(tabList, tabDescriptors);
             }
         }
     }

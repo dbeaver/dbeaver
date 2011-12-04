@@ -20,7 +20,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * OracleViewManager
  */
-public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema> /*implements DBEObjectTabProvider<OracleView>*/ {
+public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema> {
 
     public long getMakerOptions()
     {
