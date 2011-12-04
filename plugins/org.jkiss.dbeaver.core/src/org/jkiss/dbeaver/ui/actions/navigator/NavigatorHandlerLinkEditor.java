@@ -11,7 +11,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -24,8 +24,8 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
         final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
         if (activePart instanceof NavigatorViewBase) {
-            if (activeEditor.getEditorInput() instanceof IDatabaseNodeEditorInput) {
-                IDatabaseNodeEditorInput editorInput = (IDatabaseNodeEditorInput) activeEditor.getEditorInput();
+            if (activeEditor.getEditorInput() instanceof IDatabaseEditorInput) {
+                IDatabaseEditorInput editorInput = (IDatabaseEditorInput) activeEditor.getEditorInput();
                 if (editorInput != null) {
                     DBNNode dbnNode = editorInput.getTreeNode();
                     if (dbnNode != null) {

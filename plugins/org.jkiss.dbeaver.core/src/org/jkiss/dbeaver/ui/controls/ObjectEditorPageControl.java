@@ -10,7 +10,7 @@ import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -18,11 +18,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 public class ObjectEditorPageControl extends ProgressPageControl {
 
     //private Button saveChangesButton;
-    private IDatabaseNodeEditor workbenchPart;
+    private IDatabaseEditor workbenchPart;
     private IPropertyListener propertyListener;
     //private ToolBarManager objectEditToolbarManager;
 
-    public ObjectEditorPageControl(Composite parent, int style, IDatabaseNodeEditor workbenchPart)
+    public ObjectEditorPageControl(Composite parent, int style, IDatabaseEditor workbenchPart)
     {
         super(parent, style);
         this.workbenchPart = workbenchPart;
@@ -59,7 +59,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
         super.dispose();
     }
 
-    public IDatabaseNodeEditor getEditorPart()
+    public IDatabaseEditor getEditorPart()
     {
         return workbenchPart;
     }

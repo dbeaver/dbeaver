@@ -8,12 +8,16 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInputFactory;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.editors.entity.ObjectPropertiesEditor;
+import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
+import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditorInputFactory;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -38,6 +42,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     private String id;
     private String className;
     private String contributorClassName;
+    private String inputFactoryClassName;
     private boolean main;
     private String name;
     private String description;
@@ -48,6 +53,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     //private List<Class<?>> objectClasses;
     private Class<? extends IEditorPart> editorClass;
     private Class<? extends IEditorActionBarContributor> contributorClass;
+    private Class<? extends IDatabaseEditorInputFactory> inputFactoryClass;
 
     EntityEditorDescriptor()
     {
@@ -59,6 +65,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         this.id = DEFAULT_OBJECT_EDITOR_ID;
         this.className = ObjectPropertiesEditor.class.getName();
         this.contributorClassName = null;
+        this.inputFactoryClassName = ObjectPropertiesEditorInputFactory.class.getName();
         this.main = true;
         this.name = CoreMessages.registry_entity_editor_descriptor_name;
         this.description = CoreMessages.registry_entity_editor_descriptor_description;
@@ -74,6 +81,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
         this.contributorClassName = config.getAttribute(RegistryConstants.ATTR_CONTRIBUTOR);
+        this.inputFactoryClassName = config.getAttribute(RegistryConstants.ATTR_INPUT_FACTORY);
         this.main = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_MAIN));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -149,6 +157,24 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
             contributorClass = getObjectClass(contributorClassName, IEditorActionBarContributor.class);
         }
         return contributorClass;
+    }
+
+    public IEditorInput getNestedEditorInput(IDatabaseEditorInput mainInput)
+    {
+        if (inputFactoryClass == null) {
+            if (inputFactoryClassName == null) {
+                return mainInput;
+            }
+            inputFactoryClass = getObjectClass(inputFactoryClassName, IDatabaseEditorInputFactory.class);
+        }
+        try {
+            if (inputFactoryClass != null) {
+                return inputFactoryClass.newInstance().createNestedEditorInput(mainInput);
+            }
+        } catch (Exception e) {
+            log.error(e);
+        }
+        return mainInput;
     }
 
     public IEditorPart createEditor()

@@ -9,8 +9,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * AbstractDatabaseObjectEditor
  */
 public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject>
-    extends EditorPart implements IDatabaseNodeEditor, IActiveWorkbenchPart
+    extends EditorPart implements IDatabaseEditor, IActiveWorkbenchPart
 {
 
     public void init(IEditorSite site, IEditorInput input)
@@ -74,9 +74,9 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     }
 
     @Override
-    public IDatabaseNodeEditorInput getEditorInput()
+    public IDatabaseEditorInput getEditorInput()
     {
-        return (IDatabaseNodeEditorInput)super.getEditorInput();
+        return (IDatabaseEditorInput)super.getEditorInput();
     }
 
     @Override

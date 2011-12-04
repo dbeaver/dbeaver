@@ -9,11 +9,11 @@ import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 
 /**
- * IDatabaseNodeEditor
+ * IDatabaseEditor
  */
-public interface IDatabaseNodeEditor extends IEditorPart, DBPDataSourceUser, IDataSourceProvider, IRefreshablePart
+public interface IDatabaseEditor extends IEditorPart, DBPDataSourceUser, IDataSourceProvider, IRefreshablePart
 {
 
-    IDatabaseNodeEditorInput getEditorInput();
+    IDatabaseEditorInput getEditorInput();
 
 }

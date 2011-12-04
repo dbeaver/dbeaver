@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.properties.tabbed;
+package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -11,8 +11,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IRefreshableContainer;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
@@ -32,7 +32,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
 {
     //static final Log log = LogFactory.getLog(EntityNodeEditor.class);
 
-    private IDatabaseNodeEditor editor;
+    private IDatabaseEditor editor;
     private DBNNode node;
     private DBXTreeNode metaNode;
     private ItemListControl itemControl;
@@ -41,7 +41,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
 
     private Composite parent;
 
-    NodeEditorSection(IDatabaseNodeEditor editor, DBNNode node, DBXTreeNode metaNode)
+    NodeEditorSection(IDatabaseEditor editor, DBNNode node, DBXTreeNode metaNode)
     {
         this.editor = editor;
         this.node = node;
@@ -70,7 +70,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
 
     public void setInput(IWorkbenchPart part, ISelection selection)
     {
-        this.editor = (IDatabaseNodeEditor)part;
+        this.editor = (IDatabaseEditor)part;
     }
 
     public void aboutToBeShown()
@@ -146,7 +146,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
         // Property tab section is refreshed on every activation so just skip it
     }
 
-    public IDatabaseNodeEditorInput getEditorInput()
+    public IDatabaseEditorInput getEditorInput()
     {
         return editor.getEditorInput();
     }

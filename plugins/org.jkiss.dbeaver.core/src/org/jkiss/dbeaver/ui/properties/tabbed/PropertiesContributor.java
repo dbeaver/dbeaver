@@ -15,8 +15,6 @@ import java.util.List;
  */
 public class PropertiesContributor {
 
-    public static final String CONTRIBUTOR_ID = "org.jkiss.dbeaver.core.propertyViewContributor"; //$NON-NLS-1$
-
     public static final String CATEGORY_INFO = CoreMessages.ui_properties_category_information;
     public static final String CATEGORY_STRUCT = CoreMessages.ui_properties_category_structure;
 

@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.actions;
 
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -25,8 +25,8 @@ public class OracleObjectAdapter implements IAdapterFactory {
             DBSObject dbObject = null;
             if (adaptableObject instanceof DBNDatabaseNode) {
                 dbObject = ((DBNDatabaseNode) adaptableObject).getObject();
-            } else if (adaptableObject instanceof IDatabaseNodeEditor) {
-                dbObject = ((IDatabaseNodeEditor) adaptableObject).getEditorInput().getDatabaseObject();
+            } else if (adaptableObject instanceof IDatabaseEditor) {
+                dbObject = ((IDatabaseEditor) adaptableObject).getEditorInput().getDatabaseObject();
             } else if (adaptableObject instanceof DatabaseEditorInput) {
                 dbObject = ((DatabaseEditorInput) adaptableObject).getDatabaseObject();
             }

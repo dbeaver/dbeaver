@@ -685,24 +685,12 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             if (editor == null) {
                 return false;
             }
+            IEditorInput nestedInput = descriptor.getNestedEditorInput(getEditorInput());
             final Class<? extends IEditorActionBarContributor> contributorClass = descriptor.getContributorClass();
             if (contributorClass != null) {
-                boolean found = false;
-                for (ActionContributorInfo contributorInfo : actionContributors) {
-                    if (contributorInfo.contributor.getClass().equals(contributorClass)) {
-                        contributorInfo.editors.add(editor);
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    final IEditorActionBarContributor actionBarContributor = contributorClass.newInstance();
-                    ActionContributorInfo contributorInfo = new ActionContributorInfo(actionBarContributor);
-                    contributorInfo.editors.add(editor);
-                    actionContributors.add(contributorInfo);
-                }
+                addActionsContributor(editor, contributorClass);
             }
-            int index = addPage(editor, getEditorInput());
+            int index = addPage(editor, nestedInput);
             setPageText(index, descriptor.getName());
             if (descriptor.getIcon() != null) {
                 setPageImage(index, descriptor.getIcon());
@@ -744,6 +732,24 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             editorMap.put("node." + tabInfo.getName(), nodeEditor); //$NON-NLS-1$
         } catch (PartInitException ex) {
             log.error("Error adding nested editor", ex); //$NON-NLS-1$
+        }
+    }
+
+    private void addActionsContributor(IEditorPart editor, Class<? extends IEditorActionBarContributor> contributorClass) throws InstantiationException, IllegalAccessException
+    {
+        boolean found = false;
+        for (ActionContributorInfo contributorInfo : actionContributors) {
+            if (contributorInfo.contributor.getClass().equals(contributorClass)) {
+                contributorInfo.editors.add(editor);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            final IEditorActionBarContributor actionBarContributor = contributorClass.newInstance();
+            ActionContributorInfo contributorInfo = new ActionContributorInfo(actionBarContributor);
+            contributorInfo.editors.add(editor);
+            actionContributors.add(contributorInfo);
         }
     }
 

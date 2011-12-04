@@ -11,9 +11,9 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * IDatabaseNodeEditorInput
+ * IDatabaseEditorInput
  */
-public interface IDatabaseNodeEditorInput extends IEditorInput, IDataSourceProvider {
+public interface IDatabaseEditorInput extends IEditorInput, IDataSourceProvider {
 
     DBNDatabaseNode getTreeNode();
 

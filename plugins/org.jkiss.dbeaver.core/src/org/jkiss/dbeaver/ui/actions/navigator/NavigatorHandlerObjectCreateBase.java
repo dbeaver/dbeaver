@@ -8,7 +8,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
@@ -89,7 +89,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         }
                     }
                 });
-                IDatabaseNodeEditor editor = commandTarget.getEditor();
+                IDatabaseEditor editor = commandTarget.getEditor();
                 if (editor != null) {
                     // Just activate existing editor
                     workbenchWindow.getActivePage().activate(editor);

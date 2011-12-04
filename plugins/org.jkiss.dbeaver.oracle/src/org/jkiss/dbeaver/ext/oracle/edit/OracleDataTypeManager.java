@@ -92,7 +92,7 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
     }
 
 /*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseNodeEditor activeEditor, final OracleDataType object)
+    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final OracleDataType object)
     {
         List<ITabDescriptor> tabs = new ArrayList<ITabDescriptor>();
         if (!object.isPredefined() || object.hasAttributes() || object.hasMethods()) {

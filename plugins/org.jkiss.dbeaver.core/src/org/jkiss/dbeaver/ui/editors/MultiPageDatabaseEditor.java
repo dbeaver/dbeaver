@@ -15,8 +15,8 @@ import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * MultiPageDatabaseEditor
  */
-public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implements IDatabaseNodeEditor, IDataSourceProvider
+public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implements IDatabaseEditor, IDataSourceProvider
 {
     private DatabaseEditorListener listener;
     private int activePageIndex = -1;
@@ -60,8 +60,8 @@ public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implem
     }
 
     @Override
-    public IDatabaseNodeEditorInput getEditorInput() {
-        return (IDatabaseNodeEditorInput)super.getEditorInput();
+    public IDatabaseEditorInput getEditorInput() {
+        return (IDatabaseEditorInput)super.getEditorInput();
     }
 
     public void doSave(IProgressMonitor monitor)

@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
@@ -20,7 +20,7 @@ public class OracleSourceViewSection extends SourceEditSection {
     private OracleSourceObject sourceObject;
     private boolean body;
 
-    public OracleSourceViewSection(IDatabaseNodeEditor editor, boolean body)
+    public OracleSourceViewSection(IDatabaseEditor editor, boolean body)
     {
         super(editor);
         this.sourceObject = (OracleSourceObject) editor.getEditorInput().getDatabaseObject();

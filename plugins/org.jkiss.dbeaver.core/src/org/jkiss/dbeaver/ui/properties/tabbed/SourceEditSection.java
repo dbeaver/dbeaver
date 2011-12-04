@@ -23,7 +23,7 @@ import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -46,7 +46,7 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
 
     static final Log log = LogFactory.getLog(SourceEditSection.class);
 
-    private final IDatabaseNodeEditor editor;
+    private final IDatabaseEditor editor;
 
     private Composite parent;
     private SQLEditorBase sqlViewer;
@@ -55,12 +55,12 @@ public abstract class SourceEditSection extends AbstractPropertySection implemen
     private boolean sourcesModified = false;
     private IEditorSite nestedEditorSite;
 
-    protected SourceEditSection(IDatabaseNodeEditor editor)
+    protected SourceEditSection(IDatabaseEditor editor)
     {
         this.editor = editor;
     }
 
-    public IDatabaseNodeEditor getEditor()
+    public IDatabaseEditor getEditor()
     {
         return editor;
     }

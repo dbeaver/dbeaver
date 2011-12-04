@@ -8,8 +8,7 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -40,8 +39,8 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
         } else if (DBPObject.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof IEditorPart) {
                 IEditorInput editorInput = ((IEditorPart) adaptableObject).getEditorInput();
-                if (editorInput instanceof IDatabaseNodeEditorInput) {
-                    DBNNode node = ((IDatabaseNodeEditorInput) editorInput).getTreeNode();
+                if (editorInput instanceof IDatabaseEditorInput) {
+                    DBNNode node = ((IDatabaseEditorInput) editorInput).getTreeNode();
                     if (node instanceof DBSWrapper) {
                         DBSObject object = ((DBSWrapper)node).getObject();
                         if (object != null && adapterType.isAssignableFrom(object.getClass())) {

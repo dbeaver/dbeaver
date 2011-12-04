@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.properties.tabbed.SourceEditSection;
@@ -17,7 +17,7 @@ public class OracleMaterializedViewDefinitionSection extends SourceEditSection {
 
     private OracleMaterializedView view;
 
-    public OracleMaterializedViewDefinitionSection(IDatabaseNodeEditor editor)
+    public OracleMaterializedViewDefinitionSection(IDatabaseEditor editor)
     {
         super(editor);
         this.view = (OracleMaterializedView) editor.getEditorInput().getDatabaseObject();

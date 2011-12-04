@@ -22,7 +22,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
@@ -65,8 +65,8 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
     }
 
     @Override
-    public IDatabaseNodeEditorInput getEditorInput() {
-        return (IDatabaseNodeEditorInput)super.getEditorInput();
+    public IDatabaseEditorInput getEditorInput() {
+        return (IDatabaseEditorInput)super.getEditorInput();
     }
 
     public T getObject()

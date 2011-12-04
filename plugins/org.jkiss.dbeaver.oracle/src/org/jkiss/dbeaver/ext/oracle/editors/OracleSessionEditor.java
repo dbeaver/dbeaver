@@ -11,7 +11,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * OracleSessionEditor
  */
-public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseNodeEditorInput>
+public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput>
 {
     private SessionManagerViewer sessionsViewer;
     private DisconnectSessionAction killSessionAction;

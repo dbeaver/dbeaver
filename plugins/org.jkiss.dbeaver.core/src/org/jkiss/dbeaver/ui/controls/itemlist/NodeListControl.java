@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.utils.CommonUtils;
@@ -18,7 +19,6 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -237,8 +237,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     protected PropertySourceAbstract createListPropertySource()
     {
-        if (workbenchPart instanceof IDatabaseNodeEditor) {
-            return new NodeListPropertySource(((IDatabaseNodeEditor) workbenchPart).getEditorInput().getCommandContext());
+        if (workbenchPart instanceof IDatabaseEditor) {
+            return new NodeListPropertySource(((IDatabaseEditor) workbenchPart).getEditorInput().getCommandContext());
         } else {
             return super.createListPropertySource();
         }

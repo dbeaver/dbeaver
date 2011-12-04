@@ -2,8 +2,13 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.properties.tabbed;
+package org.jkiss.dbeaver.ui.editors.entity.properties;
 
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
+import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
+import org.jkiss.dbeaver.ui.properties.tabbed.StandardPropertiesSection;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,7 +18,6 @@ import org.eclipse.ui.views.properties.tabbed.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -38,6 +42,7 @@ import java.util.List;
 public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 
     static final Log log = LogFactory.getLog(PropertyTabDescriptorProvider.class);
+    public static final String CONTRIBUTOR_ID = "org.jkiss.dbeaver.core.propertyViewContributor"; //$NON-NLS-1$
 
     private ISelection curSelection;
     private ITabDescriptor[] curTabs;
@@ -53,8 +58,8 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         }
         List<ITabDescriptor> tabList = new ArrayList<ITabDescriptor>();
         makeStandardPropertiesTabs(tabList);
-        if (part instanceof IDatabaseNodeEditor) {
-            makeDatabaseEditorTabs((IDatabaseNodeEditor)part, tabList);
+        if (part instanceof IDatabaseEditor) {
+            makeDatabaseEditorTabs((IDatabaseEditor)part, tabList);
         }
         curTabs = tabList.toArray(new ITabDescriptor[tabList.size()]);
         curSelection = selection;
@@ -94,7 +99,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         }
     }
 
-    private void makeDatabaseEditorTabs(IDatabaseNodeEditor part, List<ITabDescriptor> tabList)
+    private void makeDatabaseEditorTabs(IDatabaseEditor part, List<ITabDescriptor> tabList)
     {
         final DBNDatabaseNode node = part.getEditorInput().getTreeNode();
 
@@ -177,7 +182,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         return tabs;
     }
 
-    private void addNavigatorNodeTab(final IDatabaseNodeEditor part, List<ITabDescriptor> tabList, final NavigatorTabInfo tabInfo)
+    private void addNavigatorNodeTab(final IDatabaseEditor part, List<ITabDescriptor> tabList, final NavigatorTabInfo tabInfo)
     {
 /*
         try {

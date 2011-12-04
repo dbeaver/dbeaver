@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.mysql.editors;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.properties.tabbed.SourceEditSection;
@@ -17,7 +17,7 @@ public class MySQLTriggerBodySection extends SourceEditSection {
 
     private MySQLTrigger trigger;
 
-    public MySQLTriggerBodySection(IDatabaseNodeEditor editor)
+    public MySQLTriggerBodySection(IDatabaseEditor editor)
     {
         super(editor);
         this.trigger = (MySQLTrigger) editor.getEditorInput().getDatabaseObject();

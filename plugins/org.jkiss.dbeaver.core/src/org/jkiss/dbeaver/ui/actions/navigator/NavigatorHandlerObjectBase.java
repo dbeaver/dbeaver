@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.actions.navigator;
 
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -15,8 +17,6 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -47,8 +47,8 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     protected static class CommandTarget {
         private DBECommandContext context;
-        private IDatabaseNodeEditor editor;
-        private IDatabaseNodeEditorInput editorInput;
+        private IDatabaseEditor editor;
+        private IDatabaseEditorInput editorInput;
         private CommandTarget()
         {
         }
@@ -56,7 +56,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         {
             this.context = context;
         }
-        public CommandTarget(IDatabaseNodeEditor editor)
+        public CommandTarget(IDatabaseEditor editor)
         {
             this.editor = editor;
             this.context = editor.getEditorInput().getCommandContext();
@@ -66,11 +66,11 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         {
             return context;
         }
-        public IDatabaseNodeEditor getEditor()
+        public IDatabaseEditor getEditor()
         {
             return editor;
         }
-        public IDatabaseNodeEditorInput getEditorInput()
+        public IDatabaseEditorInput getEditorInput()
         {
             return editorInput;
         }
@@ -95,18 +95,18 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         if (objectToSeek != null) {
             for (final IEditorReference editorRef : workbenchWindow.getActivePage().getEditorReferences()) {
                 final IEditorPart editor = editorRef.getEditor(false);
-                if (editor instanceof IDatabaseNodeEditor) {
-                    final IDatabaseNodeEditorInput editorInput = ((IDatabaseNodeEditor) editor).getEditorInput();
+                if (editor instanceof IDatabaseEditor) {
+                    final IDatabaseEditorInput editorInput = ((IDatabaseEditor) editor).getEditorInput();
                     if (editorInput.getDatabaseObject() == objectToSeek) {
                         workbenchWindow.getActivePage().activate(editor);
                         switchEditorFolder(container, editor);
-                        return new CommandTarget((IDatabaseNodeEditor) editor);
+                        return new CommandTarget((IDatabaseEditor) editor);
                     }
                 }
             }
 
             if (openEditor && container instanceof DBNDatabaseNode) {
-                final IDatabaseNodeEditor editor = (IDatabaseNodeEditor) NavigatorHandlerObjectOpen.openEntityEditor(
+                final IDatabaseEditor editor = (IDatabaseEditor) NavigatorHandlerObjectOpen.openEntityEditor(
                     (DBNDatabaseNode) container,
                     null,
                     workbenchWindow);

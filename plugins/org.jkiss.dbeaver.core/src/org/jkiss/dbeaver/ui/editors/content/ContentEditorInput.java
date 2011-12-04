@@ -282,7 +282,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     }
 
     ////////////////////////////////////////////////////////
-    // IDatabaseNodeEditorInput methods
+    // IDatabaseEditorInput methods
 
     public DBPDataSource getDataSource() {
         return valueController.getDataSource();

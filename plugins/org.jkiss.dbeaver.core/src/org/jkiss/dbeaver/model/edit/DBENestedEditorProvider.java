@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -18,8 +18,8 @@ public interface DBENestedEditorProvider<OBJECT_TYPE extends DBSObject> extends 
      *
      * @param workbenchWindow workbench window
      * @param superEditor main editor */
-    IDatabaseNodeEditor[] getNestedEditors(
+    IDatabaseEditor[] getNestedEditors(
         IWorkbenchWindow workbenchWindow,
-        IDatabaseNodeEditor superEditor);
+        IDatabaseEditor superEditor);
 
 }

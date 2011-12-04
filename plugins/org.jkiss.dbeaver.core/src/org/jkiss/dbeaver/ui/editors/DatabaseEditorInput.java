@@ -10,7 +10,7 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 /**
  * DatabaseEditorInput
  */
-public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IDatabaseNodeEditorInput, IDataSourceContainerProvider
+public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IDatabaseEditorInput, IDataSourceContainerProvider
 {
     private final NODE node;
     private final DBECommandContext commandContext;

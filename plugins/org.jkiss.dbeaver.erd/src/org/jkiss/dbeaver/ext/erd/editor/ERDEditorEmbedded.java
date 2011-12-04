@@ -8,9 +8,8 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -27,7 +26,7 @@ import java.util.Set;
 /**
  * Embedded ERD editor
  */
-public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseNodeEditor, IActiveWorkbenchPart {
+public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor, IActiveWorkbenchPart {
 
     private Composite parent;
 
@@ -38,9 +37,9 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseNodeEdi
     {
     }
 
-    public IDatabaseNodeEditorInput getEditorInput()
+    public IDatabaseEditorInput getEditorInput()
     {
-        return (IDatabaseNodeEditorInput)super.getEditorInput();
+        return (IDatabaseEditorInput)super.getEditorInput();
     }
 
     @Override

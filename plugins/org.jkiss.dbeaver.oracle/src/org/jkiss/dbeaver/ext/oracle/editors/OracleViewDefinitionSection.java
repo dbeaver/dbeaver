@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.oracle.model.OracleView;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.properties.tabbed.SourceEditSection;
@@ -17,7 +17,7 @@ public class OracleViewDefinitionSection extends SourceEditSection {
 
     private OracleView view;
 
-    public OracleViewDefinitionSection(IDatabaseNodeEditor editor)
+    public OracleViewDefinitionSection(IDatabaseEditor editor)
     {
         super(editor);
         this.view = (OracleView) editor.getEditorInput().getDatabaseObject();

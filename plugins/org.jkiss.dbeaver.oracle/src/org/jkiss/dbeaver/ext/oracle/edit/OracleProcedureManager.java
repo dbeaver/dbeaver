@@ -26,7 +26,7 @@ import java.util.List;
 public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStandalone, OracleSchema> {
 
 /*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseNodeEditor activeEditor, final OracleProcedureStandalone object)
+    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final OracleProcedureStandalone object)
     {
         return new ITabDescriptor[] {
             new PropertyTabDescriptor(

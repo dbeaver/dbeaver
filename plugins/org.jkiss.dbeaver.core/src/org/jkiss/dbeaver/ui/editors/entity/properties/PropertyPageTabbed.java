@@ -2,10 +2,9 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.entity;
+package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.ui.views.properties.tabbed.*;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -72,7 +71,7 @@ class PropertyPageTabbed extends TabbedPropertySheetPage {
     private static ITabbedPropertySheetPageContributor DEFAULT_PROP_SHEET_CONTRIBUTOR = new ITabbedPropertySheetPageContributor() {
         public String getContributorId()
         {
-            return PropertiesContributor.CONTRIBUTOR_ID;
+            return PropertyTabDescriptorProvider.CONTRIBUTOR_ID;
         }
     };
 

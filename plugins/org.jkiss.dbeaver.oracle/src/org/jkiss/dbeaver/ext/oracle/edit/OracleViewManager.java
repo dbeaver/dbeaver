@@ -77,7 +77,7 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
     }
 
 /*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseNodeEditor activeEditor, final OracleView object)
+    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final OracleView object)
     {
         return new ITabDescriptor[] {
             new PropertyTabDescriptor(

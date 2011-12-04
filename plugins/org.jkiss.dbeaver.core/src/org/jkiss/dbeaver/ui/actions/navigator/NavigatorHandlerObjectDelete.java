@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -185,8 +185,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         for (final IEditorReference editorRef : workbenchWindow.getActivePage().getEditorReferences()) {
             final IEditorPart editor = editorRef.getEditor(false);
 
-            if (editor instanceof IDatabaseNodeEditor) {
-                final IDatabaseNodeEditorInput editorInput = ((IDatabaseNodeEditor)editor).getEditorInput();
+            if (editor instanceof IDatabaseEditor) {
+                final IDatabaseEditorInput editorInput = ((IDatabaseEditor)editor).getEditorInput();
                 if (editorInput.getDatabaseObject() == node.getObject()) {
 
                     ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, false);

@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.mysql.editors;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseNodeEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 import org.jkiss.dbeaver.ui.properties.tabbed.SourceEditSection;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -17,7 +17,7 @@ public class MySQLViewDefinitionSection extends SourceEditSection {
 
     private MySQLView view;
 
-    public MySQLViewDefinitionSection(IDatabaseNodeEditor editor)
+    public MySQLViewDefinitionSection(IDatabaseEditor editor)
     {
         super(editor);
         this.view = (MySQLView) editor.getEditorInput().getDatabaseObject();
