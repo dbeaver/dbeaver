@@ -90,6 +90,8 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         String typeName = config.getAttribute(RegistryConstants.ATTR_TYPE);
         if (!CommonUtils.isEmpty(typeName)) {
             this.type = Type.valueOf(typeName);
+        } else {
+            this.type = Type.editor;
         }
     }
 

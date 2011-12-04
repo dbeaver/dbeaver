@@ -32,11 +32,6 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         super.setInput(input);
     }
 
-    public void dispose()
-    {
-        super.dispose();
-    }
-
     public void doSave(IProgressMonitor monitor)
     {
     }
@@ -77,12 +72,6 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     public IDatabaseEditorInput getEditorInput()
     {
         return (IDatabaseEditorInput)super.getEditorInput();
-    }
-
-    @Override
-    protected void setInput(IEditorInput input)
-    {
-        super.setInput(input);
     }
 
     /*

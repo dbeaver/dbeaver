@@ -5,10 +5,8 @@
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
-import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
-import org.jkiss.dbeaver.ui.properties.tabbed.StandardPropertiesSection;
+import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
+import org.jkiss.dbeaver.ui.properties.tabbed.*;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -102,6 +100,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
     private void makeDatabaseEditorTabs(IDatabaseEditor part, List<ITabDescriptor> tabList)
     {
         final DBNDatabaseNode node = part.getEditorInput().getTreeNode();
+        final DBSObject object = node.getObject();
 
         // Collect tabs from navigator tree model
         final List<NavigatorTabInfo> tabs = new ArrayList<NavigatorTabInfo>();
@@ -127,8 +126,17 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             addNavigatorNodeTab(part, tabList, tab);
         }
 
+        // Query for entity editors
+        List<EntityEditorDescriptor> editors = DBeaverCore.getInstance().getEditorsRegistry().getEntityEditors(object, null);
+        if (!CommonUtils.isEmpty(editors)) {
+            for (EntityEditorDescriptor descriptor : editors) {
+                if (descriptor.getType() == EntityEditorDescriptor.Type.section) {
+                    tabList.add(new EditorTabDescriptor(part, descriptor));
+                }
+            }
+        }
+
         // Query for tab providers
-        final DBSObject object = node.getObject();
         final DBEObjectTabProvider tabProvider = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectTabProvider.class);
         if (tabProvider != null) {
             final ITabDescriptor[] tabDescriptors = tabProvider.getTabDescriptors(part.getSite().getWorkbenchWindow(), part, object);
@@ -184,34 +192,12 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 
     private void addNavigatorNodeTab(final IDatabaseEditor part, List<ITabDescriptor> tabList, final NavigatorTabInfo tabInfo)
     {
-/*
-        try {
-            EntityNodeEditor nodeEditor = new EntityNodeEditor(tabInfo.node, tabInfo.meta);
-            int index = addPage(nodeEditor, getEditorInput());
-            if (tabInfo.meta == null) {
-                setPageText(index, tabInfo.node.getNodeName());
-                setPageImage(index, tabInfo.node.getNodeIconDefault());
-                setPageToolTip(index, getEditorInput().getTreeNode().getNodeType() + " " + tabInfo.node.getNodeName());
-            } else {
-                setPageText(index, tabInfo.meta.getChildrenType());
-                if (tabInfo.meta.getDefaultIcon() != null) {
-                    setPageImage(index, tabInfo.meta.getDefaultIcon());
-                } else {
-                    setPageImage(index, PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER));
-                }
-                setPageToolTip(index, tabInfo.meta.getChildrenType());
-            }
-            editorMap.put("node." + tabInfo.getName(), nodeEditor);
-        } catch (PartInitException ex) {
-            log.error("Error adding nested editor", ex);
-        }
-*/
         tabList.add(new PropertyTabDescriptor(
             PropertiesContributor.CATEGORY_STRUCT,
             tabInfo.getName(),
             tabInfo.getName(),
             tabInfo.node.getNodeIconDefault(),
-            new SectionDescriptor("default", tabInfo.getName()) { //$NON-NLS-1$
+            new SectionDescriptor(PropertiesContributor.SECTION_STANDARD, tabInfo.getName()) { //$NON-NLS-1$
                 public ISection getSectionClass()
                 {
                     return new NodeEditorSection(part, tabInfo.node, tabInfo.meta);

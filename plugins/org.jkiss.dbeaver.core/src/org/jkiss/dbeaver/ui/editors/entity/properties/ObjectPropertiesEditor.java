@@ -53,6 +53,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
     private String curFolderId;
 
     private final List<IRefreshablePart> refreshClients = new ArrayList<IRefreshablePart>();
+    private final List<ISaveablePart> nestedSaveable = new ArrayList<ISaveablePart>();
     //private Text nameText;
     //private Text descriptionText;
 
@@ -146,6 +147,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
                     if (section instanceof ISectionEditorContributor) {
                         ((ISectionEditorContributor) section).addContributions(sectionContributors);
                     }
+                    if (section instanceof ISaveablePart) {
+                        nestedSaveable.add((ISaveablePart) section);
+                    }
                 }
             }
         }
@@ -232,11 +236,17 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
 
     public void doSave(IProgressMonitor monitor)
     {
-
+        for (ISaveablePart sp : nestedSaveable) {
+            sp.doSave(monitor);
+        }
     }
 
     public void doSaveAs()
     {
+        Object activeFolder = getActiveFolder();
+        if (activeFolder instanceof ISaveablePart) {
+            ((ISaveablePart) activeFolder).doSaveAs();
+        }
     }
 
     public void init(IEditorSite site, IEditorInput input)
@@ -248,6 +258,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
 
     public boolean isDirty()
     {
+        for (ISaveablePart sp : nestedSaveable) {
+            if (sp.isDirty()) {
+                return true;
+            }
+        }
         return false;
     }
 

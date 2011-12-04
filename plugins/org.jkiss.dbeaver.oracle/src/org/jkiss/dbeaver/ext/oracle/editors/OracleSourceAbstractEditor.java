@@ -20,9 +20,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
@@ -62,6 +65,7 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
         super();
 
         setDocumentProvider(new ObjectDocumentProvider());
+        setHasVerticalRuler(false);
     }
 
     @Override
@@ -81,7 +85,15 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
     @Override
     public void createPartControl(Composite parent)
     {
-        pageControl = new EditorPageControl(parent, SWT.NONE);
+        pageControl = new EditorPageControl(parent, SWT.SHEET);
+
+        ProgressPageControl progressControl = null;
+//        if (getSite() instanceof MultiPageEditorSite) {
+//            MultiPageEditorPart ownerEditor = ((MultiPageEditorSite) getSite()).getMultiPageEditor();
+//            if (ownerEditor instanceof IProgressControlProvider) {
+//                progressControl = ((IProgressControlProvider)ownerEditor).getProgressControl();
+//            }
+//        }
 
         editorSash = new SashForm(pageControl.createContentContainer(), SWT.VERTICAL | SWT.SMOOTH);
         super.createPartControl(editorSash);
@@ -89,7 +101,11 @@ public abstract class OracleSourceAbstractEditor<T extends OracleSourceObject>
         editorControl = editorSash.getChildren()[0];
         compileLog = new OracleCompilerLogViewer(editorSash);
 
-        pageControl.createProgressPanel();
+        if (progressControl != null) {
+            pageControl.substituteProgressPanel(progressControl);
+        } else {
+            pageControl.createProgressPanel();
+        }
 
         editorSash.setWeights(new int[] {70, 30});
         editorSash.setMaximizedControl(editorControl);

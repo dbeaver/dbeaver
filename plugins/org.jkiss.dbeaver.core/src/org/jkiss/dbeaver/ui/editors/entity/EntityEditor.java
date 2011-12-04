@@ -16,6 +16,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.IProgressControlProvider;
+import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
 import org.jkiss.dbeaver.ext.ui.IFolderListener;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -56,7 +59,8 @@ import java.util.*;
 /**
  * EntityEditor
  */
-public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorModelView, ISaveablePart2, IFolderedPart
+public class EntityEditor extends MultiPageDatabaseEditor
+    implements INavigatorModelView, IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderedPart
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
@@ -104,6 +108,17 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
                 }
             }
         };
+    }
+
+    public void handlePropertyChange(int propId)
+    {
+        super.handlePropertyChange(propId);
+    }
+
+    public ProgressPageControl getProgressControl()
+    {
+        IEditorPart activeEditor = getActiveEditor();
+        return activeEditor instanceof IProgressControlProvider ? ((IProgressControlProvider) activeEditor).getProgressControl() : null;
     }
 
     public DBSObject getDatabaseObject()
@@ -674,7 +689,9 @@ public class EntityEditor extends MultiPageDatabaseEditor implements INavigatorM
             object,
             position);
         for (EntityEditorDescriptor descriptor : descriptors) {
-            addEditorTab(descriptor);
+            if (descriptor.getType() == EntityEditorDescriptor.Type.editor) {
+                addEditorTab(descriptor);
+            }
         }
     }
 

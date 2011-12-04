@@ -15,7 +15,7 @@ public class ObjectPropertiesEditorInputFactory implements IDatabaseEditorInputF
 
     public IEditorInput createNestedEditorInput(IDatabaseEditorInput mainInput)
     {
-        return mainInput;
+        return mainInput;// new ObjectPropertiesEditorInput(mainInput);
     }
 
 }

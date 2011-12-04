@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,15 +62,10 @@ public class EntityEditorsRegistry {
         entityManagers.clear();
     }
 
-    public List<EntityEditorDescriptor> getEntityEditors()
-    {
-        return entityEditors;
-    }
-
     public EntityEditorDescriptor getMainEntityEditor(DBPObject object)
     {
         for (EntityEditorDescriptor descriptor : entityEditors) {
-            if (descriptor.appliesTo(object) && descriptor.isMain()) {
+            if (descriptor.appliesTo(object) && descriptor.isMain() && descriptor.getType() == EntityEditorDescriptor.Type.editor) {
                 return descriptor;
             }
         }
@@ -79,7 +75,8 @@ public class EntityEditorsRegistry {
     public List<EntityEditorDescriptor> getEntityEditors(DBPObject object, String position)
     {
         List<EntityEditorDescriptor> editors = new ArrayList<EntityEditorDescriptor>();
-        final List<EntityEditorDescriptor> positionList = positionsMap.get(position);
+        final List<EntityEditorDescriptor> positionList =
+            CommonUtils.isEmpty(position) ? entityEditors : positionsMap.get(position);
         if (positionList != null) {
             for (EntityEditorDescriptor descriptor : positionList) {
                 if (descriptor.appliesTo(object)) {

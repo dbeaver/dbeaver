@@ -141,7 +141,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     public Composite createContentContainer()
     {
-        Composite container = new Composite(this, SWT.BORDER);
+        Composite container = new Composite(this, (getStyle() & SWT.SHEET) == SWT.SHEET ? SWT.NONE :  SWT.BORDER);
         container.setLayout(new FillLayout());
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalIndent = 0;
