@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * GenericProcedure
  */
-public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog>
+public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject
 {
     //static final Log log = LogFactory.getLog(MySQLProcedure.class);
 
@@ -204,4 +204,14 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
             this);
     }
 
+    @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
+    public String getSourceText(DBRProgressMonitor monitor) throws DBException
+    {
+        return getClientBody(monitor);
+    }
+
+    public void setSourceText(String sourceText) throws DBException
+    {
+        setClientBody(sourceText);
+    }
 }

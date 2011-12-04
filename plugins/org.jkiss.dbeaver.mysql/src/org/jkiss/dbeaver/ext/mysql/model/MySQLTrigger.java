@@ -6,10 +6,12 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTrigger;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSManipulationType;
@@ -19,7 +21,7 @@ import java.sql.ResultSet;
 /**
  * GenericProcedure
  */
-public class MySQLTrigger extends AbstractTrigger
+public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
 {
     static final Log log = LogFactory.getLog(MySQLTrigger.class);
 
@@ -78,4 +80,14 @@ public class MySQLTrigger extends AbstractTrigger
         return catalog.getDataSource();
     }
 
+    @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
+    public String getSourceText(DBRProgressMonitor monitor) throws DBException
+    {
+        return getBody();
+    }
+
+    public void setSourceText(String sourceText) throws DBException
+    {
+        body = sourceText;
+    }
 }

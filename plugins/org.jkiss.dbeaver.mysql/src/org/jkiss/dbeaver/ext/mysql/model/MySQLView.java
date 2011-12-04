@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * MySQLView
  */
-public class MySQLView extends MySQLTableBase
+public class MySQLView extends MySQLTableBase implements MySQLSourceObject
 {
     public enum CheckOption {
         NONE(null),
@@ -196,6 +196,17 @@ public class MySQLView extends MySQLTableBase
         finally {
             context.close();
         }
+    }
+
+    @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
+    public String getSourceText(DBRProgressMonitor monitor) throws DBException
+    {
+        return getAdditionalInfo(monitor).getDefinition();
+    }
+
+    public void setSourceText(String sourceText) throws DBException
+    {
+        getAdditionalInfo().setDefinition(sourceText);
     }
 
 }

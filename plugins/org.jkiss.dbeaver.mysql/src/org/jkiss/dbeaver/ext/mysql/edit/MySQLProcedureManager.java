@@ -7,30 +7,21 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.views.properties.tabbed.ISection;
-import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ext.mysql.editors.MySQLProcedureBodySection;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectTabProvider;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertyTabDescriptor;
-import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * MySQLProcedureManager
  */
-public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQLCatalog> implements DBEObjectTabProvider<MySQLProcedure> {
+public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQLCatalog> {
 
     public long getMakerOptions()
     {
@@ -89,6 +80,7 @@ public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQ
         };
     }
 
+/*
     public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final MySQLProcedure object)
     {
         if (object.getContainer().isSystem()) {
@@ -109,6 +101,7 @@ public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQ
         };
     }
 
+*/
 
 }
 

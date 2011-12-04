@@ -7,7 +7,6 @@ Bundle-Activator: org.jkiss.dbeaver.ext.mysql.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.views;bundle-version="3.5.0",
- org.eclipse.ui.views.properties.tabbed;bundle-version="3.5.0",
  org.eclipse.jface,
  org.eclipse.jface.text;bundle-version="3.5.0",
  org.jkiss.dbeaver.core;bundle-version="1.0.0",
