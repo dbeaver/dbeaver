@@ -7,12 +7,12 @@ package org.jkiss.dbeaver.ext.mysql.editors;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.AbstractDatabaseTextEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
 
 /**
  * MySQLDDLViewEditor
  */
-public class MySQLDDLViewEditor extends AbstractDatabaseTextEditor<MySQLTable> {
+public class MySQLDDLViewEditor extends SQLEditorNested<MySQLTable> {
 
     @Override
     protected boolean isReadOnly()

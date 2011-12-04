@@ -27,7 +27,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal"; //$NON-NLS-1$
     static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip"; //$NON-NLS-1$
     static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal"; //$NON-NLS-1$
-    private boolean isNestedEditor = false;
     private SQLEditorBase activeEditorPart;
 
     private RetargetTextEditorAction contentAssistProposal;
@@ -47,9 +46,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         return "actions_" + actionId + "_";//$NON-NLS-1$
     }
 
-    public void setNestedEditor(boolean nestedEditor)
+    protected boolean isNestedEditor()
     {
-        isNestedEditor = nestedEditor;
+        return false;
     }
 
     private void createActions()
@@ -97,10 +96,12 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
 
     public void contributeToMenu(IMenuManager manager)
     {
-        super.contributeToMenu(manager);
+        if (!isNestedEditor()) {
+            super.contributeToMenu(manager);
+        }
 
         IMenuManager editMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
-        if (editMenu != null) {
+        if (editMenu != null && !isNestedEditor()) {
             //editMenu.add(new Separator());
             editMenu.add(contentAssistProposal);
             editMenu.add(contentAssistTip);
@@ -108,7 +109,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
             editMenu.add(formatMenu);
             formatMenu.add(contentFormatProposal);
             formatMenu.add(copyUnformattedTextAction);
-            //editMenu.add(new Separator());
             //editMenu.add(executeStatementAction);
             //editMenu.add(executeScriptAction);
         }
@@ -116,14 +116,17 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
 
     public void contributeToCoolBar(ICoolBarManager manager)
     {
-        super.contributeToCoolBar(manager);
+        if (!isNestedEditor()) {
+            super.contributeToCoolBar(manager);
+        }
     }
 
     @Override
     public void contributeToToolBar(IToolBarManager manager)
     {
-        super.contributeToToolBar(manager);
-        if (!isNestedEditor) {
+        if (!isNestedEditor()) {
+            super.contributeToToolBar(manager);
+
             manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_STATEMENT));
             manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_SCRIPT));
             manager.add(new Separator());
@@ -135,36 +138,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
 
     public void contributeToStatusLine(IStatusLineManager statusLineManager)
     {
-        super.contributeToStatusLine(statusLineManager);
+        if (!isNestedEditor()) {
+            super.contributeToStatusLine(statusLineManager);
+        }
     }
-
-/*
-    private Menu createScriptMenu(final Menu parent, final Shell shell, final SQLEditor editor)
-    {
-        final Menu menu = parent == null ? new Menu(shell, SWT.POP_UP) : new Menu(parent);
-        MenuItem autoCommit = new MenuItem(menu, SWT.PUSH);
-        autoCommit.setText("Settings ...");
-        autoCommit.addSelectionListener(new SelectionAdapter()
-        {
-            public void widgetSelected(SelectionEvent e)
-            {
-                DBNNode dsNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(editor.getDataSourceContainer());
-                if (dsNode instanceof IAdaptable) {
-                    String pageId = PrefPageSQLEditor.PAGE_ID;
-                    PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
-                        shell,
-                        (IAdaptable)dsNode,
-                        pageId,
-                        null,//new String[]{pageId},
-                        null);
-                    if (propDialog != null) {
-                        propDialog.open();
-                    }
-                }
-            }
-        });
-        return menu;
-    }
-*/
 
 }

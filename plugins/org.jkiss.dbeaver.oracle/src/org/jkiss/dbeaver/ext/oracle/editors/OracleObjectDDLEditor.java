@@ -7,12 +7,12 @@ package org.jkiss.dbeaver.ext.oracle.editors;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.AbstractDatabaseTextEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
 
 /**
  * OracleObjectDDLEditor
  */
-public class OracleObjectDDLEditor extends AbstractDatabaseTextEditor<OracleTable> {
+public class OracleObjectDDLEditor extends SQLEditorNested<OracleTable> {
 
     @Override
     public boolean isReadOnly()

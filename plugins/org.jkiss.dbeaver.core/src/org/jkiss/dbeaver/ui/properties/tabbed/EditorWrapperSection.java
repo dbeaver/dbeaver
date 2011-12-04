@@ -18,19 +18,19 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.IDatabaseEditorContributorManager;
 import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
+import org.jkiss.dbeaver.ext.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 
-import java.util.List;
-
 /**
  * EditorWrapperSection
  */
-public class EditorWrapperSection extends AbstractPropertySection implements ISectionEditorContributor, ISaveablePart, IRefreshablePart, IAdaptable {
+public class EditorWrapperSection extends AbstractPropertySection implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, IAdaptable {
 
     static final Log log = LogFactory.getLog(EditorWrapperSection.class);
 
@@ -125,7 +125,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements ISe
         }
         //sqlViewer.enableUndoManager(true);
 
-        //editor.getSite().setSelectionProvider(selectionProvider);
+        editor.getSite().setSelectionProvider(editor.getSite().getSelectionProvider());
 
         //selectionProvider.setSelection(new StructuredSelection());
 
@@ -186,24 +186,21 @@ public class EditorWrapperSection extends AbstractPropertySection implements ISe
         return null;
     }
 
-    public void addContributions(List<IEditorActionBarContributor> contributions)
+    public IEditorActionBarContributor getContributor(IDatabaseEditorContributorManager manager)
     {
         Class<? extends IEditorActionBarContributor> contributorClass = editorDescriptor.getContributorClass();
         if (contributorClass == null) {
-            return;
+            return null;
         }
-        for (IEditorActionBarContributor contributor : contributions) {
-            if (contributor.getClass() == contributorClass) {
-                this.actionContributor = contributor;
-                return;
+        this.actionContributor = manager.getContributor(contributorClass);
+        if (this.actionContributor == null) {
+            try {
+                this.actionContributor = contributorClass.newInstance();
+            } catch (Exception e) {
+                log.error(e);
             }
         }
-        try {
-            this.actionContributor = contributorClass.newInstance();
-            contributions.add(this.actionContributor);
-        } catch (Exception e) {
-            log.error(e);
-        }
+        return this.actionContributor;
     }
 
     public void doSave(IProgressMonitor monitor)

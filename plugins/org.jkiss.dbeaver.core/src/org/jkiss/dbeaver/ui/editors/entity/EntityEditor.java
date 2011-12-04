@@ -75,16 +75,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private static class ActionContributorInfo {
-        final IEditorActionBarContributor contributor;
-        final List<IEditorPart> editors = new ArrayList<IEditorPart>();
-
-        private ActionContributorInfo(IEditorActionBarContributor contributor)
-        {
-            this.contributor = contributor;
-        }
-    }
-
     private static final Map<String, EditorDefaults> defaultPageMap = new HashMap<String, EditorDefaults>();
 
     private final Map<String, IEditorPart> editorMap = new LinkedHashMap<String, IEditorPart>();
@@ -92,7 +82,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     private DBECommandAdapter commandListener;
     private IFolderListener folderListener;
     private boolean hasPropertiesEditor;
-    private List<ActionContributorInfo> actionContributors = new ArrayList<ActionContributorInfo>();
+    private Map<IEditorPart, IEditorActionBarContributor> actionContributors = new HashMap<IEditorPart, IEditorActionBarContributor>();
 
     public EntityEditor()
     {
@@ -134,8 +124,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     public void dispose()
     {
-        for (ActionContributorInfo contributor : actionContributors) {
-            contributor.contributor.dispose();
+        for (Map.Entry<IEditorPart, IEditorActionBarContributor> entry : actionContributors.entrySet()) {
+            GlobalContributorManager.getInstance().removeContributor(entry.getValue(), entry.getKey());
         }
         actionContributors.clear();
         //final DBPDataSource dataSource = getDataSource();
@@ -447,16 +437,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_END);
 
-        if (!actionContributors.isEmpty()) {
-            for (ActionContributorInfo contributorInfo : actionContributors) {
-                try {
-                    contributorInfo.contributor.init(this.getEditorSite().getActionBars(), this.getSite().getPage());
-                } catch (Exception e) {
-                    log.error(e);
-                }
-            }
-        }
-
         String defPageId = getEditorInput().getDefaultPageId();
         if (defPageId == null && editorDefaults != null) {
             defPageId = editorDefaults.pageId;
@@ -515,11 +495,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         activeEditor = getEditor(newPageIndex);
 
-        for (ActionContributorInfo contributor : actionContributors) {
-            if (contributor.editors.contains(activeEditor)) {
-                contributor.contributor.setActiveEditor(activeEditor);
+        for (Map.Entry<IEditorPart, IEditorActionBarContributor> entry : actionContributors.entrySet()) {
+            if (entry.getKey() == activeEditor) {
+                entry.getValue().setActiveEditor(activeEditor);
             } else {
-                contributor.contributor.setActiveEditor(null);
+                entry.getValue().setActiveEditor(null);
             }
         }
 
@@ -754,20 +734,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     private void addActionsContributor(IEditorPart editor, Class<? extends IEditorActionBarContributor> contributorClass) throws InstantiationException, IllegalAccessException
     {
-        boolean found = false;
-        for (ActionContributorInfo contributorInfo : actionContributors) {
-            if (contributorInfo.contributor.getClass().equals(contributorClass)) {
-                contributorInfo.editors.add(editor);
-                found = true;
-                break;
-            }
+        GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
+        IEditorActionBarContributor contributor = contributorManager.getContributor(contributorClass);
+        if (contributor == null) {
+            contributor = contributorClass.newInstance();
         }
-        if (!found) {
-            final IEditorActionBarContributor actionBarContributor = contributorClass.newInstance();
-            ActionContributorInfo contributorInfo = new ActionContributorInfo(actionBarContributor);
-            contributorInfo.editors.add(editor);
-            actionContributors.add(contributorInfo);
-        }
+        contributorManager.addContributor(contributor, editor);
+        actionContributors.put(editor, contributor);
     }
 
     public void refreshPart(final Object source, boolean force)
@@ -814,6 +787,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySheetPage.class) {
             //return new PropertyPageTabbed();
+        }
+        IEditorPart activeEditor = getActiveEditor();
+        if (activeEditor != null) {
+            Object result = activeEditor.getAdapter(adapter);
+            if (result != null) {
+                return result;
+            }
         }
         return super.getAdapter(adapter);
     }

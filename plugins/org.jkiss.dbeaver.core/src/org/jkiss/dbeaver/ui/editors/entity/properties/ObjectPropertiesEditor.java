@@ -24,6 +24,7 @@ import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
 import org.eclipse.ui.views.properties.tabbed.TabContents;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
+import org.jkiss.dbeaver.ext.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ext.ui.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -33,11 +34,13 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
-import org.jkiss.dbeaver.ui.properties.tabbed.ISectionEditorContributor;
+import org.jkiss.dbeaver.ui.editors.entity.GlobalContributorManager;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ObjectPropertiesEditor
@@ -54,6 +57,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
 
     private final List<IRefreshablePart> refreshClients = new ArrayList<IRefreshablePart>();
     private final List<ISaveablePart> nestedSaveable = new ArrayList<ISaveablePart>();
+    private final Map<ISection, IEditorActionBarContributor> sectionContributors = new HashMap<ISection, IEditorActionBarContributor>();
     //private Text nameText;
     //private Text descriptionText;
 
@@ -139,24 +143,23 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         loadObjectProperties();
 
         // Collect section contributors
-        List<IEditorActionBarContributor> sectionContributors = new ArrayList<IEditorActionBarContributor>();
+        GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
         for (ITabDescriptor tab : properties.getActiveTabs()) {
             final ISection[] tabSections = properties.getTabSections(tab);
             if (!CommonUtils.isEmpty(tabSections)) {
                 for (ISection section : tabSections) {
-                    if (section instanceof ISectionEditorContributor) {
-                        ((ISectionEditorContributor) section).addContributions(sectionContributors);
+                    if (section instanceof IDatabaseEditorContributorUser) {
+                        IEditorActionBarContributor contributor = ((IDatabaseEditorContributorUser) section).getContributor(contributorManager);
+                        if (contributor != null) {
+                            contributorManager.addContributor(contributor, this);
+                            sectionContributors.put(section, contributor);
+                        }
                     }
                     if (section instanceof ISaveablePart) {
                         nestedSaveable.add((ISaveablePart) section);
                     }
                 }
             }
-        }
-
-        // Init contributors
-        for (IEditorActionBarContributor contributor : sectionContributors) {
-            contributor.init(this.getEditorSite().getActionBars(), this.getSite().getPage());
         }
 
         final String folderId = getEditorInput().getDefaultFolderId();
@@ -218,7 +221,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
     @Override
     public void dispose()
     {
-        // Remove lazy props listener
+        // Remove contributors
+        GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
+        for (IEditorActionBarContributor contributor : sectionContributors.values()) {
+            contributorManager.removeContributor(contributor, this);
+        }
+        sectionContributors.clear();
         //PropertiesContributor.getInstance().removeLazyListener(this);
 
         if (properties != null) {
@@ -232,6 +240,18 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
     public void setFocus()
     {
         properties.setFocus();
+        ITabDescriptor selectedTab = properties.getSelectedTab();
+        if (selectedTab != null) {
+            final ISection[] tabSections = properties.getTabSections(selectedTab);
+            if (!CommonUtils.isEmpty(tabSections)) {
+                for (ISection section : tabSections) {
+                    IEditorActionBarContributor contributor = sectionContributors.get(section);
+                    if (contributor != null) {
+                        section.aboutToBeShown();
+                    }
+                }
+            }
+        }
     }
 
     public void doSave(IProgressMonitor monitor)
@@ -394,17 +414,16 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
     @Override
     public Object getAdapter(Class adapter)
     {
-        Object result = super.getAdapter(adapter);
-        if (result == null) {
-            final Object activeFolder = getActiveFolder();
-            if (activeFolder != null) {
-                if (adapter.isAssignableFrom(activeFolder.getClass())) {
-                    result = activeFolder;
-                } else if (activeFolder instanceof IAdaptable) {
-                    result = ((IAdaptable) activeFolder).getAdapter(adapter);
-                }
+        Object result = null;
+        final Object activeFolder = getActiveFolder();
+        if (activeFolder != null) {
+            if (adapter.isAssignableFrom(activeFolder.getClass())) {
+                result = activeFolder;
+            } else if (activeFolder instanceof IAdaptable) {
+                result = ((IAdaptable) activeFolder).getAdapter(adapter);
             }
         }
-        return result;
+        return result == null ? super.getAdapter(adapter) : result;
     }
+
 }

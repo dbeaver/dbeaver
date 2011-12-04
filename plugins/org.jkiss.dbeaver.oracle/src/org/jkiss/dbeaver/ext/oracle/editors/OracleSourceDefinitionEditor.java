@@ -8,12 +8,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.AbstractDatabaseTextEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
 
 /**
  * Oracle source definition editor
  */
-public class OracleSourceDefinitionEditor extends AbstractDatabaseTextEditor<OracleSourceObjectEx> {
+public class OracleSourceDefinitionEditor extends SQLEditorNested<OracleSourceObjectEx> {
 
     @Override
     protected String getCompileCommandId()

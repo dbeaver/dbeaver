@@ -230,8 +230,8 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate" icon="icons/sql/sql_validate.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse" icon="icons/sql/sql_analyse.png"/>
 
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="IMG_ETOOL_SAVEAS_EDIT"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="IMG_OBJ_FOLDER"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="IMG_OBJ_FOLDER"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="IMG_ETOOL_SAVEAS_EDIT"/>
 
         <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/resultset_record.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.first" icon="icons/sql/resultset_first.png"/>

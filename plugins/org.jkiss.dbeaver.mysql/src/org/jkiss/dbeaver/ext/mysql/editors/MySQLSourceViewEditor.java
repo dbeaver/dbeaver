@@ -7,12 +7,12 @@ package org.jkiss.dbeaver.ext.mysql.editors;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLSourceObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.AbstractDatabaseTextEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
 
 /**
  * MySQLSourceViewEditor
  */
-public class MySQLSourceViewEditor extends AbstractDatabaseTextEditor<MySQLSourceObject> {
+public class MySQLSourceViewEditor extends SQLEditorNested<MySQLSourceObject> {
 
     public MySQLSourceViewEditor()
     {

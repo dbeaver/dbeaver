@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors;
+package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -37,15 +37,14 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * AbstractDatabaseTextEditor
+ * SQLEditorNested
  */
-public abstract class AbstractDatabaseTextEditor<T extends DBSObject>
+public abstract class SQLEditorNested<T extends DBSObject>
     extends SQLEditorBase
     implements IActiveWorkbenchPart, IRefreshablePart, DBCSourceHost
 {
@@ -56,7 +55,7 @@ public abstract class AbstractDatabaseTextEditor<T extends DBSObject>
     private Control editorControl;
     private SashForm editorSash;
 
-    public AbstractDatabaseTextEditor() {
+    public SQLEditorNested() {
         super();
 
         setDocumentProvider(new ObjectDocumentProvider());
@@ -163,12 +162,12 @@ public abstract class AbstractDatabaseTextEditor<T extends DBSObject>
     private class ObjectDocumentProvider extends BaseTextDocumentProvider {
         @Override
         public boolean isReadOnly(Object element) {
-            return AbstractDatabaseTextEditor.this.isReadOnly();
+            return SQLEditorNested.this.isReadOnly();
         }
 
         @Override
         public boolean isModifiable(Object element) {
-            return !AbstractDatabaseTextEditor.this.isReadOnly();
+            return !SQLEditorNested.this.isReadOnly();
         }
 
         @Override
