@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
  */
 public class DatabaseEditorAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, SQLEditorBase.class };
+    private static final Class<?>[] ADAPTER_LIST = { DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class };
 
     public Object getAdapter(Object adaptableObject, Class adapterType)
     {
@@ -53,7 +53,7 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
                     }
                 }
             }
-        } else if (adaptableObject instanceof EntityEditor) {
+        }/* else if (adaptableObject instanceof EntityEditor) {
             IEditorPart activeEditor = ((EntityEditor) adaptableObject).getActiveEditor();
             if (activeEditor != null) {
                 if (adapterType.isAssignableFrom(activeEditor.getClass())) {
@@ -71,7 +71,7 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
                     }
                 }
             }
-        }
+        }*/
 
         return null;
     }

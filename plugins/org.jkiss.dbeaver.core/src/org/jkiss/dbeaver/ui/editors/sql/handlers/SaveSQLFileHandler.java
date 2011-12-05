@@ -4,20 +4,19 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
-public class SaveSQLFileHandler extends AbstractHandler
+public class SaveSQLFileHandler extends BaseSQLEditorHandler
 {
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        SQLEditorBase editor = (SQLEditorBase) Platform.getAdapterManager().getAdapter(HandlerUtil.getActiveEditor(event), SQLEditorBase.class);
+        SQLEditorBase editor = getActiveControl(event);
+        if (editor == null) {
+            return null;
+        }
         editor.saveToExternalFile();
         return null;
     }

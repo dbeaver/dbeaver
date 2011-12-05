@@ -22,12 +22,15 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
@@ -56,6 +59,7 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
 
 /**
  * SQL Executor
@@ -63,6 +67,8 @@ import java.util.*;
 public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider
 {
     static protected final Log log = LogFactory.getLog(SQLEditorBase.class);
+
+    private static final String SQL_EDITOR_CONTROL_ID = "org.jkiss.dbeaver.ui.sqlEditorBase";
 
     private SQLSyntaxManager syntaxManager;
 
@@ -112,7 +118,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     {
         setRangeIndicator(new DefaultRangeIndicator());
 
-        super.createPartControl(parent);
+        super.createPartControl(new SQLEditorControl(parent, this));
+
+        {
+            final StyledText textControl = getTextViewer().getTextWidget();
+
+            final IFocusService focusService = (IFocusService) getSite().getService(IFocusService.class);
+            focusService.addFocusTracker(textControl, SQL_EDITOR_CONTROL_ID);
+            textControl.addDisposeListener(new DisposeListener() {
+                public void widgetDisposed(DisposeEvent e)
+                {
+                    focusService.removeFocusTracker(textControl);
+                }
+            });
+        }
 
         ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
         projectionSupport = new ProjectionSupport(
@@ -145,6 +164,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(symbolInserter);
             }
         }
+
     }
 
     public void updatePartControl(IEditorInput input) {
