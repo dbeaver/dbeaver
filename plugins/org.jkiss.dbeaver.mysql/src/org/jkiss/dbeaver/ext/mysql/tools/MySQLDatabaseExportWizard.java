@@ -9,17 +9,20 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
+import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.text.NumberFormat;
 import java.util.List;
 
-class MySQLDatabaseExportWizard extends MySQLAbstractToolWizard implements IExportWizard {
+class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog, MySQLServerHome> implements IExportWizard {
 
     public enum DumpMethod {
         ONLINE,
@@ -58,12 +61,12 @@ class MySQLDatabaseExportWizard extends MySQLAbstractToolWizard implements IExpo
 
 	@Override
 	public void onSuccess() {
-        UIUtils.showMessageBox(getShell(), "Database export", "Database '" + getCatalog().getName() + "' export completed", SWT.ICON_INFORMATION);
+        UIUtils.showMessageBox(getShell(), "Database export", "Database '" + getDbObject().getName() + "' export completed", SWT.ICON_INFORMATION);
         Program.launch(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
 	}
 
     @Override
-    protected void fillProcessParameters(List<String> cmd)
+    public void fillProcessParameters(List<String> cmd)
     {
         String dumpPath = new File(getServerHome().getHomePath(), "bin/mysqldump").getAbsolutePath();
         cmd.add(dumpPath);
@@ -84,8 +87,21 @@ class MySQLDatabaseExportWizard extends MySQLAbstractToolWizard implements IExpo
         if (comments) cmd.add("--comments");
     }
 
+
     @Override
-    protected boolean isVerbose()
+    public MySQLServerHome findServerHome(String clientHomeId)
+    {
+        return MySQLDataSourceProvider.getServerHome(clientHomeId);
+    }
+
+    @Override
+    protected List<String> getCommandLine()
+    {
+        return MySQLToolScript.getMySQLToolCommandLine(this);
+    }
+
+    @Override
+    public boolean isVerbose()
     {
         return true;
     }

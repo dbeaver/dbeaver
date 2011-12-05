@@ -8,14 +8,14 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPTool;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 /**
  * Database import
  */
-public class MySQLToolImport extends MySQLToolAbstract {
-
-    @Override
+public class MySQLToolImport implements DBPTool
+{
     public void execute(IWorkbenchWindow window, DBPObject object) throws DBException
     {
         if (object instanceof MySQLCatalog) {
@@ -25,5 +25,4 @@ public class MySQLToolImport extends MySQLToolAbstract {
             dialog.open();
         }
     }
-
 }

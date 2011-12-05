@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql.tools;
+package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -18,12 +18,12 @@ import java.util.Date;
 import java.util.List;
 
 
-class MySQLDatabaseWizardPageLog extends WizardPage {
+public class DatabaseWizardPageLog extends WizardPage {
 
     private StyledText dumpLogText;
     private String task;
 
-    protected MySQLDatabaseWizardPageLog(String task)
+    public DatabaseWizardPageLog(String task)
     {
         super(task + " progress");
         this.task = task;
@@ -66,12 +66,12 @@ class MySQLDatabaseWizardPageLog extends WizardPage {
         });
     }
 
-    void startLogReader(ProcessBuilder processBuilder, InputStream stream)
+    public void startLogReader(ProcessBuilder processBuilder, InputStream stream)
     {
         new LogReaderJob(processBuilder, stream).start();
     }
 
-    void startNullReader(InputStream stream)
+    public void startNullReader(InputStream stream)
     {
         new NullReaderJob(stream).start();
     }

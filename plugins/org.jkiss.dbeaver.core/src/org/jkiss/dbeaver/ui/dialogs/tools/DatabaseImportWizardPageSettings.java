@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql.tools;
+package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -19,12 +19,12 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 
 
-class MySQLDatabaseImportWizardPageSettings extends MySQLAbstractToolWizardPage<MySQLDatabaseImportWizard>
+public class DatabaseImportWizardPageSettings<W extends AbstractDatabaseImportWizard> extends AbstractToolWizardPage<AbstractDatabaseImportWizard>
 {
 
     private Text inputFileText;
 
-    protected MySQLDatabaseImportWizardPageSettings(MySQLDatabaseImportWizard wizard)
+    public DatabaseImportWizardPageSettings(W wizard)
     {
         super(wizard, wizard.isImport ? "Import configuration" : "Script configuration");
         setTitle(wizard.isImport ? "Import configuration" : "Script configuration");
