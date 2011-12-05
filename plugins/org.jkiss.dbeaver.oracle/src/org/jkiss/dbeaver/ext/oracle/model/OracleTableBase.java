@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -28,7 +29,7 @@ import java.util.List;
 /**
  * OracleTable base
  */
-public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema> implements DBPNamedObject2, DBSObjectStateful
+public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema> implements DBPNamedObject2, OracleStatefulObject
 {
     static final Log log = LogFactory.getLog(OracleTableBase.class);
 
@@ -65,6 +66,11 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         setName(JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
         this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
+    }
+
+    public OracleSchema getSchema()
+    {
+        return super.getContainer();
     }
 
     @Property(name = "Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1, description = "Name of the table")

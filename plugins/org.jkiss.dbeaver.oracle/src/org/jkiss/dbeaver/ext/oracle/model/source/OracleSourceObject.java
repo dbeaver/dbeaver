@@ -16,13 +16,9 @@ import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 /**
  * Stored code interface
  */
-public interface OracleSourceObject extends DBSObjectStateful {
+public interface OracleSourceObject extends OracleStatefulObject {
 
     void setName(String name);
-
-    OracleDataSource getDataSource();
-
-    OracleSchema getSchema();
 
     OracleSourceType getSourceType();
 

@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -230,20 +231,21 @@ public class OracleUtils {
 
     public static boolean getObjectStatus(
         DBRProgressMonitor monitor,
-        DBSObjectStateful object,
+        OracleStatefulObject object,
         OracleObjectType objectType)
         throws DBCException
     {
-        final JDBCExecutionContext context = (JDBCExecutionContext)object.getDataSource().openContext(
+        final JDBCExecutionContext context = object.getDataSource().openContext(
             monitor,
             DBCExecutionPurpose.META,
             "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'");
         try {
             final JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OBJECT_NAME=?");
+                "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OWNER=? AND OBJECT_NAME=?");
             try {
                 dbStat.setString(1, objectType.getTypeName());
-                dbStat.setString(2, DBObjectNameCaseTransformer.transformName(object, object.getName()));
+                dbStat.setString(2, object.getSchema().getName());
+                dbStat.setString(3, DBObjectNameCaseTransformer.transformName(object, object.getName()));
                 final JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     if (dbResult.next()) {
