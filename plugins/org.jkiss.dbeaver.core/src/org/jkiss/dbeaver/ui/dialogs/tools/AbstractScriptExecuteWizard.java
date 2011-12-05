@@ -15,7 +15,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 
-public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject> extends AbstractToolWizard<BASE_OBJECT> implements IImportWizard
+public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
+        extends AbstractToolWizard<BASE_OBJECT> implements IImportWizard
 {
     protected File inputFile;
 

@@ -6,11 +6,11 @@ package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.jface.wizard.WizardPage;
 
-public abstract class AbstractToolWizardPage<W extends AbstractToolWizard> extends WizardPage {
+public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard>extends WizardPage {
 
-    protected final W wizard;
+    protected final WIZARD wizard;
 
-    protected AbstractToolWizardPage(W wizard, String pageName)
+    protected AbstractToolWizardPage(WIZARD wizard, String pageName)
     {
         super(pageName);
         this.wizard = wizard;

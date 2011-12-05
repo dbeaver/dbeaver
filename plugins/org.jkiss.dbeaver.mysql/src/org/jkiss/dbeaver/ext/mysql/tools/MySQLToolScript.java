@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPTool;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
+import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class MySQLToolScript implements DBPTool
     public void execute(IWorkbenchWindow window, DBPObject object) throws DBException
     {
         if (object instanceof MySQLCatalog) {
-            ActiveWizardDialog dialog = new ActiveWizardDialog(
+            ToolWizardDialog dialog = new ToolWizardDialog(
                 window,
                 new MySQLScriptExecuteWizard((MySQLCatalog) object, false));
             dialog.open();

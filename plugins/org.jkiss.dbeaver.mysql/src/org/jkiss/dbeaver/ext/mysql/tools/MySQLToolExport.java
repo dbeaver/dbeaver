@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPTool;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 
 /**
  * Database export
@@ -19,7 +20,7 @@ public class MySQLToolExport implements DBPTool
     public void execute(IWorkbenchWindow window, DBPObject object) throws DBException
     {
         if (object instanceof MySQLCatalog) {
-            ActiveWizardDialog dialog = new ActiveWizardDialog(
+            ToolWizardDialog dialog = new ToolWizardDialog(
                 window,
                 new MySQLDatabaseExportWizard((MySQLCatalog) object));
             dialog.open();

@@ -27,7 +27,8 @@ import java.util.List;
 /**
  * Abstract wizard
  */
-public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject> extends Wizard implements DBRRunnableWithProgress {
+public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
+        extends Wizard implements DBRRunnableWithProgress {
 
     static final Log log = LogFactory.getLog(AbstractToolWizard.class);
 
