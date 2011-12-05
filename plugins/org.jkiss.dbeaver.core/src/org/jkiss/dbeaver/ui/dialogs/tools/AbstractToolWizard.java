@@ -122,13 +122,13 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
     {
         try {
-            executeProcess(monitor);
+            finished = executeProcess(monitor);
         } catch (InterruptedException e) {
             throw e;
         } catch (Exception e) {
             throw new InvocationTargetException(e);
         } finally {
-            finished = true;
+            //finished = true;
         }
         if (monitor.isCanceled()) {
             throw new InterruptedException();
@@ -159,6 +159,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
                     final int exitCode = process.exitValue();
                     if (exitCode != 0) {
                         logPage.appendLog("Process edit code: " + exitCode);
+                        return false;
                     }
                 } catch (Exception e) {
                     // Still running

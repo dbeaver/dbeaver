@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -41,18 +43,21 @@ public class MySQLScriptExecuteWizardPageSettings extends AbstractToolWizardPage
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         Group outputGroup = UIUtils.createControlGroup(composite, "Input", 3, GridData.FILL_HORIZONTAL, 0);
-        inputFileText = UIUtils.createLabelText(outputGroup, "Input File", "");
+        inputFileText = UIUtils.createLabelText(outputGroup, "Input File", "", SWT.BORDER | SWT.READ_ONLY);
+        inputFileText.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseUp(MouseEvent e)
+            {
+                chooseInputFile();
+            }
+        });
         Button browseButton = new Button(outputGroup, SWT.PUSH);
         browseButton.setText("Browse");
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                File file = ContentUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"});
-                if (file != null) {
-                    inputFileText.setText(file.getAbsolutePath());
-                }
-                updateState();
+                chooseInputFile();
             }
         });
 
@@ -77,6 +82,15 @@ public class MySQLScriptExecuteWizardPageSettings extends AbstractToolWizardPage
         setControl(composite);
 
         //updateState();
+    }
+
+    private void chooseInputFile()
+    {
+        File file = ContentUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"});
+        if (file != null) {
+            inputFileText.setText(file.getAbsolutePath());
+        }
+        updateState();
     }
 
     private void updateState()

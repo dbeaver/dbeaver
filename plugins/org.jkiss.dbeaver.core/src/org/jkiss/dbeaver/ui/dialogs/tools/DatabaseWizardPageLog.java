@@ -70,6 +70,23 @@ public class DatabaseWizardPageLog extends WizardPage {
         });
     }
 
+    public void clearLog()
+    {
+        if (getShell().isDisposed()) {
+            return;
+        }
+        UIUtils.runInUI(getShell(), new Runnable() {
+            public void run()
+            {
+                synchronized (DatabaseWizardPageLog.this) {
+                    if (!dumpLogText.isDisposed()) {
+                        dumpLogText.setText("");
+                    }
+                }
+            }
+        });
+    }
+
     public void startLogReader(ProcessBuilder processBuilder, InputStream stream)
     {
         new LogReaderJob(processBuilder, stream).start();
@@ -94,6 +111,7 @@ public class DatabaseWizardPageLog extends WizardPage {
 
         public void run()
         {
+            clearLog();
             String lf = ContentUtils.getDefaultLineSeparator();
             List<String> command = processBuilder.command();
             StringBuilder cmdString = new StringBuilder();
