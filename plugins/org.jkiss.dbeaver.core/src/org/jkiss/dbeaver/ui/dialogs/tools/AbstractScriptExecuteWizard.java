@@ -8,52 +8,47 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.List;
+import java.io.*;
 
-public abstract class AbstractDatabaseImportWizard<D extends DBSEntity, H extends JDBCClientHome> extends AbstractToolWizard<D, H> implements IImportWizard
+public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject> extends AbstractToolWizard<BASE_OBJECT> implements IImportWizard
 {
     protected File inputFile;
-    protected boolean isImport;
-    private DatabaseImportWizardPageSettings mainPage;
 
-    public AbstractDatabaseImportWizard(D dbObject, boolean isImport) {
-        super(dbObject, isImport ? "Import" : "Script");
+    public AbstractScriptExecuteWizard(BASE_OBJECT dbObject, String task) {
+        super(dbObject, task);
         this.inputFile = null;
-        this.isImport = isImport;
 	}
 
+    public File getInputFile()
+    {
+        return inputFile;
+    }
+
+    public void setInputFile(File inputFile)
+    {
+        this.inputFile = inputFile;
+    }
+
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Database Import");
+        setWindowTitle(task);
         setNeedsProgressMonitor(true);
-        mainPage = new DatabaseImportWizardPageSettings(this);
     }
 
     public void addPages() {
         super.addPages();
-        addPage(mainPage);
         addPage(logPage);
     }
 
 	@Override
 	public void onSuccess() {
         UIUtils.showMessageBox(getShell(),
-                isImport ? "Database import" : "Script execute",
-                "Database '" + getDbObject().getName() + "' " + (isImport ? "import" : "script") + " completed",
+                task,
+                task + " (" + getDatabaseObject().getName() + ") completed",
                 SWT.ICON_INFORMATION);
 	}
 
@@ -61,7 +56,7 @@ public abstract class AbstractDatabaseImportWizard<D extends DBSEntity, H extend
     protected void startProcessHandler(DBRProgressMonitor monitor, ProcessBuilder processBuilder, Process process)
     {
         new ScriptTransformerJob(monitor, process.getOutputStream()).start();
-        logPage.startNullReader(process.getInputStream());
+        //logPage.startLogReader(processBuilder, process.getInputStream());
     }
 
     protected boolean isMergeProcessStreams()
@@ -75,7 +70,7 @@ public abstract class AbstractDatabaseImportWizard<D extends DBSEntity, H extend
 
         protected ScriptTransformerJob(DBRProgressMonitor monitor, OutputStream stream)
         {
-            super("Script execute");
+            super(task);
             this.monitor = monitor;
             this.output = stream;
         }
@@ -136,7 +131,7 @@ public abstract class AbstractDatabaseImportWizard<D extends DBSEntity, H extend
             this.streamLength = streamLength;
             this.totalRead = 0;
 
-            monitor.beginTask(isImport ? "Import database" : "Execute script", (int)streamLength);
+            monitor.beginTask(task, (int)streamLength);
         }
 
         @Override

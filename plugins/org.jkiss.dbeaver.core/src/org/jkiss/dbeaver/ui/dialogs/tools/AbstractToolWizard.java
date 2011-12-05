@@ -11,40 +11,37 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.model.DBPClientHome;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Abstract wizard
  */
-public abstract class AbstractToolWizard<D extends DBSEntity, H extends JDBCClientHome> extends Wizard implements DBRRunnableWithProgress {
+public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject> extends Wizard implements DBRRunnableWithProgress {
 
     static final Log log = LogFactory.getLog(AbstractToolWizard.class);
 
-    private final D dbObject;
-    private H serverHome;
+    private final BASE_OBJECT databaseObject;
+    private DBPClientHome clientHome;
     private DBPConnectionInfo connectionInfo;
 
     protected String task;
     protected final DatabaseWizardPageLog logPage;
     private boolean finished;
 
-
-    protected AbstractToolWizard(D dbObject, String task)
+    protected AbstractToolWizard(BASE_OBJECT databaseObject, String task)
     {
-        this.dbObject = dbObject;
+        this.databaseObject = databaseObject;
         this.task = task;
         this.logPage = new DatabaseWizardPageLog(task);
     }
@@ -55,9 +52,9 @@ public abstract class AbstractToolWizard<D extends DBSEntity, H extends JDBCClie
         return !finished && super.canFinish();
     }
 
-    public D getDbObject()
+    public BASE_OBJECT getDatabaseObject()
     {
-        return dbObject;
+        return databaseObject;
     }
 
     public DBPConnectionInfo getConnectionInfo()
@@ -65,12 +62,12 @@ public abstract class AbstractToolWizard<D extends DBSEntity, H extends JDBCClie
         return connectionInfo;
     }
 
-    public H getServerHome()
+    public DBPClientHome getClientHome()
     {
-        return serverHome;
+        return clientHome;
     }
 
-    public abstract H findServerHome(String clientHomeId);
+    public abstract DBPClientHome findServerHome(String clientHomeId);
 
     @Override
     public void createPageControls(Composite pageContainer)
@@ -79,17 +76,17 @@ public abstract class AbstractToolWizard<D extends DBSEntity, H extends JDBCClie
 
         WizardPage currentPage = (WizardPage) getStartingPage();
 
-        DBSDataSourceContainer container = getDbObject().getDataSource().getContainer();
+        DBSDataSourceContainer container = getDatabaseObject().getDataSource().getContainer();
         connectionInfo = container.getConnectionInfo();
         String clientHomeId = connectionInfo.getClientHomeId();
         if (clientHomeId == null) {
-            currentPage.setErrorMessage("Server home is not specified for connection");
+            currentPage.setErrorMessage("Client home is not specified for connection");
             getContainer().updateMessage();
             return;
         }
-        serverHome = findServerHome(clientHomeId);//MySQLDataSourceProvider.getServerHome(clientHomeId);
-        if (serverHome == null) {
-            currentPage.setErrorMessage("Server home '" + clientHomeId + "' not found");
+        clientHome = findServerHome(clientHomeId);//MySQLDataSourceProvider.getServerHome(clientHomeId);
+        if (clientHome == null) {
+            currentPage.setErrorMessage("Client home '" + clientHomeId + "' not found");
             getContainer().updateMessage();
         }
     }
@@ -103,7 +100,7 @@ public abstract class AbstractToolWizard<D extends DBSEntity, H extends JDBCClie
             RuntimeUtils.run(getContainer(), true, true, this);
         }
         catch (InterruptedException ex) {
-            UIUtils.showMessageBox(getShell(), task, task + " '" + getDbObject().getName() + "' canceled", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(getShell(), task, task + " '" + getDatabaseObject().getName() + "' canceled", SWT.ICON_ERROR);
             return false;
         }
         catch (InvocationTargetException ex) {

@@ -27,7 +27,7 @@ public class MySQLToolScript implements DBPTool
         if (object instanceof MySQLCatalog) {
             ActiveWizardDialog dialog = new ActiveWizardDialog(
                 window,
-                new MySQLDatabaseImportWizard((MySQLCatalog) object, false));
+                new MySQLScriptExecuteWizard((MySQLCatalog) object, false));
             dialog.open();
         }
     }
@@ -50,7 +50,7 @@ public class MySQLToolScript implements DBPTool
         cmd.add(connectionInfo.getUserName());
         cmd.add("--password=" + connectionInfo.getUserPassword());
 
-        cmd.add(toolWizard.getDbObject().getName());
+        cmd.add(toolWizard.getDatabaseObject().getName());
         return cmd;
     }
 }

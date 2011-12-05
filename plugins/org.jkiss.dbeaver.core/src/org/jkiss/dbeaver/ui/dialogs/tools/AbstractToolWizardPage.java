@@ -19,7 +19,7 @@ public abstract class AbstractToolWizardPage<W extends AbstractToolWizard> exten
     @Override
     public boolean isPageComplete()
     {
-        return wizard.getServerHome() != null;
+        return wizard.getClientHome() != null;
     }
 
 }

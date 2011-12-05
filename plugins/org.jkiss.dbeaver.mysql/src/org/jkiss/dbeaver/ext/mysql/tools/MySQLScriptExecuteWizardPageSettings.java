@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.dialogs.tools;
+package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -13,28 +13,29 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
+import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 
 
-public class DatabaseImportWizardPageSettings<W extends AbstractDatabaseImportWizard> extends AbstractToolWizardPage<AbstractDatabaseImportWizard>
+public class MySQLScriptExecuteWizardPageSettings extends AbstractToolWizardPage<MySQLScriptExecuteWizard>
 {
-
     private Text inputFileText;
 
-    public DatabaseImportWizardPageSettings(W wizard)
+    public MySQLScriptExecuteWizardPageSettings(MySQLScriptExecuteWizard wizard)
     {
-        super(wizard, wizard.isImport ? "Import configuration" : "Script configuration");
-        setTitle(wizard.isImport ? "Import configuration" : "Script configuration");
-        setDescription(wizard.isImport ? "Set database import  settings" : "Set script execution settings");
+        super(wizard, wizard.isImport() ? "Import configuration" : "Script configuration");
+        setTitle(wizard.isImport() ? "Import configuration" : "Script configuration");
+        setDescription(wizard.isImport() ? "Set database import  settings" : "Set script execution settings");
     }
 
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete() && wizard.inputFile != null;
+        return super.isPageComplete() && wizard.getInputFile() != null;
     }
 
     public void createControl(Composite parent)
@@ -56,8 +57,8 @@ public class DatabaseImportWizardPageSettings<W extends AbstractDatabaseImportWi
                 updateState();
             }
         });
-        if (wizard.inputFile != null) {
-            inputFileText.setText(wizard.inputFile.getName());
+        if (wizard.getInputFile() != null) {
+            inputFileText.setText(wizard.getInputFile().getName());
         }
 
         setControl(composite);
@@ -68,7 +69,7 @@ public class DatabaseImportWizardPageSettings<W extends AbstractDatabaseImportWi
     private void updateState()
     {
         String fileName = inputFileText.getText();
-        wizard.inputFile = CommonUtils.isEmpty(fileName) ? null : new File(fileName);
+        wizard.setInputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
 
         getContainer().updateButtons();
     }

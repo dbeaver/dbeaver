@@ -21,7 +21,7 @@ public class MySQLToolImport implements DBPTool
         if (object instanceof MySQLCatalog) {
             ActiveWizardDialog dialog = new ActiveWizardDialog(
                 window,
-                new MySQLDatabaseImportWizard((MySQLCatalog) object, false));
+                new MySQLScriptExecuteWizard((MySQLCatalog) object, true));
             dialog.open();
         }
     }

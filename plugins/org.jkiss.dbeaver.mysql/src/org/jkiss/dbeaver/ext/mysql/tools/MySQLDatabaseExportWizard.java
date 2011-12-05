@@ -22,7 +22,7 @@ import java.io.*;
 import java.text.NumberFormat;
 import java.util.List;
 
-class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog, MySQLServerHome> implements IExportWizard {
+class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExportWizard {
 
     public enum DumpMethod {
         ONLINE,
@@ -61,14 +61,14 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog, MySQLSe
 
 	@Override
 	public void onSuccess() {
-        UIUtils.showMessageBox(getShell(), "Database export", "Database '" + getDbObject().getName() + "' export completed", SWT.ICON_INFORMATION);
+        UIUtils.showMessageBox(getShell(), "Database export", "Database '" + getDatabaseObject().getName() + "' export completed", SWT.ICON_INFORMATION);
         Program.launch(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
 	}
 
     @Override
     public void fillProcessParameters(List<String> cmd)
     {
-        String dumpPath = new File(getServerHome().getHomePath(), "bin/mysqldump").getAbsolutePath();
+        String dumpPath = new File(getClientHome().getHomePath(), "bin/mysqldump").getAbsolutePath();
         cmd.add(dumpPath);
         switch (method) {
             case LOCK_ALL_TABLES:
