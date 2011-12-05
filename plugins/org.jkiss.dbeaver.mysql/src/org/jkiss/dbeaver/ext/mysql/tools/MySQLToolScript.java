@@ -41,7 +41,6 @@ public class MySQLToolScript implements DBPTool
         if (toolWizard.isVerbose()) {
             cmd.add("-v");
         }
-        cmd.add("-q");
         DBPConnectionInfo connectionInfo = toolWizard.getConnectionInfo();
         cmd.add("--host=" + connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {

@@ -109,6 +109,9 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, ProcessBuilder processBuilder, Process process)
     {
+        logPage.startLogReader(
+            processBuilder,
+            process.getErrorStream());
         new DumpTransformerJob(monitor, process.getInputStream()).start();
     }
 

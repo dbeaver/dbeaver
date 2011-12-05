@@ -142,12 +142,13 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(getCommandLine());
-            processBuilder.redirectErrorStream(this.isMergeProcessStreams());
+            if (this.isMergeProcessStreams()) {
+                processBuilder.redirectErrorStream(true);
+            }
             Process process = processBuilder.start();
+
             startProcessHandler(monitor, processBuilder, process);
-            logPage.startLogReader(
-                processBuilder,
-                this.isMergeProcessStreams() ? process.getInputStream() : process.getErrorStream());
+            Thread.sleep(100);
 
             for (;;) {
                 Thread.sleep(100);
@@ -155,7 +156,10 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
                     process.destroy();
                 }
                 try {
-                    process.exitValue();
+                    final int exitCode = process.exitValue();
+                    if (exitCode != 0) {
+                        logPage.appendLog("Process edit code: " + exitCode);
+                    }
                 } catch (Exception e) {
                     // Still running
                     continue;
@@ -165,7 +169,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
             //process.waitFor();
         } catch (IOException e) {
             log.error(e);
-            logPage.setErrorMessage(e.getMessage());
+            logPage.appendLog("IO Error: " + e.getMessage());
             return false;
         }
 

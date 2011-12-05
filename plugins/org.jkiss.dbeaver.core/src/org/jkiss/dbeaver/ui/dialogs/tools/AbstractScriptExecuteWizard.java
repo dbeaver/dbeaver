@@ -56,6 +56,9 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, ProcessBuilder processBuilder, Process process)
     {
+        logPage.startLogReader(
+            processBuilder,
+            process.getInputStream());
         new ScriptTransformerJob(monitor, process.getOutputStream()).start();
         //logPage.startLogReader(processBuilder, process.getInputStream());
     }
@@ -86,7 +89,7 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
                 try {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(scriptStream));
                     PrintWriter writer = new PrintWriter(new OutputStreamWriter(output));
-                    for (;;) {
+                    while (!monitor.isCanceled()) {
 //                        int count = scriptStream.read(buffer);
 //                        if (count <= 0) {
 //                            break;
@@ -101,6 +104,8 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
                             break;
                         }
                         writer.println(line);
+                        writer.flush();
+                        //output.flush();
                     }
                     output.flush();
                 } finally {

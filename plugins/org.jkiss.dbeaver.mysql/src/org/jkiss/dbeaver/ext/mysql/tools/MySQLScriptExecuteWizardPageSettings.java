@@ -8,10 +8,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
@@ -24,6 +21,7 @@ import java.io.File;
 public class MySQLScriptExecuteWizardPageSettings extends AbstractToolWizardPage<MySQLScriptExecuteWizard>
 {
     private Text inputFileText;
+    private Combo logLevelCombo;
 
     public MySQLScriptExecuteWizardPageSettings(MySQLScriptExecuteWizard wizard)
     {
@@ -57,9 +55,24 @@ public class MySQLScriptExecuteWizardPageSettings extends AbstractToolWizardPage
                 updateState();
             }
         });
+
         if (wizard.getInputFile() != null) {
             inputFileText.setText(wizard.getInputFile().getName());
         }
+
+        Group settingsGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+        logLevelCombo = UIUtils.createLabelCombo(settingsGroup, "Log Level", SWT.DROP_DOWN | SWT.READ_ONLY);
+        for (MySQLScriptExecuteWizard.LogLevel logLevel : MySQLScriptExecuteWizard.LogLevel.values()) {
+            logLevelCombo.add(logLevel.name());
+        }
+        logLevelCombo.select(wizard.getLogLevel().ordinal());
+        logLevelCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                wizard.setLogLevel(MySQLScriptExecuteWizard.LogLevel.valueOf(logLevelCombo.getText()));
+            }
+        });
 
         setControl(composite);
 

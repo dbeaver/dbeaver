@@ -14,6 +14,8 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Date;
 import java.util.List;
 
@@ -56,11 +58,13 @@ public class DatabaseWizardPageLog extends WizardPage {
         UIUtils.runInUI(getShell(), new Runnable() {
             public void run()
             {
-                if (!dumpLogText.isDisposed()) {
-                    dumpLogText.append(line);
-                    //dumpLogText.append(ContentUtils.getDefaultLineSeparator());
-                    dumpLogText.setCaretOffset(dumpLogText.getCharCount());
-                    dumpLogText.showSelection();
+                synchronized (DatabaseWizardPageLog.this) {
+                    if (!dumpLogText.isDisposed()) {
+                        dumpLogText.append(line);
+                        //dumpLogText.append(ContentUtils.getDefaultLineSeparator());
+                        dumpLogText.setCaretOffset(dumpLogText.getCharCount());
+                        dumpLogText.showSelection();
+                    }
                 }
             }
         });
@@ -103,29 +107,38 @@ public class DatabaseWizardPageLog extends WizardPage {
             appendLog(task + " started at " + new Date() + lf);
 
             try {
-/*
-                String line;
-                while ((line = in.readLine()) != null) {
-                    progressDialog.appendLog(line);
-                }
-*/
-
-                StringBuilder buf = new StringBuilder();
-                for (;;) {
-                    int b = input.read();
-                    if (b == -1) {
-                        break;
+                InputStream in = input;
+//                if (in instanceof FilterInputStream) {
+//                    try {
+//                        final Field inField = FilterInputStream.class.getDeclaredField("in");
+//                        inField.setAccessible(true);
+//                        in = (InputStream) inField.get(in);
+//                    } catch (Exception e) {
+//                        appendLog(e.getMessage() + lf);
+//                    }
+//                }
+                Reader reader = new InputStreamReader(in);
+                try {
+                    StringBuilder buf = new StringBuilder();
+                    for (;;) {
+                        int b = reader.read();
+                        if (b == -1) {
+                            break;
+                        }
+                        buf.append((char)b);
+                        if (b == '\n') {
+                            appendLog(buf.toString());
+                            buf.setLength(0);
+                        }
+                        //int avail = input.available();
                     }
-                    buf.append((char)b);
-                    int avail = input.available();
-                    if (b == 0x0A) {
-                        appendLog(buf.toString());
-                        buf.setLength(0);
-                    }
+                } finally {
+                    reader.close();
                 }
 
             } catch (IOException e) {
                 // just skip
+                appendLog(e.getMessage() + lf);
             } finally {
                 appendLog(task + " finished " + new Date() + lf);
             }

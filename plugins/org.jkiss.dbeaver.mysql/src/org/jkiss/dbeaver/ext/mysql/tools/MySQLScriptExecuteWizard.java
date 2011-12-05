@@ -14,6 +14,15 @@ import java.util.List;
 
 class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog> {
 
+    enum LogLevel {
+        Normal,
+        Verbose,
+        Debug
+    }
+
+    private LogLevel logLevel;
+    private boolean noBeep;
+
     private boolean isImport;
     private MySQLScriptExecuteWizardPageSettings mainPage;
 
@@ -21,12 +30,30 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog>
     {
         super(catalog, isImport ? "Database Import" : "Execute Script");
         this.isImport = isImport;
+        this.logLevel = LogLevel.Normal;
+        this.noBeep = true;
         this.mainPage = new MySQLScriptExecuteWizardPageSettings(this);
+    }
+
+    public LogLevel getLogLevel()
+    {
+        return logLevel;
+    }
+
+    public void setLogLevel(LogLevel logLevel)
+    {
+        this.logLevel = logLevel;
     }
 
     public boolean isImport()
     {
         return isImport;
+    }
+
+    @Override
+    public boolean isVerbose()
+    {
+        return logLevel == LogLevel.Verbose || logLevel == LogLevel.Debug;
     }
 
     @Override
@@ -41,6 +68,12 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog>
     {
         String dumpPath = new File(getClientHome().getHomePath(), "bin/mysql").getAbsolutePath();
         cmd.add(dumpPath);
+        if (logLevel == LogLevel.Debug) {
+            cmd.add("--debug-info");
+        }
+        if (noBeep) {
+            cmd.add("--no-beep");
+        }
     }
 
     @Override
