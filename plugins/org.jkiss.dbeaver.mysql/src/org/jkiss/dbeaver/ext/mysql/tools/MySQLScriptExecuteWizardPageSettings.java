@@ -11,6 +11,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
@@ -52,7 +53,7 @@ public class MySQLScriptExecuteWizardPageSettings extends AbstractToolWizardPage
             }
         });
         Button browseButton = new Button(outputGroup, SWT.PUSH);
-        browseButton.setText("Browse");
+        browseButton.setImage(DBIcon.TREE_FOLDER.getImage());
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)

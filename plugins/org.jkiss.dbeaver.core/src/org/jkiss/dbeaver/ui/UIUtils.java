@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
@@ -927,6 +928,51 @@ public class UIUtils {
             DBeaverConstants.PLUGIN_ID,
             helpContextID);
     }
+
+    public static Text createOutputFolderChooser(final Composite parent, ModifyListener changeListener)
+    {
+        UIUtils.createControlLabel(parent, CoreMessages.dialog_export_wizard_output_label_directory);
+        final Text directoryText = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        directoryText.setLayoutData(gd);
+        directoryText.addModifyListener(changeListener);
+
+        final Runnable folderChooser = new Runnable() {
+            public void run()
+            {
+                DirectoryDialog dialog = new DirectoryDialog(parent.getShell(), SWT.NONE);
+                dialog.setMessage(CoreMessages.dialog_export_wizard_output_dialog_directory_message);
+                dialog.setText(CoreMessages.dialog_export_wizard_output_dialog_directory_text);
+                String directory = directoryText.getText();
+                if (!CommonUtils.isEmpty(directory)) {
+                    dialog.setFilterPath(directory);
+                }
+                directory = dialog.open();
+                if (directory != null) {
+                    directoryText.setText(directory);
+                }
+            }
+        };
+        directoryText.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseUp(MouseEvent e)
+            {
+                folderChooser.run();
+            }
+        });
+
+        Button openFolder = new Button(parent, SWT.PUSH);
+        openFolder.setImage(DBIcon.TREE_FOLDER.getImage());
+        openFolder.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                folderChooser.run();
+            }
+        });
+        return directoryText;
+    }
+
 
     public static String makeAnchor(String text)
     {

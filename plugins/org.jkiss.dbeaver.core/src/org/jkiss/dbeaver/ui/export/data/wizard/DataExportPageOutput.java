@@ -57,38 +57,12 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
         {
             Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.dialog_export_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
-            {
-                UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_directory);
-                directoryText = new Text(generalSettings, SWT.BORDER | SWT.READ_ONLY);
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.horizontalSpan = 3;
-                directoryText.setLayoutData(gd);
-                directoryText.addModifyListener(new ModifyListener() {
-                    public void modifyText(ModifyEvent e) {
-                        getWizard().getSettings().setOutputFolder(directoryText.getText());
-                        updatePageCompletion();
-                    }
-                });
-
-                Button openFolder = new Button(generalSettings, SWT.PUSH);
-                openFolder.setImage(DBIcon.TREE_FOLDER.getImage());
-                openFolder.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
-                        dialog.setMessage(CoreMessages.dialog_export_wizard_output_dialog_directory_message);
-                        dialog.setText(CoreMessages.dialog_export_wizard_output_dialog_directory_text);
-                        String directory = directoryText.getText();
-                        if (!CommonUtils.isEmpty(directory)) {
-                            dialog.setFilterPath(directory);
-                        }
-                        directory = dialog.open();
-                        if (directory != null) {
-                            directoryText.setText(directory);
-                        }
-                    }
-                });
-            }
+            directoryText = UIUtils.createOutputFolderChooser(generalSettings, new ModifyListener() {
+                public void modifyText(ModifyEvent e) {
+                    getWizard().getSettings().setOutputFolder(directoryText.getText());
+                    updatePageCompletion();
+                }
+            });
 
             UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_file_name_pattern);
             fileNameText = new Text(generalSettings, SWT.BORDER);

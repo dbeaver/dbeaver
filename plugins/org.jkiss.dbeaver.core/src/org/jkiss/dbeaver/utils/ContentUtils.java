@@ -54,7 +54,17 @@ public class ContentUtils {
       '8', '9', 'a', 'b',
       'c', 'd', 'e', 'f'
     };
-    private static String curDialogFolder;
+    private static String curDialogFolder = System.getProperty("user.dir");
+
+    public static String getCurDialogFolder()
+    {
+        return curDialogFolder;
+    }
+
+    public static void setCurDialogFolder(String curDialogFolder)
+    {
+        ContentUtils.curDialogFolder = curDialogFolder;
+    }
 
     public static byte[] getCharsetBOM(String charsetName)
     {

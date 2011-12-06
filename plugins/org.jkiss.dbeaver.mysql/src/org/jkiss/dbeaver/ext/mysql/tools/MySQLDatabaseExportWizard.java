@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
@@ -31,7 +32,7 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
         NORMAL
     }
 
-    File outputFile;
+    private File outputFile;
     DumpMethod method;
     boolean noCreateStatements;
     boolean addDropStatements = true;
@@ -45,8 +46,19 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
     public MySQLDatabaseExportWizard(MySQLCatalog catalog) {
         super(catalog, "Export");
         this.method = DumpMethod.NORMAL;
-        this.outputFile = new File(catalog.getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql");
+        this.outputFile = new File(ContentUtils.getCurDialogFolder(), catalog.getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql");
 	}
+
+    public File getOutputFile()
+    {
+        return outputFile;
+    }
+
+    public void setOutputFile(File outputFile)
+    {
+        ContentUtils.setCurDialogFolder(outputFile.getParentFile().getAbsolutePath());
+        this.outputFile = outputFile;
+    }
 
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle("Database export");

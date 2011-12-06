@@ -5,10 +5,13 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -39,7 +42,7 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete() && wizard.outputFile != null;
+        return super.isPageComplete() && wizard.getOutputFile() != null;
     }
 
     public void createControl(Composite parent)
@@ -64,8 +67,17 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
 
         Group outputGroup = UIUtils.createControlGroup(composite, "Output", 3, GridData.FILL_HORIZONTAL, 0);
         outputFileText = UIUtils.createLabelText(outputGroup, "Output File", "");
+        if (wizard.getOutputFile() != null) {
+            outputFileText.setText(wizard.getOutputFile().getAbsolutePath());
+        }
+        outputFileText.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e)
+            {
+                updateState();
+            }
+        });
         Button browseButton = new Button(outputGroup, SWT.PUSH);
-        browseButton.setText("Browse");
+        browseButton.setImage(DBIcon.TREE_FOLDER.getImage());
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -74,12 +86,8 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
                 if (file != null) {
                     outputFileText.setText(file.getAbsolutePath());
                 }
-                updateState();
             }
         });
-        if (wizard.outputFile != null) {
-            outputFileText.setText(wizard.outputFile.getName());
-        }
 
         setControl(composite);
 
@@ -89,7 +97,7 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
     private void updateState()
     {
         String fileName = outputFileText.getText();
-        wizard.outputFile = CommonUtils.isEmpty(fileName) ? null : new File(fileName);
+        wizard.setOutputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         switch (methodCombo.getSelectionIndex()) {
             case 0: wizard.method = MySQLDatabaseExportWizard.DumpMethod.ONLINE; break;
             case 1: wizard.method = MySQLDatabaseExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
