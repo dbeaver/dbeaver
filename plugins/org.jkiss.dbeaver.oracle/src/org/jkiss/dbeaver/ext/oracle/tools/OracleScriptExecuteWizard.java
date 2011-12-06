@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.tools;
 
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
@@ -51,22 +52,21 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleSchema
         List<String> cmd = new ArrayList<String>();
         fillProcessParameters(cmd);
         DBPConnectionInfo conInfo = getConnectionInfo();
-        String url = conInfo.getHostName() + ":" + conInfo.getHostPort() + "/" + conInfo.getDatabaseName();
-        cmd.add(conInfo.getUserName() + "/" + conInfo.getUserPassword() + "@//" + url);
+        String url = null;
+        if ("TNS".equals(conInfo.getProperties().get(OracleConstants.PROP_CONNECTION_TYPE))) {
+            url = conInfo.getServerName();
+        }
+        else {
+            String port = conInfo.getHostPort();
+            url = "//" + conInfo.getHostName() + (port != null ? ":" + port : "") + "/" + conInfo.getDatabaseName();
+        }
+        cmd.add(conInfo.getUserName() + "/" + conInfo.getUserPassword() + "@" + url);
 /*
 
         if (toolWizard.isVerbose()) {
             cmd.add("-v");
         }
         cmd.add("-q");
-        DBPConnectionInfo conInfo = toolWizard.getConnectionInfo();
-        cmd.add("--host=" + conInfo.getHostName());
-        if (!CommonUtils.isEmpty(conInfo.getHostPort())) {
-            cmd.add("--port=" + conInfo.getHostPort());
-        }
-        cmd.add("-u");
-        cmd.add(conInfo.getUserName());
-        cmd.add("--password=" + conInfo.getUserPassword());
 
         cmd.add(toolWizard.getDatabaseObject().getName());
 */
