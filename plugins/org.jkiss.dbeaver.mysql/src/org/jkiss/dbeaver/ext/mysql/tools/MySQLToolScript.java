@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class MySQLToolScript implements DBPTool
         }
     }
 
-    public static List<String> getMySQLToolCommandLine(AbstractToolWizard toolWizard)
+    public static List<String> getMySQLToolCommandLine(AbstractToolWizard toolWizard) throws IOException
     {
         java.util.List<String> cmd = new ArrayList<String>();
         toolWizard.fillProcessParameters(cmd);

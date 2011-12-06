@@ -11,6 +11,7 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -66,9 +67,10 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
 	}
 
     @Override
-    public void fillProcessParameters(List<String> cmd)
+    public void fillProcessParameters(List<String> cmd) throws IOException
     {
-        String dumpPath = new File(getClientHome().getHomePath(), "bin/mysqldump").getAbsolutePath();
+        File dumpBinary = MySQLUtils.getHomeBinary(getClientHome(), "mysqldump");
+        String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
         switch (method) {
             case LOCK_ALL_TABLES:
@@ -95,7 +97,7 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
     }
 
     @Override
-    protected List<String> getCommandLine()
+    protected List<String> getCommandLine() throws IOException
     {
         return MySQLToolScript.getMySQLToolCommandLine(this);
     }

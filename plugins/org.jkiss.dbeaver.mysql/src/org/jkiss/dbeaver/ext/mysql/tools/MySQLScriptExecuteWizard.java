@@ -6,10 +6,12 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog> {
@@ -64,9 +66,9 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog>
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd)
+    public void fillProcessParameters(List<String> cmd) throws IOException
     {
-        String dumpPath = new File(getClientHome().getHomePath(), "bin/mysql").getAbsolutePath();
+        String dumpPath = MySQLUtils.getHomeBinary(getClientHome(), "mysql").getAbsolutePath();
         cmd.add(dumpPath);
         if (logLevel == LogLevel.Debug) {
             cmd.add("--debug-info");
@@ -83,7 +85,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog>
     }
 
     @Override
-    protected List<String> getCommandLine()
+    protected List<String> getCommandLine() throws IOException
     {
         return MySQLToolScript.getMySQLToolCommandLine(this);
     }

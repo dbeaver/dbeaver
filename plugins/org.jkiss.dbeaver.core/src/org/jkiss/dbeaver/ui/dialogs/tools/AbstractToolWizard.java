@@ -135,8 +135,6 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         }
     }
 
-    abstract protected java.util.List<String> getCommandLine();
-
     public boolean executeProcess(DBRProgressMonitor monitor)
         throws IOException, CoreException, InterruptedException
     {
@@ -192,7 +190,9 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
 
     }
 
-    public abstract void fillProcessParameters(List<String> cmd);
+    abstract protected java.util.List<String> getCommandLine() throws IOException;
+
+    public abstract void fillProcessParameters(List<String> cmd) throws IOException;
 
     protected abstract void startProcessHandler(DBRProgressMonitor monitor, ProcessBuilder processBuilder, Process process);
 
