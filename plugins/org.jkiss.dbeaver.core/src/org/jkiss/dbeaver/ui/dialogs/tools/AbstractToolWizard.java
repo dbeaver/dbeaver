@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -139,7 +140,11 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         throws IOException, CoreException, InterruptedException
     {
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder(getCommandLine());
+            final List<String> commandLine = getCommandLine();
+            final File execPath = new File(commandLine.get(0));
+
+            ProcessBuilder processBuilder = new ProcessBuilder(commandLine);
+            processBuilder.directory(execPath.getParentFile());
             if (this.isMergeProcessStreams()) {
                 processBuilder.redirectErrorStream(true);
             }

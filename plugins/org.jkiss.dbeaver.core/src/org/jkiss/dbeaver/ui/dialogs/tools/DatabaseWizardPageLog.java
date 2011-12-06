@@ -115,11 +115,12 @@ public class DatabaseWizardPageLog extends WizardPage {
             String lf = ContentUtils.getDefaultLineSeparator();
             List<String> command = processBuilder.command();
             StringBuilder cmdString = new StringBuilder();
-            for (String cmd : command) {
-                if (cmd.startsWith("--password")) continue;
-                if (cmdString.length() > 0) cmdString.append(' ');
-                cmdString.append(cmd);
-            }
+            cmdString.append(command.get(0));
+//            for (String cmd : command) {
+//                if (cmd.startsWith("--password")) continue;
+//                if (cmdString.length() > 0) cmdString.append(' ');
+//                cmdString.append(cmd);
+//            }
             cmdString.append(lf);
             appendLog(cmdString.toString());
             appendLog(task + " started at " + new Date() + lf);

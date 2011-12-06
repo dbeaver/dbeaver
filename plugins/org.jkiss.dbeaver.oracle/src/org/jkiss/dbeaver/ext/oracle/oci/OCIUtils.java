@@ -62,7 +62,7 @@ public class OCIUtils
     }
 
     public static OracleHomeDescriptor getOraHome(String oraHome) {
-        if (CommonUtils.isEmpty(oraHome)) {
+        if (CommonUtils.isEmpty(oraHome) || !checkOraHomes()) {
             return null;
         }
         for (OracleHomeDescriptor home : oraHomes) {

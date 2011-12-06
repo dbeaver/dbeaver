@@ -383,6 +383,11 @@ public class RuntimeUtils {
         return processDescriptor;
     }
 
+    public static String getNativeBinaryName(String binName)
+    {
+        return DBeaverCore.getInstance().getLocalSystem().isWindows() ? binName + ".exe" : binName;
+    }
+
     private static class SaveRunner implements Runnable {
         private final DBRProgressMonitor monitor;
         private final ISaveablePart saveable;

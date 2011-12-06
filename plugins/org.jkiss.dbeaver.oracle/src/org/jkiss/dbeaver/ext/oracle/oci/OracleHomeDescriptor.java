@@ -132,7 +132,7 @@ public class OracleHomeDescriptor extends JDBCClientHome
                 files.add(file);
             }
             else {
-                log.warn("Driver file '" + library + "' doesn't exist.");
+                log.debug("Driver file '" + library + "' doesn't exist.");
             }
         }
         int i = 0;

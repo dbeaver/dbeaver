@@ -28,6 +28,6 @@ public class ToolWizardDialog extends ActiveWizardDialog
         Button cancelButton = getButton(IDialogConstants.CANCEL_ID);
         cancelButton.setText(IDialogConstants.CLOSE_LABEL);
         Button finishButton = getButton(IDialogConstants.FINISH_ID);
-        finishButton.setText(IDialogConstants.FINISH_LABEL);
+        finishButton.setText("Start");
     }
 }

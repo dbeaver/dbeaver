@@ -9,10 +9,11 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,9 +35,17 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleSchema
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd)
+    public void fillProcessParameters(List<String> cmd) throws IOException
     {
-        String dumpPath = new File(getClientHome().getHomePath(), "bin/sqlplus").getAbsolutePath();
+        String sqlPlusExec = RuntimeUtils.getNativeBinaryName("sqlplus");
+        File sqlPlusBinary = new File(getClientHome().getHomePath(), "bin/" + sqlPlusExec);
+        if (!sqlPlusBinary.exists()) {
+            sqlPlusBinary = new File(getClientHome().getHomePath(), sqlPlusExec);
+        }
+        if (!sqlPlusBinary.exists()) {
+            throw new IOException("SQL*Plus binary not found in Oracle home '" + getClientHome().getDisplayName() + "'");
+        }
+        String dumpPath = sqlPlusBinary.getAbsolutePath();
         cmd.add(dumpPath);
     }
 
@@ -47,12 +56,12 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleSchema
     }
 
     @Override
-    protected List<String> getCommandLine()
+    protected List<String> getCommandLine() throws IOException
     {
         List<String> cmd = new ArrayList<String>();
         fillProcessParameters(cmd);
         DBPConnectionInfo conInfo = getConnectionInfo();
-        String url = null;
+        String url;
         if ("TNS".equals(conInfo.getProperties().get(OracleConstants.PROP_CONNECTION_TYPE))) {
             url = conInfo.getServerName();
         }
