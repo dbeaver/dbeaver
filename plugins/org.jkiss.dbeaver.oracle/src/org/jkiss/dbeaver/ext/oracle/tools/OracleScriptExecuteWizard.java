@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.tools;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
@@ -17,11 +18,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleSchema> {
+class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSource> {
 
     private OracleScriptExecuteWizardPageSettings mainPage;
 
-    public OracleScriptExecuteWizard(OracleSchema oracleSchema)
+    public OracleScriptExecuteWizard(OracleDataSource oracleSchema)
     {
         super(oracleSchema, "Execute Script");
         this.mainPage = new OracleScriptExecuteWizardPageSettings(this);

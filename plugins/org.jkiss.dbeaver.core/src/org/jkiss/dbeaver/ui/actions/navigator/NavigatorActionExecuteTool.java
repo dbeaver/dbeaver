@@ -10,21 +10,12 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPTool;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DataSourceToolDescriptor;
-import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-
-import java.lang.reflect.InvocationTargetException;
 
 public class NavigatorActionExecuteTool implements IActionDelegate
 {
@@ -42,8 +33,8 @@ public class NavigatorActionExecuteTool implements IActionDelegate
     {
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
             Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element instanceof DBNDatabaseNode) {
-                executeTool(((DBNDatabaseNode) element).getObject());
+            if (element instanceof DBSWrapper) {
+                executeTool(((DBSWrapper) element).getObject());
             } else if (element instanceof DBPObject) {
                 executeTool((DBPObject) element);
             }
@@ -54,7 +45,7 @@ public class NavigatorActionExecuteTool implements IActionDelegate
     {
         try {
             DBPTool toolInstance = tool.createTool();
-            toolInstance.execute(window, object);
+            toolInstance.execute(window, DBUtils.getPublicObject(object));
         } catch (DBException e) {
             UIUtils.showErrorDialog(window.getShell(), "Tool error", "Error executing tool '" + tool.getLabel() + "'", e);
         }

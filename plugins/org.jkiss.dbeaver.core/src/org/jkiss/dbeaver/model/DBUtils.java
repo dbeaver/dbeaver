@@ -726,6 +726,15 @@ public final class DBUtils {
         return strValue;
     }
 
+    public static DBPObject getPublicObject(DBPObject object)
+    {
+        if (object instanceof DBSDataSourceContainer) {
+            return ((DBSDataSourceContainer)object).getDataSource();
+        } else {
+            return object;
+        }
+    }
+
     private static class RefColumnFinder implements DBRRunnableWithProgress {
         private DBCColumnMetaData column;
         private DBSForeignKey refConstraint;

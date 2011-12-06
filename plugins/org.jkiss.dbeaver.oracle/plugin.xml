@@ -345,6 +345,7 @@
                     description="Execute script with native client"
                     id="org.jkiss.dbeaver.ext.oracle.tools.OracleToolScript"
                     label="Execute in SQL*Plus">
+                    <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
                     <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
                 </tool>
             </tools>
