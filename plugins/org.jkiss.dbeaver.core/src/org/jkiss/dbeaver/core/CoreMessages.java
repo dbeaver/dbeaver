@@ -1201,7 +1201,7 @@ public class CoreMessages extends NLS {
 
 	public static String tools_wizard_error_task_canceled;
 
-	public static String tools_wizard_log_exit_code;
+	public static String tools_wizard_log_process_exit_code;
 
 	public static String tools_wizard_log_io_error;
 

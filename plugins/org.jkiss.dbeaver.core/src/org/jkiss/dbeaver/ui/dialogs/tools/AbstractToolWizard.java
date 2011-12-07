@@ -110,7 +110,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         catch (InvocationTargetException ex) {
             UIUtils.showErrorDialog(
                 getShell(),
-                task + CoreMessages.tools_wizard_error_task_error_title,
+                NLS.bind(CoreMessages.tools_wizard_error_task_error_title, task),
                 CoreMessages.tools_wizard_error_task_error_message + task,
                 ex.getTargetException());
             return false;
@@ -163,7 +163,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
                 try {
                     final int exitCode = process.exitValue();
                     if (exitCode != 0) {
-                        logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_exit_code, exitCode));
+                        logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_process_exit_code, exitCode));
                         return false;
                     }
                 } catch (Exception e) {
