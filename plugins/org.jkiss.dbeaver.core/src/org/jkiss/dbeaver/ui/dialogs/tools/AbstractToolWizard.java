@@ -9,8 +9,10 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPClientHome;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -82,13 +84,13 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         connectionInfo = container.getConnectionInfo();
         String clientHomeId = connectionInfo.getClientHomeId();
         if (clientHomeId == null) {
-            currentPage.setErrorMessage("Client home is not specified for connection");
+            currentPage.setErrorMessage(CoreMessages.tools_wizard_message_no_client_home);
             getContainer().updateMessage();
             return;
         }
         clientHome = findServerHome(clientHomeId);//MySQLDataSourceProvider.getServerHome(clientHomeId);
         if (clientHome == null) {
-            currentPage.setErrorMessage("Client home '" + clientHomeId + "' not found");
+            currentPage.setErrorMessage(NLS.bind(CoreMessages.tools_wizard_message_client_home_not_found, clientHomeId));
             getContainer().updateMessage();
         }
     }
@@ -102,14 +104,14 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
             RuntimeUtils.run(getContainer(), true, true, this);
         }
         catch (InterruptedException ex) {
-            UIUtils.showMessageBox(getShell(), task, task + " '" + getDatabaseObject().getName() + "' canceled", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(getShell(), task, NLS.bind(CoreMessages.tools_wizard_error_task_canceled, task, getDatabaseObject().getName()), SWT.ICON_ERROR);
             return false;
         }
         catch (InvocationTargetException ex) {
             UIUtils.showErrorDialog(
                 getShell(),
-                task + " error",
-                "Cannot perform " + task,
+                task + CoreMessages.tools_wizard_error_task_error_title,
+                CoreMessages.tools_wizard_error_task_error_message + task,
                 ex.getTargetException());
             return false;
         }
@@ -161,7 +163,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
                 try {
                     final int exitCode = process.exitValue();
                     if (exitCode != 0) {
-                        logPage.appendLog("Process edit code: " + exitCode);
+                        logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_exit_code, exitCode));
                         return false;
                     }
                 } catch (Exception e) {
@@ -173,7 +175,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
             //process.waitFor();
         } catch (IOException e) {
             log.error(e);
-            logPage.appendLog("IO Error: " + e.getMessage());
+            logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_io_error, e.getMessage()));
             return false;
         }
 

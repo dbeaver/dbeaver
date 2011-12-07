@@ -1193,6 +1193,22 @@ public class CoreMessages extends NLS {
 	public static String toolbar_datasource_selector_error_database_change_not_supported;
 	public static String toolbar_datasource_selector_resultset_segment_size;
 
+	public static String tools_script_execute_wizard_task_completed;
+
+	public static String tools_wizard_error_task_error_message;
+
+	public static String tools_wizard_error_task_error_title;
+
+	public static String tools_wizard_error_task_canceled;
+
+	public static String tools_wizard_log_exit_code;
+
+	public static String tools_wizard_log_io_error;
+
+	public static String tools_wizard_message_client_home_not_found;
+
+	public static String tools_wizard_message_no_client_home;
+
 	public static String ui_actions_context_search_name;
     public static String ui_actions_exit_emergency_question;
 

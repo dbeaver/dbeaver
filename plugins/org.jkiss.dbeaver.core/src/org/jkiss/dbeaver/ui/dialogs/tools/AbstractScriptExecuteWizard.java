@@ -5,9 +5,11 @@
 package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -49,8 +51,8 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
 	public void onSuccess() {
         UIUtils.showMessageBox(getShell(),
                 task,
-                task + " (" + getDatabaseObject().getName() + ") completed",
-                SWT.ICON_INFORMATION);
+                NLS.bind(CoreMessages.tools_script_execute_wizard_task_completed, task, getDatabaseObject().getName()) , //$NON-NLS-1$
+                        SWT.ICON_INFORMATION);
 	}
 
     @Override
