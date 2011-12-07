@@ -32,6 +32,18 @@
 
     <versions>
         <version>
+            <number>1.4.6</number>
+            <type>stable</type>
+            <date>07.12.2011</date>
+
+            <release-notes>
+                - Native clients support update
+                - MySQL &amp; Oracle tools
+                - Many UI and general fixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.4.5</number>
             <type>stable</type>
             <date>28.11.2011</date>
