@@ -11,6 +11,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
@@ -34,9 +35,9 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
 
     protected MySQLDatabaseExportWizardPageSettings(MySQLDatabaseExportWizard wizard)
     {
-        super(wizard, "Export configuration");
-        setTitle("Export configuration");
-        setDescription(("Set database export settings"));
+        super(wizard, MySQLMessages.tools_db_export_wizard_page_settings_page_name);
+        setTitle(MySQLMessages.tools_db_export_wizard_page_settings_page_name);
+        setDescription((MySQLMessages.tools_db_export_wizard_page_settings_page_description));
     }
 
     @Override
@@ -49,24 +50,24 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group methodGroup = UIUtils.createControlGroup(composite, "Execution Method", 1, GridData.FILL_HORIZONTAL, 0);
+        Group methodGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_exe_method, 1, GridData.FILL_HORIZONTAL, 0);
         methodCombo = new Combo(methodGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
         methodCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        methodCombo.add("Online backup in single transaction");
-        methodCombo.add("Lock all tables");
-        methodCombo.add("Normal (no locks)");
+        methodCombo.add(MySQLMessages.tools_db_export_wizard_page_settings_combo_item_online_backup);
+        methodCombo.add(MySQLMessages.tools_db_export_wizard_page_settings_combo_item_lock_tables);
+        methodCombo.add(MySQLMessages.tools_db_export_wizard_page_settings_combo_item_normal);
         methodCombo.select(wizard.method.ordinal());
 
-        Group settingsGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
-        noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, "No CREATE statements", wizard.noCreateStatements);
-        addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, "Add DROP statements", wizard.addDropStatements);
-        disableKeysCheck = UIUtils.createCheckbox(settingsGroup, "Disable keys", wizard.disableKeys);
-        extendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, "Extended inserts", wizard.extendedInserts);
-        dumpEventsCheck = UIUtils.createCheckbox(settingsGroup, "Dump events", wizard.dumpEvents);
-        commentsCheck = UIUtils.createCheckbox(settingsGroup, "Additional comments", wizard.comments);
+        Group settingsGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_settings, 2, GridData.FILL_HORIZONTAL, 0);
+        noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.noCreateStatements);
+        addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_add_drop, wizard.addDropStatements);
+        disableKeysCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_disable_keys, wizard.disableKeys);
+        extendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_ext_inserts, wizard.extendedInserts);
+        dumpEventsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_dump_events, wizard.dumpEvents);
+        commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.comments);
 
-        Group outputGroup = UIUtils.createControlGroup(composite, "Output", 3, GridData.FILL_HORIZONTAL, 0);
-        outputFileText = UIUtils.createLabelText(outputGroup, "Output File", "");
+        Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 3, GridData.FILL_HORIZONTAL, 0);
+        outputFileText = UIUtils.createLabelText(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, ""); //$NON-NLS-2$
         if (wizard.getOutputFile() != null) {
             outputFileText.setText(wizard.getOutputFile().getAbsolutePath());
         }
@@ -82,7 +83,7 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                File file = ContentUtils.selectFileForSave(getShell(), "Choose output file", new String[]{"*.sql", "*.txt", "*.*"}, outputFileText.getText());
+                File file = ContentUtils.selectFileForSave(getShell(), MySQLMessages.tools_db_export_wizard_page_settings_file_selector_title, new String[]{"*.sql", "*.txt", "*.*"}, outputFileText.getText()); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                 if (file != null) {
                     outputFileText.setText(file.getAbsolutePath());
                 }

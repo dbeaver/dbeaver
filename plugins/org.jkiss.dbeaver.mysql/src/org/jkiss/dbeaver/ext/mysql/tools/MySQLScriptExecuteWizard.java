@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
@@ -30,7 +31,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog>
 
     public MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport)
     {
-        super(catalog, isImport ? "Database Import" : "Execute Script");
+        super(catalog, isImport ? MySQLMessages.tools_script_execute_wizard_db_import : MySQLMessages.tools_script_execute_wizard_execute_script);
         this.isImport = isImport;
         this.logLevel = LogLevel.Normal;
         this.noBeep = true;
@@ -68,13 +69,13 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog>
     @Override
     public void fillProcessParameters(List<String> cmd) throws IOException
     {
-        String dumpPath = MySQLUtils.getHomeBinary(getClientHome(), "mysql").getAbsolutePath();
+        String dumpPath = MySQLUtils.getHomeBinary(getClientHome(), "mysql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
         if (logLevel == LogLevel.Debug) {
-            cmd.add("--debug-info");
+            cmd.add("--debug-info"); //$NON-NLS-1$
         }
         if (noBeep) {
-            cmd.add("--no-beep");
+            cmd.add("--no-beep"); //$NON-NLS-1$
         }
     }
 

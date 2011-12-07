@@ -5,11 +5,13 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
@@ -44,9 +46,9 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
     private MySQLDatabaseExportWizardPageSettings mainPage;
 
     public MySQLDatabaseExportWizard(MySQLCatalog catalog) {
-        super(catalog, "Export");
+        super(catalog, MySQLMessages.tools_db_export_wizard_task_name);
         this.method = DumpMethod.NORMAL;
-        this.outputFile = new File(ContentUtils.getCurDialogFolder(), catalog.getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql");
+        this.outputFile = new File(ContentUtils.getCurDialogFolder(), catalog.getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
     public File getOutputFile()
@@ -61,7 +63,7 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
     }
 
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Database export");
+        setWindowTitle(MySQLMessages.tools_db_export_wizard_title);
         setNeedsProgressMonitor(true);
         mainPage = new MySQLDatabaseExportWizardPageSettings(this);
     }
@@ -74,31 +76,35 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
 
 	@Override
 	public void onSuccess() {
-        UIUtils.showMessageBox(getShell(), "Database export", "Database '" + getDatabaseObject().getName() + "' export completed", SWT.ICON_INFORMATION);
+        UIUtils.showMessageBox(
+                getShell(),
+                MySQLMessages.tools_db_export_wizard_title,
+                NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getDatabaseObject().getName()),
+                SWT.ICON_INFORMATION);
         Program.launch(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
 	}
 
     @Override
     public void fillProcessParameters(List<String> cmd) throws IOException
     {
-        File dumpBinary = MySQLUtils.getHomeBinary(getClientHome(), "mysqldump");
+        File dumpBinary = MySQLUtils.getHomeBinary(getClientHome(), "mysqldump"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
         switch (method) {
             case LOCK_ALL_TABLES:
-                cmd.add("--lock-all-tables");
+                cmd.add("--lock-all-tables"); //$NON-NLS-1$
                 break;
             case ONLINE:
-                cmd.add("--single-transaction");
+                cmd.add("--single-transaction"); //$NON-NLS-1$
                 break;
         }
 
-        if (noCreateStatements) cmd.add("--no-create-info");
-        if (addDropStatements) cmd.add("--add-drop-table");
-        if (disableKeys) cmd.add("--disable-keys");
-        if (extendedInserts) cmd.add("--extended-insert");
-        if (dumpEvents) cmd.add("--events");
-        if (comments) cmd.add("--comments");
+        if (noCreateStatements) cmd.add("--no-create-info"); //$NON-NLS-1$
+        if (addDropStatements) cmd.add("--add-drop-table"); //$NON-NLS-1$
+        if (disableKeys) cmd.add("--disable-keys"); //$NON-NLS-1$
+        if (extendedInserts) cmd.add("--extended-insert"); //$NON-NLS-1$
+        if (dumpEvents) cmd.add("--events"); //$NON-NLS-1$
+        if (comments) cmd.add("--comments"); //$NON-NLS-1$
     }
 
 
@@ -135,14 +141,14 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
 
         protected DumpTransformerJob(DBRProgressMonitor monitor, InputStream stream)
         {
-            super("Dump log reader");
+            super(MySQLMessages.tools_db_export_wizard_job_dump_log_reader);
             this.monitor = monitor;
             this.input = stream;
         }
 
         public void run()
         {
-            monitor.beginTask("Export database", 100);
+            monitor.beginTask(MySQLMessages.tools_db_export_wizard_monitor_export_db, 100);
             long totalBytesDumped = 0;
             long prevStatusUpdateTime = 0;
             byte[] buffer = new byte[10000];
@@ -158,7 +164,7 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
                         totalBytesDumped += count;
                         long currentTime = System.currentTimeMillis();
                         if (currentTime - prevStatusUpdateTime > 300) {
-                            monitor.subTask(numberFormat.format(totalBytesDumped) + " bytes");
+                            monitor.subTask(NLS.bind(MySQLMessages.tools_db_export_wizard_monitor_bytes, numberFormat.format(totalBytesDumped)));
                             prevStatusUpdateTime = currentTime;
                         }
                         output.write(buffer, 0, count);

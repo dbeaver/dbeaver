@@ -1195,6 +1195,8 @@ public class CoreMessages extends NLS {
 
 	public static String tools_script_execute_wizard_task_completed;
 
+	public static String tools_wizard_dialog_button_start;
+
 	public static String tools_wizard_error_task_error_message;
 
 	public static String tools_wizard_error_task_error_title;
@@ -1208,6 +1210,16 @@ public class CoreMessages extends NLS {
 	public static String tools_wizard_message_client_home_not_found;
 
 	public static String tools_wizard_message_no_client_home;
+
+	public static String tools_wizard_page_log_task_finished;
+
+	public static String tools_wizard_page_log_task_log_reader;
+
+	public static String tools_wizard_page_log_task_progress;
+
+	public static String tools_wizard_page_log_task_progress_log;
+
+	public static String tools_wizard_page_log_task_started_at;
 
 	public static String ui_actions_context_search_name;
     public static String ui_actions_exit_emergency_question;

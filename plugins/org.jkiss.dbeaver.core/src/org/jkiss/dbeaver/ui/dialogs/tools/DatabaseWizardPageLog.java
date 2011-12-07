@@ -5,10 +5,12 @@
 package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -27,10 +29,10 @@ public class DatabaseWizardPageLog extends WizardPage {
 
     public DatabaseWizardPageLog(String task)
     {
-        super(task + " progress");
+        super(NLS.bind(CoreMessages.tools_wizard_page_log_task_progress, task));
         this.task = task;
-        setTitle(task + " progress");
-        setDescription(task + " progress log");
+        setTitle(NLS.bind(CoreMessages.tools_wizard_page_log_task_progress, task));
+        setDescription(NLS.bind(CoreMessages.tools_wizard_page_log_task_progress_log, task));
     }
 
     @Override
@@ -80,7 +82,7 @@ public class DatabaseWizardPageLog extends WizardPage {
             {
                 synchronized (DatabaseWizardPageLog.this) {
                     if (!dumpLogText.isDisposed()) {
-                        dumpLogText.setText("");
+                        dumpLogText.setText(""); //$NON-NLS-1$
                     }
                 }
             }
@@ -103,7 +105,7 @@ public class DatabaseWizardPageLog extends WizardPage {
         //private BufferedReader in;
         protected LogReaderJob(ProcessBuilder processBuilder, InputStream stream)
         {
-            super(task + " log reader");
+            super(NLS.bind(CoreMessages.tools_wizard_page_log_task_log_reader, task));
             //in = new BufferedReader(new InputStreamReader(stream), 100);
             this.processBuilder = processBuilder;
             this.input = stream;
@@ -123,7 +125,7 @@ public class DatabaseWizardPageLog extends WizardPage {
 //            }
             cmdString.append(lf);
             appendLog(cmdString.toString());
-            appendLog(task + " started at " + new Date() + lf);
+            appendLog(NLS.bind(CoreMessages.tools_wizard_page_log_task_started_at, task, new Date()) + lf);
 
             try {
                 InputStream in = input;
@@ -159,7 +161,7 @@ public class DatabaseWizardPageLog extends WizardPage {
                 // just skip
                 appendLog(e.getMessage() + lf);
             } finally {
-                appendLog(task + " finished " + new Date() + lf);
+                appendLog(NLS.bind(CoreMessages.tools_wizard_page_log_task_finished, task, new Date()) + lf);
             }
         }
     }
@@ -168,7 +170,7 @@ public class DatabaseWizardPageLog extends WizardPage {
         private InputStream input;
         protected NullReaderJob(InputStream stream)
         {
-            super(task + " log reader");
+            super(NLS.bind(CoreMessages.tools_wizard_page_log_task_log_reader, task));
             this.input = stream;
         }
 

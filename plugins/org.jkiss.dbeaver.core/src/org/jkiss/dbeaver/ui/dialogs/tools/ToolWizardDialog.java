@@ -9,6 +9,7 @@ import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 /**
@@ -28,6 +29,6 @@ public class ToolWizardDialog extends ActiveWizardDialog
         Button cancelButton = getButton(IDialogConstants.CANCEL_ID);
         cancelButton.setText(IDialogConstants.CLOSE_LABEL);
         Button finishButton = getButton(IDialogConstants.FINISH_ID);
-        finishButton.setText("Start");
+        finishButton.setText(CoreMessages.tools_wizard_dialog_button_start);
     }
 }
