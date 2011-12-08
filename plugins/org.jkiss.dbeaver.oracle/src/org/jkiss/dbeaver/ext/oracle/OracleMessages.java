@@ -72,6 +72,13 @@ public class OracleMessages extends NLS {
 	public static String editors_oracle_session_editor_title_kill_session;
 	public static String editors_oracle_source_abstract_editor_action_name;
 	public static String editors_oracle_source_abstract_editor_state;
+	public static String tools_script_execute_wizard_error_sqlplus_not_found;
+	public static String tools_script_execute_wizard_page_name;
+	public static String tools_script_execute_wizard_page_settings_button_browse;
+	public static String tools_script_execute_wizard_page_settings_group_input;
+	public static String tools_script_execute_wizard_page_settings_label_input_file;
+	public static String tools_script_execute_wizard_page_settings_page_description;
+	public static String tools_script_execute_wizard_page_settings_page_name;
 	public static String views_oracle_compiler_dialog_button_compile;
 	public static String views_oracle_compiler_dialog_button_compile_all;
 	public static String views_oracle_compiler_dialog_column_name;

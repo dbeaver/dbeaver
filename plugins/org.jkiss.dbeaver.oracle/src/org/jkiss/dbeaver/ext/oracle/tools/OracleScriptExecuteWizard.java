@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ext.oracle.tools;
 
+import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
@@ -24,7 +26,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
 
     public OracleScriptExecuteWizard(OracleDataSource oracleSchema)
     {
-        super(oracleSchema, "Execute Script");
+        super(oracleSchema, OracleMessages.tools_script_execute_wizard_page_name);
         this.mainPage = new OracleScriptExecuteWizardPageSettings(this);
     }
 
@@ -38,13 +40,13 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     @Override
     public void fillProcessParameters(List<String> cmd) throws IOException
     {
-        String sqlPlusExec = RuntimeUtils.getNativeBinaryName("sqlplus");
-        File sqlPlusBinary = new File(getClientHome().getHomePath(), "bin/" + sqlPlusExec);
+        String sqlPlusExec = RuntimeUtils.getNativeBinaryName("sqlplus"); //$NON-NLS-1$
+        File sqlPlusBinary = new File(getClientHome().getHomePath(), "bin/" + sqlPlusExec); //$NON-NLS-1$
         if (!sqlPlusBinary.exists()) {
             sqlPlusBinary = new File(getClientHome().getHomePath(), sqlPlusExec);
         }
         if (!sqlPlusBinary.exists()) {
-            throw new IOException("SQL*Plus binary not found in Oracle home '" + getClientHome().getDisplayName() + "'");
+            throw new IOException(NLS.bind(OracleMessages.tools_script_execute_wizard_error_sqlplus_not_found, getClientHome().getDisplayName()));
         }
         String dumpPath = sqlPlusBinary.getAbsolutePath();
         cmd.add(dumpPath);
@@ -63,14 +65,14 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
         fillProcessParameters(cmd);
         DBPConnectionInfo conInfo = getConnectionInfo();
         String url;
-        if ("TNS".equals(conInfo.getProperties().get(OracleConstants.PROP_CONNECTION_TYPE))) {
+        if ("TNS".equals(conInfo.getProperties().get(OracleConstants.PROP_CONNECTION_TYPE))) { //$NON-NLS-1$
             url = conInfo.getServerName();
         }
         else {
             String port = conInfo.getHostPort();
-            url = "//" + conInfo.getHostName() + (port != null ? ":" + port : "") + "/" + conInfo.getDatabaseName();
+            url = "//" + conInfo.getHostName() + (port != null ? ":" + port : "") + "/" + conInfo.getDatabaseName(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         }
-        cmd.add(conInfo.getUserName() + "/" + conInfo.getUserPassword() + "@" + url);
+        cmd.add(conInfo.getUserName() + "/" + conInfo.getUserPassword() + "@" + url); //$NON-NLS-1$ //$NON-NLS-2$
 /*
 
         if (toolWizard.isVerbose()) {

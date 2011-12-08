@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -26,9 +27,9 @@ public class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPag
 
     public OracleScriptExecuteWizardPageSettings(OracleScriptExecuteWizard wizard)
     {
-        super(wizard, "Script configuration");
-        setTitle("Script configuration");
-        setDescription("Set script execution settings");
+        super(wizard, OracleMessages.tools_script_execute_wizard_page_settings_page_name);
+        setTitle(OracleMessages.tools_script_execute_wizard_page_settings_page_name);
+        setDescription(OracleMessages.tools_script_execute_wizard_page_settings_page_description);
     }
 
     @Override
@@ -41,15 +42,15 @@ public class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPag
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group outputGroup = UIUtils.createControlGroup(composite, "Input", 3, GridData.FILL_HORIZONTAL, 0);
-        inputFileText = UIUtils.createLabelText(outputGroup, "Input File", "");
+        Group outputGroup = UIUtils.createControlGroup(composite, OracleMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
+        inputFileText = UIUtils.createLabelText(outputGroup, OracleMessages.tools_script_execute_wizard_page_settings_label_input_file, ""); //$NON-NLS-2$
         Button browseButton = new Button(outputGroup, SWT.PUSH);
-        browseButton.setText("Browse");
+        browseButton.setText(OracleMessages.tools_script_execute_wizard_page_settings_button_browse);
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                File file = ContentUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"});
+                File file = ContentUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 if (file != null) {
                     inputFileText.setText(file.getAbsolutePath());
                 }
