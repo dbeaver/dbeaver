@@ -39,7 +39,7 @@ public class OracleConstants {
     public static final String PROP_CONNECTION_TYPE = DBConstants.INTERNAL_PROP_PREFIX + "connection-type@";
     public static final String PROP_CONNECTION_TARGET = "connection_target";
     public static final String PROP_DRIVER_TYPE = DBConstants.INTERNAL_PROP_PREFIX + "driver-type@";
-    public static final String PROP_INTERNAL_LOGON = "internal_logon";
+    public static final String PROP_INTERNAL_LOGON = DBConstants.INTERNAL_PROP_PREFIX + "internal-logon@";
     public static final String OS_AUTH_USER_NAME = "@OS_AUTH@";
 
     public static final String DRIVER_TYPE_THIN = "THIN";

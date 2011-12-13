@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -96,12 +97,16 @@ public abstract class JDBCDataSource
             connectProps.putAll(connectionInfo.getProperties());
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, connectionInfo.getUserName());
+            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, connectionInfo.getUserPassword());
+            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, getConnectionUserPassword(connectionInfo));
         }
-
+        for (Iterator<Object> iter = connectProps.keySet().iterator(); iter.hasNext(); ) {
+            if (iter.next().toString().startsWith(DBConstants.INTERNAL_PROP_PREFIX)) {
+                iter.remove();
+            }
+        }
         // Obtain connection
         try {
             if (driverInstance != null && !driverInstance.acceptsURL(connectionInfo.getUrl())) {
@@ -125,6 +130,16 @@ public abstract class JDBCDataSource
         catch (Throwable e) {
             throw new DBException("Unexpected driver error occurred while connecting to database", e);
         }
+    }
+
+    protected String getConnectionUserName(DBPConnectionInfo connectionInfo)
+    {
+        return connectionInfo.getUserName();
+    }
+
+    protected String getConnectionUserPassword(DBPConnectionInfo connectionInfo)
+    {
+        return connectionInfo.getUserPassword();
     }
 
     protected Driver getDriverInstance()

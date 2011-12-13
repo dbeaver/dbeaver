@@ -14,10 +14,7 @@ import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIClassLoader;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -67,6 +64,12 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         throws DBException
     {
         super(container);
+    }
+
+    protected String getConnectionUserName(DBPConnectionInfo connectionInfo)
+    {
+        final Object role = connectionInfo.getProperties().get(OracleConstants.PROP_INTERNAL_LOGON);
+        return role == null ? connectionInfo.getUserName() : connectionInfo.getUserName() + " AS " + role;
     }
 
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)

@@ -435,6 +435,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
     protected void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo != null) {
+            super.saveSettings(connectionInfo);
             Map<Object, Object> connectionProperties = connectionInfo.getProperties();
             if (isOCI) {
                 connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
@@ -472,7 +473,6 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
             } else {
                 connectionProperties.remove(OracleConstants.PROP_INTERNAL_LOGON);
             }
-            super.saveSettings(connectionInfo);
         }
     }
 
