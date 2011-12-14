@@ -83,6 +83,9 @@ public class OracleHomeDescriptor extends JDBCClientHome
     private List<String> getRequiredJars()
     {
         List<String> list = new ArrayList<String>();
+        if (oraVersion == null) {
+            return list;
+        }
         String jdbcDriverJar;
         String jdbcPathPrefix = isInstantClient ? "/" : "/jdbc/lib/";
         String libPathPrefix = isInstantClient ? "/" : "/lib/";
@@ -106,7 +109,7 @@ public class OracleHomeDescriptor extends JDBCClientHome
                 break;
             case 11:
                 list.add(oraHome + jdbcPathPrefix + "ojdbc6.jar"); // Classes for use with JDK 1.6. It contains the JDBC driver classes except classes for NLS support in Oracle Object and Collection types.
-                //addDriverJar2list(/list, oraHome, "ojdbc5.zip"); // Classes for use with JDK 1.5. It contains the JDBC driver classes, except classes for NLS support in Oracle Object and Collection types.
+                list.add(oraHome + jdbcPathPrefix + "ojdbc5.jar"); // Classes for use with JDK 1.5. It contains the JDBC driver classes, except classes for NLS support in Oracle Object and Collection types.
                 list.add(oraHome + jdbcPathPrefix + "orai18n.jar"); //NLS classes for use with JDK 1.5, and 1.6. It contains classes for NLS support in Oracle Object and Collection types. This jar file replaces the old nls_charset jar/zip files.
                 list.add(oraHome + libPathPrefix + "xml.jar");
                 list.add(oraHome + libPathPrefix + "xmlcomp2.jar");

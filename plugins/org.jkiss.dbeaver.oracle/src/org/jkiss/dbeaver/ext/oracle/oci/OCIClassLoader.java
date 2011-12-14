@@ -18,16 +18,16 @@ public class OCIClassLoader extends URLClassLoader
 {
     static final Log log = LogFactory.getLog(OCIClassLoader.class);
 
-    private OracleHomeDescriptor oracleHomeDescriptor;
+    //private OracleHomeDescriptor oracleHomeDescriptor;
     private File[] oraHomeLibraries;
 
     public OCIClassLoader(OracleHomeDescriptor oracleHomeDescriptor, ClassLoader parent)
     {
         super(oracleHomeDescriptor.getLibraries(), parent);
-        this.oracleHomeDescriptor = oracleHomeDescriptor;
+        //this.oracleHomeDescriptor = oracleHomeDescriptor;
 
         File oraHomeFile = new File(oracleHomeDescriptor.getHomeId());
-        File dllFolder = new File(oraHomeFile, oracleHomeDescriptor.isInstantClient() ? "" : "BIN");
+        File dllFolder = oracleHomeDescriptor.isInstantClient() ? oraHomeFile : new File(oraHomeFile, "BIN");
         if (dllFolder.exists()) {
             oraHomeLibraries = dllFolder.listFiles(new FilenameFilter()
             {
