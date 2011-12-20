@@ -23,6 +23,7 @@ public class OracleHomeDescriptor extends JDBCClientHome
     private static final String JAR_OJDBC5 = "ojdbc5.jar";
     private static final String JAR_OJDBC4 = "ojdbc14.jar";
     private static final String JAR_OJDBC2 = "classes12.zip";
+    private static final String JAR_OJDBC2_ZIP = "classes12.jar";
 
     private Integer oraVersion; // short version (9, 10, 11...)
     private String fullOraVersion;
@@ -126,17 +127,25 @@ public class OracleHomeDescriptor extends JDBCClientHome
         for (File lib : list) {
             libMap.put(lib.getName(), lib);
         }
+        removeExtraLibraies(libMap, "_g");
+        removeExtraLibraies(libMap, "dms");
+        if (libMap.containsKey(JAR_OJDBC2)) {
+            libMap.remove(JAR_OJDBC2_ZIP);
+        }
         if (libMap.containsKey(JAR_OJDBC4)) {
             libMap.remove(JAR_OJDBC2);
+            libMap.remove(JAR_OJDBC2_ZIP);
         }
         if (libMap.containsKey(JAR_OJDBC5)) {
             libMap.remove(JAR_OJDBC4);
             libMap.remove(JAR_OJDBC2);
+            libMap.remove(JAR_OJDBC2_ZIP);
         }
         if (libMap.containsKey(JAR_OJDBC6)) {
             libMap.remove(JAR_OJDBC5);
             libMap.remove(JAR_OJDBC4);
             libMap.remove(JAR_OJDBC2);
+            libMap.remove(JAR_OJDBC2_ZIP);
         }
 /*
         switch (oraVersion) {
@@ -170,6 +179,18 @@ public class OracleHomeDescriptor extends JDBCClientHome
         }
 */
         return libMap.values();
+    }
+
+    private void removeExtraLibraies(Map<String, File> libMap, String suffix)
+    {
+        for (Iterator<String> nameIter = libMap.keySet().iterator(); nameIter.hasNext(); ) {
+            String libName = nameIter.next();
+            if (libName.endsWith(suffix + ".jar")) {
+                if (libMap.containsKey(libName.substring(0, libName.length() - (suffix.length() + 4)) + ".jar")) {
+                    nameIter.remove();
+                }
+            }
+        }
     }
 
     /**
