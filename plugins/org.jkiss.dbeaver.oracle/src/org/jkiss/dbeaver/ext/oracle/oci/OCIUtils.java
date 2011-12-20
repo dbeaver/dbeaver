@@ -211,23 +211,6 @@ public class OCIUtils
         return "oracle_oci".equals(driver.getId());
     }
 
-    public static Integer getOracleVersion(String oraHome, boolean isInstantClient)
-    {
-        oraHome = CommonUtils.makeDirectoryName(oraHome);
-        File folder = new File(isInstantClient ? oraHome : oraHome + "/BIN");
-        if (!folder.exists()) {
-            return null;
-        }
-        for (int counter = 5; counter <= 15; counter++) {
-            String dllName = System.mapLibraryName((isInstantClient ? "oraociei" : "oraclient") + counter);
-            File oraclient_dll = new File(folder, dllName);
-            if (oraclient_dll.exists()) {
-                return counter;
-            }
-        }
-        return null;
-    }
-
     /**
      * Returns an installed Oracle client full version
      * @return
