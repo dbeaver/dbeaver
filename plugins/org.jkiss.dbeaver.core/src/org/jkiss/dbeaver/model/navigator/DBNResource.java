@@ -286,7 +286,7 @@ public class DBNResource extends DBNNode
                             return 1;
                         }
                     }
-                    return o1.getNodeName().compareTo(o2.getNodeName());
+                    return o1.getNodeName().compareToIgnoreCase(o2.getNodeName());
                 }
             }
         });
