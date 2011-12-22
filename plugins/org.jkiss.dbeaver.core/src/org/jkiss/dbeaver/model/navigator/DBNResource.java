@@ -98,7 +98,7 @@ public class DBNResource extends DBNNode
             return null;
         }
         switch (resource.getType()) {
-            case IResource.FOLDER: return DBIcon.TREE_FOLDER.getImage();
+            case IResource.FOLDER: return resource.isLinked() ? DBIcon.TREE_FOLDER_LINK.getImage() : DBIcon.TREE_FOLDER.getImage();
             case IResource.PROJECT: return DBIcon.PROJECT.getImage();
             default: return DBIcon.TREE_PAGE.getImage();
         }

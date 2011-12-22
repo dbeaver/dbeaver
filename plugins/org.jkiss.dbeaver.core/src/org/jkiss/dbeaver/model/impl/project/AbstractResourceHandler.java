@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.project;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -22,6 +23,12 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
 
     public int getFeatures(IResource resource)
     {
+        if (resource instanceof IFolder) {
+            if (resource.getParent() instanceof IFolder) {
+                return FEATURE_DELETE | FEATURE_MOVE_INTO | FEATURE_RENAME | FEATURE_CREATE_FOLDER;
+            }
+            return FEATURE_MOVE_INTO | FEATURE_CREATE_FOLDER;
+        }
         return 0;
     }
 

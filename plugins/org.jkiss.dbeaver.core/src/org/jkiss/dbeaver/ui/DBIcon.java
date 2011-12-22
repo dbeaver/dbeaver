@@ -38,6 +38,7 @@ public enum DBIcon
     TREE_USER("user", "icons/tree/user.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_PAGE("page", "icons/tree/page.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_FOLDER("folder", "icons/tree/folder.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TREE_FOLDER_LINK("folder_linked", "icons/tree/folder_link.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_FOLDER_DATABASE("folder_database", "icons/tree/folder_database.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_FOLDER_SCHEMA("folder_schema", "icons/tree/folder_schema.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_FOLDER_TABLE("folder_table", "icons/tree/folder_table.png"), //$NON-NLS-1$ //$NON-NLS-2$

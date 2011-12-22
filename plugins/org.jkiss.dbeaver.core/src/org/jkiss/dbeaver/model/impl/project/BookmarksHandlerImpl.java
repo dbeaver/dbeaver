@@ -56,14 +56,10 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     @Override
     public int getFeatures(IResource resource)
     {
-        if (resource instanceof IFolder) {
-            if (resource.getParent() instanceof IFolder) {
-                return FEATURE_DELETE | FEATURE_RENAME | FEATURE_CREATE_FOLDER | FEATURE_MOVE_INTO;
-            }
-            return FEATURE_CREATE_FOLDER | FEATURE_MOVE_INTO;
-        } else {
+        if (resource instanceof IFile) {
             return FEATURE_OPEN | FEATURE_DELETE | FEATURE_RENAME;
         }
+        return super.getFeatures(resource);
     }
 
     public String getTypeName(IResource resource)

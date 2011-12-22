@@ -124,14 +124,10 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     @Override
     public int getFeatures(IResource resource)
     {
-        if (resource instanceof IFolder) {
-            if (resource.getParent() instanceof IFolder) {
-                return FEATURE_DELETE | FEATURE_MOVE_INTO | FEATURE_RENAME | FEATURE_CREATE_FOLDER;
-            }
-            return FEATURE_MOVE_INTO | FEATURE_CREATE_FOLDER;
-        } else {
+        if (resource instanceof IFile) {
             return FEATURE_OPEN | FEATURE_DELETE | FEATURE_RENAME;
         }
+        return super.getFeatures(resource);
     }
 
     public String getTypeName(IResource resource)

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
+import org.eclipse.core.resources.IFolder;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
@@ -90,9 +91,18 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 if (selection.size() == 1) {
                     DBNNode node = (DBNNode)selection.getFirstElement();
                     if (node instanceof DBNResource) {
-                        NavigatorHandlerObjectOpen.openResource(
-                            ((DBNResource) node).getResource(),
-                            getSite().getWorkbenchWindow());
+                        if (((DBNResource) node).getResource() instanceof IFolder) {
+                            if (Boolean.TRUE.equals(tree.getViewer().getExpandedState(node))) {
+                                tree.getViewer().collapseToLevel(node, 1);
+                            } else {
+                                tree.getViewer().expandToLevel(node, 1);
+                            }
+
+                        } else {
+                            NavigatorHandlerObjectOpen.openResource(
+                                ((DBNResource) node).getResource(),
+                                getSite().getWorkbenchWindow());
+                        }
                     } else if (node instanceof DBNDatabaseNode && node.allowsOpen()) {
                         NavigatorHandlerObjectOpen.openEntityEditor(
                             (DBNDatabaseNode) node,
