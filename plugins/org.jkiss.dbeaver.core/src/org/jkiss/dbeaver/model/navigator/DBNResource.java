@@ -26,6 +26,8 @@ import java.util.List;
  */
 public class DBNResource extends DBNNode
 {
+    private final String PROJECT_CFG_FILE = ".project";
+
     private IResource resource;
     private DBPResourceHandler handler;
     private List<DBNNode> children;
@@ -71,10 +73,11 @@ public class DBNResource extends DBNNode
         if (resource == null) {
             return null;
         }
-        if (resource instanceof IFile) {
-            return resource.getFullPath().removeFileExtension().lastSegment();
-        }
-        return resource.getFullPath().lastSegment();
+        return resource.getName();
+//        if (resource instanceof IFile) {
+//
+//        }
+//        return resource.getFullPath().lastSegment();
     }
 
     public String getNodeDescription()
@@ -157,6 +160,13 @@ public class DBNResource extends DBNNode
 
     private DBNNode makeNode(IResource resource)
     {
+        if (resource.isHidden()) {
+            return null;
+        }
+        if (resource.getParent() instanceof IProject && resource.getName().startsWith(".")) {
+            // Skip project config
+            return null;
+        }
         try {
             if (resource instanceof IFolder && resource.getParent() instanceof IFolder) {
                 // Sub folder
@@ -201,7 +211,7 @@ public class DBNResource extends DBNNode
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
         try {
-            if (resource instanceof IFile) {
+            if (newName.indexOf('.') == -1 && resource instanceof IFile) {
                 String ext = resource.getFileExtension();
                 if (!CommonUtils.isEmpty(ext)) {
                     newName += "." + ext;

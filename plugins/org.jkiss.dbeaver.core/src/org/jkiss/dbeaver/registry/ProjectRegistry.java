@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.model.impl.project.DefaultResourceHandlerImpl;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
@@ -168,6 +169,9 @@ public class ProjectRegistry implements IResourceChangeListener {
             if (!CommonUtils.isEmpty(resource.getFileExtension())) {
                 handler = getResourceHandlerByExtension(resource.getFileExtension());
             }
+        }
+        if (handler == null) {
+            handler = DefaultResourceHandlerImpl.INSTANCE;
         }
         return handler;
     }
