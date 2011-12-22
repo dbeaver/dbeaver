@@ -53,7 +53,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.resource"
-                properties="canOpen,canDelete,canCreateFolder,canSetActive,type"
+                properties="canOpen,canDelete,canCreateFolder,canCreateLink,canSetActive,type"
                 type="org.eclipse.core.resources.IResource"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
@@ -376,7 +376,7 @@
                     <count value="1"/>
                     <iterate operator="and">
                         <adapt type="org.eclipse.core.resources.IResource">
-                            <test property="org.jkiss.dbeaver.core.resource.canCreateFolder"/>
+                            <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
                         </adapt>
                     </iterate>
                 </with>

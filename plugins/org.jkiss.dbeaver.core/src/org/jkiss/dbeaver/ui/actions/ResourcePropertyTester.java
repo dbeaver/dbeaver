@@ -25,6 +25,7 @@ public class ResourcePropertyTester extends PropertyTester
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.resource";
     public static final String PROP_CAN_OPEN = "canOpen";
     public static final String PROP_CAN_CREATE_FOLDER = "canCreateFolder";
+    public static final String PROP_CAN_CREATE_LINK = "canCreateLink";
     public static final String PROP_CAN_SET_ACTIVE = "canSetActive";
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_TYPE = "type";
@@ -50,6 +51,8 @@ public class ResourcePropertyTester extends PropertyTester
             return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_DELETE) != 0;
         } else if (property.equals(PROP_CAN_CREATE_FOLDER)) {
             return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0;
+        } else if (property.equals(PROP_CAN_CREATE_LINK)) {
+            return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0 && !resource.isLinked(IResource.CHECK_ANCESTORS);
         } else if (property.equals(PROP_CAN_SET_ACTIVE)) {
             return resource instanceof IProject && resource != projectRegistry.getActiveProject();
         } else if (property.equals(PROP_TYPE)) {
