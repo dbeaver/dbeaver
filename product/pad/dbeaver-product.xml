@@ -32,6 +32,17 @@
 
     <versions>
         <version>
+            <number>1.4.7</number>
+            <type>hotfix</type>
+            <date>23.12.2011</date>
+
+            <release-notes>
+                - Oracle OCI driver fixes
+                - External folders link support
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.4.6</number>
             <type>stable</type>
             <date>07.12.2011</date>
