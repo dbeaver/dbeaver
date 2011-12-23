@@ -4,9 +4,6 @@
 
 package org.jkiss.utils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -14,7 +11,7 @@ import java.util.*;
  * Common utils
  */
 public class CommonUtils {
-    static final Log log = LogFactory.getLog(CommonUtils.class);
+    //static final Log log = LogFactory.getLog(CommonUtils.class);
 
 	public static boolean isJavaIdentifier(CharSequence str)
 	{
@@ -442,7 +439,7 @@ public class CommonUtils {
         try {
             return (T) Enum.valueOf(type, name);
         } catch (Exception e) {
-            log.warn(e);
+            e.printStackTrace();
             return null;
         }
     }

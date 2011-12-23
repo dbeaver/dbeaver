@@ -474,7 +474,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		return false;
 	}
 
-	public static class IntEntry<VALUE> implements Map.Entry<Integer, VALUE> {
+	public static class IntEntry<VALUE> implements Entry<Integer, VALUE> {
 		final int key;
 		VALUE value;
 		final int hash;
@@ -583,10 +583,10 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 
 		IntEntry<VALUE> nextEntry() {
 			if (modCount != expectedModCount)
-				throw new java.util.ConcurrentModificationException();
+				throw new ConcurrentModificationException();
 			IntEntry<VALUE> e = next;
 			if (e == null)
-				throw new java.util.NoSuchElementException();
+				throw new NoSuchElementException();
 
 			IntEntry<VALUE> n = e.next;
 			IntEntry<VALUE>[] t = table;
@@ -602,7 +602,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 			if (current == null)
 				throw new IllegalStateException();
 			if (modCount != expectedModCount)
-				throw new java.util.ConcurrentModificationException();
+				throw new ConcurrentModificationException();
 			int k = current.key;
 			current = null;
 			IntKeyMap.this.removeEntryForKey(k);

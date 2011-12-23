@@ -6,8 +6,8 @@ package org.jkiss.utils.xml;
 
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,31 +48,31 @@ public class XMLUtils
 		}
 	}
 
-	public static org.w3c.dom.Element getChildElement(org.w3c.dom.Element element,
+	public static Element getChildElement(Element element,
 		String childName)
 	{
 		for (org.w3c.dom.Node node = element.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
-				((org.w3c.dom.Element) node).getTagName().equals(childName)) {
-				return (org.w3c.dom.Element) node;
+				((Element) node).getTagName().equals(childName)) {
+				return (Element) node;
 			}
 		}
 		return null;
 	}
 
-	public static String getChildElementBody(org.w3c.dom.Element element,
+	public static String getChildElementBody(Element element,
 		String childName)
 	{
 		for (org.w3c.dom.Node node = element.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
-				((org.w3c.dom.Element) node).getTagName().equals(childName)) {
-				return getElementBody((org.w3c.dom.Element) node);
+				((Element) node).getTagName().equals(childName)) {
+				return getElementBody((Element) node);
 			}
 		}
 		return null;
 	}
 
-	public static String getElementBody(org.w3c.dom.Element element)
+	public static String getElementBody(Element element)
 	{
 		org.w3c.dom.Node valueNode = element.getFirstChild();
 		if (valueNode == null) {
@@ -103,7 +103,7 @@ public class XMLUtils
 
 	// Get list of all child elements of specified node
 	public static Collection<Element> getChildElementListNS(
-		org.w3c.dom.Element parent,
+		Element parent,
 		String nsURI)
 	{
 		List<Element> list = new ArrayList<Element>();
@@ -119,7 +119,7 @@ public class XMLUtils
 
 	// Get list of all child elements of specified node
 	public static Collection<Element> getChildElementListNS(
-		org.w3c.dom.Element parent,
+		Element parent,
 		String nodeName,
 		String nsURI)
 	{
@@ -137,7 +137,7 @@ public class XMLUtils
 
 	// Get list of all child elements of specified node
 	public static Collection<Element> getChildElementList(
-		org.w3c.dom.Element parent,
+		Element parent,
 		String[] nodeNameList)
 	{
 		List<Element> list = new ArrayList<Element>();
@@ -154,13 +154,13 @@ public class XMLUtils
 	}
 
 	// Find one child element with specified name
-	public static org.w3c.dom.Element findChildElement(
-		org.w3c.dom.Element parent)
+	public static Element findChildElement(
+		Element parent)
 	{
 		for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE)
 			{
-				return (org.w3c.dom.Element)node;
+				return (Element)node;
 			}
 		}
 		return null;

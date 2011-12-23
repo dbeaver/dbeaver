@@ -474,7 +474,7 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 		return false;
 	}
 
-	public static class LongEntry<VALUE> implements Map.Entry<Long, VALUE> {
+	public static class LongEntry<VALUE> implements Entry<Long, VALUE> {
 		final long key;
 		VALUE value;
 		final int hash;
@@ -583,10 +583,10 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 
 		LongEntry<VALUE> nextEntry() {
 			if (modCount != expectedModCount)
-				throw new java.util.ConcurrentModificationException();
+				throw new ConcurrentModificationException();
 			LongEntry<VALUE> e = next;
 			if (e == null)
-				throw new java.util.NoSuchElementException();
+				throw new NoSuchElementException();
 
 			LongEntry<VALUE> n = e.next;
 			LongEntry<VALUE>[] t = table;
@@ -602,7 +602,7 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 			if (current == null)
 				throw new IllegalStateException();
 			if (modCount != expectedModCount)
-				throw new java.util.ConcurrentModificationException();
+				throw new ConcurrentModificationException();
 			long k = current.key;
 			current = null;
 			LongKeyMap.this.removeEntryForKey(k);

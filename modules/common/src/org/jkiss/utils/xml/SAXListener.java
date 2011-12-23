@@ -10,21 +10,21 @@ package org.jkiss.utils.xml;
 public interface SAXListener {
 
 	public void saxStartElement(
-		SAXReader reader,
-		String namespaceURI, 
-		String localName, 
-		org.xml.sax.Attributes atts)
+        SAXReader reader,
+        String namespaceURI,
+        String localName,
+        org.xml.sax.Attributes atts)
 		throws XMLException;
 
 	public void saxText(
-		SAXReader reader,
-		String data)
+        SAXReader reader,
+        String data)
 		throws XMLException;
 
 	public void saxEndElement(
-		SAXReader reader,
-		String namespaceURI,
-		String localName)
+        SAXReader reader,
+        String namespaceURI,
+        String localName)
 		throws XMLException;
 
 }

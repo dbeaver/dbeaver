@@ -27,7 +27,7 @@ public final class IOUtils {
 	public static void writeStream(
 		java.io.InputStream inputStream,
 		java.io.OutputStream outputStream)
-		throws java.io.IOException
+		throws IOException
 	{
 		writeStream(inputStream, outputStream, DEFAULT_BUFFER_SIZE);
 	}
@@ -36,7 +36,7 @@ public final class IOUtils {
 		java.io.InputStream inputStream,
 		java.io.OutputStream outputStream,
 		int bufferSize)
-		throws java.io.IOException
+		throws IOException
 	{
 		copyStream(inputStream, outputStream, bufferSize);
 	}
@@ -49,7 +49,7 @@ public final class IOUtils {
 		java.io.InputStream inputStream,
 		java.io.OutputStream outputStream,
 		int bufferSize)
-		throws java.io.IOException
+		throws IOException
 	{
         try {
             byte[] writeBuffer = new byte[bufferSize];
@@ -72,7 +72,7 @@ public final class IOUtils {
 		java.io.OutputStream outputStream,
 		int portionSize,
 		int bufferSize)
-		throws java.io.IOException
+		throws IOException
 	{
 		if (bufferSize > portionSize) {
 			bufferSize = portionSize;
@@ -101,7 +101,7 @@ public final class IOUtils {
 		java.io.Reader reader,
 		java.io.Writer writer,
 		int bufferSize)
-		throws java.io.IOException
+		throws IOException
 	{
 		char[] writeBuffer = new char[bufferSize];
 		for (int br = reader.read(writeBuffer); br != -1; br = reader.read(writeBuffer)) {
@@ -116,7 +116,7 @@ public final class IOUtils {
 	public static int readStreamToBuffer(
 		java.io.InputStream inputStream,
 		byte[] buffer)
-		throws java.io.IOException
+		throws IOException
 	{
 		int totalRead = 0;
 		while (totalRead != buffer.length) {
@@ -130,7 +130,7 @@ public final class IOUtils {
 	}
 
 	public static String readLine(java.io.InputStream input)
-		throws java.io.IOException
+		throws IOException
 	{
 		StringBuilder linebuf = new StringBuilder();
 		for (int b = input.read(); b != '\n'; b = input.read()) {
@@ -149,7 +149,7 @@ public final class IOUtils {
 	}
 
 	public static String readFullLine(java.io.InputStream input)
-		throws java.io.IOException
+		throws IOException
 	{
 		StringBuilder linebuf = new StringBuilder();
 		for (int b = input.read(); ; b = input.read()) {

@@ -131,13 +131,13 @@ public class SecurityUtils {
 			if (userPassword == null) {
 				userPassword = "";
 			}
-			java.security.MessageDigest md5 = 
-				java.security.MessageDigest.getInstance(ECRYPTION_ALGORYTHM);
+			MessageDigest md5 =
+				MessageDigest.getInstance(ECRYPTION_ALGORYTHM);
 			md5.update( userAlias.getBytes() );
 
 			return Base64.encode( md5.digest( userPassword.getBytes() ) );
 		}
-		catch (java.security.NoSuchAlgorithmException toCatch) {
+		catch (NoSuchAlgorithmException toCatch) {
 			return "*";
 		}
 	}
@@ -146,12 +146,12 @@ public class SecurityUtils {
 		String userPassword)
 	{
 		try {
-			java.security.MessageDigest md5 = 
-				java.security.MessageDigest.getInstance(ECRYPTION_ALGORYTHM);
+			MessageDigest md5 =
+				MessageDigest.getInstance(ECRYPTION_ALGORYTHM);
 
 			return Base64.encode( md5.digest( userPassword.getBytes() ) );
 		}
-		catch (java.security.NoSuchAlgorithmException toCatch) {
+		catch (NoSuchAlgorithmException toCatch) {
 			return "*";
 		}
 	}
