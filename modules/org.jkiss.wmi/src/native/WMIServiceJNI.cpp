@@ -7,43 +7,45 @@
 #include "WMIUtils.h"
 
 /*
- * Class:     com_symantec_cas_ucf_sensors_wmi_service_WMIService
+ * Class:     org_jkiss_wmi_service_WMIService
  * Method:    connect
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_com_symantec_cas_ucf_sensors_wmi_service_WMIService_connect(
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_connect(
 	JNIEnv * pJavaEnv, 
 	jobject object, 
 	jstring domain, 
 	jstring host, 
 	jstring user, 
 	jstring password,
-	jstring locale)
+	jstring locale,
+	jstring resource)
 {
 	WMIService* pService = new WMIService(pJavaEnv, object);
 	if (pJavaEnv->ExceptionCheck()) {
 		return;
 	}
 	
-	CComBSTR bstrDomain, bstrHost, bstrUser, bstrPassword, bstrLocale;
+	CComBSTR bstrDomain, bstrHost, bstrUser, bstrPassword, bstrLocale, bstrResource;
 	::GetJavaString(pJavaEnv, domain, &bstrDomain);
 	::GetJavaString(pJavaEnv, host, &bstrHost);
 	::GetJavaString(pJavaEnv, user, &bstrUser);
 	::GetJavaString(pJavaEnv, password, &bstrPassword);
 	::GetJavaString(pJavaEnv, locale, &bstrLocale);
+	::GetJavaString(pJavaEnv, resource, &bstrResource);
 
-	pService->Connect(pJavaEnv, bstrDomain, bstrHost, bstrUser, bstrPassword, bstrLocale);
+	pService->Connect(pJavaEnv, bstrDomain, bstrHost, bstrUser, bstrPassword, bstrLocale, bstrResource);
 	if (pJavaEnv->ExceptionCheck()) {
 		return;
 	}
 }
 
 /*
- * Class:     com_symantec_cas_ucf_sensors_wmi_service_WMIService
+ * Class:     org_jkiss_wmi_service_WMIService
  * Method:    disconnect
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_symantec_cas_ucf_sensors_wmi_service_WMIService_close
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_close
   (JNIEnv * pJavaEnv, jobject object)
 {
 	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
@@ -54,11 +56,11 @@ JNIEXPORT void JNICALL Java_com_symantec_cas_ucf_sensors_wmi_service_WMIService_
 }
 
 /*
- * Class:     com_symantec_cas_ucf_sensors_wmi_service_WMIService
+ * Class:     org_jkiss_wmi_service_WMIService
  * Method:    executeQuery
  * Signature: (Ljava/lang/String;)Lcom/symantec/cas/ucf/sensors/wmi/pService/WQLResultSet;
  */
-JNIEXPORT jobjectArray JNICALL Java_com_symantec_cas_ucf_sensors_wmi_service_WMIService_executeQuery(
+JNIEXPORT jobjectArray JNICALL Java_org_jkiss_wmi_service_WMIService_executeQuery(
 	JNIEnv *pJavaEnv, 
 	jobject object, 
 	jstring query,
@@ -78,7 +80,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_symantec_cas_ucf_sensors_wmi_service_WMI
 	return pService->ExecuteQuery(pJavaEnv, bstrQuery, bSync == JNI_TRUE);
 }
 
-JNIEXPORT void JNICALL Java_com_symantec_cas_ucf_sensors_wmi_service_WMIService_executeQueryAsync(
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_executeQueryAsync(
 	JNIEnv *pJavaEnv, 
 	jobject object, 
 	jstring query,
@@ -103,7 +105,7 @@ JNIEXPORT void JNICALL Java_com_symantec_cas_ucf_sensors_wmi_service_WMIService_
 	pService->ExecuteQueryAsync(pJavaEnv, bstrQuery, sinkObject, bSendStatus == JNI_TRUE);
 }
 
-JNIEXPORT void JNICALL Java_com_symantec_cas_ucf_sensors_wmi_service_WMIService_cancelAsyncOperation(
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_cancelAsyncOperation(
 	JNIEnv *pJavaEnv, 
 	jobject object,
 	jobject sinkObject)

@@ -132,7 +132,8 @@ void WMIService::Connect(
 	LPWSTR host, 
 	LPWSTR user, 
 	LPWSTR password,
-	LPWSTR locale)
+	LPWSTR locale,
+	LPWSTR resource)
 {
     if (this->pWbemLocator != NULL) {
 		THROW_COMMON_EXCEPTION(L"WMI Locator was already initialized");
@@ -170,9 +171,6 @@ void WMIService::Connect(
     }
 
 	// Connect to server
-	CComBSTR resource = L"\\\\";
-	resource.Append(host);
-	resource.Append(L"\\root\\cimv2");
 	CComBSTR resourceDomain;
 	if (domain != NULL) {
 		resourceDomain.Append(L"NTLMDOMAIN:");

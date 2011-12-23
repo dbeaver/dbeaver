@@ -21,7 +21,7 @@ public class WMIService {
         this.serviceLog = serviceLog;
     }
 
-    public native void connect(String domain, String host, String user, String password, String locale)
+    public native void connect(String domain, String host, String user, String password, String locale, String resource)
         throws WMIException;
 
     public native WMIObject[] executeQuery(String query, boolean sync)
@@ -53,7 +53,7 @@ public class WMIService {
 
         serviceLog.info("Start service");
         try {
-            this.connect("bq", "aelita", "jurgen", "CityMan78#", null);
+            this.connect("bq", "aelita", "jurgen", "CityMan78#", null, "\\root\\cimv2");
             //service.connect(null, "localhost", null, null, null);
             final long curTime = System.currentTimeMillis();
 

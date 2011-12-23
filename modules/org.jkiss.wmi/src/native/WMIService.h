@@ -47,7 +47,8 @@ public:
 		LPWSTR host, 
 		LPWSTR user, 
 		LPWSTR password,
-		LPWSTR locale);
+		LPWSTR locale,
+		LPWSTR resource);
 
 	jobjectArray ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR query, bool sync);
 

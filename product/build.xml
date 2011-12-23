@@ -42,6 +42,11 @@
                 <exclude name="**/.svn" />
 				<exclude name="**/*.class" />
             </fileset>
+            <fileset dir="../modules">
+                <include name="**" />
+                <exclude name="**/.svn" />
+				<exclude name="**/*.class" />
+            </fileset>
         </copy>
         <mkdir dir="${distDirectory}" />
         <antcall target="readme"/>
