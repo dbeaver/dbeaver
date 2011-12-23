@@ -6,9 +6,7 @@ Bundle-Version: 1.4.7
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.jkiss.utils,
- org.jkiss.utils.xml;uses:="javax.xml.parsers,org.w3c.dom,org.xml.sax",
- org.apache.commons.logging,
+Export-Package: org.apache.commons.logging,
  org.apache.commons.logging.impl;
   uses:="org.apache.log,
    org.apache.commons.logging,
@@ -98,8 +96,6 @@ Export-Package: org.jkiss.utils,
  org.jkiss.dbeaver.ui.editors.sql.handlers,
  org.jkiss.dbeaver.ui.editors.sql.indent,
  org.jkiss.dbeaver.ui.editors.sql.log,
- org.jkiss.dbeaver.ui.views.plan,
- org.jkiss.dbeaver.ui.views.session,
  org.jkiss.dbeaver.ui.editors.sql.syntax,
  org.jkiss.dbeaver.ui.editors.sql.util,
  org.jkiss.dbeaver.ui.editors.text,
@@ -111,14 +107,16 @@ Export-Package: org.jkiss.utils,
  org.jkiss.dbeaver.ui.export.data.wizard,
  org.jkiss.dbeaver.ui.export.project,
  org.jkiss.dbeaver.ui.preferences,
+ org.jkiss.dbeaver.ui.properties,
+ org.jkiss.dbeaver.ui.properties.tabbed,
  org.jkiss.dbeaver.ui.splash,
  org.jkiss.dbeaver.ui.views.navigator.database,
  org.jkiss.dbeaver.ui.views.navigator.database.load,
  org.jkiss.dbeaver.ui.views.navigator.project,
- org.jkiss.dbeaver.ui.properties,
- org.jkiss.dbeaver.ui.properties.tabbed,
+ org.jkiss.dbeaver.ui.views.plan,
  org.jkiss.dbeaver.ui.views.qm,
  org.jkiss.dbeaver.ui.views.search,
+ org.jkiss.dbeaver.ui.views.session,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: lib/commons-logging-1.0.4.jar,
  lib/commons-jexl-2.0.1.jar,
@@ -137,6 +135,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.5.0",
  org.eclipse.help.webapp;bundle-version="3.5.0",
  org.mortbay.jetty.server;bundle-version="6.1.23",
  org.mortbay.jetty.util;bundle-version="6.1.23",
- org.eclipse.equinox.http.jetty;bundle-version="2.0.0"
+ org.eclipse.equinox.http.jetty;bundle-version="2.0.0",
+ org.jkiss.utils;bundle-version="1.0.0";visibility:=reexport
 Bundle-Vendor: Serge Rieder
 Bundle-Localization: plugin

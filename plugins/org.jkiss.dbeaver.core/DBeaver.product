@@ -41,7 +41,7 @@
         <url>http://dbeaver.jkiss.org/about/</url>
         <text>
    DBeaver is freeware. You can use it for any purpose with no limitations.
-This software is provided "as is" without express or implied warranty.
+This software is provided &quot;as is&quot; without express or implied warranty.
          </text>
    </license>
 
@@ -125,6 +125,7 @@ This software is provided "as is" without express or implied warranty.
       <plugin id="org.jkiss.dbeaver.ext.import_config"/>
       <plugin id="org.jkiss.dbeaver.ext.mysql"/>
       <plugin id="org.jkiss.dbeaver.ext.oracle"/>
+      <plugin id="org.jkiss.utils"/>
       <plugin id="org.mortbay.jetty.server"/>
       <plugin id="org.mortbay.jetty.util"/>
    </plugins>

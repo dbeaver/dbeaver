@@ -343,7 +343,15 @@ public class DiagramLoader
         for (RelationLoadInfo info : relInfos) {
             if (!CommonUtils.isEmpty(info.bends)) {
                 final ERDTable sourceTable = diagram.getERDTable(info.pkTable.table);
+                if (sourceTable == null) {
+                    log.warn("Source table " + info.pkTable.table.getName() + " not found");
+                    continue;
+                }
                 final ERDTable targetTable = diagram.getERDTable(info.fkTable.table);
+                if (targetTable == null) {
+                    log.warn("Target table " + info.pkTable.table.getName() + " not found");
+                    continue;
+                }
                 diagram.addInitRelationBends(sourceTable, targetTable, info.name, info.bends);
             }
         }
