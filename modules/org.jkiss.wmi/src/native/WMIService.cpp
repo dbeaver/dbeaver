@@ -423,7 +423,7 @@ jobject WMIService::MakeWMIObject(JNIEnv* pJavaEnv, IWbemClassObject *pClassObje
 		if (hres == WBEM_S_NO_MORE_DATA) {
 			break;
 		}
-		wchar_t* propNameBSTR = propName;
+		//wchar_t* propNameBSTR = propName;
 		jstring javaPropName = MakeJavaString(pJavaEnv, propName);
 		_ASSERT(javaPropName != NULL);
 		if (javaPropName == NULL) {

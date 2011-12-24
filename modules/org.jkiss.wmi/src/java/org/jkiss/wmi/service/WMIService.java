@@ -13,8 +13,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class WMIService {
 
-    long serviceHandle;
-    Log serviceLog;
+    private long serviceHandle;
+    private Log serviceLog;
 
     public WMIService(Log serviceLog) {
         this.serviceHandle = 0;
@@ -124,21 +124,25 @@ public class WMIService {
     {
         System.out.println("====== " + object);
 
-        for (String propName : object.getProperties().keySet()) {
-            Object propValue = object.getProperty(propName);
-            if (propValue instanceof Object[]) {
-                System.out.print("\t" + propName + "= { ");
-                Object[] array = (Object[])propValue;
-                for (int i = 0; i < array.length; i++) {
-                    if (i > 0) System.out.print(", ");
-                    System.out.print("'" + array[i] + "'");
+        try {
+            for (WMIObjectProperty prop : object.getProperties()) {
+                Object propValue = prop.getValue();
+                if (propValue instanceof Object[]) {
+                    System.out.print("\t" + prop.getName() + "= { ");
+                    Object[] array = (Object[])propValue;
+                    for (int i = 0; i < array.length; i++) {
+                        if (i > 0) System.out.print(", ");
+                        System.out.print("'" + array[i] + "'");
+                    }
+                    System.out.println(" }");
+                } else if (propValue instanceof byte[]) {
+                    System.out.println("\t" + prop.getName() + "= { byte array } " + ((byte[])propValue).length);
+                } else {
+                    System.out.println("\t" + prop.getName() + "=" + propValue);
                 }
-                System.out.println(" }");
-            } else if (propValue instanceof byte[]) {
-                System.out.println("\t" + propName + "= { byte array } " + ((byte[])propValue).length);
-            } else {
-                System.out.println("\t" + propName + "=" + propValue);
             }
+        } catch (WMIException e) {
+            e.printStackTrace();
         }
     }
 }

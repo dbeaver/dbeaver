@@ -4,32 +4,137 @@
 
 package org.jkiss.wmi.service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * WQL ResultSet
  */
-public class WMIObject {
+public class WMIObject extends WMIQualifiedObject {
 
-    private Map<String, Object> properties = new TreeMap<String, Object>();
+    private long objectHandle;
+    private volatile List<WMIObjectProperty> properties;
+    private volatile List<WMIObjectMethod> methods;
 
     public WMIObject() {
     }
 
-    public Map<String, Object> getProperties() {
+    public String getObjectText()
+        throws WMIException
+    {
+        return readObjectText();
+    }
+
+    public Object getValue(String name) throws WMIException
+    {
+        return readPropertyValue(name);
+    }
+
+    public void setValue(String name, Object value) throws WMIException
+    {
+        writePropertyValue(name, value);
+    }
+
+    public Collection<WMIObjectProperty> getProperties() throws WMIException
+    {
+        readProperties();
         return properties;
     }
 
-    public Object getProperty(String name)
+    public WMIObjectProperty getProperty(String name) throws WMIException
     {
-        return properties.get(name);
+        readProperties();
+        for (WMIObjectProperty property : properties) {
+            if (property.getName().equals(name)) {
+                return property;
+            }
+        }
+        return null;
     }
 
-    public void addProperty(String name, Object value)
+    private void readProperties()
+        throws WMIException
     {
-        properties.put(name, value);
+        if (properties != null) {
+            return;
+        }
+        synchronized (this) {
+            if (properties != null) {
+                return;
+            }
+            properties = new ArrayList<WMIObjectProperty>(); 
+            readProperties(properties);
+        }
     }
+
+    public Collection<WMIObjectMethod> getMethod() throws WMIException
+    {
+        readMethod();
+        return methods;
+    }
+
+    public WMIObjectMethod getMethod(String name) throws WMIException
+    {
+        readMethod();
+        for (WMIObjectMethod method : methods) {
+            if (method.getName().equals(name)) {
+                return method;
+            }
+        }
+        return null;
+    }
+
+    private void readMethod()
+        throws WMIException
+    {
+        if (methods != null) {
+            return;
+        }
+        synchronized (this) {
+            if (methods != null) {
+                return;
+            }
+            methods = new ArrayList<WMIObjectMethod>();
+            readMethod(methods);
+        }
+    }
+
+    public void release()
+    {
+        releaseObject();
+    }
+
+    @Override
+    protected void finalize() throws Throwable
+    {
+        releaseObject();
+        super.finalize();
+    }
+
+    @Override
+    protected void readObjectQualifiers(List<WMIQualifier> qualifiers)
+        throws WMIException
+    {
+        readQualifiers(false, null, qualifiers);
+    }
+
+    private native String readObjectText()
+        throws WMIException;
+
+    private native Object readPropertyValue(String name)
+        throws WMIException;
+
+    private native void writePropertyValue(String name, Object value)
+        throws WMIException;
+
+    private native List<WMIObjectMethod> readProperties(List<WMIObjectProperty> properties)
+        throws WMIException;
+
+    private native List<WMIObjectMethod> readMethod(List<WMIObjectMethod> method)
+        throws WMIException;
+
+    native void readQualifiers(boolean property, String attrName, List<WMIQualifier> qualifiers)
+        throws WMIException;
+
+    native void releaseObject();
 
 }
