@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "WMIService.h"
+#include "WMIObject.h"
 #include "WMIObjectSink.h"
 #include "WMIUtils.h"
 
@@ -45,16 +46,10 @@ WMIService::~WMIService()
 {
 }
 
-void WMIService::Close(JNIEnv* pJavaEnv)
+void WMIService::Release(JNIEnv* pJavaEnv)
 {
-	if (pWbemServices != NULL) {
-		pWbemServices->Release();
-		pWbemServices = NULL;
-	}
-	if (pWbemLocator != NULL) {
-		pWbemLocator->Release();
-		pWbemLocator = NULL;
-	}
+	pWbemServices = NULL;
+	pWbemLocator = NULL;
 	WriteLog(pJavaEnv, LT_INFO, L"WMI Service closed");
 
 	if (serviceJavaObject != NULL) {
@@ -396,17 +391,18 @@ bool WMIService::RemoveObjectSink(JNIEnv* pJavaEnv, WMIObjectSink* pSink)
 
 jobject WMIService::MakeWMIObject(JNIEnv* pJavaEnv, IWbemClassObject *pClassObject)
 {
-	// Fill class object properties
-	HRESULT hres = pClassObject->BeginEnumeration(0);
-	if (FAILED(hres)) {
-		this->WriteLog(pJavaEnv, LT_ERROR, L"Could not start class object properties enumeration", hres);
-		return NULL;
-	}
-
 	// Create instance
 	jobject pWmiObject = pJavaEnv->NewObject(jniMeta.wmiObjectClass, jniMeta.wmiObjectConstructor);
 	if (pWmiObject == NULL) {
-		this->WriteLog(pJavaEnv, LT_ERROR, L"Can't instantiate WMI java object", hres);
+		this->WriteLog(pJavaEnv, LT_ERROR, L"Can't instantiate WMI java object");
+		return NULL;
+	}
+	WMIObject* pObject = new WMIObject(pJavaEnv, *this, pWmiObject);
+/*
+	// Fill class object properties
+	hres = pClassObject->BeginEnumeration(0);
+	if (FAILED(hres)) {
+		this->WriteLog(pJavaEnv, LT_ERROR, L"Could not start class object properties enumeration", hres);
 		return NULL;
 	}
 
@@ -444,7 +440,7 @@ jobject WMIService::MakeWMIObject(JNIEnv* pJavaEnv, IWbemClassObject *pClassObje
 	if (FAILED(hres)) {
 		this->WriteLog(pJavaEnv, LT_ERROR, L"Could not finish class object enumeration", hres);
 	}
-
+*/
 	if (pJavaEnv->ExceptionCheck()) {
 		DeleteLocalRef(pJavaEnv, pWmiObject);
 		return NULL;

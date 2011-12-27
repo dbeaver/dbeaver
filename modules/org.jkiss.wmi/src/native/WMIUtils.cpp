@@ -154,6 +154,7 @@ bstr_t& operator += (bstr_t& str, long arg)
 
 int main(char** args)
 {
+/*
    int const x = 100;
    int* y;
    int const** z = &y;
@@ -161,4 +162,5 @@ int main(char** args)
    *y = 200;
 
    int c = 234;
+*/
 }

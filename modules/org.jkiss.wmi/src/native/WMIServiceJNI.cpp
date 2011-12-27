@@ -50,7 +50,7 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_close
 {
 	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
 	if (pService != NULL) {
-		pService->Close(pJavaEnv);
+		pService->Release(pJavaEnv);
 		delete pService;
 	}
 }

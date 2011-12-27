@@ -39,7 +39,7 @@ public:
 	WMIService(JNIEnv* pJavaEnv, jobject javaObject);
 	~WMIService();
 
-	void Close(JNIEnv* pJavaEnv);
+	void Release(JNIEnv* pJavaEnv);
 
 	void Connect(
 		JNIEnv* pJavaEnv,
@@ -82,8 +82,8 @@ private:
 	// Private vars
 	jobject serviceJavaObject;
 
-	IWbemLocator *pWbemLocator;
-	IWbemServices *pWbemServices;
+	CComPtr<IWbemLocator> pWbemLocator;
+	CComPtr<IWbemServices> pWbemServices;
 
 	JNIMetaData jniMeta;
 

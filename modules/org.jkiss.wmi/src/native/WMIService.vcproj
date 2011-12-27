@@ -62,6 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="..\..\lib\WMIService.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -136,6 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="..\..\lib\WMIService.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -202,11 +204,15 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\WMIObjectSink.cpp"
+				RelativePath=".\WMIObject.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\WMISensor.cpp"
+				RelativePath=".\WMIObjectJNI.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\WMIObjectSink.cpp"
 				>
 			</File>
 			<File
@@ -215,6 +221,10 @@
 			</File>
 			<File
 				RelativePath=".\WMIServiceJNI.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\WMIServiceModule.cpp"
 				>
 			</File>
 			<File
@@ -233,6 +243,14 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WMIObject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WMIObjectJNI.h"
 				>
 			</File>
 			<File

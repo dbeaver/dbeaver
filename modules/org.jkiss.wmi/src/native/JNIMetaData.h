@@ -24,7 +24,7 @@ public:
 
 	jclass wmiObjectClass;
 	jmethodID wmiObjectConstructor;
-	jmethodID wmiObjectAddPropertyMethod;
+	jfieldID wmiObjectHandleField;
 
 	jclass wmiObjectSinkClass;
 	jmethodID wmiObjectSinkIndicateMethod;
