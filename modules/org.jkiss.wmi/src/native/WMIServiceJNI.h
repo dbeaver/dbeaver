@@ -10,31 +10,23 @@ extern "C" {
 /*
  * Class:     org_jkiss_wmi_service_WMIService
  * Method:    connect
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_connect
   (JNIEnv *, jobject, jstring, jstring, jstring, jstring, jstring, jstring);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIService
- * Method:    disconnect
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_close
-  (JNIEnv *, jobject);
-
-/*
- * Class:     org_jkiss_wmi_service_WMIService
  * Method:    executeQuery
- * Signature: (Ljava/lang/String;)[Lcom/symantec/cas/ucf/sensors/wmi/service/WMIObject;
+ * Signature: (Ljava/lang/String;Z)[Lorg/jkiss/wmi/service/WMIObject;
  */
 JNIEXPORT jobjectArray JNICALL Java_org_jkiss_wmi_service_WMIService_executeQuery
-  (JNIEnv *, jobject, jstring, jboolean );
+  (JNIEnv *, jobject, jstring, jboolean);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIService
  * Method:    executeQueryAsync
- * Signature: (Ljava/lang/String;Lcom/symantec/cas/ucf/sensors/wmi/service/WMIObjectSink;Z)V
+ * Signature: (Ljava/lang/String;Lorg/jkiss/wmi/service/WMIObjectSink;Z)V
  */
 JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_executeQueryAsync
   (JNIEnv *, jobject, jstring, jobject, jboolean);
@@ -42,10 +34,18 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_executeQueryAsync
 /*
  * Class:     org_jkiss_wmi_service_WMIService
  * Method:    cancelAsyncOperation
- * Signature: ()V
+ * Signature: (Lorg/jkiss/wmi/service/WMIObjectSink;)V
  */
 JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_cancelAsyncOperation
   (JNIEnv *, jobject, jobject);
+
+/*
+ * Class:     org_jkiss_wmi_service_WMIService
+ * Method:    close
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_close
+  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }
