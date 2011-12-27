@@ -43,11 +43,11 @@ JNIMetaData::JNIMetaData(JNIEnv* pEnv) : pJavaEnv(pEnv)
 	wmiObjectSinkIndicateMethod = FindJavaMethod(
 		wmiObjectSinkClass,
 		"indicate",
-		"([Lcom/symantec/cas/ucf/sensors/wmi/service/WMIObject;)V");
+		"([Lorg/jkiss/wmi/service/WMIObject;)V");
 	wmiObjectSinkSetStatusMethod = FindJavaMethod(
 		wmiObjectSinkClass,
 		"setStatus",
-		"(Lcom/symantec/cas/ucf/sensors/wmi/service/WMIObjectSinkStatus;ILjava/lang/String;Lcom/symantec/cas/ucf/sensors/wmi/service/WMIObject;)V");
+		"(Lorg/jkiss/wmi/service/WMIObjectSinkStatus;ILjava/lang/String;Lorg/jkiss/wmi/service/WMIObject;)V");
 		 
 	wmiObjectSinkStatusClass = FindJavaClass(CLASS_WMI_OBJECT_SINK_STATUS);
 }

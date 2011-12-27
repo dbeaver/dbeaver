@@ -20,7 +20,7 @@ LONG GetSafeArraySize(SAFEARRAY* pSafeArray);
 jlong GetCurrentJavaTime();
 jobjectArray MakeJavaArrayFromVector(JNIEnv* pJavaEnv, jclass clazz, const JavaObjectVector& objects);
 
-#define EXCEPTION_WMI_GENERAL ("com/symantec/cas/ucf/sensors/wmi/service/WMIException")
+#define EXCEPTION_WMI_GENERAL ("org/jkiss/wmi/service/WMIException")
 
 #define CHECK_JAVA_EXCEPTION() if (pJavaEnv->ExceptionCheck()) return;
 #define CHECK_JAVA_EXCEPTION_NULL() if (pJavaEnv->ExceptionCheck()) return NULL;

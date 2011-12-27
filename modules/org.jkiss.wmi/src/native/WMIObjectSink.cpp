@@ -128,7 +128,7 @@ HRESULT WMIObjectSink::SetStatus(
 	jfieldID statusEnumID = pJavaEnv->GetStaticFieldID(
 		pService->GetJNIMeta().wmiObjectSinkStatusClass,
 		statusName,
-		"Lcom/symantec/cas/ucf/sensors/wmi/service/WMIObjectSinkStatus;");
+		"Lorg/jkiss/wmi/service/WMIObjectSinkStatus;");
 	_ASSERT(statusEnumID != NULL);
 	jobject statusEnum = pJavaEnv->GetStaticObjectField(
 		pService->GetJNIMeta().wmiObjectSinkStatusClass,
