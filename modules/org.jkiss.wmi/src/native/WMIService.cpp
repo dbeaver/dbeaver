@@ -23,8 +23,6 @@ JavaVM* WMIService::pJavaVM = NULL;
 //static ThreadInfoVector threadInfos;
 
 WMIService::WMIService(JNIEnv* pJavaEnv, jobject javaObject) :
-	pWbemLocator(NULL),
-	pWbemServices(NULL),
 	jniMeta(pJavaEnv)
 {
 	serviceJavaObject = pJavaEnv->NewGlobalRef(javaObject);

@@ -5,10 +5,10 @@
 
 #include <jni.h>
 
-static const char* CLASS_WMI_SERVICE = "com/symantec/cas/ucf/sensors/wmi/service/WMIService";
-static const char* CLASS_WMI_OBJECT = "com/symantec/cas/ucf/sensors/wmi/service/WMIObject";
-static const char* CLASS_WMI_OBJECT_SINK = "com/symantec/cas/ucf/sensors/wmi/service/WMIObjectSink";
-static const char* CLASS_WMI_OBJECT_SINK_STATUS = "com/symantec/cas/ucf/sensors/wmi/service/WMIObjectSinkStatus";
+static const char* CLASS_WMI_SERVICE = "org/jkiss/wmi/service/WMIService";
+static const char* CLASS_WMI_OBJECT = "org/jkiss/wmi/service/WMIObject";
+static const char* CLASS_WMI_OBJECT_SINK = "org/jkiss/wmi/service/WMIObjectSink";
+static const char* CLASS_WMI_OBJECT_SINK_STATUS = "org/jkiss/wmi/service/WMIObjectSinkStatus";
 
 class JNIMetaData
 {

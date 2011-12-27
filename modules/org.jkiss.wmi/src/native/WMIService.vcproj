@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\lib\WMIService.dll"
+				OutputFile="..\..\lib\jkiss_wmi_x86.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -120,7 +120,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=";D:\Java\jdk1.5.0_05\include;D:\Java\jdk1.5.0_05\include\win32"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;WMISENSOR_EXPORTS"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -137,7 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\lib\WMIService.dll"
+				OutputFile="..\..\lib\jkiss_wmi_x86.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"

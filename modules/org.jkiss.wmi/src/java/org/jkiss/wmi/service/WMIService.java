@@ -7,6 +7,8 @@ package org.jkiss.wmi.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.File;
+
 /**
  * WMI Service
  * Uses native Win32 API access
@@ -46,14 +48,14 @@ public class WMIService {
     {
         try {
             // load native library
-            System.load("jkiss_wmi_x86.dll");
+            System.load(new File("jkiss_wmi_x86.dll").getAbsolutePath());
         } catch (UnsatisfiedLinkError e) {
             throw new RuntimeException("Can not link to DLL.", e);
         }
 
         serviceLog.info("Start service");
         try {
-            this.connect("bq", "aelita", "jurgen", "CityMan78#", null, "\\root\\cimv2");
+            this.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
             //service.connect(null, "localhost", null, null, null);
             final long curTime = System.currentTimeMillis();
 
