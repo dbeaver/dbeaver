@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WMISensor", "WMISensor.vcproj", "{00A00D3E-4A58-45C1-91FD-D9ECB48D52F7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WMIService", "WMIService.vcproj", "{00A00D3E-4A58-45C1-91FD-D9ECB48D52F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

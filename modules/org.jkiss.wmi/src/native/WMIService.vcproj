@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="WMISensor"
+	Name="WMIService"
 	ProjectGUID="{00A00D3E-4A58-45C1-91FD-D9ECB48D52F7}"
 	RootNamespace="WMISensor"
 	Keyword="Win32Proj"
