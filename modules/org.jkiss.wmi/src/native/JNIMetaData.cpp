@@ -23,6 +23,7 @@ JNIMetaData::JNIMetaData(JNIEnv* pEnv) : pJavaEnv(pEnv)
 	javaLangDoubleClass = FindJavaClass("java/lang/Double");
 	javaLangStringClass = FindJavaClass("java/lang/String");
 	javaUtilDateClass = FindJavaClass("java/util/Date");
+	javaUtilListClass = FindJavaClass("java/util/List");
 
 	javaLangByteConstructor = FindJavaMethod(javaLangByteClass, "<init>", "(B)V");
 	javaLangCharConstructor = FindJavaMethod(javaLangCharClass, "<init>", "(C)V");
@@ -33,7 +34,7 @@ JNIMetaData::JNIMetaData(JNIEnv* pEnv) : pJavaEnv(pEnv)
 	javaLangFloatConstructor = FindJavaMethod(javaLangFloatClass, "<init>", "(F)V");
 	javaLangDoubleConstructor = FindJavaMethod(javaLangDoubleClass, "<init>", "(D)V");
 	javaUtilDateConstructor = FindJavaMethod(javaUtilDateClass, "<init>", "(J)V");
-
+	javaUtilListAddMethod = FindJavaMethod(javaUtilListClass, "add", "(Ljava/lang/Object;)Z");
 	javaLangObjectEqualsMethod = FindJavaMethod(javaLangObjectClass, "equals", "(Ljava/lang/Object;)Z");
 
 	wmiServiceClass = FindJavaClass(CLASS_WMI_SERVICE);
@@ -58,6 +59,18 @@ JNIMetaData::JNIMetaData(JNIEnv* pEnv) : pJavaEnv(pEnv)
 		"(Lorg/jkiss/wmi/service/WMIObjectSinkStatus;ILjava/lang/String;Lorg/jkiss/wmi/service/WMIObject;)V");
 		 
 	wmiObjectSinkStatusClass = FindJavaClass(CLASS_WMI_OBJECT_SINK_STATUS);
+
+	wmiObjectPropertyClass = FindJavaClass(CLASS_WMI_OBJECT_PROPERTY);
+	wmiObjectPropertyConstructor = FindJavaMethod(
+		wmiObjectPropertyClass, 
+		"<init>", 
+		"(Lorg/jkiss/wmi/service/WMIObject;Ljava/lang/String;IILjava/lang/Object;)V");
+
+	wmiObjectMethodClass = FindJavaClass(CLASS_WMI_OBJECT_METHOD);
+	wmiObjectMethodConstructor = FindJavaMethod(
+		wmiObjectMethodClass, 
+		"<init>", 
+		"(Lorg/jkiss/wmi/service/WMIObject;Ljava/lang/String;Lorg/jkiss/wmi/service/WMIObject;Lorg/jkiss/wmi/service/WMIObject;)V");
 }
 
 JNIMetaData::~JNIMetaData(void)
@@ -73,10 +86,14 @@ JNIMetaData::~JNIMetaData(void)
 	DeleteClassRef(javaLangDoubleClass);
 	DeleteClassRef(javaLangStringClass);
 	DeleteClassRef(javaUtilDateClass);
+	DeleteClassRef(javaUtilListClass);
+
 	DeleteClassRef(wmiServiceClass);
 	DeleteClassRef(wmiObjectClass);
 	DeleteClassRef(wmiObjectSinkClass);
 	DeleteClassRef(wmiObjectSinkStatusClass);
+	DeleteClassRef(wmiObjectPropertyClass);
+	DeleteClassRef(wmiObjectMethodClass);
 }
 
 JNIMetaData& JNIMetaData::GetMetaData(JNIEnv* pEnv)
@@ -106,7 +123,7 @@ void JNIMetaData::Destroy()
 jclass JNIMetaData::FindJavaClass(const char* className)
 {
 	jclass clazz = pJavaEnv->FindClass(className);
-	//_ASSERT_EXPR(clazz != NULL, CComBSTR(className));
+	_ASSERT(clazz != NULL);
 	if (clazz == NULL) {
 		return NULL;
 	}
@@ -117,6 +134,9 @@ jclass JNIMetaData::FindJavaClass(const char* className)
 
 jmethodID JNIMetaData::FindJavaMethod(jclass clazz, const char* methodName, const char* methodSig)
 {
+	if (clazz == NULL) {
+		return NULL;
+	}
 	jmethodID mid = pJavaEnv->GetMethodID(
 		clazz,
 		methodName,

@@ -77,11 +77,9 @@ public class WMIService {
                     totalObjects += objects.length;
                     for (WMIObject object : objects) {
                         try {
-                            String objectText = object.getObjectText();
-                            if (objectText == null) {
-
-                            }
-                        } catch (WMIException e) {
+                            examineObject(object);
+                            //object.release();
+                        } catch (Throwable e) {
                             e.printStackTrace();
                         }
                     }
@@ -99,7 +97,8 @@ public class WMIService {
                 }
             };
             this.executeQueryAsync(
-                "select * from Win32_NTLogEvent",
+                //"select * from Win32_NTLogEvent",
+                "select * from __Namespace",
                 wmiObjectSink,
                 true
             );
@@ -126,27 +125,33 @@ public class WMIService {
 
     private static void printObject(WMIObject object)
     {
-        System.out.println("====== " + object);
-
         try {
-            for (WMIObjectProperty prop : object.getProperties()) {
-                Object propValue = prop.getValue();
-                if (propValue instanceof Object[]) {
-                    System.out.print("\t" + prop.getName() + "= { ");
-                    Object[] array = (Object[])propValue;
-                    for (int i = 0; i < array.length; i++) {
-                        if (i > 0) System.out.print(", ");
-                        System.out.print("'" + array[i] + "'");
-                    }
-                    System.out.println(" }");
-                } else if (propValue instanceof byte[]) {
-                    System.out.println("\t" + prop.getName() + "= { byte array } " + ((byte[])propValue).length);
-                } else {
-                    System.out.println("\t" + prop.getName() + "=" + propValue);
-                }
-            }
+            System.out.println("====== " + object.getObjectText());
         } catch (WMIException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void examineObject(WMIObject object) throws WMIException
+    {
+        final String objectText = object.getObjectText();
+        //final Object name = object.getValue("Name");
+
+        for (WMIObjectProperty prop : object.getProperties()) {
+            Object propValue = prop.getValue();
+            if (propValue instanceof Object[]) {
+                //System.out.print("\t" + prop.getName() + "= { ");
+                Object[] array = (Object[])propValue;
+                for (int i = 0; i < array.length; i++) {
+                    //if (i > 0) System.out.print(", ");
+                    //System.out.print("'" + array[i] + "'");
+                }
+                //System.out.println(" }");
+            } else if (propValue instanceof byte[]) {
+                //System.out.println("\t" + prop.getName() + "= { byte array } " + ((byte[])propValue).length);
+            } else {
+                //System.out.println("\t" + prop.getName() + "=" + propValue);
+            }
         }
     }
 }

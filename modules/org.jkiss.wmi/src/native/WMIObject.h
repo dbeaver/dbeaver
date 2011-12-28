@@ -12,7 +12,9 @@ public:
 	~WMIObject();
 
 	void Release(JNIEnv* pJavaEnv, jobject javaObject);
-	void GetObjectText(BSTR* pstrObjectText);
+	jstring GetObjectText(JNIEnv* pJavaEnv);
+	jobject GetPropertyValue(JNIEnv* pJavaEnv, jstring propName);
+	void ReadProperties(JNIEnv* pJavaEnv, jobject javaObject, jobject propList);
 
 	static WMIObject* GetFromObject(JNIEnv* pJavaEnv, jobject javaObject);
 private:

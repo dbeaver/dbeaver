@@ -6,6 +6,8 @@
 #include "WMIObject.h"
 #include "WMIUtils.h"
 
+static const wchar_t* ERROR_NOT_INITIALIZED = L"WMI object was not initialized or was disposed";
+
 /*
  * Class:     org_jkiss_wmi_service_WMIObject
  * Method:    readObjectText
@@ -15,15 +17,10 @@ JNIEXPORT jstring JNICALL Java_org_jkiss_wmi_service_WMIObject_readObjectText(JN
 {
 	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
 	if (pObject == NULL) {
-		THROW_COMMON_EXCEPTION(L"WMI Object is not initialized");
+		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
 		return NULL;
 	}
-	CComBSTR objectText;
-	pObject->GetObjectText(&objectText);
-	if (pJavaEnv->ExceptionCheck()) {
-		return NULL;
-	}
-	return MakeJavaString(pJavaEnv, objectText);
+	return pObject->GetObjectText(pJavaEnv);
 }
 
 /*
@@ -31,10 +28,14 @@ JNIEXPORT jstring JNICALL Java_org_jkiss_wmi_service_WMIObject_readObjectText(JN
  * Method:    readPropertyValue
  * Signature: (Ljava/lang/String;)Ljava/lang/Object;
  */
-JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIObject_readPropertyValue
-  (JNIEnv *, jobject, jstring)
+JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIObject_readPropertyValue(JNIEnv* pJavaEnv, jobject object, jstring propName)
 {
-	return NULL;
+	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
+	if (pObject == NULL) {
+		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
+		return NULL;
+	}
+	return pObject->GetPropertyValue(pJavaEnv, propName);
 }
 
 /*
@@ -42,9 +43,14 @@ JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIObject_readPropertyValue
  * Method:    writePropertyValue
  * Signature: (Ljava/lang/String;Ljava/lang/Object;)V
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_writePropertyValue
-  (JNIEnv *, jobject, jstring, jobject)
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_writePropertyValue(JNIEnv* pJavaEnv, jobject object, jstring propName, jobject propValue)
 {
+	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
+	if (pObject == NULL) {
+		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
+		return;
+	}
+
 	return;
 }
 
@@ -53,10 +59,15 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_writePropertyValue
  * Method:    readProperties
  * Signature: (Ljava/util/List;)Ljava/util/List;
  */
-JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIObject_readProperties
-  (JNIEnv *, jobject, jobject)
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readProperties(JNIEnv* pJavaEnv, jobject object, jobject propList)
 {
-	return NULL;
+	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
+	if (pObject == NULL) {
+		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
+		return;
+	}
+
+	pObject->ReadProperties(pJavaEnv, object, propList);
 }
 
 /*
@@ -64,10 +75,13 @@ JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIObject_readProperties
  * Method:    readMethod
  * Signature: (Ljava/util/List;)Ljava/util/List;
  */
-JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIObject_readMethod
-  (JNIEnv *, jobject, jobject)
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readMethods(JNIEnv* pJavaEnv, jobject object, jobject methodList)
 {
-	return NULL;
+	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
+	if (pObject == NULL) {
+		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
+		return;
+	}
 }
 
 /*
@@ -75,9 +89,13 @@ JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIObject_readMethod
  * Method:    readQualifiers
  * Signature: (ZLjava/lang/String;Ljava/util/List;)V
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readQualifiers
-  (JNIEnv *, jobject, jboolean, jstring, jobject)
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readQualifiers(JNIEnv* pJavaEnv, jobject object, jboolean, jstring, jobject)
 {
+	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
+	if (pObject == NULL) {
+		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
+		return;
+	}
 
 }
 
@@ -90,7 +108,7 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_releaseObject(JNIEnv
 {
 	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
 	if (pObject == NULL) {
-		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
+		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
 		return;
 	}
 	pObject->Release(pJavaEnv, object);

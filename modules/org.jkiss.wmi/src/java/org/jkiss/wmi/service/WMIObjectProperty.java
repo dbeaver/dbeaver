@@ -58,4 +58,9 @@ public class WMIObjectProperty extends WMIObjectAttribute {
         return value;
     }
 
+    @Override
+    public String toString()
+    {
+        return getName() + "=" + value;
+    }
 }

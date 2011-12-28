@@ -94,7 +94,7 @@ public class WMIObject extends WMIQualifiedObject {
                 return;
             }
             methods = new ArrayList<WMIObjectMethod>();
-            readMethod(methods);
+            readMethods(methods);
         }
     }
 
@@ -126,10 +126,10 @@ public class WMIObject extends WMIQualifiedObject {
     private native void writePropertyValue(String name, Object value)
         throws WMIException;
 
-    private native List<WMIObjectMethod> readProperties(List<WMIObjectProperty> properties)
+    private native void readProperties(List<WMIObjectProperty> properties)
         throws WMIException;
 
-    private native List<WMIObjectMethod> readMethod(List<WMIObjectMethod> method)
+    private native void readMethods(List<WMIObjectMethod> method)
         throws WMIException;
 
     native void readQualifiers(boolean property, String attrName, List<WMIQualifier> qualifiers)

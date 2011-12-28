@@ -7,20 +7,6 @@
 #include "JNIMetaData.h"
 
 
-enum JavaType {
-	JT_CHAR,
-	JT_BYTE,
-	JT_BOOL,
-	JT_SHORT,
-	JT_INT,
-	JT_LONG,
-	JT_FLOAT,
-	JT_DOUBLE,
-	JT_DATE,
-	JT_STRING,
-	JT_ARRAY
-};
-
 enum LogType {
 	LT_TRACE,
 	LT_DEBUG,
@@ -67,19 +53,6 @@ public:
 public:
 	jobject MakeWMIObject (JNIEnv* pJavaEnv, IWbemClassObject *pClassObject);
 	bool RemoveObjectSink(JNIEnv* pJavaEnv, WMIObjectSink* pSink);
-
-private:
-
-	jobject MakeJavaFromVariant(JNIEnv* pJavaEnv, CComVariant& var, CIMTYPE cimType = CIM_ILLEGAL);
-
-	jbyteArray MakeJavaByteArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray);
-	jbooleanArray MakeJavaBoolArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray);
-	jshortArray MakeJavaShortArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray);
-	jintArray MakeJavaIntArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray);
-	jlongArray MakeJavaLongArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray);
-	jfloatArray MakeJavaFloatArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray);
-	jdoubleArray MakeJavaDoubleArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray);
-	jobjectArray MakeJavaObjectArrayFromSafeVector(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray, JavaType elementType, jclass arrayClass);
 
 private:
 	// Private vars

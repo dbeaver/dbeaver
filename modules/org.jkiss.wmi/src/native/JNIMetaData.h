@@ -9,6 +9,8 @@ static const char* CLASS_WMI_SERVICE = "org/jkiss/wmi/service/WMIService";
 static const char* CLASS_WMI_OBJECT = "org/jkiss/wmi/service/WMIObject";
 static const char* CLASS_WMI_OBJECT_SINK = "org/jkiss/wmi/service/WMIObjectSink";
 static const char* CLASS_WMI_OBJECT_SINK_STATUS = "org/jkiss/wmi/service/WMIObjectSinkStatus";
+static const char* CLASS_WMI_OBJECT_PROPERTY = "org/jkiss/wmi/service/WMIObjectProperty";
+static const char* CLASS_WMI_OBJECT_METHOD = "org/jkiss/wmi/service/WMIObjectMethod";
 
 class JNIMetaData
 {
@@ -32,8 +34,11 @@ public:
 	jclass wmiObjectSinkClass;
 	jmethodID wmiObjectSinkIndicateMethod;
 	jmethodID wmiObjectSinkSetStatusMethod;
-
 	jclass wmiObjectSinkStatusClass;
+	jclass wmiObjectPropertyClass;
+	jmethodID wmiObjectPropertyConstructor;
+	jclass wmiObjectMethodClass;
+	jmethodID wmiObjectMethodConstructor;
 
 	jclass javaLangObjectClass;
 	jclass javaLangByteClass;
@@ -46,6 +51,7 @@ public:
 	jclass javaLangDoubleClass;
 	jclass javaLangStringClass;
 	jclass javaUtilDateClass;
+	jclass javaUtilListClass;
 
 	jmethodID javaLangByteConstructor;
 	jmethodID javaLangCharConstructor;
@@ -56,7 +62,7 @@ public:
 	jmethodID javaLangFloatConstructor;
 	jmethodID javaLangDoubleConstructor;
 	jmethodID javaUtilDateConstructor;
-
+	jmethodID javaUtilListAddMethod;
 	jmethodID javaLangObjectEqualsMethod;
 
 private:
