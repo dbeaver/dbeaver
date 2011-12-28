@@ -21,7 +21,12 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_connect(
 	jstring locale,
 	jstring resource)
 {
-	WMIService* pService = new WMIService(pJavaEnv, object);
+	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
+	if (pService != NULL) {
+		THROW_COMMON_EXCEPTION(L"WMI Service is already connected");
+		return;
+	}
+	pService = new WMIService(pJavaEnv, object);
 	if (pJavaEnv->ExceptionCheck()) {
 		return;
 	}
@@ -55,11 +60,23 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_close
 	}
 }
 
+JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIService_openNamespace
+  (JNIEnv * pJavaEnv, jobject object, jstring nsName)
+{
+	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
+	if (pService == NULL) {
+		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
+		return NULL;
+	}
+
+	CComBSTR bstrNS;
+	::GetJavaString(pJavaEnv, nsName, &bstrNS);
+	return pService->OpenNamespace(pJavaEnv, bstrNS, 0);
+}
 /*
  * Class:     org_jkiss_wmi_service_WMIService
  * Method:    executeQuery
- * Signature: (Ljava/lang/String;)Lcom/symantec/cas/ucf/sensors/wmi/pService/WQLResultSet;
- */
+ *
 JNIEXPORT jobjectArray JNICALL Java_org_jkiss_wmi_service_WMIService_executeQuery(
 	JNIEnv *pJavaEnv, 
 	jobject object, 
@@ -78,14 +95,14 @@ JNIEXPORT jobjectArray JNICALL Java_org_jkiss_wmi_service_WMIService_executeQuer
 	CComBSTR bstrQuery;
 	::GetJavaString(pJavaEnv, query, &bstrQuery);
 	return pService->ExecuteQuery(pJavaEnv, bstrQuery, bSync == JNI_TRUE);
-}
+}*/
 
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_executeQueryAsync(
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_executeQuery(
 	JNIEnv *pJavaEnv, 
 	jobject object, 
 	jstring query,
 	jobject sinkObject,
-	jboolean bSendStatus)
+	jlong lFlags)
 {
 	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
 	if (pService == NULL) {
@@ -102,10 +119,52 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_executeQueryAsync(
 	}
 	CComBSTR bstrQuery;
 	::GetJavaString(pJavaEnv, query, &bstrQuery);
-	pService->ExecuteQueryAsync(pJavaEnv, bstrQuery, sinkObject, bSendStatus == JNI_TRUE);
+	pService->ExecuteQueryAsync(pJavaEnv, bstrQuery, sinkObject, (LONG)lFlags);
 }
 
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_cancelAsyncOperation(
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_enumClasses(
+	JNIEnv *pJavaEnv, 
+	jobject object, 
+	jstring superClass,
+	jobject sinkObject,
+	jlong lFlags)
+{
+	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
+	if (pService == NULL) {
+		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
+		return;
+	}
+	if (sinkObject == NULL) {
+		THROW_COMMON_EXCEPTION(L"NULL sink object specified");
+		return;
+	}
+	CComBSTR bstrSuperClass;
+	::GetJavaString(pJavaEnv, superClass, &bstrSuperClass);
+	//pService->ExecuteQueryAsync(pJavaEnv, bstrQuery, sinkObject, (LONG)lFlags);
+}
+
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_enumInstances(
+	JNIEnv *pJavaEnv, 
+	jobject object, 
+	jstring className,
+	jobject sinkObject,
+	jlong lFlags)
+{
+	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
+	if (pService == NULL) {
+		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
+		return;
+	}
+	if (sinkObject == NULL) {
+		THROW_COMMON_EXCEPTION(L"NULL sink object specified");
+		return;
+	}
+	CComBSTR bstrClassName;
+	::GetJavaString(pJavaEnv, className, &bstrClassName);
+	//pService->ExecuteQueryAsync(pJavaEnv, bstrQuery, sinkObject, (LONG)lFlags);
+}
+
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_cancelSink(
 	JNIEnv *pJavaEnv, 
 	jobject object,
 	jobject sinkObject)

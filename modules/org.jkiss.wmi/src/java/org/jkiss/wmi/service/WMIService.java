@@ -26,16 +26,26 @@ public class WMIService {
     public native void connect(String domain, String host, String user, String password, String locale, String resource)
         throws WMIException;
 
-    public native WMIObject[] executeQuery(String query, boolean sync)
+    public native WMIService openNamespace(String namespace)
         throws WMIException;
 
-    public native void executeQueryAsync(String query, WMIObjectSink sink, boolean sendStatus)
+    //public native WMIObject[] executeQuery(String query, boolean sync)
+    //    throws WMIException;
+
+    public native void executeQuery(String query, WMIObjectSink sink, long flags)
         throws WMIException;
 
-    public native void cancelAsyncOperation(WMIObjectSink sink)
+    public native void enumClasses(String superClass, WMIObjectSink sink, long flags)
+        throws WMIException;
+
+    public native void enumInstances(String className, WMIObjectSink sink, long flags)
+        throws WMIException;
+
+    public native void cancelSink(WMIObjectSink sink)
         throws WMIException;
 
     public native void close();
+
 
     private boolean finished = false;
 
@@ -96,11 +106,11 @@ public class WMIService {
                     finished = true;
                 }
             };
-            this.executeQueryAsync(
-                //"select * from Win32_NTLogEvent",
-                "select * from __Namespace",
+            this.executeQuery(
+                "select * from Win32_NTLogEvent",
+                //"select * from __Namespace",
                 wmiObjectSink,
-                true
+                WMIConstants.WBEM_FLAG_SEND_STATUS
             );
             try {
                 while (!finished) {

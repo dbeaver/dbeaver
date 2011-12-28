@@ -17,26 +17,42 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_connect
 
 /*
  * Class:     org_jkiss_wmi_service_WMIService
+ * Method:    openNamespace
+ * Signature: (Ljava/lang/String;)Lorg/jkiss/wmi/service/WMIService;
+ */
+JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIService_openNamespace
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_jkiss_wmi_service_WMIService
  * Method:    executeQuery
- * Signature: (Ljava/lang/String;Z)[Lorg/jkiss/wmi/service/WMIObject;
+ * Signature: (Ljava/lang/String;Lorg/jkiss/wmi/service/WMIObjectSink;J)V
  */
-JNIEXPORT jobjectArray JNICALL Java_org_jkiss_wmi_service_WMIService_executeQuery
-  (JNIEnv *, jobject, jstring, jboolean);
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_executeQuery
+  (JNIEnv *, jobject, jstring, jobject, jlong);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIService
- * Method:    executeQueryAsync
- * Signature: (Ljava/lang/String;Lorg/jkiss/wmi/service/WMIObjectSink;Z)V
+ * Method:    enumClasses
+ * Signature: (Ljava/lang/String;Lorg/jkiss/wmi/service/WMIObjectSink;J)V
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_executeQueryAsync
-  (JNIEnv *, jobject, jstring, jobject, jboolean);
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_enumClasses
+  (JNIEnv *, jobject, jstring, jobject, jlong);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIService
- * Method:    cancelAsyncOperation
+ * Method:    enumInstances
+ * Signature: (Ljava/lang/String;Lorg/jkiss/wmi/service/WMIObjectSink;J)V
+ */
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_enumInstances
+  (JNIEnv *, jobject, jstring, jobject, jlong);
+
+/*
+ * Class:     org_jkiss_wmi_service_WMIService
+ * Method:    cancelSink
  * Signature: (Lorg/jkiss/wmi/service/WMIObjectSink;)V
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_cancelAsyncOperation
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_cancelSink
   (JNIEnv *, jobject, jobject);
 
 /*

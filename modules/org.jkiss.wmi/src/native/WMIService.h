@@ -41,9 +41,9 @@ public:
 		LPWSTR locale,
 		LPWSTR resource);
 
-	jobjectArray ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR query, bool sync);
-
-	void ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR query, jobject javaSinkObject, bool sendStatus);
+	//jobjectArray ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR query, bool sync);
+	jobject OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags);
+	void ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR query, jobject javaSinkObject, LONG lFlags);
 	void CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject);
 
 	void WriteLog(JNIEnv* pLocalEnv, LogType logType, LPCWSTR wcMessage, HRESULT hr = S_OK);
@@ -53,6 +53,9 @@ public:
 public:
 	jobject MakeWMIObject (JNIEnv* pJavaEnv, IWbemClassObject *pClassObject);
 	bool RemoveObjectSink(JNIEnv* pJavaEnv, WMIObjectSink* pSink);
+
+private:
+	void MakeObjectSink(JNIEnv* pJavaEnv, jobject javaSinkObject, IWbemObjectSink** ppSink);
 
 private:
 	// Private vars
@@ -65,12 +68,6 @@ private:
 	static JavaVM* pJavaVM;
 
 public:
-/*
-	static JNIEnv* AcquireSinkEnv(WMIObjectSink* pSink);
-	static void ReleaseSinkEnv(WMIObjectSink* pSink);
-	static void RemoveSink(WMIObjectSink* pSink);
-*/
-
 	static JavaVM* GetJavaVM() { return pJavaVM; }
 	static void InitStaticState();
 	static void TermStaticState();

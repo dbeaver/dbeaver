@@ -215,7 +215,7 @@ void WMIService::Connect(
 
 	WriteLog(pJavaEnv, LT_INFO, bstr_t("WMI Service connected to ") + (LPCWSTR)resource);
 }
-
+/*
 jobjectArray WMIService::ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR queryString, bool sync)
 {
 	if (queryString == NULL) {
@@ -289,18 +289,20 @@ jobjectArray WMIService::ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR queryString, bool
 	// Make object array from rows vector
 	return ::MakeJavaArrayFromVector(pJavaEnv, JNIMetaData::GetMetaData(pJavaEnv).wmiObjectClass, rows);
 }
+*/
 
-void WMIService::ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR queryString, jobject javaSinkObject, bool sendStatus)
+jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
 {
-	if (queryString == NULL) {
-		THROW_COMMON_EXCEPTION(L"Empty query specified");
-		return;
+	CComPtr<IWbemServices> ptrNamespace;
+	HRESULT hres = pWbemServices->OpenNamespace(nsName, lFlags, NULL, &ptrNamespace, NULL);
+	if (FAILED(hres)) {
+		THROW_COMMON_ERROR(L"Could not open namespace", hres);
 	}
-	if (pWbemServices == NULL) {
-		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
-		return;
-	}
+	return NULL;
+}
 
+void WMIService::MakeObjectSink(JNIEnv* pJavaEnv, jobject javaSinkObject, IWbemObjectSink** ppSink)
+{
 	CComPtr<WMIObjectSink> pSink = new CComObject<WMIObjectSink>();
 	pSink->InitSink(this, pJavaEnv, javaSinkObject);
 
@@ -326,17 +328,35 @@ void WMIService::ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR queryString, jobject
 		}
 	}
 
+    //IEnumWbemClassObject* pEnumerator = NULL;
+	if (pSecuredSink != NULL) {
+		*ppSink = pSecuredSink.Detach();
+	} else {
+		*ppSink = pSink.Detach();
+	}
+
+	sinkList.push_back(pSink);
+}
+
+void WMIService::ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR queryString, jobject javaSinkObject, LONG lFlags)
+{
+	if (queryString == NULL) {
+		THROW_COMMON_EXCEPTION(L"Empty query specified");
+		return;
+	}
+	if (pWbemServices == NULL) {
+		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
+		return;
+	}
+
+	CComPtr<IWbemObjectSink> pActiveSink;
+	MakeObjectSink(pJavaEnv, javaSinkObject, &pActiveSink);
+
     // Use the IWbemServices pointer to make requests of WMI ----
 	this->WriteLog(pJavaEnv, LT_DEBUG, bstr_t(L"Async WQL: ") + queryString);
-    IEnumWbemClassObject* pEnumerator = NULL;
-	long lFlags = WBEM_FLAG_DIRECT_READ;
-	if (sendStatus) lFlags |= WBEM_FLAG_SEND_STATUS;
-	IWbemObjectSink* pActiveSink;
-	if (pSecuredSink != NULL) {
-		pActiveSink = pSecuredSink;
-	} else {
-		pActiveSink = pSink;
-	}
+	lFlags |= WBEM_FLAG_DIRECT_READ;
+	//if (sendStatus) lFlags |= WBEM_FLAG_SEND_STATUS;
+
 	HRESULT hres = pWbemServices->ExecQueryAsync(
         L"WQL",
         queryString,
@@ -347,8 +367,6 @@ void WMIService::ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR queryString, jobject
         THROW_COMMON_ERROR(L"Could not execute query", hres);
 		return;
     }
-
-	sinkList.push_back(pSink);
 }
 
 void WMIService::CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject)
