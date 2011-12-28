@@ -85,6 +85,6 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_releaseObject
 		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
 		return;
 	}
-	pObject->Release(pJavaEnv);
+	pObject->Release(pJavaEnv, object);
 	delete pObject;
 }

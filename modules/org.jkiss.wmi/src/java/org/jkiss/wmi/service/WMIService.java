@@ -102,14 +102,6 @@ public class WMIService {
             catch (InterruptedException e) {
                 // do nothing
             }
-/*
-            try {
-                Thread.sleep(2000);
-            }
-            catch (InterruptedException e) {
-                // do nothing
-            }
-*/
 
         } catch (WMIException e) {
             e.printStackTrace();

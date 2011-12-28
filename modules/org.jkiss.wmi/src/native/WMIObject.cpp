@@ -5,9 +5,9 @@
 #include "WMIObject.h"
 #include "WMIUtils.h"
 
-WMIObject::WMIObject(JNIEnv * pJavaEnv, WMIService& serviceRef, jobject javaObject) :
+WMIObject::WMIObject(JNIEnv * pJavaEnv, WMIService& serviceRef, jobject javaObject, IWbemClassObject* pClassObject) :
 	service(serviceRef),
-	objectJavaObject(javaObject)
+	ptrClassObject(pClassObject)
 {
 	pJavaEnv->SetLongField(javaObject, service.GetJNIMeta().wmiObjectHandleField, (jlong)this);
 }
@@ -17,12 +17,12 @@ WMIObject::~WMIObject()
 	
 }
 
-void WMIObject::Release(JNIEnv* pJavaEnv)
+void WMIObject::Release(JNIEnv* pJavaEnv, jobject javaObject)
 {
-	if (objectJavaObject != NULL) {
-		pJavaEnv->SetLongField(objectJavaObject, service.GetJNIMeta().wmiObjectHandleField, 0l);
-		objectJavaObject = NULL;
+	if (javaObject != NULL) {
+		pJavaEnv->SetLongField(javaObject, service.GetJNIMeta().wmiObjectHandleField, 0l);
 	}
+	ptrClassObject = NULL;
 }
 
 WMIObject* WMIObject::GetFromObject(JNIEnv* pJavaEnv, jobject javaObject)

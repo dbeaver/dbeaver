@@ -8,16 +8,16 @@
 
 class WMIObject {
 public:
-	WMIObject(JNIEnv* pJavaEnv, WMIService& service, jobject javaObject);
+	WMIObject(JNIEnv* pJavaEnv, WMIService& service, jobject javaObject, IWbemClassObject* pClassObject);
 	~WMIObject();
 
-	void Release(JNIEnv* pJavaEnv);
+	void Release(JNIEnv* pJavaEnv, jobject javaObject);
 
 	static WMIObject* GetFromObject(JNIEnv* pJavaEnv, jobject javaObject);
 private:
 	// Private vars
 	WMIService& service;
-	jobject objectJavaObject;
+	CComPtr<IWbemClassObject> ptrClassObject;
 
 public:
 };

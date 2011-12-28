@@ -37,7 +37,7 @@ JNIMetaData::JNIMetaData(JNIEnv* pEnv) : pJavaEnv(pEnv)
 		wmiObjectClass, 
 		"<init>", 
 		"()V");
-	wmiObjectHandleField = pJavaEnv->GetFieldID(wmiServiceClass, "objectHandle", "J");
+	wmiObjectHandleField = pJavaEnv->GetFieldID(wmiObjectClass, "objectHandle", "J");
 
 	wmiObjectSinkClass = FindJavaClass(CLASS_WMI_OBJECT_SINK);
 	wmiObjectSinkIndicateMethod = FindJavaMethod(

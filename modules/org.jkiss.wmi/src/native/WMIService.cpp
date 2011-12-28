@@ -164,13 +164,26 @@ void WMIService::Connect(
     }
 
 	// Connect to server
+	CComBSTR resourceURI;
+	if (resource != NULL) {
+		resourceURI.Append(L"\\\\");
+		if (host != NULL) {
+			resourceURI.Append(host);
+		} else {
+			resourceURI.Append(L".");
+		}
+		if (resource[0] != '\\') {
+			resourceURI.Append(L"\\");
+		}
+		resourceURI.Append(resource);
+	}
 	CComBSTR resourceDomain;
 	if (domain != NULL) {
 		resourceDomain.Append(L"NTLMDOMAIN:");
 		resourceDomain.Append(domain);
 	}
 	hres = pWbemLocator->ConnectServer(
-        resource,
+        resourceURI,
 		user,				// User name
 		password,		// User password
 		locale == NULL ? L"MS_409" : locale,	// Locale
@@ -217,7 +230,7 @@ jobjectArray WMIService::ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR queryString, bool
     // Use the IWbemServices pointer to make requests of WMI ----
 	this->WriteLog(pJavaEnv, LT_DEBUG, bstr_t(L"WQL: ") + queryString);
 	jlong startTime = ::GetCurrentJavaTime();
-    IEnumWbemClassObject* pEnumerator = NULL;
+    CComPtr<IEnumWbemClassObject> pEnumerator;
 	long lFlags = WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_DIRECT_READ;
 	if (!sync) lFlags |= WBEM_FLAG_RETURN_IMMEDIATELY;
     HRESULT hres = pWbemServices->ExecQuery(
@@ -243,7 +256,7 @@ jobjectArray WMIService::ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR queryString, bool
 
 	int objectsCount = 0;
 	while (pEnumerator != NULL) {
-		IWbemClassObject *pClassObject = NULL;
+		CComPtr<IWbemClassObject> pClassObject;
 		ULONG uReturn = 0;
         hres = pEnumerator->Next(WBEM_INFINITE, 1, &pClassObject, &uReturn);
         if (uReturn == 0) {
@@ -255,18 +268,12 @@ jobjectArray WMIService::ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR queryString, bool
 		}
 		objectsCount++;
 		jobject rowObject = MakeWMIObject(pJavaEnv, pClassObject);
-		if (pClassObject != NULL) {
-			pClassObject->Release();
-		}
 
 		CHECK_JAVA_EXCEPTION_NULL();
 
 		if (rowObject != NULL) {
 			rows.push_back(rowObject);
 		}
-	}
-	if (pEnumerator != NULL) {
-		pEnumerator->Release();
 	}
 	{
 		jlong endTime = ::GetCurrentJavaTime();
@@ -395,7 +402,7 @@ jobject WMIService::MakeWMIObject(JNIEnv* pJavaEnv, IWbemClassObject *pClassObje
 		this->WriteLog(pJavaEnv, LT_ERROR, L"Can't instantiate WMI java object");
 		return NULL;
 	}
-	WMIObject* pObject = new WMIObject(pJavaEnv, *this, pWmiObject);
+	WMIObject* pObject = new WMIObject(pJavaEnv, *this, pWmiObject, pClassObject);
 /*
 	// Fill class object properties
 	hres = pClassObject->BeginEnumeration(0);
