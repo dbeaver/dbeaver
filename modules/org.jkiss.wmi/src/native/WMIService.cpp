@@ -22,12 +22,11 @@ static CComCriticalSection csSinkThreads;
 JavaVM* WMIService::pJavaVM = NULL;
 //static ThreadInfoVector threadInfos;
 
-WMIService::WMIService(JNIEnv* pJavaEnv, jobject javaObject) :
-	jniMeta(pJavaEnv)
+WMIService::WMIService(JNIEnv* pJavaEnv, jobject javaObject)
 {
 	serviceJavaObject = pJavaEnv->NewGlobalRef(javaObject);
 	if (!pJavaEnv->ExceptionCheck()) {
-		pJavaEnv->SetLongField(serviceJavaObject, jniMeta.wmiServiceHandleField, (jlong)this);
+		pJavaEnv->SetLongField(serviceJavaObject, JNIMetaData::GetMetaData(pJavaEnv).wmiServiceHandleField, (jlong)this);
 	}
 
 	{
@@ -51,7 +50,7 @@ void WMIService::Release(JNIEnv* pJavaEnv)
 	WriteLog(pJavaEnv, LT_INFO, L"WMI Service closed");
 
 	if (serviceJavaObject != NULL) {
-		pJavaEnv->SetLongField(serviceJavaObject, jniMeta.wmiServiceHandleField, 0);
+		pJavaEnv->SetLongField(serviceJavaObject, JNIMetaData::GetMetaData(pJavaEnv).wmiServiceHandleField, 0);
 		pJavaEnv->DeleteGlobalRef(serviceJavaObject);
 		serviceJavaObject = NULL;
 	}
@@ -88,6 +87,7 @@ void WMIService::WriteLog(JNIEnv* pLocalEnv, LogType logType, LPCWSTR wcMessage,
 			return;
 	}
 
+	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pLocalEnv);
 	jobject logObject = pLocalEnv->GetObjectField(serviceJavaObject, jniMeta.wmiServiceLogField);
 	_ASSERT(logObject != NULL);
 	if (logObject != NULL) {
@@ -287,7 +287,7 @@ jobjectArray WMIService::ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR queryString, bool
 	}
 
 	// Make object array from rows vector
-	return ::MakeJavaArrayFromVector(pJavaEnv, jniMeta.wmiObjectClass, rows);
+	return ::MakeJavaArrayFromVector(pJavaEnv, JNIMetaData::GetMetaData(pJavaEnv).wmiObjectClass, rows);
 }
 
 void WMIService::ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR queryString, jobject javaSinkObject, bool sendStatus)
@@ -368,7 +368,7 @@ void WMIService::CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject)
 	for (ObjectSinkVector::iterator i = sinkList.begin(); i != sinkList.end(); i++) {
 		jboolean bEquals = pJavaEnv->CallBooleanMethod(
 			javaSinkObject, 
-			jniMeta.javaLangObjectEqualsMethod, 
+			JNIMetaData::GetMetaData(pJavaEnv).javaLangObjectEqualsMethod, 
 			(*i)->GetJavaSinkObject());
 		if (bEquals == JNI_TRUE) {
 			pSink = (*i);
@@ -397,6 +397,7 @@ bool WMIService::RemoveObjectSink(JNIEnv* pJavaEnv, WMIObjectSink* pSink)
 jobject WMIService::MakeWMIObject(JNIEnv* pJavaEnv, IWbemClassObject *pClassObject)
 {
 	// Create instance
+	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 	jobject pWmiObject = pJavaEnv->NewObject(jniMeta.wmiObjectClass, jniMeta.wmiObjectConstructor);
 	if (pWmiObject == NULL) {
 		this->WriteLog(pJavaEnv, LT_ERROR, L"Can't instantiate WMI java object");
@@ -456,6 +457,7 @@ jobject WMIService::MakeWMIObject(JNIEnv* pJavaEnv, IWbemClassObject *pClassObje
 
 jobject WMIService::MakeJavaFromVariant(JNIEnv* pJavaEnv, CComVariant& var, CIMTYPE cimType)
 {
+	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 	JavaType javaType;
 
 	VARTYPE varType = var.vt;

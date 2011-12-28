@@ -160,9 +160,9 @@ public class DBNResource extends DBNNode
 
     private DBNNode makeNode(IResource resource)
     {
-        if (resource.isHidden()) {
-            return null;
-        }
+//        if (resource.isHidden()) {
+//            return null;
+//        }
         if (resource.getParent() instanceof IProject && resource.getName().startsWith(".")) {
             // Skip project config
             return null;

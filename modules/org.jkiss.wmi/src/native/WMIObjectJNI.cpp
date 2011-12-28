@@ -11,10 +11,19 @@
  * Method:    readObjectText
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_org_jkiss_wmi_service_WMIObject_readObjectText
-  (JNIEnv *, jobject)
+JNIEXPORT jstring JNICALL Java_org_jkiss_wmi_service_WMIObject_readObjectText(JNIEnv* pJavaEnv, jobject object)
 {
-	return NULL;
+	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
+	if (pObject == NULL) {
+		THROW_COMMON_EXCEPTION(L"WMI Object is not initialized");
+		return NULL;
+	}
+	CComBSTR objectText;
+	pObject->GetObjectText(&objectText);
+	if (pJavaEnv->ExceptionCheck()) {
+		return NULL;
+	}
+	return MakeJavaString(pJavaEnv, objectText);
 }
 
 /*
@@ -77,8 +86,7 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readQualifiers
  * Method:    releaseObject
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_releaseObject
-  (JNIEnv * pJavaEnv, jobject object)
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_releaseObject(JNIEnv* pJavaEnv, jobject object)
 {
 	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
 	if (pObject == NULL) {

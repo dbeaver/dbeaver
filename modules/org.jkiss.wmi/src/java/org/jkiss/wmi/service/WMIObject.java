@@ -11,7 +11,7 @@ import java.util.*;
  */
 public class WMIObject extends WMIQualifiedObject {
 
-    long objectHandle;
+    private long objectHandle;
     private volatile List<WMIObjectProperty> properties;
     private volatile List<WMIObjectMethod> methods;
 

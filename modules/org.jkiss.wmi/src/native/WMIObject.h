@@ -12,11 +12,11 @@ public:
 	~WMIObject();
 
 	void Release(JNIEnv* pJavaEnv, jobject javaObject);
+	void GetObjectText(BSTR* pstrObjectText);
 
 	static WMIObject* GetFromObject(JNIEnv* pJavaEnv, jobject javaObject);
 private:
 	// Private vars
-	WMIService& service;
 	CComPtr<IWbemClassObject> ptrClassObject;
 
 public:

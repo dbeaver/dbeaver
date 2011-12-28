@@ -17,6 +17,7 @@ void WMIObjectSink::InitSink(WMIService* pSvc, JNIEnv* pJavaEnv, jobject javaObj
 
 	pService = pSvc;
 	javaSinkObject = pJavaEnv->NewGlobalRef(javaObject);
+	jniMeta = &JNIMetaData::GetMetaData(pJavaEnv);
 }
 
 void WMIObjectSink::TermSink(JNIEnv* pJavaEnv)
@@ -51,17 +52,18 @@ void WMIObjectSink::AttachThread()
 
 void WMIObjectSink::FlushObjectsCache(JNIEnv* pJavaEnv)
 {
+	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 	JavaObjectVector objects;
 	for (size_t i = 0; i < objectsCache.size(); i++) {
 		objects.push_back(pService->MakeWMIObject(pJavaEnv, objectsCache[i]));
 		objectsCache[i]->Release();
 	}
 	objectsCache.clear();
-	jobjectArray javaArray = ::MakeJavaArrayFromVector(pJavaEnv, pService->GetJNIMeta().wmiObjectClass, objects);
+	jobjectArray javaArray = ::MakeJavaArrayFromVector(pJavaEnv, jniMeta.wmiObjectClass, objects);
 
 	pJavaEnv->CallVoidMethod(
 		javaSinkObject, 
-		pService->GetJNIMeta().wmiObjectSinkIndicateMethod,
+		jniMeta.wmiObjectSinkIndicateMethod,
 		javaArray);
 
 	DeleteLocalRef(pJavaEnv, javaArray);
@@ -126,12 +128,12 @@ HRESULT WMIObjectSink::SetStatus(
 	}
 
 	jfieldID statusEnumID = pJavaEnv->GetStaticFieldID(
-		pService->GetJNIMeta().wmiObjectSinkStatusClass,
+		jniMeta->wmiObjectSinkStatusClass,
 		statusName,
 		"Lorg/jkiss/wmi/service/WMIObjectSinkStatus;");
 	_ASSERT(statusEnumID != NULL);
 	jobject statusEnum = pJavaEnv->GetStaticObjectField(
-		pService->GetJNIMeta().wmiObjectSinkStatusClass,
+		jniMeta->wmiObjectSinkStatusClass,
 		statusEnumID);
 	_ASSERT(statusEnum != NULL);
 	if (statusEnum == NULL) {
@@ -155,7 +157,7 @@ HRESULT WMIObjectSink::SetStatus(
 
 	pJavaEnv->CallVoidMethod(
 		javaSinkObject, 
-		pService->GetJNIMeta().wmiObjectSinkSetStatusMethod,
+		jniMeta->wmiObjectSinkSetStatusMethod,
 		statusEnum,
 		(jint)hResult,
 		javaParam,

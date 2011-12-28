@@ -39,6 +39,11 @@ public:
 	WMIService(JNIEnv* pJavaEnv, jobject javaObject);
 	~WMIService();
 
+	bool IsAlive()
+	{
+		return pWbemServices != NULL;
+	}
+
 	void Release(JNIEnv* pJavaEnv);
 
 	void Connect(
@@ -60,8 +65,6 @@ public:
 	static WMIService* GetFromObject(JNIEnv* pJavaEnv, jobject javaObject);
 
 public:
-	const JNIMetaData& GetJNIMeta() { return jniMeta; }
-
 	jobject MakeWMIObject (JNIEnv* pJavaEnv, IWbemClassObject *pClassObject);
 	bool RemoveObjectSink(JNIEnv* pJavaEnv, WMIObjectSink* pSink);
 
@@ -84,8 +87,6 @@ private:
 
 	CComPtr<IWbemLocator> pWbemLocator;
 	CComPtr<IWbemServices> pWbemServices;
-
-	JNIMetaData jniMeta;
 
 	ObjectSinkVector sinkList;
 	static JavaVM* pJavaVM;

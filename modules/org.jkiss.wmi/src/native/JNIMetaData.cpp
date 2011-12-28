@@ -1,6 +1,10 @@
 #include "StdAfx.h"
 #include "JNIMetaData.h"
 #include "WMIUtils.h"
+#include <map>
+
+typedef std::map<JNIEnv*, JNIMetaData*> MetaDataMap;
+static MetaDataMap s_MetaDataMap;
 
 JNIMetaData::JNIMetaData(JNIEnv* pEnv) : pJavaEnv(pEnv)
 {
@@ -69,6 +73,24 @@ JNIMetaData::~JNIMetaData(void)
 	DeleteClassRef(wmiObjectClass);
 	DeleteClassRef(wmiObjectSinkClass);
 	DeleteClassRef(wmiObjectSinkStatusClass);
+}
+
+JNIMetaData& JNIMetaData::GetMetaData(JNIEnv* pEnv)
+{
+	JNIMetaData* pMetaData = s_MetaDataMap[pEnv];
+	if (pMetaData == NULL) {
+		pMetaData = new JNIMetaData(pEnv);
+		s_MetaDataMap[pEnv] = pMetaData;
+	}
+	return *pMetaData;
+}
+
+void JNIMetaData::Destroy()
+{
+	for (MetaDataMap::iterator iter = s_MetaDataMap.begin(); iter != s_MetaDataMap.end(); iter++) {
+		delete iter->second;
+	}
+	s_MetaDataMap.clear();
 }
 
 jclass JNIMetaData::FindJavaClass(const char* className)

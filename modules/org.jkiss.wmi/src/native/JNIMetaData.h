@@ -16,6 +16,9 @@ public:
 	JNIMetaData(JNIEnv* pEnv);
 	~JNIMetaData();
 
+	static JNIMetaData& GetMetaData(JNIEnv* pEnv);
+	static void Destroy();
+
 	JNIEnv* pJavaEnv;
 
 	jclass wmiServiceClass;

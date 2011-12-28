@@ -75,6 +75,16 @@ public class WMIService {
 
                 public void indicate(WMIObject[] objects) {
                     totalObjects += objects.length;
+                    for (WMIObject object : objects) {
+                        try {
+                            String objectText = object.getObjectText();
+                            if (objectText == null) {
+
+                            }
+                        } catch (WMIException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     System.out.println("Recieved " + objects.length + " (" + totalObjects + ") objects");
                 }
 
