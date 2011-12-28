@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=";D:\Java\jdk1.5.0_05\include;D:\Java\jdk1.5.0_05\include\win32"
+				AdditionalIncludeDirectories="D:\Java\jdk1.6.0_21\include;D:\Java\jdk1.6.0_21\include\win32"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;WMISENSOR_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=";D:\Java\jdk1.5.0_05\include;D:\Java\jdk1.5.0_05\include\win32"
+				AdditionalIncludeDirectories="D:\Java\jdk1.6.0_21\include;D:\Java\jdk1.6.0_21\include\win32"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;WMISENSOR_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"

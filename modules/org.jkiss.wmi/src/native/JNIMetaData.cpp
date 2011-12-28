@@ -3,8 +3,12 @@
 #include "WMIUtils.h"
 #include <map>
 
-typedef std::map<JNIEnv*, JNIMetaData*> MetaDataMap;
-static MetaDataMap s_MetaDataMap;
+//static CComCriticalSection csSinkThreads;
+
+//typedef std::map<JNIEnv*, JNIMetaData*> MetaDataMap;
+//static MetaDataMap s_MetaDataMap;
+
+JNIMetaData* JNIMetaData::instance = NULL;
 
 JNIMetaData::JNIMetaData(JNIEnv* pEnv) : pJavaEnv(pEnv)
 {
@@ -77,14 +81,20 @@ JNIMetaData::~JNIMetaData(void)
 
 JNIMetaData& JNIMetaData::GetMetaData(JNIEnv* pEnv)
 {
+/*
 	JNIMetaData* pMetaData = s_MetaDataMap[pEnv];
 	if (pMetaData == NULL) {
 		pMetaData = new JNIMetaData(pEnv);
 		s_MetaDataMap[pEnv] = pMetaData;
 	}
 	return *pMetaData;
+*/
+	if (instance == NULL) {
+		instance = new JNIMetaData(pEnv);
+	}
+	return *instance;
 }
-
+/*
 void JNIMetaData::Destroy()
 {
 	for (MetaDataMap::iterator iter = s_MetaDataMap.begin(); iter != s_MetaDataMap.end(); iter++) {
@@ -92,11 +102,11 @@ void JNIMetaData::Destroy()
 	}
 	s_MetaDataMap.clear();
 }
-
+*/
 jclass JNIMetaData::FindJavaClass(const char* className)
 {
 	jclass clazz = pJavaEnv->FindClass(className);
-	_ASSERT(clazz != NULL);
+	//_ASSERT_EXPR(clazz != NULL, CComBSTR(className));
 	if (clazz == NULL) {
 		return NULL;
 	}

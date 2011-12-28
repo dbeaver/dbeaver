@@ -55,8 +55,8 @@ public class WMIService {
 
         serviceLog.info("Start service");
         try {
-            this.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
-            //service.connect(null, "localhost", null, null, null);
+            //this.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
+            this.connect(null, "localhost", null, null, null, "\\root\\cimv2");
             final long curTime = System.currentTimeMillis();
 
 /*
@@ -99,7 +99,7 @@ public class WMIService {
                 }
             };
             this.executeQueryAsync(
-                "select * from Win32_NTLogEvent where LogFile='Security'",
+                "select * from Win32_NTLogEvent",
                 wmiObjectSink,
                 true
             );

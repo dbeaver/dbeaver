@@ -17,7 +17,7 @@ public:
 	~JNIMetaData();
 
 	static JNIMetaData& GetMetaData(JNIEnv* pEnv);
-	static void Destroy();
+	//static void Destroy();
 
 	JNIEnv* pJavaEnv;
 
@@ -63,6 +63,8 @@ private:
 	jclass FindJavaClass(const char* className);
 	jmethodID FindJavaMethod(jclass clazz, const char* methodName, const char* methodSig);
 	void DeleteClassRef(jclass& clazz);
+
+	static JNIMetaData* instance;
 };
 
 #endif
