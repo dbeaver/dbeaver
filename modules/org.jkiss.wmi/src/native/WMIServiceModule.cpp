@@ -34,7 +34,7 @@ BOOL WINAPI DllMain(
 	} else if (fdwReason == DLL_PROCESS_DETACH) {
 		// Term WMI service state
 		WMIService::TermStaticState();
-		JNIMetaData::Destroy();
+		//JNIMetaData::Destroy();
 
 		if (hWMIUtils != NULL) {
 			::FreeLibrary(hWMIUtils);
