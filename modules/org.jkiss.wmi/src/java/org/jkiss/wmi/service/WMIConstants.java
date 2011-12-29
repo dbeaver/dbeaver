@@ -46,4 +46,9 @@ public class WMIConstants {
 	public static final long WBEM_FLAG_USE_AMENDED_QUALIFIERS	= 0x20000;
 	public static final long WBEM_FLAG_STRONG_VALIDATION	= 0x100000;
 
+
+	public static final long WBEM_FLAG_DEEP	= 0;
+	public static final long WBEM_FLAG_SHALLOW	= 1;
+	public static final long WBEM_FLAG_PROTOTYPE	= 2;
+
 }

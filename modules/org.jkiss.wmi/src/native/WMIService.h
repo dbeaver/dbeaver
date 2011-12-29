@@ -25,11 +25,6 @@ public:
 	WMIService(JNIEnv* pJavaEnv, jobject javaObject);
 	~WMIService();
 
-	bool IsAlive()
-	{
-		return pWbemServices != NULL;
-	}
-
 	void Release(JNIEnv* pJavaEnv);
 
 	void Connect(
@@ -44,6 +39,8 @@ public:
 	//jobjectArray ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR query, bool sync);
 	jobject OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags);
 	void ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR query, jobject javaSinkObject, LONG lFlags);
+	void EnumClasses(JNIEnv* pJavaEnv, LPWSTR superClass, jobject javaSinkObject, LONG lFlags);
+	void EnumInstances(JNIEnv* pJavaEnv, LPWSTR className, jobject javaSinkObject, LONG lFlags);
 	void CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject);
 
 	void WriteLog(JNIEnv* pLocalEnv, LogType logType, LPCWSTR wcMessage, HRESULT hr = S_OK);
@@ -61,8 +58,8 @@ private:
 	// Private vars
 	jobject serviceJavaObject;
 
-	CComPtr<IWbemLocator> pWbemLocator;
-	CComPtr<IWbemServices> pWbemServices;
+	//CComPtr<IWbemLocator> ptrWbemLocator;
+	CComPtr<IWbemServices> ptrWbemServices;
 
 	ObjectSinkVector sinkList;
 	static JavaVM* pJavaVM;

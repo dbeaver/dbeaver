@@ -46,8 +46,8 @@ public class TestService {
 
         log.info("Start service");
         try {
-            //this.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
-            service.connect(null, "localhost", null, null, null, "\\root\\cimv2");
+            service.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
+            //service.connect(null, "localhost", null, null, null, "\\root\\cimv2");
             final long curTime = System.currentTimeMillis();
 
 /*
@@ -87,38 +87,38 @@ public class TestService {
                     finished = true;
                 }
             };
-            final List<WMIObject> objectList = new ArrayList<WMIObject>();
-            WMIObjectSink objectCollectorSink = new WMIObjectSink() {
-                public void indicate(WMIObject[] objects)
-                {
-                    Collections.addAll(objectList, objects);
-                }
-                public void setStatus(WMIObjectSinkStatus status, int result, String param, WMIObject errorObject)
-                {
-                    if (status == WMIObjectSinkStatus.complete) {
-                        finished = true;
-                    }
-                }
-            };
+/*
             service.executeQuery(
-                //"select * from Win32_NTLogEvent",
-                "select * from __Namespace",
-                objectCollectorSink,
+                "select * from Win32_NTLogEvent",
+                objectExplorerSink,
                 WMIConstants.WBEM_FLAG_SEND_STATUS
             );
             try {
                 while (!finished) {
                     Thread.sleep(100);
                 }
-                //service.cancelAsyncOperation(wmiObjectSink);
             }
             catch (InterruptedException e) {
                 // do nothing
             }
+*/
 
-            for (WMIObject nsDesc : objectList) {
+            ObjectCollectorSink objectCollectorSink = new ObjectCollectorSink();
+            service.executeQuery(
+                //"select * from Win32_NTLogEvent",
+                "select * from __Namespace",
+                objectCollectorSink,
+                WMIConstants.WBEM_FLAG_SEND_STATUS
+            );
+            objectCollectorSink.waitForFinish();
+
+            for (WMIObject nsDesc : objectCollectorSink.objectList) {
                 final Object nsName = nsDesc.getValue("Name");
                 final WMIService nsService = service.openNamespace(nsName.toString());
+
+                ObjectCollectorSink classCollectorSink = new ObjectCollectorSink();
+                nsService.enumClasses(null, classCollectorSink, WMIConstants.WBEM_FLAG_SEND_STATUS | WMIConstants.WBEM_FLAG_SHALLOW);
+                classCollectorSink.waitForFinish();
                 nsService.close();
             }
 
@@ -161,6 +161,42 @@ public class TestService {
                 //System.out.println("\t" + prop.getName() + "= { byte array } " + ((byte[])propValue).length);
             } else {
                 //System.out.println("\t" + prop.getName() + "=" + propValue);
+            }
+        }
+    }
+
+    private class ObjectCollectorSink implements WMIObjectSink
+    {
+        private final List<WMIObject> objectList;
+        private boolean finished = false;
+
+        public ObjectCollectorSink()
+        {
+            this.objectList = new ArrayList<WMIObject>();
+        }
+
+        public void indicate(WMIObject[] objects)
+        {
+            Collections.addAll(objectList, objects);
+        }
+
+        public void setStatus(WMIObjectSinkStatus status, int result, String param, WMIObject errorObject)
+        {
+            if (status == WMIObjectSinkStatus.complete) {
+                finished = true;
+            }
+        }
+
+        public void waitForFinish()
+        {
+            try {
+                while (!finished) {
+                    Thread.sleep(100);
+                }
+                //service.cancelAsyncOperation(wmiObjectSink);
+            }
+            catch (InterruptedException e) {
+                // do nothing
             }
         }
     }

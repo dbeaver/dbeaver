@@ -45,8 +45,7 @@ WMIService::~WMIService()
 
 void WMIService::Release(JNIEnv* pJavaEnv)
 {
-	pWbemServices = NULL;
-	pWbemLocator = NULL;
+	ptrWbemServices = NULL;
 	WriteLog(pJavaEnv, LT_INFO, L"WMI Service closed");
 
 	if (serviceJavaObject != NULL) {
@@ -129,7 +128,7 @@ void WMIService::Connect(
 	LPWSTR locale,
 	LPWSTR resource)
 {
-    if (this->pWbemLocator != NULL) {
+    if (this->ptrWbemServices != NULL) {
 		THROW_COMMON_EXCEPTION(L"WMI Locator was already initialized");
 		return;
 	}
@@ -153,12 +152,13 @@ void WMIService::Connect(
     // Step 3: ---------------------------------------------------
     // Obtain the initial locator to WMI -------------------------
 
+	CComPtr<IWbemLocator> ptrWbemLocator;
     hres = CoCreateInstance(
         CLSID_WbemLocator,             
         0, 
         CLSCTX_INPROC_SERVER, 
         IID_IWbemLocator, 
-		(LPVOID *) &pWbemLocator);
+		(LPVOID *) &ptrWbemLocator);
     if (FAILED(hres)) {
 		THROW_COMMON_ERROR(L"Failed to create IWbemLocator object", hres);
 		return;
@@ -183,7 +183,7 @@ void WMIService::Connect(
 		resourceDomain.Append(L"NTLMDOMAIN:");
 		resourceDomain.Append(domain);
 	}
-	hres = pWbemLocator->ConnectServer(
+	hres = ptrWbemLocator->ConnectServer(
         resourceURI,
 		user,				// User name
 		password,		// User password
@@ -191,7 +191,7 @@ void WMIService::Connect(
         NULL,                           // Security flags
         resourceDomain,					// Authority
         0,                              // Context object
-        &pWbemServices                  // IWbemServices proxy
+        &ptrWbemServices                  // IWbemServices proxy
         );
     if (FAILED(hres)) {
         THROW_COMMON_ERROR(L"Failed to connect to WMI Service", hres);
@@ -200,7 +200,7 @@ void WMIService::Connect(
 
     // Set security levels on a WMI connection ------------------
     hres = CoSetProxyBlanket(
-		pWbemServices,					// Indicates the proxy to set
+		ptrWbemServices,					// Indicates the proxy to set
 		RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
 		RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
 		NULL,                        // Server principal name 
@@ -295,7 +295,7 @@ jobjectArray WMIService::ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR queryString, bool
 jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
 {
 	CComPtr<IWbemServices> ptrNamespace;
-	HRESULT hres = pWbemServices->OpenNamespace(nsName, lFlags, NULL, &ptrNamespace, NULL);
+	HRESULT hres = ptrWbemServices->OpenNamespace(nsName, lFlags, NULL, &ptrNamespace, NULL);
 	if (FAILED(hres)) {
 		THROW_COMMON_ERROR(L"Could not open namespace", hres);
 		return NULL;
@@ -312,6 +312,7 @@ jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
 		return NULL;
 	}
 	WMIService* pServiceHandler = new WMIService(pJavaEnv, newServiceObject);
+	pServiceHandler->ptrWbemServices = ptrNamespace;
 
 	WriteLog(pJavaEnv, LT_INFO, bstr_t("Connected to WMI namespace ") + nsName);
 
@@ -361,7 +362,7 @@ void WMIService::ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR queryString, jobject
 		THROW_COMMON_EXCEPTION(L"Empty query specified");
 		return;
 	}
-	if (pWbemServices == NULL) {
+	if (ptrWbemServices == NULL) {
 		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
 		return;
 	}
@@ -374,7 +375,7 @@ void WMIService::ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR queryString, jobject
 	lFlags |= WBEM_FLAG_DIRECT_READ;
 	//if (sendStatus) lFlags |= WBEM_FLAG_SEND_STATUS;
 
-	HRESULT hres = pWbemServices->ExecQueryAsync(
+	HRESULT hres = ptrWbemServices->ExecQueryAsync(
         L"WQL",
         queryString,
         lFlags, 
@@ -386,6 +387,48 @@ void WMIService::ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR queryString, jobject
     }
 }
 
+void WMIService::EnumClasses(JNIEnv* pJavaEnv, LPWSTR baseClass, jobject javaSinkObject, LONG lFlags)
+{
+	if (ptrWbemServices == NULL) {
+		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
+		return;
+	}
+
+	CComPtr<IWbemObjectSink> pActiveSink;
+	MakeObjectSink(pJavaEnv, javaSinkObject, &pActiveSink);
+
+	HRESULT hres = ptrWbemServices->CreateClassEnumAsync(
+        baseClass,
+        lFlags,
+        NULL,
+		pActiveSink);
+    if (FAILED(hres)) {
+        THROW_COMMON_ERROR(L"Could not create classes enumerator", hres);
+		return;
+    }
+}
+
+void WMIService::EnumInstances(JNIEnv* pJavaEnv, LPWSTR className, jobject javaSinkObject, LONG lFlags)
+{
+	if (ptrWbemServices == NULL) {
+		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
+		return;
+	}
+
+	CComPtr<IWbemObjectSink> pActiveSink;
+	MakeObjectSink(pJavaEnv, javaSinkObject, &pActiveSink);
+
+	HRESULT hres = ptrWbemServices->CreateInstanceEnumAsync(
+        className,
+        lFlags,
+        NULL,
+		pActiveSink);
+    if (FAILED(hres)) {
+        THROW_COMMON_ERROR(L"Could not create classes enumerator", hres);
+		return;
+    }
+}
+
 void WMIService::CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject)
 {
 	_ASSERT(javaSinkObject != NULL);
@@ -393,7 +436,7 @@ void WMIService::CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject)
 		THROW_COMMON_EXCEPTION(L"NULL sink object specified");
 		return;
 	}
-	if (pWbemServices == NULL) {
+	if (ptrWbemServices == NULL) {
 		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
 		return;
 	}
@@ -413,7 +456,7 @@ void WMIService::CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject)
 		THROW_COMMON_EXCEPTION(L"Could not find internal sink for specified object");
 	}
 
-	HRESULT hres = pWbemServices->CancelAsyncCall(pSink);
+	HRESULT hres = ptrWbemServices->CancelAsyncCall(pSink);
 	if (FAILED(hres)) {
 		THROW_COMMON_ERROR(L"Could not cancel async call", hres);
 	}

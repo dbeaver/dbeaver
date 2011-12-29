@@ -140,7 +140,7 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_enumClasses(
 	}
 	CComBSTR bstrSuperClass;
 	::GetJavaString(pJavaEnv, superClass, &bstrSuperClass);
-	//pService->ExecuteQueryAsync(pJavaEnv, bstrQuery, sinkObject, (LONG)lFlags);
+	pService->EnumClasses(pJavaEnv, bstrSuperClass, sinkObject, (LONG)lFlags);
 }
 
 JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_enumInstances(
@@ -161,7 +161,7 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_enumInstances(
 	}
 	CComBSTR bstrClassName;
 	::GetJavaString(pJavaEnv, className, &bstrClassName);
-	//pService->ExecuteQueryAsync(pJavaEnv, bstrQuery, sinkObject, (LONG)lFlags);
+	pService->EnumInstances(pJavaEnv, bstrClassName, sinkObject, (LONG)lFlags);
 }
 
 JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_cancelSink(
