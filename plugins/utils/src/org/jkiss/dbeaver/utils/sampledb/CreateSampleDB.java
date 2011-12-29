@@ -114,6 +114,7 @@ public class CreateSampleDB {
             System.out.print("Create table '" + table.name + "'...");
             final PreparedStatement dbStat = dbCon.prepareStatement(sql.toString());
             dbStat.execute();
+            dbStat.close();
             System.out.println("Done.");
         }
     }
@@ -132,6 +133,7 @@ public class CreateSampleDB {
     {
         if (args.length < 2) {
             System.out.println("Usage java CreateSampleDB driver-class jdbc-url [-u=<user> -p=<password> -tables=<count> -columns=<count> -relations=<count> -data=<true|false>]");
+            return;
         }
         String driverClass = args[0];
         String url = args[1];

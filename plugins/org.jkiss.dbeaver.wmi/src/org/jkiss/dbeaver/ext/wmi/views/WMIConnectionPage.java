@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.wmi.views;
 
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -12,22 +13,20 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.wmi.Activator;
-import org.jkiss.dbeaver.ext.wmi.MySQLConstants;
-import org.jkiss.dbeaver.ext.wmi.MySQLMessages;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * WMIConnectionPage
  */
-public class WMIConnectionPage extends ConnectionPageAdvanced
+public abstract class WMIConnectionPage extends DialogPage implements IDataSourceConnectionEditor
 {
     private Text hostText;
-    private Text portText;
     private Text dbText;
     private Text usernameText;
     private Text passwordText;
@@ -43,6 +42,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         super.dispose();
     }
 
+/*
     public void createControl(Composite composite)
     {
         //Composite group = new Composite(composite, SWT.NONE);
@@ -99,7 +99,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        Label hostLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_host);
+        Label hostLabel = UIUtils.createControlLabel(addrGroup, "Host");
         hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         hostText = new Text(addrGroup, SWT.BORDER);
@@ -108,18 +108,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
 
-        Label portLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_port);
-        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END);
-        portLabel.setLayoutData(gd);
-
-        portText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = 40;
-        portText.setLayoutData(gd);
-        portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
-        portText.addModifyListener(textListener);
-
-        Label dbLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_database);
+        Label dbLabel = UIUtils.createControlLabel(addrGroup, "Namespace");
         dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         dbText = new Text(addrGroup, SWT.BORDER);
@@ -129,7 +118,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
 
-        Label usernameLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_user_name);
+        Label usernameLabel = UIUtils.createControlLabel(addrGroup, "USer");
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         usernameText = new Text(addrGroup, SWT.BORDER);
@@ -139,7 +128,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(textListener);
 
-        Label passwordLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_password);
+        Label passwordLabel = UIUtils.createControlLabel(addrGroup, "Password");
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
@@ -156,7 +145,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         homesSelector.setLayoutData(gd);
 
         testButton = new Button(addrGroup, SWT.PUSH);
-        testButton.setText(MySQLMessages.dialog_connection_test_connection);
+        testButton.setText("Test");
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         gd.horizontalSpan = 1;
         testButton.setLayoutData(gd);
@@ -252,5 +241,6 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
             testButton.setEnabled(this.isComplete());
         }
     }
+*/
 
 }
