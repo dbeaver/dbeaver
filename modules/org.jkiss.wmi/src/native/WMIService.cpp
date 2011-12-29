@@ -106,6 +106,7 @@ void WMIService::WriteLog(JNIEnv* pLocalEnv, LogType logType, LPCWSTR wcMessage,
 			pLocalEnv->CallVoidMethod(logObject, logMethodID, jMessage);
 			DeleteLocalRef(pLocalEnv, jMessage);
 		}
+		DeleteLocalRef(pLocalEnv, logObject);
 	}
 
 	// Remove any exceptions occured in this method
@@ -297,8 +298,24 @@ jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
 	HRESULT hres = pWbemServices->OpenNamespace(nsName, lFlags, NULL, &ptrNamespace, NULL);
 	if (FAILED(hres)) {
 		THROW_COMMON_ERROR(L"Could not open namespace", hres);
+		return NULL;
 	}
-	return NULL;
+
+	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
+	jobject logObject = pJavaEnv->GetObjectField(serviceJavaObject, jniMeta.wmiServiceLogField);
+	if (pJavaEnv->ExceptionCheck()) {
+		return NULL;
+	}
+	
+	jobject newServiceObject = pJavaEnv->NewObject(jniMeta.wmiServiceClass, jniMeta.wmiServiceConstructor, logObject);
+	if (pJavaEnv->ExceptionCheck()) {
+		return NULL;
+	}
+	WMIService* pServiceHandler = new WMIService(pJavaEnv, newServiceObject);
+
+	WriteLog(pJavaEnv, LT_INFO, bstr_t("Connected to WMI namespace ") + nsName);
+
+	return newServiceObject;
 }
 
 void WMIService::MakeObjectSink(JNIEnv* pJavaEnv, jobject javaSinkObject, IWbemObjectSink** ppSink)

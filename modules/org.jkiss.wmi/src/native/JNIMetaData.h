@@ -24,6 +24,7 @@ public:
 	JNIEnv* pJavaEnv;
 
 	jclass wmiServiceClass;
+	jmethodID wmiServiceConstructor;
 	jfieldID wmiServiceHandleField;
 	jfieldID wmiServiceLogField;
 
