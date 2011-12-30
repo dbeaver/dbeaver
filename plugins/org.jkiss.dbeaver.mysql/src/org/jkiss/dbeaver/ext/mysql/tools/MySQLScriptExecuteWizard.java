@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 

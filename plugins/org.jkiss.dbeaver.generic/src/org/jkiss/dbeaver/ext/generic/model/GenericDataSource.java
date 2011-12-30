@@ -81,9 +81,9 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public void close(DBRProgressMonitor monitor)
+    public void close()
     {
-        super.close(monitor);
+        super.close();
         String paramShutdown = CommonUtils.toString(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SHUTDOWN_URL_PARAM));
         if (!CommonUtils.isEmpty(paramShutdown)) {
             try {

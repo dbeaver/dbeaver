@@ -10,7 +10,6 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPTool;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 import org.jkiss.utils.CommonUtils;

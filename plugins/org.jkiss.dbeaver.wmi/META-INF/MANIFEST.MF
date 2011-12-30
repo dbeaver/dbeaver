@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: MySQL Plug-in
+Bundle-Name: WMI Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.wmi;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: org.jkiss.dbeaver.ext.wmi.Activator
@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface,
  org.eclipse.jface.text;bundle-version="3.5.0",
  org.jkiss.dbeaver.core;bundle-version="1.0.0",
- org.eclipse.ui.workbench.texteditor;bundle-version="3.6.0"
+ org.eclipse.ui.workbench.texteditor;bundle-version="3.6.0",
+ org.jkiss.wmi;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Serge Rieder

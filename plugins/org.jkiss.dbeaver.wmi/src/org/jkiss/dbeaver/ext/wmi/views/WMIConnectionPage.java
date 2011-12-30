@@ -4,36 +4,27 @@
 
 package org.jkiss.dbeaver.ext.wmi.views;
 
-import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.wmi.Activator;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
 
 /**
  * WMIConnectionPage
  */
-public abstract class WMIConnectionPage extends DialogPage implements IDataSourceConnectionEditor
+public abstract class WMIConnectionPage extends ConnectionPageAdvanced
 {
+    private Text domainText;
     private Text hostText;
-    private Text dbText;
+    private Combo namespaceCombo;
+    private Combo localeCombo;
     private Text usernameText;
     private Text passwordText;
-    private ClientHomesSelector homesSelector;
     private Button testButton;
 
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/mysql_logo.png");
+    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_logo.png");
 
 
     @Override

@@ -211,7 +211,7 @@ public abstract class JDBCDataSource
         }
 
         if (!JDBCUtils.isConnectionAlive(connection)) {
-            close(monitor);
+            close();
             connection = openConnection();
         }
     }
@@ -230,7 +230,7 @@ public abstract class JDBCDataSource
         }
     }
 
-    public void close(DBRProgressMonitor monitor)
+    public void close()
     {
         if (connection != null) {
             try {

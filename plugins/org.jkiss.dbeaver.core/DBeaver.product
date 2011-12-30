@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.product" application="org.jkiss.dbeaver.core.application" version="1.4.0" useFeatures="false" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.product" application="org.jkiss.dbeaver.core.application" version="1.7.0" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="product_lg.gif"/>
@@ -125,7 +125,9 @@ This software is provided &quot;as is&quot; without express or implied warranty.
       <plugin id="org.jkiss.dbeaver.ext.import_config"/>
       <plugin id="org.jkiss.dbeaver.ext.mysql"/>
       <plugin id="org.jkiss.dbeaver.ext.oracle"/>
+      <plugin id="org.jkiss.dbeaver.ext.wmi"/>
       <plugin id="org.jkiss.utils"/>
+      <plugin id="org.jkiss.wmi"/>
       <plugin id="org.mortbay.jetty.server"/>
       <plugin id="org.mortbay.jetty.util"/>
    </plugins>

@@ -233,17 +233,17 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public synchronized void dispose()
     {
         IProgressMonitor monitor = new NullProgressMonitor();
-        for (IProject project : workspace.getRoot().getProjects()) {
-            try {
-                if (project.isOpen()) {
-                    project.close(monitor);
+        if (workspace != null) {
+            for (IProject project : workspace.getRoot().getProjects()) {
+                try {
+                    if (project.isOpen()) {
+                        project.close(monitor);
+                    }
+                }
+                catch (CoreException ex) {
+                    log.error("Can't close default project", ex); //$NON-NLS-1$
                 }
             }
-            catch (CoreException ex) {
-                log.error("Can't close default project", ex); //$NON-NLS-1$
-            }
-        }
-        if (workspace != null) {
             try {
                 workspace.save(true, monitor);
             }
@@ -251,22 +251,46 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 log.error("Can't save workspace", ex); //$NON-NLS-1$
             }
         }
+
         if (queryManager != null) {
             queryManager.dispose();
+            //queryManager = null;
         }
         if (navigatorModel != null) {
             navigatorModel.dispose();
+            //navigatorModel = null;
         }
-        this.dataExportersRegistry.dispose();
-        this.dataFormatterRegistry.dispose();
-        this.editorsRegistry.dispose();
-        this.projectRegistry.dispose();
-        this.dataSourceProviderRegistry.dispose();
+        if (this.dataExportersRegistry != null) {
+            this.dataExportersRegistry.dispose();
+            this.dataExportersRegistry = null;
+        }
+        if (this.dataFormatterRegistry != null) {
+            this.dataFormatterRegistry.dispose();
+            this.dataFormatterRegistry = null;
+        }
+        if (this.editorsRegistry != null) {
+            this.editorsRegistry.dispose();
+            this.editorsRegistry = null;
+        }
+        if (this.projectRegistry != null) {
+            this.projectRegistry.dispose();
+            this.projectRegistry = null;
+        }
+        if (this.dataSourceProviderRegistry != null) {
+            this.dataSourceProviderRegistry.dispose();
+            this.dataSourceProviderRegistry = null;
+        }
 
-        // Unregister properties adapter
-        Platform.getAdapterManager().unregisterAdapters(editorsAdapter);
+        if (editorsAdapter != null) {
+            // Unregister properties adapter
+            Platform.getAdapterManager().unregisterAdapters(editorsAdapter);
+            editorsAdapter = null;
+        }
 
-        this.sharedTextColors.dispose();
+        if (this.sharedTextColors != null) {
+            this.sharedTextColors.dispose();
+            this.sharedTextColors = null;
+        }
         //progressProvider.shutdown();
         //progressProvider = null;
 

@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
  * datasource instance could be refreshed at any time. Obtain references on datasource only
  * from DBSObject or IDataSourceProvider interfaces.
  */
-public interface DBPDataSource extends DBPObject
+public interface DBPDataSource extends DBPObject,DBPCloseableObject
 {
     /**
      * Datasource container
@@ -73,11 +73,5 @@ public interface DBPDataSource extends DBPObject
      * @param monitor progress monitor
      */
     void initialize(DBRProgressMonitor monitor) throws DBException;
-
-    /**
-     * Closes datasource
-     * @param monitor progress monitor
-     */
-    void close(DBRProgressMonitor monitor);
 
 }

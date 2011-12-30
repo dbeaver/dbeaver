@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>org.jkiss.dbeaver.wmi</name>
+	<name>org.jkiss.wmi</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -20,15 +20,16 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.pde.api.tools.apiAnalysisBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>org.eclipse.pde.api.tools.apiAnalysisNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>java</name>
+			<type>2</type>
+			<location>D:/Devel/My/dbeaver/modules/org.jkiss.wmi/src/java</location>
+		</link>
+	</linkedResources>
 </projectDescription>

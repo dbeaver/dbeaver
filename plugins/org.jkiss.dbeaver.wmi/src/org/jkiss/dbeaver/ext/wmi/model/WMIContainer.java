@@ -4,62 +4,64 @@
 
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.util.Collection;
 
 /**
  * Entity container
  */
-public class WMIContainer implements DBSEntityContainer {
+public abstract class WMIContainer implements DBSEntity, DBSEntityContainer {
 
-    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    static final Log log = LogFactory.getLog(WMIContainer.class);
 
-    public DBSEntity getChild(DBRProgressMonitor monitor, String childName) throws DBException
-    {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    private WMIContainer parent;
 
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException
+    protected WMIContainer(WMIContainer parent)
     {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
-    {
-        //To change body of implemented methods use File | Settings | File Templates.
+        this.parent = parent;
     }
 
     public String getDescription()
     {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
-    public DBSObject getParentObject()
+    public WMIContainer getParentObject()
     {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return parent;
     }
 
-    public DBPDataSource getDataSource()
+    public WMIDataSource getDataSource()
     {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public String getName()
-    {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        for (WMIContainer p = this; p != null; p = p.getParentObject()) {
+            if (p instanceof WMIDataSource) {
+                return (WMIDataSource)p;
+            }
+        }
+        return null;
     }
 
     public boolean isPersisted()
     {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return true;
+    }
+
+    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
+    {
+    }
+
+    public DBSEntity getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    {
+        return DBUtils.findObject(getChildren(monitor), childName);
+    }
+
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    {
+        return false;
     }
 }

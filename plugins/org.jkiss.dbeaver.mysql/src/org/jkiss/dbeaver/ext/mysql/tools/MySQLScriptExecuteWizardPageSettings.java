@@ -14,7 +14,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;

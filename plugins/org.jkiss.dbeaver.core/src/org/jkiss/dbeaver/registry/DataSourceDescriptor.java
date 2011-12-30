@@ -452,7 +452,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
         // Close datasource
         monitor.subTask("Close connection");
-        getDataSource().close(monitor);
+        getDataSource().close();
         monitor.worked(1);
 
         monitor.done();

@@ -90,7 +90,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                         }
                         finally {
                             monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
-                            dataSource.close(monitor);
+                            dataSource.close();
                         }
                     }
                     monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);

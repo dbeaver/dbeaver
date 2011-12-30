@@ -4,30 +4,83 @@
 
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.wmi.service.WMIService;
 
 /**
- * GenericDataSource
+ * WMIDataSource
  */
 public class WMIDataSource extends WMINamespace implements DBPDataSource,
-    DBSEntityContainer, DBSEntitySelector, IAdaptable
+    DBSEntityContainer, DBSEntitySelector
 {
-    static final Log log = LogFactory.getLog(WMIDataSource.class);
-
     private DBSDataSourceContainer container;
 
-    public WMIDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
+    public WMIDataSource(DBSDataSourceContainer container, WMIService service)
         throws DBException
     {
+        super(null, service);
         this.container = container;
+    }
+
+    public DBSDataSourceContainer getContainer()
+    {
+        return container;
+    }
+
+    public DBPDataSourceInfo getInfo()
+    {
+        return new WMIDataSourceInfo(getService());
+    }
+
+    public boolean isConnected()
+    {
+        return true;
+    }
+
+    public DBCExecutionContext openContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task)
+    {
+        return null;
+    }
+
+    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task)
+    {
+        return null;
+    }
+
+    public void invalidateConnection(DBRProgressMonitor monitor) throws DBException
+    {
+    }
+
+    public void initialize(DBRProgressMonitor monitor) throws DBException
+    {
+    }
+
+    public void close()
+    {
+        super.close();
+    }
+
+    public boolean supportsEntitySelect()
+    {
+        return true;
+    }
+
+    public DBSEntity getSelectedEntity()
+    {
+        return null;
+    }
+
+    public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity) throws DBException
+    {
     }
 
 }
