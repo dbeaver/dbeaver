@@ -5,16 +5,24 @@
 package org.jkiss.dbeaver.ext.wmi.views;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.wmi.Activator;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * WMIConnectionPage
  */
-public abstract class WMIConnectionPage extends ConnectionPageAdvanced
+public class WMIConnectionPage extends ConnectionPageAdvanced
 {
     private Text domainText;
     private Text hostText;
@@ -26,6 +34,9 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_logo.png");
 
+    public WMIConnectionPage()
+    {
+    }
 
     @Override
     public void dispose()
@@ -33,7 +44,6 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
         super.dispose();
     }
 
-/*
     public void createControl(Composite composite)
     {
         //Composite group = new Composite(composite, SWT.NONE);
@@ -45,13 +55,13 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
         optionsFolder.setLayoutData(gd);
 
         TabItem addrTab = new TabItem(optionsFolder, SWT.NONE);
-        addrTab.setText(MySQLMessages.dialog_connection_general_tab);
-        addrTab.setToolTipText(MySQLMessages.dialog_connection_general_tab_tooltip);
+        addrTab.setText("Settings");
+        addrTab.setToolTipText("Connection settings");
         addrTab.setControl(createGeneralTab(optionsFolder));
 
         final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
-        propsTab.setText(MySQLMessages.dialog_connection_advanced_tab);
-        propsTab.setToolTipText(MySQLMessages.dialog_connection_advanced_tab_tooltip);
+        propsTab.setText("Advanced");
+        propsTab.setToolTipText("WMI context attributes");
         propsTab.setControl(createPropertiesTab(optionsFolder));
 
         optionsFolder.addSelectionListener(
@@ -99,23 +109,32 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
 
-        Label dbLabel = UIUtils.createControlLabel(addrGroup, "Namespace");
-        dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        Label domainLabel = UIUtils.createControlLabel(addrGroup, "Domain");
+        domainLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-        dbText = new Text(addrGroup, SWT.BORDER);
+        domainText = new Text(addrGroup, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        domainText.setLayoutData(gd);
+        domainText.addModifyListener(textListener);
+
+        Label namespaceLabel = UIUtils.createControlLabel(addrGroup, "Namespace");
+        namespaceLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+        namespaceCombo = new Combo(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalSpan = 3;
-        dbText.setLayoutData(gd);
-        dbText.addModifyListener(textListener);
+        namespaceCombo.setLayoutData(gd);
+        namespaceCombo.addModifyListener(textListener);
 
-        Label usernameLabel = UIUtils.createControlLabel(addrGroup, "USer");
+        Label usernameLabel = UIUtils.createControlLabel(addrGroup, "User");
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         usernameText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 3;
+        //gd.horizontalSpan = 3;
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(textListener);
 
@@ -125,20 +144,14 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
         passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 3;
+        //gd.horizontalSpan = 3;
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
 
-        homesSelector = new ClientHomesSelector(addrGroup, SWT.NONE, "Local Server");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = 3;
-        gd.minimumWidth = 300;
-        homesSelector.setLayoutData(gd);
-
         testButton = new Button(addrGroup, SWT.PUSH);
-        testButton.setText("Test");
+        testButton.setText("Test Connection");
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 1;
+        gd.horizontalSpan = 4;
         testButton.setLayoutData(gd);
         testButton.addSelectionListener(new SelectionListener()
         {
@@ -157,9 +170,9 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
 
     public boolean isComplete()
     {
-        return hostText != null && portText != null && 
+        return hostText != null && domainText != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
-            !CommonUtils.isEmpty(portText.getText());
+            !CommonUtils.isEmpty(domainText.getText());
     }
 
     public void loadSettings()
@@ -170,15 +183,8 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
             if (hostText != null) {
                 hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
             }
-            if (portText != null) {
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    portText.setText(String.valueOf(connectionInfo.getHostPort()));
-                } else {
-                    portText.setText(String.valueOf(MySQLConstants.DEFAULT_PORT));
-                }
-            }
-            if (dbText != null) {
-                dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+            if (domainText != null) {
+                domainText.setText(CommonUtils.getString(connectionInfo.getServerName()));
             }
             if (usernameText != null) {
                 usernameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
@@ -186,10 +192,8 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
             if (passwordText != null) {
                 passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
             }
-            homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
-        } else {
-            if (portText != null) {
-                portText.setText(String.valueOf(MySQLConstants.DEFAULT_PORT));
+            if (namespaceCombo != null) {
+                namespaceCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
             }
         }
 
@@ -202,11 +206,11 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
             if (hostText != null) {
                 connectionInfo.setHostName(hostText.getText());
             }
-            if (portText != null) {
-                connectionInfo.setHostPort(portText.getText());
+            if (domainText != null) {
+                connectionInfo.setServerName(domainText.getText());
             }
-            if (dbText != null) {
-                connectionInfo.setDatabaseName(dbText.getText());
+            if (namespaceCombo != null) {
+                connectionInfo.setDatabaseName(namespaceCombo.getText());
             }
             if (usernameText != null) {
                 connectionInfo.setUserName(usernameText.getText());
@@ -214,12 +218,9 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
             if (passwordText != null) {
                 connectionInfo.setUserPassword(passwordText.getText());
             }
-            if (homesSelector != null) {
-                connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
-            }
             connectionInfo.setUrl(
-                "jdbc:wmi://" + connectionInfo.getHostName() +
-                    ":" + connectionInfo.getHostPort() +
+                "wmi://" + connectionInfo.getServerName() +
+                    "/" + connectionInfo.getHostName() +
                     "/" + connectionInfo.getDatabaseName());
             super.saveSettings(connectionInfo);
         }
@@ -232,6 +233,6 @@ public abstract class WMIConnectionPage extends ConnectionPageAdvanced
             testButton.setEnabled(this.isComplete());
         }
     }
-*/
+
 
 }
