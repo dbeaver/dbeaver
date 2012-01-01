@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
@@ -104,15 +104,15 @@ class ConnectionPageFinal extends ActiveWizardPage
             showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
             catFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getCatalogFilter()));
             schemaFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getSchemaFilter()));
-            long features = 0;
-            try {
-                features = dataSourceDescriptor.getDriver().getDataSourceProvider().getFeatures();
-            } catch (DBException e) {
-                log.error("Can't obtain data source provider instance", e); //$NON-NLS-1$
-            }
-            UIUtils.enableCheckText(catFilterText, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
-            UIUtils.enableCheckText(schemaFilterText, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
         }
+        long features = 0;
+        try {
+            features = wizard.getPageSettings().getDriver().getDataSourceProvider().getFeatures();
+        } catch (DBException e) {
+            log.error("Can't obtain data source provider instance", e); //$NON-NLS-1$
+        }
+        UIUtils.enableCheckText(catFilterText, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
+        UIUtils.enableCheckText(schemaFilterText, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
     }
 
     public void deactivatePage() {

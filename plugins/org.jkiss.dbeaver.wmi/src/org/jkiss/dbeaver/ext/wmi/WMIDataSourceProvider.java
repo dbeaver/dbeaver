@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.wmi;
@@ -28,7 +28,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
     public long getFeatures()
     {
-        return 0;
+        return FEATURE_SCHEMAS;
     }
 
     public Collection<IPropertyDescriptor> getConnectionProperties(DBPDriver driver, DBPConnectionInfo connectionInfo) throws DBException
