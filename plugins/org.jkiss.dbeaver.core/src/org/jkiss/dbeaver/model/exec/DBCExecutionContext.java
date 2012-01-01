@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
@@ -13,7 +14,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Execution context
  */
-public interface DBCExecutionContext extends DBDPreferences {
+public interface DBCExecutionContext extends DBPCloseableObject, DBDPreferences {
 
     String getTaskTitle();
 
@@ -57,10 +58,5 @@ public interface DBCExecutionContext extends DBDPreferences {
         boolean scrollable,
         boolean updatable,
         boolean returnGeneratedKeys) throws DBCException;
-
-    /**
-     * Closes context. No exceptions could be throws from this method.
-     */
-    void close();
 
 }

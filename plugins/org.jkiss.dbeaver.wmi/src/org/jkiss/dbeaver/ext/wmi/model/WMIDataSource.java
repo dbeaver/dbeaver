@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.wmi.model;
@@ -48,12 +48,14 @@ public class WMIDataSource extends WMINamespace implements DBPDataSource,
 
     public DBCExecutionContext openContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task)
     {
-        return null;
+        return new WMIExecutionContext(monitor, purpose, task, this);
     }
 
     public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task)
     {
-        return null;
+        // Open simple context.
+        // Isolated connections doesn't make sense in WMI
+        return openContext(monitor, purpose, task);
     }
 
     public void invalidateConnection(DBRProgressMonitor monitor) throws DBException

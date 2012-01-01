@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
@@ -10,10 +10,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -29,33 +29,25 @@ import java.util.Properties;
 /**
  * Managable connection
  */
-public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObject {
+public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBCExecutionContext, DBRBlockingObject {
 
     static final Log log = LogFactory.getLog(JDBCConnectionImpl.class);
 
     private JDBCConnector connector;
-    private DBRProgressMonitor monitor;
-    private DBCExecutionPurpose purpose;
-    private String taskTitle;
     private boolean isolated;
     private Connection isolatedConnection;
-    private DBDDataFormatterProfile dataFormatterProfile;
 
     public JDBCConnectionImpl(JDBCConnector connector, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, boolean isolated)
     {
+        super(monitor, purpose, taskTitle);
         this.connector = connector;
-        this.monitor = monitor;
-        this.purpose = purpose;
-        this.taskTitle = taskTitle;
         this.isolated = isolated;
         this.isolatedConnection = null;
-        this.dataFormatterProfile = connector.getDataSource().getContainer().getDataFormatterProfile();
+    }
 
-        if (taskTitle != null) {
-            monitor.startBlock(this, taskTitle);
-        }
-
-        QMUtils.getDefaultHandler().handleContextOpen(this);
+    public DBCTransactionManager getTransactionManager()
+    {
+        return new TransactionManager();
     }
 
     public Connection getOriginal()
@@ -80,11 +72,6 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
         }
     }
 
-    public String getTaskTitle()
-    {
-        return taskTitle;
-    }
-
     public DBPDataSource getDataSource()
     {
         return connector.getDataSource();
@@ -97,31 +84,6 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
             log.error("could not check connection state", e);
             return false;
         }
-    }
-
-    public DBRProgressMonitor getProgressMonitor()
-    {
-        return monitor;
-    }
-
-    public DBCTransactionManager getTransactionManager()
-    {
-        return new TransactionManager();
-    }
-
-    public DBCExecutionPurpose getPurpose()
-    {
-        return purpose;
-    }
-
-    public DBDDataFormatterProfile getDataFormatterProfile()
-    {
-        return dataFormatterProfile;
-    }
-
-    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile)
-    {
-        dataFormatterProfile = formatterProfile;
     }
 
     public JDBCStatement prepareStatement(
@@ -268,10 +230,6 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
         } catch (Throwable e) {
             log.debug("Could not check for connection warnings", e);
         }
-        // End context
-        if (taskTitle != null) {
-            monitor.endBlock();
-        }
         if (isolatedConnection != null) {
             try {
                 isolatedConnection.close();
@@ -284,7 +242,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
             // closing of context doesn't close real connection
         }
 
-        QMUtils.getDefaultHandler().handleContextClose(this);
+        super.close();
     }
 
     public boolean isClosed()
@@ -585,12 +543,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
         }
     }
 
-    private class TransactionManager implements DBCTransactionManager {
-
-        public DBPDataSource getDataSource()
-        {
-            return JDBCConnectionImpl.this.getDataSource();
-        }
+    private class TransactionManager extends AbstractTransactionManager {
 
         public DBPTransactionIsolation getTransactionIsolation()
             throws DBCException
@@ -638,11 +591,6 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
             catch (SQLException e) {
                 throw new JDBCException(e);
             }
-        }
-
-        public boolean supportsSavepoints()
-        {
-            return getDataSource().getInfo().supportsSavepoints();
         }
 
         public DBCSavepoint setSavepoint(String name)
