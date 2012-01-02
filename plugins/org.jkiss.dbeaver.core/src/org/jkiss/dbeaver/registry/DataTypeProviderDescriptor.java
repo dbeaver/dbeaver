@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
@@ -38,18 +38,6 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
         if (className == null) {
             log.error("Empty class name of data type provider '" + this.id + "'"); //$NON-NLS-1$
-        } else {
-            Class<?> providerClass = super.getObjectClass(className);
-            if (providerClass == null) {
-                log.error("Could not find data type provider class '" + this.className + "'"); //$NON-NLS-1$
-            } else {
-                try {
-                    this.instance = (DBDValueHandlerProvider) providerClass.newInstance();
-                }
-                catch (Exception e) {
-                    log.error("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
-                }
-            }
         }
 
         IConfigurationElement[] typeElements = config.getChildren(RegistryConstants.TAG_TYPE);
@@ -105,6 +93,19 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
     public DBDValueHandlerProvider getInstance()
     {
+        if (instance == null && className != null) {
+            Class<?> providerClass = super.getObjectClass(className);
+            if (providerClass == null) {
+                log.error("Could not find data type provider class '" + this.className + "'"); //$NON-NLS-1$
+            } else {
+                try {
+                    this.instance = (DBDValueHandlerProvider) providerClass.newInstance();
+                }
+                catch (Exception e) {
+                    log.error("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
+                }
+            }
+        }
         return instance;
     }
 
