@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -47,6 +47,8 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
 {
     static final Log log = LogFactory.getLog(OracleDataSource.class);
 
+    private final static Map<String, ClassLoader> ociClassLoadersCache = new HashMap<String, ClassLoader>();
+
     final SchemaCache schemaCache = new SchemaCache();
     final DataTypeCache dataTypeCache = new DataTypeCache();
     final TablespaceCache tablespaceCache = new TablespaceCache();
@@ -58,7 +60,6 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
     private String activeSchemaName;
     private boolean isAdmin;
     private String planTableName;
-    private static Map<String, ClassLoader> ociClassLoadersCache = new HashMap<String, ClassLoader>();
 
     public OracleDataSource(DBSDataSourceContainer container)
         throws DBException

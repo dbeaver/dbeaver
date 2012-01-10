@@ -22,7 +22,8 @@ static CComCriticalSection csSinkThreads;
 JavaVM* WMIService::pJavaVM = NULL;
 //static ThreadInfoVector threadInfos;
 
-WMIService::WMIService(JNIEnv* pJavaEnv, jobject javaObject)
+WMIService::WMIService(JNIEnv* pJavaEnv, jobject javaObject) :
+	bCoInitialized(false)
 {
 	serviceJavaObject = pJavaEnv->NewGlobalRef(javaObject);
 	if (!pJavaEnv->ExceptionCheck()) {
@@ -41,18 +42,6 @@ WMIService::WMIService(JNIEnv* pJavaEnv, jobject javaObject)
 
 WMIService::~WMIService()
 {
-}
-
-void WMIService::Release(JNIEnv* pJavaEnv)
-{
-	ptrWbemServices = NULL;
-	WriteLog(pJavaEnv, LT_INFO, L"WMI Service closed");
-
-	if (serviceJavaObject != NULL) {
-		pJavaEnv->SetLongField(serviceJavaObject, JNIMetaData::GetMetaData(pJavaEnv).wmiServiceHandleField, 0);
-		pJavaEnv->DeleteGlobalRef(serviceJavaObject);
-		serviceJavaObject = NULL;
-	}
 }
 
 WMIService* WMIService::GetFromObject(JNIEnv* pJavaEnv, jobject javaObject)
@@ -132,8 +121,14 @@ void WMIService::Connect(
 		THROW_COMMON_EXCEPTION(L"WMI Locator was already initialized");
 		return;
 	}
+	HRESULT hres =  ::CoInitializeEx(0, COINIT_MULTITHREADED); 
+    if (FAILED(hres)) {
+		THROW_COMMON_ERROR(L"Failed to initialize COM library", hres);
+		return;
+	}
+	bCoInitialized = true;
 
-	HRESULT hres =  ::CoInitializeSecurity(
+	hres =  ::CoInitializeSecurity(
         NULL, 
         -1,                          // COM authentication
         NULL,                        // Authentication services
@@ -144,7 +139,7 @@ void WMIService::Connect(
         EOAC_NONE,                   // Additional capabilities 
         NULL                         // Reserved
         );
-    if (FAILED(hres)) {
+    if (FAILED(hres) && hres != RPC_E_TOO_LATE) {
 		THROW_COMMON_ERROR(L"Failed to initialize security", hres);
         return;
     }
@@ -216,6 +211,24 @@ void WMIService::Connect(
 
 	WriteLog(pJavaEnv, LT_INFO, bstr_t("WMI Service connected to ") + (LPCWSTR)resource);
 }
+
+void WMIService::Release(JNIEnv* pJavaEnv)
+{
+	ptrWbemServices = NULL;
+	WriteLog(pJavaEnv, LT_INFO, L"WMI Service closed");
+
+	if (serviceJavaObject != NULL) {
+		pJavaEnv->SetLongField(serviceJavaObject, JNIMetaData::GetMetaData(pJavaEnv).wmiServiceHandleField, 0);
+		pJavaEnv->DeleteGlobalRef(serviceJavaObject);
+		serviceJavaObject = NULL;
+	}
+
+	if (bCoInitialized) {
+		::CoUninitialize();
+	}
+}
+
+	
 /*
 jobjectArray WMIService::ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR queryString, bool sync)
 {

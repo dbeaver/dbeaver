@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.wmi.test;
@@ -37,17 +37,10 @@ public class TestService {
 
     void test()
     {
-        try {
-            // load native library
-            System.load(new File("jkiss_wmi_x86.dll").getAbsolutePath());
-        } catch (UnsatisfiedLinkError e) {
-            throw new RuntimeException("Can not link to DLL.", e);
-        }
-
         log.info("Start service");
         try {
-            service.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
-            //service.connect(null, "localhost", null, null, null, "\\root\\cimv2");
+            //service.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
+            service.connect(null, "localhost", null, null, null, "\\root\\cimv2");
             final long curTime = System.currentTimeMillis();
 
 /*

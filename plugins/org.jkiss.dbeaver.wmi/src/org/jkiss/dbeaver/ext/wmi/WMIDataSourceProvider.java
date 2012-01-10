@@ -21,9 +21,11 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
     static final Log log = LogFactory.getLog(WMIDataSourceProvider.class);
 
+    private boolean libLoaded = false;
+    private WMIService service;
+
     public void init(DBPApplication application)
     {
-
     }
 
     public long getFeatures()
@@ -38,7 +40,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
     public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
     {
-        WMIService service = new WMIService(log);
+        service = new WMIService(log);
         final DBPConnectionInfo connectionInfo = container.getConnectionInfo();
         try {
             service.connect(
@@ -48,7 +50,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
                 connectionInfo.getUserPassword(),
                 null,
                 connectionInfo.getDatabaseName());
-        } catch (WMIException e) {
+        } catch (Throwable e) {
             throw new DBException("Can't connect to WMI service", e);
         }
         return new WMIDataSource(container, service);
@@ -56,7 +58,9 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
     public void close()
     {
-
+        if (service != null) {
+            service.close();
+        }
     }
 
 }

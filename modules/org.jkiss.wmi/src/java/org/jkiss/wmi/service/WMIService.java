@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.wmi.service;
@@ -11,6 +11,10 @@ import org.apache.commons.logging.Log;
  * Uses native Win32 API access
  */
 public class WMIService {
+
+    static {
+        System.loadLibrary("jkiss_wmi_x86");
+    }
 
     private long serviceHandle = 0l;
     private Log serviceLog;

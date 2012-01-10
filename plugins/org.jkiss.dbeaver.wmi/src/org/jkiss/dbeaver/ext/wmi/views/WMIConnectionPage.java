@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.wmi.views;
@@ -128,51 +128,58 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         namespaceCombo.setLayoutData(gd);
         namespaceCombo.addModifyListener(textListener);
 
-        Label usernameLabel = UIUtils.createControlLabel(addrGroup, "User");
-        usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        usernameText = new Text(addrGroup, SWT.BORDER);
+        Label divLabel = new Label(addrGroup, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        //gd.horizontalSpan = 3;
-        usernameText.setLayoutData(gd);
-        usernameText.addModifyListener(textListener);
-
-        Label passwordLabel = UIUtils.createControlLabel(addrGroup, "Password");
-        passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        //gd.horizontalSpan = 3;
-        passwordText.setLayoutData(gd);
-        passwordText.addModifyListener(textListener);
-
-        testButton = new Button(addrGroup, SWT.PUSH);
-        testButton.setText("Test Connection");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         gd.horizontalSpan = 4;
-        testButton.setLayoutData(gd);
-        testButton.addSelectionListener(new SelectionListener()
-        {
-            public void widgetSelected(SelectionEvent e)
-            {
-                site.testConnection();
-            }
+        divLabel.setLayoutData(gd);
 
-            public void widgetDefaultSelected(SelectionEvent e)
+        {
+            Label usernameLabel = UIUtils.createControlLabel(addrGroup, "User");
+            usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+            usernameText = new Text(addrGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            usernameText.setLayoutData(gd);
+            usernameText.addModifyListener(textListener);
+
+
+            testButton = new Button(addrGroup, SWT.PUSH);
+            testButton.setText("Test Connection");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            gd.horizontalSpan = 2;
+            testButton.setLayoutData(gd);
+            testButton.addSelectionListener(new SelectionListener()
             {
-            }
-        });
-        testButton.setEnabled(false);
+                public void widgetSelected(SelectionEvent e)
+                {
+                    site.testConnection();
+                }
+
+                public void widgetDefaultSelected(SelectionEvent e)
+                {
+                }
+            });
+            testButton.setEnabled(false);
+
+            Label passwordLabel = UIUtils.createControlLabel(addrGroup, "Password");
+            passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+            passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            passwordText.setLayoutData(gd);
+            passwordText.addModifyListener(textListener);
+        }
         return addrGroup;
     }
 
     public boolean isComplete()
     {
-        return hostText != null && domainText != null &&
+        return hostText != null && namespaceCombo != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
-            !CommonUtils.isEmpty(domainText.getText());
+            !CommonUtils.isEmpty(namespaceCombo.getText());
     }
 
     public void loadSettings()
@@ -180,6 +187,12 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
+            if (connectionInfo.getHostName() == null) {
+                connectionInfo.setHostName("localhost");
+            }
+            if (connectionInfo.getDatabaseName() == null) {
+                connectionInfo.setDatabaseName("root");
+            }
             if (hostText != null) {
                 hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
             }
