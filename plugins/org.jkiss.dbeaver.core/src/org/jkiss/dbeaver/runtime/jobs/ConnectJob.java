@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.jobs;
@@ -71,6 +71,12 @@ public class ConnectJob extends EventProcessorJob
                 NLS.bind(CoreMessages.runtime_jobs_connect_status_error, container.getName()),
                 ex);
         }
+    }
+
+    public IStatus runSync(DBRProgressMonitor monitor)
+    {
+        setThread(Thread.currentThread());
+        return run(monitor);
     }
 
     public boolean belongsTo(Object family)

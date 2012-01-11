@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -130,7 +130,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         throws DBException
     {
         if (childNodes == null && allowsChildren()) {
-            if (this.initializeNode(null)) {
+            if (this.initializeNode(monitor, null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<DBNDatabaseNode>();
                 loadChildren(monitor, getMeta(), null, tmpList);
                 if (!monitor.isCanceled()) {
@@ -195,7 +195,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return locked || super.isLocked();
     }
 
-    public boolean initializeNode(Runnable onFinish)
+    public boolean initializeNode(DBRProgressMonitor monitor, Runnable onFinish)
     {
         return true;
     }

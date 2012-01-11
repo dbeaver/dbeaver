@@ -1,24 +1,26 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionAuthDialog;
+import org.jkiss.utils.CommonUtils;
 
 public class DataSourceConnectHandler extends DataSourceHandler
 {
@@ -26,12 +28,18 @@ public class DataSourceConnectHandler extends DataSourceHandler
     {
         final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false, false);
         if (dataSourceContainer != null) {
-            execute(dataSourceContainer, null);
+            execute(null, dataSourceContainer, null);
         }
         return null;
     }
 
-    public static void execute(DBSDataSourceContainer dataSourceContainer, final Runnable onFinish) {
+    /**
+     * Connects datasource
+     * @param monitor progress monitor or null. If nul then new job will be started
+     * @param dataSourceContainer
+     * @param onFinish
+     */
+    public static void execute(DBRProgressMonitor monitor, DBSDataSourceContainer dataSourceContainer, final Runnable onFinish) {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
             if (!CommonUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
@@ -51,10 +59,11 @@ public class DataSourceConnectHandler extends DataSourceHandler
                 }
             }
 
-            ConnectJob connectJob = new ConnectJob(dataSourceDescriptor);
-            connectJob.addJobChangeListener(new JobChangeAdapter() {
+            final ConnectJob connectJob = new ConnectJob(dataSourceDescriptor);
+            final JobChangeAdapter jobChangeAdapter = new JobChangeAdapter() {
                 @Override
-                public void done(IJobChangeEvent event) {
+                public void done(IJobChangeEvent event)
+                {
                     if (event.getResult().isOK()) {
                         if (!dataSourceDescriptor.isSavePassword()) {
                             // Rest password back to null
@@ -66,8 +75,36 @@ public class DataSourceConnectHandler extends DataSourceHandler
                         onFinish.run();
                     }
                 }
-            });
-            connectJob.schedule();
+            };
+            if (monitor != null) {
+                final IStatus result = connectJob.runSync(monitor);
+                jobChangeAdapter.done(new IJobChangeEvent() {
+                    public long getDelay()
+                    {
+                        return 0;
+                    }
+
+                    public Job getJob()
+                    {
+                        return connectJob;
+                    }
+
+                    public IStatus getResult()
+                    {
+                        return result;
+                    }
+                });
+                if (!result.isOK()) {
+                    UIUtils.showErrorDialog(
+                        null,
+                        connectJob.getName(),
+                        null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
+                        result);
+                }
+            } else {
+                connectJob.addJobChangeListener(jobChangeAdapter);
+                connectJob.schedule();
+            }
         }
     }
 

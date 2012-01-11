@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql;
@@ -162,7 +162,7 @@ public class SQLEditor extends SQLEditorBase
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
             if (!dataSourceContainer.isConnected()) {
-                DataSourceConnectHandler.execute(dataSourceContainer, null);
+                DataSourceConnectHandler.execute(null, dataSourceContainer, null);
             }
         }
         setPartName(getEditorInput().getName());

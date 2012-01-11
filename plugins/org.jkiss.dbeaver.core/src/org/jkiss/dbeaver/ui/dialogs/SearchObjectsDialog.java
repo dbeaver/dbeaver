@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs;
@@ -261,7 +261,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                                 Object object = iter.next();
                                 if (object instanceof DBNDataSource) {
                                     DBNDataSource dsNode = (DBNDataSource)object;
-                                    dsNode.initializeNode(new Runnable() {
+                                    dsNode.initializeNode(null, new Runnable() {
                                         public void run()
                                         {
                                             Display.getDefault().asyncExec(new Runnable() {

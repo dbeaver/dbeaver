@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
@@ -134,7 +134,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                             if (event.getNode() != null) {
                                 switch (event.getNodeChange()) {
                                     case LOAD:
-                                        viewer.expandToLevel(event.getNode(), 1);
+                                        //viewer.expandToLevel(event.getNode(), 1);
                                         viewer.refresh(getViewerObject(event.getNode()));
                                         break;
                                     case UNLOAD:

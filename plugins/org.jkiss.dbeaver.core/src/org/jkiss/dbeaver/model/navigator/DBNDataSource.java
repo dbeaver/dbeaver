@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -74,7 +74,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
 
     public boolean isLazyNode()
     {
-        return false;
+        return super.isLazyNode();
     }
 
     public boolean isManagable()
@@ -92,10 +92,10 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         dataSource = (DataSourceDescriptor) object;
     }
 
-    public boolean initializeNode(Runnable onFinish)
+    public boolean initializeNode(DBRProgressMonitor monitor, Runnable onFinish)
     {
         if (!dataSource.isConnected()) {
-            DataSourceConnectHandler.execute(dataSource, onFinish);
+            DataSourceConnectHandler.execute(monitor, dataSource, onFinish);
             //dataSource.connect(monitor);
         } else {
             if (onFinish != null) {

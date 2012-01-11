@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.project;
@@ -109,7 +109,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             //    dataSourceContainer.connect();
             //}
             final DBNDataSource dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
-            dsNode.initializeNode(new Runnable() {
+            dsNode.initializeNode(null, new Runnable() {
                 public void run()
                 {
                     if (dsNode.getDataSourceContainer().isConnected()) {
