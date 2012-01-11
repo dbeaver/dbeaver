@@ -28,9 +28,10 @@ public class WMINamespace extends WMIContainer implements DBPCloseableObject {
         this.name = name;
     }
 
-    public WMINamespace(WMIContainer parent, WMIService service)
+    public WMINamespace(String name, WMIService service)
     {
-        super(parent);
+        super(null);
+        this.name = name;
         this.service = service;
     }
 
