@@ -13,7 +13,12 @@ import org.apache.commons.logging.Log;
 public class WMIService {
 
     static {
-        System.loadLibrary("jkiss_wmi_x86");
+        String arch = System.getProperty("os.arch");
+        if (arch != null && arch.indexOf("64") != -1) {
+            System.loadLibrary("jkiss_wmi_x86_64");
+        } else {
+            System.loadLibrary("jkiss_wmi_x86");
+        }
     }
 
     private long serviceHandle = 0l;

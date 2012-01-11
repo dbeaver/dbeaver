@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.wmi.service.WMIService;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * WMI Namespace
@@ -19,6 +20,7 @@ public class WMINamespace extends WMIContainer implements DBPCloseableObject {
 
     private WMIService service;
     private String name;
+    List<WMINamespace> namespaces;
 
     public WMINamespace(WMIContainer parent, String name)
     {
@@ -42,9 +44,19 @@ public class WMINamespace extends WMIContainer implements DBPCloseableObject {
         return name;
     }
 
+    public Collection<WMINamespace> getNamespaces(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (namespaces == null) {
+            // Namespaces are not yet loaded - it means we are in datasource object
+            ((WMIDataSource)this).loadNamespaces(monitor);
+        }
+        return namespaces;
+    }
+
     public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException
     {
-        return null;
+        return getNamespaces(monitor);
     }
 
     public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException

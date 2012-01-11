@@ -29,7 +29,7 @@
 		<link>
 			<name>java</name>
 			<type>2</type>
-			<location>D:/Devel/My/dbeaver/modules/org.jkiss.wmi/src/java</location>
+			<location>D:/Devel/my/dbeaver/modules/org.jkiss.wmi/src/java</location>
 		</link>
 	</linkedResources>
 </projectDescription>

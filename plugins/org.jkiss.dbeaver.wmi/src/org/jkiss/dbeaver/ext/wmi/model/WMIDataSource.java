@@ -14,7 +14,14 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.wmi.service.WMIConstants;
+import org.jkiss.wmi.service.WMIException;
+import org.jkiss.wmi.service.WMIObject;
 import org.jkiss.wmi.service.WMIService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * WMIDataSource
@@ -84,5 +91,24 @@ public class WMIDataSource extends WMINamespace implements DBPDataSource,
     public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity) throws DBException
     {
     }
+
+    void loadNamespaces(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        List<WMINamespace> children = new ArrayList<WMINamespace>();
+        WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor);
+        try {
+            getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SEND_STATUS);
+            sink.waitForFinish();
+            for (WMIObject object : sink.getObjectList()) {
+                String nsName = CommonUtils.toString(object.getValue("Name"));
+                children.add(new WMINamespace(this, nsName));
+            }
+            this.namespaces = children;
+        } catch (WMIException e) {
+            throw new DBException("Can't enum children", e);
+        }
+    }
+
 
 }

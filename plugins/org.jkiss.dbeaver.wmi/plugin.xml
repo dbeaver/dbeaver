@@ -18,11 +18,9 @@
                   icon="icons/wmi_icon.png"
                   label="WMI data source"
                   path="wmi">
-                <folder type="org.jkiss.dbeaver.ext.wmi.model.WMINamespace" label="Namespace" iconId="#folder_database" description="Namespaces">
-                    <items label="Namespace" path="namespace" property="namespaces" iconId="#database" optional="true" recursive="..">
-                        <items label="Class" path="class" property="classes" iconId="#database" optional="true" recursive=".."/>
-                    </items>
-                </folder>
+                <items label="Namespace" path="namespace" property="namespaces" iconId="#database" optional="true" recursive="..">
+                    <items label="Class" path="class" property="classes" iconId="#database" optional="true" recursive=".."/>
+                </items>
             </tree>
             <drivers managable="false">
                 <driver
