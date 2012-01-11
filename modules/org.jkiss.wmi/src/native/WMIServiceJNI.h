@@ -9,11 +9,27 @@ extern "C" {
 #endif
 /*
  * Class:     org_jkiss_wmi_service_WMIService
- * Method:    connect
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+ * Method:    initializeThread
+ * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_connect
-  (JNIEnv *, jobject, jstring, jstring, jstring, jstring, jstring, jstring);
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_initializeThread
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_jkiss_wmi_service_WMIService
+ * Method:    unInitializeThread
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_unInitializeThread
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_jkiss_wmi_service_WMIService
+ * Method:    connect
+ * Signature: (Lorg/apache/commons/logging/Log;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/jkiss/wmi/service/WMIService;
+ */
+JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIService_connect
+  (JNIEnv *, jclass, jobject, jstring, jstring, jstring, jstring, jstring, jstring);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIService

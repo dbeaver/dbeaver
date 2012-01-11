@@ -40,10 +40,11 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
     public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
     {
-        service = new WMIService(log);
         final DBPConnectionInfo connectionInfo = container.getConnectionInfo();
         try {
-            service.connect(
+            WMIService.initializeThread();
+            service = WMIService.connect(
+                log,
                 connectionInfo.getServerName(),
                 connectionInfo.getHostName(),
                 connectionInfo.getUserName(),
@@ -60,6 +61,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     {
         if (service != null) {
             service.close();
+            WMIService.unInitializeThread();
         }
     }
 

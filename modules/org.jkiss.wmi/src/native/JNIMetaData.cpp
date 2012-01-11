@@ -41,7 +41,7 @@ JNIMetaData::JNIMetaData(JNIEnv* pEnv) : pJavaEnv(pEnv)
 	wmiServiceConstructor = FindJavaMethod(
 		wmiServiceClass, 
 		"<init>", 
-		"(Lorg/apache/commons/logging/Log;)V");
+		"()V");
 	wmiServiceHandleField = pJavaEnv->GetFieldID(wmiServiceClass, "serviceHandle", "J");
 	wmiServiceLogField = pJavaEnv->GetFieldID(wmiServiceClass, "serviceLog", "Lorg/apache/commons/logging/Log;");
 

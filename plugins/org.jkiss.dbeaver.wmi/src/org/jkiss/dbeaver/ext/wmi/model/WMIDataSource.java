@@ -98,13 +98,18 @@ public class WMIDataSource extends WMINamespace implements DBPDataSource,
         List<WMINamespace> children = new ArrayList<WMINamespace>();
         WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor);
         try {
-            getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SEND_STATUS);
-            sink.waitForFinish();
-            for (WMIObject object : sink.getObjectList()) {
-                String nsName = CommonUtils.toString(object.getValue("Name"));
-                children.add(new WMINamespace(this, nsName));
+            try {
+                WMIService.initializeThread();
+                getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SEND_STATUS);
+                sink.waitForFinish();
+                for (WMIObject object : sink.getObjectList()) {
+                    String nsName = CommonUtils.toString(object.getValue("Name"));
+                    children.add(new WMINamespace(this, nsName));
+                }
+                this.namespaces = children;
+            } finally {
+                WMIService.unInitializeThread();
             }
-            this.namespaces = children;
         } catch (WMIException e) {
             throw new DBException("Can't enum children", e);
         }

@@ -23,24 +23,23 @@ public class TestService {
     private WMIService service;
     private boolean finished = false;
 
-    public TestService(WMIService service)
+    public TestService()
     {
-        this.service = service;
     }
 
     public static void main(String[] args)
     {
-        new TestService(
-            new WMIService(log))
+        new TestService()
             .test();
     }
 
     void test()
     {
         log.info("Start service");
+        WMIService.initializeThread();
         try {
             //service.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
-            service.connect(null, "localhost", null, null, null, "\\root\\cimv2");
+            service = WMIService.connect(log, null, "localhost", null, null, null, "\\root\\cimv2");
             final long curTime = System.currentTimeMillis();
 
 /*
@@ -120,6 +119,7 @@ public class TestService {
         }
         finally {
             service.close();
+            WMIService.unInitializeThread();
         }
 
         System.gc();

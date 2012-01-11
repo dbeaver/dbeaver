@@ -24,11 +24,11 @@ public class WMIService {
     private long serviceHandle = 0l;
     private Log serviceLog;
 
-    public WMIService(Log serviceLog) {
-        this.serviceLog = serviceLog;
-    }
+    public static native void initializeThread();
 
-    public native void connect(String domain, String host, String user, String password, String locale, String resource)
+    public static native void unInitializeThread();
+
+    public static native WMIService connect(Log serviceLog, String domain, String host, String user, String password, String locale, String resource)
         throws WMIException;
 
     public native WMIService openNamespace(String namespace)

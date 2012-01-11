@@ -22,8 +22,7 @@ static CComCriticalSection csSinkThreads;
 JavaVM* WMIService::pJavaVM = NULL;
 //static ThreadInfoVector threadInfos;
 
-WMIService::WMIService(JNIEnv* pJavaEnv, jobject javaObject) :
-	bCoInitialized(false)
+WMIService::WMIService(JNIEnv* pJavaEnv, jobject javaObject)
 {
 	serviceJavaObject = pJavaEnv->NewGlobalRef(javaObject);
 	if (!pJavaEnv->ExceptionCheck()) {
@@ -121,34 +120,12 @@ void WMIService::Connect(
 		THROW_COMMON_EXCEPTION(L"WMI Locator was already initialized");
 		return;
 	}
-	HRESULT hres =  ::CoInitializeEx(0, COINIT_MULTITHREADED); 
-    if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Failed to initialize COM library", hres);
-		return;
-	}
-	bCoInitialized = true;
-
-	hres =  ::CoInitializeSecurity(
-        NULL, 
-        -1,                          // COM authentication
-        NULL,                        // Authentication services
-        NULL,                        // Reserved
-        RPC_C_AUTHN_LEVEL_DEFAULT,   // Default authentication 
-        RPC_C_IMP_LEVEL_IMPERSONATE, // Default Impersonation  
-        NULL,                        // Authentication info
-        EOAC_NONE,                   // Additional capabilities 
-        NULL                         // Reserved
-        );
-    if (FAILED(hres) && hres != RPC_E_TOO_LATE) {
-		THROW_COMMON_ERROR(L"Failed to initialize security", hres);
-        return;
-    }
 
     // Step 3: ---------------------------------------------------
     // Obtain the initial locator to WMI -------------------------
 
 	CComPtr<IWbemLocator> ptrWbemLocator;
-    hres = CoCreateInstance(
+    HRESULT hres = CoCreateInstance(
         CLSID_WbemLocator,             
         0, 
         CLSCTX_INPROC_SERVER, 
@@ -221,10 +198,6 @@ void WMIService::Release(JNIEnv* pJavaEnv)
 		pJavaEnv->SetLongField(serviceJavaObject, JNIMetaData::GetMetaData(pJavaEnv).wmiServiceHandleField, 0);
 		pJavaEnv->DeleteGlobalRef(serviceJavaObject);
 		serviceJavaObject = NULL;
-	}
-
-	if (bCoInitialized) {
-		::CoUninitialize();
 	}
 }
 
@@ -320,10 +293,11 @@ jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
 		return NULL;
 	}
 	
-	jobject newServiceObject = pJavaEnv->NewObject(jniMeta.wmiServiceClass, jniMeta.wmiServiceConstructor, logObject);
+	jobject newServiceObject = pJavaEnv->NewObject(jniMeta.wmiServiceClass, jniMeta.wmiServiceConstructor);
 	if (pJavaEnv->ExceptionCheck()) {
 		return NULL;
 	}
+	pJavaEnv->SetObjectField(newServiceObject, jniMeta.wmiServiceLogField, logObject);
 	WMIService* pServiceHandler = new WMIService(pJavaEnv, newServiceObject);
 	pServiceHandler->ptrWbemServices = ptrNamespace;
 

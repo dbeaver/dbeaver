@@ -62,7 +62,6 @@ private:
 	CComPtr<IWbemServices> ptrWbemServices;
 
 	ObjectSinkVector sinkList;
-	bool bCoInitialized;
 	static JavaVM* pJavaVM;
 
 public:

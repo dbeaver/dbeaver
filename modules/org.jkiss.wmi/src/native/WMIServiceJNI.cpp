@@ -6,14 +6,55 @@
 #include "WMIService.h"
 #include "WMIUtils.h"
 
+
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_initializeThread(
+	JNIEnv* pJavaEnv, 
+	jclass serviceClass)
+{
+	HRESULT hres =  ::CoInitializeEx(0, COINIT_MULTITHREADED); 
+//	if (hres == RPC_E_CHANGED_MODE) {
+//		hres =  ::CoInitialize(0); 
+//	}
+    if (FAILED(hres)) {
+		THROW_COMMON_ERROR(L"Failed to initialize COM library", hres);
+		return;
+	}
+
+	hres =  ::CoInitializeSecurity(
+        NULL, 
+        -1,                          // COM authentication
+        NULL,                        // Authentication services
+        NULL,                        // Reserved
+        RPC_C_AUTHN_LEVEL_DEFAULT,   // Default authentication 
+        RPC_C_IMP_LEVEL_IMPERSONATE, // Default Impersonation  
+        NULL,                        // Authentication info
+        EOAC_NONE,                   // Additional capabilities 
+        NULL                         // Reserved
+        );
+    if (FAILED(hres) && hres != RPC_E_TOO_LATE) {
+		THROW_COMMON_ERROR(L"Failed to initialize security", hres);
+        return;
+    }
+}
+
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_unInitializeThread(
+	JNIEnv* pJavaEnv, 
+	jclass serviceClass)
+{
+	::CoUninitialize();
+}
+
+
+
 /*
  * Class:     org_jkiss_wmi_service_WMIService
  * Method:    connect
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_connect(
-	JNIEnv * pJavaEnv, 
-	jobject object, 
+JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIService_connect(
+	JNIEnv* pJavaEnv, 
+	jclass serviceClass,
+	jobject logObject, 
 	jstring domain, 
 	jstring host, 
 	jstring user, 
@@ -21,15 +62,14 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_connect(
 	jstring locale,
 	jstring resource)
 {
-	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
-	if (pService != NULL) {
-		THROW_COMMON_EXCEPTION(L"WMI Service is already connected");
-		return;
-	}
-	pService = new WMIService(pJavaEnv, object);
+	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
+	jobject newServiceObject = pJavaEnv->NewObject(jniMeta.wmiServiceClass, jniMeta.wmiServiceConstructor);
 	if (pJavaEnv->ExceptionCheck()) {
-		return;
+		return NULL;
 	}
+	pJavaEnv->SetObjectField(newServiceObject, jniMeta.wmiServiceLogField, logObject);
+
+	WMIService* pService = new WMIService(pJavaEnv, newServiceObject);
 	
 	CComBSTR bstrDomain, bstrHost, bstrUser, bstrPassword, bstrLocale, bstrResource;
 	::GetJavaString(pJavaEnv, domain, &bstrDomain);
@@ -41,8 +81,11 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_connect(
 
 	pService->Connect(pJavaEnv, bstrDomain, bstrHost, bstrUser, bstrPassword, bstrLocale, bstrResource);
 	if (pJavaEnv->ExceptionCheck()) {
-		return;
+		DeleteLocalRef(pJavaEnv, newServiceObject);
+		return NULL;
 	}
+
+	return newServiceObject;
 }
 
 /*
