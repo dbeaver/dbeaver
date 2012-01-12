@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.wmi.model;
@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Entity container
@@ -31,14 +32,14 @@ public abstract class WMIContainer implements DBSEntity, DBSEntityContainer {
         return null;
     }
 
-    public WMIContainer getParentObject()
+    public DBSObject getParentObject()
     {
-        return parent;
+        return parent instanceof WMIDataSource ? ((WMIDataSource) parent).getContainer() : parent;
     }
 
     public WMIDataSource getDataSource()
     {
-        for (WMIContainer p = this; p != null; p = p.getParentObject()) {
+        for (WMIContainer p = this.parent; p != null; p = p.parent) {
             if (p instanceof WMIDataSource) {
                 return (WMIDataSource)p;
             }
