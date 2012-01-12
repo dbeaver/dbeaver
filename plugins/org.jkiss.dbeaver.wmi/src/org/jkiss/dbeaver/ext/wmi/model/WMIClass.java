@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPCloseableObject;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.utils.CommonUtils;
@@ -16,9 +18,11 @@ import java.util.Collection;
 /**
  * WMI class
  */
-public class WMIClass extends WMIContainer {
+public class WMIClass extends WMIContainer implements DBPCloseableObject
+{
 
     private WMIObject classObject;
+    private String name;
 
     public WMIClass(WMIContainer parent, WMIObject classObject)
     {
@@ -32,17 +36,20 @@ public class WMIClass extends WMIContainer {
         return classObject;
     }
 
+    @Property(name = "Name", viewable = true)
     public String getName()
     {
-        try {
-            return CommonUtils.toString(
-                classObject.getProperty("Name"));
-        } catch (WMIException e) {
-            log.error(e);
-            return e.getMessage();
+        if (name == null) {
+            try {
+                name = CommonUtils.toString(
+                    classObject.getValue("__CLASS"));
+            } catch (WMIException e) {
+                log.error(e);
+                return e.getMessage();
+            }
         }
+        return name;
     }
-
     public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException
     {
         return null;
@@ -53,4 +60,11 @@ public class WMIClass extends WMIContainer {
         return WMIClass.class;
     }
 
+    public void close()
+    {
+        if (classObject != null) {
+            classObject.release();
+            classObject = null;
+        }
+    }
 }

@@ -26,16 +26,22 @@ import java.util.List;
 /**
  * WMIDataSource
  */
-public class WMIDataSource extends WMINamespace implements DBPDataSource,
-    DBSEntityContainer, DBSEntitySelector
+public class WMIDataSource extends WMINamespace implements DBPDataSource//, DBSEntitySelector
 {
     private DBSDataSourceContainer container;
 
     public WMIDataSource(DBSDataSourceContainer container, WMIService service)
         throws DBException
     {
-        super(null, service);
+        super(container.getName());
         this.container = container;
+        this.service = service;
+    }
+
+    @Override
+    public WMIService getService()
+    {
+        return service;
     }
 
     public DBSDataSourceContainer getContainer()
@@ -72,48 +78,5 @@ public class WMIDataSource extends WMINamespace implements DBPDataSource,
     public void initialize(DBRProgressMonitor monitor) throws DBException
     {
     }
-
-    public void close()
-    {
-        super.close();
-    }
-
-    public boolean supportsEntitySelect()
-    {
-        return true;
-    }
-
-    public DBSEntity getSelectedEntity()
-    {
-        return null;
-    }
-
-    public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity) throws DBException
-    {
-    }
-
-    void loadNamespaces(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        List<WMINamespace> children = new ArrayList<WMINamespace>();
-        WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor);
-        try {
-            try {
-                WMIService.initializeThread();
-                getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SEND_STATUS);
-                sink.waitForFinish();
-                for (WMIObject object : sink.getObjectList()) {
-                    String nsName = CommonUtils.toString(object.getValue("Name"));
-                    children.add(new WMINamespace(this, nsName));
-                }
-                this.namespaces = children;
-            } finally {
-                WMIService.unInitializeThread();
-            }
-        } catch (WMIException e) {
-            throw new DBException("Can't enum children", e);
-        }
-    }
-
 
 }

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -16,8 +17,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * Entity container
  */
-public abstract class WMIContainer implements DBSEntity, DBSEntityContainer {
-
+public abstract class WMIContainer implements DBSEntity, DBSEntityContainer
+{
     static final Log log = LogFactory.getLog(WMIContainer.class);
 
     private WMIContainer parent;
@@ -39,7 +40,7 @@ public abstract class WMIContainer implements DBSEntity, DBSEntityContainer {
 
     public WMIDataSource getDataSource()
     {
-        for (WMIContainer p = this.parent; p != null; p = p.parent) {
+        for (WMIContainer p = this; p != null; p = p.parent) {
             if (p instanceof WMIDataSource) {
                 return (WMIDataSource)p;
             }
@@ -65,4 +66,5 @@ public abstract class WMIContainer implements DBSEntity, DBSEntityContainer {
     {
         return false;
     }
+
 }
