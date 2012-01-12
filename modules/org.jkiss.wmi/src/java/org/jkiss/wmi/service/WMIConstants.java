@@ -51,4 +51,6 @@ public class WMIConstants {
 	public static final long WBEM_FLAG_SHALLOW	= 1;
 	public static final long WBEM_FLAG_PROTOTYPE	= 2;
 
+    public static final String CLASS_PROP_CLASS_NAME = "__CLASS";
+    public static final String CLASS_PROP_SUPER_CLASS = "__SUPERCLASS";
 }

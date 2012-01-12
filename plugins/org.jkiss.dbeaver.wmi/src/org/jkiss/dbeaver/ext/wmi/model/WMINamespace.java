@@ -18,12 +18,13 @@ import org.jkiss.wmi.service.WMIService;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * WMI Namespace
  */
-public class WMINamespace extends WMIContainer implements DBPCloseableObject {
+public class WMINamespace extends WMIContainer implements WMIClassContainer, DBPCloseableObject {
 
     private String name;
     private volatile List<WMINamespace> namespaces;
@@ -100,6 +101,11 @@ public class WMINamespace extends WMIContainer implements DBPCloseableObject {
         }
     }
 
+    public boolean hasClasses()
+    {
+        return true;
+    }
+
     public Collection<WMIClass> getClasses(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -126,16 +132,44 @@ public class WMINamespace extends WMIContainer implements DBPCloseableObject {
                 getService().enumClasses(null, sink, WMIConstants.WBEM_FLAG_SEND_STATUS | WMIConstants.WBEM_FLAG_DEEP);
                 sink.waitForFinish();
                 List<WMIClass> children = new ArrayList<WMIClass>();
+                List<WMIClass> rootClasses = new ArrayList<WMIClass>();
                 for (WMIObject object : sink.getObjectList()) {
-                    WMIClass wmiClass = new WMIClass(this, object);
-                    if (!showSystemObjects && wmiClass.getName().startsWith("__")) {
-                        wmiClass.close();
-                        continue;
+                    WMIClass superClass = null;
+                    String superClassName = (String)object.getValue(WMIConstants.CLASS_PROP_SUPER_CLASS);
+                    if (superClassName != null) {
+                        for (WMIClass c : children) {
+                            if (c.getName().equals(superClassName)) {
+                                superClass = c;
+                                break;
+                            }
+                        }
+                        if (superClass == null) {
+                            log.warn("Super class '" + superClassName + "' not found");
+                        }
                     }
+                    WMIClass wmiClass = new WMIClass(this, superClass, object);
                     children.add(wmiClass);
+                    if (superClass == null) {
+                        rootClasses.add(wmiClass);
+                    } else {
+                        superClass.addSubClass(wmiClass);
+                    }
                 }
-                DBUtils.orderObjects(children);
-                return children;
+
+                // filter out system classes
+                if (!showSystemObjects) {
+                    for (Iterator<WMIClass> iter = children.iterator(); iter.hasNext(); ) {
+                        WMIClass wmiClass = iter.next();
+                        if (wmiClass.isSystem()) {
+                            wmiClass.close();
+                            iter.remove();
+                        }
+                    }
+                }
+
+                DBUtils.orderObjects(rootClasses);
+
+                return rootClasses;
             } finally {
                 WMIService.unInitializeThread();
             }

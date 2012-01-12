@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry.tree;
 
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
@@ -205,7 +206,9 @@ public abstract class DBXTreeNode
 
             public Object get(String name)
             {
-                return node instanceof DBNDatabaseNode && name.equals("object") ? ((DBNDatabaseNode) node).getObject() : null;
+                return node instanceof DBNDatabaseNode && name.equals("object") ?
+                    DBUtils.getPublicObject(((DBNDatabaseNode) node).getObject()) :
+                    null;
             }
 
             public void set(String name, Object value)
@@ -215,7 +218,8 @@ public abstract class DBXTreeNode
 
             public boolean has(String name)
             {
-                return node instanceof DBNDatabaseNode && name.equals("object") && ((DBNDatabaseNode) node).getObject() != null;
+                return node instanceof DBNDatabaseNode && name.equals("object")
+                    && ((DBNDatabaseNode) node).getObject() != null;
             }
         };
     }

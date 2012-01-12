@@ -20,7 +20,7 @@
                   path="wmi">
                 <items label="Namespaces" itemLabel="Namespace" path="namespace" property="namespaces" icon="icons/namespace.png" id="Namespace">
                     <items ref="Namespace"/>
-                    <items label="Classes" itemLabel="Class" path="class" property="classes" iconId="icons/class.png" id="Class">
+                    <items label="Classes" itemLabel="Class" path="class" property="classes" iconId="icons/class.png" id="Class" visibleIf="object.hasClasses()">
                         <items ref="Class"/>
                     </items>
                 </items>
