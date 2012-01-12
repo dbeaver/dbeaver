@@ -45,7 +45,12 @@ public class WMINamespace extends WMIContainer implements DBPCloseableObject {
     public WMIService getService() throws WMIException
     {
         if (service == null) {
-            this.service = getDataSource().getService().openNamespace(this.name);
+            StringBuilder nsName = new StringBuilder();
+            nsName.append(this.name);
+            for (WMIContainer p = parent; p != null && !(p instanceof WMIDataSource); p = p.parent) {
+                nsName.insert(0, '/').insert(0, p.getName());
+            }
+            this.service = getDataSource().getService().openNamespace(nsName.toString());
         }
         return service;
     }

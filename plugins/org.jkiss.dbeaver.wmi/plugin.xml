@@ -18,10 +18,14 @@
                   icon="icons/wmi_icon.png"
                   label="WMI data source"
                   path="wmi">
-                <items label="Namespace" path="namespace" property="namespaces" icon="icons/namespace.png" optional="true" recursive="..">
-                    <items label="Class" path="class" property="classes" iconId="icons/class.png" optional="true" recursive=".."/>
+                <items label="Namespaces" itemLabel="Namespace" path="namespace" property="namespaces" icon="icons/namespace.png" id="Namespace">
+                    <items ref="Namespace"/>
+                    <items label="Classes" itemLabel="Class" path="class" property="classes" iconId="icons/class.png" id="Class">
+                        <items ref="Class"/>
+                    </items>
                 </items>
-                <items label="Class" path="class" property="classes" iconId="icons/class.png" optional="true" recursive=".."/>
+                <!--items label="Class" path="class" property="classes" iconId="icons/class.png" optional="true" recursive=".."/-->
+                <items ref="Class"/>
             </tree>
             <drivers managable="false">
                 <driver

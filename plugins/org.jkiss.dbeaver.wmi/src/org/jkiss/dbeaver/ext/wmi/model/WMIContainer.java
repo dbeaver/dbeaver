@@ -21,7 +21,7 @@ public abstract class WMIContainer implements DBSEntity, DBSEntityContainer
 {
     static final Log log = LogFactory.getLog(WMIContainer.class);
 
-    private WMIContainer parent;
+    protected final WMIContainer parent;
 
     protected WMIContainer(WMIContainer parent)
     {
