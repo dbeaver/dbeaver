@@ -69,7 +69,7 @@ public class WMIClass extends WMIContainer implements WMIClassContainer, DBPClos
         subClasses.add(wmiClass);
     }
 
-    @Property(name = "Name", viewable = true)
+    @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
         if (name == null && classObject != null) {

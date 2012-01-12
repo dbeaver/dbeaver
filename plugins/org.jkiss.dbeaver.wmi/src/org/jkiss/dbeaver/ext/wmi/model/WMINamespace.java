@@ -29,6 +29,7 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBP
     private String name;
     private volatile List<WMINamespace> namespaces;
     private volatile List<WMIClass> classes;
+    private volatile List<WMIClass> allClasses;
     protected WMIService service;
 
     public WMINamespace(WMIContainer parent, String name)
@@ -56,7 +57,7 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBP
         return service;
     }
 
-    @Property(name = "Name", viewable = true)
+    @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -113,14 +114,21 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBP
             synchronized (this) {
                 if (classes == null) {
                     // Class are not yet loaded - it means we are in datasource object
-                    classes = loadClasses(monitor);
+                    loadClasses(monitor);
                 }
             }
         }
         return classes;
     }
 
-    List<WMIClass> loadClasses(DBRProgressMonitor monitor)
+    public Collection<WMIClass> getAllClasses(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        getClasses(monitor);
+        return allClasses;
+    }
+
+    void loadClasses(DBRProgressMonitor monitor)
         throws DBException
     {
         boolean showSystemObjects = getDataSource().getContainer().isShowSystemObjects();
@@ -161,15 +169,16 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBP
                     for (Iterator<WMIClass> iter = children.iterator(); iter.hasNext(); ) {
                         WMIClass wmiClass = iter.next();
                         if (wmiClass.isSystem()) {
-                            wmiClass.close();
                             iter.remove();
                         }
                     }
                 }
 
                 DBUtils.orderObjects(rootClasses);
+                DBUtils.orderObjects(children);
 
-                return rootClasses;
+                this.classes = rootClasses;
+                this.allClasses = children;
             } finally {
                 WMIService.unInitializeThread();
             }
@@ -193,6 +202,19 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBP
 
     public void close()
     {
+        if (!CommonUtils.isEmpty(namespaces)) {
+            for (WMINamespace namespace : namespaces) {
+                namespace.close();
+            }
+            namespaces.clear();
+        }
+        if (!CommonUtils.isEmpty(allClasses)) {
+            for (WMIClass wmiClass : allClasses) {
+                wmiClass.close();
+            }
+            allClasses.clear();
+            classes.clear();
+        }
         if (service != null) {
             service.close();
             service = null;

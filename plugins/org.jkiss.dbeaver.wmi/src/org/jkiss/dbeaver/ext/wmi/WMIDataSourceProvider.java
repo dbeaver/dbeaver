@@ -12,7 +12,6 @@ import org.jkiss.dbeaver.ext.wmi.model.WMIDataSource;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIService;
 
 import java.util.Collection;
@@ -22,7 +21,6 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     static final Log log = LogFactory.getLog(WMIDataSourceProvider.class);
 
     private boolean libLoaded = false;
-    private WMIService service;
 
     public void init(DBPApplication application)
     {
@@ -43,7 +41,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
         final DBPConnectionInfo connectionInfo = container.getConnectionInfo();
         try {
             WMIService.initializeThread();
-            service = WMIService.connect(
+            WMIService service = WMIService.connect(
                 log,
                 connectionInfo.getServerName(),
                 connectionInfo.getHostName(),
@@ -51,18 +49,15 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
                 connectionInfo.getUserPassword(),
                 null,
                 connectionInfo.getDatabaseName());
+            return new WMIDataSource(container, service);
         } catch (Throwable e) {
             throw new DBException("Can't connect to WMI service", e);
         }
-        return new WMIDataSource(container, service);
     }
 
     public void close()
     {
-        if (service != null) {
-            service.close();
-            WMIService.unInitializeThread();
-        }
+        //WMIService.unInitializeThread();
     }
 
 }

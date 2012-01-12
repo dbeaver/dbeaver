@@ -79,4 +79,9 @@ public class WMIDataSource extends WMINamespace implements DBPDataSource//, DBSE
     {
     }
 
+    @Override
+    public void close()
+    {
+        super.close();
+    }
 }
