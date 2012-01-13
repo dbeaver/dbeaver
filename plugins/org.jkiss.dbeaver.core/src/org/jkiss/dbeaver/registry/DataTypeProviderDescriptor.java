@@ -22,6 +22,8 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
     static final Log log = LogFactory.getLog(DataSourceProviderRegistry.class);
 
+    private static final String ALL_TYPES_PATTERN = "*";
+
     private String id;
     private String className;
     private Set<Object> supportedTypes = new HashSet<Object>();
@@ -113,7 +115,8 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
     {
         return
             supportedTypes.contains(valueType) ||
-            (typeName != null && supportedTypes.contains(typeName.toLowerCase()));
+            (typeName != null && supportedTypes.contains(typeName.toLowerCase())) ||
+            supportedTypes.contains(ALL_TYPES_PATTERN);
     }
 
     public Set<Object> getSupportedTypes()

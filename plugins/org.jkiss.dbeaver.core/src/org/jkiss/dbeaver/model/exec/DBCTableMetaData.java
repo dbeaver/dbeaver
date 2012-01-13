@@ -16,7 +16,7 @@ public interface DBCTableMetaData {
     /**
      * Table reference
      * @return table table reference. never returns null
-     * @param monitor
+     * @param monitor progress monitor
      */
     DBSTable getTable(DBRProgressMonitor monitor)
         throws DBException;
@@ -34,13 +34,13 @@ public interface DBCTableMetaData {
     String getTableAlias();
 
     /**
-     * Checks table is identitied.
-     * Table is identitied if resultset contains at least one set of this table columns which will unique
+     * Checks table is identified.
+     * Table is identified if resultset contains at least one set of this table columns which will unique
      * identify table row
-     * @return true if this table has at least one unique identitier in the whole resultset.
-     * @param monitor
+     * @return true if this table has at least one unique identifier in the whole resultset.
+     * @param monitor progress monitor
      */
-    boolean isIdentitied(DBRProgressMonitor monitor)
+    boolean isIdentified(DBRProgressMonitor monitor)
         throws DBException;
 
     /**
@@ -48,7 +48,7 @@ public interface DBCTableMetaData {
      * Best identifier is a primary key. If no such one then any unique key fits.
      * @return list of identifier columns which identifies this table row the best way
      * or null if no identifiers found.
-     * @param monitor
+     * @param monitor progress monitor
      */
     DBCTableIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException;

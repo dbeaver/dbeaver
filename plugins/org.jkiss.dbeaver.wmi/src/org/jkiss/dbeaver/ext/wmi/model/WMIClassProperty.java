@@ -81,7 +81,12 @@ public class WMIClassProperty extends WMIClassAttribute<WMIObjectProperty> imple
 
     public Image getObjectImage()
     {
-        switch (attribute.getType()) {
+        return getPropertyImage(attribute.getType());
+    }
+
+    public static Image getPropertyImage(int type)
+    {
+        switch (type) {
             case WMIConstants.CIM_SINT8:
             case WMIConstants.CIM_UINT8:
             case WMIConstants.CIM_SINT16:

@@ -74,4 +74,16 @@
             label="Namespace manager"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+            class="org.jkiss.dbeaver.ext.wmi.model.WMIValueHandlerProvider"
+            id="org.jkiss.dbeaver.ext.wmi.model.WMIValueHandlerProvider"
+            label="WMI data types provider">
+
+            <datasource id="wmi"/>
+            <type name="*"/>
+
+        </provider>
+    </extension>
+
 </plugin>

@@ -19,6 +19,7 @@ import java.util.List;
  */
 public interface DBSDataContainer extends DBSObject {
 
+    public static final int DATA_SELECT         = 0;
     public static final int DATA_COUNT          = 1;
     public static final int DATA_INSERT         = 2;
     public static final int DATA_UPDATE         = 4;

@@ -94,7 +94,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         return alias;
     }
 
-    public boolean isIdentitied(DBRProgressMonitor monitor)
+    public boolean isIdentified(DBRProgressMonitor monitor)
         throws DBException
     {
         return getBestIdentifier(monitor) != null;

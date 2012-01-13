@@ -374,7 +374,7 @@ public final class DBUtils {
         try {
             for (DBDColumnBinding column : bindings) {
                 DBCColumnMetaData meta = column.getColumn();
-                if (meta.getTable() == null || !meta.getTable().isIdentitied(monitor)) {
+                if (meta.getTable() == null || !meta.getTable().isIdentified(monitor)) {
                     continue;
                 }
                 DBSTableColumn tableColumn = meta.getTableColumn(monitor);

@@ -7,14 +7,16 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDColumnValue;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.wmi.service.WMIConstants;
-import org.jkiss.wmi.service.WMIException;
-import org.jkiss.wmi.service.WMIObject;
-import org.jkiss.wmi.service.WMIObjectProperty;
+import org.jkiss.wmi.service.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +25,8 @@ import java.util.List;
 /**
  * WMI class
  */
-public class WMIClass extends WMIContainer implements WMIClassContainer, DBSTable, DBPCloseableObject
+public class WMIClass extends WMIContainer
+    implements WMIClassContainer, DBSTable, DBPCloseableObject, DBSDataContainer
 {
     private WMIClass superClass;
     private WMIObject classObject;
@@ -190,6 +193,73 @@ public class WMIClass extends WMIContainer implements WMIClassContainer, DBSTabl
             return super.toString();
         }
         return getName();
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+    // Data container
+
+    public int getSupportedFeatures()
+    {
+        return DATA_SELECT;
+    }
+
+    public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
+    {
+        try {
+            WMIObjectCollectorSink sink = new WMIObjectCollectorSink(
+                context.getProgressMonitor(),
+                getNamespace().getService(),
+                firstRow, maxRows);
+            try {
+                WMIService.initializeThread();
+                getNamespace().getService().enumInstances(
+                    getName(),
+                    sink,
+                    WMIConstants.WBEM_FLAG_SEND_STATUS);
+                sink.waitForFinish();
+                WMIResultSet resultSet = new WMIResultSet(context, this, sink.getObjectList());
+                long resultCount = 0;
+                try {
+                    dataReceiver.fetchStart(context, resultSet);
+                    while (resultSet.nextRow()) {
+                        resultCount++;
+                        dataReceiver.fetchRow(context, resultSet);
+                    }
+                } finally {
+                    try {
+                        dataReceiver.fetchEnd(context);
+                    } catch (DBCException e) {
+                        log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                    }
+                    resultSet.close();
+                }
+                return resultCount;
+            } finally {
+                WMIService.unInitializeThread();
+            }
+        } catch (WMIException e) {
+            throw new DBException("Can't enum instances", e);
+        }
+    }
+
+    public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
+    {
+        throw new DBException("Not implemented");
+    }
+
+    public long insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
+    {
+        throw new DBException("Not implemented");
+    }
+
+    public long updateData(DBCExecutionContext context, List<DBDColumnValue> keyColumns, List<DBDColumnValue> updateColumns, DBDDataReceiver keysReceiver) throws DBException
+    {
+        throw new DBException("Not implemented");
+    }
+
+    public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
+    {
+        throw new DBException("Not implemented");
     }
 
 }

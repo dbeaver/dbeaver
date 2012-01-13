@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.WMIConstants;
@@ -83,8 +82,8 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
     List<WMINamespace> loadNamespaces(DBRProgressMonitor monitor)
         throws DBException
     {
-        WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor);
         try {
+            WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor, getService());
             try {
                 WMIService.initializeThread();
                 getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SEND_STATUS);
@@ -136,8 +135,8 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
     {
         boolean showSystemObjects = getDataSource().getContainer().isShowSystemObjects();
 
-        WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor);
         try {
+            WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor, getService());
             try {
                 WMIService.initializeThread();
                 getService().enumClasses(null, sink, WMIConstants.WBEM_FLAG_SEND_STATUS | WMIConstants.WBEM_FLAG_DEEP);
