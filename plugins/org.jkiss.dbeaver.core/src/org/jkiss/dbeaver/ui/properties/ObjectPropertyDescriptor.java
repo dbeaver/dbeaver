@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -34,11 +34,12 @@ import java.lang.reflect.Method;
 */
 public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements IPropertyDescriptorEx, IPropertyValueListProvider<Object>
 {
-    private Property propInfo;
+    private final Property propInfo;
     private Method setter;
     private ILabelProvider labelProvider;
     private IPropertyValueEditorProvider valueEditor;
     private IPropertyValueTransformer valueTransformer;
+    private final Class<?> declaringClass;
 
     public ObjectPropertyDescriptor(
         IPropertySource source,
@@ -49,13 +50,14 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         super(source, parent, getter, propInfo.id(), propInfo.order());
         this.propInfo = propInfo;
         final String propertyName = BeanUtils.getPropertyNameFromGetter(getter.getName());
-        Class<?> searchClass = getter.getDeclaringClass();
-        while (setter == null && searchClass != Object.class && searchClass != null) {
+        declaringClass = parent == null ? getter.getDeclaringClass() : parent.getDeclaringClass();
+        Class<?> c = declaringClass;
+        while (setter == null && c != Object.class && c != null) {
             this.setter = BeanUtils.getSetMethod(
-                searchClass,
+                c,
                 propertyName);
             if (setter == null) {
-                searchClass = searchClass.getSuperclass();
+                c = c.getSuperclass();
             }
         }
 
@@ -91,6 +93,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 log.warn("Can't create value transformer", e);
             }
         }
+    }
+
+    public Class<?> getDeclaringClass()
+    {
+        return declaringClass;
     }
 
     public boolean isViewable()

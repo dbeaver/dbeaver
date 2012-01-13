@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
@@ -193,7 +193,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         // Collect base types for root node
         if (getRootNode() instanceof DBNDatabaseNode) {
             DBNDatabaseNode dbNode = (DBNDatabaseNode) getRootNode();
-            baseTypes = dbNode.getChildrenTypes();
+            baseTypes = dbNode.getChildrenTypes(nodeMeta);
         } else {
             baseTypes = null;
         }

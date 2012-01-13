@@ -186,13 +186,13 @@ void WMIService::Connect(
 		return;
     }
 
-	WriteLog(pJavaEnv, LT_INFO, bstr_t("WMI Service connected to ") + (LPCWSTR)resource);
+	WriteLog(pJavaEnv, LT_DEBUG, bstr_t("WMI Service connected to ") + (LPCWSTR)resource);
 }
 
 void WMIService::Release(JNIEnv* pJavaEnv)
 {
 	ptrWbemServices = NULL;
-	WriteLog(pJavaEnv, LT_INFO, L"WMI Service closed");
+	WriteLog(pJavaEnv, LT_DEBUG, L"WMI Service closed");
 
 	if (serviceJavaObject != NULL) {
 		pJavaEnv->SetLongField(serviceJavaObject, JNIMetaData::GetMetaData(pJavaEnv).wmiServiceHandleField, 0);
@@ -301,7 +301,7 @@ jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
 	WMIService* pServiceHandler = new WMIService(pJavaEnv, newServiceObject);
 	pServiceHandler->ptrWbemServices = ptrNamespace;
 
-	WriteLog(pJavaEnv, LT_INFO, bstr_t("Connected to WMI namespace ") + nsName);
+	WriteLog(pJavaEnv, LT_DEBUG, bstr_t("Connected to WMI namespace ") + nsName);
 
 	return newServiceObject;
 }

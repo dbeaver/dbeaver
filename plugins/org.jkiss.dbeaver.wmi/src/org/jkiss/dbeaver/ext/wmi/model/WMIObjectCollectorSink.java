@@ -65,6 +65,9 @@ class WMIObjectCollectorSink implements WMIObjectSink
                 errorDesc = param;
             }
         }
+        if (errorObject != null) {
+            errorObject.release();
+        }
     }
 
     public void waitForFinish()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.struct;
@@ -43,5 +43,11 @@ public class DBSConstraintModifyRule implements DBPNamedObject
     public String getClause()
     {
         return clause;
+    }
+
+    @Override
+    public String toString()
+    {
+        return id;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -36,6 +36,7 @@ public abstract class ObjectAttributeDescriptor {
     private Method getter;
     private boolean isLazy;
     private IPropertyCacheValidator cacheValidator;
+    private Class<?> declaringClass;
 
     public ObjectAttributeDescriptor(
         IPropertySource source,
@@ -53,6 +54,7 @@ public abstract class ObjectAttributeDescriptor {
             this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
         }
 
+        declaringClass = parent == null ? getter.getDeclaringClass() : parent.getDeclaringClass();
         if (this.getter.getParameterTypes().length == 1 && getter.getParameterTypes()[0] == DBRProgressMonitor.class) {
             this.isLazy = true;
         }
@@ -67,6 +69,11 @@ public abstract class ObjectAttributeDescriptor {
                 }
             }
         }
+    }
+
+    public Class<?> getDeclaringClass()
+    {
+        return declaringClass;
     }
 
     public IPropertySource getSource()

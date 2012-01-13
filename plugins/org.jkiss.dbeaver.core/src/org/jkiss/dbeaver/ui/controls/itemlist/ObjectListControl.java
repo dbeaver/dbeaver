@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
@@ -335,7 +335,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         }
                         if (!listPropertySource.hasProperty(prop)) {
                             listPropertySource.addProperty(prop);
-                            createColumn(objectClass, prop);
+                            createColumn(prop);
                         }
                     }
                 }
@@ -607,7 +607,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return props;
     }
 
-    protected void createColumn(Class<?> objectClass, ObjectPropertyDescriptor prop)
+    protected void createColumn(ObjectPropertyDescriptor prop)
     {
         ObjectColumn objectColumn = null;
         for (ObjectColumn col : columns) {
@@ -616,6 +616,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 break;
             }
         }
+        Class<?> propClass = prop.getDeclaringClass();
         if (objectColumn == null) {
             Item columnItem;
             ViewerColumn newColumn;
@@ -643,10 +644,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 newColumn.setEditingSupport(editingSupport);
             }
             objectColumn = new ObjectColumn(newColumn, columnItem, CommonUtils.toString(prop.getId()));
-            objectColumn.addProperty(objectClass, prop);
+            objectColumn.addProperty(propClass, prop);
             this.columns.add(objectColumn);
         } else {
-            objectColumn.addProperty(objectClass, prop);
+            objectColumn.addProperty(propClass, prop);
             String oldTitle = objectColumn.item.getText();
             if (!oldTitle.contains(prop.getDisplayName())) {
                 objectColumn.item.setText(CommonUtils.capitalizeWord(objectColumn.id));

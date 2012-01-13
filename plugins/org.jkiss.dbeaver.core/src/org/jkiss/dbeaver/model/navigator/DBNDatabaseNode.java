@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DBNDatabaseNode
@@ -494,9 +491,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     protected abstract void reloadObject(DBRProgressMonitor monitor, DBSObject object);
 
-    public List<Class<?>> getChildrenTypes()
+    public List<Class<?>> getChildrenTypes(DBXTreeNode useMeta)
     {
-        List<DBXTreeNode> childMetas = getMeta().getChildren(this);
+        List<DBXTreeNode> childMetas = useMeta == null ? getMeta().getChildren(this) : Collections.singletonList(useMeta);
         if (CommonUtils.isEmpty(childMetas)) {
             return null;
         } else {
