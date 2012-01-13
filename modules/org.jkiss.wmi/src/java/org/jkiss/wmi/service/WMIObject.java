@@ -66,15 +66,15 @@ public class WMIObject extends WMIQualifiedObject {
         }
     }
 
-    public Collection<WMIObjectMethod> getMethod() throws WMIException
+    public Collection<WMIObjectMethod> getMethods() throws WMIException
     {
-        readMethod();
+        readMethods();
         return methods;
     }
 
     public WMIObjectMethod getMethod(String name) throws WMIException
     {
-        readMethod();
+        readMethods();
         for (WMIObjectMethod method : methods) {
             if (method.getName().equals(name)) {
                 return method;
@@ -83,7 +83,7 @@ public class WMIObject extends WMIQualifiedObject {
         return null;
     }
 
-    private void readMethod()
+    private void readMethods()
         throws WMIException
     {
         if (methods != null) {

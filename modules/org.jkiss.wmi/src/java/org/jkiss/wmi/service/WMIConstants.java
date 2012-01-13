@@ -53,4 +53,5 @@ public class WMIConstants {
 
     public static final String CLASS_PROP_CLASS_NAME = "__CLASS";
     public static final String CLASS_PROP_SUPER_CLASS = "__SUPERCLASS";
+    public static final String CLASS_PROP_PATH = "__PATH";
 }

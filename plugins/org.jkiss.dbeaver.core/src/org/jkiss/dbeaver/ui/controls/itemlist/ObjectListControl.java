@@ -842,7 +842,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 return;
             }
 			switch(event.type) {
-				case SWT.PaintItem: {
+				case SWT.PaintItem: if (event.index < columns.size()) {
                     final OBJECT_TYPE object = (OBJECT_TYPE)event.item.getData();
                     final Object objectValue = getObjectValue(object);
                     Object cellValue = getCellValue(object, event.index);

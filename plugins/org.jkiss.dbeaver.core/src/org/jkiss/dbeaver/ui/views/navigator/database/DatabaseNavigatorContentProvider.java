@@ -101,9 +101,10 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             try {
                 // Read children with null monitor cos' it's not a lazy node
                 // and no blocking process will occur
-                List<? extends DBNNode> children = parentNode.getChildren(VoidProgressMonitor.INSTANCE);
+                List<? extends DBNNode> children = TreeLoadService.filterNavigableChildren(
+                    parentNode.getChildren(VoidProgressMonitor.INSTANCE));
                 if (CommonUtils.isEmpty(children)) {
-                    return new Object[0];
+                    return EMPTY_CHILDREN;
                 } else {
                     return children.toArray();
                 }

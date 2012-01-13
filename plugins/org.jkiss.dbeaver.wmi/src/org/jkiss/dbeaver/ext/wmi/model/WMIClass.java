@@ -6,13 +6,15 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.WMIConstants;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIObject;
+import org.jkiss.wmi.service.WMIObjectProperty;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,12 +23,13 @@ import java.util.List;
 /**
  * WMI class
  */
-public class WMIClass extends WMIContainer implements WMIClassContainer, DBPCloseableObject
+public class WMIClass extends WMIContainer implements WMIClassContainer, DBSTable, DBPCloseableObject
 {
     private WMIClass superClass;
     private WMIObject classObject;
     private String name;
     private List<WMIClass> subClasses = null;
+    private List<WMIClassProperty> properties = null;
 
     public WMIClass(WMIContainer parent, WMIClass superClass, WMIObject classObject)
     {
@@ -84,6 +87,17 @@ public class WMIClass extends WMIContainer implements WMIClassContainer, DBPClos
         return name;
     }
 
+    public String getFullQualifiedName()
+    {
+        try {
+            return CommonUtils.toString(
+                classObject.getValue(WMIConstants.CLASS_PROP_PATH));
+        } catch (WMIException e) {
+            log.error(e);
+            return e.getMessage();
+        }
+    }
+
     public boolean isSystem()
     {
         return getName().startsWith("__");
@@ -96,7 +110,72 @@ public class WMIClass extends WMIContainer implements WMIClassContainer, DBPClos
 
     public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException
     {
-        return WMIClass.class;
+        return WMIClassAttribute.class;
+    }
+
+    public boolean isView()
+    {
+        return false;
+    }
+
+    public DBSEntityContainer getContainer()
+    {
+        return parent;
+    }
+
+    public List<WMIClassProperty> getColumns(DBRProgressMonitor monitor) throws DBException
+    {
+        if (properties == null) {
+            readProperties(monitor);
+        }
+        return properties;
+    }
+
+    public WMIClassProperty getColumn(DBRProgressMonitor monitor, String columnName) throws DBException
+    {
+        if (properties == null) {
+            readProperties(monitor);
+        }
+        return DBUtils.findObject(properties, columnName);
+    }
+
+    private synchronized void readProperties(DBRProgressMonitor monitor) throws DBException
+    {
+        if (properties != null) {
+            return;
+        }
+        try {
+            properties = new ArrayList<WMIClassProperty>();
+            for (WMIObjectProperty prop : classObject.getProperties()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                properties.add(new WMIClassProperty(this, prop));
+            }
+
+        } catch (WMIException e) {
+            throw new DBException(e);
+        }
+    }
+
+    public List<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
+    public List<? extends DBSConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
+    public List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
+    public List<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
     }
 
     public void close()
@@ -115,4 +194,5 @@ public class WMIClass extends WMIContainer implements WMIClassContainer, DBPClos
         }
         return getName();
     }
+
 }

@@ -4,12 +4,13 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database.load;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,7 +34,8 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
         throws InvocationTargetException, InterruptedException
     {
         try {
-            List<? extends DBNNode> children = parentNode.getChildren(getProgressMonitor());
+            List<? extends DBNNode> children = filterNavigableChildren(
+                parentNode.getChildren(getProgressMonitor()));
             return CommonUtils.isEmpty(children) ? new Object[0] : children.toArray(); 
         } catch (Throwable ex) {
             if (ex instanceof InvocationTargetException) {
@@ -42,6 +44,28 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
                 throw new InvocationTargetException(ex);
             }
         }
+    }
+
+    public static List<? extends DBNNode> filterNavigableChildren(List<? extends DBNNode> children)
+    {
+        if (CommonUtils.isEmpty(children)) {
+            return children;
+        }
+        List<DBNNode> filtered = null;
+        for (int i = 0; i < children.size(); i++) {
+            DBNNode node = children.get(i);
+            if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
+                if (filtered == null) {
+                    filtered = new ArrayList<DBNNode>(children.size());
+                    for (int k = 0; k < i; k++) {
+                        filtered.add(children.get(k));
+                    }
+                }
+            } else if (filtered != null) {
+                filtered.add(node);
+            }
+        }
+        return filtered == null ? children : filtered;
     }
 
 }
