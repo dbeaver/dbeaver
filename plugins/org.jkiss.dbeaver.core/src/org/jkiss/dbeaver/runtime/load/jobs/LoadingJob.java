@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.load.jobs;
@@ -106,7 +106,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
                 UIUtils.showErrorDialog(
                     visualizer.getShell(),
                     getName(),
-                    null,
+                    innerError.getMessage(),
                     innerError);
             }
         }

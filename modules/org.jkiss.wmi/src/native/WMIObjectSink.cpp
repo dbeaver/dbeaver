@@ -17,7 +17,6 @@ void WMIObjectSink::InitSink(WMIService* pSvc, JNIEnv* pJavaEnv, jobject javaObj
 
 	pService = pSvc;
 	javaSinkObject = pJavaEnv->NewGlobalRef(javaObject);
-	jniMeta = &JNIMetaData::GetMetaData(pJavaEnv);
 }
 
 void WMIObjectSink::TermSink(JNIEnv* pJavaEnv)
@@ -56,7 +55,6 @@ void WMIObjectSink::FlushObjectsCache(JNIEnv* pJavaEnv)
 	JavaObjectVector objects;
 	for (size_t i = 0; i < objectsCache.size(); i++) {
 		objects.push_back(pService->MakeWMIObject(pJavaEnv, objectsCache[i]));
-		objectsCache[i]->Release();
 	}
 	objectsCache.clear();
 	jobjectArray javaArray = ::MakeJavaArrayFromVector(pJavaEnv, jniMeta.wmiObjectClass, objects);
@@ -82,7 +80,6 @@ HRESULT WMIObjectSink::Indicate(
 		return WBEM_S_NO_ERROR;
 	}
 	for (long i = 0; i < lObjectCount; i++) {
-		ppClassObject[i]->AddRef();
 		objectsCache.push_back(ppClassObject[i]);
 	}
 	if (objectsCache.size() >= MAX_CACHE_SIZE) {
@@ -127,13 +124,14 @@ HRESULT WMIObjectSink::SetStatus(
 		FlushObjectsCache(pJavaEnv);
 	}
 
+	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 	jfieldID statusEnumID = pJavaEnv->GetStaticFieldID(
-		jniMeta->wmiObjectSinkStatusClass,
+		jniMeta.wmiObjectSinkStatusClass,
 		statusName,
 		"Lorg/jkiss/wmi/service/WMIObjectSinkStatus;");
 	_ASSERT(statusEnumID != NULL);
 	jobject statusEnum = pJavaEnv->GetStaticObjectField(
-		jniMeta->wmiObjectSinkStatusClass,
+		jniMeta.wmiObjectSinkStatusClass,
 		statusEnumID);
 	_ASSERT(statusEnum != NULL);
 	if (statusEnum == NULL) {
@@ -151,13 +149,13 @@ HRESULT WMIObjectSink::SetStatus(
 	} else if (FAILED(hResult)) {
 		// Put error to param string
 		CComBSTR errorMessage;
-		::FormatErrorMessage(L"Could not execute async query", hResult, &errorMessage);
+		::FormatErrorMessage(L"Async error", hResult, &errorMessage);
 		javaParam = MakeJavaString(pJavaEnv, errorMessage);
 	}
 
 	pJavaEnv->CallVoidMethod(
 		javaSinkObject, 
-		jniMeta->wmiObjectSinkSetStatusMethod,
+		jniMeta.wmiObjectSinkSetStatusMethod,
 		statusEnum,
 		(jint)hResult,
 		javaParam,

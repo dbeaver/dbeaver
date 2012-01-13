@@ -441,11 +441,13 @@ void WMIService::CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject)
 	}
 	if (pSink == NULL) {
 		THROW_COMMON_EXCEPTION(L"Could not find internal sink for specified object");
+		return;
 	}
 
 	HRESULT hres = ptrWbemServices->CancelAsyncCall(pSink);
 	if (FAILED(hres)) {
 		THROW_COMMON_ERROR(L"Could not cancel async call", hres);
+		return;
 	}
 }
 

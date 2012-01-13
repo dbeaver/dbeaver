@@ -43,10 +43,9 @@ private:
 	void FlushObjectsCache(JNIEnv* pJavaEnv);
 private:
 	WMIService* pService;
-	JNIMetaData* jniMeta;
 	jobject javaSinkObject;
 
-	std::vector< IWbemClassObject* > objectsCache;
+	std::vector< CComPtr<IWbemClassObject> > objectsCache;
 	//JavaVM* pJavaVM;
 	//JNIEnv* pThreadEnv;
 	//DWORD hThread;

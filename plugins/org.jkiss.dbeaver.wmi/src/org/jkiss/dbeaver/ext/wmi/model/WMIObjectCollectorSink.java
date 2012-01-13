@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.apache.commons.logging.Log;
@@ -20,6 +24,7 @@ class WMIObjectCollectorSink implements WMIObjectSink
     private long totalIndicated = 0;
     private long firstRow;
     private long maxRows;
+    private String errorDesc;
 
     public WMIObjectCollectorSink(DBRProgressMonitor monitor, WMIService service)
     {
@@ -54,12 +59,16 @@ class WMIObjectCollectorSink implements WMIObjectSink
 
     public void setStatus(WMIObjectSinkStatus status, int result, String param, WMIObject errorObject)
     {
-        if (status == WMIObjectSinkStatus.complete) {
+        if (status == WMIObjectSinkStatus.complete || status == WMIObjectSinkStatus.error) {
             finished = true;
+            if (status == WMIObjectSinkStatus.error) {
+                errorDesc = param;
+            }
         }
     }
 
     public void waitForFinish()
+        throws WMIException
     {
         try {
             while (!monitor.isCanceled() && !finished) {
@@ -70,11 +79,10 @@ class WMIObjectCollectorSink implements WMIObjectSink
             // do nothing
         }
         if (monitor.isCanceled()) {
-            try {
-                service.cancelSink(this);
-            } catch (WMIException e) {
-                log.error("Error canceling collector sink", e);
-            }
+            service.cancelSink(this);
+        }
+        if (errorDesc != null) {
+            throw new WMIException(errorDesc);
         }
     }
 

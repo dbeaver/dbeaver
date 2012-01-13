@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <!--
-  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  ~ Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
   -->
 
 <plugin>
@@ -18,24 +18,26 @@
                   icon="icons/wmi_icon.png"
                   label="WMI data source"
                   path="wmi">
-                <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Classes" description="WMI classes">
+                <!--folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Classes" description="WMI classes">
                     <items label="Classes" itemLabel="Class" path="allClass" property="allClasses" iconId="icons/class.png">
                         <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassProperty" label="Properties" iconId="#columns" description="Class properties" navigable="false" id="ClassAttributes">
                             <items label="Properties" itemLabel="Property" path="property" property="columns"/>
                         </folder>
                     </items>
-                </folder>
-                <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIContainer" label="Hierarchy" description="WMI namespace and class hierarchy">
+                </folder-->
+                <!--folder type="org.jkiss.dbeaver.ext.wmi.model.WMIContainer" label="Hierarchy" description="WMI namespace and class hierarchy"-->
                     <items label="Namespaces" itemLabel="Namespace" path="namespace" property="namespaces" icon="icons/namespace.png" id="Namespace">
                         <items ref="Namespace"/>
-                        <items label="Classes" itemLabel="Class" path="class" property="classes" iconId="icons/class.png" id="Class" visibleIf="object.hasClasses()">
-                            <items ref="ClassAttributes"/>
-                            <items ref="Class"/>
+                        <items label="Classes" itemLabel="Class" path="class" property="allClasses" iconId="icons/class.png" id="Class" visibleIf="object.hasClasses()">
+                            <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassProperty" label="Properties" iconId="#columns" description="Class properties" navigable="false" id="ClassAttributes">
+                                <items label="Properties" itemLabel="Property" path="property" property="columns"/>
+                            </folder>
+                            <!--items ref="ClassAttributes"/>
+                            <items ref="Class"/-->
                         </items>
                     </items>
                     <items ref="Class"/>
-                </folder>
-                <!--items label="Class" path="class" property="classes" iconId="icons/class.png" optional="true" recursive=".."/-->
+                <!--/folder-->
             </tree>
             <drivers managable="false">
                 <driver
