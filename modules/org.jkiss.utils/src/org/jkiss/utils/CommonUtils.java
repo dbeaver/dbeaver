@@ -129,6 +129,14 @@ public class CommonUtils {
 		return value == null || value.isEmpty();
 	}
 
+    public static <T> Collection<T> safeCollection(Collection<T> theList)
+    {
+        if (theList == null) {
+            theList = Collections.emptyList();
+        }
+        return theList;
+    }
+
     public static <T> List<T> safeList(List<T> theList)
     {
         if (theList == null) {

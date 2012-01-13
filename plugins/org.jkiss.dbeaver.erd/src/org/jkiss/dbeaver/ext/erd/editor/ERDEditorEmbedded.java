@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -165,7 +166,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             DBSEntityContainer entityContainer = (DBSEntityContainer) root;
             entityContainer.cacheStructure(monitor, DBSEntityContainer.STRUCT_ENTITIES | DBSEntityContainer.STRUCT_ASSOCIATIONS | DBSEntityContainer.STRUCT_ATTRIBUTES);
             Collection<? extends DBSObject> entities = entityContainer.getChildren(monitor);
-            for (DBSObject entity : entities) {
+            for (DBSObject entity : CommonUtils.safeCollection(entities)) {
                 if (entity instanceof DBSTable) {
                     result.add((DBSTable) entity);
                 }

@@ -1,6 +1,8 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.wmi.service.WMIObjectAttribute;
@@ -30,6 +32,7 @@ public abstract class WMIClassAttribute<T extends WMIObjectAttribute> implements
         return wmiClass.getDataSource();
     }
 
+    @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
         return attribute.getName();

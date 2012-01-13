@@ -9,7 +9,10 @@ import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.WMIConstants;
 import org.jkiss.wmi.service.WMIException;
@@ -24,7 +27,7 @@ import java.util.List;
 /**
  * WMI Namespace
  */
-public class WMINamespace extends WMIContainer implements WMIClassContainer, DBPCloseableObject {
+public class WMINamespace extends WMIContainer implements WMIClassContainer, DBSSchema, DBPCloseableObject {
 
     private String name;
     private volatile List<WMINamespace> namespaces;
@@ -195,9 +198,20 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBP
         return children;
     }
 
+    public DBSEntity getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    {
+        return DBUtils.findObject(getChildren(monitor), childName);
+    }
+
     public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException
     {
         return WMIContainer.class;
+    }
+
+    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
+    {
+        getNamespaces(monitor);
+        getClasses(monitor);
     }
 
     public void close()
@@ -219,5 +233,10 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBP
             service.close();
             service = null;
         }
+    }
+
+    public DBSCatalog getCatalog()
+    {
+        return null;
     }
 }

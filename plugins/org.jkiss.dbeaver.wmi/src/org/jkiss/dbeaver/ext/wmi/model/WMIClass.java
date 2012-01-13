@@ -44,6 +44,11 @@ public class WMIClass extends WMIContainer implements WMIClassContainer, DBSTabl
         return superClass;
     }
 
+    public WMINamespace getNamespace()
+    {
+        return (WMINamespace) parent;
+    }
+
     public WMIObject getClassObject()
     {
         return classObject;
@@ -103,16 +108,6 @@ public class WMIClass extends WMIContainer implements WMIClassContainer, DBSTabl
         return getName().startsWith("__");
     }
 
-    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException
-    {
-        return WMIClassAttribute.class;
-    }
-
     public boolean isView()
     {
         return false;
@@ -120,7 +115,7 @@ public class WMIClass extends WMIContainer implements WMIClassContainer, DBSTabl
 
     public DBSEntityContainer getContainer()
     {
-        return parent;
+        return getNamespace();
     }
 
     public List<WMIClassProperty> getColumns(DBRProgressMonitor monitor) throws DBException
@@ -150,7 +145,9 @@ public class WMIClass extends WMIContainer implements WMIClassContainer, DBSTabl
                 if (monitor.isCanceled()) {
                     break;
                 }
-                properties.add(new WMIClassProperty(this, prop));
+                if (!prop.isSystem()) {
+                    properties.add(new WMIClassProperty(this, prop));
+                }
             }
 
         } catch (WMIException e) {

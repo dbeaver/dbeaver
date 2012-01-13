@@ -7,17 +7,14 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPCloseableObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Entity container
  */
-public abstract class WMIContainer implements DBSEntity, DBSEntityContainer
+public abstract class WMIContainer implements DBSEntity
 {
     static final Log log = LogFactory.getLog(WMIContainer.class);
 
@@ -51,15 +48,6 @@ public abstract class WMIContainer implements DBSEntity, DBSEntityContainer
     public boolean isPersisted()
     {
         return true;
-    }
-
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
-    {
-    }
-
-    public DBSEntity getChild(DBRProgressMonitor monitor, String childName) throws DBException
-    {
-        return DBUtils.findObject(getChildren(monitor), childName);
     }
 
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException

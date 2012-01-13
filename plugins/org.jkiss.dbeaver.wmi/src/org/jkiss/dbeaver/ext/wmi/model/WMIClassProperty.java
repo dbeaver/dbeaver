@@ -1,9 +1,13 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.WMIConstants;
 import org.jkiss.wmi.service.WMIObjectProperty;
@@ -11,7 +15,7 @@ import org.jkiss.wmi.service.WMIObjectProperty;
 /**
  * Class property
  */
-public class WMIClassProperty extends WMIClassAttribute<WMIObjectProperty> implements DBSTableColumn
+public class WMIClassProperty extends WMIClassAttribute<WMIObjectProperty> implements DBSTableColumn, IObjectImageProvider
 {
     protected WMIClassProperty(WMIClass wmiClass, WMIObjectProperty attribute)
     {
@@ -28,6 +32,28 @@ public class WMIClassProperty extends WMIClassAttribute<WMIObjectProperty> imple
         return 0;
     }
 
+    @Property(name = "Type", viewable = true, order = 10)
+    public String getTypeName()
+    {
+        return attribute.getTypeName();
+    }
+
+    public int getValueType()
+    {
+        return attribute.getType();
+    }
+
+    public int getScale()
+    {
+        return 0;
+    }
+
+    public int getPrecision()
+    {
+        return 0;
+    }
+
+    @Property(name = "Default Value", viewable = true, order = 20)
     public String getDefaultValue()
     {
         return CommonUtils.toString(attribute.getValue());
@@ -48,49 +74,34 @@ public class WMIClassProperty extends WMIClassAttribute<WMIObjectProperty> imple
         return 0;
     }
 
-    public String getTypeName()
-    {
-        switch (attribute.getType()) {
-            case WMIConstants.CIM_ILLEGAL: return "Illegal";
-            case WMIConstants.CIM_EMPTY: return "Empty";
-            case WMIConstants.CIM_SINT8: return "Int 8";
-            case WMIConstants.CIM_UINT8: return "UInt 8";
-            case WMIConstants.CIM_SINT16: return "Int 16";
-            case WMIConstants.CIM_UINT16: return "UInt 16";
-            case WMIConstants.CIM_SINT32: return "Int 32";
-            case WMIConstants.CIM_UINT32: return "UInt 32";
-            case WMIConstants.CIM_SINT64: return "Int 64";
-            case WMIConstants.CIM_UINT64: return "UInt 64";
-            case WMIConstants.CIM_REAL32: return "Real 32";
-            case WMIConstants.CIM_REAL64: return "Real 64";
-            case WMIConstants.CIM_BOOLEAN: return "Boolean";
-            case WMIConstants.CIM_STRING: return "String";
-            case WMIConstants.CIM_DATETIME: return "DateTime";
-            case WMIConstants.CIM_REFERENCE: return "Reference";
-            case WMIConstants.CIM_CHAR16: return "Char";
-            case WMIConstants.CIM_OBJECT: return "Object";
-            case WMIConstants.CIM_FLAG_ARRAY: return "Array";
-            default: return "Unknown (" + attribute.getType() + ")";
-        }
-    }
-
-    public int getValueType()
-    {
-        return attribute.getType();
-    }
-
-    public int getScale()
-    {
-        return 0;
-    }
-
-    public int getPrecision()
-    {
-        return 0;
-    }
-
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
         return false;
+    }
+
+    public Image getObjectImage()
+    {
+        switch (attribute.getType()) {
+            case WMIConstants.CIM_SINT8:
+            case WMIConstants.CIM_UINT8:
+            case WMIConstants.CIM_SINT16:
+            case WMIConstants.CIM_UINT16:
+            case WMIConstants.CIM_SINT32:
+            case WMIConstants.CIM_UINT32:
+            case WMIConstants.CIM_SINT64:
+            case WMIConstants.CIM_UINT64:
+            case WMIConstants.CIM_REAL32:
+            case WMIConstants.CIM_REAL64:
+                return DBIcon.TYPE_NUMBER.getImage();
+            case WMIConstants.CIM_BOOLEAN:
+                return DBIcon.TYPE_BOOLEAN.getImage();
+            case WMIConstants.CIM_STRING:
+            case WMIConstants.CIM_CHAR16:
+                return DBIcon.TYPE_STRING.getImage();
+            case WMIConstants.CIM_DATETIME:
+                return DBIcon.TYPE_DATETIME.getImage();
+            default:
+                return DBIcon.TYPE_UNKNOWN.getImage();
+        }
     }
 }
