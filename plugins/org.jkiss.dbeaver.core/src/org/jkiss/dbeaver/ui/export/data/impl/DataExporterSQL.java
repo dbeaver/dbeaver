@@ -144,6 +144,8 @@ public class DataExporterSQL extends DataExporterAbstract {
                 out.write(((File)value).getAbsolutePath());
             } else if (value instanceof String) {
                 writeStringValue((String) value);
+            } else if (value instanceof Number) {
+                out.write(value.toString());
             } else {
                 String stringValue = column.getValueHandler().getValueDisplayString(column.getColumn(), row[i]);
                 out.write(stringValue);

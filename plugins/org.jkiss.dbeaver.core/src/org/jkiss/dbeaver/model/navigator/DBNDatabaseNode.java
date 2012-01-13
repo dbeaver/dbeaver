@@ -470,6 +470,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     }
 
     private static boolean equalObjects(DBSObject object1, DBSObject object2) {
+        if (object1 == object2) {
+            return true;
+        }
+        if (object1 == null || object2 == null) {
+            return false;
+        }
         while (object1 != null && object2 != null) {
             if (object1.getClass() != object2.getClass() ||
                 !CommonUtils.equalObjects(DBUtils.getObjectUniqueName(object1), DBUtils.getObjectUniqueName(object2)))
