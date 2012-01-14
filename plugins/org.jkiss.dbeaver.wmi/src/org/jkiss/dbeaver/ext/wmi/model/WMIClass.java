@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.wmi.model;
@@ -215,7 +215,7 @@ public class WMIClass extends WMIContainer
                 getNamespace().getService().enumInstances(
                     getName(),
                     sink,
-                    WMIConstants.WBEM_FLAG_SEND_STATUS);
+                    WMIConstants.WBEM_FLAG_SHALLOW);
                 sink.waitForFinish();
                 WMIResultSet resultSet = new WMIResultSet(context, this, sink.getObjectList());
                 long resultCount = 0;

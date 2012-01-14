@@ -10,6 +10,7 @@ import org.jkiss.wmi.service.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class TestService {
         WMIService.initializeThread();
         try {
             //service.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
-            service = WMIService.connect(log, null, "localhost", null, null, null, "\\root\\cimv2");
+            service = WMIService.connect(log, null, "localhost", null, null, null, "\\root");
             final long curTime = System.currentTimeMillis();
 
 /*
@@ -94,24 +95,29 @@ public class TestService {
                 // do nothing
             }
 */
-
+            final WMIService nsService = service.openNamespace("cimv2");
             ObjectCollectorSink objectCollectorSink = new ObjectCollectorSink();
+/*
             service.executeQuery(
                 //"select * from Win32_NTLogEvent",
-                "select * from __Namespace",
+                "select * from Win32_Group",
                 objectCollectorSink,
                 WMIConstants.WBEM_FLAG_SEND_STATUS
             );
+*/
+            nsService.enumInstances("Win32_Group", objectCollectorSink, WMIConstants.WBEM_FLAG_SEND_STATUS);
             objectCollectorSink.waitForFinish();
 
             for (WMIObject nsDesc : objectCollectorSink.objectList) {
-                final Object nsName = nsDesc.getValue("Name");
-                final WMIService nsService = service.openNamespace(nsName.toString());
+                System.out.println(nsDesc.getValue("Name"));
 
-                ObjectCollectorSink classCollectorSink = new ObjectCollectorSink();
-                nsService.enumClasses(null, classCollectorSink, WMIConstants.WBEM_FLAG_SEND_STATUS | WMIConstants.WBEM_FLAG_SHALLOW);
-                classCollectorSink.waitForFinish();
-                nsService.close();
+//                final Object nsName = nsDesc.getValue("Name");
+//                final WMIService nsService = service.openNamespace(nsName.toString());
+//
+//                ObjectCollectorSink classCollectorSink = new ObjectCollectorSink();
+//                nsService.enumClasses(null, classCollectorSink, WMIConstants.WBEM_FLAG_SEND_STATUS | WMIConstants.WBEM_FLAG_SHALLOW);
+//                classCollectorSink.waitForFinish();
+//                nsService.close();
             }
 
         } catch (WMIException e) {

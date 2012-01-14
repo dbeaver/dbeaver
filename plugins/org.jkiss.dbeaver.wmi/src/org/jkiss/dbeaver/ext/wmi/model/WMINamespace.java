@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.wmi.model;
@@ -86,7 +86,7 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
             WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor, getService());
             try {
                 WMIService.initializeThread();
-                getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SEND_STATUS);
+                getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SHALLOW);
                 sink.waitForFinish();
                 List<WMINamespace> children = new ArrayList<WMINamespace>();
                 for (WMIObject object : sink.getObjectList()) {
@@ -139,7 +139,7 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
             WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor, getService());
             try {
                 WMIService.initializeThread();
-                getService().enumClasses(null, sink, WMIConstants.WBEM_FLAG_SEND_STATUS | WMIConstants.WBEM_FLAG_DEEP);
+                getService().enumClasses(null, sink, WMIConstants.WBEM_FLAG_DEEP);
                 sink.waitForFinish();
                 List<WMIClass> children = new ArrayList<WMIClass>();
                 List<WMIClass> rootClasses = new ArrayList<WMIClass>();
