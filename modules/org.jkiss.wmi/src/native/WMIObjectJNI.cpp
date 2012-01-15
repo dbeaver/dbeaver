@@ -82,6 +82,7 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readMethods(JNIEnv* 
 		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
 		return;
 	}
+	pObject->ReadMethods(pJavaEnv, object, methodList);
 }
 
 /*
@@ -89,14 +90,14 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readMethods(JNIEnv* 
  * Method:    readQualifiers
  * Signature: (ZLjava/lang/String;Ljava/util/List;)V
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readQualifiers(JNIEnv* pJavaEnv, jobject object, jboolean, jstring, jobject)
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readQualifiers(JNIEnv* pJavaEnv, jobject object, jboolean isProperty, jstring propName, jobject qfList)
 {
 	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
 	if (pObject == NULL) {
 		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
 		return;
 	}
-
+	pObject->ReadQualifiers(pJavaEnv, object, isProperty != 0, propName, qfList);
 }
 
 /*

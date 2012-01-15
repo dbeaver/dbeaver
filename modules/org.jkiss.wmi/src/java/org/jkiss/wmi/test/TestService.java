@@ -96,6 +96,17 @@ public class TestService {
             }
 */
             final WMIService nsService = service.openNamespace("cimv2");
+
+            ObjectCollectorSink classesSink = new ObjectCollectorSink();
+            nsService.enumClasses(null, classesSink, 0);
+            classesSink.waitForFinish();
+            for (WMIObject classDesc : classesSink.objectList) {
+                final Collection<WMIObjectMethod> methods = classDesc.getMethods();
+                if (methods != null) {
+
+                }
+            }
+
             ObjectCollectorSink objectCollectorSink = new ObjectCollectorSink();
 /*
             service.executeQuery(
@@ -110,6 +121,10 @@ public class TestService {
 
             for (WMIObject nsDesc : objectCollectorSink.objectList) {
                 System.out.println(nsDesc.getValue("Name"));
+                final Collection<WMIQualifier> qfList = nsDesc.getQualifiers();
+                if (qfList != null) {
+
+                }
 
 //                final Object nsName = nsDesc.getValue("Name");
 //                final WMIService nsService = service.openNamespace(nsName.toString());

@@ -467,10 +467,9 @@ jobject WMIService::MakeWMIObject(JNIEnv* pJavaEnv, IWbemClassObject *pClassObje
 	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 	jobject pWmiObject = pJavaEnv->NewObject(jniMeta.wmiObjectClass, jniMeta.wmiObjectConstructor);
 	if (pWmiObject == NULL) {
-		this->WriteLog(pJavaEnv, LT_ERROR, L"Can't instantiate WMI java object");
 		return NULL;
 	}
-	WMIObject* pObject = new WMIObject(pJavaEnv, *this, pWmiObject, pClassObject);
+	WMIObject* pObject = new WMIObject(pJavaEnv, pWmiObject, pClassObject);
 /*
 	// Fill class object properties
 	hres = pClassObject->BeginEnumeration(0);

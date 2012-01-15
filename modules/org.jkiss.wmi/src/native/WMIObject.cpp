@@ -5,7 +5,7 @@
 #include "WMIObject.h"
 #include "WMIUtils.h"
 
-WMIObject::WMIObject(JNIEnv * pJavaEnv, WMIService& service, jobject javaObject, IWbemClassObject* pClassObject) :
+WMIObject::WMIObject(JNIEnv * pJavaEnv, jobject javaObject, IWbemClassObject* pClassObject) :
 	ptrClassObject(pClassObject)
 {
 	pJavaEnv->SetLongField(javaObject, JNIMetaData::GetMetaData(pJavaEnv).wmiObjectHandleField, (jlong)this);
@@ -80,7 +80,7 @@ void WMIObject::ReadProperties(JNIEnv* pJavaEnv, jobject javaObject, jobject pro
 		LONG flavor;
 		hres = ptrClassObject->Next(0, &propName, &propValue, &cimType, &flavor);
 		if (FAILED(hres)) {
-			THROW_COMMON_ERROR(L"Could not obtain next class object from enumeration", hres);
+			THROW_COMMON_ERROR(L"Could not obtain next property from enumeration", hres);
 			break;
 		}
 		if (hres == WBEM_S_NO_MORE_DATA) {
@@ -118,5 +118,142 @@ void WMIObject::ReadProperties(JNIEnv* pJavaEnv, jobject javaObject, jobject pro
 	hres = ptrClassObject->EndEnumeration();
 	if (FAILED(hres)) {
 		THROW_COMMON_ERROR(L"Could not finish class object enumeration", hres);
+	}
+}
+
+void WMIObject::ReadMethods(JNIEnv* pJavaEnv, jobject javaObject, jobject methodList)
+{
+	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
+
+	// Fill class object properties
+	HRESULT hres = ptrClassObject->BeginMethodEnumeration(WBEM_FLAG_LOCAL_ONLY);
+	if (FAILED(hres)) {
+		THROW_COMMON_ERROR(L"Could not start class object methods enumeration", hres);
+		return;
+	}
+
+	for (;;) {
+		CComBSTR methodName;
+		CComPtr<IWbemClassObject> ptrInSignature;
+		CComPtr<IWbemClassObject> ptrOutSignature;
+		hres = ptrClassObject->NextMethod(0, &methodName, &ptrInSignature, &ptrOutSignature);
+		if (FAILED(hres)) {
+			THROW_COMMON_ERROR(L"Could not obtain next method from enumeration", hres);
+			break;
+		}
+		if (hres == WBEM_S_NO_MORE_DATA) {
+			break;
+		}
+		//wchar_t* propNameBSTR = propName;
+		jstring javaMethodName = ::MakeJavaString(pJavaEnv, methodName);
+		_ASSERT(javaMethodName != NULL);
+		if (javaMethodName == NULL) {
+			continue;
+		}
+		jobject javaInSignature = ptrInSignature == NULL ? NULL : WMIService::MakeWMIObject(pJavaEnv, ptrInSignature);
+		jobject javaOutSignature = ptrOutSignature == NULL ? NULL : WMIService::MakeWMIObject(pJavaEnv, ptrOutSignature);
+		if (!pJavaEnv->ExceptionCheck()) {
+			jobject javaMethodObject = pJavaEnv->NewObject(
+				jniMeta.wmiObjectMethodClass, 
+				jniMeta.wmiObjectMethodConstructor,
+				javaObject,
+				javaMethodName,
+				javaInSignature,
+				javaOutSignature);
+			if (pJavaEnv->ExceptionCheck()) {
+				break;
+			}
+			pJavaEnv->CallVoidMethod(methodList, jniMeta.javaUtilListAddMethod, javaMethodObject);
+			DeleteLocalRef(pJavaEnv, javaMethodObject);
+		}
+		DeleteLocalRef(pJavaEnv, javaMethodName);
+		if (javaInSignature != NULL) {
+			DeleteLocalRef(pJavaEnv, javaInSignature);
+		}
+		if (javaOutSignature != NULL) {
+			DeleteLocalRef(pJavaEnv, javaOutSignature);
+		}
+		if (pJavaEnv->ExceptionCheck()) {
+			break;
+		}
+	}
+
+	hres = ptrClassObject->EndMethodEnumeration();
+	if (FAILED(hres)) {
+		THROW_COMMON_ERROR(L"Could not finish class object enumeration", hres);
+	}
+}
+
+void WMIObject::ReadQualifiers(JNIEnv* pJavaEnv, jobject javaObject, bool isProperty, jstring propName, jobject qfList)
+{
+	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
+
+	CComBSTR bstrPropName;
+	if (propName != NULL) {
+		::GetJavaString(pJavaEnv, propName, &bstrPropName);
+	}
+	CComPtr<IWbemQualifierSet> ptrQFSet;
+	HRESULT hres = S_OK;
+	if (bstrPropName == NULL) {
+		hres = ptrClassObject->GetQualifierSet(&ptrQFSet);
+	} else if (isProperty) {
+		hres = ptrClassObject->GetPropertyQualifierSet(bstrPropName, &ptrQFSet);
+	} else {
+		hres = ptrClassObject->GetMethodQualifierSet(bstrPropName, &ptrQFSet);
+	}
+	if (FAILED(hres)) {
+		THROW_COMMON_ERROR(L"Could not create qualifiers enumeration", hres);
+		return;
+	}
+
+	// Fill class object properties
+	hres = ptrQFSet->BeginEnumeration(0);
+	if (FAILED(hres)) {
+		THROW_COMMON_ERROR(L"Could not begin qualifiers enumeration", hres);
+		return;
+	}
+
+	for (;;) {
+		CComBSTR qfName;
+		CComVariant qfValue;
+		LONG flavor;
+		hres = ptrQFSet->Next(0, &qfName, &qfValue, &flavor);
+		if (FAILED(hres)) {
+			THROW_COMMON_ERROR(L"Could not obtain next qualifier from enumeration", hres);
+			break;
+		}
+		if (hres == WBEM_S_NO_MORE_DATA) {
+			break;
+		}
+		//wchar_t* propNameBSTR = propName;
+		jstring javaQFName = ::MakeJavaString(pJavaEnv, qfName);
+		_ASSERT(javaQFName != NULL);
+		if (javaQFName == NULL) {
+			continue;
+		}
+		jobject javaQFValue = ::MakeJavaFromVariant(pJavaEnv, qfValue, CIM_EMPTY);
+		if (!pJavaEnv->ExceptionCheck()) {
+			jobject javaPropObject = pJavaEnv->NewObject(
+				jniMeta.wmiQualifierClass, 
+				jniMeta.wmiQualifierConstructor,
+				javaQFName,
+				(jint)flavor,
+				javaQFValue);
+			if (pJavaEnv->ExceptionCheck()) {
+				break;
+			}
+			pJavaEnv->CallVoidMethod(qfList, jniMeta.javaUtilListAddMethod, javaPropObject);
+			DeleteLocalRef(pJavaEnv, javaPropObject);
+		}
+		DeleteLocalRef(pJavaEnv, javaQFName);
+		DeleteLocalRef(pJavaEnv, javaQFValue);
+		if (pJavaEnv->ExceptionCheck()) {
+			break;
+		}
+	}
+
+	hres = ptrQFSet->EndEnumeration();
+	if (FAILED(hres)) {
+		THROW_COMMON_ERROR(L"Could not finish qualifiers enumeration", hres);
 	}
 }

@@ -48,7 +48,7 @@ public:
 	static WMIService* GetFromObject(JNIEnv* pJavaEnv, jobject javaObject);
 
 public:
-	jobject MakeWMIObject (JNIEnv* pJavaEnv, IWbemClassObject *pClassObject);
+	static jobject MakeWMIObject (JNIEnv* pJavaEnv, IWbemClassObject *pClassObject);
 	bool RemoveObjectSink(JNIEnv* pJavaEnv, WMIObjectSink* pSink);
 
 private:

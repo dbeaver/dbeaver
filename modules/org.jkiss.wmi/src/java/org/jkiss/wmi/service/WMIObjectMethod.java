@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.wmi.service;
@@ -31,4 +31,9 @@ public class WMIObjectMethod extends WMIObjectAttribute {
         return outParameter;
     }
 
+    @Override
+    public String toString()
+    {
+        return getName() + "()";
+    }
 }

@@ -52,6 +52,12 @@ JNIMetaData::JNIMetaData(JNIEnv* pEnv) : pJavaEnv(pEnv)
 		"()V");
 	wmiObjectHandleField = pJavaEnv->GetFieldID(wmiObjectClass, "objectHandle", "J");
 
+	wmiQualifierClass = FindJavaClass(CLASS_WMI_QUALIFIER);
+	wmiQualifierConstructor = FindJavaMethod(
+		wmiQualifierClass, 
+		"<init>", 
+		"(Ljava/lang/String;ILjava/lang/Object;)V");
+
 	wmiObjectSinkClass = FindJavaClass(CLASS_WMI_OBJECT_SINK);
 	wmiObjectSinkIndicateMethod = FindJavaMethod(
 		wmiObjectSinkClass,
@@ -94,6 +100,7 @@ JNIMetaData::~JNIMetaData(void)
 
 	DeleteClassRef(wmiServiceClass);
 	DeleteClassRef(wmiObjectClass);
+	DeleteClassRef(wmiQualifierClass);
 	DeleteClassRef(wmiObjectSinkClass);
 	DeleteClassRef(wmiObjectSinkStatusClass);
 	DeleteClassRef(wmiObjectPropertyClass);

@@ -7,6 +7,7 @@
 
 static const char* CLASS_WMI_SERVICE = "org/jkiss/wmi/service/WMIService";
 static const char* CLASS_WMI_OBJECT = "org/jkiss/wmi/service/WMIObject";
+static const char* CLASS_WMI_QUALIFIER = "org/jkiss/wmi/service/WMIQualifier";
 static const char* CLASS_WMI_OBJECT_SINK = "org/jkiss/wmi/service/WMIObjectSink";
 static const char* CLASS_WMI_OBJECT_SINK_STATUS = "org/jkiss/wmi/service/WMIObjectSinkStatus";
 static const char* CLASS_WMI_OBJECT_PROPERTY = "org/jkiss/wmi/service/WMIObjectProperty";
@@ -31,6 +32,9 @@ public:
 	jclass wmiObjectClass;
 	jmethodID wmiObjectConstructor;
 	jfieldID wmiObjectHandleField;
+
+	jclass wmiQualifierClass;
+	jmethodID wmiQualifierConstructor;
 
 	jclass wmiObjectSinkClass;
 	jmethodID wmiObjectSinkIndicateMethod;
