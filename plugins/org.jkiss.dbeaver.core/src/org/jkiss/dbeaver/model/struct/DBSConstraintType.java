@@ -16,6 +16,7 @@ public class DBSConstraintType
     public static final DBSConstraintType UNIQUE_KEY = new DBSConstraintType("unique", CoreMessages.model_struct_Unique_Key, true); //$NON-NLS-1$
     public static final DBSConstraintType CHECK = new DBSConstraintType("check", CoreMessages.model_struct_Check, false); //$NON-NLS-1$
     public static final DBSConstraintType NOT_NULL = new DBSConstraintType("notnull", CoreMessages.model_struct_Not_NULL, false); //$NON-NLS-1$
+    public static final DBSConstraintType INHERITANCE = new DBSConstraintType("inheritance", "Inheritance", false); //$NON-NLS-1$
 
     private final String id;
     private final String name;

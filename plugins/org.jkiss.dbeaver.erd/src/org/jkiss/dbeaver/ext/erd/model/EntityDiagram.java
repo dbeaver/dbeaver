@@ -11,8 +11,8 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityLinked;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTable;
 
 import java.util.*;
 
@@ -188,11 +188,11 @@ public class EntityDiagram extends ERDObject<DBSObject>
         return copy;
     }
 
-    public void fillTables(DBRProgressMonitor monitor, Collection<DBSTable> tables, DBSObject dbObject)
+    public void fillTables(DBRProgressMonitor monitor, Collection<DBSEntityLinked> tables, DBSObject dbObject)
     {
         // Load entities
         monitor.beginTask("Load tables metadata", tables.size());
-        for (DBSTable table : tables) {
+        for (DBSEntityLinked table : tables) {
             if (monitor.isCanceled()) {
                 break;
             }
@@ -210,7 +210,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
         // Load relations
         monitor.beginTask("Load tables' relations", tables.size());
-        for (DBSTable table : tables) {
+        for (DBSEntityLinked table : tables) {
             if (monitor.isCanceled()) {
                 break;
             }
@@ -224,7 +224,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
         monitor.done();
     }
 
-    public boolean containsTable(DBSTable table)
+    public boolean containsTable(DBSEntityLinked table)
     {
         for (ERDTable erdTable : tables) {
             if (erdTable.getObject() == table) {

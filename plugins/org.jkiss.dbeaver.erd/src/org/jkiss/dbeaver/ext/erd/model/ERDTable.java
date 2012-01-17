@@ -7,14 +7,11 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.util.*;
 
@@ -199,8 +196,12 @@ public class ERDTable extends ERDObject<DBSTable>
         return object.equals(((ERDTable)o).object);
 	}
 
-    public static ERDTable fromObject(DBRProgressMonitor monitor, DBSTable dbTable)
+    public static ERDTable fromObject(DBRProgressMonitor monitor, DBSEntityLinked entity)
     {
+        if (!(entity instanceof DBSTable)) {
+            return null;
+        }
+        DBSTable dbTable = (DBSTable)entity;
         ERDTable erdTable = new ERDTable(dbTable);
 
         try {

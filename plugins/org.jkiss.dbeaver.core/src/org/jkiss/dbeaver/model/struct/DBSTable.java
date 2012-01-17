@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Table
  */
-public interface DBSTable extends DBSEntityQualified
+public interface DBSTable extends DBSEntityLinked, DBSEntityQualified
 {
 
     boolean isView();

@@ -95,10 +95,10 @@ public class DiagramLoader
 
     private static class TableLoadInfo {
         final String objectId;
-        final DBSTable table;
+        final DBSEntityLinked table;
         final Rectangle bounds;
 
-        private TableLoadInfo(String objectId, DBSTable table, Rectangle bounds)
+        private TableLoadInfo(String objectId, DBSEntityLinked table, Rectangle bounds)
         {
             this.objectId = objectId;
             this.table = table;
@@ -218,14 +218,14 @@ public class DiagramLoader
                         continue;
                     }
                     final DBSEntity child = container.getChild(monitor, tableName);
-                    if (!(child instanceof DBSTable)) {
+                    if (!(child instanceof DBSEntityLinked)) {
                         diagram.addErrorMessage("Cannot find table '" + tableName + "' in '" + container.getName() + "'");
                         continue;
                     }
                     String locX = entityElem.getAttribute(ATTR_X);
                     String locY = entityElem.getAttribute(ATTR_Y);
 
-                    DBSTable table = (DBSTable) child;
+                    DBSEntityLinked table = (DBSEntityLinked) child;
                     Rectangle bounds = new Rectangle();
                     if (CommonUtils.isEmpty(locX) || CommonUtils.isEmpty(locY)) {
                         diagram.setNeedsAutoLayout(true);
@@ -315,7 +315,7 @@ public class DiagramLoader
         }
 
         // Fill tables
-        List<DBSTable> tableList = new ArrayList<DBSTable>();
+        List<DBSEntityLinked> tableList = new ArrayList<DBSEntityLinked>();
         for (TableLoadInfo info : tableInfos) {
             tableList.add(info.table);
         }
@@ -418,7 +418,7 @@ public class DiagramLoader
                 final DataSourceObjects desc = dsMap.get(dsContainer);
                 int tableCounter = ERD_VERSION_1;
                 for (ERDTable erdTable : desc.tables) {
-                    final DBSTable table = erdTable.getObject();
+                    final DBSEntityLinked table = erdTable.getObject();
                     EntityPart tablePart = diagramPart == null ? null : diagramPart.getEntityPart(erdTable);
                     TableSaveInfo info = new TableSaveInfo(erdTable, tablePart, tableCounter++);
                     infoMap.put(erdTable, info);
@@ -426,7 +426,9 @@ public class DiagramLoader
                     xml.startElement(TAG_ENTITY);
                     xml.addAttribute(ATTR_ID, info.objectId);
                     xml.addAttribute(ATTR_NAME, table.getName());
-                    xml.addAttribute(ATTR_FQ_NAME, table.getFullQualifiedName());
+                    if (table instanceof DBSEntityQualified) {
+                        xml.addAttribute(ATTR_FQ_NAME, ((DBSEntityQualified)table).getFullQualifiedName());
+                    }
                     Rectangle tableBounds;
                     if (tablePart != null) {
                         tableBounds = tablePart.getBounds();

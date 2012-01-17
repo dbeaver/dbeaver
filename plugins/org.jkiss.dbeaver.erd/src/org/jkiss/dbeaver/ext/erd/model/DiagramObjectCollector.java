@@ -34,12 +34,12 @@ public class DiagramObjectCollector {
         this.tableMap.putAll(diagram.getTableMap());
     }
 
-    public static Collection<DBSTable> collectTables(
+    public static Collection<DBSEntityLinked> collectTables(
         DBRProgressMonitor monitor,
         Collection<? extends DBSObject> roots)
         throws DBException
     {
-        Set<DBSTable> tables = new LinkedHashSet<DBSTable>();
+        Set<DBSEntityLinked> tables = new LinkedHashSet<DBSEntityLinked>();
         collectTables(monitor, roots, tables);
         return tables;
     }
@@ -47,7 +47,7 @@ public class DiagramObjectCollector {
     private static void collectTables(
         DBRProgressMonitor monitor,
         Collection<? extends DBSObject> roots,
-        Set<DBSTable> tables)
+        Set<DBSEntityLinked> tables)
         throws DBException
     {
         for (DBSObject root : roots) {
@@ -56,8 +56,8 @@ public class DiagramObjectCollector {
             }
             if (root instanceof DBSFolder) {
                 collectTables(monitor, ((DBSFolder) root).getChildrenObjects(monitor), tables);
-            } else if (root instanceof DBSTable) {
-                tables.add((DBSTable) root);
+            } else if (root instanceof DBSEntityLinked) {
+                tables.add((DBSEntityLinked) root);
             }
             if (root instanceof DBSEntityContainer) {
                 collectTables(monitor, (DBSEntityContainer) root, tables);
@@ -68,7 +68,7 @@ public class DiagramObjectCollector {
     private static void collectTables(
         DBRProgressMonitor monitor,
         DBSEntityContainer container,
-        Set<DBSTable> tables)
+        Set<DBSEntityLinked> tables)
         throws DBException
     {
         if (monitor.isCanceled()) {
@@ -81,8 +81,8 @@ public class DiagramObjectCollector {
                 if (monitor.isCanceled()) {
                     break;
                 }
-                if (entity instanceof DBSTable) {
-                    tables.add((DBSTable) entity);
+                if (entity instanceof DBSEntityLinked) {
+                    tables.add((DBSEntityLinked) entity);
                 } else if (entity instanceof DBSEntityContainer) {
                     collectTables(monitor, (DBSEntityContainer) entity, tables);
                 }
@@ -95,8 +95,8 @@ public class DiagramObjectCollector {
         Collection<? extends DBSObject> roots)
         throws DBException
     {
-        Collection<DBSTable> tables = collectTables(monitor, roots);
-        for (DBSTable table : tables) {
+        Collection<DBSEntityLinked> tables = collectTables(monitor, roots);
+        for (DBSEntityLinked table : tables) {
             addDiagramTable(monitor, table);
         }
 
@@ -106,15 +106,17 @@ public class DiagramObjectCollector {
         }
     }
 
-    private void addDiagramTable(DBRProgressMonitor monitor, DBSTable table)
+    private void addDiagramTable(DBRProgressMonitor monitor, DBSEntityLinked table)
     {
         if (diagram.containsTable(table)) {
             // Avoid duplicates
             return;
         }
         ERDTable erdTable = ERDTable.fromObject(monitor, table);
-        erdTables.add(erdTable);
-        tableMap.put(table, erdTable);
+        if (erdTable != null) {
+            erdTables.add(erdTable);
+            tableMap.put(table, erdTable);
+        }
     }
 
     public List<ERDTable> getDiagramTables()

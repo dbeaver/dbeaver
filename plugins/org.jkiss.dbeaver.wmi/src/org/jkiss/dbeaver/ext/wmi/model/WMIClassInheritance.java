@@ -12,7 +12,6 @@ import java.util.Collection;
  */
 public class WMIClassInheritance implements DBSForeignKey
 {
-    public static final DBSConstraintType INHERITANCE = new DBSConstraintType("Inheritance", "Inheritance", false); //$NON-NLS-1$
 
     private WMIClass superClass;
     private WMIClass subClass;
@@ -65,7 +64,7 @@ public class WMIClassInheritance implements DBSForeignKey
 
     public DBSConstraintType getConstraintType()
     {
-        return INHERITANCE;
+        return DBSConstraintType.INHERITANCE;
     }
 
     public DBSTable getTable()

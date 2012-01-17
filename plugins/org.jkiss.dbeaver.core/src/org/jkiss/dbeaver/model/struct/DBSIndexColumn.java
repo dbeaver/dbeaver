@@ -7,9 +7,9 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSIndex
  */
-public interface DBSIndexColumn extends DBSEntityAttribute
+public interface DBSIndexColumn extends DBSObject
 {
-    DBSIndex getTrigger();
+    DBSIndex getIndex();
 
     int getOrdinalPosition();
 

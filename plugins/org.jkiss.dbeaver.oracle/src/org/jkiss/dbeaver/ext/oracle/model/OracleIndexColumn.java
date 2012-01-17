@@ -37,7 +37,7 @@ public class OracleIndexColumn extends AbstractIndexColumn
         this.ascending = source.ascending;
     }
 
-    public OracleIndex getTrigger()
+    public OracleIndex getIndex()
     {
         return index;
     }
