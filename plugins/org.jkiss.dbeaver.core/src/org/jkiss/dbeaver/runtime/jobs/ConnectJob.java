@@ -28,6 +28,7 @@ public class ConnectJob extends EventProcessorJob
     static final Log log = LogFactory.getLog(ConnectJob.class);
 
     private volatile Thread connectThread;
+    private boolean reflect = true;
 
     public ConnectJob(
         DataSourceDescriptor container)
@@ -43,14 +44,14 @@ public class ConnectJob extends EventProcessorJob
         try {
             connectThread = getThread();
             String oldName = connectThread.getName();
-            if (connectThread != null) {
+            if (connectThread != null && reflect) {
                 connectThread.setName(NLS.bind(CoreMessages.runtime_jobs_connect_thread_name, container.getName()));
             }
 
             processEvents(DBPConnectionEventType.BEFORE_CONNECT);
 
             try {
-                container.connect(monitor);
+                container.connect(monitor, reflect);
             } finally {
                 if (connectThread != null) {
                     connectThread.setName(oldName);
@@ -76,6 +77,7 @@ public class ConnectJob extends EventProcessorJob
     public IStatus runSync(DBRProgressMonitor monitor)
     {
         setThread(Thread.currentThread());
+        reflect = false;
         return run(monitor);
     }
 

@@ -297,7 +297,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         connect(monitor, true);
     }
 
-    void connect(DBRProgressMonitor monitor, boolean reflect)
+    public void connect(DBRProgressMonitor monitor, boolean reflect)
         throws DBException
     {
         if (this.isConnected()) {
