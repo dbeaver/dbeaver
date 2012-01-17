@@ -466,7 +466,7 @@ public final class DBUtils {
             DBSIndex uniqueIndex = null;
             for (DBSObject id : identifiers) {
                 if (id instanceof DBSConstraint) {
-                    if (((DBSConstraint)id).getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
+                    if (((DBSConstraint)id).getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                         return getTableColumns(monitor, (DBSConstraint)id);
                     } else if (((DBSConstraint)id).getConstraintType().isUnique()) {
                         uniqueId = (DBSConstraint)id;

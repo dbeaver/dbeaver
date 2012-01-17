@@ -278,7 +278,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         if (table == null) {
             return false;
         }
-        Collection<? extends DBSForeignKey> foreignKeys = table.getForeignKeys(monitor);
+        Collection<? extends DBSForeignKey> foreignKeys = table.getAssociations(monitor);
         if (foreignKeys != null) {
             for (DBSForeignKey fk : foreignKeys) {
                 if (fk.getColumn(monitor, tableColumn) != null) {
@@ -301,7 +301,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         if (table == null) {
             return refs;
         }
-        Collection<? extends DBSForeignKey> foreignKeys = table.getForeignKeys(monitor);
+        Collection<? extends DBSForeignKey> foreignKeys = table.getAssociations(monitor);
         if (foreignKeys != null) {
             for (DBSForeignKey fk : foreignKeys) {
                 if (fk.getColumn(monitor, tableColumn) != null) {

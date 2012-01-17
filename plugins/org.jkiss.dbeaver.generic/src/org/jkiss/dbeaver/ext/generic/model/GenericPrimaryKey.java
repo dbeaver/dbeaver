@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +20,7 @@ public class GenericPrimaryKey extends GenericConstraint
 {
     private List<GenericConstraintColumn> columns;
 
-    public GenericPrimaryKey(GenericTable table, String name, String remarks, DBSConstraintType constraintType, boolean persisted)
+    public GenericPrimaryKey(GenericTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
         super(table, name, remarks, constraintType, persisted);
     }

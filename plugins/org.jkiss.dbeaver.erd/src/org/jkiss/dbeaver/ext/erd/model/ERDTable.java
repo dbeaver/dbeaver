@@ -226,7 +226,7 @@ public class ERDTable extends ERDObject<DBSTable>
         try {
             Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
             // Make associations
-            Collection<? extends DBSForeignKey> fks = getObject().getForeignKeys(monitor);
+            Collection<? extends DBSForeignKey> fks = getObject().getAssociations(monitor);
             if (fks != null) {
                 for (DBSForeignKey fk : fks) {
                     fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));

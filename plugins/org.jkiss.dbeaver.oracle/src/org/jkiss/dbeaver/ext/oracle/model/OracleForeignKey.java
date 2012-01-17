@@ -30,7 +30,7 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
         OracleConstraint referencedKey,
         DBSConstraintModifyRule deleteRule)
     {
-        super(oracleTable, name, DBSConstraintType.FOREIGN_KEY, null, status);
+        super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, null, status);
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
     }
@@ -87,7 +87,7 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
         return (DBSForeignKeyColumn)super.getColumn(monitor, tableColumn);
     }
 
-    public DBSEntity getAssociatedEntity()
+    public OracleTableBase getAssociatedEntity()
     {
         return getReferencedTable();
     }

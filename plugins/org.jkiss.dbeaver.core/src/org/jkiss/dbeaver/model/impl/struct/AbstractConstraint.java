@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -20,9 +19,9 @@ public abstract class AbstractConstraint<TABLE extends DBSTable> implements DBSC
     private final TABLE table;
     private String name;
     protected String description;
-    protected DBSConstraintType constraintType;
+    protected DBSEntityConstraintType constraintType;
 
-    protected AbstractConstraint(TABLE table, String name, String description, DBSConstraintType constraintType)
+    protected AbstractConstraint(TABLE table, String name, String description, DBSEntityConstraintType constraintType)
     {
         this.table = table;
         this.name = name;
@@ -84,13 +83,12 @@ public abstract class AbstractConstraint<TABLE extends DBSTable> implements DBSC
         this.description = description;
     }
 
-
-    public DBSConstraintType getConstraintType()
+    public DBSEntityConstraintType getConstraintType()
     {
         return constraintType;
     }
 
-    public DBSObject getParentObject()
+    public TABLE getParentObject()
     {
         return table;
     }

@@ -172,7 +172,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             DBCTableIdentifier uniqueIndex = null;
             for (DBCTableIdentifier id : identifiers) {
                 if (id.getConstraint() != null) {
-                    if (id.getConstraint().getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
+                    if (id.getConstraint().getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                         return id;
                     } else if (id.getConstraint().getConstraintType().isUnique()) {
                         uniqueId = id;

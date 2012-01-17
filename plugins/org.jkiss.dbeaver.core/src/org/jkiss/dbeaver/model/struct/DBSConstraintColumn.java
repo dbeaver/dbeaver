@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSConstraintColumn
  */
-public interface DBSConstraintColumn extends DBSObject
+public interface DBSConstraintColumn extends DBSEntityAttribute
 {
     DBSConstraint getConstraint();
 

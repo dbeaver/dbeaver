@@ -162,10 +162,10 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     public DBSForeignKey getForeignKey(DBRProgressMonitor monitor, String ukName) throws DBException
     {
-        return DBUtils.findObject(getForeignKeys(monitor), ukName);
+        return DBUtils.findObject(getAssociations(monitor), ukName);
     }
 
-    public List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

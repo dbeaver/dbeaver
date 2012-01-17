@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
@@ -38,7 +38,7 @@ public abstract class JDBCConstraint<TABLE extends JDBCTable>
 
     private boolean persisted;
 
-    protected JDBCConstraint(TABLE table, String name, String description, DBSConstraintType constraintType, boolean persisted) {
+    protected JDBCConstraint(TABLE table, String name, String description, DBSEntityConstraintType constraintType, boolean persisted) {
         super(table, name, description, constraintType);
         this.persisted = persisted;
     }

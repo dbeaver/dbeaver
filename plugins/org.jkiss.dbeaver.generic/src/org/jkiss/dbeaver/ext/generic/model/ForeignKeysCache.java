@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -117,7 +117,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
                 pk = pkMap.get(pkFullName);
                 if (pk == null) {
-                    pk = new GenericPrimaryKey(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY, true);
+                    pk = new GenericPrimaryKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
                     pkMap.put(pkFullName, pk);
                     // Add this fake constraint to it's owner
                     pk.getTable().addUniqueKey(pk);

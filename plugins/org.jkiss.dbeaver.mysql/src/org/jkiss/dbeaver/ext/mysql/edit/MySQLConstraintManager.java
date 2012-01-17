@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
@@ -16,7 +17,6 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 
@@ -34,9 +34,9 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstrain
             workbenchWindow.getShell(),
             MySQLMessages.edit_constraint_manager_title,
             parent,
-            new DBSConstraintType[] {
-                DBSConstraintType.PRIMARY_KEY,
-                DBSConstraintType.UNIQUE_KEY });
+            new DBSEntityConstraintType[] {
+                DBSEntityConstraintType.PRIMARY_KEY,
+                DBSEntityConstraintType.UNIQUE_KEY });
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -62,7 +62,7 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstrain
     protected String getDropConstraintPattern(MySQLConstraint constraint)
     {
         String clause;
-        if (constraint.getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
             clause = "PRIMARY KEY"; //$NON-NLS-1$
         } else {
             clause = "KEY"; //$NON-NLS-1$

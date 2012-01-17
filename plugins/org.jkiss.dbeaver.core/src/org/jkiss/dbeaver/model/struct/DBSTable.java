@@ -8,7 +8,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Table
@@ -59,7 +58,7 @@ public interface DBSTable extends DBSEntityLinked, DBSEntityQualified
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets foreign keys which refers this table

@@ -5,8 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
@@ -148,10 +147,10 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                         continue;
                     }
                     DBSObject constraint = null;
-                    if (hasFK && OracleConstraint.getConstraintType(constrType) == DBSConstraintType.FOREIGN_KEY) {
+                    if (hasFK && OracleConstraint.getConstraintType(constrType) == DBSEntityConstraintType.FOREIGN_KEY) {
                         constraint = table.getForeignKey(monitor, constrName);
                     }
-                    if (hasConstraints && OracleConstraint.getConstraintType(constrType) != DBSConstraintType.FOREIGN_KEY) {
+                    if (hasConstraints && OracleConstraint.getConstraintType(constrType) != DBSEntityConstraintType.FOREIGN_KEY) {
                         constraint = table.getConstraint(monitor, constrName);
                     }
                     if (constraint == null) {

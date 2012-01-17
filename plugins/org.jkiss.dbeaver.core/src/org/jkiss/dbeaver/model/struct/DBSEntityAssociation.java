@@ -9,7 +9,12 @@ package org.jkiss.dbeaver.model.struct;
  */
 public interface DBSEntityAssociation extends DBSObject {
 
-    DBSEntity getAssociatedEntity();
+    DBSEntityConstraintType getConstraintType();
+
+    DBSEntityLinked getParentObject();
+
+    DBSEntityLinked getAssociatedEntity();
+
     // target entity
     // identifying
     // multiplicity

@@ -179,7 +179,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             result.add(rootTable);
             try {
                 monitor.subTask("Read foreign keys");
-                Collection<? extends DBSEntityAssociation> fks = rootTable.getForeignKeys(monitor);
+                Collection<? extends DBSEntityAssociation> fks = rootTable.getAssociations(monitor);
                 if (fks != null) {
                     for (DBSEntityAssociation fk : fks) {
                         DBSEntity refEntity = fk.getAssociatedEntity();

@@ -7,10 +7,6 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
-import org.jkiss.utils.xml.XMLUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
@@ -34,6 +30,10 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -456,9 +456,12 @@ public class DiagramLoader
             for (ERDTable erdTable : diagram.getTables()) {
                 for (ERDAssociation rel : erdTable.getPrimaryKeyRelationships()) {
                     xml.startElement(TAG_RELATION);
-                    xml.addAttribute(ATTR_NAME, rel.getObject().getName());
-                    xml.addAttribute(ATTR_FQ_NAME, rel.getObject().getFullQualifiedName());
-                    xml.addAttribute(ATTR_TYPE, rel.getObject().getConstraintType().getId());
+                    DBSEntityAssociation association = rel.getObject();
+                    xml.addAttribute(ATTR_NAME, association.getName());
+                    if (association instanceof DBSEntityQualified) {
+                        xml.addAttribute(ATTR_FQ_NAME, ((DBSEntityQualified) association).getFullQualifiedName());
+                    }
+                    xml.addAttribute(ATTR_TYPE, association.getConstraintType().getId());
                     TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryKeyTable());
                     if (pkInfo == null) {
                         log.error("Cannot find PK table '" + rel.getPrimaryKeyTable().getObject().getFullQualifiedName() + "' in info map");
@@ -472,9 +475,9 @@ public class DiagramLoader
                     xml.addAttribute(ATTR_PK_REF, pkInfo.objectId);
                     xml.addAttribute(ATTR_FK_REF, fkInfo.objectId);
 
-                    if (rel.getObject().getConstraintType() == ERDConstants.CONSTRAINT_LOGICAL_FK) {
+                    if (association instanceof ERDLogicalForeignKey) {
                         // Save columns
-                        for (DBSConstraintColumn column : rel.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
+                        for (DBSConstraintColumn column : ((ERDLogicalForeignKey) association).getColumns(VoidProgressMonitor.INSTANCE)) {
                             xml.startElement(TAG_COLUMN);
                             xml.addAttribute(ATTR_NAME, column.getName());
                             xml.addAttribute(ATTR_REF_NAME, ((DBSForeignKeyColumn)column).getReferencedColumn().getName());

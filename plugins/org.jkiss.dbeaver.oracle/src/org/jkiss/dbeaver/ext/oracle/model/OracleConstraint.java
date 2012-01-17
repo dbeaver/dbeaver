@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -30,7 +30,7 @@ public class OracleConstraint extends JDBCConstraint<OracleTableBase> {
     private OracleObjectStatus status;
     private List<OracleConstraintColumn> columns;
 
-    public OracleConstraint(OracleTableBase oracleTable, String name, DBSConstraintType constraintType, String searchCondition, OracleObjectStatus status)
+    public OracleConstraint(OracleTableBase oracleTable, String name, DBSEntityConstraintType constraintType, String searchCondition, OracleObjectStatus status)
     {
         super(oracleTable, name, null, constraintType, false);
         this.searchCondition = searchCondition;
@@ -56,7 +56,7 @@ public class OracleConstraint extends JDBCConstraint<OracleTableBase> {
 
     @Property(name = "Type", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 3)
     @Override
-    public DBSConstraintType getConstraintType()
+    public DBSEntityConstraintType getConstraintType()
     {
         return constraintType;
     }
@@ -99,23 +99,23 @@ public class OracleConstraint extends JDBCConstraint<OracleTableBase> {
             this);
     }
 
-    public static DBSConstraintType getConstraintType(String code)
+    public static DBSEntityConstraintType getConstraintType(String code)
     {
         if ("C".equals(code)) {
-            return DBSConstraintType.CHECK;
+            return DBSEntityConstraintType.CHECK;
         } else if ("P".equals(code)) {
-            return DBSConstraintType.PRIMARY_KEY;
+            return DBSEntityConstraintType.PRIMARY_KEY;
         } else if ("U".equals(code)) {
-            return DBSConstraintType.UNIQUE_KEY;
+            return DBSEntityConstraintType.UNIQUE_KEY;
         } else if ("R".equals(code)) {
-            return DBSConstraintType.FOREIGN_KEY;
+            return DBSEntityConstraintType.FOREIGN_KEY;
         } else if ("V".equals(code)) {
             return OracleView.CONSTRAINT_WITH_CHECK_OPTION;
         } else if ("O".equals(code)) {
             return OracleView.CONSTRAINT_WITH_READ_ONLY;
         } else {
             log.debug("Unsupported constraint type: " + code);
-            return DBSConstraintType.CHECK;
+            return DBSEntityConstraintType.CHECK;
         }
     }
 }

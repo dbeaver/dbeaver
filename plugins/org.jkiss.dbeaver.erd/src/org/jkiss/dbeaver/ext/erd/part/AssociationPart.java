@@ -7,6 +7,8 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
@@ -123,7 +125,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
 
         // Set tool tip
-        Label toolTip = new Label(getAssociation().getObject().getFullQualifiedName() + " [" + getAssociation().getObject().getConstraintType().getName() + "]");
+        Label toolTip = new Label(getAssociation().getObject().getName() + " [" + getAssociation().getObject().getConstraintType().getName() + "]");
         toolTip.setIcon(DBIcon.TREE_FOREIGN_KEY.getImage());
         //toolTip.setTextPlacement(PositionConstants.SOUTH);
         //toolTip.setIconTextGap();
@@ -146,18 +148,22 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             // This part seems to be deleted
             return;
         }
-        List<AttributePart> sourceAttributes = getEntityAttributes(
-            (EntityPart)getSource(),
-            DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, getAssociation().getObject().getReferencedKey()));
-        List<AttributePart> targetAttributes = getEntityAttributes(
-            (EntityPart)getTarget(),
-            DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, getAssociation().getObject()));
-        Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
-        for (AttributePart attr : sourceAttributes) {
-            attr.getFigure().setForegroundColor(columnColor);
-        }
-        for (AttributePart attr : targetAttributes) {
-            attr.getFigure().setForegroundColor(columnColor);
+
+        DBSEntityAssociation association = getAssociation().getObject();
+        if (association instanceof DBSForeignKey) {
+            List<AttributePart> sourceAttributes = getEntityAttributes(
+                (EntityPart)getSource(),
+                DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, ((DBSForeignKey) association).getReferencedKey()));
+            List<AttributePart> targetAttributes = getEntityAttributes(
+                (EntityPart)getTarget(),
+                DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, (DBSForeignKey)association));
+            Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
+            for (AttributePart attr : sourceAttributes) {
+                attr.getFigure().setForegroundColor(columnColor);
+            }
+            for (AttributePart attr : targetAttributes) {
+                attr.getFigure().setForegroundColor(columnColor);
+            }
         }
     }
 

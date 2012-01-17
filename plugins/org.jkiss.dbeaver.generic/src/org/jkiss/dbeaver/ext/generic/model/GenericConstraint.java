@@ -4,17 +4,16 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 /**
  * GenericConstraint
  */
 public abstract class GenericConstraint extends JDBCConstraint<GenericTable>
 {
-    protected GenericConstraint(GenericTable table, String name, String remarks, DBSConstraintType constraintType, boolean persisted)
+    protected GenericConstraint(GenericTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
         super(table, name, remarks, constraintType, persisted);
     }

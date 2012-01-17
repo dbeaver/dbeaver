@@ -37,7 +37,7 @@
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericForeignKey" label="%tree.foreign_keys.node.name" iconId="#foreign-keys" description="Table foreign keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
-                                    <items label="tree.foreign_key.node.name" path="foreignKey" property="foreignKeys" iconId="#foreign-key">
+                                    <items label="tree.foreign_key.node.name" path="association" property="associations" iconId="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="true">
                                         </items>
                                     </items>

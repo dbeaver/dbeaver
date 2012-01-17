@@ -224,7 +224,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return loadReferences(monitor);
     }
 
-    public List<GenericForeignKey> getForeignKeys(DBRProgressMonitor monitor)
+    public List<GenericForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null && getDataSource().getInfo().supportsReferentialIntegrity()) {
@@ -476,14 +476,14 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     log.warn("Could not find unique key for table " + this.getFullQualifiedName() + " column " + pkColumn.getName());
                     // Too bad. But we have to create new fake PK for this FK
                     //String pkFullName = getFullQualifiedName() + "." + info.pkName;
-                    pk = new GenericPrimaryKey(this, info.pkName, null, DBSConstraintType.PRIMARY_KEY, true);
+                    pk = new GenericPrimaryKey(this, info.pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
                     pk.addColumn(new GenericConstraintColumn(pk, pkColumn, info.keySeq));
                     // Add this fake constraint to it's owner
                     this.addUniqueKey(pk);
                 }
 
                 // Find (or create) FK
-                GenericForeignKey fk = DBUtils.findObject(fkTable.getForeignKeys(monitor), info.fkName);
+                GenericForeignKey fk = DBUtils.findObject(fkTable.getAssociations(monitor), info.fkName);
                 if (fk == null) {
                     log.warn("Could not find foreign key '" + info.fkName + "' for table " + fkTable.getFullQualifiedName());
                     // No choice, we have to create fake foreign key :(

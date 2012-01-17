@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.erd;
 
 import org.eclipse.draw2d.PrintFigureOperation;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 /**
  * ERD constants
@@ -26,5 +26,5 @@ public class ERDConstants {
     public static final String PREF_GRID_WIDTH = "erd.grid.width";
     public static final String PREF_GRID_HEIGHT = "erd.grid.height";
 
-    public static DBSConstraintType CONSTRAINT_LOGICAL_FK = new DBSConstraintType("erdkey", "Logical Key", false);
+    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", true, false);
 }

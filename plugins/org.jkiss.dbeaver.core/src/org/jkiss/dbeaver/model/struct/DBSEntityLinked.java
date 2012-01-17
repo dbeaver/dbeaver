@@ -20,7 +20,7 @@ public interface DBSEntityLinked extends DBSEntity
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSEntityAssociation> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets associations which refers this entity

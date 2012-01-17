@@ -37,7 +37,7 @@ public class WMIClassInheritance implements DBSForeignKey
         return null;
     }
 
-    public DBSObject getParentObject()
+    public WMIClass getParentObject()
     {
         return subClass;
     }
@@ -47,7 +47,7 @@ public class WMIClassInheritance implements DBSForeignKey
         return subClass.getDataSource();
     }
 
-    public DBSEntity getAssociatedEntity()
+    public WMIClass getAssociatedEntity()
     {
         return superClass;
     }
@@ -62,9 +62,9 @@ public class WMIClassInheritance implements DBSForeignKey
         return getName();
     }
 
-    public DBSConstraintType getConstraintType()
+    public DBSEntityConstraintType getConstraintType()
     {
-        return DBSConstraintType.INHERITANCE;
+        return DBSEntityConstraintType.INHERITANCE;
     }
 
     public DBSTable getTable()

@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 /**
- * DBSConstraintType
+ * DBSEntityConstraintType
  */
 public class DBSActionTiming
 {

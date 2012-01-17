@@ -8,7 +8,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.draw2d.geometry.Point;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import java.util.List;
  * 
  * @author Serge Rieder
  */
-public class ERDAssociation extends ERDObject<DBSForeignKey>
+public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 {
 
 	private ERDTable primaryKeyTable;
@@ -50,7 +50,7 @@ public class ERDAssociation extends ERDObject<DBSForeignKey>
      * @param primaryTable pk table
      * @param reflect reflect flag
      */
-	public ERDAssociation(DBSForeignKey object, ERDTable foreignTable, ERDTable primaryTable, boolean reflect)
+	public ERDAssociation(DBSEntityAssociation object, ERDTable foreignTable, ERDTable primaryTable, boolean reflect)
 	{
 		super(object);
 		this.primaryKeyTable = primaryTable;

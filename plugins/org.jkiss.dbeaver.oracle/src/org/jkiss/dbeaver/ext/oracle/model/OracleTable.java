@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -116,7 +115,7 @@ public class OracleTable extends OracleTablePhysical
     }
 
     @Association
-    public List<OracleForeignKey> getForeignKeys(DBRProgressMonitor monitor)
+    public List<OracleForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {

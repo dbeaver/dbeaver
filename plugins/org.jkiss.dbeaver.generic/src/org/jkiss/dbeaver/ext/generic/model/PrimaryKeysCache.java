@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -55,7 +55,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             parent,
             pkName,
             null,
-            DBSConstraintType.PRIMARY_KEY,
+            DBSEntityConstraintType.PRIMARY_KEY,
             true);
     }
 

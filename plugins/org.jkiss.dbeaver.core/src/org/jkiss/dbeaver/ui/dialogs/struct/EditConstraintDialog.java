@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.dialogs.struct;
 
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
@@ -14,7 +15,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -25,14 +25,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class EditConstraintDialog extends ColumnsSelectorDialog {
 
-    private DBSConstraintType[] constraintTypes;
-    private DBSConstraintType selectedConstraintType;
+    private DBSEntityConstraintType[] constraintTypes;
+    private DBSEntityConstraintType selectedConstraintType;
 
     public EditConstraintDialog(
         Shell shell,
         String title,
         DBSTable table,
-        DBSConstraintType[] constraintTypes) {
+        DBSEntityConstraintType[] constraintTypes) {
         super(shell, title, table);
         this.constraintTypes = constraintTypes;
         Assert.isTrue(!CommonUtils.isEmpty(this.constraintTypes));
@@ -45,7 +45,7 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
         final Combo typeCombo = new Combo(panel, SWT.DROP_DOWN | SWT.READ_ONLY);
         typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        for (DBSConstraintType constraintType : constraintTypes) {
+        for (DBSEntityConstraintType constraintType : constraintTypes) {
             typeCombo.add(constraintType.getName());
             if (selectedConstraintType == null) {
                 selectedConstraintType = constraintType;
@@ -62,7 +62,7 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
         });
     }
 
-    public DBSConstraintType getConstraintType()
+    public DBSEntityConstraintType getConstraintType()
     {
         return selectedConstraintType;
     }

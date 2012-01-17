@@ -33,7 +33,7 @@ public abstract class JDBCForeignKey<
         DBSConstraintModifyRule updateRule,
         boolean persisted)
     {
-        super(table, name, description, DBSConstraintType.FOREIGN_KEY, persisted);
+        super(table, name, description, DBSEntityConstraintType.FOREIGN_KEY, persisted);
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
         this.updateRule = updateRule;
@@ -78,7 +78,7 @@ public abstract class JDBCForeignKey<
         return (DBSForeignKeyColumn)super.getColumn(monitor, tableColumn);
     }
 
-    public DBSEntity getAssociatedEntity()
+    public TABLE getAssociatedEntity()
     {
         return getReferencedTable();
     }

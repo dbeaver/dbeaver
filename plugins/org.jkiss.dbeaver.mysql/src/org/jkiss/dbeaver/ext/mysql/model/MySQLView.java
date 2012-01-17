@@ -130,7 +130,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
         return null;
     }
 
-    public List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

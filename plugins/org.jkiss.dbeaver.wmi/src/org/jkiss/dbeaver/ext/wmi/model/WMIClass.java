@@ -242,7 +242,7 @@ public class WMIClass extends WMIContainer
         return null;
     }
 
-    public List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         if (superClass != null) {
             return Collections.singletonList(new WMIClassInheritance(superClass, this));

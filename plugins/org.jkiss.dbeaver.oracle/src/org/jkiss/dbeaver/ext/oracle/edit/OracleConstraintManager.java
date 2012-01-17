@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
@@ -13,7 +14,6 @@ import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 
@@ -31,9 +31,9 @@ public class OracleConstraintManager extends JDBCConstraintManager<OracleConstra
             workbenchWindow.getShell(),
             OracleMessages.edit_oracle_constraint_manager_dialog_title,
             parent,
-            new DBSConstraintType[] {
-                DBSConstraintType.PRIMARY_KEY,
-                DBSConstraintType.UNIQUE_KEY });
+            new DBSEntityConstraintType[] {
+                DBSEntityConstraintType.PRIMARY_KEY,
+                DBSEntityConstraintType.UNIQUE_KEY });
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -59,7 +59,7 @@ public class OracleConstraintManager extends JDBCConstraintManager<OracleConstra
     protected String getDropConstraintPattern(OracleConstraint constraint)
     {
         String clause;
-        if (constraint.getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
             clause = "PRIMARY KEY"; //$NON-NLS-1$
         } else {
             clause = "KEY"; //$NON-NLS-1$

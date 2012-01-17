@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractCatalog;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
@@ -416,10 +416,10 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         {
             if (constraintName.equals("PRIMARY")) {
                 return new MySQLConstraint(
-                    parent, constraintName, null, DBSConstraintType.PRIMARY_KEY, true);
+                    parent, constraintName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
             } else {
                 return new MySQLConstraint(
-                    parent, constraintName, null, DBSConstraintType.UNIQUE_KEY, true);
+                    parent, constraintName, null, DBSEntityConstraintType.UNIQUE_KEY, true);
             }
         }
 

@@ -13,9 +13,9 @@ import java.util.Collection;
  */
 public interface DBSConstraint extends DBSEntityQualified
 {
-    DBSConstraintType getConstraintType();
-
     DBSTable getTable();
+
+    DBSEntityConstraintType getConstraintType();
 
     Collection<? extends DBSConstraintColumn> getColumns(DBRProgressMonitor monitor);
 

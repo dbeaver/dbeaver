@@ -8,7 +8,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class ERDLogicalPrimaryKey extends AbstractConstraint<DBSTable> {
 
     public ERDLogicalPrimaryKey(ERDTable table, String name, String description)
     {
-        super(table.getObject(), name, description, DBSConstraintType.PRIMARY_KEY);
+        super(table.getObject(), name, description, DBSEntityConstraintType.PRIMARY_KEY);
     }
 
     public Collection<? extends DBSConstraintColumn> getColumns(DBRProgressMonitor monitor)

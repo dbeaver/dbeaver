@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSTriggerColumn
  */
-public interface DBSTriggerColumn extends DBSObject
+public interface DBSTriggerColumn extends DBSEntityAttribute
 {
     DBSTrigger getTrigger();
 

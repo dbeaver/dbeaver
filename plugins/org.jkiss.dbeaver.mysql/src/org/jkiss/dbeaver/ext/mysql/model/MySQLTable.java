@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -17,7 +18,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.io.UnsupportedEncodingException;
@@ -152,7 +152,7 @@ public class MySQLTable extends MySQLTableBase
         return loadForeignKeys(monitor, true);
     }
 
-    public List<MySQLForeignKey> getForeignKeys(DBRProgressMonitor monitor)
+    public List<MySQLForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {
@@ -164,7 +164,7 @@ public class MySQLTable extends MySQLTableBase
     public MySQLForeignKey getForeignKey(DBRProgressMonitor monitor, String fkName)
         throws DBException
     {
-        return DBUtils.findObject(getForeignKeys(monitor), fkName);
+        return DBUtils.findObject(getAssociations(monitor), fkName);
     }
 
     @Association
@@ -405,7 +405,7 @@ public class MySQLTable extends MySQLTableBase
                         String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
-                            pk = new MySQLConstraint(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY, true);
+                            pk = new MySQLConstraint(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
                             pk.addColumn(new MySQLConstraintColumn(pk, pkColumn, keySeq));
                             pkMap.put(pkFullName, pk);
                         }
@@ -414,7 +414,7 @@ public class MySQLTable extends MySQLTableBase
                     // Find (or create) FK
                     MySQLForeignKey fk = null;
                     if (references) {
-                        fk = DBUtils.findObject(fkTable.getForeignKeys(monitor), fkName);
+                        fk = DBUtils.findObject(fkTable.getAssociations(monitor), fkName);
                         if (fk == null) {
                             log.warn("Could not find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());
                             // No choice, we have to create fake foreign key :(

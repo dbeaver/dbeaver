@@ -4,11 +4,10 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.List;
 public class MySQLConstraint extends JDBCConstraint<MySQLTable> {
     private List<MySQLConstraintColumn> columns;
 
-    public MySQLConstraint(MySQLTable table, String name, String remarks, DBSConstraintType constraintType, boolean persisted)
+    public MySQLConstraint(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
         super(table, name, remarks, constraintType, persisted);
     }
