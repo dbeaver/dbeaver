@@ -335,8 +335,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                     DBPEvent.Action.OBJECT_UPDATE,
                     DataSourceDescriptor.this,
                     true);
-                firePropertyChange();
             }
+            firePropertyChange();
         } catch (Exception e) {
             // Failed
             connectFailed = true;
