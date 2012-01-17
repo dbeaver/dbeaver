@@ -33,6 +33,7 @@ public class WMIClass extends WMIContainer
     private String name;
     private List<WMIClass> subClasses = null;
     private List<WMIClassProperty> properties = null;
+    private List<WMIClassMethod> methods = null;
 
     public WMIClass(WMIContainer parent, WMIClass superClass, WMIObject classObject)
     {
@@ -151,6 +152,41 @@ public class WMIClass extends WMIContainer
                 if (!prop.isSystem()) {
                     properties.add(new WMIClassProperty(this, prop));
                 }
+            }
+
+        } catch (WMIException e) {
+            throw new DBException(e);
+        }
+    }
+
+    public List<WMIClassMethod> getMethods(DBRProgressMonitor monitor) throws DBException
+    {
+        if (methods == null) {
+            readMethods(monitor);
+        }
+        return methods;
+    }
+
+    public WMIClassMethod getMethod(DBRProgressMonitor monitor, String methodName) throws DBException
+    {
+        if (methods == null) {
+            readMethods(monitor);
+        }
+        return DBUtils.findObject(methods, methodName);
+    }
+
+    private synchronized void readMethods(DBRProgressMonitor monitor) throws DBException
+    {
+        if (methods != null) {
+            return;
+        }
+        try {
+            methods = new ArrayList<WMIClassMethod>();
+            for (WMIObjectMethod prop : classObject.getMethods()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                methods.add(new WMIClassMethod(this, prop));
             }
 
         } catch (WMIException e) {
