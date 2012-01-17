@@ -13,10 +13,7 @@ import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.wmi.service.WMIConstants;
-import org.jkiss.wmi.service.WMIException;
-import org.jkiss.wmi.service.WMIObject;
-import org.jkiss.wmi.service.WMIService;
+import org.jkiss.wmi.service.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -238,4 +235,5 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
     {
         return null;
     }
+
 }

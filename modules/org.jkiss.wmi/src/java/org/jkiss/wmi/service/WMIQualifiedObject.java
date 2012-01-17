@@ -29,6 +29,17 @@ public abstract class WMIQualifiedObject {
         return qualifiers;
     }
 
+    public Object getQualifier(String name)
+        throws WMIException
+    {
+        for (WMIQualifier q : getQualifiers()) {
+            if (q.getName().equalsIgnoreCase(name)) {
+                return q.getValue();
+            }
+        }
+        return null;
+    }
+
     protected abstract void readObjectQualifiers(List<WMIQualifier> qualifiers) throws WMIException;
 
 }

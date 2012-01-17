@@ -74,11 +74,6 @@ public class WMIClassProperty extends WMIClassAttribute<WMIObjectProperty> imple
         return 0;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        return false;
-    }
-
     public Image getObjectImage()
     {
         return getPropertyImage(attribute.getType());

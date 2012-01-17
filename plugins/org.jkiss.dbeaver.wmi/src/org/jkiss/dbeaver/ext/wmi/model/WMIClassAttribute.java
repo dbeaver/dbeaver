@@ -1,12 +1,12 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.wmi.service.WMIObjectAttribute;
-import org.jkiss.wmi.service.WMIObjectProperty;
+import org.jkiss.wmi.service.WMIQualifiedObject;
 
 /**
  * Class attribute
@@ -46,5 +46,10 @@ public abstract class WMIClassAttribute<T extends WMIObjectAttribute> implements
     public boolean isPersisted()
     {
         return true;
+    }
+
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    {
+        return false;
     }
 }

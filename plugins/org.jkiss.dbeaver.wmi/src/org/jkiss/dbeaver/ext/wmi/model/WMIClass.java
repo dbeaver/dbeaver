@@ -4,7 +4,12 @@
 
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
@@ -15,6 +20,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.*;
 
@@ -26,8 +32,27 @@ import java.util.List;
  * WMI class
  */
 public class WMIClass extends WMIContainer
-    implements WMIClassContainer, DBSTable, DBPCloseableObject, DBSDataContainer
+    implements WMIClassContainer, DBSTable, DBPCloseableObject, DBSDataContainer, IObjectImageProvider
 {
+    private static Image IMG_CLASS;
+    private static Image IMG_CLASS_ABSTRACT;
+    private static Image IMG_CLASS_FINAL;
+    private static Image IMG_CLASS_ABSTRACT_FINAL;
+
+    static {
+        IMG_CLASS = Activator.getImageDescriptor("icons/class.png").createImage();
+        ImageData baseData = IMG_CLASS.getImageData();
+        OverlayImageDescriptor ovrDescriptor = new OverlayImageDescriptor(baseData);
+        ovrDescriptor.setTopRight(new ImageDescriptor[]{
+            Activator.getImageDescriptor("icons/ovr_abstract.png")});
+        IMG_CLASS_ABSTRACT = ovrDescriptor.createImage();
+        ovrDescriptor.setBottomRight(new ImageDescriptor[]{
+            Activator.getImageDescriptor("icons/ovr_final.png")});
+        IMG_CLASS_ABSTRACT_FINAL = ovrDescriptor.createImage();
+        ovrDescriptor.setTopRight(null);
+        IMG_CLASS_FINAL = ovrDescriptor.createImage();
+    }
+
     private WMIClass superClass;
     private WMIObject classObject;
     private String name;
@@ -40,6 +65,18 @@ public class WMIClass extends WMIContainer
         super(parent);
         this.superClass = superClass;
         this.classObject = classObject;
+    }
+
+    public boolean isAbstract() throws WMIException
+    {
+        return Boolean.TRUE.equals(
+            classObject.getQualifier(WMIConstants.Q_Abstract));
+    }
+
+    public boolean isFinal() throws WMIException
+    {
+        return Boolean.TRUE.equals(
+            classObject.getQualifier(WMIConstants.Q_Terminal));
     }
 
     @Property(name = "Super Class", viewable = true, order = 10)
@@ -296,6 +333,24 @@ public class WMIClass extends WMIContainer
     public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
     {
         throw new DBException("Not implemented");
+    }
+
+    public Image getObjectImage()
+    {
+        try {
+            if (isAbstract()) {
+                if (isFinal()) {
+                    return IMG_CLASS_ABSTRACT_FINAL;
+                } else {
+                    return IMG_CLASS_ABSTRACT;
+                }
+            } else if (isFinal()) {
+                return IMG_CLASS_FINAL;
+            }
+        } catch (WMIException e) {
+            log.warn(e);
+        }
+        return IMG_CLASS;
     }
 
 }
