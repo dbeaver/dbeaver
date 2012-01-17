@@ -340,12 +340,12 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         } catch (Exception e) {
             // Failed
             connectFailed = true;
-            if (reflect) {
+            //if (reflect) {
                 getRegistry().fireDataSourceEvent(
                     DBPEvent.Action.OBJECT_UPDATE,
                     DataSourceDescriptor.this,
                     false);
-            }
+            //}
             if (e instanceof DBException) {
                 throw (DBException)e;
             } else {
