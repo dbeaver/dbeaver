@@ -124,7 +124,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return getContainer().getSchema();
     }
 
-    public List<GenericTableColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<GenericTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {

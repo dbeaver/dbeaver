@@ -14,11 +14,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -51,7 +53,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
             this);
     }
 
-    public List<MySQLTableColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<MySQLTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {

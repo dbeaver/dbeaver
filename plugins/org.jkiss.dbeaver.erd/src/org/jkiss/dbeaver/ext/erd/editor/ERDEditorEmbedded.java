@@ -182,7 +182,10 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 Collection<? extends DBSForeignKey> fks = rootTable.getForeignKeys(monitor);
                 if (fks != null) {
                     for (DBSForeignKey fk : fks) {
-                        result.add(fk.getReferencedKey().getTable());
+                        DBSEntity refEntity = fk.getAssociatedEntity();
+                        if (refEntity instanceof DBSTable) {
+                            result.add((DBSTable) refEntity);
+                        }
                     }
                 }
                 monitor.worked(1);

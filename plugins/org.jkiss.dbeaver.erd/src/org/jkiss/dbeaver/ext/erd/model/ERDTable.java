@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -203,7 +204,7 @@ public class ERDTable extends ERDObject<DBSTable>
         ERDTable erdTable = new ERDTable(dbTable);
 
         try {
-            List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, dbTable);
+            Collection<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, dbTable);
 
             Collection<? extends DBSTableColumn> columns = dbTable.getColumns(monitor);
             if (!CommonUtils.isEmpty(columns)) {
@@ -219,7 +220,7 @@ public class ERDTable extends ERDObject<DBSTable>
         return erdTable;
     }
 
-    public void addRelations(DBRProgressMonitor monitor, Map<DBSTable, ERDTable> tableMap, boolean reflect)
+    public void addRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDTable> tableMap, boolean reflect)
     {
         try {
             Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
@@ -228,7 +229,7 @@ public class ERDTable extends ERDObject<DBSTable>
             if (fks != null) {
                 for (DBSForeignKey fk : fks) {
                     fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
-                    ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
+                    ERDTable table2 = tableMap.get(fk.getAssociatedEntity());
                     if (table2 == null) {
                         //log.debug("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
                         if (unresolvedKeys == null) {
@@ -255,7 +256,7 @@ public class ERDTable extends ERDObject<DBSTable>
         }
     }
 
-    public void resolveRelations(Map<DBSTable, ERDTable> tableMap, boolean reflect)
+    public void resolveRelations(Map<DBSEntity, ERDTable> tableMap, boolean reflect)
     {
         if (CommonUtils.isEmpty(unresolvedKeys)) {
             return;

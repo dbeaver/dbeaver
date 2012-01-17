@@ -26,7 +26,7 @@ public class DiagramObjectCollector {
 
     private final EntityDiagram diagram;
     private final List<ERDTable> erdTables = new ArrayList<ERDTable>();
-    private final Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
+    private final Map<DBSEntity, ERDTable> tableMap = new HashMap<DBSEntity, ERDTable>();
 
     public DiagramObjectCollector(EntityDiagram diagram)
     {

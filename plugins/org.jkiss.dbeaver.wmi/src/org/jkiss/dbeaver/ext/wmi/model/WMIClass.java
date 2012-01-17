@@ -26,6 +26,7 @@ import org.jkiss.wmi.service.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -159,7 +160,7 @@ public class WMIClass extends WMIContainer
         return getNamespace();
     }
 
-    public List<WMIClassProperty> getColumns(DBRProgressMonitor monitor) throws DBException
+    public Collection<WMIClassProperty> getColumns(DBRProgressMonitor monitor) throws DBException
     {
         if (properties == null) {
             readProperties(monitor);
@@ -243,12 +244,22 @@ public class WMIClass extends WMIContainer
 
     public List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
     {
+        if (superClass != null) {
+            return Collections.singletonList(new WMIClassInheritance(superClass, this));
+        }
         return null;
     }
 
     public List<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
     {
-        return null;
+        if (subClasses == null) {
+            return null;
+        }
+        List<WMIClassInheritance> subList = new ArrayList<WMIClassInheritance>();
+        for (WMIClass ss : subClasses) {
+            subList.add(new WMIClassInheritance(this, ss));
+        }
+        return subList;
     }
 
     public void close()

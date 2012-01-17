@@ -10,6 +10,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 
@@ -27,7 +28,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	private List<ERDTable> tables = new ArrayList<ERDTable>();
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
-    private Map<DBSTable, ERDTable> tableMap = new IdentityHashMap<DBSTable, ERDTable>();
+    private Map<DBSEntity, ERDTable> tableMap = new IdentityHashMap<DBSEntity, ERDTable>();
     private Map<ERDObject, Rectangle> initBounds = new IdentityHashMap<ERDObject, Rectangle>();
     private List<ERDNote> notes = new ArrayList<ERDNote>();
     private boolean needsAutoLayout;
@@ -233,12 +234,12 @@ public class EntityDiagram extends ERDObject<DBSObject>
         return false;
     }
 
-    public Map<DBSTable,ERDTable> getTableMap()
+    public Map<DBSEntity,ERDTable> getTableMap()
     {
         return tableMap;
     }
 
-    public ERDTable getERDTable(DBSTable table)
+    public ERDTable getERDTable(DBSEntity table)
     {
         return tableMap.get(table);
     }

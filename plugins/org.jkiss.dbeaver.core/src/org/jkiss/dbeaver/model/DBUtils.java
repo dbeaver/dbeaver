@@ -427,7 +427,7 @@ public final class DBUtils {
         return finder.refConstraint;
     }
 
-    public static List<DBSTableColumn> getBestTableIdentifier(DBRProgressMonitor monitor, DBSTable table)
+    public static Collection<DBSTableColumn> getBestTableIdentifier(DBRProgressMonitor monitor, DBSTable table)
         throws DBException
     {
         if (table.isView() || CommonUtils.isEmpty(table.getColumns(monitor))) {
@@ -484,6 +484,9 @@ public final class DBUtils {
     public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSConstraint constraint)
     {
         Collection<? extends DBSConstraintColumn> constraintColumns = constraint.getColumns(monitor);
+        if (constraintColumns == null) {
+            return Collections.emptyList();
+        }
         List<DBSTableColumn> columns = new ArrayList<DBSTableColumn>(constraintColumns.size());
         for (DBSConstraintColumn column : constraintColumns) {
             columns.add(column.getTableColumn());
@@ -494,6 +497,9 @@ public final class DBUtils {
     public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSIndex index)
     {
         Collection<? extends DBSIndexColumn> indexColumns = index.getColumns(monitor);
+        if (indexColumns == null) {
+            return Collections.emptyList();
+        }
         List<DBSTableColumn> columns = new ArrayList<DBSTableColumn>(indexColumns.size());
         for (DBSIndexColumn column : indexColumns) {
             columns.add(column.getTableColumn());

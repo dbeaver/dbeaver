@@ -26,7 +26,7 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException on any DB error
      * @param monitor
      */
-    List<? extends DBSTableColumn> getColumns(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSTableColumn> getColumns(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Retrieve table column by it's name (case insensitive)
@@ -42,7 +42,7 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException  on any DB error
      * @param monitor
      */
-    List<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Keys are: primary keys and unique keys.
@@ -51,7 +51,7 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException on any DB error
      * @param monitor
      */
-    List<? extends DBSConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets this table foreign keys
@@ -59,7 +59,7 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException on any DB error
      * @param monitor
      */
-    List<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets foreign keys which refers this table
@@ -67,6 +67,6 @@ public interface DBSTable extends DBSEntityQualified
      * @throws DBException on any DB error
      * @param monitor
      */
-    List<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException;
 
 }

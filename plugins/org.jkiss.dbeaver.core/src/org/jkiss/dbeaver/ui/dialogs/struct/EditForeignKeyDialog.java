@@ -39,6 +39,8 @@ import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -255,7 +257,7 @@ public class EditForeignKeyDialog extends Dialog {
                             // Cache ref table columns
                             refTable.getColumns(monitor);
                             // Get constraints
-                            final List<? extends DBSConstraint> constraints = refTable.getConstraints(monitor);
+                            final Collection<? extends DBSConstraint> constraints = refTable.getConstraints(monitor);
                             if (!CommonUtils.isEmpty(constraints)) {
                                 for (DBSConstraint constraint : constraints) {
                                     if (constraint.getConstraintType().isUnique()) {
@@ -302,7 +304,10 @@ public class EditForeignKeyDialog extends Dialog {
             for (DBSConstraintColumn pkColumn : curConstraint.getColumns(VoidProgressMonitor.INSTANCE)) {
                 FKColumnInfo fkColumnInfo = new FKColumnInfo(pkColumn.getTableColumn());
                 // Try to find matched column in own table
-                ownColumns = ownTable.getColumns(VoidProgressMonitor.INSTANCE);
+                Collection<? extends DBSTableColumn> tmpColumns = ownTable.getColumns(VoidProgressMonitor.INSTANCE);
+                ownColumns = tmpColumns == null ?
+                    Collections.<DBSTableColumn>emptyList() :
+                    new ArrayList<DBSTableColumn>(ownTable.getColumns(VoidProgressMonitor.INSTANCE));
                 if (!CommonUtils.isEmpty(ownColumns)) {
                     for (DBSTableColumn ownColumn : ownColumns) {
                         if (ownColumn.getName().equals(pkColumn.getTableColumn().getName()) && ownTable != pkColumn.getTableColumn().getTable()) {
