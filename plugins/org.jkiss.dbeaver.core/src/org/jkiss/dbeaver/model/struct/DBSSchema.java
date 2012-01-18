@@ -5,9 +5,11 @@
 package org.jkiss.dbeaver.model.struct;
 
 /**
- * DBSSchema
+ * Schema is a simple entity container.
+ * Do not provides any additional attributes but may be used in some JDBC specific issues
+ * to determine difference in catalog/schema containment.
  */
 public interface DBSSchema extends DBSEntity, DBSEntityContainer
 {
-    //DBSCatalog getCatalog();
+
 }

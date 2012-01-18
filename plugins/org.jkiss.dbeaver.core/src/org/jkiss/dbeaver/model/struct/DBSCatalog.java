@@ -4,18 +4,12 @@
 
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.Collection;
-
 /**
- * DBSCatalog
+ * Catalog is a simple entity container.
+ * Do not provides any additional attributes but may be used in some JDBC specific issues
+ * to determine difference in catalog/schema containment.
  */
 public interface DBSCatalog extends DBSEntity, DBSEntityContainer
 {
-/*
-    Collection<? extends DBSSchema> getSchemas(DBRProgressMonitor monitor)
-        throws DBException;
-*/
+
 }
