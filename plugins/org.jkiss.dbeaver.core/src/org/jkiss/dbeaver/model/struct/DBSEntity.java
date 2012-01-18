@@ -7,12 +7,20 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Collection;
+
 /**
  * DBSEntity
  */
-public interface DBSEntity extends DBSObject
+public interface DBSEntity<ATTR extends DBSEntityAttribute> extends DBSObject
 {
+/*
+    Collection<ATTR> getAttributes(DBRProgressMonitor monitor)
+        throws DBException;
 
+    ATTR getAttribute(DBRProgressMonitor monitor, String name)
+        throws DBException;
+*/
 
     /**
      * Refresh entity's (and all of it's children) state

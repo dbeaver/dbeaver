@@ -18,8 +18,8 @@ public interface DBSTypedObject extends DBPObject
     String getTypeName();
 
     /**
-     * Type number.
-     * Refer java.sql.Types for possible values
+     * Type numeric ID.
+     * (may refer on java.sql.Types or other constant depending on implementor)
      * @return value type
      */
     int getValueType();

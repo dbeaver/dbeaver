@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -18,14 +19,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.struct.AbstractCatalog;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -37,7 +34,7 @@ import java.util.List;
 /**
  * GenericCatalog
  */
-public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DBPSaveableObject
+public class MySQLCatalog implements DBSCatalog, DBPSaveableObject
 {
     static final Log log = LogFactory.getLog(MySQLCatalog.class);
 
@@ -47,6 +44,8 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     final ConstraintCache constraintCache = new ConstraintCache();
     final IndexCache indexCache = new IndexCache();
 
+    private MySQLDataSource dataSource;
+    private String name;
     private MySQLCharset defaultCharset;
     private MySQLCollation defaultCollation;
     private String sqlPath;
@@ -54,9 +53,9 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
 
     public MySQLCatalog(MySQLDataSource dataSource, ResultSet dbResult)
     {
-        super(dataSource, null);
+        this.dataSource = dataSource;
         if (dbResult != null) {
-            setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SCHEMA_NAME));
+            this.name = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SCHEMA_NAME);
             defaultCharset = dataSource.getCharset(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_CHARACTER_SET_NAME));
             defaultCollation = dataSource.getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_COLLATION_NAME));
             sqlPath = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SQL_PATH);
@@ -66,11 +65,25 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
     }
 
-    @Override
+    public DBSObject getParentObject()
+    {
+        return dataSource.getContainer();
+    }
+
+    public MySQLDataSource getDataSource()
+    {
+        return dataSource;
+    }
+
     @Property(name = "Schema Name", viewable = true, editable = true, order = 1)
     public String getName()
     {
-        return super.getName();
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 
     public boolean isPersisted()
@@ -207,11 +220,9 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
     }
 
-    @Override
     public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
-        super.refreshEntity(monitor);
         tableCache.clearCache();
         indexCache.clearCache();
         constraintCache.clearCache();
@@ -223,6 +234,12 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     public boolean isSystem()
     {
         return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || MySQLConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(getName());
+    }
+
+    @Override
+    public String toString()
+    {
+        return name + " [" + dataSource.getContainer().getName() + "]";
     }
 
     class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> {

@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * Named object extension
  */
-public interface DBSEntityQualified extends DBSEntity {
+public interface DBSEntityQualified<ATTR extends DBSEntityAttribute> extends DBSEntity<ATTR> {
 
     /**
      * Entity full qualified name.

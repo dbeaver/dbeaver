@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * Oracle data type
  */
-public class OracleDataType extends OracleObject implements DBSDataType, DBSEntityQualified, OracleSourceObjectEx {
+public class OracleDataType extends OracleObject implements DBSDataType, DBSEntityQualified<OracleDataTypeAttribute>, OracleSourceObjectEx {
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 
@@ -354,6 +354,11 @@ public class OracleDataType extends OracleObject implements DBSDataType, DBSEnti
         throws DBException
     {
         return attributeCache != null ? attributeCache.getObjects(monitor, this) : null;
+    }
+
+    public OracleDataTypeAttribute getAttribute(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return attributeCache != null ? attributeCache.getObject(monitor, this, name) : null;
     }
 
     @Association

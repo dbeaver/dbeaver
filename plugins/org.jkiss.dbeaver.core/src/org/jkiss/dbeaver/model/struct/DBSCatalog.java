@@ -14,5 +14,8 @@ import java.util.Collection;
  */
 public interface DBSCatalog extends DBSEntity, DBSEntityContainer
 {
-    Collection<? extends DBSSchema> getSchemas(DBRProgressMonitor monitor) throws DBException;
+/*
+    Collection<? extends DBSSchema> getSchemas(DBRProgressMonitor monitor)
+        throws DBException;
+*/
 }

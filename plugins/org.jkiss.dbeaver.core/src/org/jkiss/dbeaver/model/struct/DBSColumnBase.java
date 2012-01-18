@@ -4,13 +4,13 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DBSColumnBase
  */
-public interface DBSColumnBase extends DBSTypedObject
+public interface DBSColumnBase extends DBSTypedObject, DBPNamedObject
 {
-    String getName();
-
     boolean isNotNull();
 
     long getMaxLength();
