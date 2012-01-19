@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.ext.erd.part.NotePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -426,8 +427,8 @@ public class DiagramLoader
                     xml.startElement(TAG_ENTITY);
                     xml.addAttribute(ATTR_ID, info.objectId);
                     xml.addAttribute(ATTR_NAME, table.getName());
-                    if (table instanceof DBSEntityQualified) {
-                        xml.addAttribute(ATTR_FQ_NAME, ((DBSEntityQualified)table).getFullQualifiedName());
+                    if (table instanceof DBPQualifiedObject) {
+                        xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject)table).getFullQualifiedName());
                     }
                     Rectangle tableBounds;
                     if (tablePart != null) {
@@ -458,8 +459,8 @@ public class DiagramLoader
                     xml.startElement(TAG_RELATION);
                     DBSEntityAssociation association = rel.getObject();
                     xml.addAttribute(ATTR_NAME, association.getName());
-                    if (association instanceof DBSEntityQualified) {
-                        xml.addAttribute(ATTR_FQ_NAME, ((DBSEntityQualified) association).getFullQualifiedName());
+                    if (association instanceof DBPQualifiedObject) {
+                        xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject) association).getFullQualifiedName());
                     }
                     xml.addAttribute(ATTR_TYPE, association.getConstraintType().getId());
                     TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryKeyTable());

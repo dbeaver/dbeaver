@@ -4,17 +4,15 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 
 /**
  * Abstract oracle schema object
  */
-public abstract class OracleSchemaObject extends OracleObject<OracleSchema> implements DBSEntityQualified
+public abstract class OracleSchemaObject extends OracleObject<OracleSchema> implements DBPQualifiedObject
 {
     protected OracleSchemaObject(
         OracleSchema schema,

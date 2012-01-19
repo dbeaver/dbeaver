@@ -5,11 +5,11 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * GenericPackage
  */
-public class GenericPackage extends GenericEntityContainer implements DBSEntityQualified, GenericStoredCode
+public class GenericPackage extends GenericEntityContainer implements DBPQualifiedObject, GenericStoredCode
 {
 
     private GenericStructContainer container;

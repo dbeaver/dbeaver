@@ -310,7 +310,7 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSEntityQualified"/>
+                        <adapt type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
                     </iterate>
                 </with>
             </activeWhen>

@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -33,7 +34,7 @@ import java.util.Map;
 /**
  * Oracle data type
  */
-public class OracleDataType extends OracleObject implements DBSDataType, DBSEntityQualified, OracleSourceObjectEx {
+public class OracleDataType extends OracleObject implements DBSDataType, DBPQualifiedObject, OracleSourceObjectEx {
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 

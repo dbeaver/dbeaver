@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 public class NavigatorHandlerCopySpecial extends NavigatorHandlerCopyAbstract {
@@ -14,7 +14,7 @@ public class NavigatorHandlerCopySpecial extends NavigatorHandlerCopyAbstract {
     @Override
     protected String getObjectDisplayString(Object object)
     {
-        DBSEntityQualified adapted = RuntimeUtils.getObjectAdapter(object, DBSEntityQualified.class);
+        DBPQualifiedObject adapted = RuntimeUtils.getObjectAdapter(object, DBPQualifiedObject.class);
         if (adapted != null) {
             return adapted.getFullQualifiedName();
         } else {

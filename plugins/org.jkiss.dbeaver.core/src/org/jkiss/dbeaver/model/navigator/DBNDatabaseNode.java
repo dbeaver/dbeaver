@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -64,8 +65,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public String getNodePathName()
     {
-        if (getObject() instanceof DBSEntityQualified) {
-            return ((DBSEntityQualified)getObject()).getFullQualifiedName();
+        if (getObject() instanceof DBPQualifiedObject) {
+            return ((DBPQualifiedObject)getObject()).getFullQualifiedName();
         } else {
             return super.getNodePathName();
         }

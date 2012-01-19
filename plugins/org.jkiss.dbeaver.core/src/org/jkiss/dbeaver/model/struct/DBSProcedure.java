@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -12,7 +13,7 @@ import java.util.Collection;
 /**
  * DBSIndex
  */
-public interface DBSProcedure extends DBSEntityQualified
+public interface DBSProcedure extends DBSEntity, DBPQualifiedObject
 {
     DBSEntityContainer getContainer();
 

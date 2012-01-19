@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -11,7 +12,7 @@ import java.util.Collection;
 /**
  * DBSConstraint
  */
-public interface DBSConstraint extends DBSEntityQualified
+public interface DBSConstraint extends DBSEntity, DBPQualifiedObject
 {
     DBSTable getTable();
 

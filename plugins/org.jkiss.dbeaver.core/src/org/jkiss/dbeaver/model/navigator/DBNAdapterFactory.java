@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 
@@ -26,7 +27,7 @@ import org.jkiss.dbeaver.ui.properties.PropertyCollector;
  */
 public class DBNAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBSEntityQualified.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IProject.class, IFolder.class, IFile.class, IResource.class, IWorkbenchAdapter.class };
+    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBPQualifiedObject.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IProject.class, IFolder.class, IFile.class, IResource.class, IWorkbenchAdapter.class };
 
     public Object getAdapter(Object adaptableObject, Class adapterType)
     {

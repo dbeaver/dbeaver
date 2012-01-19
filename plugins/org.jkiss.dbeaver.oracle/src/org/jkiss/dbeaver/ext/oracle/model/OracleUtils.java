@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -41,8 +42,8 @@ public class OracleUtils {
         DBSEntity object) throws DBCException
     {
         String objectName = object.getName();
-        String objectFullName = object instanceof DBSEntityQualified ?
-            ((DBSEntityQualified)object).getFullQualifiedName() : objectName;
+        String objectFullName = object instanceof DBPQualifiedObject ?
+            ((DBPQualifiedObject)object).getFullQualifiedName() : objectName;
         OracleSchema schema = null;
         if (object instanceof OracleSchemaObject) {
             schema = ((OracleSchemaObject)object).getSchema();

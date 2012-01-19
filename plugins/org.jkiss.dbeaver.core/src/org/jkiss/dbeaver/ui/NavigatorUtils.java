@@ -28,13 +28,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.DataSourceToolDescriptor;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
@@ -218,7 +215,7 @@ public class NavigatorUtils {
                             if (object == null) {
                                 continue;
                             }
-                            nodeName = object instanceof DBSEntityQualified ? ((DBSEntityQualified)object).getFullQualifiedName() : object.getName();
+                            nodeName = object instanceof DBPQualifiedObject ? ((DBPQualifiedObject)object).getFullQualifiedName() : object.getName();
                             objects.add(object);
                         } else {
                             nodeName = ((DBNNode)nextSelected).getNodeName();
