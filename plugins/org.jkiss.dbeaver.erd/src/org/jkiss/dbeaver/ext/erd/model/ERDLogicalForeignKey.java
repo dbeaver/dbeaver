@@ -53,7 +53,7 @@ public class ERDLogicalForeignKey extends AbstractConstraint<DBSTable> implement
         return getName();
     }
 
-    public DBSEntityLinked getAssociatedEntity()
+    public DBSEntity getAssociatedEntity()
     {
         return pk.getTable();
     }

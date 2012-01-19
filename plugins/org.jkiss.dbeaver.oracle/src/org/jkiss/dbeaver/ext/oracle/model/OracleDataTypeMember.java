@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSEntityElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
@@ -16,7 +17,8 @@ import java.sql.ResultSet;
 /**
  * Oracle data type member
  */
-public abstract class OracleDataTypeMember implements DBSObject {
+public abstract class OracleDataTypeMember implements DBSEntityElement
+{
 
     static final Log log = LogFactory.getLog(OracleDataTypeMember.class);
 

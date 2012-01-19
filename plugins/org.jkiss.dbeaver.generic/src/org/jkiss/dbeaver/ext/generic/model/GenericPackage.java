@@ -9,7 +9,6 @@ import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ import java.util.List;
 /**
  * GenericPackage
  */
-public class GenericPackage extends GenericEntityContainer implements DBPQualifiedObject, GenericStoredCode
+public class GenericPackage extends GenericObjectContainer implements DBPQualifiedObject, GenericStoredCode
 {
 
     private GenericStructContainer container;
@@ -91,17 +90,17 @@ public class GenericPackage extends GenericEntityContainer implements DBPQualifi
             this);
     }
 
-    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException
     {
         return procedures;
     }
 
-    public DBSEntity getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException
     {
         return DBUtils.findObject(procedures, childName);
     }
 
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException
     {
         return GenericProcedure.class;
     }
@@ -110,7 +109,7 @@ public class GenericPackage extends GenericEntityContainer implements DBPQualifi
     {
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         procedures.clear();
         return false;

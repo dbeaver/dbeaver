@@ -33,8 +33,8 @@
             description="%editor.erd.description"
             position="additions_end"
             icon="icons/erd.png">
-            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityContainer"/>
-            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityLinked"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntity"/>
         </editor>
     </extension>
 

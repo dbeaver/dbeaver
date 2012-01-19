@@ -147,9 +147,9 @@ public class OracleTable extends OracleTablePhysical
 //    }
 
     @Override
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
-        super.refreshEntity(monitor);
+        super.refreshObject(monitor);
 
         foreignKeys = null;
         return true;

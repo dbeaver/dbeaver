@@ -1,6 +1,5 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -50,11 +49,6 @@ public class WMIClassInheritance implements DBSForeignKey
     public WMIClass getAssociatedEntity()
     {
         return superClass;
-    }
-
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        return false;
     }
 
     public String getFullQualifiedName()

@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
@@ -19,9 +18,9 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -38,9 +37,10 @@ public abstract class JDBCDataSource
     implements
         DBPDataSource,
         DBPDataTypeProvider,
+        DBPRefreshableObject,
         JDBCConnector,
-        DBSEntity,
-        DBSEntityContainer,
+        DBSObject,
+        DBSObjectContainer,
         DBCQueryTransformProvider
 {
     static final Log log = LogFactory.getLog(JDBCDataSource.class);
@@ -267,7 +267,7 @@ public abstract class JDBCDataSource
         return true;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
         this.dataSourceInfo = null;
         return true;
     }

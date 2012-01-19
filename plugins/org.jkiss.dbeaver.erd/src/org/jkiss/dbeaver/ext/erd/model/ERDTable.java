@@ -196,7 +196,7 @@ public class ERDTable extends ERDObject<DBSTable>
         return object.equals(((ERDTable)o).object);
 	}
 
-    public static ERDTable fromObject(DBRProgressMonitor monitor, DBSEntityLinked entity)
+    public static ERDTable fromObject(DBRProgressMonitor monitor, DBSEntity entity)
     {
         if (!(entity instanceof DBSTable)) {
             return null;

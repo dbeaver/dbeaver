@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -15,6 +16,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.utils.CommonUtils;
 
@@ -25,7 +27,8 @@ import java.util.Collection;
 /**
  * Oracle tablespace
  */
-public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
+public class OracleTablespace extends OracleGlobalObject implements DBPRefreshableObject
+{
 
     public enum Status {
         ONLINE,
@@ -249,7 +252,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBSEntity {
         return segmentCache.getObjects(monitor, this);
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         fileCache.clearCache();
         segmentCache.clearCache();

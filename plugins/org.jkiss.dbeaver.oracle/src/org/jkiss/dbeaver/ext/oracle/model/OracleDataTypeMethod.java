@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.struct.DBSEntityMethod;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -22,7 +23,7 @@ import java.util.Collection;
 /**
  * Oracle data type attribute
  */
-public class OracleDataTypeMethod extends OracleDataTypeMember {
+public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEntityMethod {
 
     private String methodType;
     private boolean flagFinal;

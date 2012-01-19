@@ -90,16 +90,16 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
 
         public IStatus run(DBRProgressMonitor monitor)
         {
-            DBSEntityContainer entityContainer = (DBSEntityContainer) getDataSource();
+            DBSObjectContainer objectContainer = (DBSObjectContainer) getDataSource();
             try {
                 monitor.beginTask(CoreMessages.toolbar_datasource_selector_action_read_databases, 1);
-                Class<? extends DBSEntity> childType = entityContainer.getChildType(monitor);
-                if (childType == null || !DBSEntityContainer.class.isAssignableFrom(childType)) {
+                Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
+                if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {
                     enabled = false;
                 } else {
                     enabled = true;
-                    databasesInfo.list = entityContainer.getChildren(monitor);
-                    databasesInfo.active = ((DBSEntitySelector) getDataSource()).getSelectedEntity();
+                    databasesInfo.list = objectContainer.getChildren(monitor);
+                    databasesInfo.active = ((DBSObjectSelector) getDataSource()).getSelectedObject();
                 }
             }
             catch (DBException e) {
@@ -113,7 +113,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 if (databasesInfo.list != null && !databasesInfo.list.isEmpty()) {
                     DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                     for (DBSObject database : databasesInfo.list) {
-                        if (database instanceof DBSEntityContainer) {
+                        if (database instanceof DBSObjectContainer) {
                             navigatorModel.getNodeByObject(monitor, database, true);
                         }
                     }
@@ -509,9 +509,9 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 if (dsContainer != null && dsContainer.isConnected()) {
                     final DBPDataSource dataSource = dsContainer.getDataSource();
 
-                    if (dataSource instanceof DBSEntityContainer &&
-                        dataSource instanceof DBSEntitySelector &&
-                        ((DBSEntitySelector)dataSource).supportsEntitySelect())
+                    if (dataSource instanceof DBSObjectContainer &&
+                        dataSource instanceof DBSObjectSelector &&
+                        ((DBSObjectSelector)dataSource).supportsObjectSelect())
                     {
                         synchronized (dbListReads) {
                             for (DatabaseListReader reader : dbListReads) {
@@ -540,7 +540,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                                             if (job.databasesInfo.list != null && !job.databasesInfo.list.isEmpty()) {
                                                 DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                                                 for (DBSObject database : job.databasesInfo.list) {
-                                                    if (database instanceof DBSEntityContainer) {
+                                                    if (database instanceof DBSObjectContainer) {
                                                         DBNDatabaseNode dbNode = navigatorModel.getNodeByObject(database);
                                                         if (dbNode != null) {
                                                             databaseCombo.add(
@@ -633,12 +633,12 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                         throws InvocationTargetException, InterruptedException
                     {
                         try {
-                            if (dataSource instanceof DBSEntityContainer &&
-                                dataSource instanceof DBSEntitySelector &&
-                                ((DBSEntitySelector) dataSource).supportsEntitySelect()) {
-                                DBSEntity newChild = ((DBSEntityContainer) dataSource).getChild(monitor, newName);
+                            if (dataSource instanceof DBSObjectContainer &&
+                                dataSource instanceof DBSObjectSelector &&
+                                ((DBSObjectSelector) dataSource).supportsObjectSelect()) {
+                                DBSObject newChild = ((DBSObjectContainer) dataSource).getChild(monitor, newName);
                                 if (newChild != null) {
-                                    ((DBSEntitySelector) dataSource).selectEntity(monitor, newChild);
+                                    ((DBSObjectSelector) dataSource).selectObject(monitor, newChild);
                                 } else {
                                     throw new DBException(MessageFormat.format(CoreMessages.toolbar_datasource_selector_error_database_not_found, newName));
                                 }

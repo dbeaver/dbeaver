@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -216,7 +217,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
      * navigation model - each occurrence will be refreshed then.
      *
      * @param monitor progress monitor
-     * @param source
+     * @param source source object
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */
@@ -226,7 +227,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             log.warn("Attempt to refresh locked node '" + getNodeName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
-        if (getObject() instanceof DBSEntity && ((DBSEntity)getObject()).refreshEntity(monitor)) {
+        if (getObject() instanceof DBPRefreshableObject && ((DBPRefreshableObject)getObject()).refreshObject(monitor)) {
             refreshNodeContent(monitor, source);
             return this;
         } else {

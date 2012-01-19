@@ -11,17 +11,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.wmi.service.WMIConstants;
-import org.jkiss.wmi.service.WMIException;
-import org.jkiss.wmi.service.WMIObject;
 import org.jkiss.wmi.service.WMIService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * WMIDataSource

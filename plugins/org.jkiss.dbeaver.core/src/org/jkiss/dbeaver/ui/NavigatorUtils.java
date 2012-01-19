@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
@@ -131,11 +131,11 @@ public class NavigatorUtils {
                 if (workbenchPart != null) {
                     // Add "Set active object" menu
                     if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
-                        final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
-                                DBSEntitySelector.class, ((DBNDatabaseNode) selectedNode).getObject());
-                        if (activeContainer != null && activeContainer.supportsEntitySelect()) {
+                        final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
+                                DBSObjectSelector.class, ((DBNDatabaseNode) selectedNode).getObject());
+                        if (activeContainer != null && activeContainer.supportsObjectSelect()) {
                             DBSObject activeChild;
-                            activeChild = activeContainer.getSelectedEntity();
+                            activeChild = activeContainer.getSelectedObject();
                             if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
                                 DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                                 if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {

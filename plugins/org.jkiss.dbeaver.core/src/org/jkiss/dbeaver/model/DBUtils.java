@@ -176,7 +176,7 @@ public final class DBUtils {
 
     public static DBSObject getObjectByPath(
             DBRProgressMonitor monitor,
-            DBSEntityContainer rootSC,
+            DBSObjectContainer rootSC,
             String catalogName,
             String schemaName,
             String tableName)
@@ -184,17 +184,17 @@ public final class DBUtils {
     {
         if (!CommonUtils.isEmpty(catalogName)) {
             DBSObject catalog = rootSC.getChild(monitor, catalogName);
-            if (!(catalog instanceof DBSEntityContainer)) {
+            if (!(catalog instanceof DBSObjectContainer)) {
                 return null;
             }
-            rootSC = (DBSEntityContainer) catalog;
+            rootSC = (DBSObjectContainer) catalog;
         } else {
             // In some drivers only one catalog exists and it's not used in table names
             // So we can use it as default
             // Actually I saw it only in PostgreSQL
-            Collection<? extends DBSEntity> children = rootSC.getChildren(monitor);
+            Collection<? extends DBSObject> children = rootSC.getChildren(monitor);
             if (children != null && children.size() == 1) {
-                DBSEntity child = children.iterator().next();
+                DBSObject child = children.iterator().next();
                 if (child instanceof DBSCatalog) {
                     rootSC = (DBSCatalog)child;
                 }
@@ -202,10 +202,10 @@ public final class DBUtils {
         }
         if (!CommonUtils.isEmpty(schemaName)) {
             DBSObject schema = rootSC.getChild(monitor, schemaName);
-            if (!(schema instanceof DBSEntityContainer)) {
+            if (!(schema instanceof DBSObjectContainer)) {
                 return null;
             }
-            rootSC = (DBSEntityContainer) schema;
+            rootSC = (DBSObjectContainer) schema;
         }
         Class<? extends DBSObject> childType = rootSC.getChildType(monitor);
         if (DBSTable.class.isAssignableFrom(childType)) {
@@ -213,10 +213,10 @@ public final class DBUtils {
         } else {
             // Child is not a table. May be catalog/schema names was omitted.
             // Try to use active child
-            if (rootSC instanceof DBSEntitySelector) {
-                DBSObject activeChild = ((DBSEntitySelector) rootSC).getSelectedEntity();
-                if (activeChild instanceof DBSEntityContainer && DBSTable.class.isAssignableFrom(((DBSEntityContainer)activeChild).getChildType(monitor))) {
-                    return ((DBSEntityContainer)activeChild).getChild(monitor, tableName);
+            if (rootSC instanceof DBSObjectSelector) {
+                DBSObject activeChild = ((DBSObjectSelector) rootSC).getSelectedObject();
+                if (activeChild instanceof DBSObjectContainer && DBSTable.class.isAssignableFrom(((DBSObjectContainer)activeChild).getChildType(monitor))) {
+                    return ((DBSObjectContainer)activeChild).getChild(monitor, tableName);
                 }
             }
 
@@ -227,7 +227,7 @@ public final class DBUtils {
 
     public static DBSObject findNestedObject(
         DBRProgressMonitor monitor,
-        DBSEntityContainer parent,
+        DBSObjectContainer parent,
         List<String> names
     )
         throws DBException
@@ -236,10 +236,10 @@ public final class DBUtils {
             String childName = names.get(i);
             DBSObject child = parent.getChild(monitor, childName);
             if (child == null) {
-                if (parent instanceof DBSEntitySelector) {
-                    DBSObject activeChild = ((DBSEntitySelector) parent).getSelectedEntity();
-                    if (activeChild instanceof DBSEntityContainer) {
-                        parent = (DBSEntityContainer)activeChild;
+                if (parent instanceof DBSObjectSelector) {
+                    DBSObject activeChild = ((DBSObjectSelector) parent).getSelectedObject();
+                    if (activeChild instanceof DBSObjectContainer) {
+                        parent = (DBSObjectContainer)activeChild;
                         child = parent.getChild(monitor, childName);
                     }
                 }
@@ -250,8 +250,8 @@ public final class DBUtils {
             if (i == names.size() - 1) {
                 return child;
             }
-            if (child instanceof DBSEntityContainer) {
-                parent = DBSEntityContainer.class.cast(child);
+            if (child instanceof DBSObjectContainer) {
+                parent = DBSObjectContainer.class.cast(child);
             } else {
                 break;
             }

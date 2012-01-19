@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,9 +25,9 @@ import java.util.*;
 /**
  * GenericEntityContainer
  */
-public abstract class GenericEntityContainer implements GenericStructContainer
+public abstract class GenericObjectContainer implements GenericStructContainer,DBPRefreshableObject
 {
-    static final Log log = LogFactory.getLog(GenericEntityContainer.class);
+    static final Log log = LogFactory.getLog(GenericObjectContainer.class);
 
     private GenericDataSource dataSource;
     private final TableCache tableCache;
@@ -36,7 +37,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
     private Map<String, GenericPackage> packageMap;
     private List<GenericProcedure> procedures;
 
-    protected GenericEntityContainer(GenericDataSource dataSource)
+    protected GenericObjectContainer(GenericDataSource dataSource)
     {
         this.dataSource = dataSource;
         this.tableCache = new TableCache();
@@ -205,19 +206,19 @@ public abstract class GenericEntityContainer implements GenericStructContainer
         return DBUtils.findObjects(getProcedures(monitor), name);
     }
 
-    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getTables(monitor);
     }
 
-    public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return getTable(monitor, childName);
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         this.tableCache.clearCache();
@@ -271,7 +272,7 @@ public abstract class GenericEntityContainer implements GenericStructContainer
                         }
                         procedurePackage = packageMap.get(packageName);
                         if (procedurePackage == null) {
-                            procedurePackage = new GenericPackage(GenericEntityContainer.this, packageName, true);
+                            procedurePackage = new GenericPackage(GenericObjectContainer.this, packageName, true);
                             packageMap.put(packageName, procedurePackage);
                         }
                     }

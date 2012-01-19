@@ -105,13 +105,6 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
             )};
     }
 
-    @Override
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        this.sourceDeclaration = null;
-        return super.refreshEntity(monitor);
-    }
-
     public DBSObjectState getObjectState()
     {
         return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;

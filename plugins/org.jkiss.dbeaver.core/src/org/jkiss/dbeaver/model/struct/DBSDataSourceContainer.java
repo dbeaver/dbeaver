@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.model.struct;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -16,7 +15,7 @@ import java.util.Collection;
 /**
  * DBSDataSourceContainer
  */
-public interface DBSDataSourceContainer extends DBSEntity, DBDPreferences
+public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 {
     /**
      * Container unique ID

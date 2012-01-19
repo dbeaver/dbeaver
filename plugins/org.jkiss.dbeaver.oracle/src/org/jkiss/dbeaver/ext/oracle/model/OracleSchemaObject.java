@@ -34,10 +34,4 @@ public abstract class OracleSchemaObject extends OracleObject<OracleSchema> impl
             this);
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        return false;
-    }
-
-
 }

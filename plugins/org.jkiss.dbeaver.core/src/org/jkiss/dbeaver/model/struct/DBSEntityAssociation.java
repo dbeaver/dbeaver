@@ -11,9 +11,9 @@ public interface DBSEntityAssociation extends DBSObject {
 
     DBSEntityConstraintType getConstraintType();
 
-    DBSEntityLinked getParentObject();
+    DBSEntity getParentObject();
 
-    DBSEntityLinked getAssociatedEntity();
+    DBSEntity getAssociatedEntity();
 
     // target entity
     // identifying

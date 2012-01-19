@@ -33,7 +33,7 @@ import java.util.List;
  * WMI class
  */
 public class WMIClass extends WMIContainer
-    implements WMIClassContainer, DBSTable, DBPCloseableObject, DBSDataContainer, IObjectImageProvider
+    implements WMIClassContainer, DBSTable, DBSEntity, DBPCloseableObject, DBSDataContainer, IObjectImageProvider
 {
     private static Image IMG_CLASS;
     private static Image IMG_CLASS_ABSTRACT;
@@ -155,7 +155,7 @@ public class WMIClass extends WMIContainer
         return false;
     }
 
-    public DBSEntityContainer getContainer()
+    public DBSObjectContainer getContainer()
     {
         return getNamespace();
     }

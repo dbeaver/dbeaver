@@ -9,7 +9,7 @@ package org.jkiss.dbeaver.model.struct;
  * Do not provides any additional attributes but may be used in some JDBC specific issues
  * to determine difference in catalog/schema containment.
  */
-public interface DBSSchema extends DBSEntity, DBSEntityContainer
+public interface DBSSchema extends DBSObject, DBSObjectContainer
 {
 
 }

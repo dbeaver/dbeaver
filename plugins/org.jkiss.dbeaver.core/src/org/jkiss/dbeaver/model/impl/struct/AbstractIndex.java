@@ -27,10 +27,4 @@ public abstract class AbstractIndex implements DBSIndex
         return true;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
 }

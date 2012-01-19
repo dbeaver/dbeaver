@@ -13,9 +13,9 @@ import java.util.Collection;
 /**
  * DBSIndex
  */
-public interface DBSProcedure extends DBSEntity, DBPQualifiedObject
+public interface DBSProcedure extends DBSObject, DBPQualifiedObject
 {
-    DBSEntityContainer getContainer();
+    DBSObjectContainer getContainer();
 
     DBSProcedureType getProcedureType();
 

@@ -38,7 +38,7 @@ import java.util.*;
 /**
  * GenericDataSource
  */
-public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector, DBCQueryPlanner, IAdaptable
+public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner, IAdaptable
 {
     static final Log log = LogFactory.getLog(MySQLDataSource.class);
 
@@ -264,10 +264,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
 */
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
-        super.refreshEntity(monitor);
+        super.refreshObject(monitor);
 
         this.engines = null;
         this.catalogs = null;
@@ -293,19 +293,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         return catalog.getTable(monitor, tableName);
     }
 
-    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends MySQLCatalog> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getCatalogs();
     }
 
-    public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
+    public MySQLCatalog getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return getCatalog(childName);
     }
 
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends MySQLCatalog> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         return MySQLCatalog.class;
@@ -317,29 +317,29 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         
     }
 
-    public boolean supportsEntitySelect()
+    public boolean supportsObjectSelect()
     {
         return true;
     }
 
-    public DBSEntity getSelectedEntity()
+    public MySQLCatalog getSelectedObject()
     {
         return getCatalog(activeCatalogName);
     }
 
-    public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity)
+    public void selectObject(DBRProgressMonitor monitor, DBSObject object)
         throws DBException
     {
-        final DBSEntity oldSelectedEntity = getSelectedEntity();
-        if (entity == oldSelectedEntity) {
+        final MySQLCatalog oldSelectedEntity = getSelectedObject();
+        if (object == oldSelectedEntity) {
             return;
         }
-        if (!(entity instanceof MySQLCatalog)) {
-            throw new IllegalArgumentException("Invalid object type: " + entity);
+        if (!(object instanceof MySQLCatalog)) {
+            throw new IllegalArgumentException("Invalid object type: " + object);
         }
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active catalog");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("use " + entity.getName());
+            JDBCPreparedStatement dbStat = context.prepareStatement("use " + object.getName());
             try {
                 dbStat.execute();
             } finally {
@@ -351,14 +351,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
         finally {
             context.close();
         }
-        activeCatalogName = entity.getName();
+        activeCatalogName = object.getName();
 
         // Send notifications
         if (oldSelectedEntity != null) {
             DBUtils.fireObjectSelect(oldSelectedEntity, false);
         }
         if (this.activeCatalogName != null) {
-            DBUtils.fireObjectSelect(entity, true);
+            DBUtils.fireObjectSelect(object, true);
         }
     }
 

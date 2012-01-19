@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -26,7 +27,8 @@ import java.util.List;
 /**
  * MySQLTable base
  */
-public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCatalog> implements DBPNamedObject2
+public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCatalog>
+    implements DBPNamedObject2,DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(MySQLTableBase.class);
 
@@ -68,8 +70,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         return DBUtils.findObject(getColumns(monitor), columnName);
     }
 
-    @Override
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         columns = null;
         return true;

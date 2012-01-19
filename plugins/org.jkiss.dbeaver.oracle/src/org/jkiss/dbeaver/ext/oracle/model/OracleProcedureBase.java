@@ -21,7 +21,7 @@ import java.util.*;
 /**
  * GenericProcedure
  */
-public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> extends OracleObject<PARENT> implements DBSProcedure
+public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> extends OracleObject<PARENT> implements DBSProcedure
 {
     //static final Log log = LogFactory.getLog(OracleProcedure.class);
 
@@ -44,7 +44,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
         return procedureType ;
     }
 
-    public DBSEntityContainer getContainer()
+    public DBSObjectContainer getContainer()
     {
         return getParentObject();
     }
@@ -56,13 +56,6 @@ public abstract class OracleProcedureBase<PARENT extends DBSEntityContainer> ext
     public Collection<OracleProcedureArgument> getColumns(DBRProgressMonitor monitor) throws DBException
     {
         return argumentsCache.getObjects(monitor, this);
-    }
-
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        argumentsCache.clearCache();
-        //getSchema().proceduresCache.fetchObject()
-        return true;
     }
 
     static class ArgumentsCache extends JDBCObjectCache<OracleProcedureBase, OracleProcedureArgument> {

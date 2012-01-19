@@ -33,7 +33,7 @@ import java.util.List;
  * GenericDataSource
  */
 public class GenericDataSource extends JDBCDataSource
-    implements DBPDataSource, JDBCConnector, DBSEntitySelector, IDatabaseTermProvider, IAdaptable, GenericStructContainer
+    implements DBPDataSource, JDBCConnector, DBSObjectSelector, IDatabaseTermProvider, IAdaptable, GenericStructContainer
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
@@ -42,7 +42,7 @@ public class GenericDataSource extends JDBCDataSource
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
 
-    private GenericEntityContainer structureContainer;
+    private GenericObjectContainer structureContainer;
 
     private String queryGetActiveDB;
     private String querySetActiveDB;
@@ -256,7 +256,7 @@ public class GenericDataSource extends JDBCDataSource
                 }
 
                 if (CommonUtils.isEmpty(schemas)) {
-                    this.structureContainer = new DataSourceEntityContainer();
+                    this.structureContainer = new DataSourceObjectContainer();
                 }
             }
 
@@ -373,10 +373,10 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
-        super.refreshEntity(monitor);
+        super.refreshObject(monitor);
 
         this.selectedEntityName = null;
         this.tableTypeCache.clearCache();
@@ -391,7 +391,7 @@ public class GenericDataSource extends JDBCDataSource
     GenericTable findTable(DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
         throws DBException
     {
-        GenericEntityContainer container = null;
+        GenericObjectContainer container = null;
         if (!CommonUtils.isEmpty(catalogName)) {
             container = getCatalog(catalogName);
             if (container == null) {
@@ -420,7 +420,7 @@ public class GenericDataSource extends JDBCDataSource
         return container.getTable(monitor, tableName);
     }
 
-    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getCatalogs())) {
@@ -434,7 +434,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getCatalogs())) {
@@ -448,7 +448,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(catalogs)) {
@@ -481,7 +481,7 @@ public class GenericDataSource extends JDBCDataSource
         return false;
     }
 
-    public boolean supportsEntitySelect()
+    public boolean supportsObjectSelect()
     {
         if (!CommonUtils.isEmpty(querySetActiveDB)) {
             if (CommonUtils.isEmpty(selectedEntityType)) {
@@ -496,7 +496,7 @@ public class GenericDataSource extends JDBCDataSource
         return false;
     }
 
-    public DBSEntity getSelectedEntity()
+    public DBSObject getSelectedObject()
     {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
             if (!CommonUtils.isEmpty(getCatalogs())) {
@@ -515,23 +515,23 @@ public class GenericDataSource extends JDBCDataSource
         return null;
     }
 
-    public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity)
+    public void selectObject(DBRProgressMonitor monitor, DBSObject object)
         throws DBException
     {
-        final DBSEntity oldSelectedEntity = getSelectedEntity();
-        if (entity == oldSelectedEntity) {
+        final DBSObject oldSelectedEntity = getSelectedObject();
+        if (object == oldSelectedEntity) {
             return;
         }
-        if (!isChild(entity)) {
-            throw new DBException("Bad child object specified as active: " + entity);
+        if (!isChild(object)) {
+            throw new DBException("Bad child object specified as active: " + object);
         }
 
-        setActiveEntityName(monitor, entity);
+        setActiveEntityName(monitor, object);
 
         if (oldSelectedEntity != null) {
             DBUtils.fireObjectSelect(oldSelectedEntity, false);
         }
-        DBUtils.fireObjectSelect(entity, true);
+        DBUtils.fireObjectSelect(object, true);
     }
 
     String getSelectedEntityType()
@@ -544,9 +544,9 @@ public class GenericDataSource extends JDBCDataSource
         return selectedEntityName;
     }
 
-    void setActiveEntityName(DBRProgressMonitor monitor, DBSEntity entity) throws DBException
+    void setActiveEntityName(DBRProgressMonitor monitor, DBSObject entity) throws DBException
     {
-        if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericEntityContainer)) {
+        if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericObjectContainer)) {
             throw new DBException("Active database can't be changed for this kind of datasource!");
         }
         String changeQuery = querySetActiveDB.replaceFirst("\\?", entity.getName());
@@ -617,8 +617,9 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    private class DataSourceEntityContainer extends GenericEntityContainer {
-        private DataSourceEntityContainer()
+    private class DataSourceObjectContainer extends GenericObjectContainer
+    {
+        private DataSourceObjectContainer()
         {
             super(GenericDataSource.this);
         }

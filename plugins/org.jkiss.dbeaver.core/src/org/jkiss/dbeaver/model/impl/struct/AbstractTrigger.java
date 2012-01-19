@@ -80,9 +80,4 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.description = description;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
 }

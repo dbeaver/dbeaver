@@ -51,8 +51,8 @@ public class JDBCTableMetaData implements DBCTableMetaData {
     {
         if (table == null) {
             DBPDataSource dataSource = resultSetMetaData.getResultSet().getContext().getDataSource();
-            if (dataSource instanceof DBSEntityContainer) {
-                DBSEntityContainer sc = (DBSEntityContainer) dataSource;
+            if (dataSource instanceof DBSObjectContainer) {
+                DBSObjectContainer sc = (DBSObjectContainer) dataSource;
                 Class<? extends DBSObject> scChildType = sc.getChildType(monitor);
                 DBSObject tableObject;
                 if (!CommonUtils.isEmpty(catalogName) && scChildType != null && DBSSchema.class.isAssignableFrom(scChildType)) {

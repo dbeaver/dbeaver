@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,7 +29,7 @@ import java.util.*;
 /**
  * GenericTable
  */
-public class GenericTable extends JDBCTable<GenericDataSource, GenericStructContainer>
+public class GenericTable extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(GenericTable.class);
 
@@ -277,8 +278,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
 */
 
-    @Override
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         columns = null;
         indexes = null;

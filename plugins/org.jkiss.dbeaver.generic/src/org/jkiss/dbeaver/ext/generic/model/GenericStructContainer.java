@@ -2,7 +2,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
@@ -10,7 +10,8 @@ import java.util.Collection;
 /**
  * Generic struct container
  */
-public interface GenericStructContainer extends DBSEntityContainer {
+public interface GenericStructContainer extends DBSObjectContainer
+{
 
     GenericDataSource getDataSource();
 

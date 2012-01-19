@@ -10,10 +10,12 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.wmi.service.*;
+import org.jkiss.wmi.service.WMIConstants;
+import org.jkiss.wmi.service.WMIException;
+import org.jkiss.wmi.service.WMIObject;
+import org.jkiss.wmi.service.WMIService;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -186,7 +188,7 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
         }
     }
 
-    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends WMIContainer> getChildren(DBRProgressMonitor monitor) throws DBException
     {
         List<WMIContainer> children = new ArrayList<WMIContainer>();
         children.addAll(getNamespaces(monitor));
@@ -194,12 +196,12 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
         return children;
     }
 
-    public DBSEntity getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    public WMIContainer getChild(DBRProgressMonitor monitor, String childName) throws DBException
     {
         return DBUtils.findObject(getChildren(monitor), childName);
     }
 
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException
+    public Class<? extends WMIContainer> getChildType(DBRProgressMonitor monitor) throws DBException
     {
         return WMIContainer.class;
     }

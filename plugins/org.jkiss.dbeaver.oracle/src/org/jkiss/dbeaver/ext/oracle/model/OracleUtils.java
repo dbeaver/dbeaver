@@ -128,10 +128,10 @@ public class OracleUtils {
             "Set target schema",
             "ALTER SESSION SET CURRENT_SCHEMA=" + object.getSchema().getName(),
             IDatabasePersistAction.ActionType.INITIALIZER));
-        if (object.getSchema() != object.getDataSource().getSelectedEntity()) {
+        if (object.getSchema() != object.getDataSource().getSelectedObject()) {
             actions.add(new AbstractDatabasePersistAction(
                 "Set current schema",
-                "ALTER SESSION SET CURRENT_SCHEMA=" + object.getDataSource().getSelectedEntity().getName(),
+                "ALTER SESSION SET CURRENT_SCHEMA=" + object.getDataSource().getSelectedObject().getName(),
                 IDatabasePersistAction.ActionType.FINALIZER));
         }
     }

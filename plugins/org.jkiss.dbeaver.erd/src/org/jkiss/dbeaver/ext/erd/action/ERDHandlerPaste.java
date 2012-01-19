@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.action;
 
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -18,7 +19,6 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 
@@ -38,7 +38,7 @@ public class ERDHandlerPaste extends AbstractHandler {
             return false;
         }
         for (DBPNamedObject object : objects) {
-            if (object instanceof DBSTable || object instanceof DBSEntityContainer) {
+            if (object instanceof DBSTable || object instanceof DBSObjectContainer) {
                 return true;
             }
         }

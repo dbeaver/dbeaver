@@ -151,9 +151,9 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     }
 
     @Override
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
-        super.refreshEntity(monitor);
+        super.refreshObject(monitor);
 
         indexes = null;
         partitionInfo = null;

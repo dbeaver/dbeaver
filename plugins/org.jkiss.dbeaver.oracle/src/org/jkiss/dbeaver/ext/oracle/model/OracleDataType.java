@@ -34,7 +34,8 @@ import java.util.Map;
 /**
  * Oracle data type
  */
-public class OracleDataType extends OracleObject implements DBSDataType, DBPQualifiedObject, OracleSourceObjectEx {
+public class OracleDataType extends OracleObject
+    implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObjectEx {
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 
@@ -369,16 +370,21 @@ public class OracleDataType extends OracleObject implements DBSDataType, DBPQual
         return methodCache != null ? methodCache.getObjects(monitor, this) : null;
     }
 
+    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
+    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
     public String getFullQualifiedName()
     {
         return parent instanceof OracleSchema ?
             DBUtils.getFullQualifiedName(getDataSource(), parent, this) :
             name;
-    }
-
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        return false;
     }
 
     @Override

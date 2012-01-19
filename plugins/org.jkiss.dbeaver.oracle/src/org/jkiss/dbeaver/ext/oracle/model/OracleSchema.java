@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -33,7 +34,7 @@ import java.util.List;
 /**
  * OracleSchema
  */
-public class OracleSchema extends OracleGlobalObject implements DBSSchema
+public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(OracleSchema.class);
 
@@ -256,7 +257,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema
         }
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         tableCache.clearCache();

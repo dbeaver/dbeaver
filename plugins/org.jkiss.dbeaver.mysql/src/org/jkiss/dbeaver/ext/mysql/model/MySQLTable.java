@@ -239,9 +239,9 @@ public class MySQLTable extends MySQLTableBase
     }
 
     @Override
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
-        super.refreshEntity(monitor);
+        super.refreshObject(monitor);
         indexes = null;
         constraints = null;
         foreignKeys = null;

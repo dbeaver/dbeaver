@@ -98,12 +98,6 @@ public abstract class AbstractConstraint<TABLE extends DBSTable> implements DBSC
         return true;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
     public String toString()
     {
         return getName() == null ? "<NONE>" : getName();

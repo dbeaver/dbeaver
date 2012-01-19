@@ -13,12 +13,12 @@ import java.util.Collection;
 /**
  * Table
  */
-public interface DBSTable extends DBSEntityLinked, DBPQualifiedObject
+public interface DBSTable extends DBSEntity, DBPQualifiedObject
 {
 
     boolean isView();
 
-    DBSEntityContainer getContainer();
+    DBSObjectContainer getContainer();
 
     /**
      * Table columns

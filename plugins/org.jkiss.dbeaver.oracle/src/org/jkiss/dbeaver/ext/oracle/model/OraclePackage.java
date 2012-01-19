@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -17,7 +18,8 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 
@@ -28,7 +30,8 @@ import java.util.*;
 /**
  * GenericProcedure
  */
-public class OraclePackage extends OracleSchemaObject implements OracleSourceObjectEx, DBSEntityContainer
+public class OraclePackage extends OracleSchemaObject
+    implements OracleSourceObjectEx, DBSObjectContainer, DBPRefreshableObject
 {
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;
@@ -93,17 +96,17 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
         return proceduresCache.getObjects(monitor, this);
     }
 
-    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException
     {
         return proceduresCache.getObjects(monitor, this);
     }
 
-    public DBSEntity getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException
     {
         return proceduresCache.getObject(monitor, this, childName);
     }
 
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException
     {
         return OracleProcedurePackaged.class;
     }
@@ -113,7 +116,7 @@ public class OraclePackage extends OracleSchemaObject implements OracleSourceObj
         proceduresCache.getObjects(monitor, this);
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         this.proceduresCache.clearCache();
         this.sourceDeclaration = null;

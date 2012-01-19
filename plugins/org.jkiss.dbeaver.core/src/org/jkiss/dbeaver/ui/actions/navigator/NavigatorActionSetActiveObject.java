@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -33,15 +33,15 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
             if (selectedNode instanceof DBNDatabaseNode) {
                 final DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                 if (databaseNode.getObject() instanceof DBSEntity) {
-                    final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
-                        DBSEntitySelector.class, databaseNode.getObject());
+                    final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
+                        DBSObjectSelector.class, databaseNode.getObject());
                     try {
                         DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                             public void run(DBRProgressMonitor monitor)
                                 throws InvocationTargetException, InterruptedException
                             {
                                 try {
-                                    activeContainer.selectEntity(monitor, (DBSEntity) databaseNode.getObject());
+                                    activeContainer.selectObject(monitor, (DBSEntity) databaseNode.getObject());
                                 } catch (DBException e) {
                                     throw new InvocationTargetException(e);
                                 }

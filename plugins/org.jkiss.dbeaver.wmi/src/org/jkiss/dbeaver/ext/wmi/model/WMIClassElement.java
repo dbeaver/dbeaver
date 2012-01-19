@@ -1,16 +1,14 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityElement;
 import org.jkiss.wmi.service.WMIObjectElement;
 
 /**
  * Class attribute
  */
-public abstract class WMIClassElement<T extends WMIObjectElement> implements DBSEntity
+public abstract class WMIClassElement<T extends WMIObjectElement> implements DBSEntityElement
 {
     protected final WMIClass wmiClass;
     protected final T element;
@@ -47,8 +45,4 @@ public abstract class WMIClassElement<T extends WMIObjectElement> implements DBS
         return true;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        return false;
-    }
 }

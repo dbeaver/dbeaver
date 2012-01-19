@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * Entity container
  */
-public abstract class WMIContainer implements DBSEntity
+public abstract class WMIContainer implements DBSObject
 {
     static final Log log = LogFactory.getLog(WMIContainer.class);
 
@@ -48,11 +48,6 @@ public abstract class WMIContainer implements DBSEntity
     public boolean isPersisted()
     {
         return true;
-    }
-
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        return false;
     }
 
 }

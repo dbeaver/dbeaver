@@ -205,14 +205,6 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         this.status = (OracleUtils.getObjectStatus(monitor, this, OracleObjectType.TRIGGER) ? OracleObjectStatus.ENABLED : OracleObjectStatus.ERROR);
     }
 
-    @Override
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        this.sourceDeclaration = null;
-        this.columns = null;
-        return true;
-    }
-
     public IDatabasePersistAction[] getCompileActions()
     {
         return new IDatabasePersistAction[] {

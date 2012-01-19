@@ -96,10 +96,10 @@ public class DiagramLoader
 
     private static class TableLoadInfo {
         final String objectId;
-        final DBSEntityLinked table;
+        final DBSEntity table;
         final Rectangle bounds;
 
-        private TableLoadInfo(String objectId, DBSEntityLinked table, Rectangle bounds)
+        private TableLoadInfo(String objectId, DBSEntity table, Rectangle bounds)
         {
             this.objectId = objectId;
             this.table = table;
@@ -183,11 +183,11 @@ public class DiagramLoader
                     }
                 }
                 final DBPDataSource dataSource = dataSourceContainer.getDataSource();
-                if (!(dataSource instanceof DBSEntityContainer)) {
+                if (!(dataSource instanceof DBSObjectContainer)) {
                     diagram.addErrorMessage("Datasource '" + dataSourceContainer.getName() + "' entities cannot be loaded - no entity container found");
                     continue;
                 }
-                DBSEntityContainer rootContainer = (DBSEntityContainer)dataSource;
+                DBSObjectContainer rootContainer = (DBSObjectContainer)dataSource;
                 // Parse entities
                 Collection<Element> entityElemList = XMLUtils.getChildElementList(dsElem, TAG_ENTITY);
                 monitor.beginTask("Parse entities", entityElemList.size());
@@ -199,16 +199,16 @@ public class DiagramLoader
                     for (Element pathElem : XMLUtils.getChildElementList(entityElem, TAG_PATH)) {
                         path.add(0, pathElem.getAttribute(ATTR_NAME));
                     }
-                    DBSEntityContainer container = rootContainer;
+                    DBSObjectContainer container = rootContainer;
                     for (String conName : path) {
-                        final DBSEntity child = container.getChild(monitor, conName);
+                        final DBSObject child = container.getChild(monitor, conName);
                         if (child == null) {
                             diagram.addErrorMessage("Object '" + conName + "' not found within '" + container.getName() + "'");
                             container = null;
                             break;
                         }
-                        if (child instanceof DBSEntityContainer) {
-                            container = (DBSEntityContainer) child;
+                        if (child instanceof DBSObjectContainer) {
+                            container = (DBSObjectContainer) child;
                         } else {
                             diagram.addErrorMessage("Object '" + child.getName() + "' is not a container");
                             container = null;
@@ -218,15 +218,15 @@ public class DiagramLoader
                     if (container == null) {
                         continue;
                     }
-                    final DBSEntity child = container.getChild(monitor, tableName);
-                    if (!(child instanceof DBSEntityLinked)) {
+                    final DBSObject child = container.getChild(monitor, tableName);
+                    if (!(child instanceof DBSEntity)) {
                         diagram.addErrorMessage("Cannot find table '" + tableName + "' in '" + container.getName() + "'");
                         continue;
                     }
                     String locX = entityElem.getAttribute(ATTR_X);
                     String locY = entityElem.getAttribute(ATTR_Y);
 
-                    DBSEntityLinked table = (DBSEntityLinked) child;
+                    DBSEntity table = (DBSEntity) child;
                     Rectangle bounds = new Rectangle();
                     if (CommonUtils.isEmpty(locX) || CommonUtils.isEmpty(locY)) {
                         diagram.setNeedsAutoLayout(true);
@@ -316,7 +316,7 @@ public class DiagramLoader
         }
 
         // Fill tables
-        List<DBSEntityLinked> tableList = new ArrayList<DBSEntityLinked>();
+        List<DBSEntity> tableList = new ArrayList<DBSEntity>();
         for (TableLoadInfo info : tableInfos) {
             tableList.add(info.table);
         }
@@ -419,7 +419,7 @@ public class DiagramLoader
                 final DataSourceObjects desc = dsMap.get(dsContainer);
                 int tableCounter = ERD_VERSION_1;
                 for (ERDTable erdTable : desc.tables) {
-                    final DBSEntityLinked table = erdTable.getObject();
+                    final DBSEntity table = erdTable.getObject();
                     EntityPart tablePart = diagramPart == null ? null : diagramPart.getEntityPart(erdTable);
                     TableSaveInfo info = new TableSaveInfo(erdTable, tablePart, tableCounter++);
                     infoMap.put(erdTable, info);

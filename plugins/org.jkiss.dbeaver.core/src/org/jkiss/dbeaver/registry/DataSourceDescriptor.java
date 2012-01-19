@@ -52,7 +52,14 @@ import java.util.*;
 /**
  * DataSourceDescriptor
  */
-public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImageProvider, IAdaptable, DBEPrivateObjectEditor, DBSObjectStateful
+public class DataSourceDescriptor
+    implements
+        DBSDataSourceContainer,
+        IObjectImageProvider,
+        IAdaptable,
+        DBEPrivateObjectEditor,
+        DBSObjectStateful,
+        DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
 
@@ -213,7 +220,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         return null;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         this.reconnect(monitor, false);

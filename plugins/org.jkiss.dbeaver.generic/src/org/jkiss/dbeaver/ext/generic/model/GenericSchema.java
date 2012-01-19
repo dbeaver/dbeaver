@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.model.struct.DBSSchema;
 /**
  * GenericSchema
  */
-public class GenericSchema extends GenericEntityContainer implements DBSSchema
+public class GenericSchema extends GenericObjectContainer implements DBSSchema
 {
     private GenericCatalog catalog;
     private String schemaName;

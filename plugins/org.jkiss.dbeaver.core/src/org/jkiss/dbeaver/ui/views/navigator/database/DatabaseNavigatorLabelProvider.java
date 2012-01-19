@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -117,10 +117,10 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     {
         if (element instanceof DBSWrapper) {
             DBSObject object = ((DBSWrapper) element).getObject();
-            DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
-                DBSEntitySelector.class, object);
+            DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
+                DBSObjectSelector.class, object);
             if (activeContainer != null) {
-                return activeContainer.getSelectedEntity() == object;
+                return activeContainer.getSelectedObject() == object;
             }
         } else if (element instanceof DBNProject) {
             if (((DBNProject)element).getProject() == DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) {

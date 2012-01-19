@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -26,7 +27,8 @@ import java.util.List;
 /**
  * OracleTable base
  */
-public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema> implements DBPNamedObject2, OracleStatefulObject
+public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema>
+    implements DBPNamedObject2, DBPRefreshableObject, OracleStatefulObject
 {
     static final Log log = LogFactory.getLog(OracleTableBase.class);
 
@@ -104,8 +106,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return DBUtils.findObject(getColumns(monitor), columnName);
     }
 
-    @Override
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         columns = null;
         constraints = null;

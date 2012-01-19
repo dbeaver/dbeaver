@@ -156,26 +156,26 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         return diagram;
     }
 
-    private Collection<DBSEntityLinked> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root) throws DBException
+    private Collection<DBSEntity> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root) throws DBException
     {
-        Set<DBSEntityLinked> result = new HashSet<DBSEntityLinked>();
+        Set<DBSEntity> result = new HashSet<DBSEntity>();
 
         // Cache structure
-        if (root instanceof DBSEntityContainer) {
+        if (root instanceof DBSObjectContainer) {
             monitor.beginTask("Load '" + root.getName() + "' content", 3);
-            DBSEntityContainer entityContainer = (DBSEntityContainer) root;
-            entityContainer.cacheStructure(monitor, DBSEntityContainer.STRUCT_ENTITIES | DBSEntityContainer.STRUCT_ASSOCIATIONS | DBSEntityContainer.STRUCT_ATTRIBUTES);
-            Collection<? extends DBSObject> entities = entityContainer.getChildren(monitor);
+            DBSObjectContainer objectContainer = (DBSObjectContainer) root;
+            objectContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ASSOCIATIONS | DBSObjectContainer.STRUCT_ATTRIBUTES);
+            Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
             for (DBSObject entity : CommonUtils.safeCollection(entities)) {
-                if (entity instanceof DBSEntityLinked) {
-                    result.add((DBSEntityLinked) entity);
+                if (entity instanceof DBSEntity) {
+                    result.add((DBSEntity) entity);
                 }
             }
             monitor.done();
 
-        } else if (root instanceof DBSEntityLinked) {
+        } else if (root instanceof DBSEntity) {
             monitor.beginTask("Load '" + root.getName() + "' relations", 2);
-            DBSEntityLinked rootTable = (DBSEntityLinked) root;
+            DBSEntity rootTable = (DBSEntity) root;
             result.add(rootTable);
             try {
                 monitor.subTask("Read foreign keys");
@@ -183,8 +183,8 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 if (fks != null) {
                     for (DBSEntityAssociation fk : fks) {
                         DBSEntity refEntity = fk.getAssociatedEntity();
-                        if (refEntity instanceof DBSEntityLinked) {
-                            result.add((DBSEntityLinked) refEntity);
+                        if (refEntity instanceof DBSEntity) {
+                            result.add((DBSEntity) refEntity);
                         }
                     }
                 }
@@ -200,7 +200,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 Collection<? extends DBSEntityAssociation> refs = rootTable.getReferences(monitor);
                 if (refs != null) {
                     for (DBSEntityAssociation ref : refs) {
-                        result.add((DBSEntityLinked) ref.getParentObject());
+                        result.add((DBSEntity) ref.getParentObject());
                     }
                 }
                 monitor.worked(1);

@@ -43,7 +43,8 @@ import java.util.Map;
 /**
  * GenericDataSource
  */
-public class OracleDataSource extends JDBCDataSource implements DBSEntitySelector, DBCQueryPlanner, IAdaptable
+public class OracleDataSource extends JDBCDataSource
+    implements DBSObjectSelector, DBCQueryPlanner, IAdaptable
 {
     static final Log log = LogFactory.getLog(OracleDataSource.class);
 
@@ -234,10 +235,10 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         this.dataTypeCache.getObjects(monitor, this);
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
-        super.refreshEntity(monitor);
+        super.refreshObject(monitor);
 
         this.schemaCache.clearCache();
         this.dataTypeCache.clearCache();
@@ -252,19 +253,19 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         return true;
     }
 
-    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
+    public Collection<OracleSchema> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getSchemas(monitor);
     }
 
-    public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
+    public OracleSchema getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return getSchema(monitor, childName);
     }
 
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends OracleSchema> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         return OracleSchema.class;
@@ -276,29 +277,29 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         
     }
 
-    public boolean supportsEntitySelect()
+    public boolean supportsObjectSelect()
     {
         return true;
     }
 
-    public OracleSchema getSelectedEntity()
+    public OracleSchema getSelectedObject()
     {
         return schemaCache.getCachedObject(activeSchemaName);
     }
 
-    public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity)
+    public void selectObject(DBRProgressMonitor monitor, DBSObject object)
         throws DBException
     {
-        final DBSEntity oldSelectedEntity = getSelectedEntity();
-        if (entity == oldSelectedEntity) {
+        final OracleSchema oldSelectedEntity = getSelectedObject();
+        if (object == oldSelectedEntity) {
             return;
         }
-        if (!(entity instanceof OracleSchema)) {
-            throw new IllegalArgumentException("Invalid object type: " + entity);
+        if (!(object instanceof OracleSchema)) {
+            throw new IllegalArgumentException("Invalid object type: " + object);
         }
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active schema");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("ALTER SESSION SET CURRENT_SCHEMA=" + entity.getName());
+            JDBCPreparedStatement dbStat = context.prepareStatement("ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
             try {
                 dbStat.execute();
             } finally {
@@ -310,14 +311,14 @@ public class OracleDataSource extends JDBCDataSource implements DBSEntitySelecto
         finally {
             context.close();
         }
-        activeSchemaName = entity.getName();
+        activeSchemaName = object.getName();
 
         // Send notifications
         if (oldSelectedEntity != null) {
             DBUtils.fireObjectSelect(oldSelectedEntity, false);
         }
         if (this.activeSchemaName != null) {
-            DBUtils.fireObjectSelect(entity, true);
+            DBUtils.fireObjectSelect(object, true);
         }
     }
 

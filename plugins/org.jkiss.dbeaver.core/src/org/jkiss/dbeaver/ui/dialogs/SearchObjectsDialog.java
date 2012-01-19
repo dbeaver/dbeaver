@@ -242,9 +242,9 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                             if (element instanceof DBNDatabaseFolder) {
                                 DBNDatabaseFolder folder = (DBNDatabaseFolder)element;
                                 Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
-                                return folderItemsClass != null && DBSEntityContainer.class.isAssignableFrom(folderItemsClass);
+                                return folderItemsClass != null && DBSObjectContainer.class.isAssignableFrom(folderItemsClass);
                             }
-                            if (element instanceof DBNProjectDatabases || element instanceof DBNDataSource || (element instanceof DBSWrapper && ((DBSWrapper)element).getObject() instanceof DBSEntityContainer)) {
+                            if (element instanceof DBNProjectDatabases || element instanceof DBNDataSource || (element instanceof DBSWrapper && ((DBSWrapper)element).getObject() instanceof DBSObjectContainer)) {
                                 return true;
                             }
                         }
@@ -486,9 +486,9 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
         protected LoadingJob<Collection<DBNNode>> createLoadService()
         {
             DBNNode selectedNode = getSelectedNode();
-            DBSEntityContainer parentObject = null;
-            if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSEntityContainer) {
-                parentObject = (DBSEntityContainer) ((DBSWrapper)selectedNode).getObject();
+            DBSObjectContainer parentObject = null;
+            if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSObjectContainer) {
+                parentObject = (DBSObjectContainer) ((DBSWrapper)selectedNode).getObject();
             }
 
             DBPDataSource dataSource = getSelectedDataSource();

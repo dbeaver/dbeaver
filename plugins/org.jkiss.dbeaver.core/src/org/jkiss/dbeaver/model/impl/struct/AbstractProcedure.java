@@ -4,12 +4,10 @@
 
 package org.jkiss.dbeaver.model.impl.struct;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSProcedure;
 
@@ -18,7 +16,7 @@ import org.jkiss.dbeaver.model.struct.DBSProcedure;
  */
 public abstract class AbstractProcedure<
     DATASOURCE extends DBPDataSource,
-    CONTAINER extends DBSEntityContainer>
+    CONTAINER extends DBSObjectContainer>
     implements DBSProcedure, DBPSaveableObject
 {
     protected CONTAINER container;
@@ -86,9 +84,4 @@ public abstract class AbstractProcedure<
         return container;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
 }

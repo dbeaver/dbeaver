@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * DBSEntityContainer
  */
-public interface DBSEntityContainer extends DBSObject
+public interface DBSObjectContainer extends DBSObject
 {
     /**
      * Cache underlying entities
@@ -38,32 +38,34 @@ public interface DBSEntityContainer extends DBSObject
      * @throws DBException on any DB error
      * @param monitor progress monitor
      */
-    Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets child object by its name.
      * In most cases object name have to be case insensitive.
+     *
      * @param monitor progress monitor
      * @param childName name of child object
      * @throws DBException on any DB error
      * @return child object or null
      */
-    DBSEntity getChild(DBRProgressMonitor monitor, String childName) throws DBException;
+    DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException;
 
     /**
      * Gets type of child elements.
+     *
      * @param monitor progress monitor
      * @return type of child objects
      * @throws org.jkiss.dbeaver.DBException on error
      */
-    Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException;
+    Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Caches all underlying structure contents.
      * Reads tables, columns, foreign keys and other RDB information.
      * This method is invoked when view want to draw something like ER diagramm which
      * includes all container entities.
-     * @throws DBException on any DB error  @param monitor
+     * @throws DBException on any DB error
      * @param monitor progress monitor
      * @param scope underlying structure scope
      */

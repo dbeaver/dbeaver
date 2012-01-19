@@ -14,22 +14,20 @@ import java.util.Collection;
  */
 public interface DBSEntity extends DBSObject
 {
-/*
-    Collection<ATTR> getAttributes(DBRProgressMonitor monitor)
-        throws DBException;
-
-    ATTR getAttribute(DBRProgressMonitor monitor, String name)
-        throws DBException;
-*/
+    /**
+     * Gets this entity associations
+     * @return foreign keys list
+     * @throws org.jkiss.dbeaver.DBException on any DB error
+     * @param monitor
+     */
+    Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException;
 
     /**
-     * Refresh entity's (and all of it's children) state
-     * @param monitor progress monitor
-     * @return true if object refreshed and false if parent object have to be refreshed
-     * to perform requested operation
-     * @throws org.jkiss.dbeaver.DBException on error
+     * Gets associations which refers this entity
+     * @return foreign keys list
+     * @throws DBException on any DB error
+     * @param monitor
      */
-    boolean refreshEntity(DBRProgressMonitor monitor)
-        throws DBException;
+    Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException;
 
 }

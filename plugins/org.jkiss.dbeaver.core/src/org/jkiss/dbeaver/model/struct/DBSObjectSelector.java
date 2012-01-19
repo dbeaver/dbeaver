@@ -10,13 +10,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * DBSEntitySelector
  */
-public interface DBSEntitySelector
+public interface DBSObjectSelector
 {
 
-    boolean supportsEntitySelect();
+    boolean supportsObjectSelect();
 
-    DBSEntity getSelectedEntity();
+    DBSObject getSelectedObject();
 
-    void selectEntity(DBRProgressMonitor monitor, DBSEntity entity) throws DBException;
+    void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException;
 
 }

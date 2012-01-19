@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSEntityLinked;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -95,7 +95,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
-                Collection<DBSEntityLinked> tables = DiagramObjectCollector.collectTables(
+                Collection<DBSEntity> tables = DiagramObjectCollector.collectTables(
                     monitor,
                     roots);
                 diagram.fillTables(monitor, tables, null);

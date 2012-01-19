@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * DBSIndex
  */
-public interface DBSIndex extends DBSEntity, DBPQualifiedObject
+public interface DBSIndex extends DBSObject, DBPQualifiedObject
 {
     DBSTable getTable();
 

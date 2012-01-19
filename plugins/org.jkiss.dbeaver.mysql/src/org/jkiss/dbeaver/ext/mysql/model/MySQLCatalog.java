@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -34,7 +35,7 @@ import java.util.List;
 /**
  * GenericCatalog
  */
-public class MySQLCatalog implements DBSCatalog, DBPSaveableObject
+public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(MySQLCatalog.class);
 
@@ -220,7 +221,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject
         }
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         tableCache.clearCache();

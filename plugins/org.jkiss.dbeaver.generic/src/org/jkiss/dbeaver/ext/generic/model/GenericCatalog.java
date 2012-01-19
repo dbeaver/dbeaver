@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -13,9 +12,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,7 +22,7 @@ import java.util.List;
 /**
  * GenericCatalog
  */
-public class GenericCatalog extends GenericEntityContainer implements DBSCatalog, DBSEntitySelector
+public class GenericCatalog extends GenericObjectContainer implements DBSCatalog, DBSObjectSelector
 {
     private String catalogName;
     private List<GenericSchema> schemas;
@@ -97,7 +96,7 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         }
     }
 
-    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getSchemas(monitor))) {
@@ -107,7 +106,7 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         }
     }
 
-    public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getSchemas(monitor))) {
@@ -117,7 +116,7 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         }
     }
 
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getSchemas(monitor))) {
@@ -127,43 +126,42 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         }
     }
 
-    @Override
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException {
-        super.refreshEntity(monitor);
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
+        super.refreshObject(monitor);
         this.schemas = null;
         this.isInitialized = false;
         return true;
     }
 
-    public boolean supportsEntitySelect()
+    public boolean supportsObjectSelect()
     {
         return GenericConstants.ENTITY_TYPE_SCHEMA.equals(getDataSource().getSelectedEntityType()) &&
             !CommonUtils.isEmpty(schemas);
     }
 
-    public GenericSchema getSelectedEntity()
+    public GenericSchema getSelectedObject()
     {
         return DBUtils.findObject(schemas, getDataSource().getSelectedEntityName());
     }
 
-    public void selectEntity(DBRProgressMonitor monitor, DBSEntity entity) throws DBException
+    public void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException
     {
-        final GenericSchema oldSelectedEntity = getSelectedEntity();
-        if (entity == oldSelectedEntity) {
+        final GenericSchema oldSelectedEntity = getSelectedObject();
+        if (object == oldSelectedEntity) {
             return;
         }
-        if (!(entity instanceof GenericSchema)) {
-            throw new DBException("Bad child type: " + entity);
+        if (!(object instanceof GenericSchema)) {
+            throw new DBException("Bad child type: " + object);
         }
-        if (!schemas.contains(GenericSchema.class.cast(entity))) {
-            throw new DBException("Wrong child object specified as active: " + entity);
+        if (!schemas.contains(GenericSchema.class.cast(object))) {
+            throw new DBException("Wrong child object specified as active: " + object);
         }
 
-        getDataSource().setActiveEntityName(monitor, entity);
+        getDataSource().setActiveEntityName(monitor, object);
 
         if (oldSelectedEntity != null) {
             DBUtils.fireObjectSelect(oldSelectedEntity, false);
         }
-        DBUtils.fireObjectSelect(entity, true);
+        DBUtils.fireObjectSelect(object, true);
     }
 }

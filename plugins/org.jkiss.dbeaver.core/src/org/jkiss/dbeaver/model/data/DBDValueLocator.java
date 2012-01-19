@@ -47,7 +47,7 @@ public class DBDValueLocator implements DBPObject {
     }
 
     @Property(name = "Key", viewable = true, order = 2)
-    public DBSEntity getUniqueKey() {
+    public DBSObject getUniqueKey() {
         return tableIdentifier.getConstraint() != null ? tableIdentifier.getConstraint() : tableIdentifier.getIndex();
     }
 

@@ -141,10 +141,10 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
     }
 
     @Override
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         additionalInfo.loaded = false;
-        super.refreshEntity(monitor);
+        super.refreshObject(monitor);
         return true;
     }
 

@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * DBSConstraint
  */
-public interface DBSConstraint extends DBSEntity, DBPQualifiedObject
+public interface DBSConstraint extends DBSObject, DBPQualifiedObject
 {
     DBSTable getTable();
 
