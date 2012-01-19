@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.wmi.service;
@@ -51,9 +51,46 @@ public class WMIConstants {
 	public static final long WBEM_FLAG_SHALLOW	= 1;
 	public static final long WBEM_FLAG_PROTOTYPE	= 2;
 
+    // Condition flags
+    public static final long WBEM_FLAG_ALWAYS	= 0;
+	public static final long WBEM_FLAG_ONLY_IF_TRUE	= 0x1;
+	public static final long WBEM_FLAG_ONLY_IF_FALSE	= 0x2;
+	public static final long WBEM_FLAG_ONLY_IF_IDENTICAL	= 0x3;
+	public static final long WBEM_MASK_PRIMARY_CONDITION	= 0x3;
+	public static final long WBEM_FLAG_KEYS_ONLY	= 0x4;
+	public static final long WBEM_FLAG_REFS_ONLY	= 0x8;
+	public static final long WBEM_FLAG_LOCAL_ONLY	= 0x10;
+	public static final long WBEM_FLAG_PROPAGATED_ONLY	= 0x20;
+	public static final long WBEM_FLAG_SYSTEM_ONLY	= 0x30;
+	public static final long WBEM_FLAG_NONSYSTEM_ONLY	= 0x40;
+	public static final long WBEM_MASK_CONDITION_ORIGIN	= 0x70;
+	public static final long WBEM_FLAG_CLASS_OVERRIDES_ONLY	= 0x100;
+	public static final long WBEM_FLAG_CLASS_LOCAL_AND_OVERRIDES	= 0x200;
+	public static final long WBEM_MASK_CLASS_CONDITION	= 0x300;
+
+    // Flavor types
+    public static final long WBEM_FLAVOR_DONT_PROPAGATE	= 0;
+	public static final long WBEM_FLAVOR_FLAG_PROPAGATE_TO_INSTANCE	= 0x1;
+	public static final long WBEM_FLAVOR_FLAG_PROPAGATE_TO_DERIVED_CLASS	= 0x2;
+	public static final long WBEM_FLAVOR_MASK_PROPAGATION	= 0xf;
+	public static final long WBEM_FLAVOR_OVERRIDABLE	= 0;
+	public static final long WBEM_FLAVOR_NOT_OVERRIDABLE	= 0x10;
+	public static final long WBEM_FLAVOR_MASK_PERMISSIONS	= 0x10;
+	public static final long WBEM_FLAVOR_ORIGIN_LOCAL	= 0;
+	public static final long WBEM_FLAVOR_ORIGIN_PROPAGATED	= 0x20;
+	public static final long WBEM_FLAVOR_ORIGIN_SYSTEM	= 0x40;
+	public static final long WBEM_FLAVOR_MASK_ORIGIN	= 0x60;
+	public static final long WBEM_FLAVOR_NOT_AMENDED	= 0;
+	public static final long WBEM_FLAVOR_AMENDED	= 0x80;
+	public static final long WBEM_FLAVOR_MASK_AMENDED	= 0x80;
+
+    // Class properties
+
     public static final String CLASS_PROP_CLASS_NAME = "__CLASS";
     public static final String CLASS_PROP_SUPER_CLASS = "__SUPERCLASS";
     public static final String CLASS_PROP_PATH = "__PATH";
+
+    // Standard qualifiers
 
     public static final String Q_Abstract = "Abstract";
     public static final String Q_Aggregate = "Aggregate";

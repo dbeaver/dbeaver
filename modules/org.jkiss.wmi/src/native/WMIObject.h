@@ -14,8 +14,8 @@ public:
 	void Release(JNIEnv* pJavaEnv, jobject javaObject);
 	jstring GetObjectText(JNIEnv* pJavaEnv);
 	jobject GetAttributeValue(JNIEnv* pJavaEnv, jstring propName);
-	void ReadAttributes(JNIEnv* pJavaEnv, jobject javaObject, jobject propList);
-	void ReadMethods(JNIEnv* pJavaEnv, jobject javaObject, jobject methodList);
+	void ReadAttributes(JNIEnv* pJavaEnv, jobject javaObject, LONG lFlags, jobject propList);
+	void ReadMethods(JNIEnv* pJavaEnv, jobject javaObject, LONG lFlags, jobject methodList);
 	void ReadQualifiers(JNIEnv* pJavaEnv, jobject javaObject, bool isAttribute, jstring propName, jobject qfList);
 
 	static WMIObject* GetFromObject(JNIEnv* pJavaEnv, jobject javaObject);

@@ -62,12 +62,12 @@ jobject WMIObject::GetAttributeValue(JNIEnv* pJavaEnv, jstring propName)
 	return ::MakeJavaFromVariant(pJavaEnv, propValue, cimType);
 }
 
-void WMIObject::ReadAttributes(JNIEnv* pJavaEnv, jobject javaObject, jobject propList)
+void WMIObject::ReadAttributes(JNIEnv* pJavaEnv, jobject javaObject, LONG lFlags, jobject propList)
 {
 	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 
 	// Fill class object properties
-	HRESULT hres = ptrClassObject->BeginEnumeration(0);
+	HRESULT hres = ptrClassObject->BeginEnumeration(lFlags);
 	if (FAILED(hres)) {
 		THROW_COMMON_ERROR(L"Could not start class object attributes enumeration", hres);
 		return;
@@ -121,12 +121,12 @@ void WMIObject::ReadAttributes(JNIEnv* pJavaEnv, jobject javaObject, jobject pro
 	}
 }
 
-void WMIObject::ReadMethods(JNIEnv* pJavaEnv, jobject javaObject, jobject methodList)
+void WMIObject::ReadMethods(JNIEnv* pJavaEnv, jobject javaObject, LONG lFlags, jobject methodList)
 {
 	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 
 	// Fill class object properties
-	HRESULT hres = ptrClassObject->BeginMethodEnumeration(WBEM_FLAG_LOCAL_ONLY);
+	HRESULT hres = ptrClassObject->BeginMethodEnumeration(lFlags);
 	if (FAILED(hres)) {
 		THROW_COMMON_ERROR(L"Could not start class object methods enumeration", hres);
 		return;

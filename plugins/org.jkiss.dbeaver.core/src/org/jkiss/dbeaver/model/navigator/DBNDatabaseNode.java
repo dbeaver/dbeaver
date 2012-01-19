@@ -395,7 +395,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             if (oldList != null) {
                 // Check that new object is a replacement of old one
                 for (DBNDatabaseNode oldChild : oldList) {
-                    if (equalObjects(oldChild.getObject(), object)) {
+                    if (oldChild.getMeta() == meta && equalObjects(oldChild.getObject(), object)) {
                         oldChild.reloadObject(monitor, object);
 
                         if (oldChild.allowsChildren() && !oldChild.isLazyNode()) {
@@ -420,6 +420,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         if (oldList != null) {
             // Now remove all non-existing items
             for (DBNDatabaseNode oldChild : oldList) {
+                if (oldChild.getMeta() != meta) {
+                    // Wrong type
+                    continue;
+                }
                 boolean found = false;
                 for (Object childItem : itemList) {
                     if (childItem instanceof DBSObject && equalObjects(oldChild.getObject(), (DBSObject) childItem)) {

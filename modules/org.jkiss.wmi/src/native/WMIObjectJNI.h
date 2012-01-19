@@ -34,18 +34,18 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_writeAttributeValue
 /*
  * Class:     org_jkiss_wmi_service_WMIObject
  * Method:    readAttributes
- * Signature: (Ljava/util/List;)V
+ * Signature: (JLjava/util/List;)V
  */
 JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readAttributes
-  (JNIEnv *, jobject, jobject);
+  (JNIEnv *, jobject, jlong, jobject);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIObject
  * Method:    readMethods
- * Signature: (Ljava/util/List;)V
+ * Signature: (JLjava/util/List;)V
  */
 JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readMethods
-  (JNIEnv *, jobject, jobject);
+  (JNIEnv *, jobject, jlong, jobject);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIObject

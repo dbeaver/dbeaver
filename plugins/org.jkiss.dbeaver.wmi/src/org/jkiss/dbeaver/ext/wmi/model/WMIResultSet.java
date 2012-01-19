@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.eclipse.swt.graphics.Image;
@@ -8,6 +12,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.wmi.service.WMIConstants;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIObject;
 import org.jkiss.wmi.service.WMIObjectAttribute;
@@ -46,7 +51,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
             if (metaObject == null) {
                 properties = Collections.emptyList();
             } else {
-                Collection<WMIObjectAttribute> props = metaObject.getAttributes();
+                Collection<WMIObjectAttribute> props = metaObject.getAttributes(WMIConstants.WBEM_FLAG_ALWAYS);
                 properties = new ArrayList<DBCColumnMetaData>(props.size());
                 int index = 0;
                 for (WMIObjectAttribute prop : props) {

@@ -233,9 +233,4 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
         }
     }
 
-    public DBSCatalog getCatalog()
-    {
-        return null;
-    }
-
 }

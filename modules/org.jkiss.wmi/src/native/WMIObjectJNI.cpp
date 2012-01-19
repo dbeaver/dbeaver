@@ -59,7 +59,7 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_writeAttributeValue(
  * Method:    readAttributes
  * Signature: (Ljava/util/List;)Ljava/util/List;
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readAttributes(JNIEnv* pJavaEnv, jobject object, jobject propList)
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readAttributes(JNIEnv* pJavaEnv, jobject object, jlong lFlags, jobject propList)
 {
 	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
 	if (pObject == NULL) {
@@ -67,7 +67,7 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readAttributes(JNIEn
 		return;
 	}
 
-	pObject->ReadAttributes(pJavaEnv, object, propList);
+	pObject->ReadAttributes(pJavaEnv, object, (LONG)lFlags, propList);
 }
 
 /*
@@ -75,14 +75,14 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readAttributes(JNIEn
  * Method:    readMethod
  * Signature: (Ljava/util/List;)Ljava/util/List;
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readMethods(JNIEnv* pJavaEnv, jobject object, jobject methodList)
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readMethods(JNIEnv* pJavaEnv, jobject object, jlong lFlags, jobject methodList)
 {
 	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
 	if (pObject == NULL) {
 		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
 		return;
 	}
-	pObject->ReadMethods(pJavaEnv, object, methodList);
+	pObject->ReadMethods(pJavaEnv, object, (LONG)lFlags, methodList);
 }
 
 /*

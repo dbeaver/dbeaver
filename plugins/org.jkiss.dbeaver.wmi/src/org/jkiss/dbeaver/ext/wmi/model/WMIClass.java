@@ -70,13 +70,13 @@ public class WMIClass extends WMIContainer
 
     public boolean isAbstract() throws WMIException
     {
-        return Boolean.TRUE.equals(
+        return classObject != null && Boolean.TRUE.equals(
             classObject.getQualifier(WMIConstants.Q_Abstract));
     }
 
     public boolean isFinal() throws WMIException
     {
-        return Boolean.TRUE.equals(
+        return classObject != null && Boolean.TRUE.equals(
             classObject.getQualifier(WMIConstants.Q_Terminal));
     }
 
@@ -131,11 +131,17 @@ public class WMIClass extends WMIContainer
                 return e.getMessage();
             }
         }
+        if (name == null) {
+            name = "?" + hashCode();
+        }
         return name;
     }
 
     public String getFullQualifiedName()
     {
+        if (classObject == null) {
+            return getName();
+        }
         try {
             return CommonUtils.toString(
                 classObject.getValue(WMIConstants.CLASS_PROP_PATH));
@@ -165,6 +171,19 @@ public class WMIClass extends WMIContainer
         return getColumns(monitor);
     }
 
+    public Collection<WMIClassAttribute> getAllAttributes(DBRProgressMonitor monitor) throws DBException
+    {
+        if (superClass == null) {
+            return getAttributes(monitor);
+        } else {
+            List<WMIClassAttribute> allAttrs = new ArrayList<WMIClassAttribute>();
+            for (WMIClass c = this; c != null; c = c.superClass) {
+                allAttrs.addAll(c.getAttributes(monitor));
+            }
+            return allAttrs;
+        }
+    }
+
     public Collection<WMIClassAttribute> getColumns(DBRProgressMonitor monitor) throws DBException
     {
         if (attributes == null) {
@@ -188,7 +207,7 @@ public class WMIClass extends WMIContainer
         }
         try {
             attributes = new ArrayList<WMIClassAttribute>();
-            for (WMIObjectAttribute prop : classObject.getAttributes()) {
+            for (WMIObjectAttribute prop : classObject.getAttributes(WMIConstants.WBEM_FLAG_CLASS_LOCAL_AND_OVERRIDES)) {
                 if (monitor.isCanceled()) {
                     break;
                 }
@@ -225,7 +244,7 @@ public class WMIClass extends WMIContainer
         }
         try {
             methods = new ArrayList<WMIClassMethod>();
-            for (WMIObjectMethod prop : classObject.getMethods()) {
+            for (WMIObjectMethod prop : classObject.getMethods(WMIConstants.WBEM_FLAG_LOCAL_ONLY)) {
                 if (monitor.isCanceled()) {
                     break;
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.wmi.service;
@@ -12,8 +12,6 @@ import java.util.*;
 public class WMIObject extends WMIQualifiedObject {
 
     private long objectHandle;
-    private volatile List<WMIObjectAttribute> attributes;
-    private volatile List<WMIObjectMethod> methods;
 
     public WMIObject() {
     }
@@ -34,68 +32,18 @@ public class WMIObject extends WMIQualifiedObject {
         writeAttributeValue(name, value);
     }
 
-    public Collection<WMIObjectAttribute> getAttributes() throws WMIException
+    public Collection<WMIObjectAttribute> getAttributes(long flags) throws WMIException
     {
-        readAttributes();
+        List<WMIObjectAttribute> attributes = new ArrayList<WMIObjectAttribute>();
+        readAttributes(flags, attributes);
         return attributes;
     }
 
-    public WMIObjectAttribute getAttribute(String name) throws WMIException
+    public Collection<WMIObjectMethod> getMethods(long flags) throws WMIException
     {
-        readAttributes();
-        for (WMIObjectAttribute attribute : attributes) {
-            if (attribute.getName().equals(name)) {
-                return attribute;
-            }
-        }
-        return null;
-    }
-
-    private void readAttributes()
-        throws WMIException
-    {
-        if (attributes != null) {
-            return;
-        }
-        synchronized (this) {
-            if (attributes != null) {
-                return;
-            }
-            attributes = new ArrayList<WMIObjectAttribute>();
-            readAttributes(attributes);
-        }
-    }
-
-    public Collection<WMIObjectMethod> getMethods() throws WMIException
-    {
-        readMethods();
+        List<WMIObjectMethod> methods = new ArrayList<WMIObjectMethod>();
+        readMethods(flags, methods);
         return methods;
-    }
-
-    public WMIObjectMethod getMethod(String name) throws WMIException
-    {
-        readMethods();
-        for (WMIObjectMethod method : methods) {
-            if (method.getName().equals(name)) {
-                return method;
-            }
-        }
-        return null;
-    }
-
-    private void readMethods()
-        throws WMIException
-    {
-        if (methods != null) {
-            return;
-        }
-        synchronized (this) {
-            if (methods != null) {
-                return;
-            }
-            methods = new ArrayList<WMIObjectMethod>();
-            readMethods(methods);
-        }
     }
 
     public void release()
@@ -126,10 +74,10 @@ public class WMIObject extends WMIQualifiedObject {
     private native void writeAttributeValue(String name, Object value)
         throws WMIException;
 
-    private native void readAttributes(List<WMIObjectAttribute> attributes)
+    private native void readAttributes(long flags, List<WMIObjectAttribute> attributes)
         throws WMIException;
 
-    private native void readMethods(List<WMIObjectMethod> method)
+    private native void readMethods(long flags, List<WMIObjectMethod> method)
         throws WMIException;
 
     native void readQualifiers(boolean isAttribute, String attrName, List<WMIQualifier> qualifiers)

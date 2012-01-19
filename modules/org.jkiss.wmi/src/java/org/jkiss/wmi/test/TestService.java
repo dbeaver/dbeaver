@@ -100,7 +100,7 @@ public class TestService {
             nsService.enumClasses(null, classesSink, 0);
             classesSink.waitForFinish();
             for (WMIObject classDesc : classesSink.objectList) {
-                final Collection<WMIObjectMethod> methods = classDesc.getMethods();
+                final Collection<WMIObjectMethod> methods = classDesc.getMethods(WMIConstants.WBEM_FLAG_ALWAYS);
                 if (methods != null) {
 
                 }
@@ -160,7 +160,7 @@ public class TestService {
         final String objectText = object.getObjectText();
         //final Object name = object.getValue("Name");
 
-        for (WMIObjectAttribute prop : object.getAttributes()) {
+        for (WMIObjectAttribute prop : object.getAttributes(WMIConstants.WBEM_FLAG_ALWAYS)) {
             Object propValue = prop.getValue();
             if (propValue instanceof Object[]) {
                 //System.out.print("\t" + prop.getName() + "= { ");

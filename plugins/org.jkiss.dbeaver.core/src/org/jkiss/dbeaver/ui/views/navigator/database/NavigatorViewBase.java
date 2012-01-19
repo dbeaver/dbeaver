@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
@@ -153,7 +153,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         if (lastSelection instanceof DBNDatabaseNode) {
             if (lastSelection instanceof DBNDataSource) {
                 return ((DBNDataSource)lastSelection).getDataSourceContainer();
-            } else {
+            } else if (((DBNDatabaseNode) lastSelection).getObject() != null) {
                 final DBPDataSource dataSource = ((DBNDatabaseNode) lastSelection).getObject().getDataSource();
                 if (dataSource != null) {
                     return dataSource.getContainer();
