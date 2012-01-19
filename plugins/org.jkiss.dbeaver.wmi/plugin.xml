@@ -39,7 +39,7 @@
                             <items ref="Class"/-->
                         </items>
                     </items>
-                    <items ref="Class"/>
+                    <!--items ref="Class"/-->
                 <!--/folder-->
             </tree>
             <drivers managable="false">

@@ -23,14 +23,14 @@ public class WMIExecutionContext extends AbstractExecutionContext {
         this.dataSource = dataSource;
     }
 
-    public DBPDataSource getDataSource()
+    public WMIDataSource getDataSource()
     {
         return dataSource;
     }
 
     public DBCStatement prepareStatement(DBCStatementType type, String query, boolean scrollable, boolean updatable, boolean returnGeneratedKeys) throws DBCException
     {
-        return null;
+        return new WMIStatement(this, type, query);
     }
 
     public void cancelBlock() throws DBException

@@ -4,7 +4,10 @@
 
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -22,14 +25,15 @@ import java.util.Collections;
  */
 public class WMIDataSource implements DBPDataSource//, DBSEntitySelector
 {
+    static final Log log = LogFactory.getLog(WMIDataSource.class);
+
     private DBSDataSourceContainer container;
     private WMINamespace rootNamespace;
 
-    public WMIDataSource(DBSDataSourceContainer container, WMIService service)
+    public WMIDataSource(DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
-        this.rootNamespace = new WMINamespace(null, this, container.getConnectionInfo().getDatabaseName(), service);
     }
 
     public DBSDataSourceContainer getContainer()
@@ -39,7 +43,7 @@ public class WMIDataSource implements DBPDataSource//, DBSEntitySelector
 
     public DBPDataSourceInfo getInfo()
     {
-        return new WMIDataSourceInfo(rootNamespace.service);
+        return new WMIDataSourceInfo();
     }
 
     public boolean isConnected()
@@ -65,17 +69,43 @@ public class WMIDataSource implements DBPDataSource//, DBSEntitySelector
 
     public void initialize(DBRProgressMonitor monitor) throws DBException
     {
+        final DBPConnectionInfo connectionInfo = container.getConnectionInfo();
+        try {
+            WMIService.initializeThread();
+            WMIService service = WMIService.connect(
+                log,
+                connectionInfo.getServerName(),
+                connectionInfo.getHostName(),
+                connectionInfo.getUserName(),
+                connectionInfo.getUserPassword(),
+                null,
+                connectionInfo.getDatabaseName());
+            this.rootNamespace = new WMINamespace(null, this, container.getConnectionInfo().getDatabaseName(), service);
+        } catch (Throwable e) {
+            throw new DBException("Can't connect to WMI service", e);
+        }
     }
 
     public void close()
     {
-
+        if (rootNamespace != null) {
+            rootNamespace.close();
+            if (rootNamespace.service != null) {
+                rootNamespace.service.close();
+            }
+            rootNamespace = null;
+        }
     }
 
     @Association
     public Collection<WMINamespace> getNamespaces()
     {
         return Collections.singletonList(rootNamespace);
+    }
+
+    public WMIService getService()
+    {
+        return rootNamespace.service;
     }
 
 }

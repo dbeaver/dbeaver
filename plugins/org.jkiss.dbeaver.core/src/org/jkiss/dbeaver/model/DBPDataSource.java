@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model;
@@ -73,5 +73,6 @@ public interface DBPDataSource extends DBPObject,DBPCloseableObject
      * @param monitor progress monitor
      */
     void initialize(DBRProgressMonitor monitor) throws DBException;
+
 
 }

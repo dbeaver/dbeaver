@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
@@ -10,7 +14,7 @@ import java.util.Collection;
 /**
  * Generic struct container
  */
-public interface GenericStructContainer extends DBSObjectContainer
+public interface GenericStructContainer extends DBSObject, DBSObjectContainer
 {
 
     GenericDataSource getDataSource();

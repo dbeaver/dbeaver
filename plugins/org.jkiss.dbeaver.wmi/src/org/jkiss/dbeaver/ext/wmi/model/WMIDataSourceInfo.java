@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.wmi.model;
@@ -18,11 +18,8 @@ import java.util.Collections;
  */
 public class WMIDataSourceInfo implements DBPDataSourceInfo {
 
-    private final WMIService service;
-
-    public WMIDataSourceInfo(WMIService service)
+    public WMIDataSourceInfo()
     {
-        this.service = service;
     }
 
     public boolean isReadOnlyData()
