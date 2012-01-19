@@ -4,12 +4,11 @@
 
 package org.jkiss.wmi.service;
 
-import java.util.List;
-
 /**
  * WMI object property
  */
-public class WMIObjectMethod extends WMIObjectAttribute {
+public class WMIObjectMethod extends WMIObjectElement
+{
 
     private WMIObject inParameter;
     private WMIObject outParameter;

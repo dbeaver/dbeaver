@@ -46,7 +46,7 @@ jstring WMIObject::GetObjectText(JNIEnv* pJavaEnv)
 	return MakeJavaString(pJavaEnv, bstrObjectText);
 }
 
-jobject WMIObject::GetPropertyValue(JNIEnv* pJavaEnv, jstring propName)
+jobject WMIObject::GetAttributeValue(JNIEnv* pJavaEnv, jstring propName)
 {
 	CComBSTR bstrPropName;
 	::GetJavaString(pJavaEnv, propName, &bstrPropName);
@@ -56,20 +56,20 @@ jobject WMIObject::GetPropertyValue(JNIEnv* pJavaEnv, jstring propName)
 	LONG flavor;
 	HRESULT hres = ptrClassObject->Get(bstrPropName, 0, &propValue, &cimType, &flavor);
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR((_bstr_t(L"Can't read property '") + (BSTR)bstrPropName) + L"' value", hres);
+		THROW_COMMON_ERROR((_bstr_t(L"Can't read attribute '") + (BSTR)bstrPropName) + L"' value", hres);
 		return NULL;
 	}
 	return ::MakeJavaFromVariant(pJavaEnv, propValue, cimType);
 }
 
-void WMIObject::ReadProperties(JNIEnv* pJavaEnv, jobject javaObject, jobject propList)
+void WMIObject::ReadAttributes(JNIEnv* pJavaEnv, jobject javaObject, jobject propList)
 {
 	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 
 	// Fill class object properties
 	HRESULT hres = ptrClassObject->BeginEnumeration(0);
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Could not start class object properties enumeration", hres);
+		THROW_COMMON_ERROR(L"Could not start class object attributes enumeration", hres);
 		return;
 	}
 
@@ -80,7 +80,7 @@ void WMIObject::ReadProperties(JNIEnv* pJavaEnv, jobject javaObject, jobject pro
 		LONG flavor;
 		hres = ptrClassObject->Next(0, &propName, &propValue, &cimType, &flavor);
 		if (FAILED(hres)) {
-			THROW_COMMON_ERROR(L"Could not obtain next property from enumeration", hres);
+			THROW_COMMON_ERROR(L"Could not obtain next attribute from enumeration", hres);
 			break;
 		}
 		if (hres == WBEM_S_NO_MORE_DATA) {
@@ -95,8 +95,8 @@ void WMIObject::ReadProperties(JNIEnv* pJavaEnv, jobject javaObject, jobject pro
 		jobject javaPropValue = ::MakeJavaFromVariant(pJavaEnv, propValue, cimType);
 		if (!pJavaEnv->ExceptionCheck()) {
 			jobject javaPropObject = pJavaEnv->NewObject(
-				jniMeta.wmiObjectPropertyClass, 
-				jniMeta.wmiObjectPropertyConstructor,
+				jniMeta.wmiObjectAttributeClass, 
+				jniMeta.wmiObjectAttributeConstructor,
 				javaObject,
 				javaPropName,
 				(jint)cimType,
@@ -184,7 +184,7 @@ void WMIObject::ReadMethods(JNIEnv* pJavaEnv, jobject javaObject, jobject method
 	}
 }
 
-void WMIObject::ReadQualifiers(JNIEnv* pJavaEnv, jobject javaObject, bool isProperty, jstring propName, jobject qfList)
+void WMIObject::ReadQualifiers(JNIEnv* pJavaEnv, jobject javaObject, bool isAttribute, jstring propName, jobject qfList)
 {
 	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 
@@ -196,7 +196,7 @@ void WMIObject::ReadQualifiers(JNIEnv* pJavaEnv, jobject javaObject, bool isProp
 	HRESULT hres = S_OK;
 	if (bstrPropName == NULL) {
 		hres = ptrClassObject->GetQualifierSet(&ptrQFSet);
-	} else if (isProperty) {
+	} else if (isAttribute) {
 		hres = ptrClassObject->GetPropertyQualifierSet(bstrPropName, &ptrQFSet);
 	} else {
 		hres = ptrClassObject->GetMethodQualifierSet(bstrPropName, &ptrQFSet);

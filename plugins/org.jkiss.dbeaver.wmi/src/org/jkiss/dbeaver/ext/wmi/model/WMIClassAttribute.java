@@ -1,55 +1,105 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.wmi.service.WMIConstants;
 import org.jkiss.wmi.service.WMIObjectAttribute;
-import org.jkiss.wmi.service.WMIQualifiedObject;
 
 /**
- * Class attribute
+ * Class property
  */
-public abstract class WMIClassAttribute<T extends WMIObjectAttribute> implements DBSEntity
+public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> implements DBSTableColumn, IObjectImageProvider
 {
-    protected final WMIClass wmiClass;
-    protected final T attribute;
-
-    protected WMIClassAttribute(WMIClass wmiClass, T attribute)
+    protected WMIClassAttribute(WMIClass wmiClass, WMIObjectAttribute attribute)
     {
-        this.wmiClass = wmiClass;
-        this.attribute = attribute;
+        super(wmiClass, attribute);
     }
 
-    public WMIClass getParentObject()
+    public DBSTable getTable()
     {
         return wmiClass;
     }
 
-    public DBPDataSource getDataSource()
+    public int getOrdinalPosition()
     {
-        return wmiClass.getDataSource();
+        return 0;
     }
 
-    @Property(name = "Name", viewable = true, order = 1)
-    public String getName()
+    @Property(name = "Type", viewable = true, order = 10)
+    public String getTypeName()
     {
-        return attribute.getName();
+        return element.getTypeName();
     }
 
-    public String getDescription()
+    public int getValueType()
     {
-        return null;
+        return element.getType();
     }
 
-    public boolean isPersisted()
+    public int getScale()
     {
-        return true;
+        return 0;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
+    public int getPrecision()
+    {
+        return 0;
+    }
+
+    @Property(name = "Default Value", viewable = true, order = 20)
+    public String getDefaultValue()
+    {
+        return CommonUtils.toString(element.getValue());
+    }
+
+    public boolean isAutoIncrement()
     {
         return false;
+    }
+
+    public boolean isNotNull()
+    {
+        return false;
+    }
+
+    public long getMaxLength()
+    {
+        return 0;
+    }
+
+    public Image getObjectImage()
+    {
+        return getPropertyImage(element.getType());
+    }
+
+    public static Image getPropertyImage(int type)
+    {
+        switch (type) {
+            case WMIConstants.CIM_SINT8:
+            case WMIConstants.CIM_UINT8:
+            case WMIConstants.CIM_SINT16:
+            case WMIConstants.CIM_UINT16:
+            case WMIConstants.CIM_SINT32:
+            case WMIConstants.CIM_UINT32:
+            case WMIConstants.CIM_SINT64:
+            case WMIConstants.CIM_UINT64:
+            case WMIConstants.CIM_REAL32:
+            case WMIConstants.CIM_REAL64:
+                return DBIcon.TYPE_NUMBER.getImage();
+            case WMIConstants.CIM_BOOLEAN:
+                return DBIcon.TYPE_BOOLEAN.getImage();
+            case WMIConstants.CIM_STRING:
+            case WMIConstants.CIM_CHAR16:
+                return DBIcon.TYPE_STRING.getImage();
+            case WMIConstants.CIM_DATETIME:
+                return DBIcon.TYPE_DATETIME.getImage();
+            default:
+                return DBIcon.TYPE_UNKNOWN.getImage();
+        }
     }
 }

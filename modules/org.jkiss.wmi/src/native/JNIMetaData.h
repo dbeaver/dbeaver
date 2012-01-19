@@ -10,7 +10,7 @@ static const char* CLASS_WMI_OBJECT = "org/jkiss/wmi/service/WMIObject";
 static const char* CLASS_WMI_QUALIFIER = "org/jkiss/wmi/service/WMIQualifier";
 static const char* CLASS_WMI_OBJECT_SINK = "org/jkiss/wmi/service/WMIObjectSink";
 static const char* CLASS_WMI_OBJECT_SINK_STATUS = "org/jkiss/wmi/service/WMIObjectSinkStatus";
-static const char* CLASS_WMI_OBJECT_PROPERTY = "org/jkiss/wmi/service/WMIObjectProperty";
+static const char* CLASS_WMI_OBJECT_ATTRIBUTE = "org/jkiss/wmi/service/WMIObjectAttribute";
 static const char* CLASS_WMI_OBJECT_METHOD = "org/jkiss/wmi/service/WMIObjectMethod";
 
 class JNIMetaData
@@ -40,8 +40,8 @@ public:
 	jmethodID wmiObjectSinkIndicateMethod;
 	jmethodID wmiObjectSinkSetStatusMethod;
 	jclass wmiObjectSinkStatusClass;
-	jclass wmiObjectPropertyClass;
-	jmethodID wmiObjectPropertyConstructor;
+	jclass wmiObjectAttributeClass;
+	jmethodID wmiObjectAttributeConstructor;
 	jclass wmiObjectMethodClass;
 	jmethodID wmiObjectMethodConstructor;
 

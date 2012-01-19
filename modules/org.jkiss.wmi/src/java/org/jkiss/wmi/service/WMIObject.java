@@ -12,7 +12,7 @@ import java.util.*;
 public class WMIObject extends WMIQualifiedObject {
 
     private long objectHandle;
-    private volatile List<WMIObjectProperty> properties;
+    private volatile List<WMIObjectAttribute> attributes;
     private volatile List<WMIObjectMethod> methods;
 
     public WMIObject() {
@@ -26,43 +26,43 @@ public class WMIObject extends WMIQualifiedObject {
 
     public Object getValue(String name) throws WMIException
     {
-        return readPropertyValue(name);
+        return readAttributeValue(name);
     }
 
     public void setValue(String name, Object value) throws WMIException
     {
-        writePropertyValue(name, value);
+        writeAttributeValue(name, value);
     }
 
-    public Collection<WMIObjectProperty> getProperties() throws WMIException
+    public Collection<WMIObjectAttribute> getAttributes() throws WMIException
     {
-        readProperties();
-        return properties;
+        readAttributes();
+        return attributes;
     }
 
-    public WMIObjectProperty getProperty(String name) throws WMIException
+    public WMIObjectAttribute getAttribute(String name) throws WMIException
     {
-        readProperties();
-        for (WMIObjectProperty property : properties) {
-            if (property.getName().equals(name)) {
-                return property;
+        readAttributes();
+        for (WMIObjectAttribute attribute : attributes) {
+            if (attribute.getName().equals(name)) {
+                return attribute;
             }
         }
         return null;
     }
 
-    private void readProperties()
+    private void readAttributes()
         throws WMIException
     {
-        if (properties != null) {
+        if (attributes != null) {
             return;
         }
         synchronized (this) {
-            if (properties != null) {
+            if (attributes != null) {
                 return;
             }
-            properties = new ArrayList<WMIObjectProperty>(); 
-            readProperties(properties);
+            attributes = new ArrayList<WMIObjectAttribute>();
+            readAttributes(attributes);
         }
     }
 
@@ -120,19 +120,19 @@ public class WMIObject extends WMIQualifiedObject {
     private native String readObjectText()
         throws WMIException;
 
-    private native Object readPropertyValue(String name)
+    private native Object readAttributeValue(String name)
         throws WMIException;
 
-    private native void writePropertyValue(String name, Object value)
+    private native void writeAttributeValue(String name, Object value)
         throws WMIException;
 
-    private native void readProperties(List<WMIObjectProperty> properties)
+    private native void readAttributes(List<WMIObjectAttribute> attributes)
         throws WMIException;
 
     private native void readMethods(List<WMIObjectMethod> method)
         throws WMIException;
 
-    native void readQualifiers(boolean property, String attrName, List<WMIQualifier> qualifiers)
+    native void readQualifiers(boolean isAttribute, String attrName, List<WMIQualifier> qualifiers)
         throws WMIException;
 
     native void releaseObject();

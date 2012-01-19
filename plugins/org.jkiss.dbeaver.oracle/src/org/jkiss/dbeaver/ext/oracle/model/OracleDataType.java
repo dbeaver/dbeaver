@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * Oracle data type
  */
-public class OracleDataType extends OracleObject implements DBSDataType, DBSEntityQualified<OracleDataTypeAttribute>, OracleSourceObjectEx {
+public class OracleDataType extends OracleObject implements DBSDataType, DBSEntityQualified, OracleSourceObjectEx {
 
     static final Log log = LogFactory.getLog(OracleForeignKey.class);
 

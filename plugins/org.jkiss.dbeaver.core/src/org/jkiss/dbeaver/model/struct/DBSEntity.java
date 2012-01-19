@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * DBSEntity
  */
-public interface DBSEntity<ATTR extends DBSEntityAttribute> extends DBSObject
+public interface DBSEntity extends DBSObject
 {
 /*
     Collection<ATTR> getAttributes(DBRProgressMonitor monitor)

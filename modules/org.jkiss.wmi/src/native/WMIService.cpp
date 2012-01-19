@@ -470,49 +470,7 @@ jobject WMIService::MakeWMIObject(JNIEnv* pJavaEnv, IWbemClassObject *pClassObje
 		return NULL;
 	}
 	WMIObject* pObject = new WMIObject(pJavaEnv, pWmiObject, pClassObject);
-/*
-	// Fill class object properties
-	hres = pClassObject->BeginEnumeration(0);
-	if (FAILED(hres)) {
-		this->WriteLog(pJavaEnv, LT_ERROR, L"Could not start class object properties enumeration", hres);
-		return NULL;
-	}
 
-	for (;;) {
-		CComBSTR propName;
-		CComVariant propValue;
-		CIMTYPE cimType; // CIMTYPE_ENUMERATION
-		LONG flavor;
-		hres = pClassObject->Next(0, &propName, &propValue, &cimType, &flavor);
-		if (FAILED(hres)) {
-			this->WriteLog(pJavaEnv, LT_ERROR, L"Could not obtain next class object from enumeration", hres);
-			break;
-		}
-		if (hres == WBEM_S_NO_MORE_DATA) {
-			break;
-		}
-		//wchar_t* propNameBSTR = propName;
-		jstring javaPropName = MakeJavaString(pJavaEnv, propName);
-		_ASSERT(javaPropName != NULL);
-		if (javaPropName == NULL) {
-			continue;
-		}
-		jobject javaPropValue = MakeJavaFromVariant(pJavaEnv, propValue, cimType);
-		if (!pJavaEnv->ExceptionCheck()) {
-			pJavaEnv->CallVoidMethod(pWmiObject, jniMeta.wmiObjectAddPropertyMethod, javaPropName, javaPropValue);
-		}
-		DeleteLocalRef(pJavaEnv, javaPropName);
-		DeleteLocalRef(pJavaEnv, javaPropValue);
-		if (pJavaEnv->ExceptionCheck()) {
-			break;
-		}
-	}
-
-	hres = pClassObject->EndEnumeration();
-	if (FAILED(hres)) {
-		this->WriteLog(pJavaEnv, LT_ERROR, L"Could not finish class object enumeration", hres);
-	}
-*/
 	if (pJavaEnv->ExceptionCheck()) {
 		DeleteLocalRef(pJavaEnv, pWmiObject);
 		return NULL;

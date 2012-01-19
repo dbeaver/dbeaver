@@ -17,26 +17,26 @@ JNIEXPORT jstring JNICALL Java_org_jkiss_wmi_service_WMIObject_readObjectText
 
 /*
  * Class:     org_jkiss_wmi_service_WMIObject
- * Method:    readPropertyValue
+ * Method:    readAttributeValue
  * Signature: (Ljava/lang/String;)Ljava/lang/Object;
  */
-JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIObject_readPropertyValue
+JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIObject_readAttributeValue
   (JNIEnv *, jobject, jstring);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIObject
- * Method:    writePropertyValue
+ * Method:    writeAttributeValue
  * Signature: (Ljava/lang/String;Ljava/lang/Object;)V
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_writePropertyValue
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_writeAttributeValue
   (JNIEnv *, jobject, jstring, jobject);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIObject
- * Method:    readProperties
+ * Method:    readAttributes
  * Signature: (Ljava/util/List;)V
  */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readProperties
+JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIObject_readAttributes
   (JNIEnv *, jobject, jobject);
 
 /*

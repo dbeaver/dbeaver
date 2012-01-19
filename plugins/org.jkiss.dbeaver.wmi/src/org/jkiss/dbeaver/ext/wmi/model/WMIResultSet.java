@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIObject;
-import org.jkiss.wmi.service.WMIObjectProperty;
+import org.jkiss.wmi.service.WMIObjectAttribute;
 
 import java.util.*;
 
@@ -46,10 +46,10 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
             if (metaObject == null) {
                 properties = Collections.emptyList();
             } else {
-                Collection<WMIObjectProperty> props = metaObject.getProperties();
+                Collection<WMIObjectAttribute> props = metaObject.getAttributes();
                 properties = new ArrayList<DBCColumnMetaData>(props.size());
                 int index = 0;
-                for (WMIObjectProperty prop : props) {
+                for (WMIObjectAttribute prop : props) {
                     if (!prop.isSystem()) {
                         properties.add(new MetaProperty(prop, index++));
                     }
@@ -164,18 +164,18 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
 
     private class MetaProperty implements DBCColumnMetaData,IObjectImageProvider
     {
-        private final WMIObjectProperty property;
+        private final WMIObjectAttribute attribute;
         private final int index;
 
-        private MetaProperty(WMIObjectProperty property, int index)
+        private MetaProperty(WMIObjectAttribute attribute, int index)
         {
-            this.property = property;
+            this.attribute = attribute;
             this.index = index;
         }
 
         public String getName()
         {
-            return property.getName();
+            return attribute.getName();
         }
 
         public boolean isNotNull()
@@ -190,12 +190,12 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
 
         public String getTypeName()
         {
-            return property.getTypeName();
+            return attribute.getTypeName();
         }
 
         public int getValueType()
         {
-            return property.getType();
+            return attribute.getType();
         }
 
         public int getScale()
@@ -215,7 +215,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
 
         public String getLabel()
         {
-            return property.getName();
+            return attribute.getName();
         }
 
         public String getTableName()
@@ -265,7 +265,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
 
         public Image getObjectImage()
         {
-            return WMIClassProperty.getPropertyImage(property.getType());
+            return WMIClassAttribute.getPropertyImage(attribute.getType());
         }
     }
 

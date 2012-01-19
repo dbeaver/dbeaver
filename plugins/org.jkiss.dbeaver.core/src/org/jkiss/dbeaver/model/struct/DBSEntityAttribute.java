@@ -7,5 +7,5 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSEntityAttribute
  */
-public interface DBSEntityAttribute extends DBSObject {
+public interface DBSEntityAttribute extends DBSEntityElement {
 }

@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.wmi.service.*;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -161,7 +160,7 @@ public class TestService {
         final String objectText = object.getObjectText();
         //final Object name = object.getValue("Name");
 
-        for (WMIObjectProperty prop : object.getProperties()) {
+        for (WMIObjectAttribute prop : object.getAttributes()) {
             Object propValue = prop.getValue();
             if (propValue instanceof Object[]) {
                 //System.out.print("\t" + prop.getName() + "= { ");

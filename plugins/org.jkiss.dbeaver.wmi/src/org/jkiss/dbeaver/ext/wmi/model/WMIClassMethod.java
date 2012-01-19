@@ -6,7 +6,7 @@ import org.jkiss.wmi.service.WMIObjectMethod;
 /**
  * Class property
  */
-public class WMIClassMethod extends WMIClassAttribute<WMIObjectMethod>
+public class WMIClassMethod extends WMIClassElement<WMIObjectMethod>
 {
     protected WMIClassMethod(WMIClass wmiClass, WMIObjectMethod attribute)
     {

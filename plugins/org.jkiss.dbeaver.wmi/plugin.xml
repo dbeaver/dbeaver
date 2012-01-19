@@ -29,8 +29,8 @@
                     <items label="Namespaces" itemLabel="Namespace" path="namespace" property="namespaces" icon="icons/namespace.png" id="Namespace">
                         <items ref="Namespace"/>
                         <items label="Classes" itemLabel="Class" path="class" property="allClasses" iconId="icons/class.png" id="Class" visibleIf="object.hasClasses()">
-                            <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassProperty" label="Properties" iconId="#columns" description="Class properties" navigable="false" id="ClassAttributes">
-                                <items label="Properties" itemLabel="Property" path="property" property="columns"/>
+                            <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassAttribute" label="Properties" iconId="#columns" description="Class properties" navigable="false" id="ClassAttributes">
+                                <items label="Properties" itemLabel="Property" path="attribute" property="attributes"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassMethod" label="Methods" iconId="#procedures" description="Class methods" navigable="false" id="ClassMethods">
                                 <items label="Methods" itemLabel="Method" path="method" property="methods"/>

@@ -13,10 +13,10 @@ public:
 
 	void Release(JNIEnv* pJavaEnv, jobject javaObject);
 	jstring GetObjectText(JNIEnv* pJavaEnv);
-	jobject GetPropertyValue(JNIEnv* pJavaEnv, jstring propName);
-	void ReadProperties(JNIEnv* pJavaEnv, jobject javaObject, jobject propList);
+	jobject GetAttributeValue(JNIEnv* pJavaEnv, jstring propName);
+	void ReadAttributes(JNIEnv* pJavaEnv, jobject javaObject, jobject propList);
 	void ReadMethods(JNIEnv* pJavaEnv, jobject javaObject, jobject methodList);
-	void ReadQualifiers(JNIEnv* pJavaEnv, jobject javaObject, bool isProperty, jstring propName, jobject qfList);
+	void ReadQualifiers(JNIEnv* pJavaEnv, jobject javaObject, bool isAttribute, jstring propName, jobject qfList);
 
 	static WMIObject* GetFromObject(JNIEnv* pJavaEnv, jobject javaObject);
 private:

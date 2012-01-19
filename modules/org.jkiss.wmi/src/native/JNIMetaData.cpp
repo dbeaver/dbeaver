@@ -70,9 +70,9 @@ JNIMetaData::JNIMetaData(JNIEnv* pEnv) : pJavaEnv(pEnv)
 		 
 	wmiObjectSinkStatusClass = FindJavaClass(CLASS_WMI_OBJECT_SINK_STATUS);
 
-	wmiObjectPropertyClass = FindJavaClass(CLASS_WMI_OBJECT_PROPERTY);
-	wmiObjectPropertyConstructor = FindJavaMethod(
-		wmiObjectPropertyClass, 
+	wmiObjectAttributeClass = FindJavaClass(CLASS_WMI_OBJECT_ATTRIBUTE);
+	wmiObjectAttributeConstructor = FindJavaMethod(
+		wmiObjectAttributeClass, 
 		"<init>", 
 		"(Lorg/jkiss/wmi/service/WMIObject;Ljava/lang/String;IILjava/lang/Object;)V");
 
@@ -103,7 +103,7 @@ JNIMetaData::~JNIMetaData(void)
 	DeleteClassRef(wmiQualifierClass);
 	DeleteClassRef(wmiObjectSinkClass);
 	DeleteClassRef(wmiObjectSinkStatusClass);
-	DeleteClassRef(wmiObjectPropertyClass);
+	DeleteClassRef(wmiObjectAttributeClass);
 	DeleteClassRef(wmiObjectMethodClass);
 }
 

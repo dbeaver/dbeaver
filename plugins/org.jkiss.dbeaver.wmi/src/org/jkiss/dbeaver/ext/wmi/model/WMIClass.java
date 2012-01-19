@@ -58,7 +58,7 @@ public class WMIClass extends WMIContainer
     private WMIObject classObject;
     private String name;
     private List<WMIClass> subClasses = null;
-    private List<WMIClassProperty> properties = null;
+    private List<WMIClassAttribute> attributes = null;
     private List<WMIClassMethod> methods = null;
 
     public WMIClass(WMIContainer parent, WMIClass superClass, WMIObject classObject)
@@ -160,35 +160,40 @@ public class WMIClass extends WMIContainer
         return getNamespace();
     }
 
-    public Collection<WMIClassProperty> getColumns(DBRProgressMonitor monitor) throws DBException
+    public Collection<WMIClassAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
     {
-        if (properties == null) {
-            readProperties(monitor);
-        }
-        return properties;
+        return getColumns(monitor);
     }
 
-    public WMIClassProperty getColumn(DBRProgressMonitor monitor, String columnName) throws DBException
+    public Collection<WMIClassAttribute> getColumns(DBRProgressMonitor monitor) throws DBException
     {
-        if (properties == null) {
-            readProperties(monitor);
+        if (attributes == null) {
+            readAttributes(monitor);
         }
-        return DBUtils.findObject(properties, columnName);
+        return attributes;
     }
 
-    private synchronized void readProperties(DBRProgressMonitor monitor) throws DBException
+    public WMIClassAttribute getColumn(DBRProgressMonitor monitor, String columnName) throws DBException
     {
-        if (properties != null) {
+        if (attributes == null) {
+            readAttributes(monitor);
+        }
+        return DBUtils.findObject(attributes, columnName);
+    }
+
+    private synchronized void readAttributes(DBRProgressMonitor monitor) throws DBException
+    {
+        if (attributes != null) {
             return;
         }
         try {
-            properties = new ArrayList<WMIClassProperty>();
-            for (WMIObjectProperty prop : classObject.getProperties()) {
+            attributes = new ArrayList<WMIClassAttribute>();
+            for (WMIObjectAttribute prop : classObject.getAttributes()) {
                 if (monitor.isCanceled()) {
                     break;
                 }
                 if (!prop.isSystem()) {
-                    properties.add(new WMIClassProperty(this, prop));
+                    attributes.add(new WMIClassAttribute(this, prop));
                 }
             }
 
