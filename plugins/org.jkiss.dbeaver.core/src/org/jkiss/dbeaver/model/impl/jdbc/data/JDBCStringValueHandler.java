@@ -42,7 +42,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         throws SQLException
     {
         if (value == null) {
-            statement.setNull(paramIndex, paramType.getValueType());
+            statement.setNull(paramIndex, paramType.getTypeID());
         } else {
             statement.setString(paramIndex, value.toString());
         }

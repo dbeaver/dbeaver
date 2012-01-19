@@ -46,9 +46,9 @@ public class DateTimeViewDialog extends ValueViewDialog {
         }
 
         DBSColumnBase column = getValueController().getColumnMetaData();
-        boolean isDate = column.getValueType() == java.sql.Types.DATE;
-        boolean isTime = column.getValueType() == java.sql.Types.TIME;
-        boolean isTimeStamp = column.getValueType() == java.sql.Types.TIMESTAMP;
+        boolean isDate = column.getTypeID() == java.sql.Types.DATE;
+        boolean isTime = column.getTypeID() == java.sql.Types.TIME;
+        boolean isTimeStamp = column.getTypeID() == java.sql.Types.TIMESTAMP;
 
         dateEditor = isDate || isTimeStamp ? new DateTime(dialogGroup, SWT.CALENDAR | style) : null;
         timeEditor = isTime || isTimeStamp ? new DateTime(dialogGroup, SWT.TIME | SWT.LONG | style) : null;

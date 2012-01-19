@@ -78,7 +78,7 @@ public abstract class AbstractColumn implements DBSColumnBase
         this.ordinalPosition = ordinalPosition;
     }
 
-    public int getValueType()
+    public int getTypeID()
     {
         return valueType;
     }

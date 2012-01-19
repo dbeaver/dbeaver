@@ -43,7 +43,7 @@ public class NumberViewDialog extends ValueViewDialog {
         if (getValueController().isReadOnly()) {
             style |= SWT.READ_ONLY;
         }
-        int valueType = getValueController().getColumnMetaData().getValueType();
+        int valueType = getValueController().getColumnMetaData().getTypeID();
         if (valueType == Types.BIT || valueType == Types.BOOLEAN) {
             // Bit (boolean)
             style |= SWT.READ_ONLY;
@@ -69,7 +69,7 @@ public class NumberViewDialog extends ValueViewDialog {
         } else {
             // Numbers
             textEdit = new Text(dialogGroup, style);
-            switch (getValueController().getColumnMetaData().getValueType()) {
+            switch (getValueController().getColumnMetaData().getTypeID()) {
             case java.sql.Types.BIGINT:
             case java.sql.Types.INTEGER:
             case java.sql.Types.SMALLINT:

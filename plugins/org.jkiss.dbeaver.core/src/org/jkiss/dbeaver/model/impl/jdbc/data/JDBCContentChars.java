@@ -125,7 +125,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
             if (data != null) {
                 preparedStatement.setString(paramIndex, data);
             } else {
-                preparedStatement.setNull(paramIndex, columnType.getValueType());
+                preparedStatement.setNull(paramIndex, columnType.getTypeID());
             }
         }
         catch (SQLException e) {

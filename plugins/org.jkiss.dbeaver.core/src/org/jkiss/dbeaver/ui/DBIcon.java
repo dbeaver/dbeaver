@@ -162,6 +162,7 @@ public enum DBIcon
     TYPE_LOB("lob", "/icons/sql/types/lob.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TYPE_ARRAY("array", "/icons/sql/types/array.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TYPE_STRUCT("struct", "/icons/sql/types/struct.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TYPE_OBJECT("object", "/icons/sql/types/object.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TYPE_IMAGE("image", "/icons/sql/types/image.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TYPE_UNKNOWN("unknown", "/icons/sql/types/unknown.png"), //$NON-NLS-1$ //$NON-NLS-2$
 

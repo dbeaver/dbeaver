@@ -112,7 +112,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
                 this.catalogName = tableParent instanceof DBSCatalog ? tableParent.getName() : tableGrandParent instanceof DBSCatalog ? tableGrandParent.getName() : null;
                 this.schemaName = tableParent instanceof DBSSchema ? tableParent.getName() : null;
                 this.tableName = fetchedTableName;
-                this.type = this.tableColumn.getValueType();
+                this.type = this.tableColumn.getTypeID();
                 this.typeName = this.tableColumn.getTypeName();
                 this.readOnly = false;
                 this.writable = true;
@@ -229,7 +229,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return schemaName;
     }
 
-    public int getValueType()
+    public int getTypeID()
     {
         return type;
     }

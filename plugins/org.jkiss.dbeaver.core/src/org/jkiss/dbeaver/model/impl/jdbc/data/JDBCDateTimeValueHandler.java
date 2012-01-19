@@ -7,12 +7,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
-import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
@@ -25,7 +21,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
 
 import java.sql.SQLException;
@@ -67,7 +62,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                                     int columnIndex)
         throws DBCException, SQLException
     {
-        switch (column.getValueType()) {
+        switch (column.getTypeID()) {
         case java.sql.Types.TIME:
             return resultSet.getTime(columnIndex);
         case java.sql.Types.DATE:
@@ -81,9 +76,9 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                                  int paramIndex, Object value) throws SQLException
     {
         if (value == null) {
-            statement.setNull(paramIndex + 1, paramType.getValueType());
+            statement.setNull(paramIndex + 1, paramType.getTypeID());
         } else {
-            switch (paramType.getValueType()) {
+            switch (paramType.getTypeID()) {
             case java.sql.Types.TIME:
                 statement.setTime(paramIndex, (java.sql.Time)value);
                 break;
@@ -105,9 +100,9 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
             final Composite dateTimeGroup = controller.getInlinePlaceholder();
 
-            boolean isDate = controller.getColumnMetaData().getValueType() == java.sql.Types.DATE;
-            boolean isTime = controller.getColumnMetaData().getValueType() == java.sql.Types.TIME;
-            boolean isTimeStamp = controller.getColumnMetaData().getValueType() == java.sql.Types.TIMESTAMP;
+            boolean isDate = controller.getColumnMetaData().getTypeID() == java.sql.Types.DATE;
+            boolean isTime = controller.getColumnMetaData().getTypeID() == java.sql.Types.TIME;
+            boolean isTimeStamp = controller.getColumnMetaData().getTypeID() == java.sql.Types.TIMESTAMP;
 
             final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN) : null;
             final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.TIME | SWT.LONG) : null;
@@ -163,7 +158,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         if (value == null) {
             return super.getValueDisplayString(column, value);
         }
-        switch (column.getValueType()) {
+        switch (column.getTypeID()) {
         case java.sql.Types.TIME:
             return getFormatter(TYPE_NAME_TIME).formatValue(value);
         case java.sql.Types.DATE:

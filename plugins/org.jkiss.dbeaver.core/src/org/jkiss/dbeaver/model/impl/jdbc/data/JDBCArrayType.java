@@ -29,7 +29,7 @@ public class JDBCArrayType implements DBSTypedObject {
         return typeName;
     }
 
-    public int getValueType()
+    public int getTypeID()
     {
         return valueType;
     }

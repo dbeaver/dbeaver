@@ -107,7 +107,7 @@ public class SQLStatementParameter implements DBSColumnBase {
         return paramType == null ? "" : paramType.getName();
     }
 
-    public int getValueType()
+    public int getTypeID()
     {
         return paramType == null ? -1 : paramType.getValueType();
     }

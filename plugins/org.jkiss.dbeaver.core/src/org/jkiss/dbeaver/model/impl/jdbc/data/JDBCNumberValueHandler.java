@@ -65,7 +65,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         throws DBCException, SQLException
     {
         Number value;
-        switch (column.getValueType()) {
+        switch (column.getTypeID()) {
         case java.sql.Types.BIGINT:
             value = resultSet.getLong(columnIndex);
             break;
@@ -120,10 +120,10 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                                  int paramIndex, Object value) throws SQLException
     {
         if (value == null) {
-            statement.setNull(paramIndex, paramType.getValueType());
+            statement.setNull(paramIndex, paramType.getTypeID());
         } else {
             Number number = (Number)value;
-            switch (paramType.getValueType()) {
+            switch (paramType.getTypeID()) {
             case java.sql.Types.BIGINT:
                 statement.setLong(paramIndex, number.longValue());
                 break;
@@ -161,7 +161,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         if (controller.isInlineEdit()) {
             final Object value = controller.getValue();
 
-            if (controller.getColumnMetaData().getValueType() == java.sql.Types.BIT) {
+            if (controller.getColumnMetaData().getTypeID() == java.sql.Types.BIT) {
                 CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
                 editor.add("0"); //$NON-NLS-1$
                 editor.add("1"); //$NON-NLS-1$
@@ -184,7 +184,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 editor.setTextLimit(MAX_NUMBER_LENGTH);
                 editor.selectAll();
                 editor.setFocus();
-                switch (controller.getColumnMetaData().getValueType()) {
+                switch (controller.getColumnMetaData().getTypeID()) {
                 case java.sql.Types.BIGINT:
                 case java.sql.Types.INTEGER:
                 case java.sql.Types.SMALLINT:
@@ -269,7 +269,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             } else if (originalValue instanceof BigDecimal) {
                 return new BigDecimal(text);
             } else {
-                switch (type.getValueType()) {
+                switch (type.getTypeID()) {
                 case java.sql.Types.BIGINT:
                     return Long.valueOf(text);
                 case java.sql.Types.DECIMAL:

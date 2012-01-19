@@ -18,7 +18,7 @@ public class WMIValueHandlerProvider implements DBDValueHandlerProvider {
 
     public Image getTypeImage(DBSTypedObject type)
     {
-        return WMIClassAttribute.getPropertyImage(type.getValueType());
+        return WMIClassAttribute.getPropertyImage(type.getTypeID());
     }
 
     public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)

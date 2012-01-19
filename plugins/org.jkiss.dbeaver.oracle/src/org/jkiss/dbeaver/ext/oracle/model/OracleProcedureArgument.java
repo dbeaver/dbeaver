@@ -146,7 +146,7 @@ public class OracleProcedureArgument implements DBSProcedureColumn
         return type.getName();
     }
 
-    public int getValueType()
+    public int getTypeID()
     {
         return type.getValueType();
     }

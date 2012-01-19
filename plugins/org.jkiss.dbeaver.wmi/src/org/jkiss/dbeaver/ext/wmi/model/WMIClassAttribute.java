@@ -36,7 +36,7 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
         return element.getTypeName();
     }
 
-    public int getValueType()
+    public int getTypeID()
     {
         return element.getType();
     }

@@ -19,10 +19,10 @@ public interface DBSTypedObject extends DBPObject
 
     /**
      * Type numeric ID.
-     * (may refer on java.sql.Types or other constant depending on implementor)
+     * (may refer on java.sql.Types or other constant depending on implementer)
      * @return value type
      */
-    int getValueType();
+    int getTypeID();
 
     /**
      * Value scale

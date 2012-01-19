@@ -41,7 +41,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                                  int paramIndex, Object value) throws SQLException
     {
         if (value == null) {
-            statement.setNull(paramIndex, paramType.getValueType());
+            statement.setNull(paramIndex, paramType.getTypeID());
         } else {
             statement.setBoolean(paramIndex, (Boolean)value);
         }

@@ -221,7 +221,7 @@ public class JDBCUtils {
 
     public static DBSDataKind getDataKind(DBSTypedObject type)
     {
-        return getDataKind(type.getTypeName(), type.getValueType());
+        return getDataKind(type.getTypeName(), type.getTypeID());
     }
 
     public static DBSDataKind getDataKind(String typeName, int valueType)
@@ -284,7 +284,7 @@ public class JDBCUtils {
             case STRING:
                 return DBIcon.TYPE_STRING;
             case NUMERIC:
-                if (type.getValueType() == java.sql.Types.BIT) {
+                if (type.getTypeID() == java.sql.Types.BIT) {
                     return DBIcon.TYPE_BOOLEAN;
                 } else {
                     return DBIcon.TYPE_NUMBER;
@@ -299,8 +299,10 @@ public class JDBCUtils {
                 return DBIcon.TYPE_ARRAY;
             case STRUCT:
                 return DBIcon.TYPE_STRUCT;
+            case OBJECT:
+                return DBIcon.TYPE_OBJECT;
             default:
-                if (type.getValueType() == java.sql.Types.SQLXML) {
+                if (type.getTypeID() == java.sql.Types.SQLXML) {
                     return DBIcon.TYPE_XML;
                 }
                 return DBIcon.TYPE_UNKNOWN;

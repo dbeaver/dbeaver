@@ -5,4 +5,5 @@ package org.jkiss.dbeaver.model.struct;
  */
 public interface DBSEntityElement extends DBSObject
 {
+    //boolean isInherited();
 }

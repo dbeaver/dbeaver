@@ -74,7 +74,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     {
         MySQLTypeEnum e = (MySQLTypeEnum)value;
         if (e == null || e.isNull()) {
-            statement.setNull(paramIndex, paramType.getValueType());
+            statement.setNull(paramIndex, paramType.getTypeID());
         } else {
             statement.setString(paramIndex, e.getValue());
         }

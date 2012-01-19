@@ -349,7 +349,7 @@ public final class DBUtils {
 
     public static DBDValueHandler getColumnValueHandler(DBCExecutionContext context, DBSTypedObject column)
     {
-        return findValueHandler(context.getDataSource(), context, column.getTypeName(), column.getValueType());
+        return findValueHandler(context.getDataSource(), context, column.getTypeName(), column.getTypeID());
     }
 
     public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBDPreferences preferences, String typeName, int valueType)

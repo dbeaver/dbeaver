@@ -64,7 +64,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         Object value = resultSet.getObject(columnIndex);
         if (value == null && !resultSet.wasNull()) {
             // This may happen in some bad drivers like ODBC bridge
-            switch (column.getValueType()) {
+            switch (column.getTypeID()) {
                 case java.sql.Types.CHAR:
                 case java.sql.Types.VARCHAR:
                 case java.sql.Types.NVARCHAR:
@@ -146,7 +146,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     public DBDContent createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
     {
         // Create wrapper using column type
-        switch (column.getValueType()) {
+        switch (column.getTypeID()) {
             case java.sql.Types.CHAR:
             case java.sql.Types.VARCHAR:
             case java.sql.Types.NVARCHAR:

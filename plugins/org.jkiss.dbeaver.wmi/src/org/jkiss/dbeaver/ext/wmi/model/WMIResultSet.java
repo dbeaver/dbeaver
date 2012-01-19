@@ -193,7 +193,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
             return attribute.getTypeName();
         }
 
-        public int getValueType()
+        public int getTypeID()
         {
             return attribute.getType();
         }
