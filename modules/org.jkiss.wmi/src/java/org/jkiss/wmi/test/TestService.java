@@ -96,6 +96,10 @@ public class TestService {
 */
             final WMIService nsService = service.openNamespace("cimv2");
 
+            ObjectCollectorSink tmpSink = new ObjectCollectorSink();
+            nsService.executeQuery("SELECT * FROM Win32_Group", tmpSink, WMIConstants.WBEM_FLAG_SEND_STATUS);
+            tmpSink.waitForFinish();
+
             ObjectCollectorSink classesSink = new ObjectCollectorSink();
             nsService.enumClasses(null, classesSink, 0);
             classesSink.waitForFinish();

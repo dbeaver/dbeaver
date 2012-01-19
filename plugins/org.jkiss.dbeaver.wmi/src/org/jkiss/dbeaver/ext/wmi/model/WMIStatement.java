@@ -63,7 +63,7 @@ public class WMIStatement implements DBCStatement {
                 maxRows);
             try {
                 WMIService.initializeThread();
-                getService().executeQuery(query, sink, WMIConstants.WBEM_FLAG_SHALLOW);
+                getService().executeQuery(query, sink, WMIConstants.WBEM_FLAG_SEND_STATUS);
                 sink.waitForFinish();
                 queryResult = sink.getObjectList();
                 return true;
