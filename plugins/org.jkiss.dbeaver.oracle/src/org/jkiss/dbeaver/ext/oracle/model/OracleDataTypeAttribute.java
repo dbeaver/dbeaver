@@ -75,4 +75,13 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
         return scale;
     }
 
+    public int getTypeID()
+    {
+        return attrType.getValueType();
+    }
+
+    public String getTypeName()
+    {
+        return attrType.getName();
+    }
 }

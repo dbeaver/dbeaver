@@ -9,6 +9,8 @@ package org.jkiss.dbeaver.model.struct;
  */
 public interface DBSEntityAttribute extends DBSEntityElement {
 
+    int getTypeID();
 
+    String getTypeName();
 
 }
