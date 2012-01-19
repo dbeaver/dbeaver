@@ -61,7 +61,7 @@ public class WMIClass extends WMIContainer
     private List<WMIClassAttribute> attributes = null;
     private List<WMIClassMethod> methods = null;
 
-    public WMIClass(WMIContainer parent, WMIClass superClass, WMIObject classObject)
+    public WMIClass(WMINamespace parent, WMIClass superClass, WMIObject classObject)
     {
         super(parent);
         this.superClass = superClass;

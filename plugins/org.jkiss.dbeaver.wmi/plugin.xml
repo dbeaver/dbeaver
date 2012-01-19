@@ -28,7 +28,7 @@
                 <!--folder type="org.jkiss.dbeaver.ext.wmi.model.WMIContainer" label="Hierarchy" description="WMI namespace and class hierarchy"-->
                     <items label="Namespaces" itemLabel="Namespace" path="namespace" property="namespaces" icon="icons/namespace.png" id="Namespace">
                         <items ref="Namespace"/>
-                        <items label="Classes" itemLabel="Class" path="class" property="allClasses" iconId="icons/class.png" id="Class" visibleIf="object.hasClasses()">
+                        <items label="Classes" itemLabel="Class" path="class" property="allClasses" iconId="icons/class.png" id="Class">
                             <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassAttribute" label="Properties" iconId="#columns" description="Class properties" navigable="false" id="ClassAttributes">
                                 <items label="Properties" itemLabel="Property" path="attribute" property="allAttributes"/>
                             </folder>

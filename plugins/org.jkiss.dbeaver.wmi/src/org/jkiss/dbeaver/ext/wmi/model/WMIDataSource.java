@@ -9,29 +9,27 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.wmi.service.WMIService;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * WMIDataSource
  */
-public class WMIDataSource extends WMINamespace implements DBPDataSource//, DBSEntitySelector
+public class WMIDataSource implements DBPDataSource//, DBSEntitySelector
 {
     private DBSDataSourceContainer container;
+    private WMINamespace rootNamespace;
 
     public WMIDataSource(DBSDataSourceContainer container, WMIService service)
         throws DBException
     {
-        super(container.getName());
         this.container = container;
-        this.service = service;
-    }
-
-    @Override
-    public WMIService getService()
-    {
-        return service;
+        this.rootNamespace = new WMINamespace(null, this, container.getConnectionInfo().getDatabaseName(), service);
     }
 
     public DBSDataSourceContainer getContainer()
@@ -41,7 +39,7 @@ public class WMIDataSource extends WMINamespace implements DBPDataSource//, DBSE
 
     public DBPDataSourceInfo getInfo()
     {
-        return new WMIDataSourceInfo(getService());
+        return new WMIDataSourceInfo(rootNamespace.service);
     }
 
     public boolean isConnected()
@@ -69,9 +67,15 @@ public class WMIDataSource extends WMINamespace implements DBPDataSource//, DBSE
     {
     }
 
-    @Override
     public void close()
     {
-        super.close();
+
     }
+
+    @Association
+    public Collection<WMINamespace> getNamespaces()
+    {
+        return Collections.singletonList(rootNamespace);
+    }
+
 }

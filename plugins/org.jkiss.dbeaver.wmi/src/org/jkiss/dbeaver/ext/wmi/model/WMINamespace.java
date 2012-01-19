@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.WMIConstants;
@@ -27,33 +27,37 @@ import java.util.List;
  */
 public class WMINamespace extends WMIContainer implements WMIClassContainer, DBSSchema, DBPCloseableObject {
 
+    protected WMIDataSource dataSource;
     private String name;
+    protected WMIService service;
     private volatile List<WMINamespace> namespaces;
     private volatile List<WMIClass> classes;
     private volatile List<WMIClass> allClasses;
-    protected WMIService service;
 
-    public WMINamespace(WMIContainer parent, String name)
+    public WMINamespace(WMINamespace parent, WMIDataSource dataSource, String name, WMIService service)
     {
         super(parent);
+        this.dataSource = dataSource;
         this.name = name;
+        this.service = service;
     }
 
-    public WMINamespace(String name)
+    @Override
+    public DBSObject getParentObject()
     {
-        super(null);
-        this.name = name;
+        return parent != null ? parent : dataSource.getContainer();
+    }
+
+    @Override
+    public WMIDataSource getDataSource()
+    {
+        return dataSource;
     }
 
     public WMIService getService() throws WMIException
     {
         if (service == null) {
-            StringBuilder nsName = new StringBuilder();
-            nsName.append(this.name);
-            for (WMIContainer p = parent; p != null && !(p instanceof WMIDataSource); p = p.parent) {
-                nsName.insert(0, '/').insert(0, p.getName());
-            }
-            this.service = getDataSource().getService().openNamespace(nsName.toString());
+            this.service = parent.getService().openNamespace(this.name);
         }
         return service;
     }
@@ -90,7 +94,7 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
                 List<WMINamespace> children = new ArrayList<WMINamespace>();
                 for (WMIObject object : sink.getObjectList()) {
                     String nsName = CommonUtils.toString(object.getValue("Name"));
-                    children.add(new WMINamespace(this, nsName));
+                    children.add(new WMINamespace(this, dataSource, nsName, null));
                     object.release();
                 }
                 DBUtils.orderObjects(children);
@@ -227,7 +231,7 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
             allClasses.clear();
             classes.clear();
         }
-        if (service != null) {
+        if (parent != null && service != null) {
             service.close();
             service = null;
         }

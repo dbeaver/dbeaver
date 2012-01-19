@@ -6,9 +6,6 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -18,9 +15,9 @@ public abstract class WMIContainer implements DBSObject
 {
     static final Log log = LogFactory.getLog(WMIContainer.class);
 
-    protected final WMIContainer parent;
+    protected final WMINamespace parent;
 
-    protected WMIContainer(WMIContainer parent)
+    protected WMIContainer(WMINamespace parent)
     {
         this.parent = parent;
     }
@@ -32,17 +29,12 @@ public abstract class WMIContainer implements DBSObject
 
     public DBSObject getParentObject()
     {
-        return parent instanceof WMIDataSource ? ((WMIDataSource) parent).getContainer() : parent;
+        return parent;
     }
 
     public WMIDataSource getDataSource()
     {
-        for (WMIContainer p = this; p != null; p = p.parent) {
-            if (p instanceof WMIDataSource) {
-                return (WMIDataSource)p;
-            }
-        }
-        return null;
+        return parent.getDataSource();
     }
 
     public boolean isPersisted()
