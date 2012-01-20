@@ -95,6 +95,7 @@ public class WMIConstants {
     public static final String Q_Abstract = "Abstract";
     public static final String Q_Aggregate = "Aggregate";
     public static final String Q_Aggregation = "Aggregation";
+    public static final String Q_Association = "Association";
     public static final String Q_Alias = "Alias";
     public static final String Q_ArrayType = "ArrayType";
     public static final String Q_BitMap = "BitMap";

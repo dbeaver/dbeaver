@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -22,13 +23,14 @@ import java.util.List;
 /**
  * WMI Namespace
  */
-public class WMINamespace extends WMIContainer implements WMIClassContainer, DBSSchema, DBPCloseableObject {
+public class WMINamespace extends WMIContainer implements DBSSchema, DBPCloseableObject {
 
     protected WMIDataSource dataSource;
     private String name;
     protected WMIService service;
     private volatile List<WMINamespace> namespaces;
-    private volatile List<WMIClass> classes;
+    private volatile List<WMIClass> rooClasses;
+    private volatile List<WMIClass> associations;
     private volatile List<WMIClass> allClasses;
 
     public WMINamespace(WMINamespace parent, WMIDataSource dataSource, String name, WMIService service)
@@ -104,30 +106,35 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
         }
     }
 
-    public boolean hasClasses()
-    {
-        return true;
-    }
-
-    public Collection<WMIClass> getClasses(DBRProgressMonitor monitor)
+    @Association
+    public Collection<WMIClass> getRootClasses(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (classes == null) {
+        if (rooClasses == null) {
             synchronized (this) {
-                if (classes == null) {
+                if (rooClasses == null) {
                     // Class are not yet loaded - it means we are in datasource object
                     loadClasses(monitor);
                 }
             }
         }
-        return classes;
+        return rooClasses;
     }
 
-    public Collection<WMIClass> getAllClasses(DBRProgressMonitor monitor)
+    @Association
+    public Collection<WMIClass> getClasses(DBRProgressMonitor monitor)
         throws DBException
     {
-        getClasses(monitor);
+        getRootClasses(monitor);
         return allClasses;
+    }
+
+    @Association
+    public Collection<WMIClass> getAssociations(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        getRootClasses(monitor);
+        return associations;
     }
 
     void loadClasses(DBRProgressMonitor monitor)
@@ -141,34 +148,47 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
                 WMIService.initializeThread();
                 getService().enumClasses(null, sink, WMIConstants.WBEM_FLAG_DEEP);
                 sink.waitForFinish();
-                List<WMIClass> children = new ArrayList<WMIClass>();
+                List<WMIClass> allClasses = new ArrayList<WMIClass>();
+                List<WMIClass> allAssociations = new ArrayList<WMIClass>();
                 List<WMIClass> rootClasses = new ArrayList<WMIClass>();
                 for (WMIObject object : sink.getObjectList()) {
                     WMIClass superClass = null;
                     String superClassName = (String)object.getValue(WMIConstants.CLASS_PROP_SUPER_CLASS);
                     if (superClassName != null) {
-                        for (WMIClass c : children) {
+                        for (WMIClass c : allClasses) {
                             if (c.getName().equals(superClassName)) {
                                 superClass = c;
                                 break;
                             }
                         }
                         if (superClass == null) {
-                            log.warn("Super class '" + superClassName + "' not found");
+                            for (WMIClass c : allAssociations) {
+                                if (c.getName().equals(superClassName)) {
+                                    superClass = c;
+                                    break;
+                                }
+                            }
+                            if (superClass == null) {
+                                log.warn("Super class '" + superClassName + "' not found");
+                            }
                         }
                     }
                     WMIClass wmiClass = new WMIClass(this, superClass, object);
-                    children.add(wmiClass);
-                    if (superClass == null) {
-                        rootClasses.add(wmiClass);
+                    if (wmiClass.isAssociation()) {
+                        allAssociations.add(wmiClass);
                     } else {
-                        superClass.addSubClass(wmiClass);
+                        allClasses.add(wmiClass);
+                        if (superClass == null) {
+                            rootClasses.add(wmiClass);
+                        } else {
+                            superClass.addSubClass(wmiClass);
+                        }
                     }
                 }
 
                 // filter out system classes
                 if (!showSystemObjects) {
-                    for (Iterator<WMIClass> iter = children.iterator(); iter.hasNext(); ) {
+                    for (Iterator<WMIClass> iter = allClasses.iterator(); iter.hasNext(); ) {
                         WMIClass wmiClass = iter.next();
                         if (wmiClass.isSystem()) {
                             iter.remove();
@@ -177,10 +197,12 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
                 }
 
                 DBUtils.orderObjects(rootClasses);
-                DBUtils.orderObjects(children);
+                DBUtils.orderObjects(allClasses);
+                DBUtils.orderObjects(allAssociations);
 
-                this.classes = rootClasses;
-                this.allClasses = children;
+                this.rooClasses = rootClasses;
+                this.allClasses = allClasses;
+                this.associations = allAssociations;
             } finally {
                 WMIService.unInitializeThread();
             }
@@ -193,7 +215,8 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
     {
         List<WMIContainer> children = new ArrayList<WMIContainer>();
         children.addAll(getNamespaces(monitor));
-        children.addAll(getAllClasses(monitor));
+        children.addAll(getClasses(monitor));
+        children.addAll(getAssociations(monitor));
         return children;
     }
 
@@ -226,7 +249,7 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
                 wmiClass.close();
             }
             allClasses.clear();
-            classes.clear();
+            rooClasses.clear();
         }
         if (parent != null && service != null) {
             service.close();

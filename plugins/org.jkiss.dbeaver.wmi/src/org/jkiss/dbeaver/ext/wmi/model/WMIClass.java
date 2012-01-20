@@ -34,12 +34,14 @@ import java.util.List;
  * WMI class
  */
 public class WMIClass extends WMIContainer
-    implements WMIClassContainer, DBSTable, DBSEntity, DBPCloseableObject, DBSDataContainer, IObjectImageProvider
+    implements DBSTable, DBSEntity, DBPCloseableObject, DBSDataContainer, IObjectImageProvider
 {
     private static Image IMG_CLASS;
     private static Image IMG_CLASS_ABSTRACT;
     private static Image IMG_CLASS_FINAL;
     private static Image IMG_CLASS_ABSTRACT_FINAL;
+    private static Image IMG_ASSOCIATION;
+    private static Image IMG_ASSOCIATION_ABSTRACT;
 
     static {
         IMG_CLASS = Activator.getImageDescriptor("icons/class.png").createImage();
@@ -53,6 +55,13 @@ public class WMIClass extends WMIContainer
         IMG_CLASS_ABSTRACT_FINAL = ovrDescriptor.createImage();
         ovrDescriptor.setTopRight(null);
         IMG_CLASS_FINAL = ovrDescriptor.createImage();
+
+        IMG_ASSOCIATION = Activator.getImageDescriptor("icons/association.png").createImage();
+        baseData = IMG_ASSOCIATION.getImageData();
+        ovrDescriptor = new OverlayImageDescriptor(baseData);
+        ovrDescriptor.setTopRight(new ImageDescriptor[]{
+            Activator.getImageDescriptor("icons/ovr_abstract.png")});
+        IMG_ASSOCIATION_ABSTRACT = ovrDescriptor.createImage();
     }
 
     private WMIClass superClass;
@@ -73,6 +82,12 @@ public class WMIClass extends WMIContainer
     {
         return classObject != null && Boolean.TRUE.equals(
             classObject.getQualifier(WMIConstants.Q_Abstract));
+    }
+
+    public boolean isAssociation() throws WMIException
+    {
+        return classObject != null && Boolean.TRUE.equals(
+            classObject.getQualifier(WMIConstants.Q_Association));
     }
 
     public boolean isFinal() throws WMIException
@@ -103,11 +118,7 @@ public class WMIClass extends WMIContainer
         return subClasses;
     }
 
-    public boolean hasClasses()
-    {
-        return !CommonUtils.isEmpty(subClasses);
-    }
-
+    @Association
     public Collection<WMIClass> getClasses(DBRProgressMonitor monitor) throws DBException
     {
         return subClasses;
@@ -388,12 +399,10 @@ public class WMIClass extends WMIContainer
     public Image getObjectImage()
     {
         try {
-            if (isAbstract()) {
-                if (isFinal()) {
-                    return IMG_CLASS_ABSTRACT_FINAL;
-                } else {
-                    return IMG_CLASS_ABSTRACT;
-                }
+            if (isAssociation()) {
+                return isAbstract() ? IMG_ASSOCIATION : IMG_ASSOCIATION_ABSTRACT;
+            } else if (isAbstract()) {
+                return isFinal() ? IMG_CLASS_ABSTRACT_FINAL : IMG_CLASS_ABSTRACT;
             } else if (isFinal()) {
                 return IMG_CLASS_FINAL;
             }

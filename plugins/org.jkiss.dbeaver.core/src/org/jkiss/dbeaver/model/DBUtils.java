@@ -483,7 +483,7 @@ public final class DBUtils {
 
     public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSConstraint constraint)
     {
-        Collection<? extends DBSConstraintColumn> constraintColumns = constraint.getColumns(monitor);
+        Collection<? extends DBSConstraintColumn> constraintColumns = constraint == null ? null : constraint.getColumns(monitor);
         if (constraintColumns == null) {
             return Collections.emptyList();
         }
