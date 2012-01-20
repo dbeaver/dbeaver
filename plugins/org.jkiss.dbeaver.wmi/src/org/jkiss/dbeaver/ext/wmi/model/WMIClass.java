@@ -388,4 +388,9 @@ public class WMIClass extends WMIContainer
         return IMG_CLASS;
     }
 
+    @Override
+    protected WMIQualifiedObject getQualifiedObject()
+    {
+        return classObject;
+    }
 }

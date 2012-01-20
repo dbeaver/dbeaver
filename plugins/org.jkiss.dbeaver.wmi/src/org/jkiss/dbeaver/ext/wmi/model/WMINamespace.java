@@ -12,10 +12,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.wmi.service.WMIConstants;
-import org.jkiss.wmi.service.WMIException;
-import org.jkiss.wmi.service.WMIObject;
-import org.jkiss.wmi.service.WMIService;
+import org.jkiss.wmi.service.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -196,7 +193,7 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
     {
         List<WMIContainer> children = new ArrayList<WMIContainer>();
         children.addAll(getNamespaces(monitor));
-        children.addAll(getClasses(monitor));
+        children.addAll(getAllClasses(monitor));
         return children;
     }
 
@@ -237,4 +234,9 @@ public class WMINamespace extends WMIContainer implements WMIClassContainer, DBS
         }
     }
 
+    @Override
+    protected WMIQualifiedObject getQualifiedObject()
+    {
+        return null;
+    }
 }

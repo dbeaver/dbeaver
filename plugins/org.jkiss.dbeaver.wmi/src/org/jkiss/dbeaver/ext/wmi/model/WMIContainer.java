@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * Entity container
  */
-public abstract class WMIContainer implements DBSObject
+public abstract class WMIContainer extends WMIPropertySource implements DBSObject
 {
     static final Log log = LogFactory.getLog(WMIContainer.class);
 
