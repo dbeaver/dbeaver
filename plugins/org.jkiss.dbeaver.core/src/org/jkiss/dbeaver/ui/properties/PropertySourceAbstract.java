@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -20,6 +21,7 @@ import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -260,6 +262,16 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter);
         for (final ObjectPropertyDescriptor desc : annoProps) {
             addProperty(desc);
+        }
+        if (editableValue instanceof IPropertySource) {
+            IPropertySource ownPropSource = (IPropertySource) editableValue;
+            IPropertyDescriptor[] ownProperties = ownPropSource.getPropertyDescriptors();
+            if (!CommonUtils.isEmpty(ownProperties)) {
+                for (IPropertyDescriptor prop : ownProperties) {
+                    props.add(prop);
+                    propValues.put(prop.getId(), ownPropSource.getPropertyValue(prop.getId()));
+                }
+            }
         }
     }
 

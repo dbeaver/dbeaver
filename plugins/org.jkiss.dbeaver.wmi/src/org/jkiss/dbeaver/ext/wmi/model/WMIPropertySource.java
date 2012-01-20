@@ -23,7 +23,7 @@ public abstract class WMIPropertySource implements IPropertySource
 
     public Object getEditableValue()
     {
-        return getQualifiedObject();
+        return this;//getQualifiedObject();
     }
 
     public IPropertyDescriptor[] getPropertyDescriptors()
@@ -38,7 +38,9 @@ public abstract class WMIPropertySource implements IPropertySource
             int index = 0;
             for (WMIQualifier qualifier : qualifiers) {
                 String name = qualifier.getName();
-                result[index++] = new PropertyDescriptor(name, name);
+                PropertyDescriptor prop = new PropertyDescriptor(name, name);
+                prop.setCategory("WMI");
+                result[index++] = prop;
             }
             return result;
         } catch (WMIException e) {

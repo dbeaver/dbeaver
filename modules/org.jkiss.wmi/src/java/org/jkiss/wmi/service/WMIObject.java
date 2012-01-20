@@ -65,6 +65,12 @@ public class WMIObject extends WMIQualifiedObject {
         readQualifiers(false, null, qualifiers);
     }
 
+    @Override
+    public String toString()
+    {
+        return "WMIObject:" + objectHandle;
+    }
+
     private native String readObjectText()
         throws WMIException;
 

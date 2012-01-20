@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -88,7 +89,7 @@ public class WMIClass extends WMIContainer
 
     public WMINamespace getNamespace()
     {
-        return (WMINamespace) parent;
+        return parent;
     }
 
     public WMIObject getClassObject()
@@ -96,6 +97,7 @@ public class WMIClass extends WMIContainer
         return classObject;
     }
 
+    @Association
     public List<WMIClass> getSubClasses()
     {
         return subClasses;
@@ -171,6 +173,7 @@ public class WMIClass extends WMIContainer
         return getColumns(monitor);
     }
 
+    @Association
     public Collection<WMIClassAttribute> getAllAttributes(DBRProgressMonitor monitor) throws DBException
     {
         if (superClass == null) {
@@ -178,7 +181,18 @@ public class WMIClass extends WMIContainer
         } else {
             List<WMIClassAttribute> allAttrs = new ArrayList<WMIClassAttribute>();
             for (WMIClass c = this; c != null; c = c.superClass) {
-                allAttrs.addAll(c.getAttributes(monitor));
+                for (WMIClassAttribute attr : c.getAttributes(monitor)) {
+                    boolean overridden = false;
+                    for (WMIClassAttribute a : allAttrs) {
+                        if (attr.getName().equals(a.getName())) {
+                            overridden = true;
+                            break;
+                        }
+                    }
+                    if (!overridden) {
+                        allAttrs.add(attr);
+                    }
+                }
             }
             return allAttrs;
         }
@@ -221,6 +235,7 @@ public class WMIClass extends WMIContainer
         }
     }
 
+    @Association
     public List<WMIClassMethod> getMethods(DBRProgressMonitor monitor) throws DBException
     {
         if (methods == null) {

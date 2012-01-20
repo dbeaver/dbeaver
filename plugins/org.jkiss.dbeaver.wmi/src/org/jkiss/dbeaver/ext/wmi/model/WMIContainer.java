@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -13,8 +11,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public abstract class WMIContainer extends WMIPropertySource implements DBSObject
 {
-    static final Log log = LogFactory.getLog(WMIContainer.class);
-
     protected final WMINamespace parent;
 
     protected WMIContainer(WMINamespace parent)
