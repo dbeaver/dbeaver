@@ -61,15 +61,10 @@ public class WMIStatement implements DBCStatement {
                 getService(),
                 firstRow,
                 maxRows);
-            try {
-                WMIService.initializeThread();
-                getService().executeQuery(query, sink, WMIConstants.WBEM_FLAG_SEND_STATUS);
-                sink.waitForFinish();
-                queryResult = sink.getObjectList();
-                return true;
-            } finally {
-                WMIService.unInitializeThread();
-            }
+            getService().executeQuery(query, sink, WMIConstants.WBEM_FLAG_SEND_STATUS);
+            sink.waitForFinish();
+            queryResult = sink.getObjectList();
+            return true;
         } catch (WMIException e) {
             throw new DBCException("Can't execute query '" + query + "'", e);
         }

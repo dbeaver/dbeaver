@@ -22,6 +22,7 @@ public class TestService {
 
     private WMIService service;
     private boolean finished = false;
+    private WMIService nsService;
 
     public TestService()
     {
@@ -36,81 +37,83 @@ public class TestService {
     void test()
     {
         log.info("Start service");
-        WMIService.initializeThread();
         try {
             //service.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
-            service = WMIService.connect(log, null, "localhost", null, null, null, "\\root");
-            final long curTime = System.currentTimeMillis();
-
-/*
-            WMIObject[] result = service.executeQuery(
-                "select * from Win32_NTLogEvent where LogFile='System'", false);
-            System.out.println("Exec time: " + (System.currentTimeMillis() - curTime) + "ms");
-
-            for (WMIObject object : result) {
-                printObject(object);
-            }
-*/
-
-
-            WMIObjectSink objectExplorerSink = new WMIObjectSink() {
-                private int totalObjects = 0;
-
-                public void indicate(WMIObject[] objects) {
-                    totalObjects += objects.length;
-                    for (WMIObject object : objects) {
+            {
+                Thread testThread = new Thread() {
+                    @Override
+                    public void run()
+                    {
                         try {
-                            examineObject(object);
-                            //object.release();
-                        } catch (Throwable e) {
+                            service = WMIService.connect(log, null, "localhost", null, null, null, "root");
+                            ObjectCollectorSink classesSink = new ObjectCollectorSink();
+                            service.enumClasses(null, classesSink, 0);
+                            classesSink.waitForFinish();
+                            Thread.sleep(10000);
+
+                        } catch (WMIException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        }
+                    }
+                };
+                testThread.start();
+                Thread.sleep(1000);
+            }
+
+            {
+                Thread testThread2 = new Thread() {
+                    @Override
+                    public void run()
+                    {
+                        try {
+                            testNamespace();
+                        } catch (WMIException e) {
                             e.printStackTrace();
                         }
                     }
-                    System.out.println("Recieved " + objects.length + " (" + totalObjects + ") objects");
-                }
-
-                public void setStatus(WMIObjectSinkStatus status, int progress, String param, WMIObject errorObject) {
-                    System.out.println("Status: " + status + "; " + Integer.toHexString(progress) + "; " + param);
-                    if (errorObject != null) {
-                        printObject(errorObject);
-                    }
-                    System.out.println("Total objects: " + totalObjects);
-                    System.out.println("Exec time: " + (System.currentTimeMillis() - curTime) + "ms");
-                    finished = true;
-                }
-            };
-/*
-            service.executeQuery(
-                "select * from Win32_NTLogEvent",
-                objectExplorerSink,
-                WMIConstants.WBEM_FLAG_SEND_STATUS
-            );
-            try {
-                while (!finished) {
-                    Thread.sleep(100);
-                }
-            }
-            catch (InterruptedException e) {
-                // do nothing
-            }
-*/
-            final WMIService nsService = service.openNamespace("cimv2");
-
-            ObjectCollectorSink tmpSink = new ObjectCollectorSink();
-            nsService.executeQuery("SELECT * FROM Win32_Group", tmpSink, WMIConstants.WBEM_FLAG_SEND_STATUS);
-            tmpSink.waitForFinish();
-
-            ObjectCollectorSink classesSink = new ObjectCollectorSink();
-            nsService.enumClasses(null, classesSink, 0);
-            classesSink.waitForFinish();
-            for (WMIObject classDesc : classesSink.objectList) {
-                final Collection<WMIObjectMethod> methods = classDesc.getMethods(WMIConstants.WBEM_FLAG_ALWAYS);
-                if (methods != null) {
-
-                }
+                };
+                testThread2.start();
+                testThread2.join();
             }
 
-            ObjectCollectorSink objectCollectorSink = new ObjectCollectorSink();
+        } catch (InterruptedException e) {
+            // do nothing
+        } finally {
+            service.close();
+        }
+
+        System.gc();
+        System.out.println("DONE");
+    }
+
+    private void testNamespace()
+        throws WMIException
+    {
+        //WMIService.initializeThread();
+
+        ObjectCollectorSink classesSink;
+
+        nsService = service.openNamespace("cimv2");
+        ObjectCollectorSink tmpSink = new ObjectCollectorSink();
+        nsService.executeQuery("SELECT * FROM Win32_Service", tmpSink, WMIConstants.WBEM_FLAG_SEND_STATUS);
+        tmpSink.waitForFinish();
+        for (WMIObject o : tmpSink.objectList) {
+            System.out.println(o.getValue("Name"));
+        }
+
+        classesSink = new ObjectCollectorSink();
+        nsService.enumClasses(null, classesSink, 0);
+        classesSink.waitForFinish();
+        for (WMIObject classDesc : classesSink.objectList) {
+            final Collection<WMIObjectMethod> methods = classDesc.getMethods(WMIConstants.WBEM_FLAG_ALWAYS);
+            if (methods != null) {
+
+            }
+        }
+
+        ObjectCollectorSink objectCollectorSink = new ObjectCollectorSink();
 /*
             service.executeQuery(
                 //"select * from Win32_NTLogEvent",
@@ -119,15 +122,15 @@ public class TestService {
                 WMIConstants.WBEM_FLAG_SEND_STATUS
             );
 */
-            nsService.enumInstances("Win32_Group", objectCollectorSink, WMIConstants.WBEM_FLAG_SEND_STATUS);
-            objectCollectorSink.waitForFinish();
+        nsService.enumInstances("Win32_Group", objectCollectorSink, WMIConstants.WBEM_FLAG_SEND_STATUS);
+        objectCollectorSink.waitForFinish();
 
-            for (WMIObject nsDesc : objectCollectorSink.objectList) {
-                System.out.println(nsDesc.getValue("Name"));
-                final Collection<WMIQualifier> qfList = nsDesc.getQualifiers();
-                if (qfList != null) {
+        for (WMIObject nsDesc : objectCollectorSink.objectList) {
+            System.out.println(nsDesc.getValue("Name"));
+            final Collection<WMIQualifier> qfList = nsDesc.getQualifiers();
+            if (qfList != null) {
 
-                }
+            }
 
 //                final Object nsName = nsDesc.getValue("Name");
 //                final WMIService nsService = service.openNamespace(nsName.toString());
@@ -136,18 +139,7 @@ public class TestService {
 //                nsService.enumClasses(null, classCollectorSink, WMIConstants.WBEM_FLAG_SEND_STATUS | WMIConstants.WBEM_FLAG_SHALLOW);
 //                classCollectorSink.waitForFinish();
 //                nsService.close();
-            }
-
-        } catch (WMIException e) {
-            e.printStackTrace();
         }
-        finally {
-            service.close();
-            WMIService.unInitializeThread();
-        }
-
-        System.gc();
-        System.out.println("DONE");
     }
 
     private static void printObject(WMIObject object)

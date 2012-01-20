@@ -5,10 +5,6 @@
 #include "WMIUtils.h"
 #include "WMIService.h"
 
-#ifdef _MANAGED
-7ji#pragma managed(push, off)
-#endif
-
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
@@ -26,6 +22,22 @@ BOOL WINAPI DllMain(
 			::printf("Failed to initialize COM library. Error code = %d", hres);
 			return FALSE;
 		}
+		hres =  ::CoInitializeSecurity(
+			NULL, 
+			-1,                          // COM authentication
+			NULL,                        // Authentication services
+			NULL,                        // Reserved
+			RPC_C_AUTHN_LEVEL_DEFAULT,   // Default authentication 
+			RPC_C_IMP_LEVEL_IMPERSONATE, // Default Impersonation  
+			NULL,                        // Authentication info
+			EOAC_NONE,                   // Additional capabilities 
+			NULL                         // Reserved
+			);
+		if (FAILED(hres) && hres != RPC_E_TOO_LATE) {
+			::printf("Failed to initialize security");
+			return FALSE;
+		}
+
 		_Module.Init(ObjectMap, hinstDLL);
 		hWMIUtils = ::LoadLibrary(L"wmiutils.dll");
 		hWbemCommon = ::LoadLibrary(L"wbemcomn.dll");
@@ -50,8 +62,4 @@ BOOL WINAPI DllMain(
 
 	return TRUE;
 }
-
-#ifdef _MANAGED
-#pragma managed(pop)
-#endif
 

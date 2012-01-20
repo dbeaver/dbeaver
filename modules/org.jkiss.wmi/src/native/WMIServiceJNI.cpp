@@ -7,45 +7,6 @@
 #include "WMIUtils.h"
 
 
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_initializeThread(
-	JNIEnv* pJavaEnv, 
-	jclass serviceClass)
-{
-	HRESULT hres =  ::CoInitializeEx(0, COINIT_MULTITHREADED); 
-//	if (hres == RPC_E_CHANGED_MODE) {
-//		hres =  ::CoInitialize(0); 
-//	}
-    if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Failed to initialize COM library", hres);
-		return;
-	}
-
-	hres =  ::CoInitializeSecurity(
-        NULL, 
-        -1,                          // COM authentication
-        NULL,                        // Authentication services
-        NULL,                        // Reserved
-        RPC_C_AUTHN_LEVEL_DEFAULT,   // Default authentication 
-        RPC_C_IMP_LEVEL_IMPERSONATE, // Default Impersonation  
-        NULL,                        // Authentication info
-        EOAC_NONE,                   // Additional capabilities 
-        NULL                         // Reserved
-        );
-    if (FAILED(hres) && hres != RPC_E_TOO_LATE) {
-		THROW_COMMON_ERROR(L"Failed to initialize security", hres);
-        return;
-    }
-}
-
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_unInitializeThread(
-	JNIEnv* pJavaEnv, 
-	jclass serviceClass)
-{
-	::CoUninitialize();
-}
-
-
-
 /*
  * Class:     org_jkiss_wmi_service_WMIService
  * Method:    connect
@@ -62,6 +23,9 @@ JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIService_connect(
 	jstring locale,
 	jstring resource)
 {
+	// Init COM for current thread
+	if (!WMIInitializeThread(pJavaEnv)) return NULL;
+
 	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 	jobject newServiceObject = pJavaEnv->NewObject(jniMeta.wmiServiceClass, jniMeta.wmiServiceConstructor);
 	if (pJavaEnv->ExceptionCheck()) {
@@ -96,6 +60,8 @@ JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIService_connect(
 JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_close
   (JNIEnv * pJavaEnv, jobject object)
 {
+	if (!WMIInitializeThread(pJavaEnv)) return;
+
 	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
 	if (pService != NULL) {
 		pService->Release(pJavaEnv);
@@ -106,6 +72,9 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_close
 JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIService_openNamespace
   (JNIEnv * pJavaEnv, jobject object, jstring nsName)
 {
+	// Init COM for current thread
+	if (!WMIInitializeThread(pJavaEnv)) return NULL;
+
 	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
 	if (pService == NULL) {
 		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
@@ -147,6 +116,9 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_executeQuery(
 	jobject sinkObject,
 	jlong lFlags)
 {
+	// Init COM for current thread
+	if (!WMIInitializeThread(pJavaEnv)) return;
+
 	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
 	if (pService == NULL) {
 		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
@@ -172,6 +144,9 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_enumClasses(
 	jobject sinkObject,
 	jlong lFlags)
 {
+	// Init COM for current thread
+	if (!WMIInitializeThread(pJavaEnv)) return;
+
 	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
 	if (pService == NULL) {
 		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
@@ -193,6 +168,9 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_enumInstances(
 	jobject sinkObject,
 	jlong lFlags)
 {
+	// Init COM for current thread
+	if (!WMIInitializeThread(pJavaEnv)) return;
+
 	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
 	if (pService == NULL) {
 		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
@@ -212,6 +190,9 @@ JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_cancelSink(
 	jobject object,
 	jobject sinkObject)
 {
+	// Init COM for current thread
+	if (!WMIInitializeThread(pJavaEnv)) return;
+
 	WMIService* pService = WMIService::GetFromObject(pJavaEnv, object);
 	if (pService == NULL) {
 		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");

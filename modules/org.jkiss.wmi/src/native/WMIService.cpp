@@ -126,9 +126,10 @@ void WMIService::Connect(
 
 	CComPtr<IWbemLocator> ptrWbemLocator;
     HRESULT hres = CoCreateInstance(
-        CLSID_WbemLocator,             
+        //CLSID_WbemAdministrativeLocator,
+		CLSID_WbemLocator,
         0, 
-        CLSCTX_INPROC_SERVER, 
+        CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, 
         IID_IWbemLocator, 
 		(LPVOID *) &ptrWbemLocator);
     if (FAILED(hres)) {
@@ -202,82 +203,6 @@ void WMIService::Release(JNIEnv* pJavaEnv)
 }
 
 	
-/*
-jobjectArray WMIService::ExecuteQuery(JNIEnv* pJavaEnv, LPWSTR queryString, bool sync)
-{
-	if (queryString == NULL) {
-		THROW_COMMON_EXCEPTION(L"Empty query specified");
-		return NULL;
-	}
-	if (pWbemServices == NULL) {
-		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
-		return NULL;
-	}
-
-    // Use the IWbemServices pointer to make requests of WMI ----
-	this->WriteLog(pJavaEnv, LT_DEBUG, bstr_t(L"WQL: ") + queryString);
-	jlong startTime = ::GetCurrentJavaTime();
-    CComPtr<IEnumWbemClassObject> pEnumerator;
-	long lFlags = WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_DIRECT_READ;
-	if (!sync) lFlags |= WBEM_FLAG_RETURN_IMMEDIATELY;
-    HRESULT hres = pWbemServices->ExecQuery(
-        L"WQL",
-        queryString,
-        lFlags, 
-        NULL,
-        &pEnumerator);
-    if (FAILED(hres)) {
-        THROW_COMMON_ERROR(L"Could not execute query", hres);
-        return NULL;
-    }
-
-	jlong parseTime = ::GetCurrentJavaTime();
-	{
-		bstr_t msg(L"Query finished in ");
-		msg += (long)(parseTime - startTime);
-		msg += L"ms";
-		this->WriteLog(pJavaEnv, LT_DEBUG, msg);
-	}
-
-	JavaObjectVector rows;
-
-	int objectsCount = 0;
-	while (pEnumerator != NULL) {
-		CComPtr<IWbemClassObject> pClassObject;
-		ULONG uReturn = 0;
-        hres = pEnumerator->Next(WBEM_INFINITE, 1, &pClassObject, &uReturn);
-        if (uReturn == 0) {
-            break;
-        }
-		if (FAILED(hres)) {
-			this->WriteLog(pJavaEnv, LT_ERROR, L"Could not obtain next class object", hres);
-			continue;
-		}
-		objectsCount++;
-		jobject rowObject = MakeWMIObject(pJavaEnv, pClassObject);
-
-		CHECK_JAVA_EXCEPTION_NULL();
-
-		if (rowObject != NULL) {
-			rows.push_back(rowObject);
-		}
-	}
-	{
-		jlong endTime = ::GetCurrentJavaTime();
-		bstr_t msg(L"Query returned [");
-		msg += (long)rows.size();
-		msg += L"] object(s), parse time: ";
-		msg += (long)(endTime - parseTime);
-		msg += L"ms";
-
-		this->WriteLog(pJavaEnv, LT_DEBUG, msg);
-	}
-
-	// Make object array from rows vector
-	return ::MakeJavaArrayFromVector(pJavaEnv, JNIMetaData::GetMetaData(pJavaEnv).wmiObjectClass, rows);
-}
-*/
-
 jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
 {
 	CComPtr<IWbemServices> ptrNamespace;
@@ -286,6 +211,20 @@ jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
 		THROW_COMMON_ERROR(L"Could not open namespace", hres);
 		return NULL;
 	}
+    hres = CoSetProxyBlanket(
+		ptrNamespace,				 // Indicates the proxy to set
+		RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
+		RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
+		NULL,                        // Server principal name 
+		RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx 
+		RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
+		NULL,                        // client identity
+		EOAC_NONE                    // proxy capabilities 
+		);
+    if (FAILED(hres)) {
+        THROW_COMMON_ERROR(L"Could not set proxy blanket for opened namespace", hres);
+		return NULL;
+    }
 
 	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
 	jobject logObject = pJavaEnv->GetObjectField(serviceJavaObject, jniMeta.wmiServiceLogField);
@@ -478,77 +417,6 @@ jobject WMIService::MakeWMIObject(JNIEnv* pJavaEnv, IWbemClassObject *pClassObje
 		return pWmiObject;
 	}
 }
-
-/*
-JNIEnv* WMIService::AcquireSinkEnv(WMIObjectSink* pSink)
-{
-	_ASSERT(pJavaVM != NULL);
-	if (pJavaVM == NULL) {
-		return NULL;
-	}
-	CComCritSecLock<CComCriticalSection> guard(csSinkThreads);
-
-	DWORD curThreadId = ::GetCurrentThreadId();
-	WMIThreadInfo* pCurThread = NULL;
-	for (size_t i = 0; i < threadInfos.size(); i++) {
-		if (threadInfos[i]->nThreadId == curThreadId) {
-			pCurThread = threadInfos[i];
-			break;
-		}
-	}
-	if (pCurThread != NULL) {
-		ObjectSinkVector::iterator i = std::find(pCurThread->sinks.begin(), pCurThread->sinks.end(), pSink);
-		if (i == pCurThread->sinks.end()) {
-			pCurThread->sinks.push_back(pSink);
-		}
-	} else {
-		pCurThread = new WMIThreadInfo();
-		pCurThread->nThreadId = curThreadId;
-		pCurThread->sinks.push_back(pSink);
-		pJavaVM->AttachCurrentThread((void**)&pCurThread->pThreadEnv, NULL);
-		threadInfos.push_back(pCurThread);
-	}
-
-	return pCurThread->pThreadEnv;
-}
-
-void WMIService::ReleaseSinkEnv(WMIObjectSink* pSink)
-{
-	_ASSERT(pJavaVM != NULL);
-	if (pJavaVM == NULL) {
-		return;
-	}
-	CComCritSecLock<CComCriticalSection> guard(csSinkThreads);
-	// Remove this sink from all threads
-	// Detach for current thread only - other ones a dead :(
-	DWORD curThreadId = ::GetCurrentThreadId();
-	WMIThreadInfo* pCurThread = NULL;
-
-
-	ThreadInfoVector removeThreads;
-	for (ThreadInfoVector::iterator i = threadInfos.begin(); i != threadInfos.end(); i++) {
-		ObjectSinkVector::iterator curSink = std::find((*i)->sinks.begin(), (*i)->sinks.end(), pSink);
-		if (curSink != (*i)->sinks.end()) {
-			(*i)->sinks.erase(curSink);
-		}
-		if ((*i)->sinks.empty()) {
-			if ((*i)->nThreadId == curThreadId) {
-				// Detach thread
-				pJavaVM->DetachCurrentThread();
-			} else {
-				// Dunno what to do - we have some thread which is not current
-				// Need a way to kill it
-				_RPTW0(_CRT_ERROR, L"Can't detach sink thread\n");
-			}
-			removeThreads.push_back(pCurThread);
-		}
-	}
-	for (ThreadInfoVector::iterator i = removeThreads.begin(); i != removeThreads.end(); i++) {
-		removeThreads.erase(
-			std::find(threadInfos.begin(), threadInfos.end(), *i));
-		delete *i;
-	}
-}*/
 
 void WMIService::InitStaticState()
 {

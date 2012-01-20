@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
@@ -85,7 +85,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                         monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
                         try {
                             // test connection
-                            dataSource.invalidateConnection(monitor);
+                            dataSource.initialize(monitor);
                             monitor.done();
                         }
                         finally {

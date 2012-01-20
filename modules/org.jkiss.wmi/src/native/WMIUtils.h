@@ -23,6 +23,10 @@ enum JavaType {
 extern HMODULE hWMIUtils;
 extern HMODULE hWbemCommon;
 
+bool WMIInitializeThread(JNIEnv* pJavaEnv);
+void WMIUnInitializeThread();
+
+
 void DeleteLocalRef(JNIEnv *env, jobject object);
 jstring MakeJavaString(JNIEnv *env, LPCWSTR string);
 void FormatErrorMessage(LPCWSTR message, HRESULT error, BSTR* pBuffer);

@@ -86,21 +86,16 @@ public class WMINamespace extends WMIContainer implements DBSSchema, DBPCloseabl
     {
         try {
             WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor, getService());
-            try {
-                WMIService.initializeThread();
-                getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SHALLOW);
-                sink.waitForFinish();
-                List<WMINamespace> children = new ArrayList<WMINamespace>();
-                for (WMIObject object : sink.getObjectList()) {
-                    String nsName = CommonUtils.toString(object.getValue("Name"));
-                    children.add(new WMINamespace(this, dataSource, nsName, null));
-                    object.release();
-                }
-                DBUtils.orderObjects(children);
-                return children;
-            } finally {
-                WMIService.unInitializeThread();
+            getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SHALLOW);
+            sink.waitForFinish();
+            List<WMINamespace> children = new ArrayList<WMINamespace>();
+            for (WMIObject object : sink.getObjectList()) {
+                String nsName = CommonUtils.toString(object.getValue("Name"));
+                children.add(new WMINamespace(this, dataSource, nsName, null));
+                object.release();
             }
+            DBUtils.orderObjects(children);
+            return children;
         } catch (WMIException e) {
             throw new DBException("Can't enum namespaces", e);
         }
@@ -150,68 +145,64 @@ public class WMINamespace extends WMIContainer implements DBSSchema, DBPCloseabl
 
         try {
             WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor, getService());
-            try {
-                WMIService.initializeThread();
-                getService().enumClasses(null, sink, WMIConstants.WBEM_FLAG_DEEP);
-                sink.waitForFinish();
-                List<WMIClass> allClasses = new ArrayList<WMIClass>();
-                List<WMIClass> allAssociations = new ArrayList<WMIClass>();
-                List<WMIClass> rootClasses = new ArrayList<WMIClass>();
-                for (WMIObject object : sink.getObjectList()) {
-                    WMIClass superClass = null;
-                    String superClassName = (String)object.getValue(WMIConstants.CLASS_PROP_SUPER_CLASS);
-                    if (superClassName != null) {
-                        for (WMIClass c : allClasses) {
+
+            getService().enumClasses(null, sink, WMIConstants.WBEM_FLAG_DEEP);
+            sink.waitForFinish();
+            List<WMIClass> allClasses = new ArrayList<WMIClass>();
+            List<WMIClass> allAssociations = new ArrayList<WMIClass>();
+            List<WMIClass> rootClasses = new ArrayList<WMIClass>();
+            for (WMIObject object : sink.getObjectList()) {
+                WMIClass superClass = null;
+                String superClassName = (String)object.getValue(WMIConstants.CLASS_PROP_SUPER_CLASS);
+                if (superClassName != null) {
+                    for (WMIClass c : allClasses) {
+                        if (c.getName().equals(superClassName)) {
+                            superClass = c;
+                            break;
+                        }
+                    }
+                    if (superClass == null) {
+                        for (WMIClass c : allAssociations) {
                             if (c.getName().equals(superClassName)) {
                                 superClass = c;
                                 break;
                             }
                         }
                         if (superClass == null) {
-                            for (WMIClass c : allAssociations) {
-                                if (c.getName().equals(superClassName)) {
-                                    superClass = c;
-                                    break;
-                                }
-                            }
-                            if (superClass == null) {
-                                log.warn("Super class '" + superClassName + "' not found");
-                            }
+                            log.warn("Super class '" + superClassName + "' not found");
                         }
                     }
-                    WMIClass wmiClass = new WMIClass(this, superClass, object);
-                    if (wmiClass.isAssociation()) {
-                        allAssociations.add(wmiClass);
+                }
+                WMIClass wmiClass = new WMIClass(this, superClass, object);
+                if (wmiClass.isAssociation()) {
+                    allAssociations.add(wmiClass);
+                } else {
+                    allClasses.add(wmiClass);
+                    if (superClass == null) {
+                        rootClasses.add(wmiClass);
                     } else {
-                        allClasses.add(wmiClass);
-                        if (superClass == null) {
-                            rootClasses.add(wmiClass);
-                        } else {
-                            superClass.addSubClass(wmiClass);
-                        }
+                        superClass.addSubClass(wmiClass);
                     }
                 }
-
-                // filter out system classes
-                if (!showSystemObjects) {
-                    for (Iterator<WMIClass> iter = allClasses.iterator(); iter.hasNext(); ) {
-                        WMIClass wmiClass = iter.next();
-                        if (wmiClass.isSystem()) {
-                            iter.remove();
-                        }
-                    }
-                }
-
-                DBUtils.orderObjects(rootClasses);
-                DBUtils.orderObjects(allClasses);
-                DBUtils.orderObjects(allAssociations);
-
-                this.rooClasses = rootClasses;
-                this.allClasses = allClasses;
-                this.associations = allAssociations;
-            } finally {
-                WMIService.unInitializeThread();
             }
+
+            // filter out system classes
+            if (!showSystemObjects) {
+                for (Iterator<WMIClass> iter = allClasses.iterator(); iter.hasNext(); ) {
+                    WMIClass wmiClass = iter.next();
+                    if (wmiClass.isSystem()) {
+                        iter.remove();
+                    }
+                }
+            }
+
+            DBUtils.orderObjects(rootClasses);
+            DBUtils.orderObjects(allClasses);
+            DBUtils.orderObjects(allAssociations);
+
+            this.rooClasses = rootClasses;
+            this.allClasses = allClasses;
+            this.associations = allAssociations;
         } catch (WMIException e) {
             throw new DBException("Can't enum classes", e);
         }

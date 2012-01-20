@@ -71,7 +71,6 @@ public class WMIDataSource implements DBPDataSource//, DBSEntitySelector
     {
         final DBPConnectionInfo connectionInfo = container.getConnectionInfo();
         try {
-            WMIService.initializeThread();
             WMIService service = WMIService.connect(
                 log,
                 connectionInfo.getServerName(),

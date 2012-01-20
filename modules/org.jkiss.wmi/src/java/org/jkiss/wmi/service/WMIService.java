@@ -24,10 +24,6 @@ public class WMIService {
     private long serviceHandle = 0l;
     private Log serviceLog;
 
-    public static native void initializeThread();
-
-    public static native void unInitializeThread();
-
     public static native WMIService connect(Log serviceLog, String domain, String host, String user, String password, String locale, String resource)
         throws WMIException;
 

@@ -7,21 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/*
- * Class:     org_jkiss_wmi_service_WMIService
- * Method:    initializeThread
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_initializeThread
-  (JNIEnv *, jclass);
-
-/*
- * Class:     org_jkiss_wmi_service_WMIService
- * Method:    unInitializeThread
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_org_jkiss_wmi_service_WMIService_unInitializeThread
-  (JNIEnv *, jclass);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIService

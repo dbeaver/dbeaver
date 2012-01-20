@@ -8,6 +8,47 @@
 HMODULE hWMIUtils;
 HMODULE hWbemCommon;
 
+bool WMIInitializeThread(JNIEnv* pJavaEnv)
+{
+	HRESULT hres =  ::CoInitializeEx(0, COINIT_MULTITHREADED);
+//	if (hres == RPC_E_CHANGED_MODE) {
+//		hres =  ::CoInitialize(0); 
+//	}
+    if (FAILED(hres)) {
+		THROW_COMMON_ERROR(L"Failed to initialize COM library", hres);
+		return false;
+	}
+//	if (hres == S_FALSE) {
+//		// Already initialized
+//		return true;
+//	}
+
+	hres =  ::CoInitializeSecurity(
+        NULL, 
+        -1,                          // COM authentication
+        NULL,                        // Authentication services
+        NULL,                        // Reserved
+        RPC_C_AUTHN_LEVEL_DEFAULT,   // Default authentication 
+        RPC_C_IMP_LEVEL_IMPERSONATE, // Default Impersonation  
+        NULL,                        // Authentication info
+        EOAC_NONE,                   // Additional capabilities 
+        NULL                         // Reserved
+        );
+    if (FAILED(hres) && hres != RPC_E_TOO_LATE) {
+		THROW_COMMON_ERROR(L"Failed to initialize security", hres);
+        return false;
+    }
+	return true;
+}
+
+
+void WMIUnInitializeThread()
+{
+	::CoUninitialize();
+}
+
+
+
 void DeleteLocalRef(JNIEnv *env, jobject object)
 {
 	if (object != NULL) {
@@ -290,8 +331,17 @@ jbyteArray MakeJavaByteArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArra
 
 jbooleanArray MakeJavaBoolArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray)
 {
-	THROW_COMMON_EXCEPTION(L"Boolean arrays not implemented");
-	return NULL;
+	jsize arraySize = ::GetSafeArraySize(pSafeArray);
+	jbooleanArray result = pJavaEnv->NewBooleanArray(arraySize);
+	jboolean HUGEP * boolArray;
+	HRESULT hr = ::SafeArrayAccessData(pSafeArray, (void HUGEP* FAR*)&boolArray);
+	if (FAILED(hr)) {
+		THROW_COMMON_ERROR(L"Can't access safe array bool data", hr);
+		return NULL;
+	}
+	pJavaEnv->SetBooleanArrayRegion(result, 0, arraySize, boolArray);
+	::SafeArrayUnaccessData(pSafeArray);
+	return result;
 }
 
 jshortArray MakeJavaShortArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray)
@@ -302,8 +352,17 @@ jshortArray MakeJavaShortArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeAr
 
 jintArray MakeJavaIntArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray)
 {
-	THROW_COMMON_EXCEPTION(L"Integer arrays not implemented");
-	return NULL;
+	jsize arraySize = ::GetSafeArraySize(pSafeArray);
+	jintArray result = pJavaEnv->NewIntArray(arraySize);
+	jint HUGEP * intArray;
+	HRESULT hr = ::SafeArrayAccessData(pSafeArray, (void HUGEP* FAR*)&intArray);
+	if (FAILED(hr)) {
+		THROW_COMMON_ERROR(L"Can't access safe array int data", hr);
+		return NULL;
+	}
+	pJavaEnv->SetIntArrayRegion(result, 0, arraySize, intArray);
+	::SafeArrayUnaccessData(pSafeArray);
+	return result;
 }
 
 jlongArray MakeJavaLongArrayFromSafeArray(JNIEnv* pJavaEnv, SAFEARRAY* pSafeArray)

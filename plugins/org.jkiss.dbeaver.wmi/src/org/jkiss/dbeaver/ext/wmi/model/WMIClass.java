@@ -27,7 +27,6 @@ import org.jkiss.wmi.service.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -375,33 +374,28 @@ public class WMIClass extends WMIContainer
                 context.getProgressMonitor(),
                 getNamespace().getService(),
                 firstRow, maxRows);
+            getNamespace().getService().enumInstances(
+                getName(),
+                sink,
+                WMIConstants.WBEM_FLAG_SHALLOW);
+            sink.waitForFinish();
+            WMIResultSet resultSet = new WMIResultSet(context, this, sink.getObjectList());
+            long resultCount = 0;
             try {
-                WMIService.initializeThread();
-                getNamespace().getService().enumInstances(
-                    getName(),
-                    sink,
-                    WMIConstants.WBEM_FLAG_SHALLOW);
-                sink.waitForFinish();
-                WMIResultSet resultSet = new WMIResultSet(context, this, sink.getObjectList());
-                long resultCount = 0;
-                try {
-                    dataReceiver.fetchStart(context, resultSet);
-                    while (resultSet.nextRow()) {
-                        resultCount++;
-                        dataReceiver.fetchRow(context, resultSet);
-                    }
-                } finally {
-                    try {
-                        dataReceiver.fetchEnd(context);
-                    } catch (DBCException e) {
-                        log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
-                    }
-                    resultSet.close();
+                dataReceiver.fetchStart(context, resultSet);
+                while (resultSet.nextRow()) {
+                    resultCount++;
+                    dataReceiver.fetchRow(context, resultSet);
                 }
-                return resultCount;
             } finally {
-                WMIService.unInitializeThread();
+                try {
+                    dataReceiver.fetchEnd(context);
+                } catch (DBCException e) {
+                    log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                }
+                resultSet.close();
             }
+            return resultCount;
         } catch (WMIException e) {
             throw new DBException("Can't enum instances", e);
         }
