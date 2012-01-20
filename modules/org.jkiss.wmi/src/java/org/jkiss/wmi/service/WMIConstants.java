@@ -143,4 +143,7 @@ public class WMIConstants {
     public static final String Q_WriteAtCreate = "WriteAtCreate";
     public static final String Q_WriteAtUpdate = "WriteAtUpdate";
 
+
+    public static final String Q_CIMTYPE = "CIMTYPE";
+
 }

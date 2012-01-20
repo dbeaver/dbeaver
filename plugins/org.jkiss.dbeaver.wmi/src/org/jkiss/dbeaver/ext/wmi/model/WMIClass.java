@@ -69,6 +69,7 @@ public class WMIClass extends WMIContainer
     private String name;
     private List<WMIClass> subClasses = null;
     private List<WMIClassAttribute> attributes = null;
+    private List<WMIClassReference> references = null;
     private List<WMIClassMethod> methods = null;
 
     public WMIClass(WMINamespace parent, WMIClass superClass, WMIObject classObject)
@@ -236,7 +237,28 @@ public class WMIClass extends WMIContainer
                 if (monitor.isCanceled()) {
                     break;
                 }
-                if (!prop.isSystem()) {
+                if (prop.getType() == WMIConstants.CIM_REFERENCE) {
+                    Object refClassPath = prop.getQualifier(WMIConstants.Q_CIMTYPE);
+                    if (refClassPath == null) {
+                        log.warn("No " + WMIConstants.Q_CIMTYPE + " qualifier for reference property");
+                        continue;
+                    }
+                    String refClassName = refClassPath.toString();
+                    if (!refClassName.startsWith("ref:")) {
+                        log.warn("Invalid class reference qualifier: " + refClassName);
+                        continue;
+                    }
+                    refClassName = refClassName.substring(4);
+                    WMIClass refClass = getNamespace().getClass(monitor, refClassName);
+                    if (refClass == null) {
+                        log.warn("Referenced class '" + refClassName + "' not found in '" + getNamespace().getName() + "'");
+                        continue;
+                    }
+                    if (references == null) {
+                        references = new ArrayList<WMIClassReference>();
+                    }
+                    references.add(new WMIClassReference(this, prop, refClass));
+                } /*else*/ if (!prop.isSystem()) {
                     attributes.add(new WMIClassAttribute(this, prop));
                 }
             }
@@ -294,10 +316,19 @@ public class WMIClass extends WMIContainer
 
     public List<? extends DBSForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
-        if (superClass != null) {
-            return Collections.singletonList(new WMIClassInheritance(superClass, this));
+        // Read attributes and references
+        getAttributes(monitor);
+        if (superClass == null && CommonUtils.isEmpty(references)) {
+            return null;
         }
-        return null;
+        List<DBSForeignKey> associations = new ArrayList<DBSForeignKey>();
+        if (superClass != null) {
+            associations.add(new WMIClassInheritance(superClass, this));
+        }
+        if (references != null) {
+            associations.addAll(references);
+        }
+        return associations;
     }
 
     public List<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException

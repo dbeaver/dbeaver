@@ -16,6 +16,7 @@ public class DBSEntityConstraintType
     public static final DBSEntityConstraintType UNIQUE_KEY = new DBSEntityConstraintType("unique", CoreMessages.model_struct_Unique_Key, false, true); //$NON-NLS-1$
     public static final DBSEntityConstraintType CHECK = new DBSEntityConstraintType("check", CoreMessages.model_struct_Check, false, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType NOT_NULL = new DBSEntityConstraintType("notnull", CoreMessages.model_struct_Not_NULL, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType ASSOCIATION = new DBSEntityConstraintType("association", "Association", true, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType INHERITANCE = new DBSEntityConstraintType("inheritance", "Inheritance", true, false); //$NON-NLS-1$
 
     private final String id;

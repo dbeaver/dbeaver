@@ -10,7 +10,9 @@ package org.jkiss.dbeaver.ext.erd.figures;
 import org.eclipse.draw2d.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
@@ -27,7 +29,13 @@ public class EntityFigure extends Figure {
 
     public EntityFigure(ERDTable table)
     {
-        Image tableImage = table.getObject().isView() ? DBIcon.TREE_VIEW.getImage() : DBIcon.TREE_TABLE.getImage();
+        DBNDatabaseNode entityNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(table.getObject());
+        Image tableImage;
+        if (entityNode == null) {
+            tableImage = DBIcon.TREE_TABLE.getImage();
+        } else {
+            tableImage = entityNode.getNodeIconDefault();
+        }
 
         attributeFigure = new AttributeFigure(table);
         nameLabel = new EditableLabel(table.getObject().getName());

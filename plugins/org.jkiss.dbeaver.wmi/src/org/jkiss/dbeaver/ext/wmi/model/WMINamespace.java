@@ -129,6 +129,12 @@ public class WMINamespace extends WMIContainer implements DBSSchema, DBPCloseabl
         return allClasses;
     }
 
+    public WMIClass getClass(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return DBUtils.findObject(getClasses(monitor), name);
+    }
+
     @Association
     public Collection<WMIClass> getAssociations(DBRProgressMonitor monitor)
         throws DBException
