@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSTableIndex
  */
-public interface DBSProcedureColumn extends DBSColumnBase, DBSObject
+public interface DBSProcedureColumn extends DBSTypedObject, DBSObject
 {
 
     DBSProcedure getProcedure();

@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportProvider;
@@ -51,10 +52,6 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSManipulationType;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
@@ -553,10 +550,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     static boolean isColumnReadOnly(DBDColumnBinding column)
     {
-        if (column.getValueLocator() == null || !(column.getValueLocator().getTable() instanceof DBSDataContainer)) {
+        if (column.getValueLocator() == null || !(column.getValueLocator().getEntity() instanceof DBSDataContainer)) {
             return true;
         }
-        DBSDataContainer dataContainer = (DBSDataContainer) column.getValueLocator().getTable();
+        DBSDataContainer dataContainer = (DBSDataContainer) column.getValueLocator().getEntity();
         return (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_UPDATE) == 0;
     }
 
@@ -654,15 +651,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (updateMetaData) {
             // Check single source flag
             this.singleSourceCells = true;
-            DBSTable sourceTable = null;
+            DBSEntity sourceTable = null;
             for (DBDColumnBinding column : metaColumns) {
                 if (isColumnReadOnly(column)) {
                     singleSourceCells = false;
                     break;
                 }
                 if (sourceTable == null) {
-                    sourceTable = column.getValueLocator().getTable();
-                } else if (sourceTable != column.getValueLocator().getTable()) {
+                    sourceTable = column.getValueLocator().getEntity();
+                } else if (sourceTable != column.getValueLocator().getEntity()) {
                     singleSourceCells = false;
                     break;
                 }
@@ -1303,7 +1300,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             Object[] origRow = curRows.get(currentRowNumber);
                             for (int i = 0; i < metaColumns.length; i++) {
                                 DBDColumnBinding metaColumn = metaColumns[i];
-                                if (metaColumn.getTableColumn().isAutoIncrement()) {
+                                if (metaColumn.getTableColumn().isSequence()) {
                                     // set autoincrement columns to null
                                     cells[i] = null;
                                 } else {
@@ -1488,11 +1485,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return -1;
     }
 
-    private int getMetaColumnIndex(DBSTable table, String columnName)
+    private int getMetaColumnIndex(DBSEntity table, String columnName)
     {
         for (int i = 0; i < metaColumns.length; i++) {
             DBDColumnBinding column = metaColumns[i];
-            if ((table == null || column.getValueLocator().getTable() == table) &&
+            if ((table == null || column.getValueLocator().getEntity() == table) &&
                 column.getColumnName().equals(columnName))
             {
                 return i;
@@ -1763,11 +1760,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     static class TableRowInfo {
-        DBSTable table;
-        DBCTableIdentifier id;
+        DBSEntity table;
+        DBCEntityIdentifier id;
         List<CellInfo> tableCells = new ArrayList<CellInfo>();
 
-        TableRowInfo(DBSTable table, DBCTableIdentifier id) {
+        TableRowInfo(DBSEntity table, DBCEntityIdentifier id) {
             this.table = table;
             this.id = id;
         }
@@ -1776,13 +1773,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     static class DataStatementInfo {
         DBSManipulationType type;
         RowInfo row;
-        DBSTable table;
+        DBSEntity table;
         List<DBDColumnValue> keyColumns = new ArrayList<DBDColumnValue>();
         List<DBDColumnValue> updateColumns = new ArrayList<DBDColumnValue>();
         boolean executed = false;
         Map<Integer, Object> updatedCells = new HashMap<Integer, Object>();
 
-        DataStatementInfo(DBSManipulationType type, RowInfo row, DBSTable table)
+        DataStatementInfo(DBSManipulationType type, RowInfo row, DBSEntity table)
         {
             this.type = type;
             this.row = row;
@@ -1791,7 +1788,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         boolean hasUpdateColumn(DBDColumnBinding column)
         {
             for (DBDColumnValue col : updateColumns) {
-                if (col.getColumn() == column.getTableColumn()) {
+                if (col.getAttribute() == column.getTableColumn()) {
                     return true;
                 }
             }
@@ -1801,7 +1798,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private class DataUpdater {
 
-        private final Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
+        private final Map<Integer, Map<DBSEntity, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSEntity, TableRowInfo>>();
 
         private final List<DataStatementInfo> insertStatements = new ArrayList<DataStatementInfo>();
         private final List<DataStatementInfo> deleteStatements = new ArrayList<DataStatementInfo>();
@@ -1833,17 +1830,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
             // Prepare rows
             for (CellInfo cell : editedValues.keySet()) {
-                Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(cell.row);
+                Map<DBSEntity, TableRowInfo> tableMap = updatedRows.get(cell.row);
                 if (tableMap == null) {
-                    tableMap = new HashMap<DBSTable, TableRowInfo>();
+                    tableMap = new HashMap<DBSEntity, TableRowInfo>();
                     updatedRows.put(cell.row, tableMap);
                 }
 
                 DBDColumnBinding metaColumn = metaColumns[cell.col];
-                DBSTable metaTable = metaColumn.getValueLocator().getTable();
+                DBSEntity metaTable = metaColumn.getValueLocator().getEntity();
                 TableRowInfo tableRowInfo = tableMap.get(metaTable);
                 if (tableRowInfo == null) {
-                    tableRowInfo = new TableRowInfo(metaTable, metaColumn.getValueLocator().getTableIdentifier());
+                    tableRowInfo = new TableRowInfo(metaTable, metaColumn.getValueLocator().getEntityIdentifier());
                     tableMap.put(metaTable, tableRowInfo);
                 }
                 tableRowInfo.tableCells.add(cell);
@@ -1858,7 +1855,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
             // Make delete statements
             for (RowInfo rowNum : removedRows) {
-                DBSTable table = metaColumns[0].getValueLocator().getTable();
+                DBSEntity table = metaColumns[0].getValueLocator().getEntity();
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
                 List<? extends DBSTableColumn> keyColumns = metaColumns[0].getValueLocator().getTableColumns();
                 for (DBSTableColumn column : keyColumns) {
@@ -1881,7 +1878,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             // Make insert statements
             for (RowInfo rowNum : addedRows) {
                 Object[] cellValues = curRows.get(rowNum.row);
-                DBSTable table = metaColumns[0].getValueLocator().getTable();
+                DBSEntity table = metaColumns[0].getValueLocator().getEntity();
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, rowNum, table);
                 for (int i = 0; i < metaColumns.length; i++) {
                     DBDColumnBinding column = metaColumns[i];
@@ -1902,8 +1899,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
             // Make statements
             for (Integer rowNum : updatedRows.keySet()) {
-                Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
-                for (DBSTable table : tableMap.keySet()) {
+                Map<DBSEntity, TableRowInfo> tableMap = updatedRows.get(rowNum);
+                for (DBSEntity table : tableMap.keySet()) {
                     TableRowInfo rowInfo = tableMap.get(table);
                     DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, new RowInfo(rowNum), table);
                     // Updated columns
@@ -2225,7 +2222,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     // Try to find and update auto-increment column
                     for (int k = 0; k < metaColumns.length; k++) {
                         DBDColumnBinding column = metaColumns[k];
-                        if (column.getTableColumn().isAutoIncrement()) {
+                        if (column.getTableColumn().isSequence()) {
                             // Got it
                             statement.updatedCells.put(k, keyValue);
                             //curRows.get(statement.row.row)[k] = keyValue;

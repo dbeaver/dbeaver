@@ -7,14 +7,11 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSTableColumn
  */
-public interface DBSTableColumn extends DBSColumnBase, DBSEntityAttribute
+public interface DBSTableColumn extends DBSEntityAttribute
 {
     DBSTable getParentObject();
 
     int getOrdinalPosition();
 
-    String getDefaultValue();
-    
-    boolean isAutoIncrement();
 
 }

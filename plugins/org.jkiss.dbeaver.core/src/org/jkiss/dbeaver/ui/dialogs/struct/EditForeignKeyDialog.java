@@ -302,7 +302,7 @@ public class EditForeignKeyDialog extends Dialog {
         try {
             // Read column nodes with void monitor because we already cached them above
             for (DBSTableConstraintColumn pkColumn : curConstraint.getColumns(VoidProgressMonitor.INSTANCE)) {
-                FKColumnInfo fkColumnInfo = new FKColumnInfo(pkColumn.getTableColumn());
+                FKColumnInfo fkColumnInfo = new FKColumnInfo(pkColumn.getAttribute());
                 // Try to find matched column in own table
                 Collection<? extends DBSTableColumn> tmpColumns = ownTable.getColumns(VoidProgressMonitor.INSTANCE);
                 ownColumns = tmpColumns == null ?
@@ -310,7 +310,7 @@ public class EditForeignKeyDialog extends Dialog {
                     new ArrayList<DBSTableColumn>(ownTable.getColumns(VoidProgressMonitor.INSTANCE));
                 if (!CommonUtils.isEmpty(ownColumns)) {
                     for (DBSTableColumn ownColumn : ownColumns) {
-                        if (ownColumn.getName().equals(pkColumn.getTableColumn().getName()) && ownTable != pkColumn.getTableColumn().getParentObject()) {
+                        if (ownColumn.getName().equals(pkColumn.getAttribute().getName()) && ownTable != pkColumn.getAttribute().getParentObject()) {
                             fkColumnInfo.ownColumn = ownColumn;
                             break;
                         }
@@ -324,9 +324,9 @@ public class EditForeignKeyDialog extends Dialog {
                     item.setImage(0, getColumnIcon(fkColumnInfo.ownColumn));
                     item.setText(1, fkColumnInfo.ownColumn.getTypeName());
                 }
-                item.setText(2, pkColumn.getTableColumn().getName());
-                item.setImage(2, getColumnIcon(pkColumn.getTableColumn()));
-                item.setText(3, pkColumn.getTableColumn().getTypeName());
+                item.setText(2, pkColumn.getAttribute().getName());
+                item.setImage(2, getColumnIcon(pkColumn.getAttribute()));
+                item.setText(3, pkColumn.getAttribute().getTypeName());
                 item.setData(fkColumnInfo);
             }
         } catch (DBException e) {

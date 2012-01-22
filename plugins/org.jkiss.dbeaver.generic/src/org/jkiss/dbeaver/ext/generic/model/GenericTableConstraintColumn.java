@@ -33,18 +33,13 @@ public class GenericTableConstraintColumn extends AbstractTableConstraintColumn
         this.ordinalPosition = column.ordinalPosition;
     }
 
-    public DBSTableConstraint getConstraint()
-    {
-        return constraint;
-    }
-
     public String getName()
     {
         return tableColumn.getName();
     }
 
     @Property(id = "name", name = "Column", viewable = true, order = 1)
-    public GenericTableColumn getTableColumn()
+    public GenericTableColumn getAttribute()
     {
         return tableColumn;
     }
@@ -61,7 +56,7 @@ public class GenericTableConstraintColumn extends AbstractTableConstraintColumn
         return tableColumn.getDescription();
     }
 
-    public DBSObject getParentObject()
+    public JDBCTableConstraint getParentObject()
     {
         return constraint;
     }

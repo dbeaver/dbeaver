@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Result set table metadata
  */
-public interface DBCTableIdentifier {
+public interface DBCEntityIdentifier {
 
     /**
      * Table unique constraint

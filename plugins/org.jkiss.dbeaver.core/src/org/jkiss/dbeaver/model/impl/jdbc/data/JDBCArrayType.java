@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -40,6 +40,12 @@ public class JDBCArrayType implements DBSTypedObject {
     }
 
     public int getPrecision()
+    {
+        return 0;
+    }
+
+    @Override
+    public long getMaxLength()
     {
         return 0;
     }

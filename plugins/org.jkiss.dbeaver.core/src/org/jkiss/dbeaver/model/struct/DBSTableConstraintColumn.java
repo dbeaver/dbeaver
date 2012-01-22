@@ -7,11 +7,11 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSTableConstraintColumn
  */
-public interface DBSTableConstraintColumn extends DBSObject
+public interface DBSTableConstraintColumn extends DBSObject, DBSEntityAttributeRef
 {
-    DBSTableConstraint getConstraint();
+    DBSTableConstraint getParentObject();
 
-    DBSTableColumn getTableColumn();
+    DBSTableColumn getAttribute();
 
     int getOrdinalPosition();
 }

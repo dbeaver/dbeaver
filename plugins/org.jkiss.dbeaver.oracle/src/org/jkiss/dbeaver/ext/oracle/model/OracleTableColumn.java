@@ -120,9 +120,9 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
 
     @Property(name = "Not Null", viewable = true, editable = true, updatable = true, order = 50, description = "Indicates whether a column allows NULLs")
     @Override
-    public boolean isNotNull()
+    public boolean isRequired()
     {
-        return super.isNotNull();
+        return super.isRequired();
     }
 
     @Property(name = "Default", viewable = true, editable = true, updatable = true, order = 70, description = "Default value for the column")
@@ -131,7 +131,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return defaultValue;
     }
 
-    public boolean isAutoIncrement()
+    public boolean isSequence()
     {
         return false;
     }

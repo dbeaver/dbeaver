@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * GenericConstraintColumn
@@ -25,11 +24,6 @@ public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
         this.ordinalPosition = ordinalPosition;
     }
 
-    public AbstractTableConstraint<MySQLTable> getConstraint()
-    {
-        return constraint;
-    }
-
     //@Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
@@ -37,7 +31,7 @@ public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
     }
 
     @Property(id = "name", name = "Column", viewable = true, order = 1)
-    public MySQLTableColumn getTableColumn()
+    public MySQLTableColumn getAttribute()
     {
         return tableColumn;
     }
@@ -53,7 +47,7 @@ public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
         return tableColumn.getDescription();
     }
 
-    public DBSObject getParentObject()
+    public AbstractTableConstraint<MySQLTable> getParentObject()
     {
         return constraint;
     }

@@ -5,15 +5,14 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
-
-import java.util.Collection;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
 
 /**
  * Inheritance
  */
-public class WMIClassInheritance implements DBSTableForeignKey
+public class WMIClassInheritance implements DBSEntityAssociation
 {
 
     private WMIClass superClass;
@@ -55,29 +54,9 @@ public class WMIClassInheritance implements DBSTableForeignKey
         return superClass;
     }
 
-    public String getFullQualifiedName()
-    {
-        return getName();
-    }
-
     public DBSEntityConstraintType getConstraintType()
     {
         return DBSEntityConstraintType.INHERITANCE;
-    }
-
-    public DBSTable getTable()
-    {
-        return subClass;
-    }
-
-    public Collection<? extends DBSTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
-    {
-        return null;
-    }
-
-    public DBSTableConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
-    {
-        return null;
     }
 
     public DBSTableConstraint getReferencedConstraint()
@@ -85,13 +64,4 @@ public class WMIClassInheritance implements DBSTableForeignKey
         return null;
     }
 
-    public DBSConstraintModifyRule getDeleteRule()
-    {
-        return DBSConstraintModifyRule.RESTRICT;
-    }
-
-    public DBSConstraintModifyRule getUpdateRule()
-    {
-        return DBSConstraintModifyRule.RESTRICT;
-    }
 }

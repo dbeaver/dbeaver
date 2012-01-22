@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 /**
@@ -11,20 +12,20 @@ import org.jkiss.dbeaver.model.struct.DBSTableColumn;
  */
 public class DBDColumnValue {
 
-    private DBSTableColumn column;
+    private DBSEntityAttribute attribute;
     private Object value;
 
-    public DBDColumnValue(DBSTableColumn column, Object value) {
-        this.column = column;
+    public DBDColumnValue(DBSEntityAttribute attribute, Object value) {
+        this.attribute = attribute;
         this.value = value;
     }
 
-    public DBSTableColumn getColumn() {
-        return column;
+    public DBSEntityAttribute getAttribute() {
+        return attribute;
     }
 
-    public void setColumn(DBSTableColumn column) {
-        this.column = column;
+    public void setAttribute(DBSTableColumn attribute) {
+        this.attribute = attribute;
     }
 
     public Object getValue() {

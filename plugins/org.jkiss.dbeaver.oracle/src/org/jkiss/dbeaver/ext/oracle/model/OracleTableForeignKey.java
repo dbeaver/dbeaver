@@ -82,11 +82,6 @@ public class OracleTableForeignKey extends OracleTableConstraint implements DBST
         return DBSConstraintModifyRule.NO_ACTION;
     }
 
-    public DBSTableForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
-    {
-        return (DBSTableForeignKeyColumn)super.getColumn(monitor, tableColumn);
-    }
-
     public OracleTableBase getAssociatedEntity()
     {
         return getReferencedTable();

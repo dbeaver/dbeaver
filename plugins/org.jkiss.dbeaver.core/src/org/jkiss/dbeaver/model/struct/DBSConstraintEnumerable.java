@@ -28,14 +28,14 @@ public interface DBSConstraintEnumerable extends DBSTableConstraint
     /**
      * Gets enumeration values
      * @param context
-     *@param keyColumn enumeration column.
+     * @param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
      * @param maxResults maximum enumeration values in result set     @return statement with result set which contains valid enumeration values.
-     */
+     * */
     Collection<DBDLabelValuePair> getKeyEnumeration(
         DBCExecutionContext context,
-        DBSTableColumn keyColumn,
+        DBSEntityAttribute keyColumn,
         Object keyPattern,
         List<DBDColumnValue> preceedingKeys,
         int maxResults)

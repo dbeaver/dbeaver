@@ -58,7 +58,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     private static int dialogCount = 0;
 
     private DBDValueController valueController;
-    private DBSTableForeignKey refConstraint;
+    private DBSEntityReferrer refConstraint;
     private Text editor;
     private Table editorSelector;
     private boolean handleEditorChange;
@@ -185,13 +185,13 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     protected abstract Object getEditorValue();
 
-    private DBSTableForeignKey getEnumerableConstraint()
+    private DBSEntityReferrer getEnumerableConstraint()
     {
         if (valueController instanceof DBDColumnController) {
-            DBSTableForeignKey constraint = DBUtils.getUniqueForeignConstraint(((DBDColumnController)valueController).getColumnMetaData());
-            if (constraint != null &&
-                constraint.getReferencedConstraint() instanceof DBSConstraintEnumerable &&
-                ((DBSConstraintEnumerable)constraint.getReferencedConstraint()).supportsEnumeration())
+            DBSEntityReferrer constraint = DBUtils.getUniqueForeignConstraint(((DBDColumnController)valueController).getColumnMetaData());
+            if (constraint instanceof DBSEntityAssociation &&
+                ((DBSEntityAssociation)constraint).getReferencedConstraint() instanceof DBSConstraintEnumerable &&
+                ((DBSConstraintEnumerable)((DBSEntityAssociation)constraint).getReferencedConstraint()).supportsEnumeration())
             {
                 return constraint;
             }
@@ -212,7 +212,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         this.editor = control;
 
         Link label = new Link(parent, SWT.NONE);
-        label.setText(NLS.bind(CoreMessages.dialog_value_view_label_dictionary, refConstraint.getReferencedConstraint().getTable().getName()));
+        label.setText(NLS.bind(CoreMessages.dialog_value_view_label_dictionary, ((DBSEntityAssociation)refConstraint).getReferencedConstraint().getParentObject().getName()));
         label.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -223,7 +223,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
-                        DBNDatabaseNode tableNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, refConstraint.getReferencedConstraint().getTable(), true);
+                        DBNDatabaseNode tableNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
+                            monitor,
+                            ((DBSEntityAssociation)refConstraint).getReferencedConstraint().getParentObject(),
+                            true);
                         if (tableNode != null) {
                             NavigatorHandlerObjectOpen.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
                         }
@@ -307,27 +310,38 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
             final Map<Object, String> keyValues = new TreeMap<Object, String>();
             try {
                 DBDColumnController columnController = (DBDColumnController)valueController;
-                final DBSTableForeignKeyColumn fkColumn = (DBSTableForeignKeyColumn)refConstraint.getColumn(monitor, columnController.getColumnMetaData().getTableColumn(monitor));
+                final DBSEntityAttribute tableColumn = columnController.getColumnMetaData().getTableColumn(monitor);
+                final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintColumn(monitor, refConstraint, tableColumn);
                 if (fkColumn == null) {
                     return Status.OK_STATUS;
                 }
+                DBSEntityAssociation association;
+                if (refConstraint instanceof DBSEntityAssociation) {
+                    association = (DBSEntityAssociation)refConstraint;
+                } else {
+                    return Status.OK_STATUS;
+                }
+                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn);
+                if (refColumn == null) {
+                    return Status.OK_STATUS;
+                }
                 java.util.List<DBDColumnValue> preceedingKeys = null;
-                Collection<? extends DBSTableConstraintColumn> allColumns = refConstraint.getColumns(monitor);
+                Collection<? extends DBSEntityAttributeRef> allColumns = refConstraint.getAttributeReferences(monitor);
                 if (allColumns.size() > 1) {
                     if (allColumns.iterator().next() != fkColumn) {
                         // Our column is not a first on in foreign key.
                         // So, fill uo preceeding keys
                         preceedingKeys = new ArrayList<DBDColumnValue>();
-                        for (DBSTableConstraintColumn precColumn : allColumns) {
+                        for (DBSEntityAttributeRef precColumn : allColumns) {
                             if (precColumn == fkColumn) {
                                 // Enough
                                 break;
                             }
                             DBCColumnMetaData precMeta = columnController.getRow().getColumnMetaData(
-                                columnController.getColumnMetaData().getTable(), precColumn.getTableColumn().getName());
+                                columnController.getColumnMetaData().getTable(), precColumn.getAttribute().getName());
                             if (precMeta != null) {
                                 Object precValue = columnController.getRow().getColumnValue(precMeta);
-                                preceedingKeys.add(new DBDColumnValue(precColumn.getTableColumn(), precValue));
+                                preceedingKeys.add(new DBDColumnValue(precColumn.getAttribute(), precValue));
                             }
                         }
                     }
@@ -335,12 +349,13 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                 final DBCExecutionContext context = getDataSource().openContext(
                         monitor,
                         DBCExecutionPurpose.UTIL,
-                        NLS.bind(CoreMessages.dialog_value_view_context_name, fkColumn.getReferencedColumn().getName()));
+                        NLS.bind(CoreMessages.dialog_value_view_context_name, fkColumn.getAttribute().getName()));
                 try {
-                    DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable)refConstraint.getReferencedConstraint();
+                    final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
+                    DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable) refConstraint;
                     Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
                         context,
-                        fkColumn.getReferencedColumn(),
+                        refColumn,
                         pattern,
                         preceedingKeys,
                         100);
@@ -353,7 +368,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                     getShell().getDisplay().syncExec(new Runnable() {
                         public void run()
                         {
-                            DBDValueHandler colHandler = DBUtils.getColumnValueHandler(context, fkColumn.getReferencedColumn());
+                            DBDValueHandler colHandler = DBUtils.getColumnValueHandler(context, fkColumn.getAttribute());
 
                             if (editorSelector != null && !editorSelector.isDisposed()) {
                                 editorSelector.setRedraw(false);
@@ -361,7 +376,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                                     editorSelector.removeAll();
                                     for (Map.Entry<Object, String> entry : keyValues.entrySet()) {
                                         TableItem discItem = new TableItem(editorSelector, SWT.NONE);
-                                        discItem.setText(0, colHandler.getValueDisplayString(fkColumn.getReferencedColumn(), entry.getKey()));
+                                        discItem.setText(0, colHandler.getValueDisplayString(fkColumn.getAttribute(), entry.getKey()));
                                         discItem.setText(1, entry.getValue());
                                         discItem.setData(entry.getKey());
                                     }

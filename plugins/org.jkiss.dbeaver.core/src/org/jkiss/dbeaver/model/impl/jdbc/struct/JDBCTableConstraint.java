@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
@@ -20,10 +21,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.*;
 
@@ -71,7 +69,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
     /**
      * Returns prepared statements for enumeration fetch
      * @param context
-     *@param keyColumn enumeration column.
+     * @param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
      * @param maxResults maximum enumeration values in result set     @return
@@ -79,7 +77,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
      */
     public Collection<DBDLabelValuePair> getKeyEnumeration(
         DBCExecutionContext context,
-        DBSTableColumn keyColumn,
+        DBSEntityAttribute keyColumn,
         Object keyPattern,
         List<DBDColumnValue> preceedingKeys,
         int maxResults)
@@ -92,11 +90,12 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         DBDValueHandler keyValueHandler = DBUtils.getColumnValueHandler(context, keyColumn);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ").append(DBUtils.getQuotedIdentifier(dataSource, keyColumn.getName()));
-        DBSTableColumn descColumn = getKeyDescriptionColumn(context.getProgressMonitor(), keyColumn);
+        DBSEntityAttribute descColumn = getKeyDescriptionColumn(context.getProgressMonitor(), keyColumn);
         if (descColumn != null) {
             query.append(", ").append(DBUtils.getQuotedIdentifier(dataSource, descColumn.getName()));
         }
-        query.append(" FROM ").append(keyColumn.getParentObject().getFullQualifiedName());
+        String entityName = keyColumn.getParentObject() instanceof DBPQualifiedObject ? ((DBPQualifiedObject)keyColumn.getParentObject()).getFullQualifiedName() : keyColumn.getName();
+        query.append(" FROM ").append(entityName);
         List<String> conditions = new ArrayList<String>();
         if (keyPattern != null) {
             if (keyPattern instanceof CharSequence) {
@@ -113,7 +112,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         }
         if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
             for (DBDColumnValue precColumn : preceedingKeys) {
-                conditions.add(DBUtils.getQuotedIdentifier(dataSource, precColumn.getColumn().getName()) + " = ?");
+                conditions.add(DBUtils.getQuotedIdentifier(dataSource, precColumn.getAttribute().getName()) + " = ?");
             }
         }
         if (!conditions.isEmpty()) {
@@ -138,8 +137,8 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
 
             if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
                 for (DBDColumnValue precColumn : preceedingKeys) {
-                    DBDValueHandler precValueHandler = DBUtils.getColumnValueHandler(context, precColumn.getColumn());
-                    precValueHandler.bindValueObject(context, dbStat, precColumn.getColumn(), paramPos++, precColumn.getValue());
+                    DBDValueHandler precValueHandler = DBUtils.getColumnValueHandler(context, precColumn.getAttribute());
+                    precValueHandler.bindValueObject(context, dbStat, precColumn.getAttribute(), paramPos++, precColumn.getValue());
                 }
             }
             dbStat.setLimit(0, 100);
@@ -193,16 +192,16 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         "remark",
     };
 
-    private DBSTableColumn getKeyDescriptionColumn(DBRProgressMonitor monitor, DBSTableColumn keyColumn)
+    private DBSEntityAttribute getKeyDescriptionColumn(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn)
         throws DBException
     {
-        Collection<? extends DBSTableColumn> allColumns = keyColumn.getParentObject().getColumns(monitor);
+        Collection<? extends DBSEntityAttribute> allColumns = keyColumn.getParentObject().getAttributes(monitor);
         if (allColumns.size() == 1) {
             return null;
         }
         // Find all string columns
-        Map<String, DBSTableColumn> stringColumns = new TreeMap<String, DBSTableColumn>();
-        for (DBSTableColumn column : allColumns) {
+        Map<String, DBSEntityAttribute> stringColumns = new TreeMap<String, DBSEntityAttribute>();
+        for (DBSEntityAttribute column : allColumns) {
             if (column != keyColumn && JDBCUtils.getDataKind(column) == DBSDataKind.STRING && column.getMaxLength() < MAX_DESC_COLUMN_LENGTH) {
                 stringColumns.put(column.getName().toLowerCase(), column);
             }

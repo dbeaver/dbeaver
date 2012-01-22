@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
@@ -30,7 +30,7 @@ public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableCo
     {
         StringBuilder decl = super.getNestedDeclaration(owner, command);
         final MySQLTableColumn column = command.getObject();
-        if (column.isAutoIncrement()) {
+        if (column.isSequence()) {
             decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
         }
         if (!CommonUtils.isEmpty(column.getDefaultValue())) {

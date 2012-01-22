@@ -146,13 +146,13 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     @Property(name = "Not Null", viewable = true, editable = true, updatable = true, order = 50)
     @Override
-    public boolean isNotNull()
+    public boolean isRequired()
     {
-        return super.isNotNull();
+        return super.isRequired();
     }
 
     @Property(name = "Auto Increment", viewable = true, editable = true, updatable = true, order = 51)
-    public boolean isAutoIncrement()
+    public boolean isSequence()
     {
         return autoIncrement;
     }

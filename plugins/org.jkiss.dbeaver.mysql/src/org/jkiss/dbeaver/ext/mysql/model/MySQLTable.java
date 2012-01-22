@@ -4,21 +4,21 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.model.exec.jdbc.*;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.meta.*;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
@@ -392,7 +392,7 @@ public class MySQLTable extends MySQLTableBase
                         List<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
                         if (constraints != null) {
                             for (MySQLTableConstraint pkConstraint : constraints) {
-                                if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
+                                if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintColumn(monitor, pkConstraint, pkColumn) != null) {
                                     pk = pkConstraint;
                                     break;
                                 }

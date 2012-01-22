@@ -72,7 +72,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
 
     @Property(name = "Not Null", viewable = true, editable = true, order = 50)
     @Override
-    public boolean isNotNull()
+    public boolean isRequired()
     {
         return super.isNotNull();
     }

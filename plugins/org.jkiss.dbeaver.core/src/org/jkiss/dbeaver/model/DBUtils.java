@@ -95,7 +95,7 @@ public final class DBUtils {
             return str;
         }
         // Escape quote chars
-        if (str.indexOf(quoteString) != -1) {
+        if (str.contains(quoteString)) {
             str = str.replace(quoteString, quoteString + quoteString);
         }
         return quoteString + str + quoteString;
@@ -370,14 +370,14 @@ public final class DBUtils {
         DBRProgressMonitor monitor,
         DBDColumnBinding[] bindings)
     {
-        Map<DBSTable, DBDValueLocator> locatorMap = new HashMap<DBSTable, DBDValueLocator>();
+        Map<DBSEntity, DBDValueLocator> locatorMap = new HashMap<DBSEntity, DBDValueLocator>();
         try {
             for (DBDColumnBinding column : bindings) {
                 DBCColumnMetaData meta = column.getColumn();
                 if (meta.getTable() == null || !meta.getTable().isIdentified(monitor)) {
                     continue;
                 }
-                DBSTableColumn tableColumn = meta.getTableColumn(monitor);
+                DBSEntityAttribute tableColumn = meta.getTableColumn(monitor);
                 if (tableColumn == null) {
                     continue;
                 }
@@ -386,13 +386,13 @@ public final class DBUtils {
                 // which construct any unique key
                 DBDValueLocator valueLocator = locatorMap.get(meta.getTable().getTable(monitor));
                 if (valueLocator == null) {
-                    DBCTableIdentifier tableIdentifier = meta.getTable().getBestIdentifier(monitor);
-                    if (tableIdentifier == null) {
+                    DBCEntityIdentifier entityIdentifier = meta.getTable().getBestIdentifier(monitor);
+                    if (entityIdentifier == null) {
                         continue;
                     }
                     valueLocator = new DBDValueLocator(
                         meta.getTable().getTable(monitor),
-                        tableIdentifier);
+                        entityIdentifier);
                     locatorMap.put(meta.getTable().getTable(monitor), valueLocator);
                 }
                 column.initValueLocator(tableColumn, valueLocator);
@@ -403,12 +403,12 @@ public final class DBUtils {
         }
     }
 
-    public static DBSTableForeignKey getUniqueForeignConstraint(DBCColumnMetaData column)
+    public static DBSEntityReferrer getUniqueForeignConstraint(DBCColumnMetaData column)
     {
         return getUniqueForeignConstraint(null, column);
     }
 
-    public static DBSTableForeignKey getUniqueForeignConstraint(DBRProgressMonitor monitor, DBCColumnMetaData column)
+    public static DBSEntityReferrer getUniqueForeignConstraint(DBRProgressMonitor monitor, DBCColumnMetaData column)
     {
         RefColumnFinder finder = new RefColumnFinder(column);
         try {
@@ -489,7 +489,7 @@ public final class DBUtils {
         }
         List<DBSTableColumn> columns = new ArrayList<DBSTableColumn>(constraintColumns.size());
         for (DBSTableConstraintColumn column : constraintColumns) {
-            columns.add(column.getTableColumn());
+            columns.add(column.getAttribute());
         }
         return columns;
     }
@@ -505,6 +505,58 @@ public final class DBUtils {
             columns.add(column.getTableColumn());
         }
         return columns;
+    }
+
+    public static DBSEntityAttributeRef getConstraintColumn(DBRProgressMonitor monitor, DBSEntityReferrer constraint, DBSEntityAttribute tableColumn) throws DBException
+    {
+        Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
+        if (columns != null) {
+            for (DBSEntityAttributeRef constraintColumn : columns) {
+                if (constraintColumn.getAttribute() == tableColumn) {
+                    return constraintColumn;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static DBSEntityAttributeRef getConstraintColumn(DBRProgressMonitor monitor, DBSEntityReferrer constraint, String columnName) throws DBException
+    {
+        Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
+        if (columns != null) {
+            for (DBSEntityAttributeRef constraintColumn : columns) {
+                if (constraintColumn.getAttribute().getName().equals(columnName)) {
+                    return constraintColumn;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return reference column of referrer association (FK).
+     * Assumes that columns in both constraints are in the same order.
+     */
+    public static DBSEntityAttribute getReferenceAttribute(DBRProgressMonitor monitor, DBSEntityAssociation association, DBSEntityAttribute tableColumn) throws DBException
+    {
+        final DBSEntityConstraint refConstr = association.getReferencedConstraint();
+        if (association instanceof DBSEntityReferrer && refConstr instanceof DBSEntityReferrer) {
+            final Collection<? extends DBSEntityAttributeRef> ownAttrs = ((DBSEntityReferrer) association).getAttributeReferences(monitor);
+            final Collection<? extends DBSEntityAttributeRef> refAttrs = ((DBSEntityReferrer) refConstr).getAttributeReferences(monitor);
+            if (ownAttrs == null || refAttrs == null || ownAttrs.size() != refAttrs.size()) {
+                log.error("Invalid internal state of referrer association");
+                return null;
+            }
+            final Iterator<? extends DBSEntityAttributeRef> ownIterator = ownAttrs.iterator();
+            final Iterator<? extends DBSEntityAttributeRef> refIterator = refAttrs.iterator();
+            while (ownIterator.hasNext()) {
+                if (ownIterator.next().getAttribute() == tableColumn) {
+                    return refIterator.next().getAttribute();
+                }
+                refIterator.next();
+            }
+        }
+        return null;
     }
 
     public static DBCStatement prepareStatement(
@@ -743,7 +795,7 @@ public final class DBUtils {
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {
         private DBCColumnMetaData column;
-        private DBSTableForeignKey refConstraint;
+        private DBSEntityReferrer refConstraint;
 
         private RefColumnFinder(DBCColumnMetaData column)
         {
@@ -754,7 +806,7 @@ public final class DBUtils {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                List<DBSTableForeignKey> refs = column.getForeignKeys(monitor);
+                List<DBSEntityReferrer> refs = column.getReferrers(monitor);
                 if (refs != null && !refs.isEmpty()) {
                     refConstraint = refs.get(0);
                 }

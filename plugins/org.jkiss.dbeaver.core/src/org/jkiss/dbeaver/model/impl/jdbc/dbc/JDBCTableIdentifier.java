@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
-import org.jkiss.dbeaver.model.exec.DBCTableIdentifier;
+import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * JDBC Table MetaData
  */
-public class JDBCTableIdentifier implements DBCTableIdentifier {
+public class JDBCTableIdentifier implements DBCEntityIdentifier {
 
     private DBSTableConstraint constraint;
     private DBSTableIndex index;
@@ -27,7 +27,7 @@ public class JDBCTableIdentifier implements DBCTableIdentifier {
         this.columns = columns;
         this.tableColumns = new ArrayList<DBSTableColumn>();
         for (DBSTableConstraintColumn cColumn : constraint.getColumns(monitor)) {
-            tableColumns.add(cColumn.getTableColumn());
+            tableColumns.add(cColumn.getAttribute());
         }
     }
 

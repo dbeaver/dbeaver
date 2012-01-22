@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -33,7 +34,7 @@ import java.util.List;
  * WMI class
  */
 public class WMIClass extends WMIContainer
-    implements DBSTable, DBSEntity, DBPCloseableObject, DBSDataContainer, IObjectImageProvider
+    implements DBSEntity, DBPCloseableObject, DBPQualifiedObject, DBSDataContainer, IObjectImageProvider
 {
     private static Image IMG_CLASS;
     private static Image IMG_CLASS_ABSTRACT;
@@ -169,19 +170,17 @@ public class WMIClass extends WMIContainer
         return getName().startsWith("__");
     }
 
-    public boolean isView()
-    {
-        return false;
-    }
-
-    public DBSObjectContainer getContainer()
-    {
-        return getNamespace();
-    }
-
     public Collection<WMIClassAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
     {
-        return getColumns(monitor);
+        if (attributes == null) {
+            readAttributes(monitor);
+        }
+        return attributes;
+    }
+
+    public WMIClassAttribute getAttribute(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return DBUtils.findObject(getAttributes(monitor), name);
     }
 
     @Association
@@ -207,22 +206,6 @@ public class WMIClass extends WMIContainer
             }
             return allAttrs;
         }
-    }
-
-    public Collection<WMIClassAttribute> getColumns(DBRProgressMonitor monitor) throws DBException
-    {
-        if (attributes == null) {
-            readAttributes(monitor);
-        }
-        return attributes;
-    }
-
-    public WMIClassAttribute getColumn(DBRProgressMonitor monitor, String columnName) throws DBException
-    {
-        if (attributes == null) {
-            readAttributes(monitor);
-        }
-        return DBUtils.findObject(attributes, columnName);
     }
 
     private synchronized void readAttributes(DBRProgressMonitor monitor) throws DBException
@@ -303,24 +286,14 @@ public class WMIClass extends WMIContainer
         }
     }
 
-    public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
-    public List<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
-    public List<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         // Read attributes and references
         getAttributes(monitor);
         if (superClass == null && CommonUtils.isEmpty(references)) {
             return null;
         }
-        List<DBSTableForeignKey> associations = new ArrayList<DBSTableForeignKey>();
+        List<DBSEntityAssociation> associations = new ArrayList<DBSEntityAssociation>();
         if (superClass != null) {
             associations.add(new WMIClassInheritance(superClass, this));
         }
@@ -330,7 +303,7 @@ public class WMIClass extends WMIContainer
         return associations;
     }
 
-    public List<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         if (subClasses == null) {
             return null;
@@ -442,4 +415,5 @@ public class WMIClass extends WMIContainer
     {
         return classObject;
     }
+
 }

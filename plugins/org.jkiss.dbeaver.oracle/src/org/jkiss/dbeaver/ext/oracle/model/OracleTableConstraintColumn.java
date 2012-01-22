@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * GenericConstraintColumn
@@ -25,11 +24,6 @@ public class OracleTableConstraintColumn extends AbstractTableConstraintColumn
         this.ordinalPosition = ordinalPosition;
     }
 
-    public AbstractTableConstraint<OracleTableBase> getConstraint()
-    {
-        return constraint;
-    }
-
     //@Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
@@ -37,7 +31,7 @@ public class OracleTableConstraintColumn extends AbstractTableConstraintColumn
     }
 
     @Property(id = "name", name = "Column", viewable = true, order = 1)
-    public OracleTableColumn getTableColumn()
+    public OracleTableColumn getAttribute()
     {
         return tableColumn;
     }
@@ -53,7 +47,7 @@ public class OracleTableConstraintColumn extends AbstractTableConstraintColumn
         return tableColumn.getDescription();
     }
 
-    public DBSObject getParentObject()
+    public AbstractTableConstraint<OracleTableBase> getParentObject()
     {
         return constraint;
     }

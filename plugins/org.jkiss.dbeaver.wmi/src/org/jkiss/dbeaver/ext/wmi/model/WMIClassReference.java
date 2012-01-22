@@ -4,16 +4,16 @@
 
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
 import org.jkiss.wmi.service.WMIObjectAttribute;
-
-import java.util.Collection;
 
 /**
  * Class association
  */
-public class WMIClassReference extends WMIClassElement<WMIObjectAttribute> implements DBSTableForeignKey
+public class WMIClassReference extends WMIClassElement<WMIObjectAttribute> implements DBSEntityAssociation
 {
     private WMIClass refClass;
 
@@ -23,24 +23,9 @@ public class WMIClassReference extends WMIClassElement<WMIObjectAttribute> imple
         this.refClass = refClass;
     }
 
-    public DBSTable getTable()
-    {
-        return getParentObject();
-    }
-
     public DBSEntityConstraintType getConstraintType()
     {
         return DBSEntityConstraintType.ASSOCIATION;
-    }
-
-    public Collection<? extends DBSTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
-    {
-        return null;
-    }
-
-    public DBSTableConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
-    {
-        return null;
     }
 
     public DBSEntity getAssociatedEntity()
@@ -53,18 +38,4 @@ public class WMIClassReference extends WMIClassElement<WMIObjectAttribute> imple
         return null;
     }
 
-    public DBSConstraintModifyRule getDeleteRule()
-    {
-        return DBSConstraintModifyRule.RESTRICT;
-    }
-
-    public DBSConstraintModifyRule getUpdateRule()
-    {
-        return DBSConstraintModifyRule.RESTRICT;
-    }
-
-    public String getFullQualifiedName()
-    {
-        return getName();
-    }
 }

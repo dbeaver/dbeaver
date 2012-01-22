@@ -465,7 +465,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     List<GenericPrimaryKey> uniqueKeys = this.getConstraints(monitor);
                     if (uniqueKeys != null) {
                         for (GenericPrimaryKey pkConstraint : uniqueKeys) {
-                            if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
+                            if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintColumn(monitor, pkConstraint, pkColumn) != null) {
                                 pk = pkConstraint;
                                 break;
                             }

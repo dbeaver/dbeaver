@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.struct;
@@ -7,10 +7,12 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSEntityAttribute
  */
-public interface DBSEntityAttribute extends DBSEntityElement {
+public interface DBSEntityAttribute extends DBSEntityElement, DBSColumnBase {
 
-    int getTypeID();
+    boolean isRequired();
 
-    String getTypeName();
+    boolean isSequence();
+
+    String getDefaultValue();
 
 }

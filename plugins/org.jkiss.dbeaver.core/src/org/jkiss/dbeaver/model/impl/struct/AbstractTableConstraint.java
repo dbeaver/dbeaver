@@ -6,7 +6,10 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
 
 import java.util.Collection;
 
@@ -34,30 +37,10 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
         return table;
     }
 
-    public DBSTableConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
+    @Override
+    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
     {
-        Collection<? extends DBSTableConstraintColumn> columns = getColumns(monitor);
-        if (columns != null) {
-            for (DBSTableConstraintColumn constraintColumn : columns) {
-                if (constraintColumn.getTableColumn() == tableColumn) {
-                    return constraintColumn;
-                }
-            }
-        }
-        return null;
-    }
-
-    public DBSTableConstraintColumn getColumn(DBRProgressMonitor monitor, String columnName)
-    {
-        Collection<? extends DBSTableConstraintColumn> columns = getColumns(monitor);
-        if (columns != null) {
-            for (DBSTableConstraintColumn constraintColumn : columns) {
-                if (constraintColumn.getTableColumn().getName().equals(columnName)) {
-                    return constraintColumn;
-                }
-            }
-        }
-        return null;
+        return getColumns(monitor);
     }
 
     @Property(name = "Name", viewable = true, order = 1)

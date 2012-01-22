@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -27,4 +28,9 @@ public abstract class AbstractTableIndex implements DBSTableIndex
         return true;
     }
 
+    @Override
+    public DBSEntityConstraintType getConstraintType()
+    {
+        return DBSEntityConstraintType.INDEX;
+    }
 }

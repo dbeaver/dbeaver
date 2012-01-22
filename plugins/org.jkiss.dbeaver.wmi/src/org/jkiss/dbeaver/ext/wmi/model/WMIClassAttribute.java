@@ -1,10 +1,13 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.WMIConstants;
@@ -13,21 +16,11 @@ import org.jkiss.wmi.service.WMIObjectAttribute;
 /**
  * Class property
  */
-public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> implements DBSTableColumn, IObjectImageProvider
+public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> implements DBSEntityAttribute, IObjectImageProvider
 {
     protected WMIClassAttribute(WMIClass wmiClass, WMIObjectAttribute attribute)
     {
         super(wmiClass, attribute);
-    }
-
-    public DBSTable getTable()
-    {
-        return wmiClass;
-    }
-
-    public int getOrdinalPosition()
-    {
-        return 0;
     }
 
     @Property(name = "Type", viewable = true, order = 10)
@@ -41,35 +34,40 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
         return element.getType();
     }
 
+    @Override
     public int getScale()
     {
         return 0;
     }
 
+    @Override
     public int getPrecision()
     {
         return 0;
+    }
+
+    @Override
+    public long getMaxLength()
+    {
+        return 0;
+    }
+
+    @Override
+    public boolean isRequired()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean isSequence()
+    {
+        return false;
     }
 
     @Property(name = "Default Value", viewable = true, order = 20)
     public String getDefaultValue()
     {
         return CommonUtils.toString(element.getValue());
-    }
-
-    public boolean isAutoIncrement()
-    {
-        return false;
-    }
-
-    public boolean isNotNull()
-    {
-        return false;
-    }
-
-    public long getMaxLength()
-    {
-        return 0;
     }
 
     public Image getObjectImage()

@@ -70,7 +70,7 @@ public class GenericPrimaryKey extends GenericTableConstraint
     {
         if (this.columns != null) {
             for (GenericTableConstraintColumn constColumn : columns) {
-                if (constColumn.getTableColumn() == column) {
+                if (constColumn.getAttribute() == column) {
                     return true;
                 }
             }

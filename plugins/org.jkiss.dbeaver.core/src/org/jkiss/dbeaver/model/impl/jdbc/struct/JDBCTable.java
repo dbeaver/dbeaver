@@ -216,7 +216,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName()));
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getAttribute().getName()));
         }
         query.append(") VALUES ("); //$NON-NLS-1$
         hasKey = false;
@@ -241,8 +241,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (DBUtils.isNullValue(column.getValue())) {
                     continue;
                 }
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getColumn());
-                valueHandler.bindValueObject(context, dbStat, column.getColumn(), paramNum++, column.getValue());
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getAttribute());
+                valueHandler.bindValueObject(context, dbStat, column.getAttribute(), paramNum++, column.getValue());
             }
 
             // Execute statement
@@ -276,14 +276,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         for (DBDColumnValue column : updateColumns) {
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?"); //$NON-NLS-1$
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getAttribute().getName())).append("=?"); //$NON-NLS-1$
         }
         query.append(" WHERE "); //$NON-NLS-1$
         hasKey = false;
         for (DBDColumnValue column : keyColumns) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?"); //$NON-NLS-1$
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getAttribute().getName())).append("=?"); //$NON-NLS-1$
         }
 
         // Execute
@@ -297,8 +297,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             allColumn.addAll(keyColumns);
             for (int i = 0; i < allColumn.size(); i++) {
                 DBDColumnValue column = allColumn.get(i);
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getColumn());
-                valueHandler.bindValueObject(context, dbStat, column.getColumn(), i, column.getValue());
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getAttribute());
+                valueHandler.bindValueObject(context, dbStat, column.getAttribute(), i, column.getValue());
             }
 
             // Execute statement
@@ -327,7 +327,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         for (DBDColumnValue column : keyColumns) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?"); //$NON-NLS-1$
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getAttribute().getName())).append("=?"); //$NON-NLS-1$
         }
 
         // Execute
@@ -338,8 +338,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             // Set parameters
             for (int i = 0; i < keyColumns.size(); i++) {
                 DBDColumnValue column = keyColumns.get(i);
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getColumn());
-                valueHandler.bindValueObject(context, dbStat, column.getColumn(), i, column.getValue());
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getAttribute());
+                valueHandler.bindValueObject(context, dbStat, column.getAttribute(), i, column.getValue());
             }
 
             // Execute statement

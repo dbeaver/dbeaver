@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 /**
  * Result set table metadata
@@ -18,7 +18,7 @@ public interface DBCTableMetaData {
      * @return table table reference. never returns null
      * @param monitor progress monitor
      */
-    DBSTable getTable(DBRProgressMonitor monitor)
+    DBSEntity getTable(DBRProgressMonitor monitor)
         throws DBException;
 
     /**
@@ -50,7 +50,7 @@ public interface DBCTableMetaData {
      * or null if no identifiers found.
      * @param monitor progress monitor
      */
-    DBCTableIdentifier getBestIdentifier(DBRProgressMonitor monitor)
+    DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException;
 
 }

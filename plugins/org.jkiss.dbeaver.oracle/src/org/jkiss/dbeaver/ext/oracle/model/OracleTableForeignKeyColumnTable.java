@@ -25,7 +25,7 @@ public class OracleTableForeignKeyColumnTable extends OracleTableConstraintColum
     @Property(id = "reference", name = "Reference Column", viewable = true, order = 4)
     public OracleTableColumn getReferencedColumn()
     {
-        return ((OracleTableForeignKey)getConstraint()).getReferencedConstraint().getColumns(VoidProgressMonitor.INSTANCE).get(getOrdinalPosition() - 1).getTableColumn();
+        return ((OracleTableForeignKey) getParentObject()).getReferencedConstraint().getColumns(VoidProgressMonitor.INSTANCE).get(getOrdinalPosition() - 1).getAttribute();
     }
 
 }

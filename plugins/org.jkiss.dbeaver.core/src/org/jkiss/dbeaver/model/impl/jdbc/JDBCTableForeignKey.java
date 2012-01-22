@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
@@ -71,11 +70,6 @@ public abstract class JDBCTableForeignKey<
     public void setUpdateRule(DBSConstraintModifyRule updateRule)
     {
         this.updateRule = updateRule;
-    }
-
-    public DBSTableForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
-    {
-        return (DBSTableForeignKeyColumn)super.getColumn(monitor, tableColumn);
     }
 
     public TABLE getAssociatedEntity()

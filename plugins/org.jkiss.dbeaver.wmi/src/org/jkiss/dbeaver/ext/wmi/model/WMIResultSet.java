@@ -9,9 +9,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.wmi.service.WMIConstants;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIObject;
@@ -139,7 +137,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
     /////////////////////////////////////////////////////////////
     // DBCTableMetaData
 
-    public DBSTable getTable(DBRProgressMonitor monitor) throws DBException
+    public DBSEntity getTable(DBRProgressMonitor monitor) throws DBException
     {
         return classObject == null ? null : classObject;
     }
@@ -159,7 +157,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
         return false;
     }
 
-    public DBCTableIdentifier getBestIdentifier(DBRProgressMonitor monitor) throws DBException
+    public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
@@ -248,9 +246,9 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
             return false;
         }
 
-        public DBSTableColumn getTableColumn(DBRProgressMonitor monitor) throws DBException
+        public DBSEntityAttribute getTableColumn(DBRProgressMonitor monitor) throws DBException
         {
-            return classObject == null ? null : classObject.getColumn(monitor, getName());
+            return classObject == null ? null : classObject.getAttribute(monitor, getName());
         }
 
         public DBCTableMetaData getTable()
@@ -263,7 +261,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
             return false;
         }
 
-        public List<DBSTableForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
+        public List<DBSEntityReferrer> getReferrers(DBRProgressMonitor monitor) throws DBException
         {
             return null;
         }

@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
-import org.jkiss.dbeaver.model.struct.DBSTableForeignKeyColumn;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -13,8 +13,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.struct.DBSTableConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.util.Collection;
@@ -75,10 +73,10 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCTableConstra
         }
         decl.append(") REFERENCES ").append(foreignKey.getReferencedConstraint().getTable().getFullQualifiedName()).append("("); //$NON-NLS-1$ //$NON-NLS-2$
         firstColumn = true;
-        for (DBSTableConstraintColumn constraintColumn : columns) {
+        for (DBSEntityAttributeRef constraintColumn : foreignKey.getReferencedConstraint().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
             if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
-            decl.append(((DBSTableForeignKeyColumn) constraintColumn).getReferencedColumn().getName());
+            decl.append(constraintColumn.getAttribute().getName());
         }
         decl.append(")"); //$NON-NLS-1$
         if (foreignKey.getDeleteRule() != null && !CommonUtils.isEmpty(foreignKey.getDeleteRule().getClause())) {

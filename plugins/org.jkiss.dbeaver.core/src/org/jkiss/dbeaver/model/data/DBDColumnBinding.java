@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 /**
@@ -13,7 +14,7 @@ import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 public class DBDColumnBinding {
     private final DBCColumnMetaData column;
     private final DBDValueHandler valueHandler;
-    private DBSTableColumn tableColumn;
+    private DBSEntityAttribute tableColumn;
     private DBDValueLocator valueLocator;
 
     public DBDColumnBinding(DBCColumnMetaData column, DBDValueHandler valueHandler) {
@@ -39,7 +40,7 @@ public class DBDColumnBinding {
         return valueHandler;
     }
 
-    public DBSTableColumn getTableColumn()
+    public DBSEntityAttribute getTableColumn()
     {
         return tableColumn;
     }
@@ -48,7 +49,7 @@ public class DBDColumnBinding {
         return valueLocator;
     }
 
-    public void initValueLocator(DBSTableColumn tableColumn, DBDValueLocator valueLocator) {
+    public void initValueLocator(DBSEntityAttribute tableColumn, DBDValueLocator valueLocator) {
         this.tableColumn = tableColumn;
         this.valueLocator = valueLocator;
     }

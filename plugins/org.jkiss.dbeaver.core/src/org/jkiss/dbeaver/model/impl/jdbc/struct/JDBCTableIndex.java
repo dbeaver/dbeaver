@@ -38,7 +38,7 @@ public abstract class JDBCTableIndex<TABLE extends JDBCTable>
         this.persisted = source.persisted;
     }
 
-    public DBSObject getParentObject()
+    public TABLE getParentObject()
     {
         return table;
     }

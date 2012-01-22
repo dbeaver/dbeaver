@@ -16,7 +16,7 @@ public abstract class AbstractTableConstraintColumn implements DBSTableConstrain
 {
     public Image getObjectImage()
     {
-        DBSTableColumn tableColumn = getTableColumn();
+        DBSTableColumn tableColumn = getAttribute();
         if (tableColumn instanceof IObjectImageProvider) {
             return ((IObjectImageProvider)tableColumn).getObjectImage();
         }
@@ -25,6 +25,6 @@ public abstract class AbstractTableConstraintColumn implements DBSTableConstrain
 
     public boolean isPersisted()
     {
-        return getConstraint().isPersisted();
+        return getParentObject().isPersisted();
     }
 }

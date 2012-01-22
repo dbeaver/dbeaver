@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.edit;
@@ -31,7 +31,7 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
     {
         StringBuilder decl = super.getNestedDeclaration(owner, command);
         final OracleTableColumn column = command.getObject();
-        if (column.isAutoIncrement()) {
+        if (column.isSequence()) {
             decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
         }
         if (!CommonUtils.isEmpty(column.getDefaultValue())) {

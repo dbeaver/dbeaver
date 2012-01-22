@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
@@ -108,7 +108,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
             }
         }
 
-        final boolean notNull = column.isNotNull();
+        final boolean notNull = column.isRequired();
         final long maxLength = column.getMaxLength();
         StringBuilder decl = new StringBuilder(40);
         decl.append(columnName).append(' ').append(typeName);

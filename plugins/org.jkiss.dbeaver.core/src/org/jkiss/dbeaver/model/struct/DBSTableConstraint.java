@@ -12,12 +12,10 @@ import java.util.Collection;
 /**
  * DBSTableConstraint
  */
-public interface DBSTableConstraint extends DBSEntityConstraint, DBPQualifiedObject
+public interface DBSTableConstraint extends DBSEntityReferrer, DBPQualifiedObject
 {
     DBSTable getTable();
 
     Collection<? extends DBSTableConstraintColumn> getColumns(DBRProgressMonitor monitor);
-
-    DBSTableConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn);
 
 }

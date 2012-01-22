@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.data;
@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -45,25 +46,25 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         int columnIndex)
         throws SQLException
     {
-        DBSTableColumn tableColumn = null;
+        DBSEntityAttribute attribute = null;
         if (column instanceof DBSTableColumn) {
-            tableColumn = (DBSTableColumn)column;
+            attribute = (DBSTableColumn)column;
         } else if (column instanceof DBCColumnMetaData) {
             try {
-                tableColumn = ((DBCColumnMetaData)column).getTableColumn(context.getProgressMonitor());
+                attribute = ((DBCColumnMetaData)column).getTableColumn(context.getProgressMonitor());
             }
             catch (DBException e) {
                 throw new SQLException(e);
             }
         }
-        if (tableColumn == null) {
+        if (attribute == null) {
             throw new SQLException("Could not find table column for column '" + columnIndex + "'");
         }
         MySQLTableColumn enumColumn;
-        if (tableColumn instanceof MySQLTableColumn) {
-            enumColumn = (MySQLTableColumn)tableColumn;
+        if (attribute instanceof MySQLTableColumn) {
+            enumColumn = (MySQLTableColumn)attribute;
         } else {
-            throw new SQLException("Bad column type: " + tableColumn.getClass().getName());
+            throw new SQLException("Bad column type: " + attribute.getClass().getName());
         }
         return new MySQLTypeEnum(enumColumn, resultSet.getString(columnIndex));
     }

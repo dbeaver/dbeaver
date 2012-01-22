@@ -7,7 +7,8 @@ package org.jkiss.dbeaver.model.exec;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSColumnBase;
-import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public interface DBCColumnMetaData extends DBSColumnBase
      * @throws DBCException on any DB error
      * @param monitor
      */
-    DBSTableColumn getTableColumn(DBRProgressMonitor monitor) throws DBException;
+    DBSEntityAttribute getTableColumn(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Owner table metadata
@@ -61,6 +62,6 @@ public interface DBCColumnMetaData extends DBSColumnBase
      * @return list of foreign keys. List can be empty or result can be null if this column is not a reference
      * @throws DBCException on any DB error  @param monitor
      */
-    List<DBSTableForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
+    List<DBSEntityReferrer> getReferrers(DBRProgressMonitor monitor) throws DBException;
 
 }

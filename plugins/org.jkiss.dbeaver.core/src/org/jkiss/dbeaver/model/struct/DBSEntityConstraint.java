@@ -5,12 +5,12 @@
 package org.jkiss.dbeaver.model.struct;
 
 /**
- * DBSEntityAssociation
+ * Entity constraint
  */
 public interface DBSEntityConstraint extends DBSObject {
 
-    DBSEntityConstraintType getConstraintType();
-
     DBSEntity getParentObject();
+
+    DBSEntityConstraintType getConstraintType();
 
 }

@@ -105,7 +105,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             List<GenericPrimaryKey> uniqueKeys = pkTable.getConstraints(context.getProgressMonitor());
             if (uniqueKeys != null) {
                 for (GenericPrimaryKey pkConstraint : uniqueKeys) {
-                    if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(context.getProgressMonitor(), pkColumn) != null) {
+                    if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintColumn(context.getProgressMonitor(), pkConstraint, pkColumn) != null) {
                         pk = pkConstraint;
                         break;
                     }
@@ -135,7 +135,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         throws SQLException, DBException
     {
         String pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);
-        GenericTableConstraintColumn pkColumn = (GenericTableConstraintColumn)foreignKey.getReferencedConstraint().getColumn(context.getProgressMonitor(), pkColumnName);
+        GenericTableConstraintColumn pkColumn = (GenericTableConstraintColumn)DBUtils.getConstraintColumn(context.getProgressMonitor(), foreignKey.getReferencedConstraint(), pkColumnName);
         if (pkColumn == null) {
             log.warn("Can't find PK table " + foreignKey.getReferencedConstraint().getTable().getFullQualifiedName() + " column " + pkColumnName);
             return null;
@@ -149,7 +149,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             return null;
         }
 
-        return new GenericTableForeignKeyColumnTable(foreignKey, fkColumn, keySeq, pkColumn.getTableColumn());
+        return new GenericTableForeignKeyColumnTable(foreignKey, fkColumn, keySeq, pkColumn.getAttribute());
     }
 
     protected Collection<GenericTableForeignKey> getObjectsCache(GenericTable parent)

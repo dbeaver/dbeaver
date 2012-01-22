@@ -45,11 +45,6 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
         return defferability;
     }
 
-    public GenericTableForeignKeyColumnTable getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
-    {
-        return (GenericTableForeignKeyColumnTable)super.getColumn(monitor, tableColumn);
-    }
-
     public List<GenericTableForeignKeyColumnTable> getColumns(DBRProgressMonitor monitor)
     {
         return columns;

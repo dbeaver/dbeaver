@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -64,15 +64,21 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     }
 
     @Property(name = "Precision", viewable = true, editable = true, order = 6)
-    public Integer getPrecision()
+    public int getPrecision()
     {
-        return precision;
+        return precision == null ? 0 : precision;
+    }
+
+    @Override
+    public long getMaxLength()
+    {
+        return length;
     }
 
     @Property(name = "Scale", viewable = true, editable = true, order = 7)
-    public Integer getScale()
+    public int getScale()
     {
-        return scale;
+        return scale == null ? 0 : scale;
     }
 
     public int getTypeID()
@@ -83,5 +89,23 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     public String getTypeName()
     {
         return attrType.getName();
+    }
+
+    @Override
+    public boolean isRequired()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean isSequence()
+    {
+        return false;
+    }
+
+    @Override
+    public String getDefaultValue()
+    {
+        return null;
     }
 }

@@ -85,7 +85,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     }
 
     @Property(name = "Auto Increment", viewable = true, order = 51)
-    public boolean isAutoIncrement()
+    public boolean isSequence()
     {
         return autoIncrement;
     }

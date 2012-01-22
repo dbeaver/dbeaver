@@ -4,11 +4,11 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
+import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.exec.DBCTableMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -100,7 +100,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         return getBestIdentifier(monitor) != null;
     }
 
-    public DBCTableIdentifier getBestIdentifier(DBRProgressMonitor monitor)
+    public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException
     {
         DBSTable table = getTable(monitor);
@@ -121,7 +121,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
                         if (!CommonUtils.isEmpty(constrColumns)) {
                             List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
                             for (DBSTableConstraintColumn constrColumn : constrColumns) {
-                                JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, constrColumn.getTableColumn());
+                                JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, constrColumn.getAttribute());
                                 if (rsColumn == null) {
                                     break;
                                 }
@@ -168,9 +168,9 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         }
         if (!CommonUtils.isEmpty(identifiers)) {
             // Find PK or unique key
-            DBCTableIdentifier uniqueId = null;
-            DBCTableIdentifier uniqueIndex = null;
-            for (DBCTableIdentifier id : identifiers) {
+            DBCEntityIdentifier uniqueId = null;
+            DBCEntityIdentifier uniqueIndex = null;
+            for (DBCEntityIdentifier id : identifiers) {
                 if (id.getConstraint() != null) {
                     if (id.getConstraint().getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                         return id;

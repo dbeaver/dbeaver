@@ -105,7 +105,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
                 log.warn(e);
             }
             if (this.tableColumn != null) {
-                this.notNull = this.tableColumn.isNotNull();
+                this.notNull = this.tableColumn.isRequired();
                 this.displaySize = this.tableColumn.getMaxLength();
                 DBSObject tableParent = ownerTable.getParentObject();
                 DBSObject tableGrandParent = tableParent == null ? null : tableParent.getParentObject();
@@ -254,7 +254,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return tableMetaData;
     }
 
-    public DBSTableColumn getTableColumn(DBRProgressMonitor monitor)
+    public DBSEntityAttribute getTableColumn(DBRProgressMonitor monitor)
         throws DBException
     {
         if (tableColumn != null) {
@@ -270,7 +270,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
     public boolean isForeignKey(DBRProgressMonitor monitor)
         throws DBException
     {
-        DBSTableColumn tableColumn = getTableColumn(monitor);
+        DBSEntityAttribute tableColumn = getTableColumn(monitor);
         if (tableColumn == null) {
             return false;
         }
@@ -278,10 +278,10 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         if (table == null) {
             return false;
         }
-        Collection<? extends DBSTableForeignKey> foreignKeys = table.getAssociations(monitor);
+        Collection<? extends DBSEntityAssociation> foreignKeys = table.getAssociations(monitor);
         if (foreignKeys != null) {
-            for (DBSTableForeignKey fk : foreignKeys) {
-                if (fk.getColumn(monitor, tableColumn) != null) {
+            for (DBSEntityAssociation fk : foreignKeys) {
+                if (fk instanceof DBSEntityReferrer && DBUtils.getConstraintColumn(monitor, (DBSEntityReferrer)fk, tableColumn) != null) {
                     return true;
                 }
             }
@@ -289,23 +289,23 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return false;
     }
 
-    public List<DBSTableForeignKey> getForeignKeys(DBRProgressMonitor monitor)
+    public List<DBSEntityReferrer> getReferrers(DBRProgressMonitor monitor)
         throws DBException
     {
-        List<DBSTableForeignKey> refs = new ArrayList<DBSTableForeignKey>();
-        DBSTableColumn tableColumn = getTableColumn(monitor);
+        List<DBSEntityReferrer> refs = new ArrayList<DBSEntityReferrer>();
+        DBSEntityAttribute tableColumn = getTableColumn(monitor);
         if (tableColumn == null) {
             return refs;
         }
-        DBSTable table = tableMetaData.getTable(monitor);
+        DBSEntity table = tableMetaData.getTable(monitor);
         if (table == null) {
             return refs;
         }
-        Collection<? extends DBSTableForeignKey> foreignKeys = table.getAssociations(monitor);
+        Collection<? extends DBSEntityAssociation> foreignKeys = table.getAssociations(monitor);
         if (foreignKeys != null) {
-            for (DBSTableForeignKey fk : foreignKeys) {
-                if (fk.getColumn(monitor, tableColumn) != null) {
-                    refs.add(fk);
+            for (DBSEntityAssociation fk : foreignKeys) {
+                if (fk instanceof DBSEntityReferrer && DBUtils.getConstraintColumn(monitor, (DBSEntityReferrer) fk, tableColumn) != null) {
+                    refs.add((DBSEntityReferrer)fk);
                 }
             }
         }
