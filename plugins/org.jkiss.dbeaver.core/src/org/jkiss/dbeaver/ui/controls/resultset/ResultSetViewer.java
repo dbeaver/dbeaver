@@ -1661,10 +1661,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return columns;
         }
 
-        public DBCColumnMetaData getColumnMetaData(DBCTableMetaData table, String columnName)
+        public DBCColumnMetaData getColumnMetaData(DBCEntityMetaData entity, String columnName)
         {
             for (DBDColumnBinding column : columns) {
-                if (column.getColumn().getTable() == table && column.getColumnName().equals(columnName)) {
+                if (column.getColumn().getTable() == entity && column.getColumnName().equals(columnName)) {
                     return column.getColumn();
                 }
             }

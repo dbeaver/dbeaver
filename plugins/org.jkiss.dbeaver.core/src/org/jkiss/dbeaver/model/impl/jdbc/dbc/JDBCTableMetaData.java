@@ -9,7 +9,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCTableMetaData;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * JDBC Table MetaData
  */
-public class JDBCTableMetaData implements DBCTableMetaData {
+public class JDBCTableMetaData implements DBCEntityMetaData {
 
     private JDBCResultSetMetaData resultSetMetaData;
     private String catalogName;
@@ -46,7 +46,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         return resultSetMetaData;
     }
 
-    public DBSTable getTable(DBRProgressMonitor monitor)
+    public DBSTable getEntity(DBRProgressMonitor monitor)
         throws DBException
     {
         if (table == null) {
@@ -84,12 +84,12 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         return schemaName;
     }
 
-    public String getTableName()
+    public String getEntityName()
     {
         return tableName;
     }
 
-    public String getTableAlias()
+    public String getEntityAlias()
     {
         return alias;
     }
@@ -103,7 +103,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
     public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException
     {
-        DBSTable table = getTable(monitor);
+        DBSTable table = getEntity(monitor);
 
         if (table.isView()) {
             return null;

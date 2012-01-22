@@ -384,16 +384,16 @@ public final class DBUtils {
                 // We got table name and column name
                 // To be editable we need this result set contain set of columns from the same table
                 // which construct any unique key
-                DBDValueLocator valueLocator = locatorMap.get(meta.getTable().getTable(monitor));
+                DBDValueLocator valueLocator = locatorMap.get(meta.getTable().getEntity(monitor));
                 if (valueLocator == null) {
                     DBCEntityIdentifier entityIdentifier = meta.getTable().getBestIdentifier(monitor);
                     if (entityIdentifier == null) {
                         continue;
                     }
                     valueLocator = new DBDValueLocator(
-                        meta.getTable().getTable(monitor),
+                        meta.getTable().getEntity(monitor),
                         entityIdentifier);
-                    locatorMap.put(meta.getTable().getTable(monitor), valueLocator);
+                    locatorMap.put(meta.getTable().getEntity(monitor), valueLocator);
                 }
                 column.initValueLocator(tableColumn, valueLocator);
             }

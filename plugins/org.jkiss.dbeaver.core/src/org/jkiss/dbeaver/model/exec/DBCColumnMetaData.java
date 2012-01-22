@@ -9,7 +9,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.util.List;
 
@@ -46,7 +45,7 @@ public interface DBCColumnMetaData extends DBSColumnBase
      * @return table metadata
      * @throws DBCException on any DB error
      */
-    DBCTableMetaData getTable();
+    DBCEntityMetaData getTable();
 
     /**
      * Check this column is a foreign key.

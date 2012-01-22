@@ -11,27 +11,27 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 /**
  * Result set table metadata
  */
-public interface DBCTableMetaData {
+public interface DBCEntityMetaData {
 
     /**
      * Table reference
      * @return table table reference. never returns null
      * @param monitor progress monitor
      */
-    DBSEntity getTable(DBRProgressMonitor monitor)
+    DBSEntity getEntity(DBRProgressMonitor monitor)
         throws DBException;
 
     /**
      * Table name
      * @return table name
      */
-    String getTableName();
+    String getEntityName();
 
     /**
      * Table alias
      * @return table alias in query
      */
-    String getTableAlias();
+    String getEntityAlias();
 
     /**
      * Checks table is identified.

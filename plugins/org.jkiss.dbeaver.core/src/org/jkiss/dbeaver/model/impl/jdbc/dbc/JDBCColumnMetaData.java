@@ -216,7 +216,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
 
     public String getTableName()
     {
-        return tableMetaData != null ? tableMetaData.getTableName() : tableName;
+        return tableMetaData != null ? tableMetaData.getEntityName() : tableName;
     }
 
     public String getCatalogName()
@@ -263,7 +263,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         if (tableMetaData == null) {
             return null;
         }
-        tableColumn = tableMetaData.getTable(monitor).getColumn(monitor, name);
+        tableColumn = tableMetaData.getEntity(monitor).getColumn(monitor, name);
         return tableColumn;
     }
 
@@ -274,7 +274,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         if (tableColumn == null) {
             return false;
         }
-        DBSTable table = tableMetaData.getTable(monitor);
+        DBSTable table = tableMetaData.getEntity(monitor);
         if (table == null) {
             return false;
         }
@@ -297,7 +297,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         if (tableColumn == null) {
             return refs;
         }
-        DBSEntity table = tableMetaData.getTable(monitor);
+        DBSEntity table = tableMetaData.getEntity(monitor);
         if (table == null) {
             return refs;
         }

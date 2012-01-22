@@ -20,7 +20,7 @@ import java.util.*;
 /**
  * WMI result set
  */
-public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTableMetaData
+public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEntityMetaData
 {
     private DBCExecutionContext context;
     private WMIClass classObject;
@@ -137,17 +137,17 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
     /////////////////////////////////////////////////////////////
     // DBCTableMetaData
 
-    public DBSEntity getTable(DBRProgressMonitor monitor) throws DBException
+    public DBSEntity getEntity(DBRProgressMonitor monitor) throws DBException
     {
         return classObject == null ? null : classObject;
     }
 
-    public String getTableName()
+    public String getEntityName()
     {
         return classObject == null ? null : classObject.getName();
     }
 
-    public String getTableAlias()
+    public String getEntityAlias()
     {
         return null;
     }
@@ -179,11 +179,6 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
         public String getName()
         {
             return attribute.getName();
-        }
-
-        public boolean isNotNull()
-        {
-            return false;
         }
 
         public long getMaxLength()
@@ -251,7 +246,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
             return classObject == null ? null : classObject.getAttribute(monitor, getName());
         }
 
-        public DBCTableMetaData getTable()
+        public DBCEntityMetaData getTable()
         {
             return null;
         }
