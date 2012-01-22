@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -41,9 +43,7 @@ public class OracleUtils {
         String objectType,
         DBSEntity object) throws DBCException
     {
-        String objectName = object.getName();
-        String objectFullName = object instanceof DBPQualifiedObject ?
-            ((DBPQualifiedObject)object).getFullQualifiedName() : objectName;
+        String objectFullName = DBUtils.getObjectFullName(object);
         OracleSchema schema = null;
         if (object instanceof OracleSchemaObject) {
             schema = ((OracleSchemaObject)object).getSchema();

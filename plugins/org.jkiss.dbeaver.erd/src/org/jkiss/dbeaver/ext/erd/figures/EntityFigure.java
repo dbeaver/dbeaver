@@ -12,6 +12,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -58,7 +59,7 @@ public class EntityFigure extends Figure {
         add(nameLabel);
         add(attributeFigure);
 
-        Label toolTip = new Label(entity.getObject().getFullQualifiedName());
+        Label toolTip = new Label(DBUtils.getObjectFullName(entity.getObject()));
         toolTip.setIcon(tableImage);
         setToolTip(toolTip);
     }

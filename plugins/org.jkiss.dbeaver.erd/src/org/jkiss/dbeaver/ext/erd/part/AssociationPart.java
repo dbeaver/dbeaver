@@ -8,9 +8,7 @@
 package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
@@ -24,14 +22,10 @@ import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents the editable primary key/foreign key relationship
@@ -168,13 +162,13 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
 
         DBSEntityAssociation association = getAssociation().getObject();
-        if (association instanceof DBSTableForeignKey) {
+        if (association instanceof DBSEntityReferrer && association.getReferencedConstraint() instanceof DBSEntityReferrer) {
             List<AttributePart> sourceAttributes = getEntityAttributes(
                 (EntityPart)getSource(),
-                DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, ((DBSTableForeignKey) association).getReferencedConstraint()));
+                DBUtils.getEntityAttributes(VoidProgressMonitor.INSTANCE, (DBSEntityReferrer) association.getReferencedConstraint()));
             List<AttributePart> targetAttributes = getEntityAttributes(
                 (EntityPart)getTarget(),
-                DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, (DBSTableForeignKey)association));
+                DBUtils.getEntityAttributes(VoidProgressMonitor.INSTANCE, (DBSEntityReferrer) association));
             Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
             for (AttributePart attr : sourceAttributes) {
                 attr.getFigure().setForegroundColor(columnColor);
@@ -185,7 +179,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
     }
 
-    private List<AttributePart> getEntityAttributes(EntityPart source, List<DBSTableColumn> columns)
+    private List<AttributePart> getEntityAttributes(EntityPart source, Collection<? extends DBSEntityAttribute> columns)
     {
         List<AttributePart> erdColumns = new ArrayList<AttributePart>(source.getChildren());
         for (Iterator<AttributePart> iter = erdColumns.iterator(); iter.hasNext(); ) {

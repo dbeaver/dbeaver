@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -38,8 +38,10 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.util.*;
@@ -167,20 +169,15 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             super.setContents(editpart);
             // Reset palette contents
             if (editpart instanceof DiagramPart) {
-                List<DBSTable> tables = new ArrayList<DBSTable>();
+                List<DBSEntity> tables = new ArrayList<DBSEntity>();
                 for (Object child : editpart.getChildren()) {
                     if (child instanceof EntityPart) {
                         tables.add(((EntityPart) child).getTable().getObject());
                     }
                 }
-                Collections.sort(tables, new Comparator<DBSTable>() {
-                    public int compare(DBSTable o1, DBSTable o2)
-                    {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
+                Collections.sort(tables, DBUtils.<DBSEntity>nameComparator());
                 Map<PaletteDrawer, List<ToolEntryTable>> toolMap = new LinkedHashMap<PaletteDrawer, List<ToolEntryTable>>();
-                for (DBSTable table : tables) {
+                for (DBSEntity table : tables) {
                     DBSDataSourceContainer container = table.getDataSource().getContainer();
                     PaletteDrawer drawer = getContainerPaletteDrawer(container);
                     if (drawer != null) {
@@ -203,7 +200,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         }
     }
 
-    public void handleTableActivate(DBSTable table)
+    public void handleTableActivate(DBSEntity table)
     {
         if (table.getDataSource() != null) {
             DBSDataSourceContainer container = table.getDataSource().getContainer();
@@ -240,7 +237,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         }
     }
 
-    public void handleTableDeactivate(DBSTable table)
+    public void handleTableDeactivate(DBSEntity table)
     {
         final PaletteContainer drawer = getContainerPaletteDrawer(table.getDataSource().getContainer());
         if (drawer != null) {
@@ -331,12 +328,12 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     }
 
     private class ToolEntryTable extends ToolEntry {
-        private final DBSTable table;
-        public ToolEntryTable(DBSTable table)
+        private final DBSEntity table;
+        public ToolEntryTable(DBSEntity table)
         {
             super(table.getName(), table.getDescription(), DBIcon.TREE_TABLE.getImageDescriptor(), null);
             this.setUserModificationPermission(PERMISSION_NO_MODIFICATION);
-            setDescription(table.getFullQualifiedName());
+            setDescription(DBUtils.getObjectFullName(table));
             this.table = table;
         }
         public Tool createTool()
@@ -346,9 +343,9 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     }
 
     public static class ToolSelectTable extends SelectionTool {
-        private final DBSTable table;
+        private final DBSEntity table;
 
-        public ToolSelectTable(DBSTable table)
+        public ToolSelectTable(DBSEntity table)
         {
             this.table = table;
         }

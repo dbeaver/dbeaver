@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.ext.erd.part.NotePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -465,12 +466,12 @@ public class DiagramLoader
                     xml.addAttribute(ATTR_TYPE, association.getConstraintType().getId());
                     TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryKeyEntity());
                     if (pkInfo == null) {
-                        log.error("Cannot find PK table '" + rel.getPrimaryKeyEntity().getObject().getFullQualifiedName() + "' in info map");
+                        log.error("Cannot find PK table '" + DBUtils.getObjectFullName(rel.getPrimaryKeyEntity().getObject()) + "' in info map");
                         continue;
                     }
                     TableSaveInfo fkInfo = infoMap.get(rel.getForeignKeyEntity());
                     if (fkInfo == null) {
-                        log.error("Cannot find FK table '" + rel.getForeignKeyEntity().getObject().getFullQualifiedName() + "' in info map");
+                        log.error("Cannot find FK table '" + DBUtils.getObjectFullName(rel.getForeignKeyEntity().getObject()) + "' in info map");
                         continue;
                     }
                     xml.addAttribute(ATTR_PK_REF, pkInfo.objectId);
@@ -478,10 +479,10 @@ public class DiagramLoader
 
                     if (association instanceof ERDLogicalForeignKey) {
                         // Save columns
-                        for (DBSTableConstraintColumn column : ((ERDLogicalForeignKey) association).getColumns(VoidProgressMonitor.INSTANCE)) {
+                        for (DBSEntityAttributeRef column : ((ERDLogicalForeignKey) association).getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
                             xml.startElement(TAG_COLUMN);
-                            xml.addAttribute(ATTR_NAME, column.getName());
-                            xml.addAttribute(ATTR_REF_NAME, ((DBSTableForeignKeyColumn)column).getReferencedColumn().getName());
+                            xml.addAttribute(ATTR_NAME, column.getAttribute().getName());
+                            xml.addAttribute(ATTR_REF_NAME, DBUtils.getReferenceAttribute(VoidProgressMonitor.INSTANCE, association, column.getAttribute()).getName());
                             xml.endElement();
                         }
                     }

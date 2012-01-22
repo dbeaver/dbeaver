@@ -26,7 +26,10 @@ import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
-import org.jkiss.dbeaver.ext.erd.policy.*;
+import org.jkiss.dbeaver.ext.erd.policy.EntityContainerEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.EntityEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.EntityNodeEditPolicy;
+import org.jkiss.dbeaver.model.DBUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.List;
@@ -167,7 +170,7 @@ public class EntityPart extends NodePart
 	 */
 	public String toString()
 	{
-		return getTable().getObject().getFullQualifiedName();
+        return DBUtils.getObjectFullName(getTable().getObject());
 	}
 
 	//******************* Listener related methods *********************/

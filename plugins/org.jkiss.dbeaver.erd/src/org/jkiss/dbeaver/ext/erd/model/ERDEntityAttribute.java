@@ -9,20 +9,20 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * Column entry in model Table
  * @author Serge Rieder
  */
-public class ERDEntityAttribute extends ERDObject<DBSTableColumn>
+public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
 {
     private boolean inPrimaryKey;
     private boolean inForeignKey;
 
-    public ERDEntityAttribute(DBSTableColumn dbsTableColumn, boolean inPrimaryKey) {
-        super(dbsTableColumn);
+    public ERDEntityAttribute(DBSEntityAttribute attribute, boolean inPrimaryKey) {
+        super(attribute);
         this.inPrimaryKey = inPrimaryKey;
     }
 

@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -17,49 +16,70 @@ import java.util.List;
 /**
  * Logical foreign key
  */
-public class ERDLogicalForeignKey extends AbstractTableConstraint<DBSTable> implements DBSTableForeignKey {
+public class ERDLogicalForeignKey implements DBSEntityAssociation, DBSEntityReferrer {
 
+    private DBSEntity entity;
+    private String name;
+    private String description;
     private ERDLogicalPrimaryKey pk;
-    private List<? extends DBSTableForeignKeyColumn> columns = new ArrayList<DBSTableForeignKeyColumn>();
+    private List<? extends DBSEntityAttributeRef> columns = new ArrayList<DBSEntityAttributeRef>();
 
     public ERDLogicalForeignKey(ERDEntity entity, String name, String description, ERDLogicalPrimaryKey pk)
     {
-        super(entity.getObject(), name, description, ERDConstants.CONSTRAINT_LOGICAL_FK);
+        this.entity = entity.getObject();
+        this.name = name;
+        this.description = description;
         this.pk = pk;
     }
 
-    public DBSTableConstraint getReferencedConstraint()
+    public DBSEntityConstraint getReferencedConstraint()
     {
         return pk;
     }
 
-    public DBSConstraintModifyRule getDeleteRule()
-    {
-        return DBSConstraintModifyRule.NO_ACTION;
-    }
-
-    public DBSConstraintModifyRule getUpdateRule()
-    {
-        return DBSConstraintModifyRule.NO_ACTION;
-    }
-
-    public Collection<? extends DBSTableForeignKeyColumn> getColumns(DBRProgressMonitor monitor)
-    {
-        return columns;
-    }
-
-    public String getFullQualifiedName()
-    {
-        return getName();
-    }
-
     public DBSEntity getAssociatedEntity()
     {
-        return pk.getTable();
+        return pk.getParentObject();
     }
 
     public DBPDataSource getDataSource()
     {
-        return getTable().getDataSource();
+        return entity.getDataSource();
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return description;
+    }
+
+    @Override
+    public DBSEntity getParentObject()
+    {
+        return entity;
+    }
+
+    @Override
+    public DBSEntityConstraintType getConstraintType()
+    {
+        return ERDConstants.CONSTRAINT_LOGICAL_FK;
+    }
+
+    @Override
+    public String getName()
+    {
+        return name;
+    }
+
+    @Override
+    public boolean isPersisted()
+    {
+        return false;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
+    {
+        return columns;
     }
 }

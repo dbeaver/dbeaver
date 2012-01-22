@@ -427,27 +427,33 @@ public final class DBUtils {
         return finder.refConstraint;
     }
 
-    public static Collection<DBSTableColumn> getBestTableIdentifier(DBRProgressMonitor monitor, DBSTable table)
+    public static Collection<? extends DBSEntityAttribute> getBestTableIdentifier(DBRProgressMonitor monitor, DBSEntity entity)
         throws DBException
     {
-        if (table.isView() || CommonUtils.isEmpty(table.getColumns(monitor))) {
+        if (entity instanceof DBSTable && ((DBSTable) entity).isView()) {
+            return Collections.emptyList();
+        }
+        if (CommonUtils.isEmpty(entity.getAttributes(monitor))) {
             return Collections.emptyList();
         }
 
         List<DBSObject> identifiers = new ArrayList<DBSObject>();
         // Check constraints
-        Collection<? extends DBSTableConstraint> uniqueKeys = table.getConstraints(monitor);
+        Collection<? extends DBSEntityConstraint> uniqueKeys = entity.getConstraints(monitor);
         if (!CommonUtils.isEmpty(uniqueKeys)) {
-            for (DBSTableConstraint constraint : uniqueKeys) {
-                if (constraint.getConstraintType().isUnique() && !CommonUtils.isEmpty(constraint.getColumns(monitor))) {
+            for (DBSEntityConstraint constraint : uniqueKeys) {
+                if (constraint.getConstraintType().isUnique() &&
+                    constraint instanceof DBSEntityReferrer &&
+                    !CommonUtils.isEmpty(((DBSEntityReferrer)constraint).getAttributeReferences(monitor)))
+                {
                     identifiers.add(constraint);
                 }
             }
         }
-        if (identifiers.isEmpty()) {
+        if (identifiers.isEmpty() && entity instanceof DBSTable) {
             // Check indexes only if no unique constraints found
             try {
-                Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
+                Collection<? extends DBSTableIndex> indexes = ((DBSTable)entity).getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
                     for (DBSTableIndex index : indexes) {
                         if (index.isUnique() && !CommonUtils.isEmpty(index.getColumns(monitor))) {
@@ -462,12 +468,12 @@ public final class DBUtils {
 
         if (!identifiers.isEmpty()) {
             // Find PK or unique key
-            DBSTableConstraint uniqueId = null;
+            DBSEntityConstraint uniqueId = null;
             DBSTableIndex uniqueIndex = null;
             for (DBSObject id : identifiers) {
                 if (id instanceof DBSTableConstraint) {
                     if (((DBSTableConstraint)id).getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                        return getTableColumns(monitor, (DBSTableConstraint)id);
+                        return getEntityAttributes(monitor, (DBSTableConstraint) id);
                     } else if (((DBSTableConstraint)id).getConstraintType().isUnique()) {
                         uniqueId = (DBSTableConstraint)id;
                     }
@@ -475,36 +481,25 @@ public final class DBUtils {
                     uniqueIndex = (DBSTableIndex)id;
                 }
             }
-            return uniqueId != null ? getTableColumns(monitor, uniqueId) : uniqueIndex != null ? getTableColumns(monitor, uniqueIndex) : Collections.<DBSTableColumn>emptyList();
+            return uniqueId instanceof DBSEntityReferrer ?
+                getEntityAttributes(monitor, (DBSEntityReferrer)uniqueId)
+                : uniqueIndex != null ? getEntityAttributes(monitor, uniqueIndex) : Collections.<DBSTableColumn>emptyList();
         } else {
             return Collections.emptyList();
         }
     }
 
-    public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSTableConstraint constraint)
+    public static List<DBSEntityAttribute> getEntityAttributes(DBRProgressMonitor monitor, DBSEntityReferrer referrer)
     {
-        Collection<? extends DBSTableConstraintColumn> constraintColumns = constraint == null ? null : constraint.getColumns(monitor);
+        Collection<? extends DBSEntityAttributeRef> constraintColumns = referrer == null ? null : referrer.getAttributeReferences(monitor);
         if (constraintColumns == null) {
             return Collections.emptyList();
         }
-        List<DBSTableColumn> columns = new ArrayList<DBSTableColumn>(constraintColumns.size());
-        for (DBSTableConstraintColumn column : constraintColumns) {
-            columns.add(column.getAttribute());
+        List<DBSEntityAttribute> attributes = new ArrayList<DBSEntityAttribute>(constraintColumns.size());
+        for (DBSEntityAttributeRef column : constraintColumns) {
+            attributes.add(column.getAttribute());
         }
-        return columns;
-    }
-
-    public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSTableIndex index)
-    {
-        Collection<? extends DBSTableIndexColumn> indexColumns = index.getColumns(monitor);
-        if (indexColumns == null) {
-            return Collections.emptyList();
-        }
-        List<DBSTableColumn> columns = new ArrayList<DBSTableColumn>(indexColumns.size());
-        for (DBSTableIndexColumn column : indexColumns) {
-            columns.add(column.getTableColumn());
-        }
-        return columns;
+        return attributes;
     }
 
     public static DBSEntityAttributeRef getConstraintColumn(DBRProgressMonitor monitor, DBSEntityReferrer constraint, DBSEntityAttribute tableColumn) throws DBException
@@ -537,7 +532,7 @@ public final class DBUtils {
      * Return reference column of referrer association (FK).
      * Assumes that columns in both constraints are in the same order.
      */
-    public static DBSEntityAttribute getReferenceAttribute(DBRProgressMonitor monitor, DBSEntityAssociation association, DBSEntityAttribute tableColumn) throws DBException
+    public static DBSEntityAttribute getReferenceAttribute(DBRProgressMonitor monitor, DBSEntityAssociation association, DBSEntityAttribute tableColumn)
     {
         final DBSEntityConstraint refConstr = association.getReferencedConstraint();
         if (association instanceof DBSEntityReferrer && refConstr instanceof DBSEntityReferrer) {
@@ -790,6 +785,15 @@ public final class DBUtils {
             return ((DBSDataSourceContainer)object).getDataSource();
         } else {
             return object;
+        }
+    }
+
+    public static String getObjectFullName(DBSObject object)
+    {
+        if (object instanceof DBPQualifiedObject) {
+            return ((DBPQualifiedObject) object).getFullQualifiedName();
+        } else {
+            return object.getName();
         }
     }
 

@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * DBSTableIndex
  */
-public interface DBSTableIndex extends DBSEntityConstraint, DBPQualifiedObject
+public interface DBSTableIndex extends DBSEntityConstraint, DBSEntityReferrer, DBPQualifiedObject
 {
     DBSTable getTable();
 

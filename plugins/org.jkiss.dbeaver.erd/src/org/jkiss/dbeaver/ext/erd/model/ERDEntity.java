@@ -22,19 +22,19 @@ import java.util.*;
  * in a separate diagram specific model hierarchy
  * @author Serge Rieder
  */
-public class ERDEntity extends ERDObject<DBSTable>
+public class ERDEntity extends ERDObject<DBSEntity>
 {
 
 	private List<ERDEntityAttribute> columns = new ArrayList<ERDEntityAttribute>();
 
 	private List<ERDAssociation> primaryKeyRelationships = new ArrayList<ERDAssociation>();
 	private List<ERDAssociation> foreignKeyRelationships = new ArrayList<ERDAssociation>();
-    private List<DBSTableForeignKey> unresolvedKeys;
+    private List<DBSEntityAssociation> unresolvedKeys;
 
     private boolean primary = false;
     private ERDLogicalPrimaryKey logicalPK;
 
-    public ERDEntity(DBSTable dbsTable) {
+    public ERDEntity(DBSEntity dbsTable) {
         super(dbsTable);
     }
 
@@ -198,25 +198,21 @@ public class ERDEntity extends ERDObject<DBSTable>
 
     public static ERDEntity fromObject(DBRProgressMonitor monitor, DBSEntity entity)
     {
-        if (!(entity instanceof DBSTable)) {
-            return null;
-        }
-        DBSTable dbTable = (DBSTable)entity;
-        ERDEntity erdEntity = new ERDEntity(dbTable);
+        ERDEntity erdEntity = new ERDEntity(entity);
 
         try {
-            Collection<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, dbTable);
+            Collection<? extends DBSEntityAttribute> idColumns = DBUtils.getBestTableIdentifier(monitor, entity);
 
-            Collection<? extends DBSTableColumn> columns = dbTable.getColumns(monitor);
+            Collection<? extends DBSEntityAttribute> columns = entity.getAttributes(monitor);
             if (!CommonUtils.isEmpty(columns)) {
-                for (DBSTableColumn column : columns) {
+                for (DBSEntityAttribute column : columns) {
                     ERDEntityAttribute c1 = new ERDEntityAttribute(column, idColumns.contains(column));
                     erdEntity.addColumn(c1, false);
                 }
             }
         } catch (DBException e) {
             // just skip this problematic columns
-            log.debug("Could not load table '" + dbTable.getName() + "'columns", e);
+            log.debug("Could not load table '" + entity.getName() + "'columns", e);
         }
         return erdEntity;
     }
@@ -224,17 +220,19 @@ public class ERDEntity extends ERDObject<DBSTable>
     public void addRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDEntity> tableMap, boolean reflect)
     {
         try {
-            Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
+            Set<DBSEntityAttribute> fkColumns = new HashSet<DBSEntityAttribute>();
             // Make associations
-            Collection<? extends DBSTableForeignKey> fks = getObject().getAssociations(monitor);
+            Collection<? extends DBSEntityAssociation> fks = getObject().getAssociations(monitor);
             if (fks != null) {
-                for (DBSTableForeignKey fk : fks) {
-                    fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
+                for (DBSEntityAssociation fk : fks) {
+                    if (fk instanceof DBSEntityReferrer) {
+                        fkColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) fk));
+                    }
                     ERDEntity entity2 = tableMap.get(fk.getAssociatedEntity());
                     if (entity2 == null) {
                         //log.debug("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
                         if (unresolvedKeys == null) {
-                            unresolvedKeys = new ArrayList<DBSTableForeignKey>();
+                            unresolvedKeys = new ArrayList<DBSEntityAssociation>();
                         }
                         unresolvedKeys.add(fk);
                     } else {
@@ -262,9 +260,9 @@ public class ERDEntity extends ERDObject<DBSTable>
         if (CommonUtils.isEmpty(unresolvedKeys)) {
             return;
         }
-        for (Iterator<DBSTableForeignKey> iter = unresolvedKeys.iterator(); iter.hasNext(); ) {
-            final DBSTableForeignKey fk = iter.next();
-            ERDEntity refEntity = tableMap.get(fk.getReferencedConstraint().getTable());
+        for (Iterator<DBSEntityAssociation> iter = unresolvedKeys.iterator(); iter.hasNext(); ) {
+            final DBSEntityAssociation fk = iter.next();
+            ERDEntity refEntity = tableMap.get(fk.getReferencedConstraint().getParentObject());
             if (refEntity != null) {
                 new ERDAssociation(fk, refEntity, this, reflect);
                 iter.remove();

@@ -94,8 +94,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         if (descColumn != null) {
             query.append(", ").append(DBUtils.getQuotedIdentifier(dataSource, descColumn.getName()));
         }
-        String entityName = keyColumn.getParentObject() instanceof DBPQualifiedObject ? ((DBPQualifiedObject)keyColumn.getParentObject()).getFullQualifiedName() : keyColumn.getName();
-        query.append(" FROM ").append(entityName);
+        query.append(" FROM ").append(DBUtils.getObjectFullName(keyColumn.getParentObject()));
         List<String> conditions = new ArrayList<String>();
         if (keyPattern != null) {
             if (keyPattern instanceof CharSequence) {

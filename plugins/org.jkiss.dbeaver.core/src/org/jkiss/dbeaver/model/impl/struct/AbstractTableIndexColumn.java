@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTableIndexColumn;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
@@ -29,4 +30,9 @@ public abstract class AbstractTableIndexColumn implements DBSTableIndexColumn, I
         return null;
     }
 
+    @Override
+    public DBSEntityAttribute getAttribute()
+    {
+        return getTableColumn();
+    }
 }

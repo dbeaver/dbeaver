@@ -23,6 +23,14 @@ public interface DBSEntity extends DBSObject
     Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException;
 
     /**
+     * Gets this entity constraints
+     * @return association list
+     * @throws org.jkiss.dbeaver.DBException on any DB error
+     * @param monitor progress monitor
+     */
+    Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException;
+
+    /**
      * Gets this entity associations
      * @return association list
      * @throws org.jkiss.dbeaver.DBException on any DB error

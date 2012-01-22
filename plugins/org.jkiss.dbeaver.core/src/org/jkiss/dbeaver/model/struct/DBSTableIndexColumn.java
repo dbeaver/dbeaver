@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSTableIndex
  */
-public interface DBSTableIndexColumn extends DBSObject
+public interface DBSTableIndexColumn extends DBSObject,DBSEntityAttributeRef
 {
     DBSTableIndex getIndex();
 

@@ -358,6 +358,12 @@ public class OracleDataType extends OracleObject
         return attributeCache != null ? attributeCache.getObjects(monitor, this) : null;
     }
 
+    @Override
+    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
     public OracleDataTypeAttribute getAttribute(DBRProgressMonitor monitor, String name) throws DBException
     {
         return attributeCache != null ? attributeCache.getObject(monitor, this, name) : null;
