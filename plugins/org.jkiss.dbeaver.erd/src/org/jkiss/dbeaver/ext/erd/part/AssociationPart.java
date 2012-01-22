@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -7,7 +7,9 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.*;
@@ -72,7 +74,23 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         //conn.setConnectionRouter(new BendpointConnectionRouter());
         //conn.setConnectionRouter(new ShortestPathConnectionRouter(conn));
         //conn.setToolTip(new TextFlow(association.getObject().getName()));
-        conn.setTargetDecoration(new PolygonDecoration());
+        if (association.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE) {
+            final PolygonDecoration srcDec = new PolygonDecoration();
+            srcDec.setTemplate(PolygonDecoration.TRIANGLE_TIP);
+            srcDec.setFill(true);
+            srcDec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
+            srcDec.setScale(10, 6);
+            conn.setSourceDecoration(srcDec);
+        }
+        if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
+            final CircleDecoration dec = new CircleDecoration();
+            dec.setRadius(3);
+            if (false) {
+                dec.setFill(true);
+                dec.setBackgroundColor(getParent().getViewer().getControl().getForeground());
+            }
+            conn.setTargetDecoration(dec);
+        }
 
         if (association.isLogical()) {
             conn.setLineStyle(SWT.LINE_CUSTOM);
@@ -238,5 +256,91 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     public String toString()
     {
         return getAssociation().getObject().getConstraintType().getName() + " " + getAssociation().getObject().getName();
+    }
+
+    public class CircleDecoration extends Ellipse implements RotatableDecoration {
+
+        private int radius = 5;
+        private Point location = new Point();
+
+        public CircleDecoration() {
+            super();
+        }
+
+        public void setRadius(int radius)
+        {
+            this.radius = radius;
+        }
+
+        @Override
+        public void setLocation(Point p) {
+            location = p;
+            Rectangle bounds = new Rectangle(location.x- radius, location.y- radius, radius *2, radius *2);
+            setBounds(bounds);
+        }
+
+        @Override
+        public void setReferencePoint(Point p) {
+            // length of line between reference point and location
+            double d = Math.sqrt(Math.pow((location.x-p.x), 2)+Math.pow(location.y-p.y,2));
+
+            // do nothing if link is too short.
+            if(d < radius)
+                return;
+
+            //
+            // using pythagoras theorem, we have a triangle like this:
+            //
+            //      |       figure       |
+            //      |                    |
+            //      |_____(l.x,l.y)______|
+            //                (\)
+            //                | \(r.x,r.y)
+            //                | |\
+            //                | | \
+            //                | |  \
+            //                | |   \
+            //                |_|(p.x,p.y)
+            //
+            // We want to find a point that at radius distance from l (location) on the line between l and p
+            // and center our circle at this point.
+            //
+            // I you remember your school math, let the distance between l and p (calculated
+            // using pythagoras theorem) be defined as d. We want to find point r where the
+            // distance between r and p is d-radius (the same as saying that the distance
+            // between l and r is radius). We can do this using triangle identities.
+            //     |px-rx|/|px-lx|=|py-ry|/|py-ly|=|d-radius|/d
+            //
+            // we use
+            //  k = |d-radius|/d
+            //  longx = |px-lx|
+            //  longy = |py-xy|
+            //
+            // remember that d > radius.
+            //
+            double k = (d- radius)/d;
+            double longx = Math.abs(p.x-location.x);
+            double longy = Math.abs(p.y-location.y);
+
+            double shortx = k*longx;
+            double shorty = k*longy;
+
+            // now create locate the new point using the distances depending on the location of the original points.
+            int rx, ry;
+            if(location.x < p.x) {
+                rx = p.x - (int)shortx;
+            } else {
+                rx = p.x + (int)shortx;
+            }
+            if(location.y > p.y) {
+                ry = p.y + (int)shorty;
+            } else {
+                ry = p.y - (int)shorty;
+            }
+
+            // For reasons that are still unknown to me, I had to increase the radius
+            // of the circle for the graphics to look right.
+            setBounds(new Rectangle(rx- radius, ry- radius, (int)(radius *2.5), (int)(radius *2.5)));
+        }
     }
 }
