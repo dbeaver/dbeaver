@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -67,6 +69,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
+    {
+        return getColumns(monitor);
     }
 
     public int getSupportedFeatures()
