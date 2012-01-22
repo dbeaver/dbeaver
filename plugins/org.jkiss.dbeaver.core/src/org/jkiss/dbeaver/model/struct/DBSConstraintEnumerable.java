@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.struct;
@@ -16,7 +16,7 @@ import java.util.List;
  * Enumerable Constraint.
  * May return possible values for one of constraint's key.
  */
-public interface DBSConstraintEnumerable extends DBSConstraint
+public interface DBSConstraintEnumerable extends DBSTableConstraint
 {
     /**
      * Checks that this constrain supports key enumerations.

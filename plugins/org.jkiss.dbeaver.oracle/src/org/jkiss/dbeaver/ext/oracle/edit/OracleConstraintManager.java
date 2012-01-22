@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.edit;
@@ -20,9 +20,9 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 /**
  * Oracle constraint manager
  */
-public class OracleConstraintManager extends JDBCConstraintManager<OracleConstraint, OracleTableBase> {
+public class OracleConstraintManager extends JDBCConstraintManager<OracleTableConstraint, OracleTableBase> {
 
-    protected OracleConstraint createDatabaseObject(
+    protected OracleTableConstraint createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent,
         Object from)
@@ -38,7 +38,7 @@ public class OracleConstraintManager extends JDBCConstraintManager<OracleConstra
             return null;
         }
 
-        final OracleConstraint constraint = new OracleConstraint(
+        final OracleTableConstraint constraint = new OracleTableConstraint(
             parent,
             null,
             editDialog.getConstraintType(),
@@ -48,7 +48,7 @@ public class OracleConstraintManager extends JDBCConstraintManager<OracleConstra
         int colIndex = 1;
         for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
             constraint.addColumn(
-                new OracleConstraintColumn(
+                new OracleTableConstraintColumn(
                     constraint,
                     (OracleTableColumn) tableColumn,
                     colIndex++));
@@ -56,7 +56,7 @@ public class OracleConstraintManager extends JDBCConstraintManager<OracleConstra
         return constraint;
     }
 
-    protected String getDropConstraintPattern(OracleConstraint constraint)
+    protected String getDropConstraintPattern(OracleTableConstraint constraint)
     {
         String clause;
         if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {

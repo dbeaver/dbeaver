@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 
@@ -15,15 +15,15 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class MySQLForeignKey extends JDBCForeignKey<MySQLTable, MySQLConstraint>
+public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLTableConstraint>
 {
-    private List<MySQLForeignKeyColumn> columns;
+    private List<MySQLTableForeignKeyColumnTable> columns;
 
-    public MySQLForeignKey(
+    public MySQLTableForeignKey(
         MySQLTable table,
         String name,
         String remarks,
-        MySQLConstraint referencedKey,
+        MySQLTableConstraint referencedKey,
         DBSConstraintModifyRule deleteRule,
         DBSConstraintModifyRule updateRule,
         boolean persisted)
@@ -31,15 +31,15 @@ public class MySQLForeignKey extends JDBCForeignKey<MySQLTable, MySQLConstraint>
         super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
     }
 
-    public List<MySQLForeignKeyColumn> getColumns(DBRProgressMonitor monitor)
+    public List<MySQLTableForeignKeyColumnTable> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
-    public void addColumn(MySQLForeignKeyColumn column)
+    public void addColumn(MySQLTableForeignKeyColumnTable column)
     {
         if (columns == null) {
-            columns = new ArrayList<MySQLForeignKeyColumn>();
+            columns = new ArrayList<MySQLTableForeignKeyColumnTable>();
         }
         columns.add(column);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -72,9 +72,9 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
-    private List<MySQLIndex> indexes;
-    private List<MySQLConstraint> constraints;
-    private List<MySQLForeignKey> foreignKeys;
+    private List<MySQLTableIndex> indexes;
+    private List<MySQLTableConstraint> constraints;
+    private List<MySQLTableForeignKey> foreignKeys;
     private final PartitionCache partitionCache = new PartitionCache();
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
@@ -109,7 +109,7 @@ public class MySQLTable extends MySQLTableBase
     }
 
     @Association
-    public List<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
+    public List<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (indexes == null) {
@@ -119,18 +119,18 @@ public class MySQLTable extends MySQLTableBase
         return indexes;
     }
 
-    Collection<MySQLIndex> getIndexesCache()
+    Collection<MySQLTableIndex> getIndexesCache()
     {
         return indexes;
     }
 
-    void setIndexes(List<MySQLIndex> indexes)
+    void setIndexes(List<MySQLTableIndex> indexes)
     {
         this.indexes = indexes;
     }
 
     @Association
-    public List<MySQLConstraint> getConstraints(DBRProgressMonitor monitor)
+    public List<MySQLTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (constraints == null) {
@@ -139,20 +139,20 @@ public class MySQLTable extends MySQLTableBase
         return constraints;
     }
 
-    public MySQLConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
+    public MySQLTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
         return DBUtils.findObject(getConstraints(monitor), ukName);
     }
 
     @Association
-    public List<MySQLForeignKey> getReferences(DBRProgressMonitor monitor)
+    public List<MySQLTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         return loadForeignKeys(monitor, true);
     }
 
-    public List<MySQLForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public List<MySQLTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {
@@ -161,7 +161,7 @@ public class MySQLTable extends MySQLTableBase
         return foreignKeys;
     }
 
-    public MySQLForeignKey getForeignKey(DBRProgressMonitor monitor, String fkName)
+    public MySQLTableForeignKey getForeignKey(DBRProgressMonitor monitor, String fkName)
         throws DBException
     {
         return DBUtils.findObject(getAssociations(monitor), fkName);
@@ -307,27 +307,27 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
-    List<MySQLConstraint> getUniqueKeysCache()
+    List<MySQLTableConstraint> getUniqueKeysCache()
     {
         return this.constraints;
     }
 
-    void cacheUniqueKeys(List<MySQLConstraint> constraints)
+    void cacheUniqueKeys(List<MySQLTableConstraint> constraints)
     {
         this.constraints = constraints;
     }
 
-    private List<MySQLForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
+    private List<MySQLTableForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
         throws DBException
     {
-        List<MySQLForeignKey> fkList = new ArrayList<MySQLForeignKey>();
+        List<MySQLTableForeignKey> fkList = new ArrayList<MySQLTableForeignKey>();
         if (!isPersisted()) {
             return fkList;
         }
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
-            Map<String, MySQLForeignKey> fkMap = new HashMap<String, MySQLForeignKey>();
-            Map<String, MySQLConstraint> pkMap = new HashMap<String, MySQLConstraint>();
+            Map<String, MySQLTableForeignKey> fkMap = new HashMap<String, MySQLTableForeignKey>();
+            Map<String, MySQLTableConstraint> pkMap = new HashMap<String, MySQLTableConstraint>();
             JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
@@ -381,7 +381,7 @@ public class MySQLTable extends MySQLTableBase
                     }
 
                     // Find PK
-                    MySQLConstraint pk = null;
+                    MySQLTableConstraint pk = null;
                     if (pkName != null) {
                         pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
                         if (pk == null) {
@@ -389,9 +389,9 @@ public class MySQLTable extends MySQLTableBase
                         }
                     }
                     if (pk == null) {
-                        List<MySQLConstraint> constraints = pkTable.getConstraints(monitor);
+                        List<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
                         if (constraints != null) {
-                            for (MySQLConstraint pkConstraint : constraints) {
+                            for (MySQLTableConstraint pkConstraint : constraints) {
                                 if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
                                     pk = pkConstraint;
                                     break;
@@ -405,14 +405,14 @@ public class MySQLTable extends MySQLTableBase
                         String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
-                            pk = new MySQLConstraint(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
-                            pk.addColumn(new MySQLConstraintColumn(pk, pkColumn, keySeq));
+                            pk = new MySQLTableConstraint(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                            pk.addColumn(new MySQLTableConstraintColumn(pk, pkColumn, keySeq));
                             pkMap.put(pkFullName, pk);
                         }
                     }
 
                     // Find (or create) FK
-                    MySQLForeignKey fk = null;
+                    MySQLTableForeignKey fk = null;
                     if (references) {
                         fk = DBUtils.findObject(fkTable.getAssociations(monitor), fkName);
                         if (fk == null) {
@@ -428,11 +428,11 @@ public class MySQLTable extends MySQLTableBase
                     if (fk == null) {
                         fk = fkMap.get(fkName);
                         if (fk == null) {
-                            fk = new MySQLForeignKey(fkTable, fkName, null, pk, deleteRule, updateRule, true);
+                            fk = new MySQLTableForeignKey(fkTable, fkName, null, pk, deleteRule, updateRule, true);
                             fkMap.put(fkName, fk);
                             fkList.add(fk);
                         }
-                        MySQLForeignKeyColumn fkColumnInfo = new MySQLForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
+                        MySQLTableForeignKeyColumnTable fkColumnInfo = new MySQLTableForeignKeyColumnTable(fk, fkColumn, keySeq, pkColumn);
                         fk.addColumn(fkColumnInfo);
                     }
                 }

@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
@@ -11,8 +12,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLConstraint;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLConstraintColumn;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraintColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 /**
  * MySQL constraint manager
  */
-public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstraint, MySQLTable> {
+public class MySQLConstraintManager extends JDBCConstraintManager<MySQLTableConstraint, MySQLTable> {
 
-    protected MySQLConstraint createDatabaseObject(
+    protected MySQLTableConstraint createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor, DBECommandContext context, MySQLTable parent,
         Object from)
@@ -41,7 +41,7 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstrain
             return null;
         }
 
-        final MySQLConstraint constraint = new MySQLConstraint(
+        final MySQLTableConstraint constraint = new MySQLTableConstraint(
             parent,
             null,
             null,
@@ -51,7 +51,7 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstrain
         int colIndex = 1;
         for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
             constraint.addColumn(
-                new MySQLConstraintColumn(
+                new MySQLTableConstraintColumn(
                     constraint,
                     (MySQLTableColumn) tableColumn,
                     colIndex++));
@@ -59,7 +59,7 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLConstrain
         return constraint;
     }
 
-    protected String getDropConstraintPattern(MySQLConstraint constraint)
+    protected String getDropConstraintPattern(MySQLTableConstraint constraint)
     {
         String clause;
         if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {

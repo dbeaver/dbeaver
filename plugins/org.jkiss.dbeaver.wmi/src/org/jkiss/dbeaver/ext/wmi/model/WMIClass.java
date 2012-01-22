@@ -303,24 +303,24 @@ public class WMIClass extends WMIContainer
         }
     }
 
-    public List<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
-    public List<? extends DBSConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
-    public List<? extends DBSForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         // Read attributes and references
         getAttributes(monitor);
         if (superClass == null && CommonUtils.isEmpty(references)) {
             return null;
         }
-        List<DBSForeignKey> associations = new ArrayList<DBSForeignKey>();
+        List<DBSTableForeignKey> associations = new ArrayList<DBSTableForeignKey>();
         if (superClass != null) {
             associations.add(new WMIClassInheritance(superClass, this));
         }
@@ -330,7 +330,7 @@ public class WMIClass extends WMIContainer
         return associations;
     }
 
-    public List<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         if (subClasses == null) {
             return null;

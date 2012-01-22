@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.struct;
@@ -10,9 +10,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.Collection;
 
 /**
- * DBSIndex
+ * DBSTableIndex
  */
-public interface DBSIndex extends DBSObject, DBPQualifiedObject
+public interface DBSTableIndex extends DBSObject, DBPQualifiedObject
 {
     DBSTable getTable();
 
@@ -20,6 +20,6 @@ public interface DBSIndex extends DBSObject, DBPQualifiedObject
 
     DBSIndexType getIndexType();
 
-    Collection<? extends DBSIndexColumn> getColumns(DBRProgressMonitor monitor);
+    Collection<? extends DBSTableIndexColumn> getColumns(DBRProgressMonitor monitor);
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -45,9 +45,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 */
 
     private List<GenericTableColumn> columns;
-    private List<GenericIndex> indexes;
+    private List<GenericTableIndex> indexes;
     private List<GenericPrimaryKey> uniqueKeys;
-    private List<GenericForeignKey> foreignKeys;
+    private List<GenericTableForeignKey> foreignKeys;
     private Long rowCount;
 
     public GenericTable(
@@ -164,7 +164,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         this.columns = columns;
     }
 
-    public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
+    public List<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (indexes == null && getDataSource().getInfo().supportsIndexes()) {
@@ -174,18 +174,18 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return indexes;
     }
 
-    public GenericIndex getIndex(DBRProgressMonitor monitor, String indexName)
+    public GenericTableIndex getIndex(DBRProgressMonitor monitor, String indexName)
         throws DBException
     {
         return DBUtils.findObject(getIndexes(monitor), indexName);
     }
 
-    synchronized void setIndexes(List<GenericIndex> indexes)
+    synchronized void setIndexes(List<GenericTableIndex> indexes)
     {
         this.indexes = indexes;
     }
 
-    Collection<GenericIndex> getIndexesCache()
+    Collection<GenericTableIndex> getIndexesCache()
     {
         return this.indexes;
     }
@@ -219,13 +219,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         }
     }
 
-    public List<GenericForeignKey> getReferences(DBRProgressMonitor monitor)
+    public List<GenericTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         return loadReferences(monitor);
     }
 
-    public List<GenericForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public List<GenericTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null && getDataSource().getInfo().supportsReferentialIntegrity()) {
@@ -234,7 +234,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return foreignKeys;
     }
 
-    synchronized void setForeignKeys(List<GenericForeignKey> foreignKeys)
+    synchronized void setForeignKeys(List<GenericTableForeignKey> foreignKeys)
     {
         this.foreignKeys = foreignKeys;
     }
@@ -250,7 +250,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return description;
     }
 
-    public Collection<GenericForeignKey> getForeignKeysCache()
+    public Collection<GenericTableForeignKey> getForeignKeysCache()
     {
         return foreignKeys;
     }
@@ -349,9 +349,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         try {
 // Try to get cardinality from some unique index
             // Cardinality
-            final List<GenericIndex> indexList = getIndexes(monitor);
+            final List<GenericTableIndex> indexList = getIndexes(monitor);
             if (!CommonUtils.isEmpty(indexList)) {
-                for (GenericIndex index : indexList) {
+                for (GenericTableIndex index : indexList) {
                     if (index.isUnique() || index.getIndexType() == DBSIndexType.STATISTIC) {
                         final long cardinality = index.getCardinality();
                         if (cardinality > 0) {
@@ -380,11 +380,11 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         int defferabilityNum;
     }
 
-    private List<GenericForeignKey> loadReferences(DBRProgressMonitor monitor)
+    private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
-            return new ArrayList<GenericForeignKey>();
+            return new ArrayList<GenericTableForeignKey>();
         }
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
@@ -419,8 +419,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 dbResult.close();
             }
 
-            List<GenericForeignKey> fkList = new ArrayList<GenericForeignKey>();
-            Map<String, GenericForeignKey> fkMap = new HashMap<String, GenericForeignKey>();
+            List<GenericTableForeignKey> fkList = new ArrayList<GenericTableForeignKey>();
+            Map<String, GenericTableForeignKey> fkMap = new HashMap<String, GenericTableForeignKey>();
             for (ForeignKeyInfo info : fkInfos) {
                 DBSConstraintModifyRule deleteRule = JDBCUtils.getCascadeFromNum(info.deleteRuleNum);
                 DBSConstraintModifyRule updateRule = JDBCUtils.getCascadeFromNum(info.updateRuleNum);
@@ -477,13 +477,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     // Too bad. But we have to create new fake PK for this FK
                     //String pkFullName = getFullQualifiedName() + "." + info.pkName;
                     pk = new GenericPrimaryKey(this, info.pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
-                    pk.addColumn(new GenericConstraintColumn(pk, pkColumn, info.keySeq));
+                    pk.addColumn(new GenericTableConstraintColumn(pk, pkColumn, info.keySeq));
                     // Add this fake constraint to it's owner
                     this.addUniqueKey(pk);
                 }
 
                 // Find (or create) FK
-                GenericForeignKey fk = DBUtils.findObject(fkTable.getAssociations(monitor), info.fkName);
+                GenericTableForeignKey fk = DBUtils.findObject(fkTable.getAssociations(monitor), info.fkName);
                 if (fk == null) {
                     log.warn("Could not find foreign key '" + info.fkName + "' for table " + fkTable.getFullQualifiedName());
                     // No choice, we have to create fake foreign key :(
@@ -496,11 +496,11 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 if (fk == null) {
                     fk = fkMap.get(info.fkName);
                     if (fk == null) {
-                        fk = new GenericForeignKey(fkTable, info.fkName, null, pk, deleteRule, updateRule, defferability, true);
+                        fk = new GenericTableForeignKey(fkTable, info.fkName, null, pk, deleteRule, updateRule, defferability, true);
                         fkMap.put(info.fkName, fk);
                         fkList.add(fk);
                     }
-                    GenericForeignKeyColumn fkColumnInfo = new GenericForeignKeyColumn(fk, fkColumn, info.keySeq, pkColumn);
+                    GenericTableForeignKeyColumnTable fkColumnInfo = new GenericTableForeignKeyColumnTable(fk, fkColumn, info.keySeq, pkColumn);
                     fk.addColumn(fkColumnInfo);
                 }
             }

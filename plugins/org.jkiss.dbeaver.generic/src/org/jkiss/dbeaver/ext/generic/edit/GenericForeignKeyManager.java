@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.edit;
@@ -19,11 +19,11 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 /**
  * Generic foreign manager
  */
-public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericForeignKey, GenericTable> {
+public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericTableForeignKey, GenericTable> {
 
 
     @Override
-    protected GenericForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, GenericTable table, Object from)
+    protected GenericTableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, GenericTable table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
             workbenchWindow.getShell(),
@@ -39,7 +39,7 @@ public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericForei
             return null;
         }
 
-        final GenericForeignKey foreignKey = new GenericForeignKey(
+        final GenericTableForeignKey foreignKey = new GenericTableForeignKey(
             table,
             null,
             null,
@@ -54,7 +54,7 @@ public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericForei
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(
-                new GenericForeignKeyColumn(
+                new GenericTableForeignKeyColumnTable(
                     foreignKey,
                     (GenericTableColumn) tableColumn.getOwnColumn(),
                     colIndex++,

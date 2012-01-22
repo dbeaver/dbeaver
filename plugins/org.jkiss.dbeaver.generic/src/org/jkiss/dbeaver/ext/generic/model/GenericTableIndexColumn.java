@@ -1,27 +1,25 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.oracle.model;
+package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.model.impl.struct.AbstractIndexColumn;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
 /**
- * GenericIndexColumn
+ * GenericTableIndexColumn
  */
-public class OracleIndexColumn extends AbstractIndexColumn
+public class GenericTableIndexColumn extends AbstractTableIndexColumn
 {
-    private OracleIndex index;
-    private OracleTableColumn tableColumn;
+    private GenericTableIndex index;
+    private GenericTableColumn tableColumn;
     private int ordinalPosition;
     private boolean ascending;
 
-    public OracleIndexColumn(
-        OracleIndex index,
-        OracleTableColumn tableColumn,
-        int ordinalPosition,
-        boolean ascending)
+    public GenericTableIndexColumn(GenericTableIndex index, GenericTableColumn tableColumn,
+                                   int ordinalPosition,
+                                   boolean ascending)
     {
         this.index = index;
         this.tableColumn = tableColumn;
@@ -29,7 +27,7 @@ public class OracleIndexColumn extends AbstractIndexColumn
         this.ascending = ascending;
     }
 
-    OracleIndexColumn(OracleIndex toIndex, OracleIndexColumn source)
+    GenericTableIndexColumn(GenericTableIndex toIndex, GenericTableIndexColumn source)
     {
         this.index = toIndex;
         this.tableColumn = source.tableColumn;
@@ -37,7 +35,7 @@ public class OracleIndexColumn extends AbstractIndexColumn
         this.ascending = source.ascending;
     }
 
-    public OracleIndex getIndex()
+    public GenericTableIndex getIndex()
     {
         return index;
     }
@@ -49,7 +47,7 @@ public class OracleIndexColumn extends AbstractIndexColumn
     }
 
     @Property(id = "name", name = "Column", viewable = true, order = 1)
-    public OracleTableColumn getTableColumn()
+    public GenericTableColumn getTableColumn()
     {
         return tableColumn;
     }
@@ -71,12 +69,12 @@ public class OracleIndexColumn extends AbstractIndexColumn
         return tableColumn.getDescription();
     }
 
-    public OracleIndex getParentObject()
+    public GenericTableIndex getParentObject()
     {
         return index;
     }
 
-    public OracleDataSource getDataSource()
+    public GenericDataSource getDataSource()
     {
         return index.getDataSource();
     }

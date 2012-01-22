@@ -1,21 +1,21 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
+import org.jkiss.dbeaver.model.struct.DBSTableForeignKeyColumn;
 
 /**
  * GenericConstraintColumn
  */
-public class MySQLForeignKeyColumn extends MySQLConstraintColumn implements DBSForeignKeyColumn
+public class MySQLTableForeignKeyColumnTable extends MySQLTableConstraintColumn implements DBSTableForeignKeyColumn
 {
     private MySQLTableColumn referencedColumn;
 
-    public MySQLForeignKeyColumn(
-        MySQLForeignKey constraint,
+    public MySQLTableForeignKeyColumnTable(
+        MySQLTableForeignKey constraint,
         MySQLTableColumn tableColumn,
         int ordinalPosition,
         MySQLTableColumn referencedColumn)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.edit;
@@ -19,10 +19,10 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 /**
  * Oracle foreign key manager
  */
-public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeignKey, OracleTableBase> {
+public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleTableForeignKey, OracleTableBase> {
 
 
-    protected OracleForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase table, Object from)
+    protected OracleTableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
             workbenchWindow.getShell(),
@@ -38,11 +38,11 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeign
             return null;
         }
 
-        final OracleForeignKey foreignKey = new OracleForeignKey(
+        final OracleTableForeignKey foreignKey = new OracleTableForeignKey(
             table,
             null,
             null,
-            (OracleConstraint) editDialog.getUniqueConstraint(),
+            (OracleTableConstraint) editDialog.getUniqueConstraint(),
             editDialog.getOnDeleteRule());
         foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey,
                 CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
@@ -50,7 +50,7 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeign
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(
-                new OracleForeignKeyColumn(
+                new OracleTableForeignKeyColumnTable(
                     foreignKey,
                     (OracleTableColumn) tableColumn.getOwnColumn(),
                     colIndex++));
@@ -58,7 +58,7 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleForeign
         return foreignKey;
     }
 
-    protected String getDropForeignKeyPattern(OracleForeignKey foreignKey)
+    protected String getDropForeignKeyPattern(OracleTableForeignKey foreignKey)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }

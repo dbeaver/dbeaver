@@ -1,31 +1,31 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.oracle.model;
+package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
-import org.jkiss.dbeaver.model.impl.struct.AbstractConstraintColumn;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * GenericConstraintColumn
  */
-public class OracleConstraintColumn extends AbstractConstraintColumn
+public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
 {
-    private AbstractConstraint<OracleTableBase> constraint;
-    private OracleTableColumn tableColumn;
+    private AbstractTableConstraint<MySQLTable> constraint;
+    private MySQLTableColumn tableColumn;
     private int ordinalPosition;
 
-    public OracleConstraintColumn(AbstractConstraint<OracleTableBase> constraint, OracleTableColumn tableColumn, int ordinalPosition)
+    public MySQLTableConstraintColumn(AbstractTableConstraint<MySQLTable> constraint, MySQLTableColumn tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
     }
 
-    public AbstractConstraint<OracleTableBase> getConstraint()
+    public AbstractTableConstraint<MySQLTable> getConstraint()
     {
         return constraint;
     }
@@ -37,7 +37,7 @@ public class OracleConstraintColumn extends AbstractConstraintColumn
     }
 
     @Property(id = "name", name = "Column", viewable = true, order = 1)
-    public OracleTableColumn getTableColumn()
+    public MySQLTableColumn getTableColumn()
     {
         return tableColumn;
     }
@@ -58,7 +58,7 @@ public class OracleConstraintColumn extends AbstractConstraintColumn
         return constraint;
     }
 
-    public OracleDataSource getDataSource()
+    public MySQLDataSource getDataSource()
     {
         return constraint.getTable().getDataSource();
     }

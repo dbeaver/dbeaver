@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCIndex;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
@@ -14,22 +14,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * MySQLIndex
+ * MySQLTableIndex
  */
-public class MySQLIndex extends JDBCIndex<MySQLTable>
+public class MySQLTableIndex extends JDBCTableIndex<MySQLTable>
 {
     private boolean nonUnique;
     private String comment;
-    private List<MySQLIndexColumn> columns;
+    private List<MySQLTableIndexColumn> columns;
 
-    public MySQLIndex(
+    public MySQLTableIndex(
         MySQLTable table,
         DBSIndexType indexType)
     {
         super(table, null, indexType, false);
     }
 
-    public MySQLIndex(
+    public MySQLTableIndex(
         MySQLTable table,
         boolean nonUnique,
         String indexName,
@@ -45,14 +45,14 @@ public class MySQLIndex extends JDBCIndex<MySQLTable>
      * Copy constructor
      * @param source source index
      */
-    MySQLIndex(MySQLIndex source)
+    MySQLTableIndex(MySQLTableIndex source)
     {
         super(source);
         this.nonUnique = source.nonUnique;
         if (source.columns != null) {
-            this.columns = new ArrayList<MySQLIndexColumn>(source.columns.size());
-            for (MySQLIndexColumn sourceColumn : source.columns) {
-                this.columns.add(new MySQLIndexColumn(this, sourceColumn));
+            this.columns = new ArrayList<MySQLTableIndexColumn>(source.columns.size());
+            for (MySQLTableIndexColumn sourceColumn : source.columns) {
+                this.columns.add(new MySQLTableIndexColumn(this, sourceColumn));
             }
         }
     }
@@ -74,25 +74,25 @@ public class MySQLIndex extends JDBCIndex<MySQLTable>
         return comment;
     }
 
-    public List<MySQLIndexColumn> getColumns(DBRProgressMonitor monitor)
+    public List<MySQLTableIndexColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
-    public MySQLIndexColumn getColumn(String columnName)
+    public MySQLTableIndexColumn getColumn(String columnName)
     {
         return DBUtils.findObject(columns, columnName);
     }
 
-    void setColumns(List<MySQLIndexColumn> columns)
+    void setColumns(List<MySQLTableIndexColumn> columns)
     {
         this.columns = columns;
     }
 
-    public void addColumn(MySQLIndexColumn column)
+    public void addColumn(MySQLTableIndexColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<MySQLIndexColumn>();
+            columns = new ArrayList<MySQLTableIndexColumn>();
         }
         columns.add(column);
     }

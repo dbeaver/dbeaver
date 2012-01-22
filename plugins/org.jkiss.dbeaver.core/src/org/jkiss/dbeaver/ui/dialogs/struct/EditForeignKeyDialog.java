@@ -75,12 +75,12 @@ public class EditForeignKeyDialog extends Dialog {
     private DBSConstraintModifyRule[] supportedModifyRules;
     private DBSTable ownTable;
     private DBSTable curRefTable;
-    private List<DBSConstraint> curConstraints;
+    private List<DBSTableConstraint> curConstraints;
     private DBNDatabaseNode ownerTableNode;
     private Combo uniqueKeyCombo;
     private Table columnsTable;
 
-    private DBSConstraint curConstraint;
+    private DBSTableConstraint curConstraint;
     private List<? extends DBSTableColumn> ownColumns;
     private List<FKColumnInfo> fkColumns = new ArrayList<FKColumnInfo>();
     private DBSConstraintModifyRule onDeleteRule;
@@ -242,7 +242,7 @@ public class EditForeignKeyDialog extends Dialog {
         uniqueKeyCombo.removeAll();
 
         try {
-            curConstraints = new ArrayList<DBSConstraint>();
+            curConstraints = new ArrayList<DBSTableConstraint>();
             curConstraint = null;
             final DBeaverCore core = DBeaverCore.getInstance();
             if (refTableNode != null) {
@@ -257,9 +257,9 @@ public class EditForeignKeyDialog extends Dialog {
                             // Cache ref table columns
                             refTable.getColumns(monitor);
                             // Get constraints
-                            final Collection<? extends DBSConstraint> constraints = refTable.getConstraints(monitor);
+                            final Collection<? extends DBSTableConstraint> constraints = refTable.getConstraints(monitor);
                             if (!CommonUtils.isEmpty(constraints)) {
-                                for (DBSConstraint constraint : constraints) {
+                                for (DBSTableConstraint constraint : constraints) {
                                     if (constraint.getConstraintType().isUnique()) {
                                         curConstraints.add(constraint);
                                     }
@@ -271,7 +271,7 @@ public class EditForeignKeyDialog extends Dialog {
                     }
                 });
             }
-            for (DBSConstraint constraint : curConstraints) {
+            for (DBSTableConstraint constraint : curConstraints) {
                 uniqueKeyCombo.add(constraint.getName());
             }
             uniqueKeyCombo.select(0);
@@ -301,7 +301,7 @@ public class EditForeignKeyDialog extends Dialog {
         curConstraint = curConstraints.get(uniqueKeyCombo.getSelectionIndex());
         try {
             // Read column nodes with void monitor because we already cached them above
-            for (DBSConstraintColumn pkColumn : curConstraint.getColumns(VoidProgressMonitor.INSTANCE)) {
+            for (DBSTableConstraintColumn pkColumn : curConstraint.getColumns(VoidProgressMonitor.INSTANCE)) {
                 FKColumnInfo fkColumnInfo = new FKColumnInfo(pkColumn.getTableColumn());
                 // Try to find matched column in own table
                 Collection<? extends DBSTableColumn> tmpColumns = ownTable.getColumns(VoidProgressMonitor.INSTANCE);
@@ -390,7 +390,7 @@ public class EditForeignKeyDialog extends Dialog {
         return onUpdateRule;
     }
 
-    public DBSConstraint getUniqueConstraint()
+    public DBSTableConstraint getUniqueConstraint()
     {
         return curConstraint;
     }

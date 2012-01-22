@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.exec;
@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.exec;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSColumnBase;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
+import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.util.List;
@@ -61,6 +61,6 @@ public interface DBCColumnMetaData extends DBSColumnBase
      * @return list of foreign keys. List can be empty or result can be null if this column is not a reference
      * @throws DBCException on any DB error  @param monitor
      */
-    List<DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
+    List<DBSTableForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
 
 }

@@ -1,16 +1,16 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.ext.generic.model.GenericIndex;
-import org.jkiss.dbeaver.ext.generic.model.GenericIndexColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -24,9 +24,9 @@ import java.util.Collections;
 /**
  * Generic index manager
  */
-public class GenericIndexManager extends JDBCIndexManager<GenericIndex, GenericTable> {
+public class GenericIndexManager extends JDBCIndexManager<GenericTableIndex, GenericTable> {
 
-    protected GenericIndex createDatabaseObject(
+    protected GenericTableIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor,
         DBECommandContext context, GenericTable parent,
@@ -41,7 +41,7 @@ public class GenericIndexManager extends JDBCIndexManager<GenericIndex, GenericT
             return null;
         }
 
-        final GenericIndex index = new GenericIndex(
+        final GenericTableIndex index = new GenericTableIndex(
             parent,
             false,
             null,
@@ -57,7 +57,7 @@ public class GenericIndexManager extends JDBCIndexManager<GenericIndex, GenericT
                 idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName()));
             }
             index.addColumn(
-                new GenericIndexColumn(
+                new GenericTableIndexColumn(
                     index,
                     (GenericTableColumn) tableColumn,
                     colIndex++,

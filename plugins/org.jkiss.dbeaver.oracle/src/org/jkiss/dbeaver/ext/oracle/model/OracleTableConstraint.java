@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -20,24 +20,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * OracleConstraint
+ * OracleTableConstraint
  */
-public class OracleConstraint extends JDBCConstraint<OracleTableBase> {
+public class OracleTableConstraint extends JDBCTableConstraint<OracleTableBase> {
 
-    static final Log log = LogFactory.getLog(OracleConstraint.class);
+    static final Log log = LogFactory.getLog(OracleTableConstraint.class);
 
     private String searchCondition;
     private OracleObjectStatus status;
-    private List<OracleConstraintColumn> columns;
+    private List<OracleTableConstraintColumn> columns;
 
-    public OracleConstraint(OracleTableBase oracleTable, String name, DBSEntityConstraintType constraintType, String searchCondition, OracleObjectStatus status)
+    public OracleTableConstraint(OracleTableBase oracleTable, String name, DBSEntityConstraintType constraintType, String searchCondition, OracleObjectStatus status)
     {
         super(oracleTable, name, null, constraintType, false);
         this.searchCondition = searchCondition;
         this.status = status;
     }
 
-    public OracleConstraint(OracleTableBase table, ResultSet dbResult)
+    public OracleTableConstraint(OracleTableBase table, ResultSet dbResult)
     {
         super(
             table,
@@ -73,20 +73,20 @@ public class OracleConstraint extends JDBCConstraint<OracleTableBase> {
         return status;
     }
 
-    public List<OracleConstraintColumn> getColumns(DBRProgressMonitor monitor)
+    public List<OracleTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
-    public void addColumn(OracleConstraintColumn column)
+    public void addColumn(OracleTableConstraintColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<OracleConstraintColumn>();
+            columns = new ArrayList<OracleTableConstraintColumn>();
         }
         this.columns.add(column);
     }
 
-    void setColumns(List<OracleConstraintColumn> columns)
+    void setColumns(List<OracleTableConstraintColumn> columns)
     {
         this.columns = columns;
     }

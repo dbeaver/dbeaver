@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -19,9 +19,9 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSIndex;
+import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
+import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.DBSTableIndex;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -120,22 +120,22 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
         }
     }
 
-    public List<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
-    public List<? extends DBSConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
-    public List<? extends DBSForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
-    public List<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

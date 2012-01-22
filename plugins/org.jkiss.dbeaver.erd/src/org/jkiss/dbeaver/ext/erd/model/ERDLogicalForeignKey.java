@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -17,10 +17,10 @@ import java.util.List;
 /**
  * Logical foreign key
  */
-public class ERDLogicalForeignKey extends AbstractConstraint<DBSTable> implements DBSForeignKey {
+public class ERDLogicalForeignKey extends AbstractTableConstraint<DBSTable> implements DBSTableForeignKey {
 
     private ERDLogicalPrimaryKey pk;
-    private List<? extends DBSForeignKeyColumn> columns = new ArrayList<DBSForeignKeyColumn>();
+    private List<? extends DBSTableForeignKeyColumn> columns = new ArrayList<DBSTableForeignKeyColumn>();
 
     public ERDLogicalForeignKey(ERDEntity entity, String name, String description, ERDLogicalPrimaryKey pk)
     {
@@ -28,7 +28,7 @@ public class ERDLogicalForeignKey extends AbstractConstraint<DBSTable> implement
         this.pk = pk;
     }
 
-    public DBSConstraint getReferencedKey()
+    public DBSTableConstraint getReferencedConstraint()
     {
         return pk;
     }
@@ -43,7 +43,7 @@ public class ERDLogicalForeignKey extends AbstractConstraint<DBSTable> implement
         return DBSConstraintModifyRule.NO_ACTION;
     }
 
-    public Collection<? extends DBSForeignKeyColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<? extends DBSTableForeignKeyColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -52,7 +52,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     protected boolean valid;
     private String comment;
     private List<OracleTableColumn> columns;
-    private List<OracleConstraint> constraints;
+    private List<OracleTableConstraint> constraints;
 
     protected OracleTableBase(OracleSchema schema, String name, boolean persisted)
     {
@@ -130,13 +130,13 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return getContainer().triggerCache.getObjects(monitor, getContainer(), this);
     }
 
-    public List<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Association
-    public List<OracleConstraint> getConstraints(DBRProgressMonitor monitor)
+    public List<OracleTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (constraints == null) {
@@ -145,33 +145,33 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return constraints;
     }
 
-    public OracleConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
+    public OracleTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
         return DBUtils.findObject(getConstraints(monitor), ukName);
     }
 
-    void setConstraints(List<OracleConstraint> constraints)
+    void setConstraints(List<OracleTableConstraint> constraints)
     {
         this.constraints = constraints;
     }
 
-    List<OracleConstraint> getConstraintsCache()
+    List<OracleTableConstraint> getConstraintsCache()
     {
         return constraints;
     }
 
-    public DBSForeignKey getForeignKey(DBRProgressMonitor monitor, String ukName) throws DBException
+    public DBSTableForeignKey getForeignKey(DBRProgressMonitor monitor, String ukName) throws DBException
     {
         return DBUtils.findObject(getAssociations(monitor), ukName);
     }
 
-    public List<? extends DBSForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
-    public List<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

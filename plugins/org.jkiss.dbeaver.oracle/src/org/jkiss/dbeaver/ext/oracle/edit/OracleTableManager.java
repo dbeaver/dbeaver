@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.edit;
@@ -24,9 +24,9 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
 
     private static final Class<?>[] CHILD_TYPES = {
         OracleTableColumn.class,
-        OracleConstraint.class,
-        OracleForeignKey.class,
-        OracleIndex.class
+        OracleTableConstraint.class,
+        OracleTableForeignKey.class,
+        OracleTableIndex.class
     };
 
     @Override

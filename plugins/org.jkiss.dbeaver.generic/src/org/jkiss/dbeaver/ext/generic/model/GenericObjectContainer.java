@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -89,7 +89,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         return tableCache.getObject(monitor, this, name);
     }
 
-    public Collection<GenericIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         cacheIndexes(monitor, true);
@@ -113,7 +113,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                     // Failed
                     if (readFromTables) {
                         // Load indexes for all tables and return copy of them
-                        List<GenericIndex> tmpIndexMap = new ArrayList<GenericIndex>();
+                        List<GenericTableIndex> tmpIndexMap = new ArrayList<GenericTableIndex>();
                         for (GenericTable table : getTables(monitor)) {
                             tmpIndexMap.addAll(table.getIndexes(monitor));
                         }

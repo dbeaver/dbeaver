@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.struct;
@@ -16,8 +16,8 @@ public class RelationalObjectType implements DBSObjectType {
 
     public static final DBSObjectType TYPE_TABLE = new RelationalObjectType("Table", "Table or View", DBIcon.TREE_TABLE.getImage(), DBSTable.class);
     public static final DBSObjectType TYPE_TABLE_COLUMN = new RelationalObjectType("Table column", "Table column", DBIcon.TREE_COLUMN.getImage(), DBSTableColumn.class);
-    public static final DBSObjectType TYPE_INDEX = new RelationalObjectType("Index", "Index", DBIcon.TREE_INDEX.getImage(), DBSIndex.class);
-    public static final DBSObjectType TYPE_CONSTRAINT = new RelationalObjectType("Constraint", "Table constraint (primary key, foreign key, unique, etc)", DBIcon.TREE_CONSTRAINT.getImage(), DBSConstraint.class);
+    public static final DBSObjectType TYPE_INDEX = new RelationalObjectType("Index", "Index", DBIcon.TREE_INDEX.getImage(), DBSTableIndex.class);
+    public static final DBSObjectType TYPE_CONSTRAINT = new RelationalObjectType("Constraint", "Table constraint (primary key, foreign key, unique, etc)", DBIcon.TREE_CONSTRAINT.getImage(), DBSTableConstraint.class);
     public static final DBSObjectType TYPE_PROCEDURE = new RelationalObjectType("Procedure", "Procedure or function", DBIcon.TREE_PROCEDURE.getImage(), DBSProcedure.class);
     public static final DBSObjectType TYPE_TRIGGER = new RelationalObjectType("Trigger", "Trigger", DBIcon.TREE_TRIGGER.getImage(), DBSTrigger.class);
 

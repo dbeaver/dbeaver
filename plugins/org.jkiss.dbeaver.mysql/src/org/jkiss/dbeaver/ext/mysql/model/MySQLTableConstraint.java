@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
@@ -15,28 +15,28 @@ import java.util.List;
 /**
  * GenericPrimaryKey
  */
-public class MySQLConstraint extends JDBCConstraint<MySQLTable> {
-    private List<MySQLConstraintColumn> columns;
+public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
+    private List<MySQLTableConstraintColumn> columns;
 
-    public MySQLConstraint(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
+    public MySQLTableConstraint(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
         super(table, name, remarks, constraintType, persisted);
     }
 
-    public List<MySQLConstraintColumn> getColumns(DBRProgressMonitor monitor)
+    public List<MySQLTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
-    public void addColumn(MySQLConstraintColumn column)
+    public void addColumn(MySQLTableConstraintColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<MySQLConstraintColumn>();
+            columns = new ArrayList<MySQLTableConstraintColumn>();
         }
         this.columns.add(column);
     }
 
-    void setColumns(List<MySQLConstraintColumn> columns)
+    void setColumns(List<MySQLTableConstraintColumn> columns)
     {
         this.columns = columns;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Index cache implementation
  */
-class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericPrimaryKey, GenericConstraintColumn> {
+class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericPrimaryKey, GenericTableConstraintColumn> {
 
     PrimaryKeysCache(TableCache tableCache)
     {
@@ -59,7 +59,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             true);
     }
 
-    protected GenericConstraintColumn fetchObjectRow(
+    protected GenericTableConstraintColumn fetchObjectRow(
         JDBCExecutionContext context,
         GenericTable parent, GenericPrimaryKey object, ResultSet dbResult)
         throws SQLException, DBException
@@ -76,7 +76,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             return null;
         }
 
-        return new GenericConstraintColumn(object, tableColumn, keySeq);
+        return new GenericTableConstraintColumn(object, tableColumn, keySeq);
     }
 
     protected Collection<GenericPrimaryKey> getObjectsCache(GenericTable parent)
@@ -89,7 +89,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         parent.setUniqueKeys(primaryKeys);
     }
 
-    protected void cacheChildren(GenericPrimaryKey primaryKey, List<GenericConstraintColumn> rows)
+    protected void cacheChildren(GenericPrimaryKey primaryKey, List<GenericTableConstraintColumn> rows)
     {
         primaryKey.setColumns(rows);
     }

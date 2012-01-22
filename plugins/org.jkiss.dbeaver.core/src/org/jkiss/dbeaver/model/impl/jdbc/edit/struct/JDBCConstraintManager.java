@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
@@ -9,15 +9,15 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
+import org.jkiss.dbeaver.model.struct.DBSTableConstraintColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 /**
  * JDBC constraint manager
  */
-public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
+public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCTableConstraint<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
@@ -63,7 +63,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCConstraint<T
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         boolean firstColumn = true;
-        for (DBSConstraintColumn constraintColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
+        for (DBSTableConstraintColumn constraintColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
             if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
             decl.append(constraintColumn.getName());

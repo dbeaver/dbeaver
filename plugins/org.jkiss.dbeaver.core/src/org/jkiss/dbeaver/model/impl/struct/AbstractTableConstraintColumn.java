@@ -1,25 +1,19 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
+import org.jkiss.dbeaver.model.struct.DBSTableConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 /**
- * AbstractIndexColumn
+ * Abstract constraint column
  */
-public abstract class AbstractIndexColumn implements DBSIndexColumn, IObjectImageProvider
+public abstract class AbstractTableConstraintColumn implements DBSTableConstraintColumn, IObjectImageProvider
 {
-
-    public boolean isPersisted()
-    {
-        return true;
-    }
-
     public Image getObjectImage()
     {
         DBSTableColumn tableColumn = getTableColumn();
@@ -29,4 +23,8 @@ public abstract class AbstractIndexColumn implements DBSIndexColumn, IObjectImag
         return null;
     }
 
+    public boolean isPersisted()
+    {
+        return getConstraint().isPersisted();
+    }
 }

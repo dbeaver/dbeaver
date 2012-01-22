@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model;
@@ -403,12 +403,12 @@ public final class DBUtils {
         }
     }
 
-    public static DBSForeignKey getUniqueForeignConstraint(DBCColumnMetaData column)
+    public static DBSTableForeignKey getUniqueForeignConstraint(DBCColumnMetaData column)
     {
         return getUniqueForeignConstraint(null, column);
     }
 
-    public static DBSForeignKey getUniqueForeignConstraint(DBRProgressMonitor monitor, DBCColumnMetaData column)
+    public static DBSTableForeignKey getUniqueForeignConstraint(DBRProgressMonitor monitor, DBCColumnMetaData column)
     {
         RefColumnFinder finder = new RefColumnFinder(column);
         try {
@@ -436,9 +436,9 @@ public final class DBUtils {
 
         List<DBSObject> identifiers = new ArrayList<DBSObject>();
         // Check constraints
-        Collection<? extends DBSConstraint> uniqueKeys = table.getConstraints(monitor);
+        Collection<? extends DBSTableConstraint> uniqueKeys = table.getConstraints(monitor);
         if (!CommonUtils.isEmpty(uniqueKeys)) {
-            for (DBSConstraint constraint : uniqueKeys) {
+            for (DBSTableConstraint constraint : uniqueKeys) {
                 if (constraint.getConstraintType().isUnique() && !CommonUtils.isEmpty(constraint.getColumns(monitor))) {
                     identifiers.add(constraint);
                 }
@@ -447,9 +447,9 @@ public final class DBUtils {
         if (identifiers.isEmpty()) {
             // Check indexes only if no unique constraints found
             try {
-                Collection<? extends DBSIndex> indexes = table.getIndexes(monitor);
+                Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
-                    for (DBSIndex index : indexes) {
+                    for (DBSTableIndex index : indexes) {
                         if (index.isUnique() && !CommonUtils.isEmpty(index.getColumns(monitor))) {
                             identifiers.add(index);
                         }
@@ -462,17 +462,17 @@ public final class DBUtils {
 
         if (!identifiers.isEmpty()) {
             // Find PK or unique key
-            DBSConstraint uniqueId = null;
-            DBSIndex uniqueIndex = null;
+            DBSTableConstraint uniqueId = null;
+            DBSTableIndex uniqueIndex = null;
             for (DBSObject id : identifiers) {
-                if (id instanceof DBSConstraint) {
-                    if (((DBSConstraint)id).getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                        return getTableColumns(monitor, (DBSConstraint)id);
-                    } else if (((DBSConstraint)id).getConstraintType().isUnique()) {
-                        uniqueId = (DBSConstraint)id;
+                if (id instanceof DBSTableConstraint) {
+                    if (((DBSTableConstraint)id).getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                        return getTableColumns(monitor, (DBSTableConstraint)id);
+                    } else if (((DBSTableConstraint)id).getConstraintType().isUnique()) {
+                        uniqueId = (DBSTableConstraint)id;
                     }
                 } else {
-                    uniqueIndex = (DBSIndex)id;
+                    uniqueIndex = (DBSTableIndex)id;
                 }
             }
             return uniqueId != null ? getTableColumns(monitor, uniqueId) : uniqueIndex != null ? getTableColumns(monitor, uniqueIndex) : Collections.<DBSTableColumn>emptyList();
@@ -481,27 +481,27 @@ public final class DBUtils {
         }
     }
 
-    public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSConstraint constraint)
+    public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSTableConstraint constraint)
     {
-        Collection<? extends DBSConstraintColumn> constraintColumns = constraint == null ? null : constraint.getColumns(monitor);
+        Collection<? extends DBSTableConstraintColumn> constraintColumns = constraint == null ? null : constraint.getColumns(monitor);
         if (constraintColumns == null) {
             return Collections.emptyList();
         }
         List<DBSTableColumn> columns = new ArrayList<DBSTableColumn>(constraintColumns.size());
-        for (DBSConstraintColumn column : constraintColumns) {
+        for (DBSTableConstraintColumn column : constraintColumns) {
             columns.add(column.getTableColumn());
         }
         return columns;
     }
 
-    public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSIndex index)
+    public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSTableIndex index)
     {
-        Collection<? extends DBSIndexColumn> indexColumns = index.getColumns(monitor);
+        Collection<? extends DBSTableIndexColumn> indexColumns = index.getColumns(monitor);
         if (indexColumns == null) {
             return Collections.emptyList();
         }
         List<DBSTableColumn> columns = new ArrayList<DBSTableColumn>(indexColumns.size());
-        for (DBSIndexColumn column : indexColumns) {
+        for (DBSTableIndexColumn column : indexColumns) {
             columns.add(column.getTableColumn());
         }
         return columns;
@@ -743,7 +743,7 @@ public final class DBUtils {
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {
         private DBCColumnMetaData column;
-        private DBSForeignKey refConstraint;
+        private DBSTableForeignKey refConstraint;
 
         private RefColumnFinder(DBCColumnMetaData column)
         {
@@ -754,7 +754,7 @@ public final class DBUtils {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                List<DBSForeignKey> refs = column.getForeignKeys(monitor);
+                List<DBSTableForeignKey> refs = column.getForeignKeys(monitor);
                 if (refs != null && !refs.isEmpty()) {
                     refConstraint = refs.get(0);
                 }

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCForeignKey;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -16,18 +16,18 @@ import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 import java.sql.ResultSet;
 
 /**
- * OracleForeignKey
+ * OracleTableForeignKey
  */
-public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
+public class OracleTableForeignKey extends OracleTableConstraint implements DBSTableForeignKey
 {
-    private OracleConstraint referencedKey;
+    private OracleTableConstraint referencedKey;
     private DBSConstraintModifyRule deleteRule;
 
-    public OracleForeignKey(
+    public OracleTableForeignKey(
         OracleTableBase oracleTable,
         String name,
         OracleObjectStatus status,
-        OracleConstraint referencedKey,
+        OracleTableConstraint referencedKey,
         DBSConstraintModifyRule deleteRule)
     {
         super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, null, status);
@@ -35,7 +35,7 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
         this.deleteRule = deleteRule;
     }
 
-    public OracleForeignKey(
+    public OracleTableForeignKey(
         DBRProgressMonitor monitor,
         OracleTable table,
         ResultSet dbResult)
@@ -65,7 +65,7 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
     }
 
     @Property(id = "reference", name = "Ref Object", viewable = true, order = 4)
-    public OracleConstraint getReferencedKey()
+    public OracleTableConstraint getReferencedConstraint()
     {
         return referencedKey;
     }
@@ -82,9 +82,9 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
         return DBSConstraintModifyRule.NO_ACTION;
     }
 
-    public DBSForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
+    public DBSTableForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
     {
-        return (DBSForeignKeyColumn)super.getColumn(monitor, tableColumn);
+        return (DBSTableForeignKeyColumn)super.getColumn(monitor, tableColumn);
     }
 
     public OracleTableBase getAssociatedEntity()
@@ -100,14 +100,14 @@ public class OracleForeignKey extends OracleConstraint implements DBSForeignKey
             this);
     }
 
-    public static class ConstraintModifyRuleListProvider implements IPropertyValueListProvider<JDBCForeignKey> {
+    public static class ConstraintModifyRuleListProvider implements IPropertyValueListProvider<JDBCTableForeignKey> {
 
         public boolean allowCustomValue()
         {
             return false;
         }
 
-        public Object[] getPossibleValues(JDBCForeignKey foreignKey)
+        public Object[] getPossibleValues(JDBCTableForeignKey foreignKey)
         {
             return new DBSConstraintModifyRule[] {
                 DBSConstraintModifyRule.NO_ACTION,

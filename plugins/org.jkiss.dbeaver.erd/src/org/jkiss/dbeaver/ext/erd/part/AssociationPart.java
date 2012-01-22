@@ -10,7 +10,7 @@ package org.jkiss.dbeaver.ext.erd.part;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
+import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
@@ -168,13 +168,13 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
 
         DBSEntityAssociation association = getAssociation().getObject();
-        if (association instanceof DBSForeignKey) {
+        if (association instanceof DBSTableForeignKey) {
             List<AttributePart> sourceAttributes = getEntityAttributes(
                 (EntityPart)getSource(),
-                DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, ((DBSForeignKey) association).getReferencedKey()));
+                DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, ((DBSTableForeignKey) association).getReferencedConstraint()));
             List<AttributePart> targetAttributes = getEntityAttributes(
                 (EntityPart)getTarget(),
-                DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, (DBSForeignKey)association));
+                DBUtils.getTableColumns(VoidProgressMonitor.INSTANCE, (DBSTableForeignKey)association));
             Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
             for (AttributePart attr : sourceAttributes) {
                 attr.getFigure().setForegroundColor(columnColor);

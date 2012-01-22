@@ -1,47 +1,43 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql.model;
+package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.model.impl.struct.AbstractIndexColumn;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * GenericIndexColumn
  */
-public class MySQLIndexColumn extends AbstractIndexColumn
+public class OracleTableIndexColumn extends AbstractTableIndexColumn
 {
-    private MySQLIndex index;
-    private MySQLTableColumn tableColumn;
+    private OracleTableIndex index;
+    private OracleTableColumn tableColumn;
     private int ordinalPosition;
     private boolean ascending;
-    private boolean nullable;
 
-    public MySQLIndexColumn(
-        MySQLIndex index,
-        MySQLTableColumn tableColumn,
+    public OracleTableIndexColumn(
+        OracleTableIndex index,
+        OracleTableColumn tableColumn,
         int ordinalPosition,
-        boolean ascending,
-        boolean nullable)
+        boolean ascending)
     {
         this.index = index;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
-        this.nullable = nullable;
     }
 
-    MySQLIndexColumn(MySQLIndex toIndex, MySQLIndexColumn source)
+    OracleTableIndexColumn(OracleTableIndex toIndex, OracleTableIndexColumn source)
     {
         this.index = toIndex;
         this.tableColumn = source.tableColumn;
         this.ordinalPosition = source.ordinalPosition;
         this.ascending = source.ascending;
-        this.nullable = source.nullable;
     }
 
-    public MySQLIndex getIndex()
+    public OracleTableIndex getIndex()
     {
         return index;
     }
@@ -53,7 +49,7 @@ public class MySQLIndexColumn extends AbstractIndexColumn
     }
 
     @Property(id = "name", name = "Column", viewable = true, order = 1)
-    public MySQLTableColumn getTableColumn()
+    public OracleTableColumn getTableColumn()
     {
         return tableColumn;
     }
@@ -70,23 +66,17 @@ public class MySQLIndexColumn extends AbstractIndexColumn
         return ascending;
     }
 
-    @Property(name = "Nullable", viewable = true, order = 4)
-    public boolean isNullable()
-    {
-        return nullable;
-    }
-
     public String getDescription()
     {
         return tableColumn.getDescription();
     }
 
-    public MySQLIndex getParentObject()
+    public OracleTableIndex getParentObject()
     {
         return index;
     }
 
-    public MySQLDataSource getDataSource()
+    public OracleDataSource getDataSource()
     {
         return index.getDataSource();
     }

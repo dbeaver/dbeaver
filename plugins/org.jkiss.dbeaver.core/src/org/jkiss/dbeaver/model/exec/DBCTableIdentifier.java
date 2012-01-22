@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
-import org.jkiss.dbeaver.model.struct.DBSIndex;
+import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
+import org.jkiss.dbeaver.model.struct.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.util.List;
@@ -19,13 +19,13 @@ public interface DBCTableIdentifier {
      * Table unique constraint
      * @return constraint
      */
-    DBSConstraint getConstraint();
+    DBSTableConstraint getConstraint();
 
     /**
      * Table unique index
      * @return constraint
      */
-    DBSIndex getIndex();
+    DBSTableIndex getIndex();
 
     /**
      * Result set columns

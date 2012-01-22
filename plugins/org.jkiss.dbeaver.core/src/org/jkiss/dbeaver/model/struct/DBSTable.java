@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.struct;
@@ -42,7 +42,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * @throws DBException  on any DB error
      * @param monitor
      */
-    Collection<? extends DBSIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Keys are: primary keys and unique keys.
@@ -51,7 +51,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets this table foreign keys
@@ -59,7 +59,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets foreign keys which refers this table
@@ -67,6 +67,6 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException;
 
 }

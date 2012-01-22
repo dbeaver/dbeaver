@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.edit;
@@ -19,8 +19,8 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
     private static final Class<?>[] CHILD_TYPES = {
         GenericTableColumn.class,
         GenericPrimaryKey.class,
-        GenericForeignKey.class,
-        GenericIndex.class
+        GenericTableForeignKey.class,
+        GenericTableIndex.class
     };
 
     public Class<?>[] getChildTypes()

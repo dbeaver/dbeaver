@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.edit;
@@ -23,9 +23,9 @@ import java.util.Collections;
 /**
  * Oracle index manager
  */
-public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTablePhysical> {
+public class OracleIndexManager extends JDBCIndexManager<OracleTableIndex, OracleTablePhysical> {
 
-    protected OracleIndex createDatabaseObject(
+    protected OracleTableIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor,
         DBECommandContext context, OracleTablePhysical parent,
@@ -44,7 +44,7 @@ public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTabl
         idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_") //$NON-NLS-1$
             .append(CommonUtils.escapeIdentifier(editDialog.getSelectedColumns().iterator().next().getName()))
             .append("_IDX"); //$NON-NLS-1$
-        final OracleIndex index = new OracleIndex(
+        final OracleTableIndex index = new OracleTableIndex(
             parent,
             DBObjectNameCaseTransformer.transformName((DBPDataSource) parent.getDataSource(), idxName.toString()),
             false,
@@ -52,7 +52,7 @@ public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTabl
         int colIndex = 1;
         for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
             index.addColumn(
-                new OracleIndexColumn(
+                new OracleTableIndexColumn(
                     index,
                     (OracleTableColumn) tableColumn,
                     colIndex++,
@@ -61,7 +61,7 @@ public class OracleIndexManager extends JDBCIndexManager<OracleIndex, OracleTabl
         return index;
     }
 
-    protected String getDropIndexPattern(OracleIndex index)
+    protected String getDropIndexPattern(OracleTableIndex index)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP INDEX " + PATTERN_ITEM_INDEX_SHORT; //$NON-NLS-1$ //$NON-NLS-2$
     }

@@ -1,39 +1,39 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
-import org.jkiss.dbeaver.model.impl.struct.AbstractConstraintColumn;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
+import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * GenericConstraintColumn
+ * GenericTableConstraintColumn
  */
-public class GenericConstraintColumn extends AbstractConstraintColumn
+public class GenericTableConstraintColumn extends AbstractTableConstraintColumn
 {
-    private JDBCConstraint constraint;
+    private JDBCTableConstraint constraint;
     private GenericTableColumn tableColumn;
     private int ordinalPosition;
 
-    public GenericConstraintColumn(JDBCConstraint constraint, GenericTableColumn tableColumn, int ordinalPosition)
+    public GenericTableConstraintColumn(JDBCTableConstraint constraint, GenericTableColumn tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
     }
 
-    public GenericConstraintColumn(GenericConstraint constraint, GenericConstraintColumn column)
+    public GenericTableConstraintColumn(GenericTableConstraint constraint, GenericTableConstraintColumn column)
     {
         this.constraint = constraint;
         this.tableColumn = column.tableColumn;
         this.ordinalPosition = column.ordinalPosition;
     }
 
-    public DBSConstraint getConstraint()
+    public DBSTableConstraint getConstraint()
     {
         return constraint;
     }

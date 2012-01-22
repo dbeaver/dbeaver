@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -175,7 +175,7 @@ public class GenericDataSource extends JDBCDataSource
         return structureContainer == null ? null : structureContainer.getPackages(monitor);
     }
 
-    public Collection<GenericIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getIndexes(monitor);

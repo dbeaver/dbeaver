@@ -478,10 +478,10 @@ public class DiagramLoader
 
                     if (association instanceof ERDLogicalForeignKey) {
                         // Save columns
-                        for (DBSConstraintColumn column : ((ERDLogicalForeignKey) association).getColumns(VoidProgressMonitor.INSTANCE)) {
+                        for (DBSTableConstraintColumn column : ((ERDLogicalForeignKey) association).getColumns(VoidProgressMonitor.INSTANCE)) {
                             xml.startElement(TAG_COLUMN);
                             xml.addAttribute(ATTR_NAME, column.getName());
-                            xml.addAttribute(ATTR_REF_NAME, ((DBSForeignKeyColumn)column).getReferencedColumn().getName());
+                            xml.addAttribute(ATTR_REF_NAME, ((DBSTableForeignKeyColumn)column).getReferencedColumn().getName());
                             xml.endElement();
                         }
                     }

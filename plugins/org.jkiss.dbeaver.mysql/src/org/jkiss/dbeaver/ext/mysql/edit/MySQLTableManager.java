@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
@@ -27,9 +27,9 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
 
     private static final Class<?>[] CHILD_TYPES = {
         MySQLTableColumn.class,
-        MySQLConstraint.class,
-        MySQLForeignKey.class,
-        MySQLIndex.class
+        MySQLTableConstraint.class,
+        MySQLTableForeignKey.class,
+        MySQLTableIndex.class
     };
 
     @Override

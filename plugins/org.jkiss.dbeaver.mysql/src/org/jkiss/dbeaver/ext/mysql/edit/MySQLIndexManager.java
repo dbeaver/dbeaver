@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLIndex;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLIndexColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -25,9 +25,9 @@ import java.util.Collections;
 /**
  * MySQL index manager
  */
-public class MySQLIndexManager extends JDBCIndexManager<MySQLIndex, MySQLTable> {
+public class MySQLIndexManager extends JDBCIndexManager<MySQLTableIndex, MySQLTable> {
 
-    protected MySQLIndex createDatabaseObject(
+    protected MySQLTableIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor,
         DBECommandContext context, MySQLTable parent,
@@ -42,7 +42,7 @@ public class MySQLIndexManager extends JDBCIndexManager<MySQLIndex, MySQLTable> 
             return null;
         }
 
-        final MySQLIndex index = new MySQLIndex(
+        final MySQLTableIndex index = new MySQLTableIndex(
             parent,
             false,
             null,
@@ -56,7 +56,7 @@ public class MySQLIndexManager extends JDBCIndexManager<MySQLIndex, MySQLTable> 
                 idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
             }
             index.addColumn(
-                new MySQLIndexColumn(
+                new MySQLTableIndexColumn(
                     index,
                     (MySQLTableColumn) tableColumn,
                     colIndex++,
@@ -68,7 +68,7 @@ public class MySQLIndexManager extends JDBCIndexManager<MySQLIndex, MySQLTable> 
         return index;
     }
 
-    protected String getDropIndexPattern(MySQLIndex index)
+    protected String getDropIndexPattern(MySQLTableIndex index)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP INDEX " + PATTERN_ITEM_INDEX_SHORT; //$NON-NLS-1$ //$NON-NLS-2$
     }

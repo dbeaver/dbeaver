@@ -1,41 +1,47 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.generic.model;
+package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.model.impl.struct.AbstractIndexColumn;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * GenericIndexColumn
  */
-public class GenericIndexColumn extends AbstractIndexColumn
+public class MySQLTableIndexColumn extends AbstractTableIndexColumn
 {
-    private GenericIndex index;
-    private GenericTableColumn tableColumn;
+    private MySQLTableIndex index;
+    private MySQLTableColumn tableColumn;
     private int ordinalPosition;
     private boolean ascending;
+    private boolean nullable;
 
-    public GenericIndexColumn(GenericIndex index, GenericTableColumn tableColumn,
+    public MySQLTableIndexColumn(
+        MySQLTableIndex index,
+        MySQLTableColumn tableColumn,
         int ordinalPosition,
-        boolean ascending)
+        boolean ascending,
+        boolean nullable)
     {
         this.index = index;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
+        this.nullable = nullable;
     }
 
-    GenericIndexColumn(GenericIndex toIndex, GenericIndexColumn source)
+    MySQLTableIndexColumn(MySQLTableIndex toIndex, MySQLTableIndexColumn source)
     {
         this.index = toIndex;
         this.tableColumn = source.tableColumn;
         this.ordinalPosition = source.ordinalPosition;
         this.ascending = source.ascending;
+        this.nullable = source.nullable;
     }
 
-    public GenericIndex getIndex()
+    public MySQLTableIndex getIndex()
     {
         return index;
     }
@@ -47,7 +53,7 @@ public class GenericIndexColumn extends AbstractIndexColumn
     }
 
     @Property(id = "name", name = "Column", viewable = true, order = 1)
-    public GenericTableColumn getTableColumn()
+    public MySQLTableColumn getTableColumn()
     {
         return tableColumn;
     }
@@ -64,17 +70,23 @@ public class GenericIndexColumn extends AbstractIndexColumn
         return ascending;
     }
 
+    @Property(name = "Nullable", viewable = true, order = 4)
+    public boolean isNullable()
+    {
+        return nullable;
+    }
+
     public String getDescription()
     {
         return tableColumn.getDescription();
     }
 
-    public GenericIndex getParentObject()
+    public MySQLTableIndex getParentObject()
     {
         return index;
     }
 
-    public GenericDataSource getDataSource()
+    public MySQLDataSource getDataSource()
     {
         return index.getDataSource();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -26,7 +26,7 @@ import java.util.Map;
 /**
 * Foreign key cache
 */
-class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericForeignKey, GenericForeignKeyColumn> {
+class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericTableForeignKey, GenericTableForeignKeyColumnTable> {
 
     Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
 
@@ -52,7 +52,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             .getSource();
     }
 
-    protected GenericForeignKey fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String fkName, ResultSet dbResult)
+    protected GenericTableForeignKey fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String fkName, ResultSet dbResult)
         throws SQLException, DBException
     {
         String pkTableCatalog = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKTABLE_CAT);
@@ -122,22 +122,22 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                     // Add this fake constraint to it's owner
                     pk.getTable().addUniqueKey(pk);
                 }
-                pk.addColumn(new GenericConstraintColumn(pk, pkColumn, keySeq));
+                pk.addColumn(new GenericTableConstraintColumn(pk, pkColumn, keySeq));
             }
         }
 
-        return new GenericForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability, true);
+        return new GenericTableForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability, true);
     }
 
-    protected GenericForeignKeyColumn fetchObjectRow(
+    protected GenericTableForeignKeyColumnTable fetchObjectRow(
         JDBCExecutionContext context,
-        GenericTable parent, GenericForeignKey foreignKey, ResultSet dbResult)
+        GenericTable parent, GenericTableForeignKey foreignKey, ResultSet dbResult)
         throws SQLException, DBException
     {
         String pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);
-        GenericConstraintColumn pkColumn = (GenericConstraintColumn)foreignKey.getReferencedKey().getColumn(context.getProgressMonitor(), pkColumnName);
+        GenericTableConstraintColumn pkColumn = (GenericTableConstraintColumn)foreignKey.getReferencedConstraint().getColumn(context.getProgressMonitor(), pkColumnName);
         if (pkColumn == null) {
-            log.warn("Can't find PK table " + foreignKey.getReferencedKey().getTable().getFullQualifiedName() + " column " + pkColumnName);
+            log.warn("Can't find PK table " + foreignKey.getReferencedConstraint().getTable().getFullQualifiedName() + " column " + pkColumnName);
             return null;
         }
         int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
@@ -149,20 +149,20 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             return null;
         }
 
-        return new GenericForeignKeyColumn(foreignKey, fkColumn, keySeq, pkColumn.getTableColumn());
+        return new GenericTableForeignKeyColumnTable(foreignKey, fkColumn, keySeq, pkColumn.getTableColumn());
     }
 
-    protected Collection<GenericForeignKey> getObjectsCache(GenericTable parent)
+    protected Collection<GenericTableForeignKey> getObjectsCache(GenericTable parent)
     {
         return parent.getForeignKeysCache();
     }
 
-    protected void cacheObjects(GenericTable parent, List<GenericForeignKey> foreignKeys)
+    protected void cacheObjects(GenericTable parent, List<GenericTableForeignKey> foreignKeys)
     {
         parent.setForeignKeys(foreignKeys);
     }
 
-    protected void cacheChildren(GenericForeignKey foreignKey, List<GenericForeignKeyColumn> rows)
+    protected void cacheChildren(GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
     {
         foreignKey.setColumns(rows);
     }

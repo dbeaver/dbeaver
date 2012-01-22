@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -9,7 +13,7 @@ import java.util.Collection;
 /**
  * Class association
  */
-public class WMIClassReference extends WMIClassElement<WMIObjectAttribute> implements DBSForeignKey
+public class WMIClassReference extends WMIClassElement<WMIObjectAttribute> implements DBSTableForeignKey
 {
     private WMIClass refClass;
 
@@ -29,12 +33,12 @@ public class WMIClassReference extends WMIClassElement<WMIObjectAttribute> imple
         return DBSEntityConstraintType.ASSOCIATION;
     }
 
-    public Collection<? extends DBSConstraintColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<? extends DBSTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
     {
         return null;
     }
 
-    public DBSConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
+    public DBSTableConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
     {
         return null;
     }
@@ -44,7 +48,7 @@ public class WMIClassReference extends WMIClassElement<WMIObjectAttribute> imple
         return refClass;
     }
 
-    public DBSConstraint getReferencedKey()
+    public DBSTableConstraint getReferencedConstraint()
     {
         return null;
     }

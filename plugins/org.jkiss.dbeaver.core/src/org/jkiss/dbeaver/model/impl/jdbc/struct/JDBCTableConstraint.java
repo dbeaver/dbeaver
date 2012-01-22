@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
@@ -30,15 +30,15 @@ import java.util.*;
 /**
  * JDBC abstract constraint
  */
-public abstract class JDBCConstraint<TABLE extends JDBCTable>
-    extends AbstractConstraint<TABLE>
+public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
+    extends AbstractTableConstraint<TABLE>
     implements DBSConstraintEnumerable, DBPSaveableObject
 {
     private static final int MAX_DESC_COLUMN_LENGTH = 1000;
 
     private boolean persisted;
 
-    protected JDBCConstraint(TABLE table, String name, String description, DBSEntityConstraintType constraintType, boolean persisted) {
+    protected JDBCTableConstraint(TABLE table, String name, String description, DBSEntityConstraintType constraintType, boolean persisted) {
         super(table, name, description, constraintType);
         this.persisted = persisted;
     }

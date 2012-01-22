@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
+import org.jkiss.dbeaver.model.struct.DBSTableForeignKeyColumn;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
+import org.jkiss.dbeaver.model.struct.DBSTableConstraintColumn;
+import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.util.Collection;
@@ -22,7 +22,7 @@ import java.util.Collection;
 /**
  * JDBC foreign key manager
  */
-public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCConstraint<TABLE_TYPE> & DBSForeignKey, TABLE_TYPE extends JDBCTable>
+public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCTableConstraint<TABLE_TYPE> & DBSTableForeignKey, TABLE_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
@@ -66,19 +66,19 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCConstraint<T
             .append(" ").append(foreignKey.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
-        final Collection<? extends DBSConstraintColumn> columns = command.getObject().getColumns(VoidProgressMonitor.INSTANCE);
+        final Collection<? extends DBSTableConstraintColumn> columns = command.getObject().getColumns(VoidProgressMonitor.INSTANCE);
         boolean firstColumn = true;
-        for (DBSConstraintColumn constraintColumn : columns) {
+        for (DBSTableConstraintColumn constraintColumn : columns) {
             if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
             decl.append(constraintColumn.getName());
         }
-        decl.append(") REFERENCES ").append(foreignKey.getReferencedKey().getTable().getFullQualifiedName()).append("("); //$NON-NLS-1$ //$NON-NLS-2$
+        decl.append(") REFERENCES ").append(foreignKey.getReferencedConstraint().getTable().getFullQualifiedName()).append("("); //$NON-NLS-1$ //$NON-NLS-2$
         firstColumn = true;
-        for (DBSConstraintColumn constraintColumn : columns) {
+        for (DBSTableConstraintColumn constraintColumn : columns) {
             if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
-            decl.append(((DBSForeignKeyColumn) constraintColumn).getReferencedColumn().getName());
+            decl.append(((DBSTableForeignKeyColumn) constraintColumn).getReferencedColumn().getName());
         }
         decl.append(")"); //$NON-NLS-1$
         if (foreignKey.getDeleteRule() != null && !CommonUtils.isEmpty(foreignKey.getDeleteRule().getClause())) {

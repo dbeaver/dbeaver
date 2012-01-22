@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -136,7 +135,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     }
 
     @Association
-    public Collection<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return indexCache.getObjects(monitor, this, null);
@@ -307,7 +306,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Index cache implementation
      */
-    class IndexCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLIndex, MySQLIndexColumn> {
+    class IndexCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableIndex, MySQLTableIndexColumn> {
         protected IndexCache()
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
@@ -333,7 +332,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return dbStat;
         }
 
-        protected MySQLIndex fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String indexName, ResultSet dbResult)
+        protected MySQLTableIndex fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NON_UNIQUE) != 0;
@@ -352,7 +351,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
             final String comment = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COMMENT);
 
-            return new MySQLIndex(
+            return new MySQLTableIndex(
                 parent,
                 isNonUnique,
                 indexName,
@@ -360,9 +359,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 comment);
         }
 
-        protected MySQLIndexColumn fetchObjectRow(
+        protected MySQLTableIndexColumn fetchObjectRow(
             JDBCExecutionContext context,
-            MySQLTable parent, MySQLIndex object, ResultSet dbResult)
+            MySQLTable parent, MySQLTableIndex object, ResultSet dbResult)
             throws SQLException, DBException
         {
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_SEQ_IN_INDEX);
@@ -376,7 +375,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 return null;
             }
 
-            return new MySQLIndexColumn(
+            return new MySQLTableIndexColumn(
                 object,
                 tableColumn,
                 ordinalPosition,
@@ -384,17 +383,17 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 nullable);
         }
 
-        protected Collection<MySQLIndex> getObjectsCache(MySQLTable parent)
+        protected Collection<MySQLTableIndex> getObjectsCache(MySQLTable parent)
         {
             return parent.getIndexesCache();
         }
 
-        protected void cacheObjects(MySQLTable parent, List<MySQLIndex> indexes)
+        protected void cacheObjects(MySQLTable parent, List<MySQLTableIndex> indexes)
         {
             parent.setIndexes(indexes);
         }
 
-        protected void cacheChildren(MySQLIndex index, List<MySQLIndexColumn> rows)
+        protected void cacheChildren(MySQLTableIndex index, List<MySQLTableIndexColumn> rows)
         {
             index.setColumns(rows);
         }
@@ -403,7 +402,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Constraint cache implementation
      */
-    class ConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLConstraint, MySQLConstraintColumn> {
+    class ConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableConstraint, MySQLTableConstraintColumn> {
         protected ConstraintCache()
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
@@ -429,21 +428,21 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return dbStat;
         }
 
-        protected MySQLConstraint fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String constraintName, ResultSet dbResult)
+        protected MySQLTableConstraint fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String constraintName, ResultSet dbResult)
             throws SQLException, DBException
         {
             if (constraintName.equals("PRIMARY")) {
-                return new MySQLConstraint(
+                return new MySQLTableConstraint(
                     parent, constraintName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
             } else {
-                return new MySQLConstraint(
+                return new MySQLTableConstraint(
                     parent, constraintName, null, DBSEntityConstraintType.UNIQUE_KEY, true);
             }
         }
 
-        protected MySQLConstraintColumn fetchObjectRow(
+        protected MySQLTableConstraintColumn fetchObjectRow(
             JDBCExecutionContext context,
-            MySQLTable parent, MySQLConstraint object, ResultSet dbResult)
+            MySQLTable parent, MySQLTableConstraint object, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
@@ -454,23 +453,23 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION);
 
-            return new MySQLConstraintColumn(
+            return new MySQLTableConstraintColumn(
                 object,
                 column,
                 ordinalPosition);
         }
 
-        protected Collection<MySQLConstraint> getObjectsCache(MySQLTable parent)
+        protected Collection<MySQLTableConstraint> getObjectsCache(MySQLTable parent)
         {
             return parent.getUniqueKeysCache();
         }
 
-        protected void cacheObjects(MySQLTable parent, List<MySQLConstraint> constraints)
+        protected void cacheObjects(MySQLTable parent, List<MySQLTableConstraint> constraints)
         {
             parent.cacheUniqueKeys(constraints);
         }
 
-        protected void cacheChildren(MySQLConstraint constraint, List<MySQLConstraintColumn> rows)
+        protected void cacheChildren(MySQLTableConstraint constraint, List<MySQLTableConstraintColumn> rows)
         {
             constraint.setColumns(rows);
         }

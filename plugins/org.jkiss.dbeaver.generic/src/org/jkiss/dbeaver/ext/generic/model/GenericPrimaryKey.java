@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -14,11 +14,11 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * GenericConstraint
+ * GenericTableConstraint
  */
-public class GenericPrimaryKey extends GenericConstraint
+public class GenericPrimaryKey extends GenericTableConstraint
 {
-    private List<GenericConstraintColumn> columns;
+    private List<GenericTableConstraintColumn> columns;
 
     public GenericPrimaryKey(GenericTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
@@ -33,32 +33,32 @@ public class GenericPrimaryKey extends GenericConstraint
     {
         super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType(), constraint.isPersisted());
         if (constraint.columns != null) {
-            this.columns = new ArrayList<GenericConstraintColumn>(constraint.columns.size());
-            for (GenericConstraintColumn sourceColumn : constraint.columns) {
-                this.columns.add(new GenericConstraintColumn(this, sourceColumn));
+            this.columns = new ArrayList<GenericTableConstraintColumn>(constraint.columns.size());
+            for (GenericTableConstraintColumn sourceColumn : constraint.columns) {
+                this.columns.add(new GenericTableConstraintColumn(this, sourceColumn));
             }
         }
     }
 
-    public List<GenericConstraintColumn> getColumns(DBRProgressMonitor monitor)
+    public List<GenericTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
-    public void addColumn(GenericConstraintColumn column)
+    public void addColumn(GenericTableConstraintColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<GenericConstraintColumn>();
+            columns = new ArrayList<GenericTableConstraintColumn>();
         }
         this.columns.add(column);
     }
 
-    void setColumns(List<GenericConstraintColumn> columns)
+    void setColumns(List<GenericTableConstraintColumn> columns)
     {
         this.columns = columns;
         if (!CommonUtils.isEmpty(this.columns) && this.columns.size() > 1) {
-            Collections.sort(columns, new Comparator<GenericConstraintColumn>() {
-                public int compare(GenericConstraintColumn o1, GenericConstraintColumn o2)
+            Collections.sort(columns, new Comparator<GenericTableConstraintColumn>() {
+                public int compare(GenericTableConstraintColumn o1, GenericTableConstraintColumn o2)
                 {
                     return o1.getOrdinalPosition() - o2.getOrdinalPosition();
                 }
@@ -69,7 +69,7 @@ public class GenericPrimaryKey extends GenericConstraint
     public boolean hasColumn(GenericTableColumn column)
     {
         if (this.columns != null) {
-            for (GenericConstraintColumn constColumn : columns) {
+            for (GenericTableConstraintColumn constColumn : columns) {
                 if (constColumn.getTableColumn() == column) {
                     return true;
                 }

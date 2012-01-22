@@ -1,21 +1,21 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
+import org.jkiss.dbeaver.model.struct.DBSTableForeignKeyColumn;
 
 /**
- * GenericConstraintColumn
+ * GenericTableConstraintColumn
  */
-public class GenericForeignKeyColumn extends GenericConstraintColumn implements DBSForeignKeyColumn
+public class GenericTableForeignKeyColumnTable extends GenericTableConstraintColumn implements DBSTableForeignKeyColumn
 {
     private GenericTableColumn referencedColumn;
 
-    public GenericForeignKeyColumn(
-        GenericForeignKey constraint,
+    public GenericTableForeignKeyColumnTable(
+        GenericTableForeignKey constraint,
         GenericTableColumn tableColumn,
         int ordinalPosition,
         GenericTableColumn referencedColumn)

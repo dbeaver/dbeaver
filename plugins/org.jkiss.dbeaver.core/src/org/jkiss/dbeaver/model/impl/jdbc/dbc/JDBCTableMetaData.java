@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
@@ -112,15 +112,15 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
             // Check constraints
-            Collection<? extends DBSConstraint> uniqueKeys = table.getConstraints(monitor);
+            Collection<? extends DBSTableConstraint> uniqueKeys = table.getConstraints(monitor);
             if (!CommonUtils.isEmpty(uniqueKeys)) {
-                for (DBSConstraint constraint : uniqueKeys) {
+                for (DBSTableConstraint constraint : uniqueKeys) {
                     if (constraint.getConstraintType().isUnique()) {
                         // We need ALL columns from this constraint
-                        Collection<? extends DBSConstraintColumn> constrColumns = constraint.getColumns(monitor);
+                        Collection<? extends DBSTableConstraintColumn> constrColumns = constraint.getColumns(monitor);
                         if (!CommonUtils.isEmpty(constrColumns)) {
                             List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
-                            for (DBSConstraintColumn constrColumn : constrColumns) {
+                            for (DBSTableConstraintColumn constrColumn : constrColumns) {
                                 JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, constrColumn.getTableColumn());
                                 if (rsColumn == null) {
                                     break;
@@ -139,15 +139,15 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             }
             if (identifiers.isEmpty()) {
                 // Check indexes only if no unique constraints found
-                Collection<? extends DBSIndex> indexes = table.getIndexes(monitor);
+                Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
-                    for (DBSIndex index : indexes) {
+                    for (DBSTableIndex index : indexes) {
                         if (index.isUnique()) {
                             // We need ALL columns from this constraint
-                            Collection<? extends DBSIndexColumn> constrColumns = index.getColumns(monitor);
+                            Collection<? extends DBSTableIndexColumn> constrColumns = index.getColumns(monitor);
                             if (!CommonUtils.isEmpty(constrColumns)) {
                                 List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
-                                for (DBSIndexColumn indexColumn : constrColumns) {
+                                for (DBSTableIndexColumn indexColumn : constrColumns) {
                                     JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, indexColumn.getTableColumn());
                                     if (rsColumn == null) {
                                         break;

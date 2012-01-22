@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Index cache implementation
  */
-class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericIndex, GenericIndexColumn> {
+class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericTableIndex, GenericTableIndexColumn> {
 
     IndexCache(TableCache tableCache)
     {
@@ -53,7 +53,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         }
     }
 
-    protected GenericIndex fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String indexName, ResultSet dbResult)
+    protected GenericTableIndex fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String indexName, ResultSet dbResult)
         throws SQLException, DBException
     {
         boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
@@ -70,7 +70,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             default: indexType = DBSIndexType.UNKNOWN; break;
         }
 
-        return new GenericIndex(
+        return new GenericTableIndex(
             parent,
             isNonUnique,
             indexQualifier,
@@ -80,9 +80,9 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             true);
     }
 
-    protected GenericIndexColumn fetchObjectRow(
+    protected GenericTableIndexColumn fetchObjectRow(
         JDBCExecutionContext context,
-        GenericTable parent, GenericIndex object, ResultSet dbResult)
+        GenericTable parent, GenericTableIndex object, ResultSet dbResult)
         throws SQLException, DBException
     {
         int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
@@ -95,24 +95,24 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             return null;
         }
 
-        return new GenericIndexColumn(
+        return new GenericTableIndexColumn(
             object,
             tableColumn,
             ordinalPosition,
             !"D".equalsIgnoreCase(ascOrDesc));
     }
 
-    protected Collection<GenericIndex> getObjectsCache(GenericTable parent)
+    protected Collection<GenericTableIndex> getObjectsCache(GenericTable parent)
     {
         return parent.getIndexesCache();
     }
 
-    protected void cacheObjects(GenericTable parent, List<GenericIndex> indexes)
+    protected void cacheObjects(GenericTable parent, List<GenericTableIndex> indexes)
     {
         parent.setIndexes(indexes);
     }
 
-    protected void cacheChildren(GenericIndex index, List<GenericIndexColumn> rows)
+    protected void cacheChildren(GenericTableIndex index, List<GenericTableIndexColumn> rows)
     {
         index.setColumns(rows);
     }

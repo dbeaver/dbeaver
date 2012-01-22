@@ -38,7 +38,7 @@ public interface GenericStructContainer extends DBSObject, DBSObjectContainer
 
     GenericTable getTable(DBRProgressMonitor monitor, String name) throws DBException;
 
-    Collection<GenericIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
+    Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
 
     Collection<GenericPackage> getPackages(DBRProgressMonitor monitor) throws DBException;
 

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.struct.AbstractIndex;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -14,8 +14,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * JDBC abstract index
  */
-public abstract class JDBCIndex<TABLE extends JDBCTable>
-    extends AbstractIndex
+public abstract class JDBCTableIndex<TABLE extends JDBCTable>
+    extends AbstractTableIndex
     implements DBPSaveableObject
 {
     private final TABLE table;
@@ -23,14 +23,14 @@ public abstract class JDBCIndex<TABLE extends JDBCTable>
     protected DBSIndexType indexType;
     private boolean persisted;
 
-    protected JDBCIndex(TABLE table, String name, DBSIndexType indexType, boolean persisted) {
+    protected JDBCTableIndex(TABLE table, String name, DBSIndexType indexType, boolean persisted) {
         this.table = table;
         this.name = name;
         this.indexType = indexType;
         this.persisted = persisted;
     }
 
-    protected JDBCIndex(JDBCIndex<TABLE> source)
+    protected JDBCTableIndex(JDBCTableIndex<TABLE> source)
     {
         this.table = source.table;
         this.name = source.name;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.struct;
@@ -7,11 +7,9 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSEntityAssociation
  */
-public interface DBSEntityAssociation extends DBSObject {
+public interface DBSEntityAssociation extends DBSEntityConstraint {
 
-    DBSEntityConstraintType getConstraintType();
-
-    DBSEntity getParentObject();
+    DBSEntityConstraint getReferencedConstraint();
 
     DBSEntity getAssociatedEntity();
 

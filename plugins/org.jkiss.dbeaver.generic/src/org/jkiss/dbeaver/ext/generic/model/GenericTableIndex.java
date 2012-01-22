@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCIndex;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
@@ -16,14 +16,14 @@ import java.util.List;
 /**
  * GenericTable
  */
-public class GenericIndex extends JDBCIndex<GenericTable>
+public class GenericTableIndex extends JDBCTableIndex<GenericTable>
 {
     private boolean nonUnique;
     private String qualifier;
     private long cardinality;
-    private List<GenericIndexColumn> columns;
+    private List<GenericTableIndexColumn> columns;
 
-    public GenericIndex(
+    public GenericTableIndex(
         GenericTable table,
         boolean nonUnique,
         String qualifier,
@@ -42,16 +42,16 @@ public class GenericIndex extends JDBCIndex<GenericTable>
      * Copy constructor
      * @param source source index
      */
-    GenericIndex(GenericIndex source)
+    GenericTableIndex(GenericTableIndex source)
     {
         super(source);
         this.nonUnique = source.nonUnique;
         this.qualifier = source.qualifier;
         this.cardinality = source.cardinality;
         if (source.columns != null) {
-            this.columns = new ArrayList<GenericIndexColumn>(source.columns.size());
-            for (GenericIndexColumn sourceColumn : source.columns) {
-                this.columns.add(new GenericIndexColumn(this, sourceColumn));
+            this.columns = new ArrayList<GenericTableIndexColumn>(source.columns.size());
+            for (GenericTableIndexColumn sourceColumn : source.columns) {
+                this.columns.add(new GenericTableIndexColumn(this, sourceColumn));
             }
         }
     }
@@ -85,25 +85,25 @@ public class GenericIndex extends JDBCIndex<GenericTable>
         return cardinality;
     }
 
-    public List<GenericIndexColumn> getColumns(DBRProgressMonitor monitor)
+    public List<GenericTableIndexColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
-    public GenericIndexColumn getColumn(String columnName)
+    public GenericTableIndexColumn getColumn(String columnName)
     {
         return DBUtils.findObject(columns, columnName);
     }
 
-    void setColumns(List<GenericIndexColumn> columns)
+    void setColumns(List<GenericTableIndexColumn> columns)
     {
         this.columns = columns;
     }
 
-    public void addColumn(GenericIndexColumn column)
+    public void addColumn(GenericTableIndexColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<GenericIndexColumn>();
+            columns = new ArrayList<GenericTableIndexColumn>();
         }
         columns.add(column);
     }

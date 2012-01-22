@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCIndex;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -20,15 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * OracleIndex
+ * OracleTableIndex
  */
-public class OracleIndex extends JDBCIndex<OracleTablePhysical> implements DBSObjectLazy
+public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implements DBSObjectLazy
 {
     private Object tablespace;
     private boolean nonUnique;
-    private List<OracleIndexColumn> columns;
+    private List<OracleTableIndexColumn> columns;
 
-    public OracleIndex(
+    public OracleTableIndex(
         OracleTablePhysical table,
         String indexName,
         ResultSet dbResult)
@@ -52,7 +52,7 @@ public class OracleIndex extends JDBCIndex<OracleTablePhysical> implements DBSOb
         this.tablespace = JDBCUtils.safeGetString(dbResult, "TABLESPACE_NAME");
     }
 
-    public OracleIndex(OracleTablePhysical parent, String name, boolean unique, DBSIndexType indexType)
+    public OracleTableIndex(OracleTablePhysical parent, String name, boolean unique, DBSIndexType indexType)
     {
         super(parent, name, indexType, false);
         this.nonUnique = !unique;
@@ -87,26 +87,26 @@ public class OracleIndex extends JDBCIndex<OracleTablePhysical> implements DBSOb
         return null;
     }
 
-    public List<OracleIndexColumn> getColumns(DBRProgressMonitor monitor)
+    public List<OracleTableIndexColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
     @Association
-    public OracleIndexColumn getColumn(String columnName)
+    public OracleTableIndexColumn getColumn(String columnName)
     {
         return DBUtils.findObject(columns, columnName);
     }
 
-    void setColumns(List<OracleIndexColumn> columns)
+    void setColumns(List<OracleTableIndexColumn> columns)
     {
         this.columns = columns;
     }
 
-    public void addColumn(OracleIndexColumn column)
+    public void addColumn(OracleTableIndexColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<OracleIndexColumn>();
+            columns = new ArrayList<OracleTableIndexColumn>();
         }
         columns.add(column);
     }

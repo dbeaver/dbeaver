@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -9,7 +13,7 @@ import java.util.Collection;
 /**
  * Inheritance
  */
-public class WMIClassInheritance implements DBSForeignKey
+public class WMIClassInheritance implements DBSTableForeignKey
 {
 
     private WMIClass superClass;
@@ -66,17 +70,17 @@ public class WMIClassInheritance implements DBSForeignKey
         return subClass;
     }
 
-    public Collection<? extends DBSConstraintColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<? extends DBSTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
     {
         return null;
     }
 
-    public DBSConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
+    public DBSTableConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
     {
         return null;
     }
 
-    public DBSConstraint getReferencedKey()
+    public DBSTableConstraint getReferencedConstraint()
     {
         return null;
     }

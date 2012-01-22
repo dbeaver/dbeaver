@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -37,7 +37,7 @@ import java.util.Map;
 public class OracleDataType extends OracleObject
     implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObjectEx {
 
-    static final Log log = LogFactory.getLog(OracleForeignKey.class);
+    static final Log log = LogFactory.getLog(OracleTableForeignKey.class);
 
     static class TypeDesc {
         final int valueType;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
@@ -278,9 +278,9 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         if (table == null) {
             return false;
         }
-        Collection<? extends DBSForeignKey> foreignKeys = table.getAssociations(monitor);
+        Collection<? extends DBSTableForeignKey> foreignKeys = table.getAssociations(monitor);
         if (foreignKeys != null) {
-            for (DBSForeignKey fk : foreignKeys) {
+            for (DBSTableForeignKey fk : foreignKeys) {
                 if (fk.getColumn(monitor, tableColumn) != null) {
                     return true;
                 }
@@ -289,10 +289,10 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return false;
     }
 
-    public List<DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor)
+    public List<DBSTableForeignKey> getForeignKeys(DBRProgressMonitor monitor)
         throws DBException
     {
-        List<DBSForeignKey> refs = new ArrayList<DBSForeignKey>();
+        List<DBSTableForeignKey> refs = new ArrayList<DBSTableForeignKey>();
         DBSTableColumn tableColumn = getTableColumn(monitor);
         if (tableColumn == null) {
             return refs;
@@ -301,9 +301,9 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         if (table == null) {
             return refs;
         }
-        Collection<? extends DBSForeignKey> foreignKeys = table.getAssociations(monitor);
+        Collection<? extends DBSTableForeignKey> foreignKeys = table.getAssociations(monitor);
         if (foreignKeys != null) {
-            for (DBSForeignKey fk : foreignKeys) {
+            for (DBSTableForeignKey fk : foreignKeys) {
                 if (fk.getColumn(monitor, tableColumn) != null) {
                     refs.add(fk);
                 }

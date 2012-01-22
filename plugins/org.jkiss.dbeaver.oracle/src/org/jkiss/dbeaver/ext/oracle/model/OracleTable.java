@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -31,7 +31,7 @@ public class OracleTable extends OracleTablePhysical
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
-    private List<OracleForeignKey> foreignKeys;
+    private List<OracleTableForeignKey> foreignKeys;
 
     public OracleTable(OracleSchema schema, String name)
     {
@@ -98,15 +98,15 @@ public class OracleTable extends OracleTablePhysical
         return nested;
     }
 
-    public List<OracleForeignKey> getReferences(DBRProgressMonitor monitor)
+    public List<OracleTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
-        List<OracleForeignKey> refs = new ArrayList<OracleForeignKey>();
+        List<OracleTableForeignKey> refs = new ArrayList<OracleTableForeignKey>();
         // This is dummy implementation
         // Get references from this schema only
-        final Collection<OracleForeignKey> allForeignKeys =
+        final Collection<OracleTableForeignKey> allForeignKeys =
             getContainer().foreignKeyCache.getObjects(monitor, getContainer(), null);
-        for (OracleForeignKey constraint : allForeignKeys) {
+        for (OracleTableForeignKey constraint : allForeignKeys) {
             if (constraint.getReferencedTable() == this) {
                 refs.add(constraint);
             }
@@ -115,7 +115,7 @@ public class OracleTable extends OracleTablePhysical
     }
 
     @Association
-    public List<OracleForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public List<OracleTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {
@@ -124,17 +124,17 @@ public class OracleTable extends OracleTablePhysical
         return foreignKeys;
     }
 
-    void setForeignKeys(List<OracleForeignKey> constraints)
+    void setForeignKeys(List<OracleTableForeignKey> constraints)
     {
         this.foreignKeys = constraints;
     }
 
-    List<OracleForeignKey> getForeignKeysCache()
+    List<OracleTableForeignKey> getForeignKeysCache()
     {
         return foreignKeys;
     }
 
-//    public OracleForeignKey getForeignKey(DBRProgressMonitor monitor, String fkName)
+//    public OracleTableForeignKey getForeignKey(DBRProgressMonitor monitor, String fkName)
 //        throws DBException
 //    {
 //        return DBUtils.findObject(getForeignKeys(monitor), fkName);

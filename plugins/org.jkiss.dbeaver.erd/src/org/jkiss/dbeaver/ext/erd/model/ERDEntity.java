@@ -29,7 +29,7 @@ public class ERDEntity extends ERDObject<DBSTable>
 
 	private List<ERDAssociation> primaryKeyRelationships = new ArrayList<ERDAssociation>();
 	private List<ERDAssociation> foreignKeyRelationships = new ArrayList<ERDAssociation>();
-    private List<DBSForeignKey> unresolvedKeys;
+    private List<DBSTableForeignKey> unresolvedKeys;
 
     private boolean primary = false;
     private ERDLogicalPrimaryKey logicalPK;
@@ -226,15 +226,15 @@ public class ERDEntity extends ERDObject<DBSTable>
         try {
             Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
             // Make associations
-            Collection<? extends DBSForeignKey> fks = getObject().getAssociations(monitor);
+            Collection<? extends DBSTableForeignKey> fks = getObject().getAssociations(monitor);
             if (fks != null) {
-                for (DBSForeignKey fk : fks) {
+                for (DBSTableForeignKey fk : fks) {
                     fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
                     ERDEntity entity2 = tableMap.get(fk.getAssociatedEntity());
                     if (entity2 == null) {
                         //log.debug("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
                         if (unresolvedKeys == null) {
-                            unresolvedKeys = new ArrayList<DBSForeignKey>();
+                            unresolvedKeys = new ArrayList<DBSTableForeignKey>();
                         }
                         unresolvedKeys.add(fk);
                     } else {
@@ -262,9 +262,9 @@ public class ERDEntity extends ERDObject<DBSTable>
         if (CommonUtils.isEmpty(unresolvedKeys)) {
             return;
         }
-        for (Iterator<DBSForeignKey> iter = unresolvedKeys.iterator(); iter.hasNext(); ) {
-            final DBSForeignKey fk = iter.next();
-            ERDEntity refEntity = tableMap.get(fk.getReferencedKey().getTable());
+        for (Iterator<DBSTableForeignKey> iter = unresolvedKeys.iterator(); iter.hasNext(); ) {
+            final DBSTableForeignKey fk = iter.next();
+            ERDEntity refEntity = tableMap.get(fk.getReferencedConstraint().getTable());
             if (refEntity != null) {
                 new ERDAssociation(fk, refEntity, this, reflect);
                 iter.remove();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
@@ -8,15 +8,15 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCIndex;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
+import org.jkiss.dbeaver.model.struct.DBSTableIndexColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 /**
  * JDBC constraint manager
  */
-public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
+public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCTableIndex<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
@@ -42,7 +42,7 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCIndex<TABLE_TYPE>
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         boolean firstColumn = true;
-        for (DBSIndexColumn indexColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
+        for (DBSTableIndexColumn indexColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
             if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
             decl.append(indexColumn.getName());

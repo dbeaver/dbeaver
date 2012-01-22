@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
@@ -19,10 +19,10 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 /**
  * Generic foreign manager
  */
-public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKey, MySQLTable> {
+public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLTableForeignKey, MySQLTable> {
 
 
-    protected MySQLForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLTable table, Object from)
+    protected MySQLTableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLTable table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
             workbenchWindow.getShell(),
@@ -38,11 +38,11 @@ public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKe
             return null;
         }
 
-        final MySQLForeignKey foreignKey = new MySQLForeignKey(
+        final MySQLTableForeignKey foreignKey = new MySQLTableForeignKey(
             table,
             null,
             null,
-            (MySQLConstraint) editDialog.getUniqueConstraint(),
+            (MySQLTableConstraint) editDialog.getUniqueConstraint(),
             editDialog.getOnDeleteRule(),
             editDialog.getOnUpdateRule(),
             false);
@@ -52,7 +52,7 @@ public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKe
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(
-                new MySQLForeignKeyColumn(
+                new MySQLTableForeignKeyColumnTable(
                     foreignKey,
                     (MySQLTableColumn) tableColumn.getOwnColumn(),
                     colIndex++,
@@ -61,7 +61,7 @@ public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLForeignKe
         return foreignKey;
     }
 
-    protected String getDropForeignKeyPattern(MySQLForeignKey foreignKey)
+    protected String getDropForeignKeyPattern(MySQLTableForeignKey foreignKey)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }

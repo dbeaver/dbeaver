@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -101,7 +101,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
 
     @Association
-    public Collection<OracleIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<OracleTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return indexCache.getObjects(monitor, this, null);
@@ -385,7 +385,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     /**
      * Index cache implementation
      */
-    class ConstraintCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleConstraint, OracleConstraintColumn> {
+    class ConstraintCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableConstraint, OracleTableConstraintColumn> {
         protected ConstraintCache()
         {
             super(tableCache, OracleTableBase.class, "TABLE_NAME", "CONSTRAINT_NAME");
@@ -415,41 +415,41 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return dbStat;
         }
 
-        protected OracleConstraint fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTableBase parent, String indexName, ResultSet dbResult)
+        protected OracleTableConstraint fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTableBase parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleConstraint(parent, dbResult);
+            return new OracleTableConstraint(parent, dbResult);
         }
 
-        protected OracleConstraintColumn fetchObjectRow(
+        protected OracleTableConstraintColumn fetchObjectRow(
             JDBCExecutionContext context,
-            OracleTableBase parent, OracleConstraint object, ResultSet dbResult)
+            OracleTableBase parent, OracleTableConstraint object, ResultSet dbResult)
             throws SQLException, DBException
         {
             final OracleTableColumn tableColumn = getTableColumn(context, parent, dbResult);
-            return tableColumn == null ? null : new OracleConstraintColumn(
+            return tableColumn == null ? null : new OracleTableConstraintColumn(
                 object,
                 tableColumn,
                 JDBCUtils.safeGetInt(dbResult, "POSITION"));
         }
 
-        protected Collection<OracleConstraint> getObjectsCache(OracleTableBase parent)
+        protected Collection<OracleTableConstraint> getObjectsCache(OracleTableBase parent)
         {
             return parent.getConstraintsCache();
         }
 
-        protected void cacheObjects(OracleTableBase parent, List<OracleConstraint> constraints)
+        protected void cacheObjects(OracleTableBase parent, List<OracleTableConstraint> constraints)
         {
             parent.setConstraints(constraints);
         }
 
-        protected void cacheChildren(OracleConstraint constraint, List<OracleConstraintColumn> rows)
+        protected void cacheChildren(OracleTableConstraint constraint, List<OracleTableConstraintColumn> rows)
         {
             constraint.setColumns(rows);
         }
     }
 
-    class ForeignKeyCache extends JDBCCompositeCache<OracleSchema, OracleTable, OracleForeignKey, OracleForeignKeyColumn> {
+    class ForeignKeyCache extends JDBCCompositeCache<OracleSchema, OracleTable, OracleTableForeignKey, OracleTableForeignKeyColumnTable> {
         protected ForeignKeyCache()
         {
             super(tableCache, OracleTable.class, "TABLE_NAME", "CONSTRAINT_NAME");
@@ -490,36 +490,36 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return dbStat;
         }
 
-        protected OracleForeignKey fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTable parent, String indexName, ResultSet dbResult)
+        protected OracleTableForeignKey fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleForeignKey(context.getProgressMonitor(), parent, dbResult);
+            return new OracleTableForeignKey(context.getProgressMonitor(), parent, dbResult);
         }
 
-        protected OracleForeignKeyColumn fetchObjectRow(
+        protected OracleTableForeignKeyColumnTable fetchObjectRow(
             JDBCExecutionContext context,
-            OracleTable parent, OracleForeignKey object, ResultSet dbResult)
+            OracleTable parent, OracleTableForeignKey object, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleForeignKeyColumn(
+            return new OracleTableForeignKeyColumnTable(
                 object,
                 getTableColumn(context, parent, dbResult),
                 JDBCUtils.safeGetInt(dbResult, "POSITION"));
         }
 
-        protected Collection<OracleForeignKey> getObjectsCache(OracleTable parent)
+        protected Collection<OracleTableForeignKey> getObjectsCache(OracleTable parent)
         {
             return parent.getForeignKeysCache();
         }
 
-        protected void cacheObjects(OracleTable parent, List<OracleForeignKey> constraints)
+        protected void cacheObjects(OracleTable parent, List<OracleTableForeignKey> constraints)
         {
             parent.setForeignKeys(constraints);
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        protected void cacheChildren(OracleForeignKey foreignKey, List<OracleForeignKeyColumn> rows)
+        protected void cacheChildren(OracleTableForeignKey foreignKey, List<OracleTableForeignKeyColumnTable> rows)
         {
             foreignKey.setColumns((List)rows);
         }
@@ -529,7 +529,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     /**
      * Index cache implementation
      */
-    class IndexCache extends JDBCCompositeCache<OracleSchema, OracleTablePhysical, OracleIndex, OracleIndexColumn> {
+    class IndexCache extends JDBCCompositeCache<OracleSchema, OracleTablePhysical, OracleTableIndex, OracleTableIndexColumn> {
         protected IndexCache()
         {
             super(tableCache, OracleTablePhysical.class, "TABLE_NAME", "INDEX_NAME");
@@ -559,15 +559,15 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return dbStat;
         }
 
-        protected OracleIndex fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTablePhysical parent, String indexName, ResultSet dbResult)
+        protected OracleTableIndex fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTablePhysical parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleIndex(parent, indexName, dbResult);
+            return new OracleTableIndex(parent, indexName, dbResult);
         }
 
-        protected OracleIndexColumn fetchObjectRow(
+        protected OracleTableIndexColumn fetchObjectRow(
             JDBCExecutionContext context,
-            OracleTablePhysical parent, OracleIndex object, ResultSet dbResult)
+            OracleTablePhysical parent, OracleTableIndex object, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
@@ -580,24 +580,24 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 return null;
             }
 
-            return new OracleIndexColumn(
+            return new OracleTableIndexColumn(
                 object,
                 tableColumn,
                 ordinalPosition,
                 isAscending);
         }
 
-        protected Collection<OracleIndex> getObjectsCache(OracleTablePhysical parent)
+        protected Collection<OracleTableIndex> getObjectsCache(OracleTablePhysical parent)
         {
             return parent.getIndexesCache();
         }
 
-        protected void cacheObjects(OracleTablePhysical parent, List<OracleIndex> indexes)
+        protected void cacheObjects(OracleTablePhysical parent, List<OracleTableIndex> indexes)
         {
             parent.setIndexes(indexes);
         }
 
-        protected void cacheChildren(OracleIndex index, List<OracleIndexColumn> rows)
+        protected void cacheChildren(OracleTableIndex index, List<OracleTableIndexColumn> rows)
         {
             index.setColumns(rows);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.data;
@@ -56,12 +56,12 @@ public class DBDValueLocator implements DBPObject {
         return tableIdentifier;
     }
 
-    public DBSConstraint getUniqueConstraint()
+    public DBSTableConstraint getUniqueConstraint()
     {
         return tableIdentifier.getConstraint();
     }
 
-    public DBSIndex getUniqueIndex()
+    public DBSTableIndex getUniqueIndex()
     {
         return tableIdentifier.getIndex();
     }

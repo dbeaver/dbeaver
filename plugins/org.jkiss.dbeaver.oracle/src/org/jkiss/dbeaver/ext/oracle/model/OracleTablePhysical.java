@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -32,7 +32,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     //private boolean valid;
     private long rowCount;
     private Object tablespace;
-    private List<OracleIndex> indexes;
+    private List<OracleTableIndex> indexes;
     private boolean partitioned;
     private PartitionInfo partitionInfo;
     private PartitionCache partitionCache;
@@ -80,7 +80,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     }
 
     @Association
-    public List<OracleIndex> getIndexes(DBRProgressMonitor monitor)
+    public List<OracleTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (indexes == null) {
@@ -90,18 +90,18 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return indexes;
     }
 
-    public OracleIndex getIndexe(DBRProgressMonitor monitor, String name)
+    public OracleTableIndex getIndexe(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return DBUtils.findObject(getIndexes(monitor), name);
     }
 
-    Collection<OracleIndex> getIndexesCache()
+    Collection<OracleTableIndex> getIndexesCache()
     {
         return indexes;
     }
 
-    void setIndexes(List<OracleIndex> indexes)
+    void setIndexes(List<OracleTableIndex> indexes)
     {
         this.indexes = indexes;
     }

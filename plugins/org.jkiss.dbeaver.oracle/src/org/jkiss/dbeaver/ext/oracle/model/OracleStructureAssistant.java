@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -147,10 +147,10 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                         continue;
                     }
                     DBSObject constraint = null;
-                    if (hasFK && OracleConstraint.getConstraintType(constrType) == DBSEntityConstraintType.FOREIGN_KEY) {
+                    if (hasFK && OracleTableConstraint.getConstraintType(constrType) == DBSEntityConstraintType.FOREIGN_KEY) {
                         constraint = table.getForeignKey(monitor, constrName);
                     }
-                    if (hasConstraints && OracleConstraint.getConstraintType(constrType) != DBSEntityConstraintType.FOREIGN_KEY) {
+                    if (hasConstraints && OracleTableConstraint.getConstraintType(constrType) != DBSEntityConstraintType.FOREIGN_KEY) {
                         constraint = table.getConstraint(monitor, constrName);
                     }
                     if (constraint == null) {

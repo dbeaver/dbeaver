@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.edit;
@@ -9,7 +9,7 @@ import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.ext.generic.model.GenericConstraintColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -48,7 +48,7 @@ public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrima
         int colIndex = 1;
         for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
             primaryKey.addColumn(
-                new GenericConstraintColumn(
+                new GenericTableConstraintColumn(
                     primaryKey,
                     (GenericTableColumn) tableColumn,
                     colIndex++));

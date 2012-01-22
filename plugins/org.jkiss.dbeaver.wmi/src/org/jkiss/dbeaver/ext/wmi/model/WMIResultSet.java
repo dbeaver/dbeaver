@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
+import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.wmi.service.WMIConstants;
@@ -263,7 +263,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCTabl
             return false;
         }
 
-        public List<DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
+        public List<DBSTableForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException
         {
             return null;
         }

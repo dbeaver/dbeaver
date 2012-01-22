@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
@@ -16,37 +16,37 @@ import java.util.List;
  */
 public class JDBCTableIdentifier implements DBCTableIdentifier {
 
-    private DBSConstraint constraint;
-    private DBSIndex index;
+    private DBSTableConstraint constraint;
+    private DBSTableIndex index;
     private List<JDBCColumnMetaData> columns;
     private List<DBSTableColumn> tableColumns;
 
-    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSConstraint constraint, List<JDBCColumnMetaData> columns)
+    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSTableConstraint constraint, List<JDBCColumnMetaData> columns)
     {
         this.constraint = constraint;
         this.columns = columns;
         this.tableColumns = new ArrayList<DBSTableColumn>();
-        for (DBSConstraintColumn cColumn : constraint.getColumns(monitor)) {
+        for (DBSTableConstraintColumn cColumn : constraint.getColumns(monitor)) {
             tableColumns.add(cColumn.getTableColumn());
         }
     }
 
-    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSIndex index, List<JDBCColumnMetaData> columns)
+    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSTableIndex index, List<JDBCColumnMetaData> columns)
     {
         this.index = index;
         this.columns = columns;
         this.tableColumns = new ArrayList<DBSTableColumn>();
-        for (DBSIndexColumn cColumn : index.getColumns(monitor)) {
+        for (DBSTableIndexColumn cColumn : index.getColumns(monitor)) {
             tableColumns.add(cColumn.getTableColumn());
         }
     }
 
-    public DBSConstraint getConstraint()
+    public DBSTableConstraint getConstraint()
     {
         return constraint;
     }
 
-    public DBSIndex getIndex()
+    public DBSTableIndex getIndex()
     {
         return index;
     }

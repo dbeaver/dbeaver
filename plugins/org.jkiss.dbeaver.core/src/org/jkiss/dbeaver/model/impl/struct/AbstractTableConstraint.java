@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.struct;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -14,14 +13,14 @@ import java.util.Collection;
 /**
  * GenericConstraint
  */
-public abstract class AbstractConstraint<TABLE extends DBSTable> implements DBSConstraint
+public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements DBSTableConstraint
 {
     private final TABLE table;
     private String name;
     protected String description;
     protected DBSEntityConstraintType constraintType;
 
-    protected AbstractConstraint(TABLE table, String name, String description, DBSEntityConstraintType constraintType)
+    protected AbstractTableConstraint(TABLE table, String name, String description, DBSEntityConstraintType constraintType)
     {
         this.table = table;
         this.name = name;
@@ -35,11 +34,11 @@ public abstract class AbstractConstraint<TABLE extends DBSTable> implements DBSC
         return table;
     }
 
-    public DBSConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
+    public DBSTableConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
     {
-        Collection<? extends DBSConstraintColumn> columns = getColumns(monitor);
+        Collection<? extends DBSTableConstraintColumn> columns = getColumns(monitor);
         if (columns != null) {
-            for (DBSConstraintColumn constraintColumn : columns) {
+            for (DBSTableConstraintColumn constraintColumn : columns) {
                 if (constraintColumn.getTableColumn() == tableColumn) {
                     return constraintColumn;
                 }
@@ -48,11 +47,11 @@ public abstract class AbstractConstraint<TABLE extends DBSTable> implements DBSC
         return null;
     }
 
-    public DBSConstraintColumn getColumn(DBRProgressMonitor monitor, String columnName)
+    public DBSTableConstraintColumn getColumn(DBRProgressMonitor monitor, String columnName)
     {
-        Collection<? extends DBSConstraintColumn> columns = getColumns(monitor);
+        Collection<? extends DBSTableConstraintColumn> columns = getColumns(monitor);
         if (columns != null) {
-            for (DBSConstraintColumn constraintColumn : columns) {
+            for (DBSTableConstraintColumn constraintColumn : columns) {
                 if (constraintColumn.getTableColumn().getName().equals(columnName)) {
                     return constraintColumn;
                 }
