@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -33,13 +33,13 @@ public class EntityLayoutEditPolicy extends FlowLayoutEditPolicy
 		if (!(after instanceof AttributePart))
 			return null;
 
-		ERDTableColumn toMove = (ERDTableColumn) child.getModel();
-		ERDTableColumn afterModel = (ERDTableColumn) after.getModel();
+		ERDEntityAttribute toMove = (ERDEntityAttribute) child.getModel();
+		ERDEntityAttribute afterModel = (ERDEntityAttribute) after.getModel();
 
 		EntityPart originalEntityPart = (EntityPart) child.getParent();
-		ERDTable originalTable = (ERDTable) originalEntityPart.getModel();
+		ERDEntity originalTable = (ERDEntity) originalEntityPart.getModel();
 		EntityPart newEntityPart = (EntityPart) after.getParent();
-		ERDTable newTable = newEntityPart.getTable();
+		ERDEntity newTable = newEntityPart.getTable();
 
 		int oldIndex = originalEntityPart.getChildren().indexOf(child);
 		int newIndex = newEntityPart.getChildren().indexOf(after);
@@ -60,10 +60,10 @@ public class EntityLayoutEditPolicy extends FlowLayoutEditPolicy
 /*
 		if (after != null)
 		{
-			ERDTableColumn childModel = (ERDTableColumn) child.getModel();
-			ERDTableColumn afterModel = (ERDTableColumn) after.getModel();
+			ERDEntityAttribute childModel = (ERDEntityAttribute) child.getModel();
+			ERDEntityAttribute afterModel = (ERDEntityAttribute) after.getModel();
 
-			ERDTable parentTable = (ERDTable) getHost().getModel();
+			ERDEntity parentTable = (ERDEntity) getHost().getModel();
 			int oldIndex = getHost().getChildren().indexOf(child);
 			int newIndex = getHost().getChildren().indexOf(after);
 

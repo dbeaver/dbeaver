@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -23,11 +23,11 @@ class ERDEditPartFactory implements EditPartFactory
         EditPart part = null;
         if (model instanceof EntityDiagram) {
             part = new DiagramPart();
-        } else if (model instanceof ERDTable) {
+        } else if (model instanceof ERDEntity) {
             part = new EntityPart();
         } else if (model instanceof ERDAssociation) {
             part = new AssociationPart();
-        } else if (model instanceof ERDTableColumn) {
+        } else if (model instanceof ERDEntityAttribute) {
             part = new AttributePart();
         } else if (model instanceof ERDNote) {
             part = new NotePart();

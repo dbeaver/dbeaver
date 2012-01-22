@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.model;
@@ -22,9 +22,9 @@ public class ERDLogicalForeignKey extends AbstractConstraint<DBSTable> implement
     private ERDLogicalPrimaryKey pk;
     private List<? extends DBSForeignKeyColumn> columns = new ArrayList<DBSForeignKeyColumn>();
 
-    public ERDLogicalForeignKey(ERDTable table, String name, String description, ERDLogicalPrimaryKey pk)
+    public ERDLogicalForeignKey(ERDEntity entity, String name, String description, ERDLogicalPrimaryKey pk)
     {
-        super(table.getObject(), name, description, ERDConstants.CONSTRAINT_LOGICAL_FK);
+        super(entity.getObject(), name, description, ERDConstants.CONSTRAINT_LOGICAL_FK);
         this.pk = pk;
     }
 

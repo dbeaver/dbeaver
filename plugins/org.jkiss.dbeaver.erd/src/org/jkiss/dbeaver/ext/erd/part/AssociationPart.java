@@ -119,7 +119,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 connBends.add(new AbsoluteBendpoint(bend.x, bend.y));
             }
             conn.setRoutingConstraint(connBends);
-        } else if (association.getPrimaryKeyTable() == association.getForeignKeyTable()) {
+        } else if (association.getPrimaryKeyEntity() == association.getForeignKeyEntity()) {
             // Self link
             final IFigure entityFigure = ((GraphicalEditPart) getSource()).getFigure();
             //EntityPart entity = (EntityPart) connEdge.source.getParent().data;

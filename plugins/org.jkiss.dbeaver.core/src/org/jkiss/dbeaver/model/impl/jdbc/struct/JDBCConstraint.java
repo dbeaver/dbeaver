@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
@@ -85,7 +85,7 @@ public abstract class JDBCConstraint<TABLE extends JDBCTable>
         int maxResults)
         throws DBException
     {
-        if (keyColumn.getTable() != this.getTable()) {
+        if (keyColumn.getParentObject() != this.getTable()) {
             throw new IllegalArgumentException("Bad key column argument");
         }
         DBPDataSource dataSource = keyColumn.getDataSource();
@@ -96,7 +96,7 @@ public abstract class JDBCConstraint<TABLE extends JDBCTable>
         if (descColumn != null) {
             query.append(", ").append(DBUtils.getQuotedIdentifier(dataSource, descColumn.getName()));
         }
-        query.append(" FROM ").append(keyColumn.getTable().getFullQualifiedName());
+        query.append(" FROM ").append(keyColumn.getParentObject().getFullQualifiedName());
         List<String> conditions = new ArrayList<String>();
         if (keyPattern != null) {
             if (keyPattern instanceof CharSequence) {
@@ -196,7 +196,7 @@ public abstract class JDBCConstraint<TABLE extends JDBCTable>
     private DBSTableColumn getKeyDescriptionColumn(DBRProgressMonitor monitor, DBSTableColumn keyColumn)
         throws DBException
     {
-        Collection<? extends DBSTableColumn> allColumns = keyColumn.getTable().getColumns(monitor);
+        Collection<? extends DBSTableColumn> allColumns = keyColumn.getParentObject().getColumns(monitor);
         if (allColumns.size() == 1) {
             return null;
         }

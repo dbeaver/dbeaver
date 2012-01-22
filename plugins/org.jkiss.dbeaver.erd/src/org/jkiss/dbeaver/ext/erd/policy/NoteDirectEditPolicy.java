@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -31,7 +31,7 @@ public class NoteDirectEditPolicy extends DirectEditPolicy
 	{
 /*
 		EntityRenameCommand cmd = new EntityRenameCommand();
-		ERDTable table = (ERDTable) getHost().getModel();
+		ERDEntity table = (ERDEntity) getHost().getModel();
 		cmd.setTable(table);
 		cmd.setOldName(table.getName());
 		CellEditor cellEditor = request.getCellEditor();

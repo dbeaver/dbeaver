@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -10,7 +10,7 @@ package org.jkiss.dbeaver.ext.erd.command;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
@@ -26,7 +26,7 @@ public class EntityDeleteCommand extends Command
 {
 
     private EntityPart entityPart;
-	private ERDTable table;
+	private ERDEntity entity;
 	private EntityDiagram entityDiagram;
 	private int index = -1;
 	private List<ERDAssociation> foreignKeyRelationships = new ArrayList<ERDAssociation>();
@@ -36,29 +36,29 @@ public class EntityDeleteCommand extends Command
     public EntityDeleteCommand(EntityDiagram entityDiagram, EntityPart entityPart, Rectangle originalBounds) {
         this.entityDiagram = entityDiagram;
         this.entityPart = entityPart;
-        this.table = entityPart.getTable();
+        this.entity = entityPart.getTable();
         this.bounds = originalBounds;
     }
 
-    private void deleteRelationships(ERDTable t)
+    private void deleteRelationships(ERDEntity t)
 	{
 
 		this.foreignKeyRelationships.addAll(t.getForeignKeyRelationships());
 
-		//for all relationships where current table is foreign key
+		//for all relationships where current entity is foreign key
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = foreignKeyRelationships.get(i);
-			r.getPrimaryKeyTable().removePrimaryKeyRelationship(r, true);
+			r.getPrimaryKeyEntity().removePrimaryKeyRelationship(r, true);
 			t.removeForeignKeyRelationship(r, true);
 		}
 
-		//for all relationships where current table is primary key
+		//for all relationships where current entity is primary key
 		this.primaryKeyRelationships.addAll(t.getPrimaryKeyRelationships());
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = primaryKeyRelationships.get(i);
-			r.getForeignKeyTable().removeForeignKeyRelationship(r, true);
+			r.getForeignKeyEntity().removeForeignKeyRelationship(r, true);
 			t.removePrimaryKeyRelationship(r, true);
 		}
 	}
@@ -76,16 +76,16 @@ public class EntityDeleteCommand extends Command
 	 */
 	protected void primExecute()
 	{
-        // Put table's bound in init map - it could be used by EntityPart on undo
-        entityDiagram.addInitBounds(table, entityPart.getBounds());
+        // Put entity's bound in init map - it could be used by EntityPart on undo
+        entityDiagram.addInitBounds(entity, entityPart.getBounds());
 
         // Zero bounds - to let modifyBounds reflect on undo
         //entityPart.modifyBounds(new Rectangle(0, 0, 0, 0));
 
         // Delete entity
-		deleteRelationships(table);
-		index = entityDiagram.getTables().indexOf(table);
-		entityDiagram.removeTable(table, true);
+		deleteRelationships(entity);
+		index = entityDiagram.getEntities().indexOf(entity);
+		entityDiagram.removeTable(entity, true);
 	}
 
 	/**
@@ -101,15 +101,15 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = foreignKeyRelationships.get(i);
-			r.getForeignKeyTable().addForeignKeyRelationship(r, true);
-			r.getPrimaryKeyTable().addPrimaryKeyRelationship(r, true);
+			r.getForeignKeyEntity().addForeignKeyRelationship(r, true);
+			r.getPrimaryKeyEntity().addPrimaryKeyRelationship(r, true);
 		}
 		foreignKeyRelationships.clear();
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = primaryKeyRelationships.get(i);
-			r.getForeignKeyTable().addForeignKeyRelationship(r, true);
-			r.getPrimaryKeyTable().addPrimaryKeyRelationship(r, true);
+			r.getForeignKeyEntity().addForeignKeyRelationship(r, true);
+			r.getPrimaryKeyEntity().addPrimaryKeyRelationship(r, true);
 		}
 		primaryKeyRelationships.clear();
 	}
@@ -119,7 +119,7 @@ public class EntityDeleteCommand extends Command
 	 */
 	public void undo()
 	{
-		entityDiagram.addTable(table, index, true);
+		entityDiagram.addTable(entity, index, true);
 		restoreRelationships();
 		//entityPart.modifyBounds(bounds);
 	}

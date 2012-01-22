@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.part;
@@ -7,10 +7,7 @@ package org.jkiss.dbeaver.ext.erd.part;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
-import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStackListener;
-import org.eclipse.gef.editpolicies.XYLayoutEditPolicy;
-import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
@@ -22,11 +19,10 @@ import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.layout.GraphLayoutAuto;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.DiagramXYLayoutPolicy;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -308,10 +304,10 @@ public class DiagramPart extends PropertyAwarePart {
         return super.getAdapter(key);
     }
 
-    public EntityPart getEntityPart(ERDTable erdTable)
+    public EntityPart getEntityPart(ERDEntity erdEntity)
     {
         for (Object child : getChildren()) {
-            if (child instanceof EntityPart && ((EntityPart) child).getTable() == erdTable) {
+            if (child instanceof EntityPart && ((EntityPart) child).getTable() == erdEntity) {
                 return (EntityPart) child;
             }
         }

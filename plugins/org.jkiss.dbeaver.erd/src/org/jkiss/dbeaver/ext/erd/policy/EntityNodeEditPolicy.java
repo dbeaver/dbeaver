@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -32,7 +32,7 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 
 		AssociationCreateCommand cmd = new AssociationCreateCommand();
 		EntityPart part = (EntityPart) getHost();
-		cmd.setForeignTable(part.getTable());
+		cmd.setForeignEntity(part.getTable());
 		request.setStartCommand(cmd);
 		return cmd;
 	}
@@ -44,7 +44,7 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 	{
 		AssociationCreateCommand cmd = (AssociationCreateCommand) request.getStartCommand();
 		EntityPart part = (EntityPart) request.getTargetEditPart();
-		cmd.setPrimaryTable(part.getTable());
+		cmd.setPrimaryEntity(part.getTable());
 		return cmd;
 	}
 

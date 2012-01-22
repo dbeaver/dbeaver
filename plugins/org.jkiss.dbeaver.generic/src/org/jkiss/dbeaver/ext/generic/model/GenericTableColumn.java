@@ -1,15 +1,14 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -63,11 +62,6 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         this.autoIncrement = autoIncrement;
         this.remarks = remarks;
         this.radix = radix;
-    }
-
-    public DBSObject getParentObject()
-    {
-        return getTable();
     }
 
     public GenericDataSource getDataSource()

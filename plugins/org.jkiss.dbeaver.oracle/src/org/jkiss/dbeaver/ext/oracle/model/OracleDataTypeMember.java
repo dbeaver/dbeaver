@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -10,7 +10,6 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 
@@ -51,7 +50,7 @@ public abstract class OracleDataTypeMember implements DBSEntityElement
         return null;
     }
 
-    public DBSObject getParentObject()
+    public OracleDataType getParentObject()
     {
         return dataType;
     }

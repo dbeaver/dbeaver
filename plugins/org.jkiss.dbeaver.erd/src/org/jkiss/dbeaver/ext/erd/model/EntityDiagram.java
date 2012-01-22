@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -10,7 +10,6 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -25,10 +24,10 @@ import java.util.*;
 public class EntityDiagram extends ERDObject<DBSObject>
 {
 	private String name;
-	private List<ERDTable> tables = new ArrayList<ERDTable>();
+	private List<ERDEntity> entities = new ArrayList<ERDEntity>();
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
-    private Map<DBSEntity, ERDTable> tableMap = new IdentityHashMap<DBSEntity, ERDTable>();
+    private Map<DBSEntity, ERDEntity> tableMap = new IdentityHashMap<DBSEntity, ERDEntity>();
     private Map<ERDObject, Rectangle> initBounds = new IdentityHashMap<ERDObject, Rectangle>();
     private List<ERDNote> notes = new ArrayList<ERDNote>();
     private boolean needsAutoLayout;
@@ -43,28 +42,28 @@ public class EntityDiagram extends ERDObject<DBSObject>
 		this.name = name;
 	}
 
-	public synchronized void addTable(ERDTable table, boolean reflect)
+	public synchronized void addTable(ERDEntity entity, boolean reflect)
 	{
-        addTable(table, -1, reflect);
+        addTable(entity, -1, reflect);
 	}
 
-	public synchronized void addTable(ERDTable table, int i, boolean reflect)
+	public synchronized void addTable(ERDEntity entity, int i, boolean reflect)
 	{
         if (i < 0) {
-            tables.add(table);
+            entities.add(entity);
         } else {
-		    tables.add(i, table);
+		    entities.add(i, entity);
         }
-        tableMap.put(table.getObject(), table);
+        tableMap.put(entity.getObject(), entity);
 
         if (reflect) {
-		    firePropertyChange(CHILD, null, table);
+		    firePropertyChange(CHILD, null, entity);
 /*
-            for (ERDAssociation rel : table.getPrimaryKeyRelationships()) {
-                table.firePropertyChange(INPUT, null, rel);
+            for (ERDAssociation rel : entity.getPrimaryKeyRelationships()) {
+                entity.firePropertyChange(INPUT, null, rel);
             }
-            for (ERDAssociation rel : table.getForeignKeyRelationships()) {
-                table.firePropertyChange(OUTPUT, null, rel);
+            for (ERDAssociation rel : entity.getForeignKeyRelationships()) {
+                entity.firePropertyChange(OUTPUT, null, rel);
             }
 */
         }
@@ -72,8 +71,8 @@ public class EntityDiagram extends ERDObject<DBSObject>
         resolveRelations(reflect);
 
         if (reflect) {
-            for (ERDAssociation rel : table.getPrimaryKeyRelationships()) {
-                rel.getForeignKeyTable().firePropertyChange(OUTPUT, null, rel);
+            for (ERDAssociation rel : entity.getPrimaryKeyRelationships()) {
+                rel.getForeignKeyEntity().firePropertyChange(OUTPUT, null, rel);
             }
         }
 	}
@@ -81,26 +80,26 @@ public class EntityDiagram extends ERDObject<DBSObject>
     private void resolveRelations(boolean reflect)
     {
         // Resolve incomplete relations
-        for (ERDTable erdTable : getTables()) {
-            erdTable.resolveRelations(tableMap, reflect);
+        for (ERDEntity erdEntity : getEntities()) {
+            erdEntity.resolveRelations(tableMap, reflect);
         }
     }
 
-	public synchronized void removeTable(ERDTable table, boolean reflect)
+	public synchronized void removeTable(ERDEntity entity, boolean reflect)
 	{
-        tableMap.remove(table.getObject());
-		tables.remove(table);
+        tableMap.remove(entity.getObject());
+		entities.remove(entity);
         if (reflect) {
-		    firePropertyChange(CHILD, table, null);
+		    firePropertyChange(CHILD, entity, null);
         }
 	}
 
     /**
 	 * @return the Tables for the current schema
 	 */
-	public synchronized List<ERDTable> getTables()
+	public synchronized List<ERDEntity> getEntities()
 	{
-		return tables;
+		return entities;
 	}
 
     public synchronized List<ERDNote> getNotes()
@@ -166,7 +165,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	}
 
 	/**
-	 * @return Returns whether we can lay out individual tables manually using the XYLayout
+	 * @return Returns whether we can lay out individual entities manually using the XYLayout
 	 */
 	public boolean isLayoutManualAllowed()
 	{
@@ -174,13 +173,13 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	}
 
     public int getEntityCount() {
-        return tables.size();
+        return entities.size();
     }
 
     public EntityDiagram copy()
     {
         EntityDiagram copy = new EntityDiagram(getObject(), getName());
-        copy.tables.addAll(this.tables);
+        copy.entities.addAll(this.entities);
         copy.tableMap.putAll(this.tableMap);
         copy.layoutManualDesired = this.layoutManualDesired;
         copy.layoutManualAllowed = this.layoutManualAllowed;
@@ -191,17 +190,17 @@ public class EntityDiagram extends ERDObject<DBSObject>
     public void fillTables(DBRProgressMonitor monitor, Collection<DBSEntity> tables, DBSObject dbObject)
     {
         // Load entities
-        monitor.beginTask("Load tables metadata", tables.size());
+        monitor.beginTask("Load entities metadata", tables.size());
         for (DBSEntity table : tables) {
             if (monitor.isCanceled()) {
                 break;
             }
             monitor.subTask("Load " + table.getName());
-            ERDTable erdTable = ERDTable.fromObject(monitor, table);
-            erdTable.setPrimary(table == dbObject);
+            ERDEntity erdEntity = ERDEntity.fromObject(monitor, table);
+            erdEntity.setPrimary(table == dbObject);
 
-            addTable(erdTable, false);
-            tableMap.put(table, erdTable);
+            addTable(erdEntity, false);
+            tableMap.put(table, erdEntity);
 
             monitor.worked(1);
         }
@@ -209,15 +208,15 @@ public class EntityDiagram extends ERDObject<DBSObject>
         monitor.done();
 
         // Load relations
-        monitor.beginTask("Load tables' relations", tables.size());
+        monitor.beginTask("Load entities' relations", tables.size());
         for (DBSEntity table : tables) {
             if (monitor.isCanceled()) {
                 break;
             }
             monitor.subTask("Load " + table.getName());
-            final ERDTable erdTable = tableMap.get(table);
-            if (erdTable != null) {
-                erdTable.addRelations(monitor, tableMap, false);
+            final ERDEntity erdEntity = tableMap.get(table);
+            if (erdEntity != null) {
+                erdEntity.addRelations(monitor, tableMap, false);
             }
             monitor.worked(1);
         }
@@ -226,27 +225,27 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
     public boolean containsTable(DBSEntity table)
     {
-        for (ERDTable erdTable : tables) {
-            if (erdTable.getObject() == table) {
+        for (ERDEntity erdEntity : entities) {
+            if (erdEntity.getObject() == table) {
                 return true;
             }
         }
         return false;
     }
 
-    public Map<DBSEntity,ERDTable> getTableMap()
+    public Map<DBSEntity,ERDEntity> getTableMap()
     {
         return tableMap;
     }
 
-    public ERDTable getERDTable(DBSEntity table)
+    public ERDEntity getERDTable(DBSEntity table)
     {
         return tableMap.get(table);
     }
 
     public void clear()
     {
-        this.tables.clear();
+        this.entities.clear();
         this.tableMap.clear();
         this.initBounds.clear();
     }
@@ -271,10 +270,10 @@ public class EntityDiagram extends ERDObject<DBSObject>
         this.needsAutoLayout = needsAutoLayout;
     }
 
-    public void addInitRelationBends(ERDTable sourceTable, ERDTable targetTable, String relName, List<Point> bends)
+    public void addInitRelationBends(ERDEntity sourceEntity, ERDEntity targetEntity, String relName, List<Point> bends)
     {
-        for (ERDAssociation rel : sourceTable.getPrimaryKeyRelationships()) {
-            if (rel.getForeignKeyTable() == targetTable && relName.equals(rel.getObject().getName())) {
+        for (ERDAssociation rel : sourceEntity.getPrimaryKeyRelationships()) {
+            if (rel.getForeignKeyEntity() == targetEntity && relName.equals(rel.getObject().getName())) {
                 rel.setInitBends(bends);
             }
         }
@@ -282,8 +281,8 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
     public List<ERDObject> getContents()
     {
-        List<ERDObject> children = new ArrayList<ERDObject>(tables.size() + notes.size());
-        children.addAll(tables);
+        List<ERDObject> children = new ArrayList<ERDObject>(entities.size() + notes.size());
+        children.addAll(entities);
         children.addAll(notes);
         return children;
     }

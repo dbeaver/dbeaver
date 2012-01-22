@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
-import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 
 import java.beans.PropertyChangeEvent;
 
@@ -47,7 +47,7 @@ public class AttributePart extends PropertyAwarePart
 	 */
 	protected IFigure createFigure()
 	{
-		ERDTableColumn column = (ERDTableColumn) getModel();
+		ERDEntityAttribute column = (ERDEntityAttribute) getModel();
 		String label = column.getLabelText();
         EditableLabel editableLabel = new EditableLabel(label);
         editableLabel.setIcon(column.getLabelImage());
@@ -173,16 +173,16 @@ public class AttributePart extends PropertyAwarePart
 	 */
 	protected void refreshVisuals()
 	{
-		ERDTableColumn column = (ERDTableColumn) getModel();
+		ERDEntityAttribute column = (ERDEntityAttribute) getModel();
 		EditableLabel columnLabel = (EditableLabel) getFigure();
 		columnLabel.setText(column.getLabelText());
 	}
 	
 	
 
-	public ERDTableColumn getColumn()
+	public ERDEntityAttribute getColumn()
 	{
-		return (ERDTableColumn) getModel();
+		return (ERDEntityAttribute) getModel();
 	}
 	
     @Override

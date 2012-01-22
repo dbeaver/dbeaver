@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.struct;
@@ -310,7 +310,7 @@ public class EditForeignKeyDialog extends Dialog {
                     new ArrayList<DBSTableColumn>(ownTable.getColumns(VoidProgressMonitor.INSTANCE));
                 if (!CommonUtils.isEmpty(ownColumns)) {
                     for (DBSTableColumn ownColumn : ownColumns) {
-                        if (ownColumn.getName().equals(pkColumn.getTableColumn().getName()) && ownTable != pkColumn.getTableColumn().getTable()) {
+                        if (ownColumn.getName().equals(pkColumn.getTableColumn().getName()) && ownTable != pkColumn.getTableColumn().getParentObject()) {
                             fkColumnInfo.ownColumn = ownColumn;
                             break;
                         }

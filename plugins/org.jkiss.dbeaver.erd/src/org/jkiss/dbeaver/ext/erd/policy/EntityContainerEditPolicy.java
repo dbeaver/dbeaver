@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -26,14 +26,14 @@ public class EntityContainerEditPolicy extends ContainerEditPolicy
 	{
 /*
 		Object newObject = request.getNewObject();
-		if (!(newObject instanceof ERDTableColumn))
+		if (!(newObject instanceof ERDEntityAttribute))
 		{
 			return null;
 		}
 		
 		EntityPart entityPart = (EntityPart) getHost();
-		ERDTable table = entityPart.getTable();
-		ERDTableColumn column = (ERDTableColumn) newObject;
+		ERDEntity table = entityPart.getTable();
+		ERDEntityAttribute column = (ERDEntityAttribute) newObject;
 		AttributeCreateCommand command = new AttributeCreateCommand();
 		command.setTable(table);
 		command.setColumn(column);

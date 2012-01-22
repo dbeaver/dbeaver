@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -9,9 +9,7 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDLogicalForeignKey;
-import org.jkiss.dbeaver.ext.erd.model.ERDLogicalPrimaryKey;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 
 import java.util.List;
 
@@ -23,8 +21,8 @@ import java.util.List;
 public class AssociationCreateCommand extends Command {
 
     protected ERDAssociation association;
-    protected ERDTable foreignTable;
-    protected ERDTable primaryTable;
+    protected ERDEntity foreignEntity;
+    protected ERDEntity primaryEntity;
 
     /**
      * @see org.eclipse.gef.commands.Command#canExecute()
@@ -33,18 +31,18 @@ public class AssociationCreateCommand extends Command {
     {
 
         boolean returnValue = true;
-        if (foreignTable.equals(primaryTable)) {
+        if (foreignEntity.equals(primaryEntity)) {
             returnValue = false;
         } else {
 
-            if (primaryTable == null) {
+            if (primaryEntity == null) {
                 return false;
             } else {
                 // Check for existence of relationship already
-                List<ERDAssociation> relationships = primaryTable.getPrimaryKeyRelationships();
+                List<ERDAssociation> relationships = primaryEntity.getPrimaryKeyRelationships();
                 for (int i = 0; i < relationships.size(); i++) {
                     ERDAssociation currentRelationship = relationships.get(i);
-                    if (currentRelationship.getForeignKeyTable().equals(foreignTable)) {
+                    if (currentRelationship.getForeignKeyEntity().equals(foreignEntity)) {
                         returnValue = false;
                         break;
                     }
@@ -61,23 +59,23 @@ public class AssociationCreateCommand extends Command {
      */
     public void execute()
     {
-        association = new ERDAssociation(foreignTable, primaryTable, true);
+        association = new ERDAssociation(foreignEntity, primaryEntity, true);
     }
 
     /**
-     * @return Returns the foreignTable.
+     * @return Returns the foreignEntity.
      */
-    public ERDTable getForeignTable()
+    public ERDEntity getForeignEntity()
     {
-        return foreignTable;
+        return foreignEntity;
     }
 
     /**
-     * @return Returns the primaryTable.
+     * @return Returns the primaryEntity.
      */
-    public ERDTable getPrimaryTable()
+    public ERDEntity getPrimaryEntity()
     {
-        return primaryTable;
+        return primaryEntity;
     }
 
     /**
@@ -95,24 +93,24 @@ public class AssociationCreateCommand extends Command {
      */
     public void redo()
     {
-        foreignTable.addForeignKeyRelationship(association, true);
-        primaryTable.addPrimaryKeyRelationship(association, true);
+        foreignEntity.addForeignKeyRelationship(association, true);
+        primaryEntity.addPrimaryKeyRelationship(association, true);
     }
 
     /**
-     * @param foreignTable The foreignTable to set.
+     * @param foreignEntity The foreignEntity to set.
      */
-    public void setForeignTable(ERDTable foreignTable)
+    public void setForeignEntity(ERDEntity foreignEntity)
     {
-        this.foreignTable = foreignTable;
+        this.foreignEntity = foreignEntity;
     }
 
     /**
-     * @param primaryTable The primaryTable to set.
+     * @param primaryEntity The primaryEntity to set.
      */
-    public void setPrimaryTable(ERDTable primaryTable)
+    public void setPrimaryEntity(ERDEntity primaryEntity)
     {
-        this.primaryTable = primaryTable;
+        this.primaryEntity = primaryEntity;
     }
 
     /**
@@ -128,8 +126,8 @@ public class AssociationCreateCommand extends Command {
      */
     public void undo()
     {
-        foreignTable.removeForeignKeyRelationship(association, true);
-        primaryTable.removePrimaryKeyRelationship(association, true);
+        foreignEntity.removeForeignKeyRelationship(association, true);
+        primaryEntity.removePrimaryKeyRelationship(association, true);
     }
 
 }

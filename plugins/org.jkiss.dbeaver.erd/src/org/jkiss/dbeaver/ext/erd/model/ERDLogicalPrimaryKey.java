@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.model;
@@ -22,9 +22,9 @@ public class ERDLogicalPrimaryKey extends AbstractConstraint<DBSTable> {
 
     private List<? extends DBSConstraintColumn> columns = new ArrayList<DBSConstraintColumn>();
 
-    public ERDLogicalPrimaryKey(ERDTable table, String name, String description)
+    public ERDLogicalPrimaryKey(ERDEntity entity, String name, String description)
     {
-        super(table.getObject(), name, description, DBSEntityConstraintType.PRIMARY_KEY);
+        super(entity.getObject(), name, description, DBSEntityConstraintType.PRIMARY_KEY);
     }
 
     public Collection<? extends DBSConstraintColumn> getColumns(DBRProgressMonitor monitor)

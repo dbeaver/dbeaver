@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.command;
@@ -8,7 +8,7 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
@@ -21,29 +21,29 @@ public class EntityAddCommand extends Command
 {
 
 	private DiagramPart diagramPart;
-	private Collection<ERDTable> tables;
+	private Collection<ERDEntity> entities;
     private Point location;
 
-    public EntityAddCommand(DiagramPart diagram, Collection<ERDTable> tables, Point location)
+    public EntityAddCommand(DiagramPart diagram, Collection<ERDEntity> entities, Point location)
     {
         this.diagramPart = diagram;
-        this.tables = tables;
+        this.entities = entities;
         this.location = location;
     }
 
     public void execute()
 	{
         Point curLocation = location == null ? null : new Point(location);
-        for (ERDTable table : tables) {
-		    diagramPart.getDiagram().addTable(table, true);
-            //diagramPart.getDiagram().addRelations(monitor, table, true);
+        for (ERDEntity entity : entities) {
+		    diagramPart.getDiagram().addTable(entity, true);
+            //diagramPart.getDiagram().addRelations(monitor, entity, true);
 
             if (curLocation != null) {
-                // Put new tables in specified location
+                // Put new entities in specified location
                 for (Object diagramChild : diagramPart.getChildren()) {
                     if (diagramChild instanceof EntityPart) {
                         EntityPart entityPart = (EntityPart) diagramChild;
-                        if (entityPart.getTable() == table) {
+                        if (entityPart.getTable() == entity) {
                             final Rectangle newBounds = new Rectangle();
                             final Dimension size = entityPart.getFigure().getPreferredSize();
                             newBounds.x = curLocation.x;
@@ -63,8 +63,8 @@ public class EntityAddCommand extends Command
 
     public void undo()
     {
-        for (ERDTable table : tables) {
-            diagramPart.getDiagram().removeTable(table, true);
+        for (ERDEntity entity : entities) {
+            diagramPart.getDiagram().removeTable(entity, true);
         }
     }
 

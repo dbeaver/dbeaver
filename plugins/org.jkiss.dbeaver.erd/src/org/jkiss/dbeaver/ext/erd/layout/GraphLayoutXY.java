@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -10,8 +10,6 @@ package org.jkiss.dbeaver.ext.erd.layout;
 import org.eclipse.draw2d.FreeformLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 
@@ -39,7 +37,7 @@ public class GraphLayoutXY extends FreeformLayout {
     {
 /*
         if (child instanceof EntityFigure) {
-            final ERDTable erdTable = ((EntityFigure) child).getTable();
+            final ERDEntity erdTable = ((EntityFigure) child).getTable();
             Rectangle bounds = diagram.getDiagram().getInitBounds(erdTable);
             if (bounds != null) {
                 bounds.width = child.getSize().width;

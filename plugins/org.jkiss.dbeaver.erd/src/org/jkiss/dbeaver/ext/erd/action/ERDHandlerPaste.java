@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.action;
 
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.commands.AbstractHandler;
@@ -17,7 +18,6 @@ import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
@@ -52,9 +52,9 @@ public class ERDHandlerPaste extends AbstractHandler {
             if (editor != null && !editor.isReadOnly()) {
                 final Collection<DBPNamedObject> objects = DatabaseObjectTransfer.getInstance().getObject();
                 if (!CommonUtils.isEmpty(objects)) {
-                    final List<ERDTable> erdTables = DiagramObjectCollector.generateTableList(editor.getDiagram(), objects);
-                    if (!CommonUtils.isEmpty(erdTables)) {
-                        EntityAddCommand command = new EntityAddCommand(editor.getDiagramPart(), erdTables, new Point(10, 10));
+                    final List<ERDEntity> erdEntities = DiagramObjectCollector.generateTableList(editor.getDiagram(), objects);
+                    if (!CommonUtils.isEmpty(erdEntities)) {
+                        EntityAddCommand command = new EntityAddCommand(editor.getDiagramPart(), erdEntities, new Point(10, 10));
                         editor.getCommandStack().execute(command);
                     }
                 }

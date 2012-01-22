@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.model;
@@ -25,8 +25,8 @@ public class DiagramObjectCollector {
     static final Log log = LogFactory.getLog(DiagramObjectCollector.class);
 
     private final EntityDiagram diagram;
-    private final List<ERDTable> erdTables = new ArrayList<ERDTable>();
-    private final Map<DBSEntity, ERDTable> tableMap = new HashMap<DBSEntity, ERDTable>();
+    private final List<ERDEntity> erdEntities = new ArrayList<ERDEntity>();
+    private final Map<DBSEntity, ERDEntity> tableMap = new HashMap<DBSEntity, ERDEntity>();
 
     public DiagramObjectCollector(EntityDiagram diagram)
     {
@@ -101,8 +101,8 @@ public class DiagramObjectCollector {
         }
 
         // Add new relations
-        for (ERDTable erdTable : erdTables) {
-            erdTable.addRelations(monitor, tableMap, false);
+        for (ERDEntity erdEntity : erdEntities) {
+            erdEntity.addRelations(monitor, tableMap, false);
         }
     }
 
@@ -112,19 +112,19 @@ public class DiagramObjectCollector {
             // Avoid duplicates
             return;
         }
-        ERDTable erdTable = ERDTable.fromObject(monitor, table);
-        if (erdTable != null) {
-            erdTables.add(erdTable);
-            tableMap.put(table, erdTable);
+        ERDEntity erdEntity = ERDEntity.fromObject(monitor, table);
+        if (erdEntity != null) {
+            erdEntities.add(erdEntity);
+            tableMap.put(table, erdEntity);
         }
     }
 
-    public List<ERDTable> getDiagramTables()
+    public List<ERDEntity> getDiagramTables()
     {
-        return erdTables;
+        return erdEntities;
     }
 
-    public static List<ERDTable> generateTableList(final EntityDiagram diagram, Collection<DBPNamedObject> objects)
+    public static List<ERDEntity> generateTableList(final EntityDiagram diagram, Collection<DBPNamedObject> objects)
     {
         final List<DBSObject> roots = new ArrayList<DBSObject>();
         for (DBPNamedObject object : objects) {
@@ -133,7 +133,7 @@ public class DiagramObjectCollector {
             }
         }
 
-        final List<ERDTable> tables = new ArrayList<ERDTable>();
+        final List<ERDEntity> entities = new ArrayList<ERDEntity>();
 
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
@@ -145,7 +145,7 @@ public class DiagramObjectCollector {
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
-                    tables.addAll(collector.getDiagramTables());
+                    entities.addAll(collector.getDiagramTables());
                 }
             });
         } catch (InvocationTargetException e) {
@@ -153,7 +153,7 @@ public class DiagramObjectCollector {
         } catch (InterruptedException e) {
             // interrupted
         }
-        return tables;
+        return entities;
     }
 
 }

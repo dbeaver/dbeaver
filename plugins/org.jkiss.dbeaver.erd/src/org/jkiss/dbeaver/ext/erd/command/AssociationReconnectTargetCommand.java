@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -9,7 +9,7 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 
 import java.util.List;
 
@@ -23,13 +23,13 @@ public class AssociationReconnectTargetCommand extends Command
 {
 
 	/** source Table * */
-	protected ERDTable sourceForeignKey;
+	protected ERDEntity sourceForeignKey;
 	/** target Table * */
-	protected ERDTable targetPrimaryKey;
+	protected ERDEntity targetPrimaryKey;
 	/** Relationship between source and target * */
 	protected ERDAssociation relationship;
 	/** previous source prior to command execution * */
-	protected ERDTable oldTargetPrimaryKey;
+	protected ERDEntity oldTargetPrimaryKey;
 
 	/**
 	 * Makes sure that foreign key doesn't reconnect to itself or try to create
@@ -40,9 +40,9 @@ public class AssociationReconnectTargetCommand extends Command
 
 		boolean returnVal = true;
 
-		ERDTable foreignKeyTable = relationship.getForeignKeyTable();
+		ERDEntity foreignKeyEntity = relationship.getForeignKeyEntity();
 
-		if (foreignKeyTable.equals(targetPrimaryKey))
+		if (foreignKeyEntity.equals(targetPrimaryKey))
 		{
 			returnVal = false;
 		}
@@ -55,8 +55,8 @@ public class AssociationReconnectTargetCommand extends Command
 
 				ERDAssociation relationship = ((ERDAssociation) (relationships.get(i)));
 
-				if (relationship.getForeignKeyTable().equals(sourceForeignKey)
-						&& relationship.getPrimaryKeyTable().equals(targetPrimaryKey))
+				if (relationship.getForeignKeyEntity().equals(sourceForeignKey)
+						&& relationship.getPrimaryKeyEntity().equals(targetPrimaryKey))
 				{
 					returnVal = false;
 					break;
@@ -76,7 +76,7 @@ public class AssociationReconnectTargetCommand extends Command
 		if (targetPrimaryKey != null)
 		{
 			oldTargetPrimaryKey.removePrimaryKeyRelationship(relationship, true);
-			relationship.setPrimaryKeyTable(targetPrimaryKey);
+			relationship.setPrimaryKeyEntity(targetPrimaryKey);
 			targetPrimaryKey.addPrimaryKeyRelationship(relationship, true);
 		}
 	}
@@ -84,7 +84,7 @@ public class AssociationReconnectTargetCommand extends Command
 	/**
 	 * @return Returns the sourceForeignKey.
 	 */
-	public ERDTable getSourceForeignKey()
+	public ERDEntity getSourceForeignKey()
 	{
 		return sourceForeignKey;
 	}
@@ -93,7 +93,7 @@ public class AssociationReconnectTargetCommand extends Command
 	 * @param sourceForeignKey
 	 *            The sourceForeignKey to set.
 	 */
-	public void setSourceForeignKey(ERDTable sourceForeignKey)
+	public void setSourceForeignKey(ERDEntity sourceForeignKey)
 	{
 		this.sourceForeignKey = sourceForeignKey;
 	}
@@ -101,7 +101,7 @@ public class AssociationReconnectTargetCommand extends Command
 	/**
 	 * @return Returns the targetPrimaryKey.
 	 */
-	public ERDTable getTargetPrimaryKey()
+	public ERDEntity getTargetPrimaryKey()
 	{
 		return targetPrimaryKey;
 	}
@@ -110,7 +110,7 @@ public class AssociationReconnectTargetCommand extends Command
 	 * @param targetPrimaryKey
 	 *            The targetPrimaryKey to set.
 	 */
-	public void setTargetPrimaryKey(ERDTable targetPrimaryKey)
+	public void setTargetPrimaryKey(ERDEntity targetPrimaryKey)
 	{
 		this.targetPrimaryKey = targetPrimaryKey;
 	}
@@ -132,8 +132,8 @@ public class AssociationReconnectTargetCommand extends Command
 	public void setRelationship(ERDAssociation relationship)
 	{
 		this.relationship = relationship;
-		oldTargetPrimaryKey = relationship.getPrimaryKeyTable();
-		sourceForeignKey = relationship.getForeignKeyTable();
+		oldTargetPrimaryKey = relationship.getPrimaryKeyEntity();
+		sourceForeignKey = relationship.getForeignKeyEntity();
 	}
 
 	/**
@@ -142,7 +142,7 @@ public class AssociationReconnectTargetCommand extends Command
 	public void undo()
 	{
 		targetPrimaryKey.removePrimaryKeyRelationship(relationship, true);
-		relationship.setPrimaryKeyTable(oldTargetPrimaryKey);
+		relationship.setPrimaryKeyEntity(oldTargetPrimaryKey);
 		oldTargetPrimaryKey.addPrimaryKeyRelationship(relationship, true);
 	}
 }

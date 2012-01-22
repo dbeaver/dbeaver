@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -9,7 +9,7 @@ package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Insets;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 
 /**
  * Figure used to hold the column labels
@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 public class AttributeFigure extends Figure
 {
 
-	public AttributeFigure(ERDTable table)
+	public AttributeFigure(ERDEntity entity)
 	{
 		FlowLayout layout = new FlowLayout();
 		layout.setMinorAlignment(FlowLayout.ALIGN_LEFTTOP);
@@ -26,7 +26,7 @@ public class AttributeFigure extends Figure
 		layout.setHorizontal(false);
 		setLayoutManager(layout);
 		setBorder(new ColumnFigureBorder());
-        if (table.isPrimary()) {
+        if (entity.isPrimary()) {
             //setBackgroundColor(EntityFigure.primaryTableColor);
         } else {
 		    //setBackgroundColor(ColorConstants.tooltipBackground);

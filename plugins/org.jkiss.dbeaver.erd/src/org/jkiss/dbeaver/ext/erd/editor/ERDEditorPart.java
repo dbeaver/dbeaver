@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.editor;
@@ -581,12 +581,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             List<CombinedTemplateCreationEntry> entries = new ArrayList<CombinedTemplateCreationEntry>();
 
             CombinedTemplateCreationEntry tableEntry = new CombinedTemplateCreationEntry("New Table", "Create a new table",
-                ERDTable.class, new DataElementFactory(ERDTable.class),
+                ERDEntity.class, new DataElementFactory(ERDEntity.class),
                 Activator.getImageDescriptor("icons/table.gif"),
                 Activator.getImageDescriptor("icons/table.gif"));
 
             CombinedTemplateCreationEntry columnEntry = new CombinedTemplateCreationEntry("New Column", "Add a new column",
-                ERDTableColumn.class, new DataElementFactory(ERDTableColumn.class),
+                ERDEntityAttribute.class, new DataElementFactory(ERDEntityAttribute.class),
                 Activator.getImageDescriptor("icons/column.gif"),
                 Activator.getImageDescriptor("icons/column.gif"));
 

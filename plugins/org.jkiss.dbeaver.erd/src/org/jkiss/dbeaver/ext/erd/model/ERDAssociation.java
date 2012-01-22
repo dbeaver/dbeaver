@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -20,43 +20,43 @@ import java.util.List;
 public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 {
 
-	private ERDTable primaryKeyTable;
-	private ERDTable foreignKeyTable;
+	private ERDEntity primaryKeyEntity;
+	private ERDEntity foreignKeyEntity;
     private List<Point> initBends;
 
     /**
      * Constructor for logical association
-     * @param foreignTable fk table
-     * @param primaryTable pk table
+     * @param foreignEntity fk table
+     * @param primaryEntity pk table
      * @param reflect reflect flag
      */
-    public ERDAssociation(ERDTable foreignTable, ERDTable primaryTable, boolean reflect)
+    public ERDAssociation(ERDEntity foreignEntity, ERDEntity primaryEntity, boolean reflect)
     {
         super(new ERDLogicalForeignKey(
-            foreignTable,
-            foreignTable.getObject().getName() + " -> " + primaryTable.getObject().getName(),
+            foreignEntity,
+            foreignEntity.getObject().getName() + " -> " + primaryEntity.getObject().getName(),
             "",
-            primaryTable.getLogicalPrimaryKey()));
-        this.primaryKeyTable = primaryTable;
-        this.foreignKeyTable = foreignTable;
-        this.primaryKeyTable.addPrimaryKeyRelationship(this, reflect);
-        this.foreignKeyTable.addForeignKeyRelationship(this, reflect);
+            primaryEntity.getLogicalPrimaryKey()));
+        this.primaryKeyEntity = primaryEntity;
+        this.foreignKeyEntity = foreignEntity;
+        this.primaryKeyEntity.addPrimaryKeyRelationship(this, reflect);
+        this.foreignKeyEntity.addForeignKeyRelationship(this, reflect);
     }
 
     /**
      * Constructor for physical association
      * @param object physical FK
-     * @param foreignTable fk table
-     * @param primaryTable pk table
+     * @param foreignEntity fk table
+     * @param primaryEntity pk table
      * @param reflect reflect flag
      */
-	public ERDAssociation(DBSEntityAssociation object, ERDTable foreignTable, ERDTable primaryTable, boolean reflect)
+	public ERDAssociation(DBSEntityAssociation object, ERDEntity foreignEntity, ERDEntity primaryEntity, boolean reflect)
 	{
 		super(object);
-		this.primaryKeyTable = primaryTable;
-		this.foreignKeyTable = foreignTable;
-        this.primaryKeyTable.addPrimaryKeyRelationship(this, reflect);
-        this.foreignKeyTable.addForeignKeyRelationship(this, reflect);
+		this.primaryKeyEntity = primaryEntity;
+		this.foreignKeyEntity = foreignEntity;
+        this.primaryKeyEntity.addPrimaryKeyRelationship(this, reflect);
+        this.foreignKeyEntity.addForeignKeyRelationship(this, reflect);
 	}
 
     public boolean isLogical()
@@ -65,32 +65,32 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     }
 
 	/**
-	 * @return Returns the foreignKeyTable.
+	 * @return Returns the foreignKeyEntity.
 	 */
-	public ERDTable getForeignKeyTable()
+	public ERDEntity getForeignKeyEntity()
 	{
-		return foreignKeyTable;
+		return foreignKeyEntity;
 	}
 
 	/**
-	 * @return Returns the primaryKeyTable.
+	 * @return Returns the primaryKeyEntity.
 	 */
-	public ERDTable getPrimaryKeyTable()
+	public ERDEntity getPrimaryKeyEntity()
 	{
-		return primaryKeyTable;
+		return primaryKeyEntity;
 	}
 
-	public void setPrimaryKeyTable(ERDTable targetPrimaryKey)
+	public void setPrimaryKeyEntity(ERDEntity targetPrimaryKey)
 	{
-		this.primaryKeyTable = targetPrimaryKey;
+		this.primaryKeyEntity = targetPrimaryKey;
 	}
 
 	/**
 	 * @param sourceForeignKey the foreign key table you are connecting from
 	 */
-	public void setForeignKeyTable(ERDTable sourceForeignKey)
+	public void setForeignKeyEntity(ERDEntity sourceForeignKey)
 	{
-		this.foreignKeyTable = sourceForeignKey;
+		this.foreignKeyEntity = sourceForeignKey;
 	}
 
     public List<Point> getInitBends()
@@ -106,7 +106,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     @Override
     public String toString()
     {
-        return getObject() + " [" + primaryKeyTable + "->" + foreignKeyTable + "]";
+        return getObject() + " [" + primaryKeyEntity + "->" + foreignKeyEntity + "]";
     }
 
     public String getName()

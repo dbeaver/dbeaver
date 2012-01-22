@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -30,7 +30,7 @@ public class ColumnDirectEditPolicy extends DirectEditPolicy
 	{
 /*
 		AttributeResetNameTypeCommand cmd = new AttributeResetNameTypeCommand();
-		ERDTableColumn column = (ERDTableColumn) getHost().getModel();
+		ERDEntityAttribute column = (ERDEntityAttribute) getHost().getModel();
 		cmd.setSource(column);
 		cmd.setOldName(column.getName());
 		cmd.setOldType(column.getType());

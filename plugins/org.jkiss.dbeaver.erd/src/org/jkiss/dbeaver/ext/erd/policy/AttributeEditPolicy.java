@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -21,10 +21,10 @@ public class AttributeEditPolicy extends ComponentEditPolicy
 	protected Command createDeleteCommand(GroupRequest request)
 	{
 /*
-		ERDTable parent = (ERDTable) (getHost().getParent().getModel());
+		ERDEntity parent = (ERDEntity) (getHost().getParent().getModel());
 		AttributeDeleteCommand deleteCmd = new AttributeDeleteCommand();
 		deleteCmd.setTable(parent);
-		deleteCmd.setColumn((ERDTableColumn) (getHost().getModel()));
+		deleteCmd.setColumn((ERDEntityAttribute) (getHost().getModel()));
 		return deleteCmd;
 */
         return null;

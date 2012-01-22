@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -11,7 +11,7 @@ import org.eclipse.draw2d.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -27,9 +27,9 @@ public class EntityFigure extends Figure {
     private AttributeFigure attributeFigure;
     private EditableLabel nameLabel;
 
-    public EntityFigure(ERDTable table)
+    public EntityFigure(ERDEntity entity)
     {
-        DBNDatabaseNode entityNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(table.getObject());
+        DBNDatabaseNode entityNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(entity.getObject());
         Image tableImage;
         if (entityNode == null) {
             tableImage = DBIcon.TREE_TABLE.getImage();
@@ -37,8 +37,8 @@ public class EntityFigure extends Figure {
             tableImage = entityNode.getNodeIconDefault();
         }
 
-        attributeFigure = new AttributeFigure(table);
-        nameLabel = new EditableLabel(table.getObject().getName());
+        attributeFigure = new AttributeFigure(entity);
+        nameLabel = new EditableLabel(entity.getObject().getName());
         nameLabel.setIcon(tableImage);
         nameLabel.setForegroundColor(ColorConstants.black);
 
@@ -47,7 +47,7 @@ public class EntityFigure extends Figure {
         layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
         setBorder(new LineBorder(ColorConstants.black, 1));
-        if (table.isPrimary()) {
+        if (entity.isPrimary()) {
             setBackgroundColor(primaryTableColor);
         } else {
             setBackgroundColor(ColorConstants.tooltipBackground);
@@ -58,7 +58,7 @@ public class EntityFigure extends Figure {
         add(nameLabel);
         add(attributeFigure);
 
-        Label toolTip = new Label(table.getObject().getFullQualifiedName());
+        Label toolTip = new Label(entity.getObject().getFullQualifiedName());
         toolTip.setIcon(tableImage);
         setToolTip(toolTip);
     }

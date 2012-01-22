@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.policy;
 
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPart;
@@ -19,7 +20,6 @@ import org.eclipse.gef.requests.GroupRequest;
 import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
 import org.jkiss.dbeaver.ext.erd.command.NoteCreateCommand;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 import java.util.Collection;
@@ -54,18 +54,18 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
         if (newObject instanceof ERDNote) {
             return new NoteCreateCommand(diagramPart, (ERDNote)newObject, location);
         }
-        Collection<ERDTable> tables = null;
-        if (newObject instanceof ERDTable) {
-            tables = Collections.singletonList((ERDTable) newObject);
+        Collection<ERDEntity> entities = null;
+        if (newObject instanceof ERDEntity) {
+            entities = Collections.singletonList((ERDEntity) newObject);
         } else if (newObject instanceof Collection) {
-            tables = (Collection<ERDTable>) newObject;
+            entities = (Collection<ERDEntity>) newObject;
         }
-        if (CommonUtils.isEmpty(tables)) {
+        if (CommonUtils.isEmpty(entities)) {
             return null;
         }
         //EditPart host = getTargetEditPart(request);
 
-        return new EntityAddCommand(diagramPart, tables, location);
+        return new EntityAddCommand(diagramPart, entities, location);
     }
 
     /**

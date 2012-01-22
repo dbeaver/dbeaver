@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -16,12 +16,12 @@ import org.jkiss.dbeaver.ui.DBIcon;
  * Column entry in model Table
  * @author Serge Rieder
  */
-public class ERDTableColumn extends ERDObject<DBSTableColumn>
+public class ERDEntityAttribute extends ERDObject<DBSTableColumn>
 {
     private boolean inPrimaryKey;
     private boolean inForeignKey;
 
-    public ERDTableColumn(DBSTableColumn dbsTableColumn, boolean inPrimaryKey) {
+    public ERDEntityAttribute(DBSTableColumn dbsTableColumn, boolean inPrimaryKey) {
         super(dbsTableColumn);
         this.inPrimaryKey = inPrimaryKey;
     }

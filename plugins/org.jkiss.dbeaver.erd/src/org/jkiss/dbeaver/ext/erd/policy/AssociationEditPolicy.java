@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -12,7 +12,7 @@ import org.eclipse.gef.editpolicies.ComponentEditPolicy;
 import org.eclipse.gef.requests.GroupRequest;
 import org.jkiss.dbeaver.ext.erd.command.AssociationDeleteCommand;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 
 /**
  * EditPolicy to handle deletion of relationships
@@ -24,8 +24,8 @@ public class AssociationEditPolicy extends ComponentEditPolicy
 	protected Command createDeleteCommand(GroupRequest request)
 	{
 		ERDAssociation relationship = (ERDAssociation) getHost().getModel();
-		ERDTable primaryKeyTarget = relationship.getPrimaryKeyTable();
-		ERDTable foreignKeySource = relationship.getForeignKeyTable();
+		ERDEntity primaryKeyTarget = relationship.getPrimaryKeyEntity();
+		ERDEntity foreignKeySource = relationship.getForeignKeyEntity();
 		AssociationDeleteCommand deleteCmd = new AssociationDeleteCommand(foreignKeySource, primaryKeyTarget, relationship);
 		return deleteCmd;
 	}

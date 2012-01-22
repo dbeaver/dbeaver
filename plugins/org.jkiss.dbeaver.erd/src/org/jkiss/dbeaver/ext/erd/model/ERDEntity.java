@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -22,10 +22,10 @@ import java.util.*;
  * in a separate diagram specific model hierarchy
  * @author Serge Rieder
  */
-public class ERDTable extends ERDObject<DBSTable>
+public class ERDEntity extends ERDObject<DBSTable>
 {
 
-	private List<ERDTableColumn> columns = new ArrayList<ERDTableColumn>();
+	private List<ERDEntityAttribute> columns = new ArrayList<ERDEntityAttribute>();
 
 	private List<ERDAssociation> primaryKeyRelationships = new ArrayList<ERDAssociation>();
 	private List<ERDAssociation> foreignKeyRelationships = new ArrayList<ERDAssociation>();
@@ -34,11 +34,11 @@ public class ERDTable extends ERDObject<DBSTable>
     private boolean primary = false;
     private ERDLogicalPrimaryKey logicalPK;
 
-    public ERDTable(DBSTable dbsTable) {
+    public ERDEntity(DBSTable dbsTable) {
         super(dbsTable);
     }
 
-    public void addColumn(ERDTableColumn column, boolean reflect)
+    public void addColumn(ERDEntityAttribute column, boolean reflect)
 	{
 		if (columns.contains(column))
 		{
@@ -50,7 +50,7 @@ public class ERDTable extends ERDObject<DBSTable>
         }
 	}
 
-	public void removeColumn(ERDTableColumn column, boolean reflect)
+	public void removeColumn(ERDEntityAttribute column, boolean reflect)
 	{
 		columns.remove(column);
         if (reflect) {
@@ -58,7 +58,7 @@ public class ERDTable extends ERDObject<DBSTable>
         }
 	}
 
-	public void switchColumn(ERDTableColumn column, int index, boolean reflect)
+	public void switchColumn(ERDEntityAttribute column, int index, boolean reflect)
 	{
 		columns.remove(column);
 		columns.add(index, column);
@@ -134,7 +134,7 @@ public class ERDTable extends ERDObject<DBSTable>
         }
 	}
 
-	public List<ERDTableColumn> getColumns()
+	public List<ERDEntityAttribute> getColumns()
 	{
 		return columns;
 	}
@@ -166,7 +166,7 @@ public class ERDTable extends ERDObject<DBSTable>
     public boolean hasSelfLinks()
     {
         for (ERDAssociation association : foreignKeyRelationships) {
-            if (association.getPrimaryKeyTable() == this) {
+            if (association.getPrimaryKeyEntity() == this) {
                 return true;
             }
         }
@@ -191,18 +191,18 @@ public class ERDTable extends ERDObject<DBSTable>
 	 */
 	public boolean equals(Object o)
 	{
-		if (o == null || !(o instanceof ERDTable))
+		if (o == null || !(o instanceof ERDEntity))
 			return false;
-        return object.equals(((ERDTable)o).object);
+        return object.equals(((ERDEntity)o).object);
 	}
 
-    public static ERDTable fromObject(DBRProgressMonitor monitor, DBSEntity entity)
+    public static ERDEntity fromObject(DBRProgressMonitor monitor, DBSEntity entity)
     {
         if (!(entity instanceof DBSTable)) {
             return null;
         }
         DBSTable dbTable = (DBSTable)entity;
-        ERDTable erdTable = new ERDTable(dbTable);
+        ERDEntity erdEntity = new ERDEntity(dbTable);
 
         try {
             Collection<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, dbTable);
@@ -210,18 +210,18 @@ public class ERDTable extends ERDObject<DBSTable>
             Collection<? extends DBSTableColumn> columns = dbTable.getColumns(monitor);
             if (!CommonUtils.isEmpty(columns)) {
                 for (DBSTableColumn column : columns) {
-                    ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
-                    erdTable.addColumn(c1, false);
+                    ERDEntityAttribute c1 = new ERDEntityAttribute(column, idColumns.contains(column));
+                    erdEntity.addColumn(c1, false);
                 }
             }
         } catch (DBException e) {
             // just skip this problematic columns
             log.debug("Could not load table '" + dbTable.getName() + "'columns", e);
         }
-        return erdTable;
+        return erdEntity;
     }
 
-    public void addRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDTable> tableMap, boolean reflect)
+    public void addRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDEntity> tableMap, boolean reflect)
     {
         try {
             Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
@@ -230,23 +230,23 @@ public class ERDTable extends ERDObject<DBSTable>
             if (fks != null) {
                 for (DBSForeignKey fk : fks) {
                     fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
-                    ERDTable table2 = tableMap.get(fk.getAssociatedEntity());
-                    if (table2 == null) {
+                    ERDEntity entity2 = tableMap.get(fk.getAssociatedEntity());
+                    if (entity2 == null) {
                         //log.debug("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
                         if (unresolvedKeys == null) {
                             unresolvedKeys = new ArrayList<DBSForeignKey>();
                         }
                         unresolvedKeys.add(fk);
                     } else {
-                        //if (table1 != table2) {
-                        new ERDAssociation(fk, table2, this, reflect);
+                        //if (table1 != entity2) {
+                        new ERDAssociation(fk, entity2, this, reflect);
                         //}
                     }
                 }
             }
 
             // Mark column's fk flag
-            for (ERDTableColumn column : this.getColumns()) {
+            for (ERDEntityAttribute column : this.getColumns()) {
                 if (fkColumns.contains(column.getObject())) {
                     column.setInForeignKey(true);
                 }
@@ -257,16 +257,16 @@ public class ERDTable extends ERDObject<DBSTable>
         }
     }
 
-    public void resolveRelations(Map<DBSEntity, ERDTable> tableMap, boolean reflect)
+    public void resolveRelations(Map<DBSEntity, ERDEntity> tableMap, boolean reflect)
     {
         if (CommonUtils.isEmpty(unresolvedKeys)) {
             return;
         }
         for (Iterator<DBSForeignKey> iter = unresolvedKeys.iterator(); iter.hasNext(); ) {
             final DBSForeignKey fk = iter.next();
-            ERDTable refTable = tableMap.get(fk.getReferencedKey().getTable());
-            if (refTable != null) {
-                new ERDAssociation(fk, refTable, this, reflect);
+            ERDEntity refEntity = tableMap.get(fk.getReferencedKey().getTable());
+            if (refEntity != null) {
+                new ERDAssociation(fk, refEntity, this, reflect);
                 iter.remove();
             }
         }

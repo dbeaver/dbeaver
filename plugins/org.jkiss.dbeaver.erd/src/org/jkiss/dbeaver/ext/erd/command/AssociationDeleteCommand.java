@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -9,7 +9,7 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 
 /**
  * Command to delete relationship
@@ -19,11 +19,11 @@ import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 public class AssociationDeleteCommand extends Command
 {
 
-	private ERDTable foreignKeySource;
-	private ERDTable primaryKeyTarget;
+	private ERDEntity foreignKeySource;
+	private ERDEntity primaryKeyTarget;
 	private ERDAssociation relationship;
 
-	public AssociationDeleteCommand(ERDTable foreignKeySource, ERDTable primaryKeyTarget, ERDAssociation relationship)
+	public AssociationDeleteCommand(ERDEntity foreignKeySource, ERDEntity primaryKeyTarget, ERDAssociation relationship)
 	{
 		super();
 		this.foreignKeySource = foreignKeySource;
@@ -38,8 +38,8 @@ public class AssociationDeleteCommand extends Command
 	{
         primaryKeyTarget.removePrimaryKeyRelationship(relationship, true);
 		foreignKeySource.removeForeignKeyRelationship(relationship, true);
-		relationship.setForeignKeyTable(null);
-		relationship.setPrimaryKeyTable(null);
+		relationship.setForeignKeyEntity(null);
+		relationship.setPrimaryKeyEntity(null);
 	}
 
 	/**
@@ -47,8 +47,8 @@ public class AssociationDeleteCommand extends Command
 	 */
 	public void undo()
 	{
-		relationship.setForeignKeyTable(foreignKeySource);
-		relationship.setForeignKeyTable(primaryKeyTarget);
+		relationship.setForeignKeyEntity(foreignKeySource);
+		relationship.setForeignKeyEntity(primaryKeyTarget);
 		foreignKeySource.addForeignKeyRelationship(relationship, true);
 		primaryKeyTarget.addPrimaryKeyRelationship(relationship, true);
 	}

@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,6 +42,12 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
     {
         return table;
     }
+
+    public TABLE_TYPE getParentObject()
+    {
+        return getTable();
+    }
+
 
     @Property(name = "Column Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 10)
     @Override

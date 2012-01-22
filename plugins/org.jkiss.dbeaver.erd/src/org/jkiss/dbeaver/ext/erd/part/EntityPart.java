@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
-import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.*;
 
@@ -48,15 +48,15 @@ public class EntityPart extends NodePart
     /**
 	 * Returns the Table model object represented by this EditPart
 	 */
-	public ERDTable getTable()
+	public ERDEntity getTable()
 	{
-		return (ERDTable) getModel();
+		return (ERDEntity) getModel();
 	}
 
 	/**
 	 * @return the children Model objects as a new ArrayList
 	 */
-	protected List<ERDTableColumn> getModelChildren()
+	protected List<ERDEntityAttribute> getModelChildren()
 	{
 		return getTable().getColumns();
 	}
@@ -154,8 +154,8 @@ public class EntityPart extends NodePart
 	{
 		EntityFigure entityFigure = (EntityFigure) getFigure();
 		EditableLabel label = entityFigure.getNameLabel();
-		ERDTable table = getTable();
-		label.setText(table.getObject().getName());
+		ERDEntity entity = getTable();
+		label.setText(entity.getObject().getName());
 		label.setVisible(true);
 		refreshVisuals();
 	}

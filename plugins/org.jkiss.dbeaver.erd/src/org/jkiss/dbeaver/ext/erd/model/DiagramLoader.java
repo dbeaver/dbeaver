@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -82,13 +82,13 @@ public class DiagramLoader
     private static final String TAG_NOTE = "note";
 
     private static class TableSaveInfo {
-        final ERDTable erdTable;
+        final ERDEntity erdEntity;
         final EntityPart tablePart;
         final int objectId;
 
-        private TableSaveInfo(ERDTable erdTable, EntityPart tablePart, int objectId)
+        private TableSaveInfo(ERDEntity erdEntity, EntityPart tablePart, int objectId)
         {
-            this.erdTable = erdTable;
+            this.erdEntity = erdEntity;
             this.tablePart = tablePart;
             this.objectId = objectId;
         }
@@ -125,7 +125,7 @@ public class DiagramLoader
     }
 
     private static class DataSourceObjects {
-        List<ERDTable> tables = new ArrayList<ERDTable>();
+        List<ERDEntity> entities = new ArrayList<ERDEntity>();
     }
 
     public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, InputStream in)
@@ -315,7 +315,7 @@ public class DiagramLoader
             }
         }
 
-        // Fill tables
+        // Fill entities
         List<DBSEntity> tableList = new ArrayList<DBSEntity>();
         for (TableLoadInfo info : tableInfos) {
             tableList.add(info.table);
@@ -324,36 +324,36 @@ public class DiagramLoader
 
         // Set initial bounds
         for (TableLoadInfo info : tableInfos) {
-            final ERDTable erdTable = diagram.getERDTable(info.table);
-            if (erdTable != null) {
-                diagram.addInitBounds(erdTable, info.bounds);
+            final ERDEntity erdEntity = diagram.getERDTable(info.table);
+            if (erdEntity != null) {
+                diagram.addInitBounds(erdEntity, info.bounds);
             }
         }
 
         // Add logical relations
         for (RelationLoadInfo info : relInfos) {
             if (info.type.equals(ERDConstants.CONSTRAINT_LOGICAL_FK.getId())) {
-                final ERDTable sourceTable = diagram.getERDTable(info.pkTable.table);
-                final ERDTable targetTable = diagram.getERDTable(info.fkTable.table);
-                if (sourceTable != null && targetTable != null) {
-                    new ERDAssociation(targetTable, sourceTable, false);
+                final ERDEntity sourceEntity = diagram.getERDTable(info.pkTable.table);
+                final ERDEntity targetEntity = diagram.getERDTable(info.fkTable.table);
+                if (sourceEntity != null && targetEntity != null) {
+                    new ERDAssociation(targetEntity, sourceEntity, false);
                 }
             }
         }
         // Set relations' bends
         for (RelationLoadInfo info : relInfos) {
             if (!CommonUtils.isEmpty(info.bends)) {
-                final ERDTable sourceTable = diagram.getERDTable(info.pkTable.table);
-                if (sourceTable == null) {
+                final ERDEntity sourceEntity = diagram.getERDTable(info.pkTable.table);
+                if (sourceEntity == null) {
                     log.warn("Source table " + info.pkTable.table.getName() + " not found");
                     continue;
                 }
-                final ERDTable targetTable = diagram.getERDTable(info.fkTable.table);
-                if (targetTable == null) {
+                final ERDEntity targetEntity = diagram.getERDTable(info.fkTable.table);
+                if (targetEntity == null) {
                     log.warn("Target table " + info.pkTable.table.getName() + " not found");
                     continue;
                 }
-                diagram.addInitRelationBends(sourceTable, targetTable, info.name, info.bends);
+                diagram.addInitRelationBends(sourceEntity, targetEntity, info.name, info.bends);
             }
         }
     }
@@ -364,18 +364,18 @@ public class DiagramLoader
         // Prepare DS objects map
         Map<DBSDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<DBSDataSourceContainer, DataSourceObjects>();
         if (diagram != null) {
-            for (ERDTable erdTable : diagram.getTables()) {
-                final DBSDataSourceContainer dsContainer = erdTable.getObject().getDataSource().getContainer();
+            for (ERDEntity erdEntity : diagram.getEntities()) {
+                final DBSDataSourceContainer dsContainer = erdEntity.getObject().getDataSource().getContainer();
                 DataSourceObjects desc = dsMap.get(dsContainer);
                 if (desc == null) {
                     desc = new DataSourceObjects();
                     dsMap.put(dsContainer, desc);
                 }
-                desc.tables.add(erdTable);
+                desc.entities.add(erdEntity);
             }
         }
 
-        Map<ERDTable, TableSaveInfo> infoMap = new IdentityHashMap<ERDTable, TableSaveInfo>();
+        Map<ERDEntity, TableSaveInfo> infoMap = new IdentityHashMap<ERDEntity, TableSaveInfo>();
 
         // Save as XML
         XMLBuilder xml = new XMLBuilder(out, ContentUtils.DEFAULT_FILE_CHARSET);
@@ -418,11 +418,11 @@ public class DiagramLoader
 
                 final DataSourceObjects desc = dsMap.get(dsContainer);
                 int tableCounter = ERD_VERSION_1;
-                for (ERDTable erdTable : desc.tables) {
-                    final DBSEntity table = erdTable.getObject();
-                    EntityPart tablePart = diagramPart == null ? null : diagramPart.getEntityPart(erdTable);
-                    TableSaveInfo info = new TableSaveInfo(erdTable, tablePart, tableCounter++);
-                    infoMap.put(erdTable, info);
+                for (ERDEntity erdEntity : desc.entities) {
+                    final DBSEntity table = erdEntity.getObject();
+                    EntityPart tablePart = diagramPart == null ? null : diagramPart.getEntityPart(erdEntity);
+                    TableSaveInfo info = new TableSaveInfo(erdEntity, tablePart, tableCounter++);
+                    infoMap.put(erdEntity, info);
 
                     xml.startElement(TAG_ENTITY);
                     xml.addAttribute(ATTR_ID, info.objectId);
@@ -434,7 +434,7 @@ public class DiagramLoader
                     if (tablePart != null) {
                         tableBounds = tablePart.getBounds();
                     } else {
-                        tableBounds = diagram.getInitBounds(erdTable);
+                        tableBounds = diagram.getInitBounds(erdEntity);
                     }
                     if (tableBounds != null) {
                         xml.addAttribute(ATTR_X, tableBounds.x);
@@ -454,8 +454,8 @@ public class DiagramLoader
             // Relations
             xml.startElement(TAG_RELATIONS);
 
-            for (ERDTable erdTable : diagram.getTables()) {
-                for (ERDAssociation rel : erdTable.getPrimaryKeyRelationships()) {
+            for (ERDEntity erdEntity : diagram.getEntities()) {
+                for (ERDAssociation rel : erdEntity.getPrimaryKeyRelationships()) {
                     xml.startElement(TAG_RELATION);
                     DBSEntityAssociation association = rel.getObject();
                     xml.addAttribute(ATTR_NAME, association.getName());
@@ -463,14 +463,14 @@ public class DiagramLoader
                         xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject) association).getFullQualifiedName());
                     }
                     xml.addAttribute(ATTR_TYPE, association.getConstraintType().getId());
-                    TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryKeyTable());
+                    TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryKeyEntity());
                     if (pkInfo == null) {
-                        log.error("Cannot find PK table '" + rel.getPrimaryKeyTable().getObject().getFullQualifiedName() + "' in info map");
+                        log.error("Cannot find PK table '" + rel.getPrimaryKeyEntity().getObject().getFullQualifiedName() + "' in info map");
                         continue;
                     }
-                    TableSaveInfo fkInfo = infoMap.get(rel.getForeignKeyTable());
+                    TableSaveInfo fkInfo = infoMap.get(rel.getForeignKeyEntity());
                     if (fkInfo == null) {
-                        log.error("Cannot find FK table '" + rel.getForeignKeyTable().getObject().getFullQualifiedName() + "' in info map");
+                        log.error("Cannot find FK table '" + rel.getForeignKeyEntity().getObject().getFullQualifiedName() + "' in info map");
                         continue;
                     }
                     xml.addAttribute(ATTR_PK_REF, pkInfo.objectId);
