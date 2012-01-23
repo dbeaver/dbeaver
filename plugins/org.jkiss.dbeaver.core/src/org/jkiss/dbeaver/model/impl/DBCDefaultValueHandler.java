@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCursor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.ResultSet;
@@ -26,7 +27,7 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     public int getFeatures()
     {
-        return FEATURE_NONE;
+        return FEATURE_VIEWER;
     }
 
     public Class getValueObjectType()
@@ -85,7 +86,9 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     }
 
     public boolean editValue(DBDValueController controller) throws DBException {
-        return false;
+        TextViewDialog dialog = new TextViewDialog(controller);
+        dialog.open();
+        return true;
     }
 
 }

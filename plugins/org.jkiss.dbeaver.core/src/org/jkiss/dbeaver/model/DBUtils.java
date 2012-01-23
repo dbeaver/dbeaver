@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -746,6 +747,8 @@ public final class DBUtils {
             if (value.getClass().getComponentType() == Byte.TYPE) {
                 byte[] bytes = (byte[]) value;
                 return CommonUtils.toHexString(bytes, 0, 2000);
+            } else {
+                return UIUtils.makeStringForUI(value).toString();
             }
         }
         String className = value.getClass().getName();

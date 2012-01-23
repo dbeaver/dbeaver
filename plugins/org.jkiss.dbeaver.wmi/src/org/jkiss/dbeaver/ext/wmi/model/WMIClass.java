@@ -151,11 +151,9 @@ public class WMIClass extends WMIContainer
         return name;
     }
 
-    public String getFullQualifiedName()
+    @Property(name = "Path", viewable = true, order = 2)
+    public String getPath()
     {
-        if (classObject == null) {
-            return getName();
-        }
         try {
             return CommonUtils.toString(
                 classObject.getValue(WMIConstants.CLASS_PROP_PATH));
@@ -163,6 +161,13 @@ public class WMIClass extends WMIContainer
             log.error(e);
             return e.getMessage();
         }
+    }
+
+    public String getFullQualifiedName()
+    {
+        //if (classObject == null) {
+            return getName();
+        //}
     }
 
     public boolean isSystem()

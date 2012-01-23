@@ -152,12 +152,25 @@ void GetJavaString(JNIEnv *env, jstring string, BSTR* result)
 jlong ConvertCIMTimeToJavaTime(BSTR cimTime)
 {
 	struct tm resultTime;
-	int tz;
-	int result = ::swscanf_s(cimTime, L"%04d%02d%02d%02d%02d%02d.000000%c%03d", 
-		&resultTime.tm_year, &resultTime.tm_mon, &resultTime.tm_mday, &resultTime.tm_hour, &resultTime.tm_min, &resultTime.tm_sec, &tz);
+	int microSecs = 0;
+	int tz = 0;
+	int result = ::swscanf_s(cimTime, L"%04d%02d%02d%02d%02d%02d.%06d%d", 
+		&resultTime.tm_year, 
+		&resultTime.tm_mon, 
+		&resultTime.tm_mday, 
+		&resultTime.tm_hour, 
+		&resultTime.tm_min, 
+		&resultTime.tm_sec, 
+		&microSecs, 
+		&tz);
+	if (result != 8) {
+		// Invalid CIM time
+		return 0;
+	}
 	resultTime.tm_year -= 1900;
 	resultTime.tm_mon--;
-	return mktime(&resultTime) * 1000;
+	time_t timeInSeconds = mktime(&resultTime);
+	return timeInSeconds * 1000 + (microSecs / 1000);
 }
 
 LONG GetSafeArraySize(SAFEARRAY* pSafeArray)

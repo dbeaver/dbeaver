@@ -86,6 +86,7 @@ public class TestService {
 
         System.gc();
         System.out.println("DONE");
+        System.exit(0);
     }
 
     private void testNamespace()
@@ -97,48 +98,17 @@ public class TestService {
 
         nsService = service.openNamespace("cimv2");
         ObjectCollectorSink tmpSink = new ObjectCollectorSink();
-        nsService.executeQuery("SELECT * FROM Win32_Service", tmpSink, WMIConstants.WBEM_FLAG_SEND_STATUS);
+        nsService.executeQuery("SELECT * FROM Win32_Process", tmpSink, WMIConstants.WBEM_FLAG_SEND_STATUS);
         tmpSink.waitForFinish();
         for (WMIObject o : tmpSink.objectList) {
-            System.out.println(o.getValue("Name"));
-        }
-
-        classesSink = new ObjectCollectorSink();
-        nsService.enumClasses(null, classesSink, 0);
-        classesSink.waitForFinish();
-        for (WMIObject classDesc : classesSink.objectList) {
-            final Collection<WMIObjectMethod> methods = classDesc.getMethods(WMIConstants.WBEM_FLAG_ALWAYS);
-            if (methods != null) {
-
-            }
-        }
-
-        ObjectCollectorSink objectCollectorSink = new ObjectCollectorSink();
-/*
-            service.executeQuery(
-                //"select * from Win32_NTLogEvent",
-                "select * from Win32_Group",
-                objectCollectorSink,
-                WMIConstants.WBEM_FLAG_SEND_STATUS
-            );
-*/
-        nsService.enumInstances("Win32_Group", objectCollectorSink, WMIConstants.WBEM_FLAG_SEND_STATUS);
-        objectCollectorSink.waitForFinish();
-
-        for (WMIObject nsDesc : objectCollectorSink.objectList) {
-            System.out.println(nsDesc.getValue("Name"));
-            final Collection<WMIQualifier> qfList = nsDesc.getQualifiers();
-            if (qfList != null) {
-
-            }
-
-//                final Object nsName = nsDesc.getValue("Name");
-//                final WMIService nsService = service.openNamespace(nsName.toString());
-//
-//                ObjectCollectorSink classCollectorSink = new ObjectCollectorSink();
-//                nsService.enumClasses(null, classCollectorSink, WMIConstants.WBEM_FLAG_SEND_STATUS | WMIConstants.WBEM_FLAG_SHALLOW);
-//                classCollectorSink.waitForFinish();
-//                nsService.close();
+            System.out.println("=============");
+//            for (WMIObjectAttribute attr : o.getAttributes(WMIConstants.WBEM_FLAG_ALWAYS)) {
+//                System.out.println(attr.toString());
+//            }
+            System.out.println("Caption=" + o.getValue("Caption"));
+            System.out.println("CommandLine=" + o.getValue("CommandLine"));
+            System.out.println("CreationClassName=" + o.getValue("CreationClassName"));
+            System.out.println("CreationDate=" + o.getValue("CreationDate"));
         }
     }
 

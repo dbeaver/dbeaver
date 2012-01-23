@@ -30,12 +30,18 @@ JNIEXPORT jstring JNICALL Java_org_jkiss_wmi_service_WMIObject_readObjectText(JN
  */
 JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIObject_readAttributeValue(JNIEnv* pJavaEnv, jobject object, jstring propName)
 {
-	WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
-	if (pObject == NULL) {
-		THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
+	try {
+		WMIObject* pObject = WMIObject::GetFromObject(pJavaEnv, object);
+		if (pObject == NULL) {
+			THROW_COMMON_EXCEPTION(ERROR_NOT_INITIALIZED);
+			return NULL;
+		}
+		return pObject->GetAttributeValue(pJavaEnv, propName);
+	}
+	catch (...) {
+		THROW_COMMON_EXCEPTION(L"Internal error while reading attribute");
 		return NULL;
 	}
-	return pObject->GetAttributeValue(pJavaEnv, propName);
 }
 
 /*
