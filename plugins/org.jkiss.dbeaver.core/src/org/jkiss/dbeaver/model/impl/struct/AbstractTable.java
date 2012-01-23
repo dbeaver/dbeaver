@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
@@ -30,6 +31,12 @@ public abstract class AbstractTable<
     {
         this(container);
         this.tableName = tableName;
+    }
+
+    @Override
+    public DBSEntityType getEntityType()
+    {
+        return DBSEntityType.TABLE;
     }
 
     public CONTAINER getContainer()

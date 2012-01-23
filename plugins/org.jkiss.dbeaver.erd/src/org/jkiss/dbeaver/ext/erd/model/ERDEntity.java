@@ -203,10 +203,15 @@ public class ERDEntity extends ERDObject<DBSEntity>
         try {
             Collection<? extends DBSEntityAttribute> idColumns = DBUtils.getBestTableIdentifier(monitor, entity);
 
-            Collection<? extends DBSEntityAttribute> columns = entity.getAttributes(monitor);
-            if (!CommonUtils.isEmpty(columns)) {
-                for (DBSEntityAttribute column : columns) {
-                    ERDEntityAttribute c1 = new ERDEntityAttribute(column, idColumns.contains(column));
+            Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
+            if (!CommonUtils.isEmpty(attributes)) {
+                for (DBSEntityAttribute attribute : attributes) {
+                    if (attribute instanceof DBSEntityAssociation) {
+                        // skip attributes which are associations
+                        // usual thing in some systems like WMI/CIM model
+                        continue;
+                    }
+                    ERDEntityAttribute c1 = new ERDEntityAttribute(attribute, idColumns.contains(attribute));
                     erdEntity.addColumn(c1, false);
                 }
             }

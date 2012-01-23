@@ -20,9 +20,7 @@ import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Embedded ERD editor
@@ -158,7 +156,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
 
     private Collection<DBSEntity> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root) throws DBException
     {
-        Set<DBSEntity> result = new HashSet<DBSEntity>();
+        Set<DBSEntity> result = new LinkedHashSet<DBSEntity>();
 
         // Cache structure
         if (root instanceof DBSObjectContainer) {
@@ -174,7 +172,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             monitor.done();
 
         } else if (root instanceof DBSEntity) {
-            monitor.beginTask("Load '" + root.getName() + "' relations", 2);
+            monitor.beginTask("Load '" + root.getName() + "' relations", 3);
             DBSEntity rootTable = (DBSEntity) root;
             result.add(rootTable);
             try {
@@ -182,10 +180,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 Collection<? extends DBSEntityAssociation> fks = rootTable.getAssociations(monitor);
                 if (fks != null) {
                     for (DBSEntityAssociation fk : fks) {
-                        DBSEntity refEntity = fk.getAssociatedEntity();
-                        if (refEntity instanceof DBSEntity) {
-                            result.add((DBSEntity) refEntity);
-                        }
+                        result.add(fk.getAssociatedEntity());
                     }
                 }
                 monitor.worked(1);
@@ -200,13 +195,38 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 Collection<? extends DBSEntityAssociation> refs = rootTable.getReferences(monitor);
                 if (refs != null) {
                     for (DBSEntityAssociation ref : refs) {
-                        result.add((DBSEntity) ref.getParentObject());
+                        result.add(ref.getParentObject());
                     }
                 }
                 monitor.worked(1);
             } catch (DBException e) {
                 log.warn("Could not load table references", e);
             }
+            if (monitor.isCanceled()) {
+                return result;
+            }
+            try {
+                monitor.subTask("Read associations");
+                List<DBSEntity> secondLevelEntities = new ArrayList<DBSEntity>();
+                for (DBSEntity entity : result) {
+                    if (entity != rootTable && entity.getEntityType() == DBSEntityType.ASSOCIATION) {
+                        // Read all association's associations
+                        Collection<? extends DBSEntityAssociation> fks = entity.getAssociations(monitor);
+                        if (fks != null) {
+                            for (DBSEntityAssociation association : fks) {
+                                if (association.getConstraintType() != DBSEntityConstraintType.INHERITANCE) {
+                                    secondLevelEntities.add(association.getAssociatedEntity());
+                                }
+                            }
+                        }
+                    }
+                }
+                result.addAll(secondLevelEntities);
+                monitor.worked(1);
+            } catch (DBException e) {
+                log.warn("Could not load table references", e);
+            }
+
             monitor.done();
         }
 

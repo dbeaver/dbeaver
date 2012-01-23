@@ -13,7 +13,7 @@ import org.jkiss.wmi.service.WMIObjectAttribute;
 /**
  * Class association
  */
-public class WMIClassReference extends WMIClassElement<WMIObjectAttribute> implements DBSEntityAssociation
+public class WMIClassReference extends WMIClassAttribute implements DBSEntityAssociation
 {
     private WMIClass refClass;
 

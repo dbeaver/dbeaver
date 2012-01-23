@@ -14,6 +14,8 @@ import java.util.Collection;
  */
 public interface DBSEntity extends DBSObject
 {
+    DBSEntityType getEntityType();
+
     /**
      * Gets this entity attributes
      * @return attribute list

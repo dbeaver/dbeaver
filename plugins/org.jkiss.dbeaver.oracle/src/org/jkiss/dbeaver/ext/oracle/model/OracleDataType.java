@@ -351,6 +351,12 @@ public class OracleDataType extends OracleObject
         return methodCache != null;
     }
 
+    @Override
+    public DBSEntityType getEntityType()
+    {
+        return DBSEntityType.TYPE;
+    }
+
     @Association
     public Collection<OracleDataTypeAttribute> getAttributes(DBRProgressMonitor monitor)
         throws DBException

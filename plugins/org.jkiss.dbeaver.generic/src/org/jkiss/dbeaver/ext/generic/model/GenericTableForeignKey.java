@@ -21,14 +21,15 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
     private DBSConstraintDefferability defferability;
     private List<GenericTableForeignKeyColumnTable> columns;
 
-    public GenericTableForeignKey(GenericTable table,
-                                  String name,
-                                  String remarks,
-                                  GenericPrimaryKey referencedKey,
-                                  DBSConstraintModifyRule deleteRule,
-                                  DBSConstraintModifyRule updateRule,
-                                  DBSConstraintDefferability defferability,
-                                  boolean persisted)
+    public GenericTableForeignKey(
+        GenericTable table,
+        String name,
+        String remarks,
+        GenericPrimaryKey referencedKey,
+        DBSConstraintModifyRule deleteRule,
+        DBSConstraintModifyRule updateRule,
+        DBSConstraintDefferability defferability,
+        boolean persisted)
     {
         super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
         this.defferability = defferability;

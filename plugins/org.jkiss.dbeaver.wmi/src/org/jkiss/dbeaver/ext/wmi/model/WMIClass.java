@@ -69,7 +69,7 @@ public class WMIClass extends WMIContainer
     private String name;
     private List<WMIClass> subClasses = null;
     private List<WMIClassAttribute> attributes = null;
-    private List<WMIClassReference> references = null;
+    private List<WMIClassReference> referenceAttributes = null;
     private List<WMIClassMethod> methods = null;
 
     public WMIClass(WMINamespace parent, WMIClass superClass, WMIObject classObject)
@@ -79,22 +79,29 @@ public class WMIClass extends WMIContainer
         this.classObject = classObject;
     }
 
-    public boolean isAbstract() throws WMIException
+    private boolean getFlagQualifier(String qName) throws DBException
     {
-        return classObject != null && Boolean.TRUE.equals(
-            classObject.getQualifier(WMIConstants.Q_Abstract));
+        try {
+            return classObject != null && Boolean.TRUE.equals(
+                classObject.getQualifier(qName));
+        } catch (WMIException e) {
+            throw new DBException(e);
+        }
     }
 
-    public boolean isAssociation() throws WMIException
+    public boolean isAbstract() throws DBException
     {
-        return classObject != null && Boolean.TRUE.equals(
-            classObject.getQualifier(WMIConstants.Q_Association));
+        return getFlagQualifier(WMIConstants.Q_Abstract);
     }
 
-    public boolean isFinal() throws WMIException
+    public boolean isAssociation() throws DBException
     {
-        return classObject != null && Boolean.TRUE.equals(
-            classObject.getQualifier(WMIConstants.Q_Terminal));
+        return getFlagQualifier(WMIConstants.Q_Association);
+    }
+
+    public boolean isFinal() throws DBException
+    {
+        return getFlagQualifier(WMIConstants.Q_Terminal);
     }
 
     @Property(name = "Super Class", viewable = true, order = 10)
@@ -175,6 +182,27 @@ public class WMIClass extends WMIContainer
         return getName().startsWith("__");
     }
 
+    @Override
+    public DBSEntityType getEntityType()
+    {
+        try {
+            if (isAssociation()) {
+                return DBSEntityType.ASSOCIATION;
+            }
+        } catch (DBException e) {
+            log.warn(e);
+        }
+        return DBSEntityType.CLASS;
+    }
+
+    public Collection<WMIClassReference> getReferenceAttributes(DBRProgressMonitor monitor) throws DBException
+    {
+        if (attributes == null) {
+            readAttributes(monitor);
+        }
+        return referenceAttributes;
+    }
+
     public Collection<WMIClassAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
     {
         if (attributes == null) {
@@ -247,11 +275,13 @@ public class WMIClass extends WMIContainer
                         log.warn("Referenced class '" + refClassName + "' not found in '" + getNamespace().getName() + "'");
                         continue;
                     }
-                    if (references == null) {
-                        references = new ArrayList<WMIClassReference>();
+                    if (referenceAttributes == null) {
+                        referenceAttributes = new ArrayList<WMIClassReference>();
                     }
-                    references.add(new WMIClassReference(this, prop, refClass));
-                } /*else*/ if (!prop.isSystem()) {
+                    WMIClassReference reference = new WMIClassReference(this, prop, refClass);
+                    referenceAttributes.add(reference);
+                    attributes.add(reference);
+                } else if (!prop.isSystem()) {
                     attributes.add(new WMIClassAttribute(this, prop));
                 }
             }
@@ -301,29 +331,43 @@ public class WMIClass extends WMIContainer
     {
         // Read attributes and references
         getAttributes(monitor);
-        if (superClass == null && CommonUtils.isEmpty(references)) {
+        if (superClass == null && CommonUtils.isEmpty(referenceAttributes)) {
             return null;
         }
         List<DBSEntityAssociation> associations = new ArrayList<DBSEntityAssociation>();
         if (superClass != null) {
             associations.add(new WMIClassInheritance(superClass, this));
         }
-        if (references != null) {
-            associations.addAll(references);
+        if (referenceAttributes != null) {
+            associations.addAll(referenceAttributes);
         }
         return associations;
     }
 
     public List<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
     {
-        if (subClasses == null) {
-            return null;
+        List<DBSEntityAssociation> references = new ArrayList<DBSEntityAssociation>();
+        if (subClasses != null) {
+            for (WMIClass ss : subClasses) {
+                references.add(new WMIClassInheritance(this, ss));
+            }
         }
-        List<WMIClassInheritance> subList = new ArrayList<WMIClassInheritance>();
-        for (WMIClass ss : subClasses) {
-            subList.add(new WMIClassInheritance(this, ss));
+        if (!this.isAssociation()) {
+            // Try to find references on self in association classes
+            for (WMIClass assoc : getNamespace().getAssociations(monitor)) {
+                Collection<WMIClassReference> refAttrs = assoc.getReferenceAttributes(monitor);
+                if (refAttrs != null) {
+                    for (WMIClassReference ref : refAttrs) {
+                        if (ref.getAssociatedEntity() == this) {
+                            // Add all association ref attributes
+                            references.add(ref);
+                            break;
+                        }
+                    }
+                }
+            }
         }
-        return subList;
+        return references;
     }
 
     public void close()
@@ -415,7 +459,7 @@ public class WMIClass extends WMIContainer
             } else if (isFinal()) {
                 return IMG_CLASS_FINAL;
             }
-        } catch (WMIException e) {
+        } catch (DBException e) {
             log.warn(e);
         }
         return IMG_CLASS;
