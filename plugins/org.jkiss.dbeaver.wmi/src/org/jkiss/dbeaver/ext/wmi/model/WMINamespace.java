@@ -180,9 +180,10 @@ public class WMINamespace extends WMIContainer implements DBSSchema, DBPCloseabl
                     allClasses.add(wmiClass);
                     if (superClass == null) {
                         rootClasses.add(wmiClass);
-                    } else {
-                        superClass.addSubClass(wmiClass);
                     }
+                }
+                if (superClass != null) {
+                    superClass.addSubClass(wmiClass);
                 }
             }
 
