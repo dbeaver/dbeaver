@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
+import org.eclipse.jface.action.*;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ImageUtils;
@@ -27,10 +28,6 @@ import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -705,6 +702,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     }
 
+    public MenuManager createAttributeVisibilityMenu()
+    {
+        MenuManager avMenu = new MenuManager("Show Attributes");
+        avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.ALL));
+        avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.KEYS));
+        avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.PRIMARY));
+        avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.NONE));
+        return avMenu;
+    }
+
     public void printDiagram()
     {
         GraphicalViewer viewer = getGraphicalViewer();
@@ -750,6 +757,30 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     protected abstract void loadDiagram();
+
+    private class ChangeAttributeVisibilityAction extends Action {
+        private final ERDAttributeVisibility visibility;
+
+        private ChangeAttributeVisibilityAction(ERDAttributeVisibility visibility)
+        {
+            super(visibility.getTitle(), IAction.AS_RADIO_BUTTON);
+            this.visibility = visibility;
+        }
+
+        @Override
+        public boolean isChecked()
+        {
+            return visibility == getDiagram().getAttributeVisibility();
+        }
+
+        @Override
+        public void run()
+        {
+            getDiagram().setAttributeVisibility(visibility);
+            refreshDiagram();
+            //this.setChecked(true);
+        }
+    }
 
     private class ConfigPropertyListener implements IPropertyChangeListener {
         public void propertyChange(PropertyChangeEvent event)
@@ -808,7 +839,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
             ZoomManager zoomManager = rootPart.getZoomManager();
 
-            toolBarManager = new ToolBarManager();
+            toolBarManager = new ToolBarManager(SWT.HORIZONTAL | SWT.FLAT);
 
             String[] zoomStrings = new String[]{
                 ZoomManager.FIT_ALL,
@@ -852,9 +883,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             //toolBarManager.add(new RedoAction(ERDEditorPart.this));
             //toolBarManager.add(new PrintAction(ERDEditorPart.this));
 
-            toolBarManager.add(new Separator());
             toolBarManager.add(new ZoomInAction(zoomManager));
             toolBarManager.add(new ZoomOutAction(zoomManager));
+            toolBarManager.add(new Separator());
+            //toolBarManager.add(createAttributeVisibilityMenu());
             toolBarManager.add(new DiagramLayoutAction(ERDEditorPart.this));
             toolBarManager.add(new DiagramToggleGridAction());
             toolBarManager.add(new DiagramRefreshAction(ERDEditorPart.this));

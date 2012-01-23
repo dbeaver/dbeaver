@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql;
@@ -257,7 +257,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         {
             Composite infoGroup = super.createProgressPanel(container);
 
-            toolBarManager = new ToolBarManager();
+            toolBarManager = new ToolBarManager(SWT.HORIZONTAL | SWT.FLAT);
 
             toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), ICommandIds.CMD_OPEN_FILE));
             toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), ICommandIds.CMD_SAVE_FILE));

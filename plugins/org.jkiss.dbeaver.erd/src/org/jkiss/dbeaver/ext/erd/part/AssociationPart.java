@@ -77,12 +77,13 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             conn.setSourceDecoration(srcDec);
         }
         if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
-            final CircleDecoration dec = new CircleDecoration();
-            dec.setRadius(3);
-            if (false) {
-                dec.setFill(true);
-                dec.setBackgroundColor(getParent().getViewer().getControl().getForeground());
-            }
+//            final CircleDecoration dec = new CircleDecoration();
+//            dec.setRadius(3);
+//            if (false) {
+//                dec.setFill(true);
+//                dec.setBackgroundColor(getParent().getViewer().getControl().getForeground());
+//            }
+            final PolygonDecoration dec = new PolygonDecoration();
             conn.setTargetDecoration(dec);
         }
 

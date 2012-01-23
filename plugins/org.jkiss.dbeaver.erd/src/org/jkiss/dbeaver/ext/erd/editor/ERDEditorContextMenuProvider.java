@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -9,7 +9,6 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.ui.actions.GEFActionConstants;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -44,9 +43,9 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
 
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
-        IAction action = new DiagramLayoutAction(editor);
         menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new Separator());
-        menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, action);
+        menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, editor.createAttributeVisibilityMenu());
+        menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new DiagramLayoutAction(editor));
 
 	}
 }

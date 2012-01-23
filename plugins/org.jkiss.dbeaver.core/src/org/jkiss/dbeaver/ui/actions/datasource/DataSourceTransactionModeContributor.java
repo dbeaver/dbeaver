@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.datasource;
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -51,7 +52,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             } catch (DBCException ex) {
                 log.warn("Can't determine current transaction isolation level", ex);
             }
-            for (DBPTransactionIsolation txi : dsInfo.getSupportedTransactionIsolations()) {
+            for (DBPTransactionIsolation txi : CommonUtils.safeCollection(dsInfo.getSupportedTransactionIsolations())) {
                 if (!txi.isEnabled()) {
                     continue;
                 }
