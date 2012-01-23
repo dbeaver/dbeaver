@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.DefaultPropertyLabelProvider;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIQualifiedObject;
 import org.jkiss.wmi.service.WMIQualifier;
@@ -39,6 +40,7 @@ public abstract class WMIPropertySource implements IPropertySource
             for (WMIQualifier qualifier : qualifiers) {
                 String name = qualifier.getName();
                 PropertyDescriptor prop = new PropertyDescriptor(name, name);
+                prop.setLabelProvider(DefaultPropertyLabelProvider.INSTANCE);
                 prop.setCategory("WMI");
                 result[index++] = prop;
             }

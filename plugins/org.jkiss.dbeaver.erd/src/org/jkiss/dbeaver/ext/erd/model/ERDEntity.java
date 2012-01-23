@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
@@ -196,28 +197,60 @@ public class ERDEntity extends ERDObject<DBSEntity>
         return object.equals(((ERDEntity)o).object);
 	}
 
-    public static ERDEntity fromObject(DBRProgressMonitor monitor, DBSEntity entity)
+    public static ERDEntity fromObject(DBRProgressMonitor monitor, EntityDiagram diagram, DBSEntity entity)
     {
         ERDEntity erdEntity = new ERDEntity(entity);
-
-        try {
-            Collection<? extends DBSEntityAttribute> idColumns = DBUtils.getBestTableIdentifier(monitor, entity);
-
-            Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
-            if (!CommonUtils.isEmpty(attributes)) {
-                for (DBSEntityAttribute attribute : attributes) {
-                    if (attribute instanceof DBSEntityAssociation) {
-                        // skip attributes which are associations
-                        // usual thing in some systems like WMI/CIM model
-                        continue;
+        ERDAttributeVisibility attributeVisibility = diagram.getAttributeVisibility();
+        if (attributeVisibility != ERDAttributeVisibility.NONE) {
+            Set<DBSEntityAttribute> keyColumns = null;
+            if (attributeVisibility == ERDAttributeVisibility.KEYS) {
+                keyColumns = new HashSet<DBSEntityAttribute>();
+                try {
+                    for (DBSEntityAssociation assoc : CommonUtils.safeCollection(entity.getAssociations(monitor))) {
+                        if (assoc instanceof DBSEntityReferrer) {
+                            keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) assoc));
+                        }
                     }
-                    ERDEntityAttribute c1 = new ERDEntityAttribute(attribute, idColumns.contains(attribute));
-                    erdEntity.addColumn(c1, false);
+                } catch (DBException e) {
+                    log.warn(e);
                 }
             }
-        } catch (DBException e) {
-            // just skip this problematic columns
-            log.debug("Could not load table '" + entity.getName() + "'columns", e);
+            try {
+                Collection<? extends DBSEntityAttribute> idColumns = DBUtils.getBestTableIdentifier(monitor, entity);
+                if (keyColumns != null) {
+                    keyColumns.addAll(idColumns);
+                }
+
+                Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
+                if (!CommonUtils.isEmpty(attributes)) {
+                    for (DBSEntityAttribute attribute : attributes) {
+                        if (attribute instanceof DBSEntityAssociation) {
+                            // skip attributes which are associations
+                            // usual thing in some systems like WMI/CIM model
+                            continue;
+                        }
+                        switch (attributeVisibility) {
+                            case PRIMARY:
+                                if (!idColumns.contains(attribute)) {
+                                    continue;
+                                }
+                                break;
+                            case KEYS:
+                                if (!keyColumns.contains(attribute)) {
+                                    continue;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                        ERDEntityAttribute c1 = new ERDEntityAttribute(attribute, idColumns.contains(attribute));
+                        erdEntity.addColumn(c1, false);
+                    }
+                }
+            } catch (DBException e) {
+                // just skip this problematic columns
+                log.debug("Could not load table '" + entity.getName() + "'columns", e);
+            }
         }
         return erdEntity;
     }

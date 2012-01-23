@@ -453,7 +453,7 @@ public class WMIClass extends WMIContainer
     {
         try {
             if (isAssociation()) {
-                return isAbstract() ? IMG_ASSOCIATION : IMG_ASSOCIATION_ABSTRACT;
+                return isAbstract() ? IMG_ASSOCIATION_ABSTRACT : IMG_ASSOCIATION;
             } else if (isAbstract()) {
                 return isFinal() ? IMG_CLASS_ABSTRACT_FINAL : IMG_CLASS_ABSTRACT;
             } else if (isFinal()) {

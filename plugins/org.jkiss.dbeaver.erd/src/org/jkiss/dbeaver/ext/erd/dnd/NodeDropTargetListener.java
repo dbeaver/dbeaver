@@ -17,7 +17,6 @@ import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
-import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
 import java.util.Collection;
 
@@ -48,7 +47,7 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                     return null;
                 }
 
-                return DiagramObjectCollector.generateTableList(
+                return DiagramObjectCollector.generateEntityList(
                     ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram(),
                     objects);
             }

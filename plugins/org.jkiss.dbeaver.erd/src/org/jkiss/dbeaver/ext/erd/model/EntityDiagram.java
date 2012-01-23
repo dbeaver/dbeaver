@@ -9,9 +9,13 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.jkiss.dbeaver.ext.erd.Activator;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -31,6 +35,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     private Map<ERDObject, Rectangle> initBounds = new IdentityHashMap<ERDObject, Rectangle>();
     private List<ERDNote> notes = new ArrayList<ERDNote>();
     private boolean needsAutoLayout;
+    private ERDAttributeVisibility attributeVisibility = ERDAttributeVisibility.PRIMARY;
 
     private List<String> errorMessages = new ArrayList<String>();
 
@@ -40,7 +45,30 @@ public class EntityDiagram extends ERDObject<DBSObject>
 		if (name == null)
 			throw new NullPointerException("Name cannot be null");
 		this.name = name;
+
+        String attrVisibilityString = Activator.getDefault().getPreferenceStore().getString(ERDConstants.PREF_ATTR_VISIBILITY);
+        if (!CommonUtils.isEmpty(attrVisibilityString)) {
+            try {
+                attributeVisibility = ERDAttributeVisibility.valueOf(attrVisibilityString);
+            } catch (IllegalArgumentException e) {
+                log.warn(e);
+            }
+        }
 	}
+
+
+    public ERDAttributeVisibility getAttributeVisibility()
+    {
+        return attributeVisibility;
+    }
+
+    public void setAttributeVisibility(ERDAttributeVisibility attributeVisibility)
+    {
+        this.attributeVisibility = attributeVisibility;
+        Activator.getDefault().getPreferenceStore().setValue(
+            ERDConstants.PREF_ATTR_VISIBILITY,
+            attributeVisibility.name());
+    }
 
 	public synchronized void addTable(ERDEntity entity, boolean reflect)
 	{
@@ -196,7 +224,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
                 break;
             }
             monitor.subTask("Load " + table.getName());
-            ERDEntity erdEntity = ERDEntity.fromObject(monitor, table);
+            ERDEntity erdEntity = ERDEntity.fromObject(monitor, this, table);
             erdEntity.setPrimary(table == dbObject);
 
             addTable(erdEntity, false);

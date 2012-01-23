@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 public class EntityFigure extends Figure {
 
     public static Color primaryTableColor = new Color(null, 255, 226, 255);
+    public static Color associationTableColor = new Color(null, 255, 255, 255);
 
     private AttributeFigure attributeFigure;
     private EditableLabel nameLabel;
@@ -50,6 +52,8 @@ public class EntityFigure extends Figure {
         setBorder(new LineBorder(ColorConstants.black, 1));
         if (entity.isPrimary()) {
             setBackgroundColor(primaryTableColor);
+        } else if (entity.getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
+            setBackgroundColor(associationTableColor);
         } else {
             setBackgroundColor(ColorConstants.tooltipBackground);
         }

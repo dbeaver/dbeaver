@@ -97,7 +97,7 @@ public class DiagramObjectCollector {
     {
         Collection<DBSEntity> tables = collectTables(monitor, roots);
         for (DBSEntity table : tables) {
-            addDiagramTable(monitor, table);
+            addDiagramEntity(monitor, table);
         }
 
         // Add new relations
@@ -106,25 +106,25 @@ public class DiagramObjectCollector {
         }
     }
 
-    private void addDiagramTable(DBRProgressMonitor monitor, DBSEntity table)
+    private void addDiagramEntity(DBRProgressMonitor monitor, DBSEntity table)
     {
         if (diagram.containsTable(table)) {
             // Avoid duplicates
             return;
         }
-        ERDEntity erdEntity = ERDEntity.fromObject(monitor, table);
+        ERDEntity erdEntity = ERDEntity.fromObject(monitor, diagram, table);
         if (erdEntity != null) {
             erdEntities.add(erdEntity);
             tableMap.put(table, erdEntity);
         }
     }
 
-    public List<ERDEntity> getDiagramTables()
+    public List<ERDEntity> getDiagramEntities()
     {
         return erdEntities;
     }
 
-    public static List<ERDEntity> generateTableList(final EntityDiagram diagram, Collection<DBPNamedObject> objects)
+    public static List<ERDEntity> generateEntityList(final EntityDiagram diagram, Collection<DBPNamedObject> objects)
     {
         final List<DBSObject> roots = new ArrayList<DBSObject>();
         for (DBPNamedObject object : objects) {
@@ -145,7 +145,7 @@ public class DiagramObjectCollector {
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
-                    entities.addAll(collector.getDiagramTables());
+                    entities.addAll(collector.getDiagramEntities());
                 }
             });
         } catch (InvocationTargetException e) {
