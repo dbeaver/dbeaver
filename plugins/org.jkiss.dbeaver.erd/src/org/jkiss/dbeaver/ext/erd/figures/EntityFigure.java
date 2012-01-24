@@ -10,12 +10,9 @@ package org.jkiss.dbeaver.ext.erd.figures;
 import org.eclipse.draw2d.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
-import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * Figure used to represent a table in the schema
@@ -32,17 +29,13 @@ public class EntityFigure extends Figure {
 
     public EntityFigure(ERDEntity entity)
     {
-        DBNDatabaseNode entityNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(entity.getObject());
-        Image tableImage;
-        if (entityNode == null) {
-            tableImage = DBIcon.TREE_TABLE.getImage();
-        } else {
-            tableImage = entityNode.getNodeIconDefault();
-        }
+        Image tableImage = entity.getObject().getEntityType().getIcon();
 
         attributeFigure = new AttributeFigure(entity);
         nameLabel = new EditableLabel(entity.getObject().getName());
-        nameLabel.setIcon(tableImage);
+        if (tableImage != null) {
+            nameLabel.setIcon(tableImage);
+        }
         nameLabel.setForegroundColor(ColorConstants.black);
 
         ToolbarLayout layout = new ToolbarLayout();

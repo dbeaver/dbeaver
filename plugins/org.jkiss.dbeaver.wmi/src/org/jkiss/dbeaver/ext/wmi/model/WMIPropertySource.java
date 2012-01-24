@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.properties.DefaultPropertyLabelProvider;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIQualifiedObject;
@@ -21,6 +22,17 @@ public abstract class WMIPropertySource implements IPropertySource
     private static final IPropertyDescriptor[] EMPTY_PROPERTIES = new IPropertyDescriptor[0];
 
     protected abstract WMIQualifiedObject getQualifiedObject();
+
+    protected boolean getFlagQualifier(String qName) throws DBException
+    {
+        try {
+            WMIQualifiedObject qualifiedObject = getQualifiedObject();
+            return qualifiedObject != null && Boolean.TRUE.equals(
+                qualifiedObject.getQualifier(qName));
+        } catch (WMIException e) {
+            throw new DBException(e);
+        }
+    }
 
     public Object getEditableValue()
     {

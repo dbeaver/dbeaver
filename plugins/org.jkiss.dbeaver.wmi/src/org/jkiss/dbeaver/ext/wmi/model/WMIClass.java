@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.*;
@@ -44,7 +45,7 @@ public class WMIClass extends WMIContainer
     private static Image IMG_ASSOCIATION_ABSTRACT;
 
     static {
-        IMG_CLASS = Activator.getImageDescriptor("icons/class.png").createImage();
+        IMG_CLASS = DBIcon.TREE_CLASS.getImage();
         ImageData baseData = IMG_CLASS.getImageData();
         OverlayImageDescriptor ovrDescriptor = new OverlayImageDescriptor(baseData);
         ovrDescriptor.setTopRight(new ImageDescriptor[]{
@@ -56,7 +57,7 @@ public class WMIClass extends WMIContainer
         ovrDescriptor.setTopRight(null);
         IMG_CLASS_FINAL = ovrDescriptor.createImage();
 
-        IMG_ASSOCIATION = Activator.getImageDescriptor("icons/association.png").createImage();
+        IMG_ASSOCIATION = DBIcon.TREE_ASSOCIATION.getImage();
         baseData = IMG_ASSOCIATION.getImageData();
         ovrDescriptor = new OverlayImageDescriptor(baseData);
         ovrDescriptor.setTopRight(new ImageDescriptor[]{
@@ -79,16 +80,6 @@ public class WMIClass extends WMIContainer
         this.classObject = classObject;
     }
 
-    private boolean getFlagQualifier(String qName) throws DBException
-    {
-        try {
-            return classObject != null && Boolean.TRUE.equals(
-                classObject.getQualifier(qName));
-        } catch (WMIException e) {
-            throw new DBException(e);
-        }
-    }
-
     public boolean isAbstract() throws DBException
     {
         return getFlagQualifier(WMIConstants.Q_Abstract);
@@ -97,6 +88,11 @@ public class WMIClass extends WMIContainer
     public boolean isAssociation() throws DBException
     {
         return getFlagQualifier(WMIConstants.Q_Association);
+    }
+
+    public boolean isAggregation() throws DBException
+    {
+        return getFlagQualifier(WMIConstants.Q_Aggregation);
     }
 
     public boolean isFinal() throws DBException
@@ -214,7 +210,16 @@ public class WMIClass extends WMIContainer
     @Override
     public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
     {
-        return null;
+        List<WMIClassConstraint> constraints = null;
+        for (WMIClassAttribute attr : getAllAttributes(monitor)) {
+            if (attr.isKey()) {
+                if (constraints == null) {
+                    constraints = new ArrayList<WMIClassConstraint>();
+                }
+                constraints.add(new WMIClassConstraint(this, attr));
+            }
+        }
+        return constraints;
     }
 
     public WMIClassAttribute getAttribute(DBRProgressMonitor monitor, String name) throws DBException

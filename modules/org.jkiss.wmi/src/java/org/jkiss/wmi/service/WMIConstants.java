@@ -145,5 +145,6 @@ public class WMIConstants {
 
 
     public static final String Q_CIMTYPE = "CIMTYPE";
+    public static final String Q_CIM_Key = "CIM_Key";
 
 }

@@ -211,6 +211,11 @@ public class ERDEntity extends ERDObject<DBSEntity>
                             keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) assoc));
                         }
                     }
+                    for (DBSEntityConstraint constraint : CommonUtils.safeCollection(entity.getConstraints(monitor))) {
+                        if (constraint instanceof DBSEntityReferrer) {
+                            keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) constraint));
+                        }
+                    }
                 } catch (DBException e) {
                     log.warn(e);
                 }

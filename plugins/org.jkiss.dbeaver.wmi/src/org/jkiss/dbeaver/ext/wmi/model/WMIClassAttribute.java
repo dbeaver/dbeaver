@@ -5,12 +5,14 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.WMIConstants;
+import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIObjectAttribute;
 
 /**
@@ -49,6 +51,14 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
     @Override
     public long getMaxLength()
     {
+        try {
+            Object maxLengthQ = getQualifiedObject().getQualifier(WMIConstants.Q_MaxLen);
+            if (maxLengthQ instanceof Number) {
+                return ((Number) maxLengthQ).longValue();
+            }
+        } catch (WMIException e) {
+            log.warn(e);
+        }
         return 0;
     }
 
@@ -62,6 +72,11 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
     public boolean isSequence()
     {
         return false;
+    }
+
+    public boolean isKey() throws DBException
+    {
+        return getFlagQualifier(WMIConstants.Q_Key) || getFlagQualifier(WMIConstants.Q_CIM_Key);
     }
 
     @Property(name = "Default Value", viewable = true, order = 20)
@@ -100,4 +115,5 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
                 return DBIcon.TYPE_UNKNOWN.getImage();
         }
     }
+
 }

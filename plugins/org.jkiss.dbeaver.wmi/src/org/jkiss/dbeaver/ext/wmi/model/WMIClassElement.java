@@ -52,4 +52,9 @@ public abstract class WMIClassElement<T extends WMIObjectElement> extends WMIPro
         return true;
     }
 
+    @Override
+    public String toString()
+    {
+        return getName();
+    }
 }

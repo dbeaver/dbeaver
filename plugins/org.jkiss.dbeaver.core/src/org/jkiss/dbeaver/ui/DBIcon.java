@@ -57,6 +57,8 @@ public enum DBIcon
     TREE_JAVA_INTERFACE("javaInterface", "icons/tree/java_interface.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_LINK("link", "icons/tree/link.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_FILE("file", "icons/tree/file.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TREE_CLASS("class", "icons/tree/class.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TREE_ASSOCIATION("association", "icons/tree/association.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     TREE_INFO("info", "/icons/tree/info.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_FOLDER_INFO("folder_info", "/icons/tree/folder_info.png"), //$NON-NLS-1$ //$NON-NLS-2$

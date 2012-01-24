@@ -36,7 +36,7 @@ public abstract class AbstractTable<
     @Override
     public DBSEntityType getEntityType()
     {
-        return DBSEntityType.TABLE;
+        return isView() ? DBSEntityType.VIEW : DBSEntityType.TABLE;
     }
 
     public CONTAINER getContainer()

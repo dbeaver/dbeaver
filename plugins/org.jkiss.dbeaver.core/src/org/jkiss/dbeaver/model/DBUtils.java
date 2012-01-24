@@ -438,7 +438,7 @@ public final class DBUtils {
             return Collections.emptyList();
         }
 
-        List<DBSObject> identifiers = new ArrayList<DBSObject>();
+        List<DBSEntityConstraint> identifiers = new ArrayList<DBSEntityConstraint>();
         // Check constraints
         Collection<? extends DBSEntityConstraint> uniqueKeys = entity.getConstraints(monitor);
         if (!CommonUtils.isEmpty(uniqueKeys)) {
@@ -470,21 +470,17 @@ public final class DBUtils {
         if (!identifiers.isEmpty()) {
             // Find PK or unique key
             DBSEntityConstraint uniqueId = null;
-            DBSTableIndex uniqueIndex = null;
-            for (DBSObject id : identifiers) {
-                if (id instanceof DBSTableConstraint) {
-                    if (((DBSTableConstraint)id).getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                        return getEntityAttributes(monitor, (DBSTableConstraint) id);
-                    } else if (((DBSTableConstraint)id).getConstraintType().isUnique()) {
-                        uniqueId = (DBSTableConstraint)id;
-                    }
-                } else {
-                    uniqueIndex = (DBSTableIndex)id;
+            DBSEntityConstraint uniqueIndex = null;
+            for (DBSEntityConstraint id : identifiers) {
+                if (id instanceof DBSEntityReferrer && id.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                    return getEntityAttributes(monitor, (DBSEntityReferrer) id);
+                } else if (id.getConstraintType().isUnique()) {
+                    uniqueId = id;
                 }
             }
             return uniqueId instanceof DBSEntityReferrer ?
                 getEntityAttributes(monitor, (DBSEntityReferrer)uniqueId)
-                : uniqueIndex != null ? getEntityAttributes(monitor, uniqueIndex) : Collections.<DBSTableColumn>emptyList();
+                : Collections.<DBSTableColumn>emptyList();
         } else {
             return Collections.emptyList();
         }
