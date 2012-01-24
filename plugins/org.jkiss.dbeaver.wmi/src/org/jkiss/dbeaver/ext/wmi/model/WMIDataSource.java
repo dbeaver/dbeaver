@@ -72,7 +72,6 @@ public class WMIDataSource implements DBPDataSource//, DBSEntitySelector
         final DBPConnectionInfo connectionInfo = container.getConnectionInfo();
         try {
             WMIService service = WMIService.connect(
-                log,
                 connectionInfo.getServerName(),
                 connectionInfo.getHostName(),
                 connectionInfo.getUserName(),
@@ -80,6 +79,8 @@ public class WMIDataSource implements DBPDataSource//, DBSEntitySelector
                 null,
                 connectionInfo.getDatabaseName());
             this.rootNamespace = new WMINamespace(null, this, container.getConnectionInfo().getDatabaseName(), service);
+        } catch (UnsatisfiedLinkError e) {
+            throw new DBException("Can't link with WMI native library", e);
         } catch (Throwable e) {
             throw new DBException("Can't connect to WMI service", e);
         }

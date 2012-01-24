@@ -4,12 +4,9 @@
 
 package org.jkiss.wmi.test;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.wmi.service.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,8 +14,6 @@ import java.util.List;
  * WMI Service tester
  */
 public class TestService {
-
-    final static Log log = LogFactory.getLog(TestService.class);
 
     private WMIService service;
     private boolean finished = false;
@@ -36,7 +31,6 @@ public class TestService {
 
     void test()
     {
-        log.info("Start service");
         try {
             //service.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
             {
@@ -45,7 +39,7 @@ public class TestService {
                     public void run()
                     {
                         try {
-                            service = WMIService.connect(log, null, "localhost", null, null, null, "root");
+                            service = WMIService.connect(null, "localhost", null, null, null, "root");
                             ObjectCollectorSink classesSink = new ObjectCollectorSink();
                             service.enumClasses(null, classesSink, 0);
                             classesSink.waitForFinish();

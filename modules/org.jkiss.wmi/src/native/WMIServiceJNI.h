@@ -7,14 +7,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 /*
  * Class:     org_jkiss_wmi_service_WMIService
  * Method:    connect
- * Signature: (Lorg/apache/commons/logging/Log;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/jkiss/wmi/service/WMIService;
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/jkiss/wmi/service/WMIService;
  */
 JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIService_connect
-  (JNIEnv *, jclass, jobject, jstring, jstring, jstring, jstring, jstring, jstring);
+  (JNIEnv *, jclass, jstring, jstring, jstring, jstring, jstring, jstring);
 
 /*
  * Class:     org_jkiss_wmi_service_WMIService

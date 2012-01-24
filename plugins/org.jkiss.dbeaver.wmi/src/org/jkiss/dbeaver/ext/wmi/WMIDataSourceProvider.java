@@ -4,15 +4,12 @@
 
 package org.jkiss.dbeaver.ext.wmi;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.wmi.model.WMIDataSource;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.wmi.service.WMIService;
 
 import java.util.Collection;
 
@@ -37,7 +34,25 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
     public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
     {
+        if (!libLoaded) {
+            loadNativeLib(container.getDriver());
+            libLoaded = true;
+        }
         return new WMIDataSource(container);
+    }
+
+    private void loadNativeLib(DBPDriver driver) throws DBException
+    {
+/*
+        String arch = System.getProperty("os.arch");
+        String libName = (arch != null && arch.indexOf("64") != -1) ?
+            "jkiss_wmi_x86_64" : "jkiss_wmi_x86";
+        try {
+            System.loadLibrary(libName);
+        } catch (UnsatisfiedLinkError e) {
+            throw new DBException("Can't load native library '" + libName + "'", e);
+        }
+*/
     }
 
     public void close()

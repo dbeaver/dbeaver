@@ -54,7 +54,7 @@ WMIService* WMIService::GetFromObject(JNIEnv* pJavaEnv, jobject javaObject)
 	}
 	return (WMIService*)pJavaEnv->GetLongField(javaObject, fid);
 }
-
+/*
 void WMIService::WriteLog(JNIEnv* pLocalEnv, LogType logType, LPCWSTR wcMessage, HRESULT hr)
 {
 #ifdef DEBUG
@@ -101,7 +101,7 @@ void WMIService::WriteLog(JNIEnv* pLocalEnv, LogType logType, LPCWSTR wcMessage,
 		pLocalEnv->ExceptionClear();
 	}
 }
-
+*/
 /*
  * Class:     com_symantec_cas_ucf_sensors_wmi_service_WMIService
  * Method:    connect
@@ -187,13 +187,13 @@ void WMIService::Connect(
 		return;
     }
 
-	WriteLog(pJavaEnv, LT_DEBUG, bstr_t("WMI Service connected to ") + (LPCWSTR)resource);
+	//WriteLog(pJavaEnv, LT_DEBUG, bstr_t("WMI Service connected to ") + (LPCWSTR)resource);
 }
 
 void WMIService::Release(JNIEnv* pJavaEnv)
 {
 	ptrWbemServices = NULL;
-	WriteLog(pJavaEnv, LT_DEBUG, L"WMI Service closed");
+	//WriteLog(pJavaEnv, LT_DEBUG, L"WMI Service closed");
 
 	if (serviceJavaObject != NULL) {
 		pJavaEnv->SetLongField(serviceJavaObject, JNIMetaData::GetMetaData(pJavaEnv).wmiServiceHandleField, 0);
@@ -227,20 +227,15 @@ jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
     }
 
 	JNIMetaData& jniMeta = JNIMetaData::GetMetaData(pJavaEnv);
-	jobject logObject = pJavaEnv->GetObjectField(serviceJavaObject, jniMeta.wmiServiceLogField);
-	if (pJavaEnv->ExceptionCheck()) {
-		return NULL;
-	}
 	
 	jobject newServiceObject = pJavaEnv->NewObject(jniMeta.wmiServiceClass, jniMeta.wmiServiceConstructor);
 	if (pJavaEnv->ExceptionCheck()) {
 		return NULL;
 	}
-	pJavaEnv->SetObjectField(newServiceObject, jniMeta.wmiServiceLogField, logObject);
 	WMIService* pServiceHandler = new WMIService(pJavaEnv, newServiceObject);
 	pServiceHandler->ptrWbemServices = ptrNamespace;
 
-	WriteLog(pJavaEnv, LT_DEBUG, bstr_t("Connected to WMI namespace ") + nsName);
+	//WriteLog(pJavaEnv, LT_DEBUG, bstr_t("Connected to WMI namespace ") + nsName);
 
 	return newServiceObject;
 }
@@ -266,7 +261,7 @@ void WMIService::MakeObjectSink(JNIEnv* pJavaEnv, jobject javaSinkObject, IWbemO
 			if (pStubUnk != NULL) {
 				pStubUnk.QueryInterface(&pSecuredSink);
 				if (pSecuredSink != NULL) {
-					this->WriteLog(pJavaEnv, LT_DEBUG, L"Using unsecured appartments for async queries");
+					//this->WriteLog(pJavaEnv, LT_DEBUG, L"Using unsecured appartments for async queries");
 				}
 			}
 		}
@@ -297,7 +292,7 @@ void WMIService::ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR queryString, jobject
 	MakeObjectSink(pJavaEnv, javaSinkObject, &pActiveSink);
 
     // Use the IWbemServices pointer to make requests of WMI ----
-	this->WriteLog(pJavaEnv, LT_DEBUG, bstr_t(L"Async WQL: ") + queryString);
+	//this->WriteLog(pJavaEnv, LT_DEBUG, bstr_t(L"Async WQL: ") + queryString);
 	lFlags |= WBEM_FLAG_DIRECT_READ;
 	//if (sendStatus) lFlags |= WBEM_FLAG_SEND_STATUS;
 
@@ -366,7 +361,7 @@ void WMIService::CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject)
 		THROW_COMMON_EXCEPTION(L"WMI Service is not initialized");
 		return;
 	}
-	WriteLog(pJavaEnv, LT_DEBUG, L"Cancel async call");
+	//WriteLog(pJavaEnv, LT_DEBUG, L"Cancel async call");
 
 	WMIObjectSink* pSink = NULL;
 	for (ObjectSinkVector::iterator i = sinkList.begin(); i != sinkList.end(); i++) {

@@ -15,7 +15,6 @@
 JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIService_connect(
 	JNIEnv* pJavaEnv, 
 	jclass serviceClass,
-	jobject logObject, 
 	jstring domain, 
 	jstring host, 
 	jstring user, 
@@ -31,7 +30,7 @@ JNIEXPORT jobject JNICALL Java_org_jkiss_wmi_service_WMIService_connect(
 	if (pJavaEnv->ExceptionCheck()) {
 		return NULL;
 	}
-	pJavaEnv->SetObjectField(newServiceObject, jniMeta.wmiServiceLogField, logObject);
+	//pJavaEnv->SetObjectField(newServiceObject, jniMeta.wmiServiceLogField, logObject);
 
 	WMIService* pService = new WMIService(pJavaEnv, newServiceObject);
 	

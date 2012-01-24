@@ -43,7 +43,7 @@ public:
 	void EnumInstances(JNIEnv* pJavaEnv, LPWSTR className, jobject javaSinkObject, LONG lFlags);
 	void CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject);
 
-	void WriteLog(JNIEnv* pLocalEnv, LogType logType, LPCWSTR wcMessage, HRESULT hr = S_OK);
+	//void WriteLog(JNIEnv* pLocalEnv, LogType logType, LPCWSTR wcMessage, HRESULT hr = S_OK);
 
 	static WMIService* GetFromObject(JNIEnv* pJavaEnv, jobject javaObject);
 

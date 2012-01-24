@@ -4,8 +4,6 @@
 
 package org.jkiss.wmi.service;
 
-import org.apache.commons.logging.Log;
-
 /**
  * WMI Service
  * Uses native Win32 API access
@@ -22,9 +20,8 @@ public class WMIService {
     }
 
     private long serviceHandle = 0l;
-    private Log serviceLog;
 
-    public static native WMIService connect(Log serviceLog, String domain, String host, String user, String password, String locale, String resource)
+    public static native WMIService connect(String domain, String host, String user, String password, String locale, String resource)
         throws WMIException;
 
     public native WMIService openNamespace(String namespace)

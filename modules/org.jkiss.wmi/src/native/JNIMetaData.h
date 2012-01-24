@@ -27,7 +27,6 @@ public:
 	jclass wmiServiceClass;
 	jmethodID wmiServiceConstructor;
 	jfieldID wmiServiceHandleField;
-	jfieldID wmiServiceLogField;
 
 	jclass wmiObjectClass;
 	jmethodID wmiObjectConstructor;
