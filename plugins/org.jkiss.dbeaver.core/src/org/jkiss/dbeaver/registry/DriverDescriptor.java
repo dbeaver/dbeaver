@@ -22,10 +22,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPClientHome;
-import org.jkiss.dbeaver.model.DBPClientManager;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -138,6 +135,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.origSampleURL = this.sampleURL = config.getAttribute(RegistryConstants.ATTR_SAMPLE_URL);
         this.webURL = config.getAttribute(RegistryConstants.ATTR_WEB_URL);
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
+        this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.custom = false;
@@ -531,9 +529,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return customDriverLoader;
     }
 
-    public void setLoadedByConnection(boolean loadedByConnection)
+    public void setCustomDriverLoader(boolean customDriverLoader)
     {
-        this.customDriverLoader = loadedByConnection;
+        this.customDriverLoader = customDriverLoader;
     }
 
     public boolean isManagable()
@@ -737,7 +735,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public String getLicense()
     {
         for (DriverFileDescriptor file : files) {
-            if (file.getType() == DriverFileType.license) {
+            if (file.getType() == DBPDriverFileType.license) {
                 final File licenseFile = file.getFile();
                 if (licenseFile.exists()) {
                     try {
@@ -805,7 +803,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         List<URL> libraryURLs = new ArrayList<URL>();
         // Load libraries
         for (DriverFileDescriptor file : files) {
-            if (file.isDisabled() || file.getType() != DriverFileType.jar) {
+            if (file.isDisabled() || file.getType() != DBPDriverFileType.jar) {
                 continue;
             }
             URL url;
@@ -901,7 +899,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         // User must accept all licenses before actual drivers download
         for (final DriverFileDescriptor file : getFiles()) {
-            if (file.getType() == DriverFileType.license) {
+            if (file.getType() == DBPDriverFileType.license) {
                 final File libraryFile = file.getLocalFile();
                 if (!libraryFile.exists()) {
                     try {
@@ -956,7 +954,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             // User just canceled download
             return IDialogConstants.CANCEL_ID;
         } catch (InvocationTargetException e) {
-            if (file.getType() == DriverFileType.license) {
+            if (file.getType() == DBPDriverFileType.license) {
                 return IDialogConstants.OK_ID;
             }
             DownloadErrorDialog dialog = new DownloadErrorDialog(
@@ -1103,7 +1101,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             if ((export && !lib.isDisabled()) || lib.isCustom() || lib.isDisabled()) {
                 xml.startElement(RegistryConstants.TAG_LIBRARY);
                 xml.addAttribute(RegistryConstants.ATTR_PATH, lib.getPath());
-                if (lib.getType() == DriverFileType.jar && lib.isDisabled()) {
+                if (lib.getType() == DBPDriverFileType.jar && lib.isDisabled()) {
                     xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
                 }
                 xml.endElement();
@@ -1216,10 +1214,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
                 curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
                 curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
-                String loadedByConnection = atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER);
-                if (loadedByConnection != null) {
-                    curDriver.setLoadedByConnection(Boolean.valueOf(loadedByConnection));
-                }
+                curDriver.setCustomDriverLoader("true".equals(atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER)));
                 curDriver.setModified(true);
                 String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                 if (CommonUtils.getBoolean(disabledAttr)) {

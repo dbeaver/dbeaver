@@ -10,13 +10,18 @@ package org.jkiss.wmi.service;
  */
 public class WMIService {
 
-    static {
-        String arch = System.getProperty("os.arch");
-        if (arch != null && arch.indexOf("64") != -1) {
-            System.loadLibrary("jkiss_wmi_x86_64");
-        } else {
-            System.loadLibrary("jkiss_wmi_x86");
-        }
+//    static {
+//        String arch = System.getProperty("os.arch");
+//        if (arch != null && arch.indexOf("64") != -1) {
+//            System.loadLibrary("jkiss_wmi_x86_64");
+//        } else {
+//            System.loadLibrary("jkiss_wmi_x86");
+//        }
+//    }
+
+    public static void linkNative(String libPath)
+    {
+        System.load(libPath);
     }
 
     private long serviceHandle = 0l;

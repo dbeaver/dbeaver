@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.ext.wmi.model.WMIDataSource;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.wmi.service.WMIService;
 
 import java.util.Collection;
 
@@ -35,7 +36,9 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
     {
         if (!libLoaded) {
-            loadNativeLib(container.getDriver());
+            DBPDriver driver = container.getDriver();
+            driver.loadDriver();
+            loadNativeLib(driver);
             libLoaded = true;
         }
         return new WMIDataSource(container);
@@ -43,16 +46,15 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
     private void loadNativeLib(DBPDriver driver) throws DBException
     {
-/*
-        String arch = System.getProperty("os.arch");
-        String libName = (arch != null && arch.indexOf("64") != -1) ?
-            "jkiss_wmi_x86_64" : "jkiss_wmi_x86";
-        try {
-            System.loadLibrary(libName);
-        } catch (UnsatisfiedLinkError e) {
-            throw new DBException("Can't load native library '" + libName + "'", e);
+        for (DBPDriverFile libFile : driver.getFiles()) {
+            if (libFile.matchesCurrentPlatform() && libFile.getType() == DBPDriverFileType.lib) {
+                try {
+                    WMIService.linkNative(libFile.getFile().getAbsolutePath());
+                } catch (UnsatisfiedLinkError e) {
+                    throw new DBException("Can't load native library '" + libFile.getFile().getAbsolutePath() + "'", e);
+                }
+            }
         }
-*/
     }
 
     public void close()

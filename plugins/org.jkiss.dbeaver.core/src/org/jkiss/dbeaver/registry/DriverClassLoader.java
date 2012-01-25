@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.model.DBPDriverFileType;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -29,7 +30,7 @@ public class DriverClassLoader extends URLClassLoader
     {
         String nativeName = System.mapLibraryName(libname);
         for (DriverFileDescriptor driverFile : driver.getFiles()) {
-            if (driverFile.getType() == DriverFileType.lib && driverFile.matchesCurrentPlatform()) {
+            if (driverFile.getType() == DBPDriverFileType.lib && driverFile.matchesCurrentPlatform()) {
                 final File localFile = driverFile.getLocalFile();
                 if (localFile.exists()) {
                     final String fileName = localFile.getName();

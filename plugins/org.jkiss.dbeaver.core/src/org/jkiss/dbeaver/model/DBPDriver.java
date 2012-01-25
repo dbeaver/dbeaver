@@ -68,4 +68,7 @@ public interface DBPDriver extends DBPObject
 
     ClassLoader getClassLoader();
 
+    Collection<? extends DBPDriverFile> getFiles();
+
+    void loadDriver() throws DBException;
 }

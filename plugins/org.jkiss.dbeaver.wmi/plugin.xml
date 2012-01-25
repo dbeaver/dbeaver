@@ -53,7 +53,8 @@
                     label="WMI"
                     icon="icons/wmi_icon.png"
                     description="WMI Native driver"
-                    class="org.jkiss.dbeaver.ext.wmi.WMIDriver">
+                    class="org.jkiss.wmi.service.WMIServiceNative"
+                    customDriverLoader="true">
                     <file type="lib" os="win32" arch="x86" path="drivers/wmi/x86/jkiss_wmi.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/wmi/x86/jkiss_wmi.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/wmi/x64/jkiss_wmi.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/wmi/x64/jkiss_wmi.dll"/>
                 </driver>

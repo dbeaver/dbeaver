@@ -10,6 +10,8 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDriverFile;
+import org.jkiss.dbeaver.model.DBPDriverFileType;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,12 +20,12 @@ import java.net.URL;
 /**
  * DriverFileDescriptor
  */
-public class DriverFileDescriptor
+public class DriverFileDescriptor implements DBPDriverFile
 {
     static final Log log = LogFactory.getLog(DriverFileDescriptor.class);
 
     private final DriverDescriptor driver;
-    private final DriverFileType type;
+    private final DBPDriverFileType type;
     private final OSDescriptor system;
     private String path;
     private String description;
@@ -34,7 +36,7 @@ public class DriverFileDescriptor
     public DriverFileDescriptor(DriverDescriptor driver, String path)
     {
         this.driver = driver;
-        this.type = DriverFileType.jar;
+        this.type = DBPDriverFileType.jar;
         this.system = DBeaverCore.getInstance().getLocalSystem();
         this.path = path;
         this.custom = true;
@@ -43,7 +45,7 @@ public class DriverFileDescriptor
     DriverFileDescriptor(DriverDescriptor driver, IConfigurationElement config)
     {
         this.driver = driver;
-        this.type = DriverFileType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE));
+        this.type = DBPDriverFileType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE));
 
         String osName = config.getAttribute(RegistryConstants.ATTR_OS);
         this.system = osName == null ? null : new OSDescriptor(
@@ -60,7 +62,7 @@ public class DriverFileDescriptor
         return driver;
     }
 
-    public DriverFileType getType()
+    public DBPDriverFileType getType()
     {
         return type;
     }

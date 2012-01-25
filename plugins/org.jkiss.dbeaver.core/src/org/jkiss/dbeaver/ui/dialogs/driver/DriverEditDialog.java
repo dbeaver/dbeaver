@@ -26,10 +26,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDriverFileType;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
-import org.jkiss.dbeaver.registry.DriverFileType;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesPanel;
@@ -303,7 +303,7 @@ public class DriverEditDialog extends HelpEnabledDialog
 
             libList = new ArrayList<DriverFileDescriptor>();
             for (DriverFileDescriptor lib : driver.getFiles()) {
-                if (lib.isDisabled() || lib.getType() != DriverFileType.jar) {
+                if (lib.isDisabled() || lib.getType() != DBPDriverFileType.jar || lib.getType() != DBPDriverFileType.lib) {
                     continue;
                 }
                 libList.add(lib);
@@ -637,7 +637,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             driver.addLibrary(lib);
         }
         for (DriverFileDescriptor lib : CommonUtils.copyList(driver.getFiles())) {
-            if (lib.getType() == DriverFileType.jar && !libList.contains(lib)) {
+            if (lib.getType() == DBPDriverFileType.jar && !libList.contains(lib)) {
                 driver.removeLibrary(lib);
             }
         }
