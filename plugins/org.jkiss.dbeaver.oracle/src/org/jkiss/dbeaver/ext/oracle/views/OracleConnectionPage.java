@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.views;
@@ -59,7 +59,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png"); //$NON-NLS-1$
     private Combo languageCombo;
     private Combo territoryCombo;
-    private Button checkContentCheckbox;
+    private Button hideEmptySchemasCheckbox;
     private Button showDBAAlwaysCheckbox;
 
     @Override
@@ -387,8 +387,8 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         {
             final Group contentGroup = UIUtils.createControlGroup(cfgGroup, "Content", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            checkContentCheckbox = UIUtils.createCheckbox(contentGroup, "Check schema content on load", true);
-            checkContentCheckbox.setToolTipText(
+            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, "Hide empty schemas", true);
+            hideEmptySchemasCheckbox.setToolTipText(
                 "Check existence of objects within schema and do not show empty schemas in tree. " + ContentUtils.getDefaultLineSeparator() +
                 "Enabled by default but it may cause performance problems on databases with very big number of objects.");
 
@@ -499,7 +499,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
                 final Object checkSchemaContent = connectionProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
                 if (checkSchemaContent != null) {
-                    checkContentCheckbox.setSelection("true".equals(checkSchemaContent));
+                    hideEmptySchemasCheckbox.setSelection("true".equals(checkSchemaContent));
                 }
 
                 final Object showDBAObjects = connectionProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA);
@@ -576,7 +576,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
             connectionProperties.put(
                 OracleConstants.PROP_CHECK_SCHEMA_CONTENT,
-                String.valueOf(checkContentCheckbox.getSelection()));
+                String.valueOf(hideEmptySchemasCheckbox.getSelection()));
 
             connectionProperties.put(
                 OracleConstants.PROP_ALWAYS_SHOW_DBA,

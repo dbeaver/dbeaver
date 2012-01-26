@@ -381,21 +381,21 @@ public class OracleDataSource extends JDBCDataSource
         {
             List<String> schemaFilters = SQLUtils.splitFilter(owner.getContainer().getSchemaFilter());
             StringBuilder schemasQuery = new StringBuilder();
-            boolean manyUsers = false;
-            if (manyUsers) {
-                schemasQuery.append("SELECT U.USERNAME FROM SYS.ALL_USERS U\n" +
-                    "WHERE U.USERNAME IN (SELECT DISTINCT OWNER FROM SYS.ALL_OBJECTS)\n");
-            } else {
-                schemasQuery.append("SELECT U.USERNAME FROM SYS.ALL_USERS U\n");
+            boolean manyObjects = "false".equals(owner.getContainer().getConnectionInfo().getProperties().get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
+            schemasQuery.append("SELECT U.USERNAME FROM SYS.ALL_USERS U\n");
 
-                if (owner.isAdmin() && false) {
-                    schemasQuery.append(
-                        "WHERE (U.USER_ID IN (SELECT DISTINCT OWNER# FROM SYS.OBJ$) ");
-                } else {
-                    schemasQuery.append(
-                        "WHERE (U.USERNAME IN (SELECT DISTINCT OWNER FROM SYS.ALL_OBJECTS)");
-                }
+//                if (owner.isAdmin() && false) {
+//                    schemasQuery.append(
+//                        "WHERE (U.USER_ID IN (SELECT DISTINCT OWNER# FROM SYS.OBJ$) ");
+//                } else {
+            schemasQuery.append(
+                "WHERE ");
+            if (manyObjects) {
+                schemasQuery.append("U.USERNAME IS NOT NULL");
+            } else {
+                schemasQuery.append("(U.USERNAME IN (SELECT DISTINCT OWNER FROM SYS.ALL_OBJECTS)");
             }
+//                }
 
             if (!schemaFilters.isEmpty()) {
                 schemasQuery.append(" AND (");
