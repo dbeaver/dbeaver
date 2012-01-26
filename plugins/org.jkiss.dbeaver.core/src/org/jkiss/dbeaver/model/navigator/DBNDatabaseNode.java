@@ -134,10 +134,16 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                 loadChildren(monitor, getMeta(), null, tmpList);
                 if (!monitor.isCanceled()) {
                     this.childNodes = tmpList;
+                    this.afterChildRead();
                 }
             }
         }
         return childNodes;
+    }
+
+    protected void afterChildRead()
+    {
+        // Do nothing
     }
 
     List<DBNDatabaseNode> getChildNodes()

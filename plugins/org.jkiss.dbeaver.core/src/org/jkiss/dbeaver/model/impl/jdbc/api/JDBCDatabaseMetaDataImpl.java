@@ -26,6 +26,14 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
         this.original = original;
     }
 
+    public DatabaseMetaData getOriginal() throws SQLException
+    {
+        if (original == null) {
+            throw new SQLException("Database metadata not supported by driver");
+        }
+        return original;
+    }
+
     private JDBCResultSet makeResultSet(java.sql.ResultSet resultSet, String functionName, Object ... args)
     {
         String description = functionName;
@@ -204,11 +212,6 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
         return getOriginal().isWrapperFor(iface);
     }
 
-    public DatabaseMetaData getOriginal()
-    {
-        return original;
-    }
-
     public boolean allProceduresAreCallable()
         throws SQLException
     {
@@ -289,12 +292,12 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
 
     public int getDriverMajorVersion()
     {
-        return getOriginal().getDriverMajorVersion();
+        return original == null ? 0 : original.getDriverMajorVersion();
     }
 
     public int getDriverMinorVersion()
     {
-        return getOriginal().getDriverMinorVersion();
+        return original == null ? 0 : original.getDriverMinorVersion();
     }
 
     public boolean usesLocalFiles()

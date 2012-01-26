@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -130,4 +131,20 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         dataSource.getRegistry().updateDataSource(dataSource);
     }
 
+    @Override
+    protected void afterChildRead()
+    {
+        // Notify datasource listeners about state change.
+        // We make this action here because we can't update state in
+        // initializeNode if this action caused by readChildren.
+        // Because readChildren executes in separate job - this job reused by
+        // datasource connect job and it do not updates UI after connect because
+        // we need to read datasource children immediately.
+        // It breaks loading process. So we refresh datasource state manually
+        // right after children nodes read
+        dataSource.getRegistry().fireDataSourceEvent(
+            DBPEvent.Action.OBJECT_UPDATE,
+            dataSource,
+            true);
+    }
 }

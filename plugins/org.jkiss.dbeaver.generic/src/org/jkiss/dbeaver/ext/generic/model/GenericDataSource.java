@@ -197,7 +197,11 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException
     {
         super.initialize(monitor);
-        dataTypeCache.getObjects(monitor, this);
+        try {
+            dataTypeCache.getObjects(monitor, this);
+        } catch (DBException e) {
+            log.warn("Can't fetch database data types", e);
+        }
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read generic metadata");
         try {
             // Read metadata
