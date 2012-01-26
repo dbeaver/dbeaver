@@ -15,12 +15,16 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -53,6 +57,10 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
     private boolean isOCI;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png"); //$NON-NLS-1$
+    private Combo languageCombo;
+    private Combo territoryCombo;
+    private Button checkContentCheckbox;
+    private Button showDBAAlwaysCheckbox;
 
     @Override
     public void dispose()
@@ -76,6 +84,11 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         addrTab.setText(OracleMessages.dialog_connection_general_tab);
         addrTab.setToolTipText(OracleMessages.dialog_connection_general_tab_tooltip);
         addrTab.setControl(createGeneralTab(optionsFolder));
+
+        final TabItem cfgTab = new TabItem(optionsFolder, SWT.NONE);
+        cfgTab.setText("Settings");
+        cfgTab.setToolTipText("Additional connection settings");
+        cfgTab.setControl(createConfigurationTab(optionsFolder));
 
         final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
         propsTab.setText(OracleMessages.dialog_connection_advanced_tab);
@@ -121,9 +134,11 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 		createTNSConnectionControls(connectionTypeFolder);
         createCustomConnectionControls(connectionTypeFolder);
         connectionTypeFolder.setSelection(connectionType.ordinal());
-        connectionTypeFolder.addSelectionListener(new SelectionAdapter() {
+        connectionTypeFolder.addSelectionListener(new SelectionAdapter()
+        {
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e)
+            {
                 connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection().getData();
                 updateUI();
             }
@@ -254,9 +269,9 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
         gd.widthHint = 60;
         userRoleCombo.setLayoutData(gd);
-        userRoleCombo.add(OracleConstants.ConnectionRole.NORMAL.getTitle());
-        userRoleCombo.add(OracleConstants.ConnectionRole.SYSDBA.getTitle());
-        userRoleCombo.add(OracleConstants.ConnectionRole.SYSOPER.getTitle());
+        userRoleCombo.add(OracleConnectionRole.NORMAL.getTitle());
+        userRoleCombo.add(OracleConnectionRole.SYSDBA.getTitle());
+        userRoleCombo.add(OracleConnectionRole.SYSOPER.getTitle());
         userRoleCombo.select(0);
 
         Label passwordLabel = UIUtils.createControlLabel(parent, OracleMessages.dialog_connection_password);
@@ -337,6 +352,52 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
             });
             testButton.setEnabled(false);
         }
+    }
+
+    private Composite createConfigurationTab(Composite parent)
+    {
+        Composite cfgGroup = new Composite(parent, SWT.NONE);
+        GridLayout gl = new GridLayout(1, false);
+        gl.marginHeight = 10;
+        gl.marginWidth = 10;
+        cfgGroup.setLayout(gl);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        cfgGroup.setLayoutData(gd);
+
+        {
+            final Group sessionGroup = UIUtils.createControlGroup(cfgGroup, "Session settings", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+
+            languageCombo = UIUtils.createLabelCombo(sessionGroup, "Language", SWT.DROP_DOWN);
+            languageCombo.setToolTipText("Session language");
+            languageCombo.add(OracleConstants.NLS_DEFAULT_VALUE);
+            for (OracleLanguage language : OracleLanguage.values()) {
+                languageCombo.add(language.getLanguage());
+            }
+            languageCombo.setText(OracleConstants.NLS_DEFAULT_VALUE);
+
+            territoryCombo = UIUtils.createLabelCombo(sessionGroup, "Territory", SWT.DROP_DOWN);
+            territoryCombo.setToolTipText("Session territory");
+            territoryCombo.add(OracleConstants.NLS_DEFAULT_VALUE);
+            for (OracleTerritory territory : OracleTerritory.values()) {
+                territoryCombo.add(territory.getTerritory());
+            }
+            territoryCombo.setText(OracleConstants.NLS_DEFAULT_VALUE);
+        }
+
+        {
+            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, "Content", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+
+            checkContentCheckbox = UIUtils.createCheckbox(contentGroup, "Check schema content on load", true);
+            checkContentCheckbox.setToolTipText(
+                "Check existence of objects within schema and do not show empty schemas in tree. " + ContentUtils.getDefaultLineSeparator() +
+                "Enabled by default but it may cause performance problems on databases with very big number of objects.");
+
+            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, "Always show DBA objects", false);
+            showDBAAlwaysCheckbox.setToolTipText(
+                "Always shows DBA-related metadata objects in tree even if user do not has DBA role.");
+        }
+
+        return cfgGroup;
     }
 
     public boolean isComplete()
@@ -423,6 +484,29 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
             if (roleName != null) {
                 userRoleCombo.setText(roleName.toString().toUpperCase());
             }
+
+            {
+                // Settings
+                final Object nlsLanguage = connectionProperties.get(OracleConstants.PROP_SESSION_LANGUAGE);
+                if (nlsLanguage != null) {
+                    languageCombo.setText(nlsLanguage.toString());
+                }
+
+                final Object nlsTerritory = connectionProperties.get(OracleConstants.PROP_SESSION_TERRITORY);
+                if (nlsTerritory != null) {
+                    territoryCombo.setText(nlsTerritory.toString());
+                }
+
+                final Object checkSchemaContent = connectionProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
+                if (checkSchemaContent != null) {
+                    checkContentCheckbox.setSelection("true".equals(checkSchemaContent));
+                }
+
+                final Object showDBAObjects = connectionProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA);
+                if (showDBAObjects != null) {
+                    showDBAAlwaysCheckbox.setSelection("true".equals(showDBAObjects));
+                }
+            }
         } else {
             if (portText != null) {
                 portText.setText(String.valueOf(OracleConstants.DEFAULT_PORT));
@@ -434,45 +518,69 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
     protected void saveSettings(DBPConnectionInfo connectionInfo)
     {
-        if (connectionInfo != null) {
-            super.saveSettings(connectionInfo);
-            Map<Object, Object> connectionProperties = connectionInfo.getProperties();
-            if (isOCI) {
-                connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
-            }
+        if (connectionInfo == null) {
+            return;
+        }
+        super.saveSettings(connectionInfo);
+        Map<Object, Object> connectionProperties = connectionInfo.getProperties();
+        if (isOCI) {
+            connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
+        }
 
-            connectionProperties.put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
-            connectionProperties.put(
-                    OracleConstants.PROP_DRIVER_TYPE, isOCI ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
+        connectionProperties.put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
+        connectionProperties.put(
+                OracleConstants.PROP_DRIVER_TYPE, isOCI ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
 //            connectionInfo.getProperties().put(OracleConstants.PROP_DRIVER_TYPE,
 //                ociDriverCheck.getSelection() ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
-            switch (connectionType) {
-                case BASIC:
-                    connectionInfo.setHostName(hostText.getText());
-                    connectionInfo.setHostPort(portText.getText());
-                    connectionInfo.setDatabaseName(serviceNameCombo.getText());
-                    generateConnectionURL(connectionInfo);
-                    break;
-                case TNS:
-                    connectionInfo.setDatabaseName(tnsNameCombo.getText());
-                    generateConnectionURL(connectionInfo);
-                    break;
-                case CUSTOM:
-                    connectionInfo.setUrl(connectionUrlText.getText());
-                    break;
-            }
-            if (osAuthCheck.getSelection()) {
-                connectionInfo.setUserName(OracleConstants.OS_AUTH_USER_NAME);
-                connectionInfo.setUserPassword(""); //$NON-NLS-1$
+        switch (connectionType) {
+            case BASIC:
+                connectionInfo.setHostName(hostText.getText());
+                connectionInfo.setHostPort(portText.getText());
+                connectionInfo.setDatabaseName(serviceNameCombo.getText());
+                generateConnectionURL(connectionInfo);
+                break;
+            case TNS:
+                connectionInfo.setDatabaseName(tnsNameCombo.getText());
+                generateConnectionURL(connectionInfo);
+                break;
+            case CUSTOM:
+                connectionInfo.setUrl(connectionUrlText.getText());
+                break;
+        }
+        if (osAuthCheck.getSelection()) {
+            connectionInfo.setUserName(OracleConstants.OS_AUTH_USER_NAME);
+            connectionInfo.setUserPassword(""); //$NON-NLS-1$
+        } else {
+            connectionInfo.setUserName(userNameText.getText());
+            connectionInfo.setUserPassword(passwordText.getText());
+        }
+        if (userRoleCombo.getSelectionIndex() > 0) {
+            connectionProperties.put(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase());
+        } else {
+            connectionProperties.remove(OracleConstants.PROP_INTERNAL_LOGON);
+        }
+
+        {
+            // Settings
+            if (!OracleConstants.NLS_DEFAULT_VALUE.equals(languageCombo.getText())) {
+                connectionProperties.put(OracleConstants.PROP_SESSION_LANGUAGE, languageCombo.getText());
             } else {
-                connectionInfo.setUserName(userNameText.getText());
-                connectionInfo.setUserPassword(passwordText.getText());
+                connectionProperties.remove(OracleConstants.PROP_SESSION_LANGUAGE);
             }
-            if (userRoleCombo.getSelectionIndex() > 0) {
-                connectionProperties.put(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase());
+
+            if (!OracleConstants.NLS_DEFAULT_VALUE.equals(territoryCombo.getText())) {
+                connectionProperties.put(OracleConstants.PROP_SESSION_TERRITORY, territoryCombo.getText());
             } else {
-                connectionProperties.remove(OracleConstants.PROP_INTERNAL_LOGON);
+                connectionProperties.remove(OracleConstants.PROP_SESSION_TERRITORY);
             }
+
+            connectionProperties.put(
+                OracleConstants.PROP_CHECK_SCHEMA_CONTENT,
+                String.valueOf(checkContentCheckbox.getSelection()));
+
+            connectionProperties.put(
+                OracleConstants.PROP_ALWAYS_SHOW_DBA,
+                String.valueOf(showDBAAlwaysCheckbox.getSelection()));
         }
     }
 

@@ -69,6 +69,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         if (dbResult != null) {
             this.id = JDBCUtils.safeGetLong(dbResult, "USER_ID");
             this.name = JDBCUtils.safeGetString(dbResult, "USERNAME");
+            if (this.name == null) {
+                log.warn("Empty schema name fetched");
+                this.name = "? " + super.hashCode();
+            }
         }
     }
 

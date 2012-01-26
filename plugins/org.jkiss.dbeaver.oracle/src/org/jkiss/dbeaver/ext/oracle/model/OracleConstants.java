@@ -40,6 +40,12 @@ public class OracleConstants {
     public static final String PROP_CONNECTION_TARGET = "connection_target";
     public static final String PROP_DRIVER_TYPE = DBConstants.INTERNAL_PROP_PREFIX + "driver-type@";
     public static final String PROP_INTERNAL_LOGON = DBConstants.INTERNAL_PROP_PREFIX + "internal-logon@";
+
+    public static final String PROP_SESSION_LANGUAGE = DBConstants.INTERNAL_PROP_PREFIX + "session-language@";
+    public static final String PROP_SESSION_TERRITORY = DBConstants.INTERNAL_PROP_PREFIX + "session-territory@";
+    public static final String PROP_CHECK_SCHEMA_CONTENT = DBConstants.INTERNAL_PROP_PREFIX + "check-schema-content@";
+    public static final String PROP_ALWAYS_SHOW_DBA = DBConstants.INTERNAL_PROP_PREFIX + "always-show-dba@";
+
     public static final String OS_AUTH_USER_NAME = "@OS_AUTH@";
 
     public static final String DRIVER_TYPE_THIN = "THIN";
@@ -77,6 +83,7 @@ public class OracleConstants {
         "RETURN",
         "WRAPPED"
     };
+    public static final String NLS_DEFAULT_VALUE = "Default";
 
     /**
      * Connection type
@@ -93,23 +100,6 @@ public class OracleConstants {
     public static enum ConnectionTarget {
         SID,
         SERVICE
-    }
-
-    public static enum ConnectionRole {
-        NORMAL("Normal"),
-        SYSDBA("SYSDBA"),
-        SYSOPER("SYSOPER");
-        private final String title;
-
-        ConnectionRole(String title)
-        {
-            this.title = title;
-        }
-
-        public String getTitle()
-        {
-            return title;
-        }
     }
 
     public static final String PLAN_TABLE_DEFINITION =

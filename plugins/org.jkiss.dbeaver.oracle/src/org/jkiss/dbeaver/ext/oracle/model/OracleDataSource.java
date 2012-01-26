@@ -191,42 +191,34 @@ public class OracleDataSource extends JDBCDataSource
         {
             final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
             try {
-                // Get user roles
-                this.isAdmin = false;
-                JDBCPreparedStatement dbStat = context.prepareStatement(
-                    "SELECT GRANTED_ROLE FROM USER_ROLE_PRIVS");
-                try {
-                    JDBCResultSet resultSet = dbStat.executeQuery();
-                    try {
-                        while (resultSet.next()) {
-                            final String role = resultSet.getString(1);
-                            if (role.equals("DBA")) {
-                                isAdmin = true;
-                            }
-                        }
-                    } finally {
-                        resultSet.close();
-                    }
-                } finally {
-                    dbStat.close();
+                // Set session settings
+                DBPConnectionInfo connectionInfo = getContainer().getConnectionInfo();
+                Object sessionLanguage = connectionInfo.getProperties().get(OracleConstants.PROP_SESSION_LANGUAGE);
+                if (sessionLanguage != null) {
+                    JDBCUtils.executeSQL(
+                        context,
+                        "ALTER SESSION SET NLS_LANGUAGE='" + sessionLanguage + "'");
+                }
+                Object sessionTerritory = connectionInfo.getProperties().get(OracleConstants.PROP_SESSION_TERRITORY);
+                if (sessionLanguage != null) {
+                    JDBCUtils.executeSQL(
+                        context,
+                        "ALTER SESSION SET NLS_TERRITORY='" + sessionTerritory + "'");
                 }
 
+                // Check ВИФ role
+                this.isAdmin = "YES".equals(
+                    JDBCUtils.queryString(
+                    context,
+                    "SELECT 'YES' FROM USER_ROLE_PRIVS WHERE GRANTED_ROLE='DBA'"));
+
                 // Get active schema
-                dbStat = context.prepareStatement(
+                this.activeSchemaName = JDBCUtils.queryString(
+                    context,
                     "SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
-                try {
-                    JDBCResultSet resultSet = dbStat.executeQuery();
-                    try {
-                        resultSet.next();
-                        this.activeSchemaName = resultSet.getString(1);
-                    } finally {
-                        resultSet.close();
-                    }
-                } finally {
-                    dbStat.close();
-                }
             } catch (SQLException e) {
-                log.error(e);
+                //throw new DBException(e);
+                log.warn(e);
             }
             finally {
                 context.close();
@@ -284,7 +276,7 @@ public class OracleDataSource extends JDBCDataSource
 
     public OracleSchema getSelectedObject()
     {
-        return schemaCache.getCachedObject(activeSchemaName);
+        return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
     }
 
     public void selectObject(DBRProgressMonitor monitor, DBSObject object)
@@ -299,12 +291,7 @@ public class OracleDataSource extends JDBCDataSource
         }
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active schema");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
-            try {
-                dbStat.execute();
-            } finally {
-                dbStat.close();
-            }
+            JDBCUtils.executeSQL(context, "ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
         } catch (SQLException e) {
             throw new DBException(e);
         }
@@ -447,7 +434,7 @@ public class OracleDataSource extends JDBCDataSource
         {
             setListOrderComparator(DBUtils.<OracleSchema>nameComparator());
             // Add predefined types
-            if (getCachedObject(owner.activeSchemaName) == null) {
+            if (owner.activeSchemaName != null && getCachedObject(owner.activeSchemaName) == null) {
                 cacheObject(
                     new OracleSchema(owner, -1, owner.activeSchemaName));
             }

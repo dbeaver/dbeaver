@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
@@ -526,6 +527,25 @@ public class JDBCUtils {
         final JDBCPreparedStatement dbStat = context.prepareStatement(sql);
         try {
             dbStat.execute();
+        } finally {
+            dbStat.close();
+        }
+    }
+
+    public static String queryString(JDBCExecutionContext context, String sql) throws SQLException
+    {
+        final JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        try {
+            JDBCResultSet resultSet = dbStat.executeQuery();
+            try {
+                if (resultSet.next()) {
+                    return resultSet.getString(1);
+                } else {
+                    return null;
+                }
+            } finally {
+                resultSet.close();
+            }
         } finally {
             dbStat.close();
         }
