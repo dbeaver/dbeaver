@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.driver;
@@ -289,7 +289,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                             PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE) :
                             lib.getFile().isDirectory() ?
                                 DBIcon.TREE_FOLDER.getImage() :
-                                DBIcon.JAR.getImage());
+                                (lib.getType() == DBPDriverFileType.jar ? DBIcon.JAR.getImage() : DBIcon.TYPE_UNKNOWN.getImage()));
                 }
             });
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -385,6 +385,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                             libList.add(
                                 new DriverFileDescriptor(
                                     driver,
+                                    fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverFileType.jar : DBPDriverFileType.lib,
                                     new File(folderFile, fileName).getAbsolutePath()));
                         }
                         changeLibContent();
@@ -406,7 +407,10 @@ public class DriverEditDialog extends HelpEnabledDialog
                 String selected = fd.open();
                 if (selected != null) {
                     curFolder = fd.getFilterPath();
-                    libList.add(new DriverFileDescriptor(driver, selected));
+                    libList.add(new DriverFileDescriptor(
+                        driver,
+                        DBPDriverFileType.jar,
+                        selected));
                     changeLibContent();
                 }
             }
@@ -688,7 +692,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             java.util.List<URL> libURLs = new ArrayList<URL>();
             for (DriverFileDescriptor lib : libList) {
                 File libFile = lib.getFile();
-                if (libFile.exists() && !libFile.isDirectory()) {
+                if (libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverFileType.jar) {
                     libFiles.add(libFile);
                     try {
                         libURLs.add(libFile.toURI().toURL());

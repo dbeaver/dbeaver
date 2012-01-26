@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
@@ -606,7 +606,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 return lib;
             }
         }
-        DriverFileDescriptor lib = new DriverFileDescriptor(this, path);
+        DriverFileDescriptor lib = new DriverFileDescriptor(this, DBPDriverFileType.jar, path);
         this.files.add(lib);
         return lib;
     }

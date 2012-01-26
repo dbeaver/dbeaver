@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
@@ -33,10 +33,10 @@ public class DriverFileDescriptor implements DBPDriverFile
     private boolean custom;
     private boolean disabled;
 
-    public DriverFileDescriptor(DriverDescriptor driver, String path)
+    public DriverFileDescriptor(DriverDescriptor driver, DBPDriverFileType type, String path)
     {
         this.driver = driver;
-        this.type = DBPDriverFileType.jar;
+        this.type = type;
         this.system = DBeaverCore.getInstance().getLocalSystem();
         this.path = path;
         this.custom = true;
