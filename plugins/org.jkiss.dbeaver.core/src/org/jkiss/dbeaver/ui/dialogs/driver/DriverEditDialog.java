@@ -303,7 +303,7 @@ public class DriverEditDialog extends HelpEnabledDialog
 
             libList = new ArrayList<DriverFileDescriptor>();
             for (DriverFileDescriptor lib : driver.getFiles()) {
-                if (lib.isDisabled() || lib.getType() != DBPDriverFileType.jar || lib.getType() != DBPDriverFileType.lib) {
+                if (lib.isDisabled() || (lib.getType() != DBPDriverFileType.jar && lib.getType() != DBPDriverFileType.lib)) {
                     continue;
                 }
                 libList.add(lib);
