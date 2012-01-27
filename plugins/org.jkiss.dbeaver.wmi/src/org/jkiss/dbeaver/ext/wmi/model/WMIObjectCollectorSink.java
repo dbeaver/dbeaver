@@ -20,16 +20,18 @@ class WMIObjectCollectorSink implements WMIObjectSink
     private final DBRProgressMonitor monitor;
     private final WMIService service;
     private final List<WMIObject> objectList = new ArrayList<WMIObject>();
+    private final long firstRow;
+    private final long maxRows;
     private volatile boolean finished = false;
     private long totalIndicated = 0;
-    private long firstRow;
-    private long maxRows;
     private String errorDesc;
 
     public WMIObjectCollectorSink(DBRProgressMonitor monitor, WMIService service)
     {
         this.monitor = monitor;
         this.service = service;
+        this.firstRow = 0;
+        this.maxRows = 0;
     }
 
     WMIObjectCollectorSink(DBRProgressMonitor monitor, WMIService service, long firstRow, long maxRows)
@@ -47,12 +49,49 @@ class WMIObjectCollectorSink implements WMIObjectSink
 
     public void indicate(WMIObject[] objects)
     {
+        if (finished) {
+            return;
+        }
+
         if (firstRow <= 0 && maxRows <= 0) {
+            // Read everything
             Collections.addAll(objectList, objects);
             totalIndicated += objects.length;
         } else {
-            Collections.addAll(objectList, objects);
-            totalIndicated += objects.length;
+            // Add part (or all) of new objects
+            int startPos, lastPos = objects.length - 1;
+            if (firstRow > 0) {
+                if (totalIndicated + objects.length < firstRow) {
+                    totalIndicated += objects.length;
+                    return;
+                } else if (totalIndicated < firstRow) {
+                    startPos = (int)(firstRow - totalIndicated);
+                } else {
+                    startPos = 0;
+                }
+            } else {
+                startPos = 0;
+            }
+            totalIndicated += startPos;
+            for (int i = startPos; i <= lastPos; i++) {
+                if (objectList.size() >= maxRows) {
+                    finished = true;
+                    break;
+                }
+                objectList.add(objects[i]);
+                totalIndicated++;
+            }
+
+            if (finished) {
+                // We read everything so lets cancel the sink
+                try {
+                    service.cancelSink(this);
+                } catch (WMIException e) {
+                    log.warn(e);
+                }
+            }
+            //Collections.addAll(objectList, objects);
+            //totalIndicated += objects.length;
         }
         monitor.subTask(String.valueOf(objectList.size()) + " objects loaded");
     }
@@ -82,6 +121,7 @@ class WMIObjectCollectorSink implements WMIObjectSink
             // do nothing
         }
         if (monitor.isCanceled()) {
+            finished = true;
             service.cancelSink(this);
         }
         if (errorDesc != null) {
