@@ -427,6 +427,7 @@ public class WMIClass extends WMIContainer
                     log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                 }
                 resultSet.close();
+                dataReceiver.close();
             }
             return resultCount;
         } catch (WMIException e) {
