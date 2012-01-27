@@ -210,7 +210,7 @@
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" iconId="#java" description="Java Classes">
                             <items label="Java Class" path="class" property="javaClasses" iconId="#javaClass"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.recycle_bin.node.name" iconId="#recycle_bin" description="Recycle Bin" visibleIf="object.dataSource.admin">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.recycle_bin.node.name" iconId="#recycle_bin" description="Recycle Bin" visibleIf="object.dataSource.adminVisible">
                             <items label="%tree.recycled_object.node.name" path="object" property="recycledObjects" iconId="#recycle_bin"/>
                         </folder>
                     </items>
@@ -241,7 +241,7 @@
                         </items>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" iconId="#security" description="Security management" visibleIf="object.dataSource.admin">
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" iconId="#security" description="Security management" visibleIf="object.dataSource.adminVisible">
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="%tree.users.node.name" iconId="#folder_user" description="Users">
                         <items label="%tree.user.node.name" path="users" property="users" iconId="#user">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="%tree.roles.node.name" iconId="#folder_role" description="User roles" navigable="false">
@@ -280,7 +280,7 @@
                         </items>
                     </folder>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" iconId="#folder_admin" description="Maintenance/Settings" visibleIf="object.dataSource.admin">
+                <folder type="" label="%tree.administer.node.name" iconId="#folder_admin" description="Maintenance/Settings" visibleIf="object.dataSource.adminVisible">
                     <object type="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor" label="%tree.sessions.node.name" iconId="#admin" description="Server session manager" editor="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"/>
                     <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="Global Recycle Bin" iconId="#recycle_bin" description="Global recycle bin" visibleIf="object.dataSource.admin">
                         <items label="Recycled Object" path="object" property="adminRecycleBin" iconId="#recycle_bin"/>

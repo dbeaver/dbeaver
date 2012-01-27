@@ -169,6 +169,11 @@ public class CommonUtils {
         return isEmpty(value) ? defaultValue : Boolean.parseBoolean(value);
     }
 
+    public static boolean getBoolean(Object value, boolean defaultValue)
+    {
+        return value != null && (value instanceof Boolean ? (Boolean) value : getBoolean(value.toString()));
+    }
+
     public static String getLineSeparator()
     {
         String lineSeparator = System.getProperty("line.separator");

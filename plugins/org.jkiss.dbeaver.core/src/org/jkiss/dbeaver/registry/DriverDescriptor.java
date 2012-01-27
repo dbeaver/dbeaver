@@ -1214,7 +1214,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
                 curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
                 curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
-                curDriver.setCustomDriverLoader("true".equals(atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER)));
+                curDriver.setCustomDriverLoader(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false));
                 curDriver.setModified(true);
                 String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                 if (CommonUtils.getBoolean(disabledAttr)) {

@@ -499,12 +499,12 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
                 final Object checkSchemaContent = connectionProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
                 if (checkSchemaContent != null) {
-                    hideEmptySchemasCheckbox.setSelection("true".equals(checkSchemaContent));
+                    hideEmptySchemasCheckbox.setSelection(CommonUtils.getBoolean(checkSchemaContent, false));
                 }
 
                 final Object showDBAObjects = connectionProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA);
                 if (showDBAObjects != null) {
-                    showDBAAlwaysCheckbox.setSelection("true".equals(showDBAObjects));
+                    showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(showDBAObjects, false));
                 }
             }
         } else {

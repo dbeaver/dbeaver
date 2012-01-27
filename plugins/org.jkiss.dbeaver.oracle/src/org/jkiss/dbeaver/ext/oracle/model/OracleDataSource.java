@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.Driver;
 import java.sql.ResultSet;
@@ -60,6 +61,7 @@ public class OracleDataSource extends JDBCDataSource
     private OracleSchema publicSchema;
     private String activeSchemaName;
     private boolean isAdmin;
+    private boolean isAdminVisible;
     private String planTableName;
 
     public OracleDataSource(DBSDataSourceContainer container)
@@ -91,6 +93,11 @@ public class OracleDataSource extends JDBCDataSource
     public boolean isAdmin()
     {
         return isAdmin;
+    }
+
+    public boolean isAdminVisible()
+    {
+        return isAdmin || isAdminVisible;
     }
 
     @Association
@@ -211,6 +218,13 @@ public class OracleDataSource extends JDBCDataSource
                     JDBCUtils.queryString(
                     context,
                     "SELECT 'YES' FROM USER_ROLE_PRIVS WHERE GRANTED_ROLE='DBA'"));
+                this.isAdminVisible = isAdmin;
+                if (!isAdminVisible) {
+                    Object showAdmin = connectionInfo.getProperties().get(OracleConstants.PROP_ALWAYS_SHOW_DBA);
+                    if (showAdmin != null) {
+                        isAdminVisible = CommonUtils.getBoolean(showAdmin, false);
+                    }
+                }
 
                 // Get active schema
                 this.activeSchemaName = JDBCUtils.queryString(
@@ -389,11 +403,11 @@ public class OracleDataSource extends JDBCDataSource
 //                        "WHERE (U.USER_ID IN (SELECT DISTINCT OWNER# FROM SYS.OBJ$) ");
 //                } else {
             schemasQuery.append(
-                "WHERE ");
+                "WHERE (");
             if (manyObjects) {
                 schemasQuery.append("U.USERNAME IS NOT NULL");
             } else {
-                schemasQuery.append("(U.USERNAME IN (SELECT DISTINCT OWNER FROM SYS.ALL_OBJECTS)");
+                schemasQuery.append("U.USERNAME IN (SELECT DISTINCT OWNER FROM SYS.ALL_OBJECTS)");
             }
 //                }
 
