@@ -32,26 +32,24 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
             DBNNode selectedNode = NavigatorUtils.getSelectedNode(selection);
             if (selectedNode instanceof DBNDatabaseNode) {
                 final DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
-                if (databaseNode.getObject() instanceof DBSEntity) {
-                    final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                        DBSObjectSelector.class, databaseNode.getObject());
-                    try {
-                        DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
-                            public void run(DBRProgressMonitor monitor)
-                                throws InvocationTargetException, InterruptedException
-                            {
-                                try {
-                                    activeContainer.selectObject(monitor, databaseNode.getObject());
-                                } catch (DBException e) {
-                                    throw new InvocationTargetException(e);
-                                }
+                final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
+                    DBSObjectSelector.class, databaseNode.getObject());
+                try {
+                    DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                        public void run(DBRProgressMonitor monitor)
+                            throws InvocationTargetException, InterruptedException
+                        {
+                            try {
+                                activeContainer.selectObject(monitor, databaseNode.getObject());
+                            } catch (DBException e) {
+                                throw new InvocationTargetException(e);
                             }
-                        });
-                    } catch (InvocationTargetException e) {
-                        UIUtils.showErrorDialog(null, "Select entity", "Can't change selected entity", e.getTargetException());
-                    } catch (InterruptedException e) {
-                        // do nothing
-                    }
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    UIUtils.showErrorDialog(null, "Select entity", "Can't change selected entity", e.getTargetException());
+                } catch (InterruptedException e) {
+                    // do nothing
                 }
             }
         }
