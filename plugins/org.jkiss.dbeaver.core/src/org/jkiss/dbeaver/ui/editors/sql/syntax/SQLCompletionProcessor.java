@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
@@ -183,10 +183,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         DBPDataSource dataSource,
         List<ICompletionProposal> proposals)
     {
-        if (!(dataSource instanceof DBSObjectContainer)) {
+        final DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        if (rootContainer == null) {
             return;
         }
-        DBSObjectContainer sc = (DBSObjectContainer) dataSource;
+        DBSObjectContainer sc = rootContainer;
         DBSObject childObject = sc;
         List<String> tokens = wordDetector.splitWordPart();
 
@@ -251,7 +252,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 // At last - try to find child tables by pattern
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, childObject);
                 if (structureAssistant != null) {
-                    makeProposalsFromAssistant(monitor, structureAssistant, (DBSObjectContainer) dataSource, lastToken, proposals);
+                    makeProposalsFromAssistant(monitor, structureAssistant, rootContainer, lastToken, proposals);
                 }
             }
         }

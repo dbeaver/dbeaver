@@ -50,9 +50,9 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         throws DBException
     {
         if (table == null) {
-            DBPDataSource dataSource = resultSetMetaData.getResultSet().getContext().getDataSource();
-            if (dataSource instanceof DBSObjectContainer) {
-                DBSObjectContainer sc = (DBSObjectContainer) dataSource;
+            final DBPDataSource dataSource = resultSetMetaData.getResultSet().getContext().getDataSource();
+            final DBSObjectContainer sc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+            if (sc != null) {
                 Class<? extends DBSObject> scChildType = sc.getChildType(monitor);
                 DBSObject tableObject;
                 if (!CommonUtils.isEmpty(catalogName) && scChildType != null && DBSSchema.class.isAssignableFrom(scChildType)) {

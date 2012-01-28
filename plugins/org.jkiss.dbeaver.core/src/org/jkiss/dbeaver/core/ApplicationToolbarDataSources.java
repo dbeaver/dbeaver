@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.core;
@@ -90,16 +90,20 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
 
         public IStatus run(DBRProgressMonitor monitor)
         {
-            DBSObjectContainer objectContainer = (DBSObjectContainer) getDataSource();
+            DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, getDataSource());
+            DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, getDataSource());
+            if (oc == null || os == null) {
+                return Status.CANCEL_STATUS;
+            }
             try {
                 monitor.beginTask(CoreMessages.toolbar_datasource_selector_action_read_databases, 1);
-                Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
+                Class<? extends DBSObject> childType = oc.getChildType(monitor);
                 if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {
                     enabled = false;
                 } else {
                     enabled = true;
-                    databasesInfo.list = objectContainer.getChildren(monitor);
-                    databasesInfo.active = ((DBSObjectSelector) getDataSource()).getSelectedObject();
+                    databasesInfo.list = oc.getChildren(monitor);
+                    databasesInfo.active = os.getSelectedObject();
                 }
             }
             catch (DBException e) {
@@ -509,9 +513,9 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 if (dsContainer != null && dsContainer.isConnected()) {
                     final DBPDataSource dataSource = dsContainer.getDataSource();
 
-                    if (dataSource instanceof DBSObjectContainer &&
-                        dataSource instanceof DBSObjectSelector &&
-                        ((DBSObjectSelector)dataSource).supportsObjectSelect())
+                    DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+                    DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+                    if (oc != null && os != null && os.supportsObjectSelect())
                     {
                         synchronized (dbListReads) {
                             for (DatabaseListReader reader : dbListReads) {
@@ -633,12 +637,12 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                         throws InvocationTargetException, InterruptedException
                     {
                         try {
-                            if (dataSource instanceof DBSObjectContainer &&
-                                dataSource instanceof DBSObjectSelector &&
-                                ((DBSObjectSelector) dataSource).supportsObjectSelect()) {
-                                DBSObject newChild = ((DBSObjectContainer) dataSource).getChild(monitor, newName);
+                            DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+                            DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+                            if (oc != null && os != null && os.supportsObjectSelect()) {
+                                DBSObject newChild = oc.getChild(monitor, newName);
                                 if (newChild != null) {
-                                    ((DBSObjectSelector) dataSource).selectObject(monitor, newChild);
+                                    os.selectObject(monitor, newChild);
                                 } else {
                                     throw new DBException(MessageFormat.format(CoreMessages.toolbar_datasource_selector_error_database_not_found, newName));
                                 }

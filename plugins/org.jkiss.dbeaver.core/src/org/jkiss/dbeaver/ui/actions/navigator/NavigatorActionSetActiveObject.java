@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -29,7 +29,7 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
     public void run(IAction action)
     {
         if (selection instanceof IStructuredSelection) {
-            DBNNode selectedNode = NavigatorUtils.getSelectedNode((IStructuredSelection) selection);
+            DBNNode selectedNode = NavigatorUtils.getSelectedNode(selection);
             if (selectedNode instanceof DBNDatabaseNode) {
                 final DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                 if (databaseNode.getObject() instanceof DBSEntity) {
@@ -41,7 +41,7 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
                                 throws InvocationTargetException, InterruptedException
                             {
                                 try {
-                                    activeContainer.selectObject(monitor, (DBSEntity) databaseNode.getObject());
+                                    activeContainer.selectObject(monitor, databaseNode.getObject());
                                 } catch (DBException e) {
                                     throw new InvocationTargetException(e);
                                 }
