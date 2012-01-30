@@ -30,6 +30,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
     public Collection<IPropertyDescriptor> getConnectionProperties(DBPDriver driver, DBPConnectionInfo connectionInfo) throws DBException
     {
+        driver.validateFilesPresence();
         return null;
     }
 

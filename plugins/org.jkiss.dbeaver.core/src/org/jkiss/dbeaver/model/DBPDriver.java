@@ -70,5 +70,7 @@ public interface DBPDriver extends DBPObject
 
     Collection<? extends DBPDriverFile> getFiles();
 
+    void validateFilesPresence();
+
     void loadDriver() throws DBException;
 }
