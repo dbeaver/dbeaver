@@ -43,7 +43,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     static final Log log = LogFactory.getLog(NavigatorHandlerObjectBase.class);
 
-    static boolean updateUI = false;
+    static boolean updateUI = true;
 
     protected static class CommandTarget {
         private DBECommandContext context;
