@@ -2207,6 +2207,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 DBCColumnMetaData keyColumn = keyColumns.get(i);
                 DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, keyColumn);
                 Object keyValue = valueHandler.getValueObject(context, resultSet, keyColumn, i);
+                if (keyValue == null) {
+                    // [MSSQL] Sometimes driver returns empty list of generated keys if
+                    // table has auto-increment columns and user performs simple row update
+                    // Just ignore such empty keys. We can't do anything with them anyway
+                    continue;
+                }
                 boolean updated = false;
                 if (!CommonUtils.isEmpty(keyColumn.getName())) {
                     int colIndex = getMetaColumnIndex(statement.table, keyColumn.getName());
