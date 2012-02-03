@@ -27,5 +27,5 @@ public class ERDConstants {
     public static final String PREF_GRID_HEIGHT = "erd.grid.height";
     public static final String PREF_ATTR_VISIBILITY = "erd.attr.visibility";
 
-    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", true, false);
+    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false);
 }

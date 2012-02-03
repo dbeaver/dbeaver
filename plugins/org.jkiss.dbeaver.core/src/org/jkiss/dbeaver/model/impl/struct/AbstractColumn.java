@@ -15,7 +15,7 @@ public abstract class AbstractColumn implements DBSColumnBase
     protected String name;
     protected int valueType;
     protected long maxLength;
-    protected boolean notNull;
+    protected boolean required;
     protected int scale;
     protected int precision;
     protected String typeName;
@@ -33,14 +33,14 @@ public abstract class AbstractColumn implements DBSColumnBase
         long maxLength,
         int scale,
         int precision,
-        boolean notNull)
+        boolean required)
     {
         this.name = name;
         this.valueType = valueType;
         this.maxLength = maxLength;
         this.scale = scale;
         this.precision = precision;
-        this.notNull = notNull;
+        this.required = required;
         this.typeName = typeName;
         this.ordinalPosition = ordinalPosition;
     }
@@ -100,14 +100,14 @@ public abstract class AbstractColumn implements DBSColumnBase
     }
 
     @Property(name = "Not Null", viewable = true, order = 50)
-    public boolean isNotNull()
+    public boolean isRequired()
     {
-        return notNull;
+        return required;
     }
 
-    public void setNotNull(boolean notNull)
+    public void setRequired(boolean required)
     {
-        this.notNull = notNull;
+        this.required = required;
     }
 
     @Property(name = "Scale", viewable = false, order = 60)

@@ -61,7 +61,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             this.valueType = type.getValueType();
         }
         this.maxLength = JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH");
-        this.notNull = !"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE"));
+        this.required = !"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE"));
         this.scale = JDBCUtils.safeGetInt(dbResult, "DATA_SCALE");
         this.precision = JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION");
         this.defaultValue = JDBCUtils.safeGetString(dbResult, "DATA_DEFAULT");

@@ -11,24 +11,26 @@ import org.jkiss.dbeaver.core.CoreMessages;
  */
 public class DBSEntityConstraintType
 {
-    public static final DBSEntityConstraintType FOREIGN_KEY = new DBSEntityConstraintType("fk", CoreMessages.model_struct_Foreign_Key, true, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType PRIMARY_KEY = new DBSEntityConstraintType("pk", CoreMessages.model_struct_Primary_Key, false, true); //$NON-NLS-1$
-    public static final DBSEntityConstraintType UNIQUE_KEY = new DBSEntityConstraintType("unique", CoreMessages.model_struct_Unique_Key, false, true); //$NON-NLS-1$
-    public static final DBSEntityConstraintType CHECK = new DBSEntityConstraintType("check", CoreMessages.model_struct_Check, false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType NOT_NULL = new DBSEntityConstraintType("notnull", CoreMessages.model_struct_Not_NULL, false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType INDEX = new DBSEntityConstraintType("index", "Index", false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType ASSOCIATION = new DBSEntityConstraintType("association", "Association", true, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType INHERITANCE = new DBSEntityConstraintType("inheritance", "Inheritance", true, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType FOREIGN_KEY = new DBSEntityConstraintType("fk", "FOREIGN KEY", CoreMessages.model_struct_Foreign_Key, true, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType PRIMARY_KEY = new DBSEntityConstraintType("pk", "PRIMARY KEY", CoreMessages.model_struct_Primary_Key, false, true); //$NON-NLS-1$
+    public static final DBSEntityConstraintType UNIQUE_KEY = new DBSEntityConstraintType("unique", "UNIQUE KEY", CoreMessages.model_struct_Unique_Key, false, true); //$NON-NLS-1$
+    public static final DBSEntityConstraintType CHECK = new DBSEntityConstraintType("check", "CHECK", CoreMessages.model_struct_Check, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType NOT_NULL = new DBSEntityConstraintType("notnull", "NOT NULL", CoreMessages.model_struct_Not_NULL, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType INDEX = new DBSEntityConstraintType("index", "Index", "Index", false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType ASSOCIATION = new DBSEntityConstraintType("association", "Association", "Association", true, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType INHERITANCE = new DBSEntityConstraintType("inheritance", "Inheritance", "Inheritance", true, false); //$NON-NLS-1$
 
     private final String id;
     private final String name;
+    private final String localizedName;
     private final boolean association;
     private final boolean unique;
 
-    public DBSEntityConstraintType(String id, String name, boolean association, boolean unique)
+    public DBSEntityConstraintType(String id, String name, String localizedName, boolean association, boolean unique)
     {
         this.id = id;
         this.name = name;
+        this.localizedName = localizedName == null ? name : localizedName;
         this.association = association;
         this.unique = unique;
     }
@@ -39,6 +41,11 @@ public class DBSEntityConstraintType
 
     public String getName() {
         return name;
+    }
+
+    public String getLocalizedName()
+    {
+        return localizedName;
     }
 
     public boolean isAssociation()

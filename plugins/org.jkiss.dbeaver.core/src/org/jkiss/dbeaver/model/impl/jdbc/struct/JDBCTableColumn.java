@@ -74,7 +74,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
     @Override
     public boolean isRequired()
     {
-        return super.isNotNull();
+        return super.isRequired();
     }
 
     public boolean isPersisted()
