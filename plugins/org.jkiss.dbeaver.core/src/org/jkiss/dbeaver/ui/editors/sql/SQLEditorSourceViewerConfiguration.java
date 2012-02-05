@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql;
@@ -24,11 +24,19 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLStringAutoIndentStrategy;
@@ -49,7 +57,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     /**
      * The editor with which this configuration is associated.
      */
-    private IEditorPart editor;
+    private SQLEditorBase editor;
     private SQLSyntaxManager syntaxManager;
 
     private IContentAssistProcessor completionProcessor;
@@ -72,7 +80,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      * @param editor the SQLEditor to configure
      */
     public SQLEditorSourceViewerConfiguration(
-        IEditorPart editor,
+        SQLEditorBase editor,
         SQLSyntaxManager syntaxManager,
         IContentAssistProcessor completionProcessor,
         IHyperlinkDetector hyperlinkDetector)
@@ -134,7 +142,20 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
-        ContentAssistant assistant = new ContentAssistant();
+        if (editor instanceof IDataSourceContainerProvider) {
+            final DBSDataSourceContainer container = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
+            if (container != null) {
+                store = container.getPreferenceStore();
+            }
+        } else if (editor instanceof IDataSourceProvider) {
+            final DBPDataSource dataSource = ((IDataSourceProvider) editor).getDataSource();
+            if (dataSource != null) {
+                store = dataSource.getContainer().getPreferenceStore();
+            }
+        }
+        final IPreferenceStore configStore = store;
+
+        final ContentAssistant assistant = new ContentAssistant();
 
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
@@ -160,6 +181,27 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         //Set auto insert mode.
         assistant.enableAutoInsert(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
 
+        final IPropertyChangeListener prefListener = new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event)
+            {
+                if (event.getProperty().equals(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)) {
+                    assistant.enableAutoActivation(configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
+                } else if (event.getProperty().equals(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY)) {
+                    assistant.setAutoActivationDelay(configStore.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
+                } else if (event.getProperty().equals(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO)) {
+                    assistant.enableAutoInsert(configStore.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
+                }
+            }
+        };
+        configStore.addPropertyChangeListener(prefListener);
+        editor.getTextViewer().getControl().addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e)
+            {
+                configStore.removePropertyChangeListener(prefListener);
+            }
+        });
         return assistant;
 
     }

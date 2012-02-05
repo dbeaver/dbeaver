@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.utils;
@@ -12,6 +12,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.util.SafeRunnable;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,8 +22,7 @@ import java.util.Map;
  * However, save will always use THIS store, not parent.
  * Originally copied from standard PreferenceStore class
  */
-public abstract class AbstractPreferenceStore extends EventManager implements IPersistentPreferenceStore
-{
+public abstract class AbstractPreferenceStore extends EventManager implements IPersistentPreferenceStore, IPropertyChangeListener {
     private IPreferenceStore parentStore;
     private Map<String, String> properties;
     private Map<String, String> defaultProperties;
@@ -38,6 +38,9 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     {
         this();
         this.parentStore = parentStore;
+        if (parentStore != null) {
+            parentStore.addPropertyChangeListener(this);
+        }
     }
 
     public IPreferenceStore getParentStore()
@@ -420,4 +423,17 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         p.put(name, value ? IPreferenceStore.TRUE : IPreferenceStore.FALSE);
     }
 
+    @Override
+    public void save() throws IOException
+    {
+
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event)
+    {
+        for (Object listener : getListeners()) {
+            ((IPropertyChangeListener)listener).propertyChange(event);
+        }
+    }
 }

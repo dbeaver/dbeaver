@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -17,7 +15,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.wmi.service.WMIService;
 
 import java.util.Collection;
@@ -28,8 +25,6 @@ import java.util.Collections;
  */
 public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectContainer, DBSObjectSelector
 {
-    static final Log log = LogFactory.getLog(WMIDataSource.class);
-
     private DBSDataSourceContainer container;
     private WMINamespace rootNamespace;
 

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 /**
@@ -30,6 +31,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Spinner commitLinesText;
     private Button fetchResultSetsCheck;
     private Button autoFoldersCheck;
+    private Button csAutoActivationCheck;
+    private Spinner csAutoActivationDelaySpinner;
+    private Button csAutoInsertCheck;
 
     public PrefPageSQLEditor()
     {
@@ -60,7 +64,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         // General settings
         {
-            Composite commonGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_common, 2, SWT.NONE, 0);
+            Composite commonGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_common, 2, GridData.FILL_HORIZONTAL, 0);
             {
                 UIUtils.createControlLabel(commonGroup, CoreMessages.pref_page_sql_editor_label_sql_timeout);
 
@@ -75,7 +79,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         // Scripts
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_scripts, 2, SWT.NONE, 0);
+            Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_scripts, 2, GridData.FILL_HORIZONTAL, 0);
 
             {
                 UIUtils.createControlLabel(scriptsGroup, CoreMessages.pref_page_sql_editor_label_commit_type);
@@ -109,9 +113,26 @@ public class PrefPageSQLEditor extends TargetPrefPage
             fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, false);
         }
 
+        // Content assistant
+        {
+            Composite assistGroup = UIUtils.createControlGroup(composite, "Content assistant", 2, GridData.FILL_HORIZONTAL, 0);
+
+            csAutoActivationCheck = UIUtils.createLabelCheckbox(assistGroup, "Enable auto activation", false);
+            csAutoActivationCheck.setToolTipText("Enables the content assistant's auto activation");
+            UIUtils.createControlLabel(assistGroup, "Auto activation delay");
+            csAutoActivationDelaySpinner = new Spinner(assistGroup, SWT.BORDER);
+            csAutoActivationDelaySpinner.setSelection(0);
+            csAutoActivationDelaySpinner.setDigits(0);
+            csAutoActivationDelaySpinner.setIncrement(50);
+            csAutoActivationDelaySpinner.setMinimum(0);
+            csAutoActivationDelaySpinner.setMaximum(1000000);
+            csAutoInsertCheck = UIUtils.createLabelCheckbox(assistGroup, "Auto-insert proposal", false);
+            csAutoInsertCheck.setToolTipText("Enables the content assistant's auto insertion mode.\nIf enabled, the content assistant inserts a proposal automatically if it is the only proposal.\nIn the case of ambiguities, the user must make the choice.");
+        }
+
         // Scripts
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_resources, 2, SWT.NONE, 0);
+            Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
 
             autoFoldersCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, false);
         }
@@ -128,6 +149,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
             commitLinesText.setSelection(store.getInt(PrefConstants.SCRIPT_COMMIT_LINES));
             fetchResultSetsCheck.setSelection(store.getBoolean(PrefConstants.SCRIPT_FETCH_RESULT_SETS));
             autoFoldersCheck.setSelection(store.getBoolean(PrefConstants.SCRIPT_AUTO_FOLDERS));
+            csAutoActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
+            csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
+            csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -137,6 +161,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         try {
             store.setValue(PrefConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
+
+            store.setValue(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, csAutoActivationCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, csAutoActivationDelaySpinner.getSelection());
+            store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
 
             store.setValue(PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.fromOrdinal(commitTypeCombo.getSelectionIndex()).name());
             store.setValue(PrefConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
