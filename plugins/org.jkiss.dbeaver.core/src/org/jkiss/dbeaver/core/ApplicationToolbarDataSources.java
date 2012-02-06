@@ -102,7 +102,10 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                     enabled = false;
                 } else {
                     enabled = true;
-                    databasesInfo.list = oc.getChildren(monitor);
+                    Collection<? extends DBSObject> children = oc.getChildren(monitor);
+                    databasesInfo.list = CommonUtils.isEmpty(children) ?
+                        Collections.<DBSObject>emptyList() :
+                        new ArrayList<DBSObject>(children);
                     databasesInfo.active = os.getSelectedObject();
                 }
             }

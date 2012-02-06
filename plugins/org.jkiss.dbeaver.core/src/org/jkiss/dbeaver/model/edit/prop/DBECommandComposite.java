@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.edit.prop;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 
@@ -42,15 +41,6 @@ public abstract class DBECommandComposite<OBJECT_TYPE extends DBPObject, HANDLER
     public void addPropertyHandler(HANDLER_TYPE handler, Object value)
     {
         properties.put(handler.getId(), value);
-    }
-
-    @Override
-    public void validateCommand() throws DBException
-    {
-    }
-
-    public void updateModel()
-    {
     }
 
 //    public static <OBJECT_TYPE extends DBPObject> DBECommandComposite getFromContext(DBECommandContext context, OBJECT_TYPE object, DBEPropertyHandler<OBJECT_TYPE> handler)

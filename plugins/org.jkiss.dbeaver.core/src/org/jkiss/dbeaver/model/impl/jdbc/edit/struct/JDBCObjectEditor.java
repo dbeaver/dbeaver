@@ -255,13 +255,13 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         {
             super.updateModel();
             OBJECT_TYPE object = getObject();
-            if (!object.isPersisted()) {
-                object.setPersisted(true);
-                DBUtils.fireObjectUpdate(object);
-            }
             JDBCAbstractCache<CONTAINER_TYPE, OBJECT_TYPE> cache = getObjectsCache(object);
             if (cache != null) {
                 cache.cacheObject(object);
+            }
+            if (!object.isPersisted()) {
+                object.setPersisted(true);
+                DBUtils.fireObjectUpdate(object);
             }
         }
 

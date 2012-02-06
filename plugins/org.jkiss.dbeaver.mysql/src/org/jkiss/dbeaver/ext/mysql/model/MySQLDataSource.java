@@ -21,17 +21,20 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -44,7 +47,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     private final JDBCDataTypeCache dataTypeCache;
     private List<MySQLEngine> engines;
-    private List<MySQLCatalog> catalogs;
+    private final CatalogCache catalogCache = new CatalogCache();
     private List<MySQLPrivilege> privileges;
     private List<MySQLUser> users;
     private List<MySQLCharset> charsets;
@@ -69,14 +72,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return MySQLConstants.TABLE_TYPES;
     }
 
-    public List<MySQLCatalog> getCatalogs()
+    public CatalogCache getCatalogCache()
     {
-        return catalogs;
+        return catalogCache;
+    }
+
+    public Collection<MySQLCatalog> getCatalogs()
+    {
+        return catalogCache.getCachedObjects();
     }
 
     public MySQLCatalog getCatalog(String name)
     {
-        return DBUtils.findObject(catalogs, name);
+        return catalogCache.getCachedObject(name);
     }
 
     public void initialize(DBRProgressMonitor monitor)
@@ -156,44 +164,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 }
             }
 
-            {
-                // Read catalogs
-                List<MySQLCatalog> tmpCatalogs = new ArrayList<MySQLCatalog>();
-                StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
-                List<String> catalogFilters = SQLUtils.splitFilter(getContainer().getCatalogFilter());
-                if (!catalogFilters.isEmpty()) {
-                    catalogQuery.append(" WHERE ");
-                    for (int i = 0; i < catalogFilters.size(); i++) {
-                        if (i > 0) catalogQuery.append(" OR ");
-                        catalogQuery.append(MySQLConstants.COL_SCHEMA_NAME).append(" LIKE ?");
-                    }
-                }
-                JDBCPreparedStatement dbStat = context.prepareStatement(catalogQuery.toString());
-                try {
-                    if (!catalogFilters.isEmpty()) {
-                        for (int i = 0; i < catalogFilters.size(); i++) {
-                            dbStat.setString(i + 1, catalogFilters.get(i));
-                        }
-                    }
-                    JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
-                        while (dbResult.next()) {
-                            MySQLCatalog catalog = new MySQLCatalog(this, dbResult);
-                            if (!getContainer().isShowSystemObjects() && catalog.getName().equalsIgnoreCase(MySQLConstants.INFO_SCHEMA_NAME)) {
-                                // Skip system catalog
-                                continue;
-                            }
-                            tmpCatalogs.add(catalog);
-                        }
-                    } finally {
-                        dbResult.close();
-                    }
-                }
-                finally {
-                    dbStat.close();
-                }
-                this.catalogs = tmpCatalogs;
-            }
+            // Read catalogs
+            catalogCache.getObjects(monitor, this);
 
             {
                 // Get active schema
@@ -270,7 +242,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         super.refreshObject(monitor);
 
         this.engines = null;
-        this.catalogs = null;
+        this.catalogCache.clearCache();
         this.users = null;
         this.activeCatalogName = null;
 
@@ -644,4 +616,36 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     {
         return dataTypeCache.getCachedObject(typeName);
     }
+
+    static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog>
+    {
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLDataSource owner) throws SQLException
+        {
+            StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
+            List<String> catalogFilters = SQLUtils.splitFilter(owner.getContainer().getCatalogFilter());
+            if (!catalogFilters.isEmpty()) {
+                catalogQuery.append(" WHERE ");
+                for (int i = 0; i < catalogFilters.size(); i++) {
+                    if (i > 0) catalogQuery.append(" OR ");
+                    catalogQuery.append(MySQLConstants.COL_SCHEMA_NAME).append(" LIKE ?");
+                }
+            }
+            JDBCPreparedStatement dbStat = context.prepareStatement(catalogQuery.toString());
+            if (!catalogFilters.isEmpty()) {
+                for (int i = 0; i < catalogFilters.size(); i++) {
+                    dbStat.setString(i + 1, catalogFilters.get(i));
+                }
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected MySQLCatalog fetchObject(JDBCExecutionContext context, MySQLDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        {
+            return new MySQLCatalog(owner, resultSet);
+        }
+
+    }
+
 }

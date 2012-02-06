@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -26,6 +27,12 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     public long getMakerOptions()
     {
         return FEATURE_SAVE_IMMEDIATELY;
+    }
+
+    @Override
+    protected JDBCAbstractCache<MySQLDataSource, MySQLCatalog> getObjectsCache(MySQLCatalog object)
+    {
+        return object.getDataSource().getCatalogCache();
     }
 
     @Override
