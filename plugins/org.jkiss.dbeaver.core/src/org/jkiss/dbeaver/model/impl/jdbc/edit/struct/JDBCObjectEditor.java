@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -141,6 +142,17 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         commandContext.addCommand(command, new RenameObjectReflector());
     }
 
+    /**
+     * Provides access to objects cache.
+     * Editor will reflect object create/delete in commands model update method
+     * @param object contained object
+     * @return objects cache or null
+     */
+    protected JDBCAbstractCache<CONTAINER_TYPE, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object)
+    {
+        return null;
+    }
+
     protected class PropertyHandler
         extends ProxyPropertyDescriptor
         implements DBEPropertyHandler<OBJECT_TYPE>, DBEPropertyReflector<OBJECT_TYPE>, DBEPropertyValidator<OBJECT_TYPE>
@@ -242,9 +254,14 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         public void updateModel()
         {
             super.updateModel();
-            if (!getObject().isPersisted()) {
-                getObject().setPersisted(true);
-                DBUtils.fireObjectUpdate(getObject());
+            OBJECT_TYPE object = getObject();
+            if (!object.isPersisted()) {
+                object.setPersisted(true);
+                DBUtils.fireObjectUpdate(object);
+            }
+            JDBCAbstractCache<CONTAINER_TYPE, OBJECT_TYPE> cache = getObjectsCache(object);
+            if (cache != null) {
+                cache.cacheObject(object);
             }
         }
 
@@ -267,6 +284,16 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         public IDatabasePersistAction[] getPersistActions()
         {
             return makeObjectDeleteActions(this);
+        }
+
+        @Override
+        public void updateModel()
+        {
+            OBJECT_TYPE object = getObject();
+            JDBCAbstractCache<CONTAINER_TYPE, OBJECT_TYPE> cache = getObjectsCache(object);
+            if (cache != null) {
+                cache.removeObject(object);
+            }
         }
     }
 

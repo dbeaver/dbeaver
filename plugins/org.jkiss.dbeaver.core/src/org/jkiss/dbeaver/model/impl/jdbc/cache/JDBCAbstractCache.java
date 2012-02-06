@@ -25,7 +25,17 @@ public interface JDBCAbstractCache<OWNER extends DBSObject, OBJECT extends DBSOb
 
     OBJECT getCachedObject(String name);
 
+    /**
+     * Adds specified object to cache
+     * @param object object to cache
+     */
     void cacheObject(OBJECT object);
+
+    /**
+     * Removes specified object from cache
+     * @param object object to remove
+     */
+    void removeObject(OBJECT object);
 
     void clearCache();
 

@@ -140,6 +140,16 @@ public abstract class JDBCCompositeCache<
         }
     }
 
+    public void removeObject(OBJECT object)
+    {
+        synchronized (this) {
+            if (this.objectList != null) {
+                this.objectList.remove(object);
+                this.objectMap.remove(object.getName());
+            }
+        }
+    }
+
     public void setCache(Collection<OBJECT> objects)
     {
         synchronized (this) {

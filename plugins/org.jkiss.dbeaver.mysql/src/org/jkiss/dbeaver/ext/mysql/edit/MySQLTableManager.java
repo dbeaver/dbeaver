@@ -17,13 +17,14 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 /**
  * MySQL table manager
  */
-public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog> implements DBEObjectRenamer<MySQLTable> {
+public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCatalog> implements DBEObjectRenamer<MySQLTableBase> {
 
     private static final Class<?>[] CHILD_TYPES = {
         MySQLTableColumn.class,
@@ -31,6 +32,12 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
         MySQLTableForeignKey.class,
         MySQLTableIndex.class
     };
+
+    @Override
+    protected JDBCAbstractCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
+    {
+        return object.getContainer().tableCache;
+    }
 
     @Override
     protected MySQLTable createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
@@ -62,27 +69,30 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
     }
 
     @Override
-    protected void appendTableModifiers(MySQLTable table, NestedObjectCommand tableProps, StringBuilder ddl)
+    protected void appendTableModifiers(MySQLTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl)
     {
-        try {
-            final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
-            if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
-                ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
+        if (tableBase instanceof MySQLTable) {
+            MySQLTable table =(MySQLTable)tableBase;
+            try {
+                final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
+                if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
+                    ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
+                }
+                if ((!table.isPersisted() || tableProps.getProperty("charset") != null) && additionalInfo.getCharset() != null) { //$NON-NLS-1$
+                    ddl.append("\nDEFAULT CHARSET=").append(additionalInfo.getCharset().getName()); //$NON-NLS-1$
+                }
+                if ((!table.isPersisted() || tableProps.getProperty("collation") != null) && additionalInfo.getCollation() != null) { //$NON-NLS-1$
+                    ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
+                }
+                if ((!table.isPersisted() || tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
+                    ddl.append("\nCOMMENT='").append(table.getDescription().replace('\'', '"')).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
+                }
+                if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
+                    ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement()); //$NON-NLS-1$
+                }
+            } catch (DBCException e) {
+                log.error(e);
             }
-            if ((!table.isPersisted() || tableProps.getProperty("charset") != null) && additionalInfo.getCharset() != null) { //$NON-NLS-1$
-                ddl.append("\nDEFAULT CHARSET=").append(additionalInfo.getCharset().getName()); //$NON-NLS-1$
-            }
-            if ((!table.isPersisted() || tableProps.getProperty("collation") != null) && additionalInfo.getCollation() != null) { //$NON-NLS-1$
-                ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
-            }
-            if ((!table.isPersisted() || tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
-                ddl.append("\nCOMMENT='").append(table.getDescription().replace('\'', '"')).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-            if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
-                ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement()); //$NON-NLS-1$
-            }
-        } catch (DBCException e) {
-            log.error(e);
         }
     }
 
@@ -101,7 +111,7 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTable, MySQLCatalog
         return CHILD_TYPES;
     }
 
-    public void renameObject(DBECommandContext commandContext, MySQLTable object, String newName) throws DBException
+    public void renameObject(DBECommandContext commandContext, MySQLTableBase object, String newName) throws DBException
     {
         processObjectRename(commandContext, object, newName);
     }

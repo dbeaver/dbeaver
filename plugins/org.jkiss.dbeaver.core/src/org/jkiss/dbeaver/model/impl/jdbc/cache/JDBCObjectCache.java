@@ -103,6 +103,18 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         }
     }
 
+    @Override
+    public void removeObject(OBJECT object)
+    {
+        synchronized (this) {
+            if (this.objectList != null) {
+                detectCaseSensitivity(object);
+                this.objectList.remove(object);
+                this.objectMap.remove(caseSensitive ? object.getName() : object.getName().toUpperCase());
+            }
+        }
+    }
+
     public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, OWNER owner, String name, Class<SUB_TYPE> type)
         throws DBException
     {
