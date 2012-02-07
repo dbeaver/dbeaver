@@ -6,13 +6,13 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,7 +36,7 @@ public abstract class JDBCCompositeCache<
     PARENT extends DBSObject,
     OBJECT extends DBSObject,
     ROW_REF extends DBSObject>
-    implements JDBCAbstractCache<OWNER, OBJECT>
+    implements DBSObjectCache<OWNER, OBJECT>
 {
     protected static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
 

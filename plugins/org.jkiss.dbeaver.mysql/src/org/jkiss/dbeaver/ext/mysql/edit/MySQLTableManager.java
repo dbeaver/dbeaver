@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
@@ -34,9 +34,9 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCat
     };
 
     @Override
-    protected JDBCAbstractCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
+    protected DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
     {
-        return object.getContainer().tableCache;
+        return object.getContainer().getTableCache();
     }
 
     @Override

@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
@@ -22,6 +23,12 @@ import org.jkiss.utils.CommonUtils;
  * MySQLProcedureManager
  */
 public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQLCatalog> {
+
+    @Override
+    protected DBSObjectCache<MySQLCatalog, MySQLProcedure> getObjectsCache(MySQLProcedure object)
+    {
+        return object.getContainer().getProceduresCache();
+    }
 
     public long getMakerOptions()
     {

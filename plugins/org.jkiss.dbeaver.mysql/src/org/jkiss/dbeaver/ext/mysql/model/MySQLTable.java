@@ -161,7 +161,7 @@ public class MySQLTable extends MySQLTableBase
         return foreignKeys;
     }
 
-    public MySQLTableForeignKey getForeignKey(DBRProgressMonitor monitor, String fkName)
+    public MySQLTableForeignKey getAssociation(DBRProgressMonitor monitor, String fkName)
         throws DBException
     {
         return DBUtils.findObject(getAssociations(monitor), fkName);

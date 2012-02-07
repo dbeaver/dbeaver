@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.impl.jdbc.cache;
+package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -13,7 +13,7 @@ import java.util.Collection;
 /**
  * Abstract objects cache
  */
-public interface JDBCAbstractCache<OWNER extends DBSObject, OBJECT extends DBSObject> {
+public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> {
 
     Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException;

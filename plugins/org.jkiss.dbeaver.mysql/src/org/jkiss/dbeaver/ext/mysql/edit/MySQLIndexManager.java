@@ -4,16 +4,14 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
+import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
@@ -26,6 +24,12 @@ import java.util.Collections;
  * MySQL index manager
  */
 public class MySQLIndexManager extends JDBCIndexManager<MySQLTableIndex, MySQLTable> {
+
+    @Override
+    protected DBSObjectCache<MySQLCatalog, MySQLTableIndex> getObjectsCache(MySQLTableIndex object)
+    {
+        return object.getTable().getContainer().getIndexCache();
+    }
 
     protected MySQLTableIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,

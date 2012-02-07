@@ -10,8 +10,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -20,7 +22,13 @@ import org.jkiss.utils.CommonUtils;
 /**
  * MySQLViewManager
  */
-public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> {
+public class MySQLViewManager extends JDBCObjectEditor<MySQLTableBase, MySQLCatalog> {
+
+    @Override
+    protected DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
+    {
+        return object.getContainer().getTableCache();
+    }
 
     public long getMakerOptions()
     {
@@ -30,10 +38,11 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
     protected void validateObjectProperties(ObjectChangeCommand command)
         throws DBException
     {
-        if (CommonUtils.isEmpty(command.getObject().getName())) {
+        MySQLTableBase object = command.getObject();
+        if (CommonUtils.isEmpty(object.getName())) {
             throw new DBException("View name cannot be empty");
         }
-        if (CommonUtils.isEmpty(command.getObject().getAdditionalInfo().getDefinition())) {
+        if (CommonUtils.isEmpty(((MySQLView) object).getAdditionalInfo().getDefinition())) {
             throw new DBException("View definition cannot be empty");
         }
     }
@@ -49,13 +58,13 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLView, MySQLCatalog> 
     @Override
     protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
-        return createOrReplaceViewQuery(command.getObject());
+        return createOrReplaceViewQuery((MySQLView) command.getObject());
     }
 
     @Override
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        return createOrReplaceViewQuery(command.getObject());
+        return createOrReplaceViewQuery((MySQLView) command.getObject());
     }
 
     @Override

@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -40,6 +40,17 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     public static final String PATTERN_ITEM_TABLE = "%TABLE%"; //$NON-NLS-1$
     public static final String PATTERN_ITEM_INDEX_SHORT = "%INDEX_SHORT%"; //$NON-NLS-1$
     public static final String PATTERN_ITEM_CONSTRAINT = "%CONSTRAINT%"; //$NON-NLS-1$
+
+    /**
+     * Provides access to objects cache.
+     * Editor will reflect object create/delete in commands model update method
+     * @param object contained object
+     * @return objects cache or null
+     */
+    protected DBSObjectCache<? extends DBSObject, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object)
+    {
+        return null;
+    }
 
     public final DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
     {
@@ -140,17 +151,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     {
         ObjectRenameCommand command = new ObjectRenameCommand(object, CoreMessages.model_jdbc_rename_object, newName);
         commandContext.addCommand(command, new RenameObjectReflector());
-    }
-
-    /**
-     * Provides access to objects cache.
-     * Editor will reflect object create/delete in commands model update method
-     * @param object contained object
-     * @return objects cache or null
-     */
-    protected JDBCAbstractCache<CONTAINER_TYPE, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object)
-    {
-        return null;
     }
 
     protected class PropertyHandler
@@ -255,7 +255,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         {
             super.updateModel();
             OBJECT_TYPE object = getObject();
-            JDBCAbstractCache<CONTAINER_TYPE, OBJECT_TYPE> cache = getObjectsCache(object);
+            DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = getObjectsCache(object);
             if (cache != null) {
                 cache.cacheObject(object);
             }
@@ -290,7 +290,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         public void updateModel()
         {
             OBJECT_TYPE object = getObject();
-            JDBCAbstractCache<CONTAINER_TYPE, OBJECT_TYPE> cache = getObjectsCache(object);
+            DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = getObjectsCache(object);
             if (cache != null) {
                 cache.removeObject(object);
             }

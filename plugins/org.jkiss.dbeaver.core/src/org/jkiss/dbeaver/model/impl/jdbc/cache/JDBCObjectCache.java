@@ -9,9 +9,9 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -22,7 +22,8 @@ import java.util.*;
 /**
  * Various objects cache
  */
-public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> implements JDBCAbstractCache<OWNER, OBJECT> {
+public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> implements DBSObjectCache<OWNER, OBJECT>
+{
 
     private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;

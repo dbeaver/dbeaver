@@ -20,8 +20,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCAbstractCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -208,7 +208,7 @@ public class OracleUtils {
     static <PARENT extends DBSObject> Object resolveLazyReference(
         DBRProgressMonitor monitor,
         PARENT parent,
-        JDBCAbstractCache<PARENT,?> cache,
+        DBSObjectCache<PARENT,?> cache,
         DBSObjectLazy<?> referrer,
         Object propertyId)
         throws DBException

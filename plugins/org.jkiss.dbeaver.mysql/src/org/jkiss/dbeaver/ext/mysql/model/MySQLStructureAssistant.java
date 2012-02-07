@@ -194,7 +194,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     }
                     DBSObject constraint;
                     if (MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constrType)) {
-                        constraint = table.getForeignKey(monitor, constrName);
+                        constraint = table.getAssociation(monitor, constrName);
                     } else {
                         constraint = table.getConstraint(monitor, constrName);
                     }

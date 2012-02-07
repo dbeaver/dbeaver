@@ -13,6 +13,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 public class MySQLTriggerManager extends JDBCObjectManager<MySQLTrigger> {
 
 /*
+    @Override
+    protected JDBCAbstractCache<MySQLCatalog, MySQLTrigger> getObjectsCache(MySQLTrigger object)
+    {
+        return object.getContainer().getProceduresCache();
+    }
+*/
+
+/*
     public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final MySQLTrigger object)
     {
         return new ITabDescriptor[] {

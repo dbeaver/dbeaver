@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
  */
 public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLTableForeignKey, MySQLTable> {
 
-
     protected MySQLTableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLTable table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(

@@ -38,11 +38,11 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 {
     static final Log log = LogFactory.getLog(MySQLCatalog.class);
 
-    public final TableCache tableCache = new TableCache();
-    public final ProceduresCache proceduresCache = new ProceduresCache();
-    public final TriggerCache triggerCache = new TriggerCache();
-    public final ConstraintCache constraintCache = new ConstraintCache();
-    public final IndexCache indexCache = new IndexCache();
+    final TableCache tableCache = new TableCache();
+    final ProceduresCache proceduresCache = new ProceduresCache();
+    final TriggerCache triggerCache = new TriggerCache();
+    final ConstraintCache constraintCache = new ConstraintCache();
+    final IndexCache indexCache = new IndexCache();
 
     private MySQLDataSource dataSource;
     private String name;
@@ -132,6 +132,31 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     void setSqlPath(String sqlPath)
     {
         this.sqlPath = sqlPath;
+    }
+
+    public TableCache getTableCache()
+    {
+        return tableCache;
+    }
+
+    public ProceduresCache getProceduresCache()
+    {
+        return proceduresCache;
+    }
+
+    public TriggerCache getTriggerCache()
+    {
+        return triggerCache;
+    }
+
+    public ConstraintCache getConstraintCache()
+    {
+        return constraintCache;
+    }
+
+    public IndexCache getIndexCache()
+    {
+        return indexCache;
     }
 
     @Association
