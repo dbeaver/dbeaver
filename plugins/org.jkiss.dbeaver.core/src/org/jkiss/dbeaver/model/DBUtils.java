@@ -229,8 +229,7 @@ public final class DBUtils {
     public static DBSObject findNestedObject(
         DBRProgressMonitor monitor,
         DBSObjectContainer parent,
-        List<String> names
-    )
+        List<String> names)
         throws DBException
     {
         for (int i = 0; i < names.size(); i++) {
@@ -269,10 +268,20 @@ public final class DBUtils {
      */
     public static <T extends DBPNamedObject> T findObject(Collection<T> theList, String objectName)
     {
-        if (!CommonUtils.isEmpty(theList)) {
-            for (T object : theList) {
-                if (object.getName().equalsIgnoreCase(objectName)) {
-                    return object;
+        if (theList != null && !theList.isEmpty()) {
+            if (theList instanceof List) {
+                List<T> l = (List<T>)theList;
+                for (int i = 0; i < l.size(); i++) {
+                    if (l.get(i).getName().equalsIgnoreCase(objectName)) {
+                        return l.get(i);
+                    }
+
+                }
+            } else {
+                for (T object : theList) {
+                    if (object.getName().equalsIgnoreCase(objectName)) {
+                        return object;
+                    }
                 }
             }
         }
@@ -288,7 +297,7 @@ public final class DBUtils {
      */
     public static <T extends DBPNamedObject> List<T> findObjects(Collection<T> theList, String objectName)
     {
-        if (!CommonUtils.isEmpty(theList)) {
+        if (theList != null && !theList.isEmpty()) {
             List<T> result = new ArrayList<T>();
             for (T object : theList) {
                 if (object.getName().equalsIgnoreCase(objectName)) {

@@ -115,7 +115,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public Collection<OracleTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, this, OracleTable.class);
+        return tableCache.getTypedObjects(monitor, this, OracleTable.class);
     }
 
     public OracleTable getTable(DBRProgressMonitor monitor, String name)
@@ -128,7 +128,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public Collection<OracleView> getViews(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, this, OracleView.class);
+        return tableCache.getTypedObjects(monitor, this, OracleView.class);
     }
 
     public OracleView getView(DBRProgressMonitor monitor, String name)

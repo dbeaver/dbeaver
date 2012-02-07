@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -22,25 +22,10 @@ import java.util.*;
 /**
  * Various objects cache
  */
-public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> implements DBSObjectCache<OWNER, OBJECT>
+public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends AbstractObjectCache<OWNER, OBJECT>
 {
 
-    private List<OBJECT> objectList;
-    private Map<String, OBJECT> objectMap;
-    private boolean caseSensitive = true;
-    private Comparator<OBJECT> listOrderComparator;
-
     protected JDBCObjectCache() {
-    }
-
-    public void setCaseSensitive(boolean caseSensitive)
-    {
-        this.caseSensitive = caseSensitive;
-    }
-
-    public void setListOrderComparator(Comparator<OBJECT> listOrderComparator)
-    {
-        this.listOrderComparator = listOrderComparator;
     }
 
     abstract protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner)
@@ -58,25 +43,6 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         return getCachedObjects();
     }
 
-    public Collection<OBJECT> getCachedObjects()
-    {
-        synchronized (this) {
-            return objectList == null ? Collections.<OBJECT>emptyList() : objectList;
-        }
-    }
-
-    public <SUB_TYPE> Collection<SUB_TYPE> getObjects(DBRProgressMonitor monitor, OWNER owner, Class<SUB_TYPE> type)
-        throws DBException
-    {
-        List<SUB_TYPE> result = new ArrayList<SUB_TYPE>();
-        for (OBJECT object : getObjects(monitor, owner)) {
-            if (type.isInstance(object)) {
-                result.add(type.cast(object));
-            }
-        }
-        return result;
-    }
-
     public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name)
         throws DBException
     {
@@ -84,58 +50,6 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             this.loadObjects(monitor, owner);
         }
         return getCachedObject(name);
-    }
-
-    public OBJECT getCachedObject(String name)
-    {
-        synchronized (this) {
-            return objectMap == null ? null : objectMap.get(caseSensitive ? name : name.toUpperCase());
-        }
-    }
-
-    public void cacheObject(OBJECT object)
-    {
-        synchronized (this) {
-            if (this.objectList != null) {
-                detectCaseSensitivity(object);
-                this.objectList.add(object);
-                this.objectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
-            }
-        }
-    }
-
-    @Override
-    public void removeObject(OBJECT object)
-    {
-        synchronized (this) {
-            if (this.objectList != null) {
-                detectCaseSensitivity(object);
-                this.objectList.remove(object);
-                this.objectMap.remove(caseSensitive ? object.getName() : object.getName().toUpperCase());
-            }
-        }
-    }
-
-    public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, OWNER owner, String name, Class<SUB_TYPE> type)
-        throws DBException
-    {
-        final OBJECT object = getObject(monitor, owner, name);
-        return type.isInstance(object) ? type.cast(object) : null;
-    }
-
-    public boolean isCached()
-    {
-        synchronized (this) {
-            return objectMap != null;
-        }
-    }
-
-    public void clearCache()
-    {
-        synchronized (this) {
-            this.objectList = null;
-            this.objectMap = null;
-        }
     }
 
     public void loadObjects(DBRProgressMonitor monitor, OWNER owner)
@@ -184,18 +98,15 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             context.close();
         }
 
+        Comparator<OBJECT> comparator = getListOrderComparator();
+        if (comparator != null) {
+            Collections.sort(tmpObjectList, comparator);
+        }
+
         synchronized (this) {
             detectCaseSensitivity(owner);
-
-            this.objectList = tmpObjectList;
-            this.objectMap = new LinkedHashMap<String, OBJECT>();
-            for (OBJECT object : tmpObjectList) {
-                this.objectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
-            }
+            setCache(tmpObjectList);
             this.invalidateObjects(monitor, owner, new CacheIterator());
-        }
-        if (listOrderComparator != null) {
-            Collections.sort(tmpObjectList, listOrderComparator);
         }
     }
 
@@ -205,32 +116,4 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         }
     }
 
-    protected void invalidateObjects(DBRProgressMonitor monitor, OWNER owner, Iterator<OBJECT> objectIter)
-    {
-
-    }
-
-    private class CacheIterator implements Iterator<OBJECT> {
-        private Iterator<OBJECT> listIterator = objectList.iterator();
-        private OBJECT curObject;
-        private CacheIterator()
-        {
-        }
-
-        public boolean hasNext()
-        {
-            return listIterator.hasNext();
-        }
-
-        public OBJECT next()
-        {
-            return (curObject = listIterator.next());
-        }
-
-        public void remove()
-        {
-            listIterator.remove();
-            objectMap.remove(caseSensitive ? curObject.getName() : curObject.getName().toUpperCase());
-        }
-    }
 }

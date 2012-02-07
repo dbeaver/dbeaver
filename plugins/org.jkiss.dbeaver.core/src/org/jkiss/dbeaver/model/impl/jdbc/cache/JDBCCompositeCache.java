@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,7 +36,7 @@ public abstract class JDBCCompositeCache<
     PARENT extends DBSObject,
     OBJECT extends DBSObject,
     ROW_REF extends DBSObject>
-    implements DBSObjectCache<OWNER, OBJECT>
+    extends AbstractObjectCache<OWNER, OBJECT>
 {
     protected static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
 
@@ -44,8 +44,6 @@ public abstract class JDBCCompositeCache<
 
     private JDBCStructCache<OWNER,?,?> parentCache;
     private Class<PARENT> parentType;
-    private List<OBJECT> objectList;
-    private Map<String, OBJECT> objectMap;
     private final String parentColumnName;
     private final String objectColumnName;
 
@@ -91,22 +89,6 @@ public abstract class JDBCCompositeCache<
         return getObjects(monitor, owner, null);
     }
 
-    public Collection<OBJECT> getCachedObjects()
-    {
-        synchronized (this) {
-            return objectList == null ? Collections.<OBJECT>emptyList() : objectList;
-        }
-    }
-
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
-        throws DBException
-    {
-        if (!isCached()) {
-            loadObjects(monitor, owner, forParent);
-        }
-        return getCachedObjects();
-    }
-
     public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String objectName)
         throws DBException
     {
@@ -116,62 +98,13 @@ public abstract class JDBCCompositeCache<
         return getCachedObject(objectName);
     }
 
-    public OBJECT getCachedObject(String name)
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+        throws DBException
     {
-        synchronized (this) {
-            return objectMap == null ? null : objectMap.get(name);
+        if (!isCached()) {
+            loadObjects(monitor, owner, forParent);
         }
-    }
-
-    public boolean isCached()
-    {
-        synchronized (this) {
-            return objectMap != null;
-        }
-    }
-
-    public void cacheObject(OBJECT object)
-    {
-        synchronized (this) {
-            if (this.objectList != null) {
-                this.objectList.add(object);
-                this.objectMap.put(object.getName(), object);
-            }
-        }
-    }
-
-    public void removeObject(OBJECT object)
-    {
-        synchronized (this) {
-            if (this.objectList != null) {
-                this.objectList.remove(object);
-                this.objectMap.remove(object.getName());
-            }
-        }
-    }
-
-    public void setCache(Collection<OBJECT> objects)
-    {
-        synchronized (this) {
-            objectList = new ArrayList<OBJECT>(objects);
-            objectMap = new LinkedHashMap<String, OBJECT>();
-            for (OBJECT object : objects) {
-                objectMap.put(object.getName(), object);
-            }
-        }
-    }
-
-    public void clearCache()
-    {
-        synchronized (this) {
-            if (this.objectList != null) {
-                for (OBJECT object : this.objectList) {
-                    cacheChildren(object, null);
-                }
-                this.objectList = null;
-                this.objectMap = null;
-            }
-        }
+        return getCachedObjects();
     }
 
     protected void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
@@ -276,19 +209,16 @@ public abstract class JDBCCompositeCache<
             if (forParent != null || !parentObjectMap.isEmpty()) {
                 if (forParent == null) {
                     // Cache global object list
-                    objectList = new ArrayList<OBJECT>();
-                    objectMap = new LinkedHashMap<String, OBJECT>();
+                    List<OBJECT> globalCache = new ArrayList<OBJECT>();
                     for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
                         for (ObjectInfo info : objMap.values()) {
-                            objectList.add(info.object);
-                            objectMap.put(info.object.getName(), info.object);
+                            globalCache.add(info.object);
                         }
                     }
                     // Add precached objects to global cache too
-                    for (OBJECT object : precachedObjects) {
-                        objectList.add(object);
-                        objectMap.put(object.getName(), object);
-                    }
+                    globalCache.addAll(precachedObjects);
+                    this.setCache(globalCache);
+                    this.invalidateObjects(monitor, owner, new CacheIterator());
                 }
             }
         }
@@ -312,7 +242,7 @@ public abstract class JDBCCompositeCache<
         }
         // Now set empty object list for other parents
         if (forParent == null) {
-            for (PARENT tmpParent : parentCache.getObjects(monitor, owner, parentType)) {
+            for (PARENT tmpParent : parentCache.getTypedObjects(monitor, owner, parentType)) {
                 if (!parentObjectMap.containsKey(tmpParent)) {
                     cacheObjects(tmpParent, new ArrayList<OBJECT>());
                 }

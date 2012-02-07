@@ -170,7 +170,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     public Collection<MySQLTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, this, MySQLTable.class);
+        return tableCache.getTypedObjects(monitor, this, MySQLTable.class);
     }
 
     public MySQLTable getTable(DBRProgressMonitor monitor, String name)
@@ -183,7 +183,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     public Collection<MySQLView> getViews(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, this, MySQLView.class);
+        return tableCache.getTypedObjects(monitor, this, MySQLView.class);
     }
 
     @Association
