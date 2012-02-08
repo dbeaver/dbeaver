@@ -25,15 +25,13 @@ import java.util.*;
  */
 public class ERDEntity extends ERDObject<DBSEntity>
 {
+	private List<ERDEntityAttribute> columns;
 
-	private List<ERDEntityAttribute> columns = new ArrayList<ERDEntityAttribute>();
-
-	private List<ERDAssociation> primaryKeyRelationships = new ArrayList<ERDAssociation>();
-	private List<ERDAssociation> foreignKeyRelationships = new ArrayList<ERDAssociation>();
+	private List<ERDAssociation> primaryKeyRelationships;
+	private List<ERDAssociation> foreignKeyRelationships;
     private List<DBSEntityAssociation> unresolvedKeys;
 
     private boolean primary = false;
-    private ERDLogicalPrimaryKey logicalPK;
 
     public ERDEntity(DBSEntity dbsTable) {
         super(dbsTable);
@@ -41,6 +39,9 @@ public class ERDEntity extends ERDObject<DBSEntity>
 
     public void addColumn(ERDEntityAttribute column, boolean reflect)
 	{
+        if (columns == null) {
+            columns = new ArrayList<ERDEntityAttribute>();
+        }
 		if (columns.contains(column))
 		{
 			throw new IllegalArgumentException("Column already present");
@@ -87,6 +88,9 @@ public class ERDEntity extends ERDObject<DBSEntity>
 	 */
 	public void addForeignKeyRelationship(ERDAssociation rel, boolean reflect)
 	{
+        if (foreignKeyRelationships == null) {
+            foreignKeyRelationships = new ArrayList<ERDAssociation>();
+        }
 		foreignKeyRelationships.add(rel);
         if (reflect) {
 		    firePropertyChange(OUTPUT, null, rel);
@@ -101,6 +105,9 @@ public class ERDEntity extends ERDObject<DBSEntity>
 	 */
 	public void addPrimaryKeyRelationship(ERDAssociation table, boolean reflect)
 	{
+        if (primaryKeyRelationships == null) {
+            primaryKeyRelationships = new ArrayList<ERDAssociation>();
+        }
 		primaryKeyRelationships.add(table);
         if (reflect) {
 		    firePropertyChange(INPUT, null, table);
@@ -137,7 +144,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
 
 	public List<ERDEntityAttribute> getColumns()
 	{
-		return columns;
+		return CommonUtils.safeList(columns);
 	}
 
 	/**
@@ -145,7 +152,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
 	 */
 	public List<ERDAssociation> getForeignKeyRelationships()
 	{
-		return foreignKeyRelationships;
+		return CommonUtils.safeList(foreignKeyRelationships);
 	}
 
 	/**
@@ -153,7 +160,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
 	 */
 	public List<ERDAssociation> getPrimaryKeyRelationships()
 	{
-		return primaryKeyRelationships;
+		return CommonUtils.safeList(primaryKeyRelationships);
 	}
 
     public boolean isPrimary() {
@@ -166,9 +173,11 @@ public class ERDEntity extends ERDObject<DBSEntity>
 
     public boolean hasSelfLinks()
     {
-        for (ERDAssociation association : foreignKeyRelationships) {
-            if (association.getPrimaryKeyEntity() == this) {
-                return true;
+        if (foreignKeyRelationships != null) {
+            for (ERDAssociation association : foreignKeyRelationships) {
+                if (association.getPrimaryKeyEntity() == this) {
+                    return true;
+                }
             }
         }
         return false;
@@ -311,14 +320,6 @@ public class ERDEntity extends ERDObject<DBSEntity>
                 iter.remove();
             }
         }
-    }
-
-    public ERDLogicalPrimaryKey getLogicalPrimaryKey()
-    {
-        if (logicalPK == null) {
-            logicalPK = new ERDLogicalPrimaryKey(this, "Primary key", "");
-        }
-        return logicalPK;
     }
 
     public String getName()

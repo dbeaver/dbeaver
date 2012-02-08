@@ -36,7 +36,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
             foreignEntity,
             foreignEntity.getObject().getName() + " -> " + primaryEntity.getObject().getName(),
             "",
-            primaryEntity.getLogicalPrimaryKey()));
+            new ERDLogicalPrimaryKey(primaryEntity, "Primary key", "")));
         this.primaryKeyEntity = primaryEntity;
         this.foreignKeyEntity = foreignEntity;
         this.primaryKeyEntity.addPrimaryKeyRelationship(this, reflect);
