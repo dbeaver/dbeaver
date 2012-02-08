@@ -9,7 +9,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Generic table manager
@@ -22,6 +24,12 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
         GenericTableForeignKey.class,
         GenericTableIndex.class
     };
+
+    @Override
+    protected DBSObjectCache<? extends DBSObject, GenericTable> getObjectsCache(GenericTable object)
+    {
+        return object.getContainer().getTableCache();
+    }
 
     public Class<?>[] getChildTypes()
     {
