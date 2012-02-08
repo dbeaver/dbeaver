@@ -195,13 +195,13 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         objectTypeClause.append(",'").append(OracleObjectType.SYNONYM.getTypeName()).append("'");
         // Seek for objects (join with public synonyms)
         JDBCPreparedStatement dbStat = context.prepareStatement(
-            "SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ALL_OBJECTS WHERE " +
+            "SELECT DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM (SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ALL_OBJECTS WHERE " +
             "OBJECT_TYPE IN (" + objectTypeClause + ") AND OBJECT_NAME LIKE ? " +
             (schema == null ? "" : " AND OWNER=?") +
             "UNION ALL\n" +
             "SELECT O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
             "FROM ALL_SYNONYMS S,ALL_OBJECTS O\n" +
-            "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?" +
+            "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?)" +
             "\nORDER BY OBJECT_NAME");
         try {
             objectNameMask = objectNameMask.toUpperCase();
