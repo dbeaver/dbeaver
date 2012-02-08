@@ -40,8 +40,7 @@ import java.util.List;
 public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl {
     static final Log log = LogFactory.getLog(ObjectListControl.class);
 
-    private static final String LAZY_VALUE_LABEL = "...";
-    private final static LazyValue DEF_LAZY_VALUE = new LazyValue(LAZY_VALUE_LABEL); //$NON-NLS-1$
+    private final static LazyValue DEF_LAZY_VALUE = new LazyValue("..."); //$NON-NLS-1$
     private final static String DATA_OBJECT_COLUMN = "objectColumn"; //$NON-NLS-1$
     private final static int LAZY_LOAD_DELAY = 100;
     private final static Object NULL_VALUE = new Object();
@@ -849,10 +848,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     final Object objectValue = getObjectValue(object);
                     Object cellValue = getCellValue(object, event.index);
                     final ObjectColumn objectColumn = columns.get(event.index);
-                    String columnText = event.item instanceof TreeItem ?
-                        ((TreeItem)event.item).getText(event.index) :
-                        ((TableItem)event.item).getText(event.index);
-                    if (LAZY_VALUE_LABEL.equals(columnText)) {
+                    if (cellValue instanceof LazyValue) {
                         if (!lazyLoadCanceled) {
                             addLazyObject(object, objectColumn);
                         }
