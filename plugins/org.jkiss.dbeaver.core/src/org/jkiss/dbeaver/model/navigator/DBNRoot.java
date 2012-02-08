@@ -21,9 +21,9 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
 {
     private List<DBNProject> projects = new ArrayList<DBNProject>();
 
-    public DBNRoot(DBNModel model)
+    public DBNRoot()
     {
-        super(model);
+        super();
         DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
     }
 
@@ -116,7 +116,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
                 return o1.getNodeName().compareTo(o2.getNodeName());
             }
         });
-        getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
+        DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
 
         return projectNode;
     }
@@ -127,7 +127,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
             DBNProject projectNode = iter.next();
             if (projectNode.getProject() == project) {
                 iter.remove();
-                getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, projectNode));
+                DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, projectNode));
                 projectNode.dispose(true);
                 break;
             }
@@ -139,10 +139,10 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         DBNProject projectNode = getProject(newValue);
         DBNProject oldProjectNode = getProject(oldValue);
         if (projectNode != null) {
-            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, projectNode));
+            DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, projectNode));
         }
         if (oldProjectNode != null) {
-            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, oldProjectNode));
+            DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, oldProjectNode));
         }
     }
 }

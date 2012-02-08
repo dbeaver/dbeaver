@@ -50,8 +50,8 @@ public class DBNResource extends DBNNode
             }
             children = null;
         }
-        if (reflect && this.getModel() != null) {
-            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
+        if (reflect) {
+            DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
         }
         super.dispose(reflect);
     }
@@ -317,7 +317,7 @@ public class DBNResource extends DBNNode
     {
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Update this node in navigator
-            getModel().fireNodeEvent(new DBNEvent(delta, DBNEvent.Action.UPDATE, this));
+            DBNModel.getInstance().fireNodeEvent(new DBNEvent(delta, DBNEvent.Action.UPDATE, this));
         }
         if (children == null) {
             // Child nodes are not yet read so nothing to change here - just return
@@ -332,7 +332,7 @@ public class DBNResource extends DBNNode
                     if (newChild != null) {
                         children.add(newChild);
                         sortChildren(children);
-                        getModel().fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.ADD, newChild));
+                        DBNModel.getInstance().fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.ADD, newChild));
 
                         if (childDelta.getKind() == IResourceDelta.CHANGED) {
                             // Notify just created resource

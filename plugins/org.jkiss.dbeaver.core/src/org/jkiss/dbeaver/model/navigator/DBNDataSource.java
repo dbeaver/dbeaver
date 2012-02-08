@@ -27,12 +27,12 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         super(parentNode);
         this.dataSource = dataSource;
         this.treeRoot = dataSource.getDriver().getProviderDescriptor().getTreeDescriptor();
-        this.getModel().addNode(this, false);
+        DBNModel.getInstance().addNode(this, false);
     }
 
     protected void dispose(boolean reflect)
     {
-        this.getModel().removeNode(this, reflect);
+        DBNModel.getInstance().removeNode(this, reflect);
 /*
         if (this.dataSource.isConnected()) {
             try {

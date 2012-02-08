@@ -209,6 +209,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         // Navigator model
         this.navigatorModel = new DBNModel();
+        this.navigatorModel.initialize();
     }
 
     public IProject getProject(String projectId)

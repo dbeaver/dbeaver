@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.model.navigator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
-import org.jkiss.dbeaver.ui.ICommandIds;
 
 /**
  * DBNDatabaseItem
@@ -22,9 +21,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode
         super(parent);
         this.meta = meta;
         this.object = object;
-        if (this.getModel() != null) {
-            this.getModel().addNode(this, reflect);
-        }
+        DBNModel.getInstance().addNode(this, reflect);
     }
 
     @Override
@@ -35,11 +32,9 @@ public class DBNDatabaseItem extends DBNDatabaseNode
 
     protected void dispose(boolean reflect)
     {
-        if (this.getModel() != null) {
-            // Notify model
-            // Reflect changes only if underlying object is not persisted
-            this.getModel().removeNode(this, reflect);
-        }
+        // Notify model
+        // Reflect changes only if underlying object is not persisted
+        DBNModel.getInstance().removeNode(this, reflect);
         this.object = null;
         super.dispose(reflect);
     }
@@ -51,9 +46,9 @@ public class DBNDatabaseItem extends DBNDatabaseNode
 
     @Override
     protected void reloadObject(DBRProgressMonitor monitor, DBSObject object) {
-        getModel().removeNode(this, false);
+        DBNModel.getInstance().removeNode(this, false);
         this.object = object;
-        getModel().addNode(this, false);
+        DBNModel.getInstance().addNode(this, false);
     }
 
     public DBSObject getObject()

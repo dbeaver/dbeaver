@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,35 +24,26 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
 {
     static final Log log = LogFactory.getLog(DBNNode.class);
 
-    private DBNModel model;
     private DBNNode parentNode;
 
-    protected DBNNode(DBNModel model)
+    protected DBNNode()
     {
-        this.model = model;
         this.parentNode = null;
     }
 
     protected DBNNode(DBNNode parentNode)
     {
-        this.model = parentNode.getModel();
         this.parentNode = parentNode;
     }
 
     public boolean isDisposed()
     {
-        return model == null;
+        return false;
     }
 
     void dispose(boolean reflect)
     {
-        this.model = null;
         this.parentNode = null;
-    }
-
-    public final DBNModel getModel()
-    {
-        return model;
     }
 
     public final DBNNode getParentNode()

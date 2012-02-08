@@ -48,7 +48,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
     {
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
-        this.model = rootNode.getModel();
+        this.model = DBNModel.getInstance();
         this.model.addListener(this);
         addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)

@@ -30,16 +30,12 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     {
         super(parent);
         this.meta = meta;
-        if (this.getModel() != null) {
-            this.getModel().addNode(this);
-        }
+        DBNModel.getInstance().addNode(this);
     }
 
     protected void dispose(boolean reflect)
     {
-        if (this.getModel() != null) {
-            this.getModel().removeNode(this, reflect);
-        }
+        DBNModel.getInstance().removeNode(this, reflect);
         super.dispose(reflect);
     }
 

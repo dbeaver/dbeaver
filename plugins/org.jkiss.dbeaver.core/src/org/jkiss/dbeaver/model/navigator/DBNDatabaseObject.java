@@ -26,17 +26,13 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     {
         super(parent);
         this.meta = meta;
-        if (this.getModel() != null) {
-            this.getModel().addNode(this);
-        }
+        DBNModel.getInstance().addNode(this);
         this.editorDescriptor = DBeaverCore.getActiveWorkbenchWindow().getWorkbench().getEditorRegistry().findEditor(meta.getEditorId());
     }
 
     protected void dispose(boolean reflect)
     {
-        if (this.getModel() != null) {
-            this.getModel().removeNode(this, reflect);
-        }
+        DBNModel.getInstance().removeNode(this, reflect);
         super.dispose(reflect);
     }
 

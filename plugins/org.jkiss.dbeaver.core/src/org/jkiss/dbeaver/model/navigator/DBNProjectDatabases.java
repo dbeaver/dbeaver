@@ -115,7 +115,9 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
     {
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
         dataSources.add(newNode);
-        this.getModel().addNode(newNode, reflect);
+        if (reflect) {
+            DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, newNode));
+        }
         return newNode;
     }
 
@@ -137,8 +139,8 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
             case OBJECT_ADD:
                 if (event.getObject() instanceof DataSourceDescriptor) {
                     addDataSource((DataSourceDescriptor) event.getObject(), true);
-                } else if (getModel().getNodeByObject(event.getObject()) == null) {
-                    final DBNDatabaseNode parentNode = getModel().getParentNode(event.getObject());
+                } else if (DBNModel.getInstance().getNodeByObject(event.getObject()) == null) {
+                    final DBNDatabaseNode parentNode = DBNModel.getInstance().getParentNode(event.getObject());
 
                     if (parentNode != null) {
                         if (parentNode.getChildNodes() == null && parentNode.allowsChildren()) {
@@ -170,7 +172,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
                 if (event.getObject() instanceof DataSourceDescriptor) {
                     removeDataSource((DataSourceDescriptor) event.getObject());
                 } else {
-                    final DBNDatabaseNode node = getModel().getNodeByObject(event.getObject());
+                    final DBNDatabaseNode node = DBNModel.getInstance().getNodeByObject(event.getObject());
                     if (node != null && node.getParentNode() instanceof DBNDatabaseNode) {
                         ((DBNDatabaseNode)node.getParentNode()).removeChildItem(event.getObject());
                     }
@@ -179,7 +181,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
             case OBJECT_UPDATE:
             case OBJECT_SELECT:
             {
-                DBNNode dbmNode = getModel().getNodeByObject(event.getObject());
+                DBNNode dbmNode = DBNModel.getInstance().getNodeByObject(event.getObject());
                 if (dbmNode != null) {
                     DBNEvent.NodeChange nodeChange;
                     Boolean enabled = null;
@@ -197,7 +199,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
                             nodeChange = DBNEvent.NodeChange.REFRESH;
                         }
                     }
-                    getModel().fireNodeUpdate(
+                    DBNModel.getInstance().fireNodeUpdate(
                         this,
                         dbmNode,
                         nodeChange);

@@ -47,7 +47,19 @@ public class DBNModel implements IResourceChangeListener {
 
     public DBNModel()
     {
-        this.root = new DBNRoot(this);
+    }
+
+    public static DBNModel getInstance()
+    {
+        return DBeaverCore.getInstance().getNavigatorModel();
+    }
+
+    public void initialize()
+    {
+        if (this.root != null) {
+            throw new IllegalStateException("Can't initialize navigator model more than once");
+        }
+        this.root = new DBNRoot();
 
         // Add all existing projects to root node
         final DBeaverCore core = DBeaverCore.getInstance();
@@ -83,15 +95,11 @@ public class DBNModel implements IResourceChangeListener {
         }
         this.listeners.clear();
         this.listenersCopy = null;
+        this.root = null;
 
         synchronized (DBNModel.class) {
             overlayImageCache.clear();
         }
-    }
-
-    public DBNAdapterFactory getNodesAdapter()
-    {
-        return nodesAdapter;
     }
 
     public DBNRoot getRoot()
